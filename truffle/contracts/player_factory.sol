@@ -100,8 +100,8 @@ contract PlayerFactory is HelperFunctions {
             _playerNumberInTeam, 
             computePlayerStateFromRandom(dna, _playerRole, now)
             );
-     }
-
+     }    
+     
     function computePlayerStateFromRandom(uint longRnd, uint8 playerRole, uint currentTime) 
         internal 
         pure 
@@ -140,6 +140,47 @@ contract PlayerFactory is HelperFunctions {
         return encodeIntoLongIntArray(7, states, 10000);
     }
     
+    function createTestPlayer(
+        string _playerName, 
+        uint _teamIdx, 
+        uint8 _playerNumberInTeam, 
+        uint monthOfBirthAfterUnixEpoch, 
+        uint defense, 
+        uint speed, 
+        uint pass, 
+        uint shoot,
+        uint endurance, 
+        uint role
+        ) 
+        public 
+    {
+        // we should make sure all numbers are below 1e5
+        require (_teamIdx < teams.length);
+        // uint factor = 10000;
+        // uint state =    monthOfBirthAfterUnixEpoch +
+        //                 defense     * factor +
+        //                 speed       * factor*factor +
+        //                 pass        * factor*factor*factor +
+        //                 shoot       * factor*factor*factor*factor + 
+        //                 endurance   * factor*factor*factor*factor*factor +
+        //                 role        * factor*factor*factor*factor*factor*factor;
+        // uint factor = 10000;
+        uint state =    monthOfBirthAfterUnixEpoch +
+                        defense     * 1e4 +
+                        speed       * 1e8 +
+                        pass        * 1e12 +
+                        shoot       * 1e16 + 
+                        endurance   * 1e20 +
+                        role        * 1e24;
+ 
+        createPlayer(
+            _playerName, 
+            _teamIdx, 
+            _playerNumberInTeam, 
+            state
+            );
+     }
+     
     function getNCreatedPlayers() external view returns(uint) { return players.length;}
 
     function getPlayerState(uint playerIdx) external view returns(uint) { 

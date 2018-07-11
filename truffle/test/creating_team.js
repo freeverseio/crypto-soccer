@@ -42,7 +42,16 @@ contract('Teams', function(accounts) {
 
   // TODO: add test that you cannot create 2 teams with same name
   it("creates another team and plays a game. With this seed, it checks that the result is 2-2", async () => {
-    await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
+    // await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
+    await createTestTeam(
+      instance, 
+      "Sevilla", 
+      "Navas", 
+      maxPlayersPerTeam, 
+      1, 
+      [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
+      playerRoles433
+    );
     await printTeamPlayers(1, instance);
     var goals = await instance.playGame.call(0,1,232);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
@@ -67,7 +76,7 @@ contract('Teams', function(accounts) {
     }
     console.log("Total Goals: " + goalsTeam1 + " - " + goalsTeam2);
     assert.isTrue(goalsTeam1==6);
-    assert.isTrue(goalsTeam2==11);
+    assert.isTrue(goalsTeam2==13);
   });
 });
 
@@ -88,7 +97,6 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
   console.log("creating team: " + teamName);
   await instance.createTeam(teamName);
   const userChoice=1;
-  var playerRole=0;
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
@@ -124,3 +132,38 @@ function unixMonthToAge(unixMonthOfBirth) {
   return parseInt(age*10)/10;
 }
 
+
+async function createTestTeam(
+  instance, 
+  teamName, 
+  playerBasename, 
+  maxPlayersPerTeam, 
+  teamIdx, 
+  skills,
+  playerRoles 
+  ) 
+{
+  // TODO: derive from the name and the mapping
+  console.log("creating team: " + teamName);
+  await instance.createTeam(teamName);
+
+  for (var p=0; p<maxPlayersPerTeam; p++) {
+      thisName = playerBasename + p.toString();
+      var tx = await instance.createTestPlayer(
+          thisName,
+          teamIdx,
+          p,
+          skills[0], // monthOfBirthAfterUnixEpoch
+          skills[1], // defense
+          skills[2], // speed
+          skills[3], // pass
+          skills[4], // shoot
+          skills[5], // endurance
+          playerRoles[p]
+        );
+      var playerIdx = catchPlayerIdxFromEvent(tx.logs);
+      assert( playerIdx >= 0 );
+  }
+  nCreatedPlayers = await instance.getNCreatedPlayers.call();
+  console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
+}
