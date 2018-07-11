@@ -1,0 +1,28 @@
+{
+  "name": "cryptosoccer",
+  "version": "1.0.0",
+  "description": "\"cool soccer\"",
+  "main": "package.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/toni.mateos/cryptosoccer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/toni.mateos/cryptosoccer/issues"
+  },
+  "homepage": "https://gitlab.com/toni.mateos/cryptosoccer#README",
+  "dependencies": {
+    "openzeppelin-solidity": "1.10.0"
+  },
+  "devDependencies": {
+    "eth-gas-reporter": "^0.1.9"
+  }
+}

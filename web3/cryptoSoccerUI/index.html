@@ -1,0 +1,69 @@
+<html>
+
+<head>
+    <title>testing UI</title>
+    <script src="js/jquery-3.2.0.min.js"></script>
+    <script src="js/cryptoSoccer.js"></script>
+    <script src="js/web3.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/cryptoSoccer.css">
+</head>
+
+<body>
+
+    <div>
+        <div style="float: left; width: 100%">
+            <div id='teams'>
+                <p>TEAMS</p>
+                <button onclick="createTeam()">Create team</button>
+                <p>Created Teams:</p>
+                <div id='createdTeams'></div>
+            </div>
+            <div id='playersStats'>
+                <p>PLAYERS: choose team to explore</p>
+                <p>Team id: <input type="text" id='teamIdInput'><button onclick='getPlayersOfTeam()'>Go</button></p>
+                <div id='playersList'></div>
+            </div>
+        </div>
+        <div style="float: left; width: 100%">
+            <p>Utilities</p>
+            <div style="width: 45%; float: left;">
+
+                <p>Deployed contract address: <span id='contractAddress'></span></p>
+
+                <p>Check ganache client addresses:</p>
+                <button onclick="getGanacheAddresses()">Check addresses</button>
+                <div id='ganacheAddresses'></div>
+            </div>
+            <div style="width: 45%; overflow: hidden;">
+                <p>Play a match:</p>
+                <p>Introduce the id of the two teams and click on play to start the match :D</p>
+                <form>
+                    Local Team:
+                    <br>
+                    <input type="text" id='localTeamInput'>
+                    <br> Visitor Team:
+                    <br>
+                    <input type="text" id='visitorTeamInput'>
+                    <p>
+                        <button onclick='playMatch()'>Play Match</button>
+                    </p>
+                    <p>
+                        <div id='resultMatch'></div>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+    </div>
+    <script>
+
+        window.onload = function () {
+            getCreatedTeams()
+            getDeployedContractAddress()
+        };
+
+    </script>
+</body>
+
+</html>

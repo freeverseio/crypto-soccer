@@ -1,0 +1,11 @@
+#teams {
+    background-color: aliceblue;
+    width: 45%;
+    float: left;
+}
+
+#playersStats {
+    background-color: rgb(216, 216, 64);
+    width: 45%;
+    overflow: hidden;
+}
