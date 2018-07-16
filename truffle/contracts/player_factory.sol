@@ -1,9 +1,10 @@
 pragma solidity ^ 0.4.24;
 
 import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./storage.sol";
 import "./helper_functions.sol";
 
-contract PlayerFactory is HelperFunctions {
+contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
 
@@ -19,27 +20,7 @@ contract PlayerFactory is HelperFunctions {
     ///         5-endurance
     ///         6-role
     // @param role is: 0=keeper, 1=defence, 2=midfielder, 3=attacker, 4=retired
-    struct Player {
-        string name;
-        uint state; 
-    }
     
-    // TODO: check if we can do fwd declartion and specify this inside TeamFactory
-    uint8 constant kMaxPlayersInTeam = 11;
-    struct Team {
-        string name;
-        uint256 playersIdx;
-    }
-    /// @dev An array containing the Team struct for all teams in existence. The ID
-    ///  of each team is actually an index into this array.
-    Team[] teams;
-
-    /// @dev An array containing the Player struct for all players in existence. The ID
-    ///  of each player is actually an index into this array.
-    Player[] players;
-
-    /// @dev A mapping from hash(playerName) to a Team struct.
-    mapping(bytes32 => Team) public playerToTeam;
 
     /// @dev An internal method that creates a new player and stores it. This
     ///  method doesn't do any checking and should only be called when the

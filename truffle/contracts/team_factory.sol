@@ -4,9 +4,6 @@ import "./player_factory.sol";
 
 contract TeamFactory is PlayerFactory {
 
-    /// @dev A mapping from team hash(name) to the owner's address.
-    mapping(bytes32 => address) public teamToOwnerAddr;
-
     /// @dev Fired whenever a new team is created
     event TeamCreation(string teamName, uint nCreatedTeams, address owner);
 
