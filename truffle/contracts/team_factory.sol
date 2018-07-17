@@ -14,7 +14,7 @@ contract TeamFactory is PlayerFactory {
     function createTeam(string _teamName) public {
         // TODO: require maxLen for _teamName
         bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
-        require(teamToOwnerAddr[nameHash]==0); 
+        require(teamToOwnerAddr[nameHash]==0);
 
         Team memory emptyTeam;
         emptyTeam.name = _teamName;
@@ -22,8 +22,9 @@ contract TeamFactory is PlayerFactory {
         // We will signal that a team has been created by editing the first player's idx.
         // This enables to require that two players can't have the same name, via:
         //      require(playerToTeam[playerNameHash].playerIdx[0] == 0);
-        emptyTeam.playersIdx = uint(-1);
-        
+        emptyTeam.playersIdx = uint(0);
+        emptyTeam.timeOfCreation = now;
+
         teams.push(emptyTeam);
         teamToOwnerAddr[nameHash] = msg.sender;
 
@@ -32,15 +33,18 @@ contract TeamFactory is PlayerFactory {
     }
 
     function getNCreatedTeams() external view returns(uint) { return teams.length;}
+    function getTeamName(uint idx) external view returns(string) { return teams[idx].name;}
 
-    function getSkillsOfPlayersInTeam(uint teamIdx) 
-        external 
-        view 
-        returns(uint[7][kMaxPlayersInTeam] skills) 
-        // returns(uint[3][2] skills2) 
-    { 
+    function getSkillsOfPlayersInTeam(uint teamIdx)
+        external
+        view
+        returns(uint[7][kMaxPlayersInTeam] skills)
+        // returns(uint[3][2] skills2)
+    {
+        Team storage t = teams[teamIdx];
         for (uint8 p=0;p<kMaxPlayersInTeam;p++) {
-            uint state = players[getNumAtPos(teams[teamIdx].playersIdx, p, 1000000)].state;
+            uint playerIdx = getNumAtPos(t.playersIdx, p, 1000000);
+            uint state = (playerIdx != 0) ? players[playerIdx].state : getDefaultPlayerState(t, p);
             uint16[] memory thisSkills = readNumbersFromUint(7, state, 10000);
             for (uint8 sk=0;sk<7;sk++) {
                 skills[p][sk] = thisSkills[sk];

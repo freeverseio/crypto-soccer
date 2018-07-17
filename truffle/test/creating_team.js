@@ -32,11 +32,11 @@ contract('Teams', function(accounts) {
 
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
     nCreatedPlayers = await instance.getNCreatedPlayers.call();
-    assert.equal(nCreatedPlayers,0);
+    assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
     await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, playerRoles433);
     await printTeamPlayers(0, instance);
-    assert.equal(nCreatedPlayers,maxPlayersPerTeam);
+    assert.equal(nCreatedPlayers,maxPlayersPerTeam+1);
   });
 
 
@@ -58,6 +58,25 @@ contract('Teams', function(accounts) {
     assert.isTrue(goals[0].toNumber()==2);
     assert.isTrue(goals[1].toNumber()==2);
   });
+
+  it("creates a default team", async () => {
+    await instance.createTeam("Los Cojos");
+    var name = await instance.getTeamName(2);
+    assert.isTrue(name == "Los Cojos");
+    await printTeamPlayers(2, instance);
+  });
+  it("creates a default team and plays a game. With this seed, it checks that the result is 2-1", async () => {
+    console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
+    await instance.createTeam("Los Petardos");
+    var name = await instance.getTeamName(3);
+    assert.isTrue(name == "Los Petardos");
+    await printTeamPlayers(3, instance);
+    var goals = await instance.playGame.call(2,3,232);
+    console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
+    assert.isTrue(goals[0].toNumber()==2);
+    assert.isTrue(goals[1].toNumber()==1);
+  });
+
 
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
     var goals = await instance.playGame(0,1,232);

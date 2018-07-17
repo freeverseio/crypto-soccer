@@ -6,16 +6,17 @@ contract GameEngine is TeamFactory {
     // plays a game and, currently, returns the number of goals by each team.
     // pending: add effect of endurance, to decrease capabilities as rounds go on
     // pending: select the attacker who actually shoots and confront his shoot skill with the keeper.
-    function playGame(uint teamIdx1, uint teamIdx2, uint rndSeed) 
+    function playGame(uint teamIdx1, uint teamIdx2, uint rndSeed)
         public
-        returns (uint16[2] memory teamGoals) 
+        view
+        returns (uint16[2] memory teamGoals)
     {
-        // order of globSkills: 
-            // 0 - move2attack, 
-            // 1 - createShoot, 
-            // 2 - defendShoot, 
-            // 3 - blockShoot, 
-            // 4 - currentEndurance, 
+        // order of globSkills:
+            // 0 - move2attack,
+            // 1 - createShoot,
+            // 2 - defendShoot,
+            // 3 - blockShoot,
+            // 4 - currentEndurance,
             // 5 - startEndurance
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
@@ -23,8 +24,8 @@ contract GameEngine is TeamFactory {
         uint8[2] memory nAttackers;
         (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teams[teamIdx1]);
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teams[teamIdx2]);
-        uint8 nRounds = 18; // one every 5 mins => 18 rounds. 
-        
+        uint8 nRounds = 18; // one every 5 mins => 18 rounds.
+
         uint16[][4] memory rndNums = [
            readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed))), 1000),
            readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed+1))), 1000),
@@ -43,10 +44,10 @@ contract GameEngine is TeamFactory {
                         nAttackers[teamThatAttacks],
                         attackersSpeed[teamThatAttacks],
                         attackersShoot[teamThatAttacks],
-                        globSkills[1-teamThatAttacks][3], 
-                        rndNums[2][round], 
-                        rndNums[3][round], 
-                        1000  
+                        globSkills[1-teamThatAttacks][3],
+                        rndNums[2][round],
+                        rndNums[3][round],
+                        1000
                         )
                     ) {
                     teamGoals[teamThatAttacks]++;
@@ -57,10 +58,10 @@ contract GameEngine is TeamFactory {
         return teamGoals;
      }
 
-    function teamsGetTired(uint[5][2] globSkills) 
-        internal 
-        pure 
-        returns(uint[5][2]) 
+    function teamsGetTired(uint[5][2] globSkills)
+        internal
+        pure
+        returns(uint[5][2])
     {
         // recall the endurance is now a val for which 0 is greatest, 2000 is avg starting
         for (uint8 sk=0; sk<4; sk++) {
@@ -75,10 +76,10 @@ contract GameEngine is TeamFactory {
         uint[kMaxPlayersInTeam] memory attackersSpeed,
         uint[kMaxPlayersInTeam] memory attackersShoot,
         uint blockShoot,
-        uint rndNum1, 
-        uint rndNum2, 
+        uint rndNum1,
+        uint rndNum2,
         uint factor
-        ) 
+        )
         internal
         pure
         returns (bool)
@@ -94,7 +95,7 @@ contract GameEngine is TeamFactory {
         return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0;
     }
 
-    function getTeamThatAttacks(uint[5][2] globSkills, uint rndNum, uint factor) 
+    function getTeamThatAttacks(uint[5][2] globSkills, uint rndNum, uint factor)
         internal
         pure
         returns (uint8)
@@ -107,7 +108,7 @@ contract GameEngine is TeamFactory {
         );
     }
 
-    function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor) 
+    function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor)
         internal
         pure
         returns (bool)
@@ -124,27 +125,27 @@ contract GameEngine is TeamFactory {
 
 
     // computes basic data needed during the game.
-    function getGameglobSkills(Team t) 
-        internal 
-        view 
+    function getGameglobSkills(Team t)
+        internal
+        view
         returns (
-            uint[5] globSkills, 
+            uint[5] globSkills,
             uint8 nAttackers,
-            uint[kMaxPlayersInTeam] memory attackersSpeed, 
+            uint[kMaxPlayersInTeam] memory attackersSpeed,
             uint[kMaxPlayersInTeam] memory attackersShoot
         )
     {
-        // move2attack =    defence(defenders + 2*midfields + attackers) + 
-        //                  speed(defenders + 2*midfields) + 
-        //                  pass(defenders + 3*midfields) 
+        // move2attack =    defence(defenders + 2*midfields + attackers) +
+        //                  speed(defenders + 2*midfields) +
+        //                  pass(defenders + 3*midfields)
         // createShoot =    speed(attackers) + pass(attackers)
-        // defendShoot =    speed(defenders) + defence(defenders); 
-        // blockShoot  =    shoot(keeper); 
+        // defendShoot =    speed(defenders) + defence(defenders);
+        // blockShoot  =    shoot(keeper);
         // skills:  0-age
-        //          1-defense  
-        //          2-speed  
+        //          1-defense
+        //          2-speed
         //          3-pass
-        //          4-shoot (for a goalkeeper, this is interpreted as ability to block a shoot)  
+        //          4-shoot (for a goalkeeper, this is interpreted as ability to block a shoot)
         //          5-endurance
         //          6-role (0=goalkeeper, 1=defence, 2=midfield, 3=attacker, 4=retired)
         uint move2attack;
@@ -155,8 +156,9 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            Player storage player = players[getNumAtPos(t.playersIdx, p, 1000000)];
-            uint16[] memory skills = readNumbersFromUint(7, player.state, 10000);
+            uint playerIdx = getNumAtPos(t.playersIdx, p, 1000000);
+            uint state = (playerIdx != 0) ? players[playerIdx].state : getDefaultPlayerState(t, p);
+            uint16[] memory skills = readNumbersFromUint(7, state, 10000);
             endurance += skills[5];
             if (skills[6] == 0) {
                 blockShoot = skills[4];
@@ -178,18 +180,18 @@ contract GameEngine is TeamFactory {
         }
         // endurance is converted to a percentage that will be maintained:
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (endurance < 500) { 
-            endurance = 70; 
+        if (endurance < 500) {
+            endurance = 70;
         } else if (endurance < 1400) {
-            endurance = 100 - (1400-endurance)/30; 
+            endurance = 100 - (1400-endurance)/30;
         } else {
             endurance = 100;
         }
 
         return (
             [move2attack, createShoot, defendShoot, blockShoot, endurance],
-            nAttackers, 
-            attackersSpeed, 
+            nAttackers,
+            attackersSpeed,
             attackersShoot
         );
     }

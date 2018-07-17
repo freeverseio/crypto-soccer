@@ -23,10 +23,10 @@ contract HelperFunctions {
         return a < b ? a : b;
     }
 
-    function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor) 
-        public 
-        pure 
-        returns(uint) 
+    function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
+        public
+        pure
+        returns(uint)
     {
         uint state = rnds[0];
         uint currentFactor =1;
@@ -38,10 +38,10 @@ contract HelperFunctions {
     }
 
     // reads an arbitrary number of numbers from a long one
-    function readNumbersFromUint(uint8 nNumbers, uint longState, uint factor)  
+    function readNumbersFromUint(uint8 nNumbers, uint longState, uint factor)
         public
-        pure 
-        returns(uint16[] memory result) 
+        pure
+        returns(uint16[] memory result)
     {
         uint quotient;
         result = new uint16[](nNumbers);
@@ -59,57 +59,57 @@ contract HelperFunctions {
         return result;
     }
 
-    function getNumAtPos(uint longState, uint8 pos, uint factor)  
+    function getNumAtPos(uint longState, uint8 pos, uint factor)
         internal
-        pure 
-        returns(uint) 
+        pure
+        returns(uint)
     {
         return (longState/power(factor,pos)) % factor;
-    }   
+    }
 
 
-    function setNumAtPos(uint num, uint longState, uint8 pos, uint factor)  
+    function setNumAtPos(uint num, uint longState, uint8 pos, uint factor)
         public
-        pure 
-        returns(uint) 
+        pure
+        returns(uint)
     {
         return longState + (num - getNumAtPos(longState, pos, factor))*power(factor, pos);
-    }   
+    }
 
     // uses the previous function, feeding it with a uint256 hash, only for test use
-    function readNumbersFromHash(uint8 nNumbers, uint seed, uint factor)  
+    function readNumbersFromHash(uint8 nNumbers, uint seed, uint factor)
         public
-        pure 
-        returns(uint16[] memory result) 
+        pure
+        returns(uint16[] memory result)
     {
         uint longState = uint(keccak256(abi.encodePacked(seed)));
         return readNumbersFromUint(nNumbers, longState, factor);
     }
-    
+
 
     // throws a dice that returns 0 with probability weight1/(weight1+weight2), and 1 otherwise.
     // In other words, the responsible for weight1 is selected if return = 0.
     // We return a uint, not bool, to allow the return to be used as an idx in an array.
     // The formula is derived as follows. Throw a random number R in the range [0,M]
     // Then, w1 wins if (w1+w2)*(R/M) < w1, and w2 wins otherise. Clear, this is a weighted dice.
-    function throwDice(uint weight1, uint weight2, uint rndNum, uint factor)   
+    function throwDice(uint weight1, uint weight2, uint rndNum, uint factor)
         public
-        pure 
-        returns(uint8) 
-    {   
+        pure
+        returns(uint8)
+    {
         if( ((weight1+weight2)*rndNum)<(weight1 * (factor-1)) ) {
-            return 0; 
+            return 0;
         } else {
             return 1;
         }
-    }  
+    }
 
     // Generalization of the previous to any number of weights
-    function throwDiceArray(uint[] memory weights, uint rndNum, uint factor)   
+    function throwDiceArray(uint[] memory weights, uint rndNum, uint factor)
         public
-        pure 
-        returns(uint8) 
-    {   
+        pure
+        returns(uint8)
+    {
         uint uniformRndInSumOfWeights;
         for (uint8 w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
@@ -124,7 +124,7 @@ contract HelperFunctions {
             }
         }
         return w;
-    }  
+    }
 
 
 }
