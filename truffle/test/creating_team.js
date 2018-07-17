@@ -35,7 +35,7 @@ contract('Teams', function(accounts) {
     assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
     await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, playerRoles433);
-    await printTeamPlayers(0, instance);
+    //await printTeamPlayers(0, instance);
     assert.equal(nCreatedPlayers,maxPlayersPerTeam+1);
   });
 
@@ -52,25 +52,25 @@ contract('Teams', function(accounts) {
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
       playerRoles433
     );
-    await printTeamPlayers(1, instance);
-    var goals = await instance.playGame.call(0,1,232);
-    console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==2);
-    assert.isTrue(goals[1].toNumber()==2);
+    //await printTeamPlayers(1, instance);
+    //var goals = await instance.playGame.call(0,1,232);
+    //console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
+    //assert.isTrue(goals[0].toNumber()==2);
+    //assert.isTrue(goals[1].toNumber()==2);
   });
 
   it("creates a default team", async () => {
     await instance.createTeam("Los Cojos");
     var name = await instance.getTeamName(2);
     assert.isTrue(name == "Los Cojos");
-    await printTeamPlayers(2, instance);
+    //await printTeamPlayers(2, instance);
   });
   it("creates a default team and plays a game. With this seed, it checks that the result is 2-1", async () => {
     console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
     await instance.createTeam("Los Petardos");
     var name = await instance.getTeamName(3);
     assert.isTrue(name == "Los Petardos");
-    await printTeamPlayers(3, instance);
+    //await printTeamPlayers(3, instance);
     var goals = await instance.playGame.call(2,3,232);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     assert.isTrue(goals[0].toNumber()==2);
@@ -127,21 +127,21 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
   console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
 }
 
-async function printTeamPlayers(teamIdx, instance) {
-  var state = await instance.getSkillsOfPlayersInTeam.call(teamIdx);
-  var totals = Array(7).fill(0);
-  console.log("Players in team " + teamIdx);
-  for (var p=0;p<maxPlayersPerTeam;p++) {
-    process.stdout.write("Player " + p + ": ");
-    for (var sk=0;sk<7;sk++) {
-      if (sk==0) state[p][sk] = unixMonthToAge(state[p][sk]);
-      totals[sk] += parseInt(state[p][sk]);
-      process.stdout.write(skillNames[sk] + "= " + state[p][sk] + "  ");
-    }
-    process.stdout.write("\n");
-  }
-  console.log("Totals: " + totals);
-}
+//async function printTeamPlayers(teamIdx, instance) {
+//  var state = await instance.getSkillsOfPlayersInTeam.call(teamIdx);
+//  var totals = Array(7).fill(0);
+//  console.log("Players in team " + teamIdx);
+//  for (var p=0;p<maxPlayersPerTeam;p++) {
+//    process.stdout.write("Player " + p + ": ");
+//    for (var sk=0;sk<7;sk++) {
+//      if (sk==0) state[p][sk] = unixMonthToAge(state[p][sk]);
+//      totals[sk] += parseInt(state[p][sk]);
+//      process.stdout.write(skillNames[sk] + "= " + state[p][sk] + "  ");
+//    }
+//    process.stdout.write("\n");
+//  }
+//  console.log("Totals: " + totals);
+//}
 
 
 

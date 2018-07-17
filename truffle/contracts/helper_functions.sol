@@ -1,26 +1,15 @@
 pragma solidity ^ 0.4.24;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../node_modules/openzeppelin-solidity/contracts/math/Math.sol";
-
 // contract containing reusable generic functions
 contract HelperFunctions {
 
-    using SafeMath for uint256;
-    using Math for uint256;
-
-    function divideUint(uint numerator, uint denominator) internal pure returns(uint quotient, uint16 remainder) {
-        quotient = numerator.div(denominator);
-        remainder = uint16(numerator.sub(denominator.mul(quotient)));
-    }
-
-    function divideUint8(uint8 numerator, uint8 denominator) internal pure returns(uint8 quotient, uint8 remainder) {
-        quotient = numerator / denominator;
-        remainder = numerator - denominator * quotient;
-    }
-
-    function min(uint16 a, uint16 b) pure private returns(uint16) {
-        return a < b ? a : b;
+    function divideUint(uint numerator, uint denominator)
+        internal
+        pure
+        returns(uint quotient, uint16 remainder)
+    {
+        quotient = numerator/denominator;
+        remainder = uint16(numerator - denominator*quotient);
     }
 
     function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
@@ -51,20 +40,12 @@ contract HelperFunctions {
         }
     }
 
-    function power(uint x, uint8 exponent) internal pure returns(uint) {
-        uint result = 1;
-        for (uint8 e=0; e<exponent;e++) {
-            result *= x;
-        }
-        return result;
-    }
-
     function getNumAtPos(uint longState, uint8 pos, uint factor)
         internal
         pure
         returns(uint)
     {
-        return (longState/power(factor,pos)) % factor;
+        return (longState/(factor**pos)) % factor;
     }
 
 
@@ -73,19 +54,17 @@ contract HelperFunctions {
         pure
         returns(uint)
     {
-        return longState + (num - getNumAtPos(longState, pos, factor))*power(factor, pos);
+        return longState + (num - getNumAtPos(longState, pos, factor))*(factor**pos);
     }
 
-    // uses the previous function, feeding it with a uint256 hash, only for test use
-    function readNumbersFromHash(uint8 nNumbers, uint seed, uint factor)
-        public
-        pure
-        returns(uint16[] memory result)
+    // only used for testing since web3.eth.solidityUtils not yet available
+    function computeKeccak256(uint n)
+    public
+    pure
+    returns(uint)
     {
-        uint longState = uint(keccak256(abi.encodePacked(seed)));
-        return readNumbersFromUint(nNumbers, longState, factor);
+        return uint(keccak256(abi.encodePacked(n)));
     }
-
 
     // throws a dice that returns 0 with probability weight1/(weight1+weight2), and 1 otherwise.
     // In other words, the responsible for weight1 is selected if return = 0.

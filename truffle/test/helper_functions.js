@@ -29,7 +29,8 @@ contract('Helpers', function(accounts) {
     var numToRead = 25;
     var factor = 10000;
     var seed = 2;
-    var rnds = await instance.readNumbersFromHash.call(numToRead,seed,factor);
+    hash = await instance.computeKeccak256(seed)
+    rnds = await instance.readNumbersFromUint.call(numToRead, hash, factor);
     // for (var n=0; n<numToRead; n++) {
       // console.log(n + " - " + rnds[n]);
     // } 
