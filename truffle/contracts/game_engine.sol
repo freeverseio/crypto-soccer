@@ -6,7 +6,7 @@ contract GameEngine is TeamFactory {
     // plays a game and, currently, returns the number of goals by each team.
     // pending: add effect of endurance, to decrease capabilities as rounds go on
     // pending: select the attacker who actually shoots and confront his shoot skill with the keeper.
-    function playGame(uint teamIdx1, uint teamIdx2, uint rndSeed)
+    function playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
         public
         view
         returns (uint16[2] memory teamGoals)
@@ -18,35 +18,34 @@ contract GameEngine is TeamFactory {
             // 3 - blockShoot,
             // 4 - currentEndurance,
             // 5 - startEndurance
+
+        uint nRounds = rndNum1.length;
+        require (nRounds == rndNum2.length);
+        require (nRounds == rndNum3.length);
+        require (nRounds == rndNum4.length);
+
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
         uint[kMaxPlayersInTeam][2] memory attackersShoot;
         uint8[2] memory nAttackers;
         (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
-        uint8 nRounds = 18; // one every 5 mins => 18 rounds.
 
-        uint16[][4] memory rndNums = [
-           readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed))), 1000),
-           readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed+1))), 1000),
-           readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed+2))), 1000),
-           readNumbersFromUint(nRounds, uint(keccak256(abi.encodePacked(rndSeed+3))), 1000)
-        ];
         uint8 teamThatAttacks;
         // order of globSkills: [move2attack, createShoot, defendShoot, blockShoot, currentEndurance, startEndurance]
         for (uint round = 0; round < nRounds; round++){
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice( globSkills[0][0], globSkills[1][0], rndNums[0][round], 1000);
-            if ( managesToShoot(teamThatAttacks, globSkills, rndNums[1][round], 1000)) {
+            teamThatAttacks = throwDice( globSkills[0][0], globSkills[1][0], rndNum1[round], 1000);
+            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], 1000)) {
                 if ( managesToScore(
                         nAttackers[teamThatAttacks],
                         attackersSpeed[teamThatAttacks],
                         attackersShoot[teamThatAttacks],
                         globSkills[1-teamThatAttacks][3],
-                        rndNums[2][round],
-                        rndNums[3][round],
+                        rndNum3[round],
+                        rndNum4[round],
                         1000
                         )
                     ) {
@@ -54,7 +53,6 @@ contract GameEngine is TeamFactory {
                 }
             }
         }
-        // return [globSkills[0][4],globSkills[1][4]];
         return teamGoals;
      }
 
