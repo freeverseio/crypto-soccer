@@ -65,6 +65,14 @@ contract HelperFunctions {
     {
         return uint(keccak256(abi.encodePacked(n)));
     }
+    // only used for testing since web3.eth.solidityUtils not yet available
+    function computeKeccak256(string s, uint n1, uint n2)
+    public
+    pure
+    returns(uint)
+    {
+        return uint(keccak256(abi.encodePacked(s, n1, n2)));
+    }
 
     // throws a dice that returns 0 with probability weight1/(weight1+weight2), and 1 otherwise.
     // In other words, the responsible for weight1 is selected if return = 0.

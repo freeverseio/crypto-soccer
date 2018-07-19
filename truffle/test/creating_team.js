@@ -44,11 +44,11 @@ contract('Teams', function(accounts) {
   it("creates another team and plays a game. With this seed, it checks that the result is 2-2", async () => {
     // await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
     await createTestTeam(
-      instance, 
-      "Sevilla", 
-      "Navas", 
-      maxPlayersPerTeam, 
-      1, 
+      instance,
+      "Sevilla",
+      "Navas",
+      maxPlayersPerTeam,
+      1,
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
       playerRoles433
     );
@@ -177,14 +177,14 @@ function unixMonthToAge(unixMonthOfBirth) {
 
 
 async function createTestTeam(
-  instance, 
-  teamName, 
-  playerBasename, 
-  maxPlayersPerTeam, 
-  teamIdx, 
+  instance,
+  teamName,
+  playerBasename,
+  maxPlayersPerTeam,
+  teamIdx,
   skills,
-  playerRoles 
-  ) 
+  playerRoles
+  )
 {
   // TODO: derive from the name and the mapping
   console.log("creating team: " + teamName);
@@ -192,7 +192,7 @@ async function createTestTeam(
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.createTestPlayer(
+      var tx = await instance.createPlayer(
           thisName,
           teamIdx,
           p,
