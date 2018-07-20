@@ -9,6 +9,13 @@ contract('Helpers', function(accounts) {
     instance = await cryptoSoccer.deployed();
   });
 
+  it("tests encode with bits", async () => {
+    input = [1714, 311, 42, 3]
+    expected =  14167111270563175204530
+    result = await instance.encode(4, input, 24);
+    assert.equal(result, expected);
+  });
+
   it("tests readNumbersFromUint", async () =>{
     var rnds = await instance.readNumbersFromUint.call(3,1234567890,10000);
     assert.isTrue(rnds[0]==7890);

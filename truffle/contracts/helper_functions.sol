@@ -12,6 +12,18 @@ contract HelperFunctions {
         remainder = uint16(numerator - denominator*quotient);
     }
 
+    function encode(uint8 nElem, uint[] nums, uint bits) public pure returns(uint result) {
+        result = 0;
+        uint b = 0;
+        uint maxnum = (2<<(bits-1)); // 2**bits
+        for (uint8 i=0; i<nElem; i++) {
+            require(nums[i] < maxnum);
+            result += (nums[i] << b);
+            b += bits;
+        }
+        return result;
+    }
+
     function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
         public
         pure
