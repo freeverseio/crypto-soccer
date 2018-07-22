@@ -33,7 +33,7 @@ contract('Helpers', function(accounts) {
     newInput = [3, 3410, 790, 21]
     result = expected
     for (var i=0;i<len;i++) {
-      result = await instance.setNumAtIndex(result, newInput[i], i, bits)
+      result = await instance.setNumAtIndex(newInput[i], result, i, bits)
     }
     expected = 1456376979459
     assert.equal(result, expected)
@@ -63,11 +63,11 @@ contract('Helpers', function(accounts) {
     var numToRead = 25;
     var factor = 10000;
     var seed = 2;
-    hash = await instance.computeKeccak256(seed)
+    hash = await instance.computeKeccak256ForNumber(seed)
     rnds = await instance.readNumbersFromUint.call(numToRead, hash, factor);
-    // for (var n=0; n<numToRead; n++) {
-      // console.log(n + " - " + rnds[n]);
-    // } 
+    //for (var n=0; n<numToRead; n++) {
+    //  console.log(n + " - " + rnds[n]);
+    //} 
     assert.isTrue(rnds[18] != 0);
     assert.isTrue(rnds[20] == 0);
   });

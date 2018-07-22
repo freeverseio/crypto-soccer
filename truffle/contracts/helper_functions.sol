@@ -13,24 +13,26 @@ contract HelperFunctions {
     }
 
     /// @dev encodes an array of nums into a single uint with specific bits
-    function encode(uint8 nElem, uint[] nums, uint bits) public pure returns(uint result) {
+    function encode(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint result) {
+        require(bits <= 16);
         result = 0;
         uint b = 0;
         uint maxnum = (2<<(bits-1)); // 2**bits
         for (uint8 i=0; i<nElem; i++) {
             require(nums[i] < maxnum);
-            result += (nums[i] << b);
+            result += (uint(nums[i]) << b);
             b += bits;
         }
         return result;
     }
 
     /// @dev decodes a uint256 into an array of nums with specific bits
-    function decode(uint8 nNumbers, uint x, uint bits) public pure returns(uint[] result) {
+    function decode(uint8 nNumbers, uint x, uint bits) public pure returns(uint16[] result) {
+        require (bits <= 16);
         uint mask = (2 << (bits-1))-1; // (2**bits)-1
-        result = new uint[](nNumbers);
+        result = new uint16[](nNumbers);
         for (uint8 i=0; i<nNumbers; i++) {
-            result[i] = uint(x & mask);
+            result[i] = uint16(x & mask);
             x >>= bits;
         }
     }
@@ -41,7 +43,7 @@ contract HelperFunctions {
     }
 
     /// encodes value at specific index into x
-    function setNumAtIndex(uint x, uint value, uint8 index, uint bits) public pure returns(uint) {
+    function setNumAtIndex(uint value, uint x, uint8 index, uint bits) public pure returns(uint) {
         uint maxnum = (2<<(bits-1)); // 2**bits
         require(value < maxnum);
         uint b = bits*index;
@@ -96,7 +98,7 @@ contract HelperFunctions {
     }
 
     // only used for testing since web3.eth.solidityUtils not yet available
-    function computeKeccak256(uint n)
+    function computeKeccak256ForNumber(uint n)
     public
     pure
     returns(uint)
