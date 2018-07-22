@@ -12,6 +12,7 @@ contract HelperFunctions {
         remainder = uint16(numerator - denominator*quotient);
     }
 
+    /// @dev encodes an array of nums into a single uint with specific bits
     function encode(uint8 nElem, uint[] nums, uint bits) public pure returns(uint result) {
         result = 0;
         uint b = 0;
@@ -22,6 +23,16 @@ contract HelperFunctions {
             b += bits;
         }
         return result;
+    }
+
+    /// @dev decodes a uint256 into an array of nums with specific bits
+    function decode(uint8 nNumbers, uint x, uint bits) public pure returns(uint[] result) {
+        uint mask = (2 << (bits-1))-1; // (2**bits)-1
+        result = new uint[](nNumbers);
+        for (uint8 i=0; i<nNumbers; i++) {
+            result[i] = uint(x & mask);
+            x >>= bits;
+        }
     }
 
     function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
