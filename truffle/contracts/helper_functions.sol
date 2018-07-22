@@ -17,7 +17,7 @@ contract HelperFunctions {
         require(bits <= 16);
         result = 0;
         uint b = 0;
-        uint maxnum = (2<<(bits-1)); // 2**bits
+        uint maxnum = 1<<bits; // 2**bits
         for (uint8 i=0; i<nElem; i++) {
             require(nums[i] < maxnum);
             result += (uint(nums[i]) << b);
@@ -29,7 +29,7 @@ contract HelperFunctions {
     /// @dev decodes a uint256 into an array of nums with specific bits
     function decode(uint8 nNumbers, uint x, uint bits) public pure returns(uint16[] result) {
         require (bits <= 16);
-        uint mask = (2 << (bits-1))-1; // (2**bits)-1
+        uint mask = (1 << bits)-1; // (2**bits)-1
         result = new uint16[](nNumbers);
         for (uint8 i=0; i<nNumbers; i++) {
             result[i] = uint16(x & mask);
@@ -38,16 +38,15 @@ contract HelperFunctions {
     }
     /// obtains value at index from big uint256 x
     function getNumAtIndex(uint x, uint8 index, uint bits) public pure returns(uint) {
-        uint mask = (2 << (bits-1))-1; // (2**bits)-1
-        return (x >> (bits*index))&mask;
+        return (x >> (bits*index))&((1 << bits)-1);
     }
 
     /// encodes value at specific index into x
     function setNumAtIndex(uint value, uint x, uint8 index, uint bits) public pure returns(uint) {
-        uint maxnum = (2<<(bits-1)); // 2**bits
+        uint maxnum = 1<<bits; // 2**bits
         require(value < maxnum);
         uint b = bits*index;
-        uint mask = (2 << (bits-1))-1; // (2**bits)-1
+        uint mask = (1 << bits)-1; // (2**bits)-1
         x &= ~(mask << b); // clear all bits at index
         return x + (value << b);
     }
