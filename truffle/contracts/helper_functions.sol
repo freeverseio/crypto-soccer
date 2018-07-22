@@ -34,6 +34,21 @@ contract HelperFunctions {
             x >>= bits;
         }
     }
+    /// obtains value at index from big uint256 x
+    function getNumAtIndex(uint x, uint8 index, uint bits) public pure returns(uint) {
+        uint mask = (2 << (bits-1))-1; // (2**bits)-1
+        return (x >> (bits*index))&mask;
+    }
+
+    /// encodes value at specific index into x
+    function setNumAtIndex(uint x, uint value, uint8 index, uint bits) public pure returns(uint) {
+        uint maxnum = (2<<(bits-1)); // 2**bits
+        require(value < maxnum);
+        uint b = bits*index;
+        uint mask = (2 << (bits-1))-1; // (2**bits)-1
+        x &= ~(mask << b); // clear all bits at index
+        return x + (value << b);
+    }
 
     function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
         public

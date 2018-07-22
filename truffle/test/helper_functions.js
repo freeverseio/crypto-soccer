@@ -14,13 +14,33 @@ contract('Helpers', function(accounts) {
     expected = 206864348850;
     bits = 12;
     len = 4;
+
+    // encoding
     result = await instance.encode(len, input, bits);
     assert.equal(result, expected);
 
+    // decoding
     output = await instance.decode(len, expected, bits);
-    console.log("output: " + output);
     for (var i=0; i<len; i++)
       assert.equal(output[i], input[i])
+
+    // get num at index
+    for (var i=0;i<len;i++) {
+      assert.equal(await instance.getNumAtIndex(expected,i,bits), input[i])
+    }
+
+    // set num at index
+    newInput = [3, 3410, 790, 21]
+    result = expected
+    for (var i=0;i<len;i++) {
+      result = await instance.setNumAtIndex(result, newInput[i], i, bits)
+    }
+    expected = 1456376979459
+    assert.equal(result, expected)
+    for (var i=0;i<len;i++) {
+      assert.equal(await instance.getNumAtIndex(expected,i,bits), newInput[i])
+    }
+
   });
 
   it("tests readNumbersFromUint", async () =>{
