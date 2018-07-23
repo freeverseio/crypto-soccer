@@ -53,11 +53,11 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint nCreatedPlayers = players.length;
         players.push(Player({name: _playerName, state: _playerState}));
         playerToTeam[playerNameHash] = teams[_teamIdx];
-        teams[_teamIdx].playersIdx = setNumAtPos(
+        teams[_teamIdx].playersIdx = setNumAtIndex(
             nCreatedPlayers,
             teams[_teamIdx].playersIdx,
             _playerNumberInTeam,
-            1000000
+            20
         );
 
         // emit the creation event
