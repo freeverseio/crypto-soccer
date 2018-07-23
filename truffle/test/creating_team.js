@@ -136,13 +136,13 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
 async function getRandomNumbers(instance, nRounds, rndSeed)
 {
   var result = []
-  var hash = await instance.computeKeccak256(rndSeed);
+  var hash = await instance.computeKeccak256ForNumber(rndSeed);
   var rndNums1= await instance.readNumbersFromUint(nRounds, hash , 1000);
-  hash = await instance.computeKeccak256(rndSeed+1);
+  hash = await instance.computeKeccak256ForNumber(rndSeed+1);
   var rndNums2= await instance.readNumbersFromUint(nRounds, hash, 1000);
-  hash = await instance.computeKeccak256(rndSeed+2);
+  hash = await instance.computeKeccak256ForNumber(rndSeed+2);
   var rndNums3= await instance.readNumbersFromUint(nRounds, hash, 1000);
-  hash = await instance.computeKeccak256(rndSeed+3);
+  hash = await instance.computeKeccak256ForNumber(rndSeed+3);
   var rndNums4= await instance.readNumbersFromUint(nRounds, hash, 1000);
   result.push(rndNums1);
   result.push(rndNums2);
