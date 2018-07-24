@@ -88,7 +88,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         // state[0] -> age, state[6] -> role
         // state[1]...state[5] -> skills
         // get random numbers between 0 and 9999:
-        uint16[] memory states = readNumbersFromUint(7, longRnd, 10000);
+        uint16[] memory states = decode(7, longRnd, 14);
 
         // First number is age, in years, at moment of creation can vary between 16 and 35.
         states[0] = 16 + (states[0] % 20);
@@ -115,7 +115,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             states[sk] = states[sk] + excess;
         }
 
-        return encodeIntoLongIntArray(7, states, 10000);
+        return encode(7, states, 14);
     }
 
     /// @dev Creates a player where skills are set pseudo-randomly
@@ -166,13 +166,14 @@ contract PlayerFactory is Storage, HelperFunctions {
         public {
         // we should make sure all numbers are below 1e5
         require (_teamIdx < teams.length);
+        uint bits = 14;
         uint state = _monthOfBirthAfterUnixEpoch +
-                     _defense     * 1e4 +
-                     _speed       * 1e8 +
-                     _pass        * 1e12 +
-                     _shoot       * 1e16 +
-                     _endurance   * 1e20 +
-                     _role        * 1e24;
+                     (_defense     << bits) +
+                     (_speed       << (bits*2)) +
+                     (_pass        << (bits*3)) +
+                     (_shoot       << (bits*4)) +
+                     (_endurance   << (bits*5)) +
+                     (_role        << (bits*6));
 
         createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
      }

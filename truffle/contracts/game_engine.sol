@@ -138,7 +138,7 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = readNumbersFromUint(7, this.getSkill(_teamIdx, p), 10000);
+            uint16[] memory skills = decode(7, this.getSkill(_teamIdx, p), 14);
             endurance += skills[5];
             if (skills[6] == 0) {
                 blockShoot = skills[4];

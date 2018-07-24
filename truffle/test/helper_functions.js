@@ -78,7 +78,7 @@ contract('Helpers', function(accounts) {
     nPlayers = 11
     nStates = 7
     bits = 14
-    var encodedStates = new Array(nPlayers)
+    var encodedStates = Array(nPlayers).fill(0)
     for (player=0; player<nPlayers; player++) {
       encodedStates[player] = await instance.encode(nStates, states[player], bits);
     }
