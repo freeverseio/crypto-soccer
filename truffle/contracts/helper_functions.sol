@@ -51,21 +51,7 @@ contract HelperFunctions {
         return longState + (value << b);
     }
 
-    function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
-        public
-        pure
-        returns(uint)
-    {
-        uint state = rnds[0];
-        uint currentFactor =1;
-        for (uint8 n = 1; n < nElem; n++) {
-            currentFactor *= factor;
-            state = state + uint(rnds[n]) * currentFactor;
-        }
-        return state;
-    }
-
-    // reads an arbitrary number of numbers from a long one
+    // TODO: deprecate. reads an arbitrary number of numbers from a long one
     function readNumbersFromUint(uint8 nNumbers, uint longState, uint factor)
         public
         pure
@@ -77,23 +63,6 @@ contract HelperFunctions {
         for (uint8 n = 1; n < nNumbers; n++) {
             (quotient, result[n]) = divideUint(quotient, factor);
         }
-    }
-
-    function getNumAtPos(uint longState, uint8 pos, uint factor)
-        internal
-        pure
-        returns(uint)
-    {
-        return (longState/(factor**pos)) % factor;
-    }
-
-
-    function setNumAtPos(uint num, uint longState, uint8 pos, uint factor)
-        public
-        pure
-        returns(uint)
-    {
-        return longState + (num - getNumAtPos(longState, pos, factor))*(factor**pos);
     }
 
     // only used for testing since web3.eth.solidityUtils not yet available
