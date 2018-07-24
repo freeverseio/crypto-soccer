@@ -82,7 +82,7 @@ contract('Helpers', function(accounts) {
     for (player=0; player<nPlayers; player++) {
       encodedStates[player] = await instance.encode(nStates, states[player], bits);
     }
-    console.log("encoded states:", encodedStates)
+    console.log("encoded states:\n", encodedStates)
 
     for (player=0; player<nPlayers; player++) {
       decodedState = await instance.decode(nStates, encodedStates[player], bits);

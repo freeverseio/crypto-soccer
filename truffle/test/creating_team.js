@@ -41,7 +41,7 @@ contract('Teams', function(accounts) {
 
 
   // TODO: add test that you cannot create 2 teams with same name
-  it("creates another team and plays a game. With this seed, it checks that the result is 2-2", async () => {
+  it("creates another team and plays a game. With this seed, it checks that the result is 1-3", async () => {
     // await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
     await createTestTeam(
       instance,
@@ -55,8 +55,8 @@ contract('Teams', function(accounts) {
     await printTeamPlayers(1, instance);
     var goals = await playGame(instance, 0, 1, 18, 232);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==2);
-    assert.isTrue(goals[1].toNumber()==2);
+    assert.isTrue(goals[0].toNumber()==1);
+    assert.isTrue(goals[1].toNumber()==3);
   });
 
   it("creates a default team", async () => {
@@ -65,7 +65,7 @@ contract('Teams', function(accounts) {
     assert.isTrue(name == "Los Cojos");
     await printTeamPlayers(2, instance);
   });
-  it("creates a default team and plays a game. With this seed, it checks that the result is 2-1", async () => {
+  it("creates a default team and plays a game. With this seed, it checks that the result is 1-3", async () => {
     console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
     await instance.createTeam("Los Petardos");
     var name = await instance.getTeamName(3);
@@ -73,8 +73,8 @@ contract('Teams', function(accounts) {
     await printTeamPlayers(3, instance);
     var goals = await playGame(instance, 2, 3, 18, 232);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==2);
-    assert.isTrue(goals[1].toNumber()==1);
+    assert.isTrue(goals[0].toNumber()==1);
+    assert.isTrue(goals[1].toNumber()==3);
   });
 
 
@@ -94,8 +94,8 @@ contract('Teams', function(accounts) {
       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     }
     console.log("Total Goals: " + goalsTeam1 + " - " + goalsTeam2);
-    assert.isTrue(goalsTeam1==5);
-    assert.isTrue(goalsTeam2==16);
+    assert.isTrue(goalsTeam1==6);
+    assert.isTrue(goalsTeam2==14);
   });
 });
 
@@ -136,14 +136,15 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
 async function getRandomNumbers(instance, nRounds, rndSeed)
 {
   var result = []
+  bits = 10
   var hash = await instance.computeKeccak256ForNumber(rndSeed);
-  var rndNums1= await instance.readNumbersFromUint(nRounds, hash , 1000);
+  var rndNums1= await instance.decode(nRounds, hash , bits);
   hash = await instance.computeKeccak256ForNumber(rndSeed+1);
-  var rndNums2= await instance.readNumbersFromUint(nRounds, hash, 1000);
+  var rndNums2= await instance.decode(nRounds, hash, bits);
   hash = await instance.computeKeccak256ForNumber(rndSeed+2);
-  var rndNums3= await instance.readNumbersFromUint(nRounds, hash, 1000);
+  var rndNums3= await instance.decode(nRounds, hash, bits);
   hash = await instance.computeKeccak256ForNumber(rndSeed+3);
-  var rndNums4= await instance.readNumbersFromUint(nRounds, hash, 1000);
+  var rndNums4= await instance.decode(nRounds, hash, bits);
   result.push(rndNums1);
   result.push(rndNums2);
   result.push(rndNums3);

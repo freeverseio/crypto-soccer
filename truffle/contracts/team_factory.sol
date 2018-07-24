@@ -45,17 +45,5 @@ contract TeamFactory is PlayerFactory {
         Team storage t = teams[_teamIdx];
         uint playerIdx = getNumAtIndex(t.playersIdx, _playerIdx, 20);
         return (playerIdx != 0) ? players[playerIdx].state : getDefaultPlayerState(t, _playerIdx);
-
-        // TODO (eaylon): the rest is not useful for any contract, move to the test that needs it:
-        //for (uint8 p=0;p<kMaxPlayersInTeam;p++) {
-        //    uint16[] memory thisSkills = readNumbersFromUint(7, state, 10000);
-        //    for (uint8 sk=0;sk<7;sk++) {
-        //        skills[p][sk] = thisSkills[sk];
-        //    }
-        //}
-        //return skills;
-        // skills2[0][0]=uint(4);
-        // skills2[1][2]=uint(114);
-        // return skills2;
     }
 }

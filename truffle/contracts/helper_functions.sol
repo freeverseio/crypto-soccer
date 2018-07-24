@@ -3,15 +3,6 @@ pragma solidity ^ 0.4.24;
 // contract containing reusable generic functions
 contract HelperFunctions {
 
-    function divideUint(uint numerator, uint denominator)
-        internal
-        pure
-        returns(uint quotient, uint16 remainder)
-    {
-        quotient = numerator/denominator;
-        remainder = uint16(numerator - denominator*quotient);
-    }
-
     /// @dev encodes an array of nums into a single uint with specific bits
     function encode(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint result) {
         require(bits <= 16);
@@ -49,20 +40,6 @@ contract HelperFunctions {
         uint mask = (1 << bits)-1; // (2**bits)-1
         longState &= ~(mask << b); // clear all bits at index
         return longState + (value << b);
-    }
-
-    // TODO: deprecate. reads an arbitrary number of numbers from a long one
-    function readNumbersFromUint(uint8 nNumbers, uint longState, uint factor)
-        public
-        pure
-        returns(uint16[] memory result)
-    {
-        uint quotient;
-        result = new uint16[](nNumbers);
-        (quotient, result[0]) = divideUint(longState, factor);
-        for (uint8 n = 1; n < nNumbers; n++) {
-            (quotient, result[n]) = divideUint(quotient, factor);
-        }
     }
 
     // only used for testing since web3.eth.solidityUtils not yet available
@@ -120,6 +97,4 @@ contract HelperFunctions {
         }
         return w;
     }
-
-
 }

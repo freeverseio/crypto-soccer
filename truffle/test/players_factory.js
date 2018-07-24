@@ -41,7 +41,7 @@ contract('Players', function(accounts) {
     nTotalPlayers = await instance.getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,2);
     playerState = await instance.getPlayerState.call(0);
-    var states = await instance.readNumbersFromUint.call(7,playerState,10000);
+    var states = await instance.decode(7,playerState,14);
   });
 
   it("tries to add a player with the same name, and checks that it fails", async () =>{
