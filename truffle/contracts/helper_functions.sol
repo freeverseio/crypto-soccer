@@ -27,28 +27,28 @@ contract HelperFunctions {
     }
 
     /// @dev decodes a uint256 into an array of nums with specific bits
-    function decode(uint8 nNumbers, uint x, uint bits) public pure returns(uint16[] result) {
+    function decode(uint8 nNumbers, uint longState, uint bits) public pure returns(uint16[] result) {
         require (bits <= 16);
         uint mask = (1 << bits)-1; // (2**bits)-1
         result = new uint16[](nNumbers);
         for (uint8 i=0; i<nNumbers; i++) {
-            result[i] = uint16(x & mask);
-            x >>= bits;
+            result[i] = uint16(longState & mask);
+            longState >>= bits;
         }
     }
-    /// obtains value at index from big uint256 x
-    function getNumAtIndex(uint x, uint8 index, uint bits) public pure returns(uint) {
-        return (x >> (bits*index))&((1 << bits)-1);
+    /// obtains value at index from big uint256 longState
+    function getNumAtIndex(uint longState, uint8 index, uint bits) public pure returns(uint) {
+        return (longState >> (bits*index))&((1 << bits)-1);
     }
 
-    /// encodes value at specific index into x
-    function setNumAtIndex(uint value, uint x, uint8 index, uint bits) public pure returns(uint) {
+    /// encodes value at specific index into longState
+    function setNumAtIndex(uint value, uint longState, uint8 index, uint bits) public pure returns(uint) {
         uint maxnum = 1<<bits; // 2**bits
         require(value < maxnum);
         uint b = bits*index;
         uint mask = (1 << bits)-1; // (2**bits)-1
-        x &= ~(mask << b); // clear all bits at index
-        return x + (value << b);
+        longState &= ~(mask << b); // clear all bits at index
+        return longState + (value << b);
     }
 
     function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor)
