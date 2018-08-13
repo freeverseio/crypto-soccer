@@ -70,8 +70,10 @@ def createRandomTeam(intSeed, roles):
     return newTeam
 
 def showTeam(team):
-    for player in team.players:
-        print str(player.role) + " - " + str(player.skills)
+    # for player in team.players:
+    #     print str(player.role) + " - " + str(player.skills)
+    computeTeamGlobalSkills(team)
+    print "defendShoot, createShoot, move2attack, blockShoot, endurance:  %s, %s, %s, %s, %s" % (team.defendShoot, team.createShoot, team.move2attack, team.blockShoot, team.endurance)
 
 def getDefenders(team, skill):
     return [p.skills[skill] for p in team.players if p.role==DEFENDER]
