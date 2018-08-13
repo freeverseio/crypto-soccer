@@ -1,11 +1,26 @@
 pragma solidity ^ 0.4.24;
 
 import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./storage.sol";
 import "./helper_functions.sol";
 
-contract PlayerFactory is HelperFunctions {
+contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
+    enum Role { Keeper, Defense, Midfield, Attack, Substitute, Retired }
+
+    // @dev obtain player role from its position and strategy first-second-third (i.e. 4-3-3)
+    function getRole(uint idx, uint8 first, uint8 second, uint8 /*third*/) public pure returns(uint8) {
+        require (idx < kMaxPlayersInTeam);
+        if (idx == 0)
+            return uint8(Role.Keeper);
+        else if (idx > 0 && idx <= first)
+            return uint8(Role.Defense);
+        else if (idx > first && idx < first+second+1)
+            return uint8(Role.Midfield);
+        else
+            return uint8(Role.Attack);
+    }
 
     /// @dev The main Player struct.
     /// @param name is a string, unique for every Player
@@ -19,98 +34,61 @@ contract PlayerFactory is HelperFunctions {
     ///         5-endurance
     ///         6-role
     // @param role is: 0=keeper, 1=defence, 2=midfielder, 3=attacker, 4=retired
-    struct Player {
-        string name;
-        uint state; 
-    }
-    
-    // TODO: check if we can do fwd declartion and specify this inside TeamFactory
-    uint8 constant kMaxPlayersInTeam = 11;
-    struct Team {
-        string name;
-        uint256 playersIdx;
-    }
-    /// @dev An array containing the Team struct for all teams in existence. The ID
-    ///  of each team is actually an index into this array.
-    Team[] teams;
 
-    /// @dev An array containing the Player struct for all players in existence. The ID
-    ///  of each player is actually an index into this array.
-    Player[] players;
-
-    /// @dev A mapping from hash(playerName) to a Team struct.
-    mapping(bytes32 => Team) public playerToTeam;
 
     /// @dev An internal method that creates a new player and stores it. This
     ///  method doesn't do any checking and should only be called when the
     ///  input data is known to be valid.
     /// @param _playerState It contains all you need to know about a player
-    function createPlayer(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState) 
-        internal 
+    function createPlayerInternal(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState)
+        internal
     {
         // make sure this player name is unique. If so, it has never been assigned to a Team.
         // all teams, when created, have the first player Idx set to uint(-1), to signal
         // that the team has been created.
         bytes32 playerNameHash = keccak256(abi.encodePacked(_playerName));
         require(playerToTeam[playerNameHash].playersIdx == 0);
-        
+
         // push payer, and update mapping and player count
         uint nCreatedPlayers = players.length;
         players.push(Player({name: _playerName, state: _playerState}));
         playerToTeam[playerNameHash] = teams[_teamIdx];
-        teams[_teamIdx].playersIdx = setNumAtPos(
-            nCreatedPlayers, 
+        teams[_teamIdx].playersIdx = setNumAtIndex(
+            nCreatedPlayers,
             teams[_teamIdx].playersIdx,
             _playerNumberInTeam,
-            1000000
+            20
         );
 
         // emit the creation event
         emit PlayerCreation(_playerName, nCreatedPlayers, _playerState);
     }
 
-    /// @dev Creates a player where skills are set pseudo-randomly
-    /// @param _teamIdx The idx of the team to which this player belongs
-    /// @param _userChoice The user enters a team name, then chooses among many possible teams varying this number.
-    /// the skills are determined from a random number, which is determined by concatenating the team's name with the
-    /// player number. We will not allow two teams with the same name, and hence, same player numbers will not lead
-    /// to the same skills. We can optimize this a bit by getting more 4-digit randoms from the long randoms we
-    /// generate, so that we need to generate less
-    /// @param _playerRole encodes the positions:
-    ///         0=keeper, 1=defence, 2=midfield, 3=attack, 4=substitute, 5=retired.
-    /// It returns the hash of the player's name
-    function createRandomPlayer(
-        string _playerName, 
-        uint _teamIdx, 
-        uint16 _userChoice, 
-        uint8 _playerNumberInTeam, 
-        uint8 _playerRole
-        ) 
-        public 
-    {
-        require (_teamIdx < teams.length);
+     function getDefaultPlayerState(
+        Team _team,
+        uint8 _playerNumberInTeam
+     )
+     internal
+     pure
+     returns (uint)
+     {
         uint dna = uint(keccak256(abi.encodePacked(
-            teams[_teamIdx].name, 
-            _userChoice, 
+            _team.name,
+            _team.userChoice,
             _playerNumberInTeam
             )));
-        createPlayer(
-            _playerName, 
-            _teamIdx, 
-            _playerNumberInTeam, 
-            computePlayerStateFromRandom(dna, _playerRole, now)
-            );
-     }    
-     
-    function computePlayerStateFromRandom(uint longRnd, uint8 playerRole, uint currentTime) 
-        internal 
-        pure 
-        returns(uint) 
+            return computePlayerStateFromRandom(dna, getRole(_playerNumberInTeam,4,3,3), _team.timeOfCreation);
+     }
+
+    function computePlayerStateFromRandom(uint longRnd, uint8 playerRole, uint currentTime)
+        internal
+        pure
+        returns(uint)
     {
         // state[0] -> age, state[6] -> role
         // state[1]...state[5] -> skills
         // get random numbers between 0 and 9999:
-        uint16[] memory states = readNumbersFromUint(7, longRnd, 10000);
+        uint16[] memory states = decode(7, longRnd, 14);
 
         // First number is age, in years, at moment of creation can vary between 16 and 35.
         states[0] = 16 + (states[0] % 20);
@@ -137,53 +115,72 @@ contract PlayerFactory is HelperFunctions {
             states[sk] = states[sk] + excess;
         }
 
-        return encodeIntoLongIntArray(7, states, 10000);
+        return encode(7, states, 14);
     }
-    
-    function createTestPlayer(
-        string _playerName, 
-        uint _teamIdx, 
-        uint8 _playerNumberInTeam, 
-        uint monthOfBirthAfterUnixEpoch, 
-        uint defense, 
-        uint speed, 
-        uint pass, 
-        uint shoot,
-        uint endurance, 
-        uint role
-        ) 
-        public 
+
+    /// @dev Creates a player where skills are set pseudo-randomly
+    /// @param _teamIdx The idx of the team to which this player belongs
+    /// @param _userChoice The user enters a team name, then chooses among many possible teams varying this number.
+    /// the skills are determined from a random number, which is determined by concatenating the team's name with the
+    /// player number. We will not allow two teams with the same name, and hence, same player numbers will not lead
+    /// to the same skills. We can optimize this a bit by getting more 4-digit randoms from the long randoms we
+    /// generate, so that we need to generate less
+    /// @param _playerRole encodes the positions:
+    ///         0=keeper, 1=defence, 2=midfield, 3=attack, 4=substitute, 5=retired.
+    /// It returns the hash of the player's name
+    function createRandomPlayer(
+        string _playerName,
+        uint _teamIdx,
+        uint16 _userChoice,
+        uint8 _playerNumberInTeam,
+        uint8 _playerRole
+        )
+        public
     {
-        // we should make sure all numbers are below 1e5
         require (_teamIdx < teams.length);
-        // uint factor = 10000;
-        // uint state =    monthOfBirthAfterUnixEpoch +
-        //                 defense     * factor +
-        //                 speed       * factor*factor +
-        //                 pass        * factor*factor*factor +
-        //                 shoot       * factor*factor*factor*factor + 
-        //                 endurance   * factor*factor*factor*factor*factor +
-        //                 role        * factor*factor*factor*factor*factor*factor;
-        // uint factor = 10000;
-        uint state =    monthOfBirthAfterUnixEpoch +
-                        defense     * 1e4 +
-                        speed       * 1e8 +
-                        pass        * 1e12 +
-                        shoot       * 1e16 + 
-                        endurance   * 1e20 +
-                        role        * 1e24;
- 
-        createPlayer(
-            _playerName, 
-            _teamIdx, 
-            _playerNumberInTeam, 
-            state
+        uint dna = uint(keccak256(abi.encodePacked(
+            teams[_teamIdx].name,
+            _userChoice,
+            _playerNumberInTeam
+            )));
+        createPlayerInternal(
+            _playerName,
+            _teamIdx,
+            _playerNumberInTeam,
+            computePlayerStateFromRandom(dna, _playerRole, now)
             );
      }
-     
+
+    function createPlayer(
+        string _playerName,
+        uint _teamIdx,
+        uint8 _playerNumberInTeam,
+        uint _monthOfBirthAfterUnixEpoch,
+        uint _defense,
+        uint _speed,
+        uint _pass,
+        uint _shoot,
+        uint _endurance,
+        uint _role
+        )
+        public {
+        // we should make sure all numbers are below 1e5
+        require (_teamIdx < teams.length);
+        uint bits = 14;
+        uint state = _monthOfBirthAfterUnixEpoch +
+                     (_defense     << bits) +
+                     (_speed       << (bits*2)) +
+                     (_pass        << (bits*3)) +
+                     (_shoot       << (bits*4)) +
+                     (_endurance   << (bits*5)) +
+                     (_role        << (bits*6));
+
+        createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
+     }
+
     function getNCreatedPlayers() external view returns(uint) { return players.length;}
 
-    function getPlayerState(uint playerIdx) external view returns(uint) { 
+    function getPlayerState(uint playerIdx) external view returns(uint) {
         return players[playerIdx].state;
     }
 }

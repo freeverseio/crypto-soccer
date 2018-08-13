@@ -36,12 +36,12 @@ contract('Players', function(accounts) {
     const playerNumberInTeam=2;
     const playerRole=3; 
     nTotalPlayers = await instance.getNCreatedPlayers.call();
-    assert.equal(nTotalPlayers,0);
+    assert.equal(nTotalPlayers,1); // we have a default player at pos 0
     await instance.createRandomPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
     nTotalPlayers = await instance.getNCreatedPlayers.call();
-    assert.equal(nTotalPlayers,1);
+    assert.equal(nTotalPlayers,2);
     playerState = await instance.getPlayerState.call(0);
-    var states = await instance.readNumbersFromUint.call(7,playerState,10000);
+    var states = await instance.decode(7,playerState,14);
   });
 
   it("tries to add a player with the same name, and checks that it fails", async () =>{

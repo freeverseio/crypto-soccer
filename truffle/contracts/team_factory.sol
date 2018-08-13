@@ -4,9 +4,6 @@ import "./player_factory.sol";
 
 contract TeamFactory is PlayerFactory {
 
-    /// @dev A mapping from team hash(name) to the owner's address.
-    mapping(bytes32 => address) public teamToOwnerAddr;
-
     /// @dev Fired whenever a new team is created
     event TeamCreation(string teamName, uint nCreatedTeams, address owner);
 
@@ -17,7 +14,7 @@ contract TeamFactory is PlayerFactory {
     function createTeam(string _teamName) public {
         // TODO: require maxLen for _teamName
         bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
-        require(teamToOwnerAddr[nameHash]==0); 
+        require(teamToOwnerAddr[nameHash]==0);
 
         Team memory emptyTeam;
         emptyTeam.name = _teamName;
@@ -25,8 +22,9 @@ contract TeamFactory is PlayerFactory {
         // We will signal that a team has been created by editing the first player's idx.
         // This enables to require that two players can't have the same name, via:
         //      require(playerToTeam[playerNameHash].playerIdx[0] == 0);
-        emptyTeam.playersIdx = uint(-1);
-        
+        emptyTeam.playersIdx = uint(0);
+        emptyTeam.timeOfCreation = now;
+
         teams.push(emptyTeam);
         teamToOwnerAddr[nameHash] = msg.sender;
 
@@ -35,23 +33,17 @@ contract TeamFactory is PlayerFactory {
     }
 
     function getNCreatedTeams() external view returns(uint) { return teams.length;}
+    function getTeamName(uint idx) external view returns(string) { return teams[idx].name;}
 
-    function getSkillsOfPlayersInTeam(uint teamIdx) 
-        external 
-        view 
-        returns(uint[7][kMaxPlayersInTeam] skills) 
-        // returns(uint[3][2] skills2) 
-    { 
-        for (uint8 p=0;p<kMaxPlayersInTeam;p++) {
-            uint state = players[getNumAtPos(teams[teamIdx].playersIdx, p, 1000000)].state;
-            uint16[] memory thisSkills = readNumbersFromUint(7, state, 10000);
-            for (uint8 sk=0;sk<7;sk++) {
-                skills[p][sk] = thisSkills[sk];
-            }
-        }
-        return skills;
-        // skills2[0][0]=uint(4);
-        // skills2[1][2]=uint(114);
-        // return skills2;
+    function getSkill(uint _teamIdx, uint8 _playerIdx)
+        external
+        view
+        returns(uint)
+    {
+        require (_teamIdx < teams.length);
+        require (_playerIdx < kMaxPlayersInTeam);
+        Team storage t = teams[_teamIdx];
+        uint playerIdx = getNumAtIndex(t.playersIdx, _playerIdx, 20);
+        return (playerIdx != 0) ? players[playerIdx].state : getDefaultPlayerState(t, _playerIdx);
     }
 }

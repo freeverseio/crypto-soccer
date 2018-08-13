@@ -1,115 +1,87 @@
 pragma solidity ^ 0.4.24;
 
-import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "../node_modules/openzeppelin-solidity/contracts/math/Math.sol";
-
 // contract containing reusable generic functions
 contract HelperFunctions {
 
-    using SafeMath for uint256;
-    using Math for uint256;
-
-    function divideUint(uint numerator, uint denominator) internal pure returns(uint quotient, uint16 remainder) {
-        quotient = numerator.div(denominator);
-        remainder = uint16(numerator.sub(denominator.mul(quotient)));
-    }
-
-    function divideUint8(uint8 numerator, uint8 denominator) internal pure returns(uint8 quotient, uint8 remainder) {
-        quotient = numerator / denominator;
-        remainder = numerator - denominator * quotient;
-    }
-
-    function min(uint16 a, uint16 b) pure private returns(uint16) {
-        return a < b ? a : b;
-    }
-
-    function encodeIntoLongIntArray(uint8 nElem, uint16[] rnds, uint factor) 
-        public 
-        pure 
-        returns(uint) 
-    {
-        uint state = rnds[0];
-        uint currentFactor =1;
-        for (uint8 n = 1; n < nElem; n++) {
-            currentFactor *= factor;
-            state = state + uint(rnds[n]) * currentFactor;
-        }
-        return state;
-    }
-
-    // reads an arbitrary number of numbers from a long one
-    function readNumbersFromUint(uint8 nNumbers, uint longState, uint factor)  
-        public
-        pure 
-        returns(uint16[] memory result) 
-    {
-        uint quotient;
-        result = new uint16[](nNumbers);
-        (quotient, result[0]) = divideUint(longState, factor);
-        for (uint8 n = 1; n < nNumbers; n++) {
-            (quotient, result[n]) = divideUint(quotient, factor);
-        }
-    }
-
-    function power(uint x, uint8 exponent) internal pure returns(uint) {
-        uint result = 1;
-        for (uint8 e=0; e<exponent;e++) {
-            result *= x;
+    /// @dev encodes an array of nums into a single uint with specific bits
+    function encode(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint result) {
+        require(bits <= 16);
+        result = 0;
+        uint b = 0;
+        uint maxnum = 1<<bits; // 2**bits
+        for (uint8 i=0; i<nElem; i++) {
+            require(nums[i] < maxnum);
+            result += (uint(nums[i]) << b);
+            b += bits;
         }
         return result;
     }
 
-    function getNumAtPos(uint longState, uint8 pos, uint factor)  
-        internal
-        pure 
-        returns(uint) 
-    {
-        return (longState/power(factor,pos)) % factor;
-    }   
-
-
-    function setNumAtPos(uint num, uint longState, uint8 pos, uint factor)  
-        public
-        pure 
-        returns(uint) 
-    {
-        return longState + (num - getNumAtPos(longState, pos, factor))*power(factor, pos);
-    }   
-
-    // uses the previous function, feeding it with a uint256 hash, only for test use
-    function readNumbersFromHash(uint8 nNumbers, uint seed, uint factor)  
-        public
-        pure 
-        returns(uint16[] memory result) 
-    {
-        uint longState = uint(keccak256(abi.encodePacked(seed)));
-        return readNumbersFromUint(nNumbers, longState, factor);
+    /// @dev decodes a uint256 into an array of nums with specific bits
+    function decode(uint8 nNumbers, uint longState, uint bits) public pure returns(uint16[] result) {
+        require (bits <= 16);
+        uint mask = (1 << bits)-1; // (2**bits)-1
+        result = new uint16[](nNumbers);
+        for (uint8 i=0; i<nNumbers; i++) {
+            result[i] = uint16(longState & mask);
+            longState >>= bits;
+        }
     }
-    
+    /// obtains value at index from big uint256 longState
+    function getNumAtIndex(uint longState, uint8 index, uint bits) public pure returns(uint) {
+        return (longState >> (bits*index))&((1 << bits)-1);
+    }
+
+    /// encodes value at specific index into longState
+    function setNumAtIndex(uint value, uint longState, uint8 index, uint bits) public pure returns(uint) {
+        uint maxnum = 1<<bits; // 2**bits
+        require(value < maxnum);
+        uint b = bits*index;
+        uint mask = (1 << bits)-1; // (2**bits)-1
+        longState &= ~(mask << b); // clear all bits at index
+        return longState + (value << b);
+    }
+
+    // only used for testing since web3.eth.solidityUtils not yet available
+    function computeKeccak256ForNumber(uint n)
+    public
+    pure
+    returns(uint)
+    {
+        return uint(keccak256(abi.encodePacked(n)));
+    }
+    // only used for testing since web3.eth.solidityUtils not yet available
+    function computeKeccak256(string s, uint n1, uint n2)
+    public
+    pure
+    returns(uint)
+    {
+        return uint(keccak256(abi.encodePacked(s, n1, n2)));
+    }
 
     // throws a dice that returns 0 with probability weight1/(weight1+weight2), and 1 otherwise.
     // In other words, the responsible for weight1 is selected if return = 0.
     // We return a uint, not bool, to allow the return to be used as an idx in an array.
     // The formula is derived as follows. Throw a random number R in the range [0,M]
     // Then, w1 wins if (w1+w2)*(R/M) < w1, and w2 wins otherise. Clear, this is a weighted dice.
-    function throwDice(uint weight1, uint weight2, uint rndNum, uint factor)   
+    function throwDice(uint weight1, uint weight2, uint rndNum, uint factor)
         public
-        pure 
-        returns(uint8) 
-    {   
+        pure
+        returns(uint8)
+    {
         if( ((weight1+weight2)*rndNum)<(weight1 * (factor-1)) ) {
-            return 0; 
+            return 0;
         } else {
             return 1;
         }
-    }  
+    }
 
     // Generalization of the previous to any number of weights
-    function throwDiceArray(uint[] memory weights, uint rndNum, uint factor)   
+    function throwDiceArray(uint[] memory weights, uint rndNum, uint factor)
         public
-        pure 
-        returns(uint8) 
-    {   
+        pure
+        returns(uint8)
+    {
         uint uniformRndInSumOfWeights;
         for (uint8 w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
@@ -124,7 +96,5 @@ contract HelperFunctions {
             }
         }
         return w;
-    }  
-
-
+    }
 }
