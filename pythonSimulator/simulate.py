@@ -168,12 +168,18 @@ def playGame(team1, team2, intSeed):
             if manages2Score(teamThatAttacks, teamThatDefends, np.random.randint(0,MAX_DICE_RAND), np.random.randint(0,MAX_DICE_RAND), MAX_DICE_RAND):
                 teamThatAttacks.goals += 1
 
-    print 'Result: %s - %s' % (t1.goals, t2.goals)
-
+    return t1.goals, t2.goals
 
 barca = createRandomTeam(0,roles433)
 
 showTeam(barca)
 
-for game in range(10):
-    playGame(barca, barca, game)
+total1 = 0
+total2 = 0
+for game in range(1000):
+    goals1, goals2 = playGame(barca, barca, game)
+    print 'Result: %s - %s' % (goals1, goals2)
+    total1 += goals1
+    total2 += goals2
+print 'Aggregated Result: %s - %s' % (total1, total2)
+
