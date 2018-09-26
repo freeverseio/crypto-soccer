@@ -19,6 +19,5 @@ jobs:
     steps:
       - run: 'sudo npm install -g truffle'
       - checkout
-      - run: which truffle
       - run: cd truffle && npm install
       - run: cd truffle && truffle test
