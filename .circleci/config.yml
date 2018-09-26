@@ -21,4 +21,4 @@ jobs:
       - checkout
       - run: which truffle
       - run: cd truffle && npm install
-      - run: cd truffle && /usr/local/bin/truffle test
+      - run: cd truffle && truffle test
