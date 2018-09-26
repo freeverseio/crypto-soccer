@@ -21,7 +21,7 @@ jobs:
 
       - run:
           name: Update npm
-          command: 'sudo npm install -g npm@latest strip'
+          command: 'sudo npm install -g npm@latest strip-ansi'
       - run: 'sudo npm install -g truffle'
       - run: which truffle
       - run: cd truffle && npm install
