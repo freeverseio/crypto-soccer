@@ -17,9 +17,8 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - checkout
-
       - run: 'sudo npm install -g truffle'
+      - checkout
       - run: which truffle
       - run: cd truffle && npm install
-      # - run: cd truffle && /usr/local/bin/truffle test
+      - run: cd truffle && /usr/local/bin/truffle test
