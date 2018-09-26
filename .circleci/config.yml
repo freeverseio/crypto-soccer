@@ -23,3 +23,5 @@ jobs:
       - run: cd truffle && npm install
       - run: cd truffle && /usr/local/bin/truffle test
 
+
+
