@@ -51,6 +51,8 @@ struct:
     - n0: starting block
     - nStep: separation between blocks: n0, n0 + nStep, n0 + 2 nStep,...
 
+leagues[] is an array of leagues.
+
 Given Nteams, there are nGamesPerTeam = 2 (nTeams - 1) games to be played by each team.
 In total, there are nTotalGames = nTeams (nTeams-1)
 
@@ -163,6 +165,33 @@ A2: t in [t, t+N/2-2]
 
 So for a given t, determine the points (t-N/2-1, t-1, t+N/2-2) and use A1,B1,A2,B2 to find n as r goes from 0 through those points. Finally, use g(r,n) above to find the game.
 
+We shall call this procedure finding g(t,r) => "find the game for team t at round r"
+
+
+# Updating player skills
+
+Inputs: playerIdx or playerNameHash, current block number
+
+Step 1: find team for that player via mapping(bytes32 => Team) playerToTeam;
+    - maybe simpler with playerIdx
+
+Step 2: find league for that team
+
+    - we need a mapping(bytes32) => League 
+        - doubt: to League or to leagueIdx? Is it redundant with league.teamIdx?
+        - the latter, I don't think so, since we need to scan the teams in a league...
+
+Step 3: find last round preocessed for that team:
+
+    - alternative 1: binary search
+    - alternative 2: store uint lastRoundsProcessed = serialization for each team
+
+Step 4: compare last round's block with current block
+    - if needs to update, play remaining rounds for team t.
+
+
+IMPORTANT: if we don't do skill updates during a league, we don't need to update the other teams!!!
+We may need to call 'Update skills' during a league, e.g. to change the owner. This doesn't affect game play.
 
 
 
