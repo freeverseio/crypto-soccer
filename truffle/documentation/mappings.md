@@ -9,7 +9,7 @@ Player is a struct that has:
 
 players[] is a vector of Players.
 
-the genesis player (at pos 0) is has name: _ and state uint(-1)
+the genesis player (at pos 0) has name: _ and state uint(-1)
 
 # Teams
 Team is a struct that has:
@@ -44,7 +44,7 @@ An example: in playGame, all players in a team are accessed via:
 
 ## Struct
 
-inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value.
+inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; the starting bloc and nStep.
 
 struct:
     - uint teamsIdxs: the serialization of teamIdx
@@ -72,13 +72,15 @@ If we only store 'who won', we need 2 bits: 0=not played, 1=team 1, 2= team 2, 3
 
 We can then store 256/2 = 128 games.
 
+We could even just use 1 bit: "has it been processed?" but maybe it's a pain, given that one needs to look back at the states before...?
+
 ## Scheduling
 
-We need to sort them. In every round r=0,...,n-2 there are n=1,...,nTeams/2 games. 
+We need to sort the games. In every round r=0,...,nTeams-2, there are n=1,...,nTeams/2 games. 
 
-Use Round-Robin algorithm for tournament scheduling (and modify from Wikpedia so that they increase)
+Use a Round-Robin algorithm for tournament scheduling (modify Wikpedia's so that all entries increase instead of decrease).
 
-Let N = nTeams.
+Let us, for shortness, use N = nTeams.
 
     r=0
         0 N-1 N-2   ,...,N/2+1
@@ -87,40 +89,50 @@ Let N = nTeams.
     r=1
         0 1 N-1 ... N/2+2
         2 3 4   ... N/2+1
+.
+.
+.
 
     r=N-2
         0   N-2  N-3 ... N/2
         N-1 1    2   ... N/2-1
 
-the number appearing in any position always increases by 1, and jumps from n-1 to 1, not zero. Define:
-    P(x)=x if x < n, x-(n-1) otherwise
+With our choice, the numbers appearing in any position always increase by 1, and jump from n-1 to 1, not zero. Define:
 
-r: 
-    g0          = ( 0,         P(1+r) )     = (0, 1), (0,2),  ...,(0,N-1)
-    g1          = ( P(N-1+r),  P(2+r) )     = (N-1, 2), (1,3),... (N-2, 1) 
-    g2          = ( P(N-2+r),  P(3+r) )     = (N-2, 3), (N-1,4),...(N-3, 2) 
+    P(x) = { x if x < n; x-(n-1) otherwise }
 
-    gn          = ( P(N-n+r),  P(n+1+r) )
+The, for a given round r: 
+    game(0,r)          = ( 0,         P(1+r) )     = (0, 1), (0,2),  ...,(0,N-1)
+    game(1,r)          = ( P(N-1+r),  P(2+r) )     = (N-1, 2), (1,3),... (N-2, 1) 
+    game(2,r)          = ( P(N-2+r),  P(3+r) )     = (N-2, 3), (N-1,4),...(N-3, 2) 
+.
+.
+.
+    game(N/2-1,r)   = ( P(N/2+1+r),P(N/2+r))    = (N/2+1,N/2),...
 
-    g_{N/2-1}   = ( P(N/2+1+r),P(N/2+r))    = (N/2+1,N/2),...
+So the generic formula, for a given round r and game n, is:
+
+    game(n,r)          = ( P(N-n+r),  P(n+1+r) )
+
 
 
 so if g=1,...,N (N-1) is the index that goes through every game in the league, then, the relation with the round and game in that round is:
 
 If g <= N (N-1)/2: We are in the first leg of the league.
 
-    g = r * N/2 + n,   n = 0,...,N/2-1;   r = 0,...,N-1
+    g(r,n) = r * N/2 + n,   n = 0,...,N/2-1;   r = 0,...,N-1
 
 whose inverse is:
 
     r = floor( g / (N/2) ) 
     n = g - r * N/2
 
-from which we obtain the two teams that play there: 
-    
-    P(N-n+r) vs P(n+1+r), unless n=0, in which case the first team is team 0.
+from which we obtain the two teams that played at game g:
 
-If g > N (N-1)/2: We are in the second leg of the league. Just change g <- g mod N (N-1)/2, apply the previous formulas, and just reverse the final order of teams.
+    - find r,n given g, 
+    - teams: P(N-n+r) vs P(n+1+r), unless n=0, in which case the first team is team 0.
+
+If g > N (N-1)/2: We are in the second leg of the league. Just change g by { g mod N (N-1)/2 }, apply the previous formulas, and just reverse the final order of teams.
 
 
 ## Finding games for a given team
@@ -130,17 +142,20 @@ An important function we'll need to implement is one that, given a team, it find
 For t=0, we have n=0 for all r. So the games are g(0,r). 
 Let's look at t>0. Since:
 
-    gn          = ( P(N-n+r),  P(n+1+r) )
+    game(r,n)          = ( P(N-n+r),  P(n+1+r) )
 
 
 We ask: for fixed t = 1,...,N-1, (we exclude the first team!!) when is it the case that either
 
-P(N-n+r) = t, or P(n+1+r) = t ? There must be exactly one solution to each of those, since the 1st answers when is the team at home, and the second, when is the team away. 
+    P(N-n+r) = t, or P(n+1+r) = t ? 
+
+There must be exactly one solution to each of those, since the 1st answers when is the team at home, and the second, when is the team away. 
+
 We parametrize the solutions by the round 'r':
     
     0 <= r <= N-2,  
 
-so that givent t and r, which game 'n' of that round do they appear. Note that we need:
+so that given t and r, in which game 'n' of that round do they appear? Note that we need answers for which:
 
     Restrictions:    0 <= n < N/2 (up to N/2-1)
 
@@ -159,11 +174,11 @@ B1: t in [t-N/2, t-1]
 A2: t in [t-1, t+N/2-2] 
 B2: t in [t+N/2-1, t+N-2] 
 
-They all are a continuous non-intersecting set, except for A2-B1, which intersect at r=t-1, for which n=0 in both. This is impossible for A2, since the home team at n=0 is always t=0. So:
+They all form a continuous non-intersecting set, except for the transition A2-B1, which intersects at r=t-1, for which n=0 in both. This is impossible for A2, since the home team at n=0 is always t=0. So:
 
 A2: t in [t, t+N/2-2] 
 
-So for a given t, determine the points (t-N/2-1, t-1, t+N/2-2) and use A1,B1,A2,B2 to find n as r goes from 0 through those points. Finally, use g(r,n) above to find the game.
+So for a given t, determine the 3 points (t-N/2-1, t-1, t+N/2-2) and use A1,B1,A2,B2 to find n as r goes from 0 through those points. Finally, use g(r,n) above to find the game.
 
 We shall call this procedure finding g(t,r) => "find the game for team t at round r"
 
@@ -173,7 +188,7 @@ We shall call this procedure finding g(t,r) => "find the game for team t at roun
 Inputs: playerIdx or playerNameHash, current block number
 
 Step 1: find team for that player via mapping(bytes32 => Team) playerToTeam;
-    - maybe simpler with playerIdx
+    - doubt maybe simpler with playerIdx?
 
 Step 2: find league for that team
 
