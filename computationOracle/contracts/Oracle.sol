@@ -12,6 +12,10 @@ contract Oracle {
         return true;
     }
 
+    function unregisterSolver() public {
+
+    }
+
     function setResult() public returns (bool) {
         return false;
     }

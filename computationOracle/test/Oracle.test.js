@@ -10,16 +10,24 @@ contract('Oracle', (accounts) => {
         oracle.should.not.equal(null);
     });
 
-    it('registerSolver with correct amount', async () => {
+    it('register solver with correct amount', async () => {
         const amount = 100;
         const oracle = await Oracle.new(amount);
         await oracle.registerSolver.call({value: amount}).should.be.fulfilled;
     });
 
-    it('registerSolver with wrong amount', async () => {
+    it('register solver with wrong amount', async () => {
         const amount = 100;
         const oracle = await Oracle.new(amount);
         await oracle.registerSolver.call({value: amount-1}).should.be.rejected;
         await oracle.registerSolver.call({value: amount+1}).should.be.rejected;
+    });
+
+    it('unregister solver', async () => {
+        const amount = 100;
+        const oracle = await Oracle.new(amount);
+        await oracle.registerSolver.call({value: amount});
+        await oracle.unregisterSolver.call().should.be.fulfilled;
+        // TODO check the balance
     });
 });
