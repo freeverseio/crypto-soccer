@@ -21,3 +21,4 @@ jobs:
       - checkout
       - run: cd truffle && npm install
       - run: cd truffle && truffle test
+      - run: cd computationOracle && truffle test
