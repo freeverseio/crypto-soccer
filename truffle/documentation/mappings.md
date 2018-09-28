@@ -42,6 +42,8 @@ An example: in playGame, all players in a team are accessed via:
 
 # League
 
+## Struct
+
 inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value.
 
 struct:
@@ -67,6 +69,8 @@ Say we use 3 bits for the score of each team (0,...,7). We could have 256/3=85.3
 If we only store 'who won', we need 2 bits: 0=not played, 1=team 1, 2= team 2, 3 = tie
 
 We can then store 256/2 = 128 games.
+
+## Scheduling
 
 We need to sort them. In every round r=0,...,n-2 there are n=1,...,nTeams/2 games. 
 
@@ -117,9 +121,47 @@ from which we obtain the two teams that play there:
 If g > N (N-1)/2: We are in the second leg of the league. Just change g <- g mod N (N-1)/2, apply the previous formulas, and just reverse the final order of teams.
 
 
+## Finding games for a given team
+
+An important function we'll need to implement is one that, given a team, it finds the games in which they play.
+
+For t=0, we have n=0 for all r. So the games are g(0,r). 
+Let's look at t>0. Since:
+
+    gn          = ( P(N-n+r),  P(n+1+r) )
 
 
+We ask: for fixed t = 1,...,N-1, (we exclude the first team!!) when is it the case that either
 
+P(N-n+r) = t, or P(n+1+r) = t ? There must be exactly one solution to each of those, since the 1st answers when is the team at home, and the second, when is the team away. 
+We parametrize the solutions by the round 'r':
+    
+    0 <= r <= N-2,  
+
+so that givent t and r, which game 'n' of that round do they appear. Note that we need:
+
+    Restrictions:    0 <= n < N/2 (up to N/2-1)
+
+Since P(x) = t has two solutions: x=t, x=t+N-1, then we have, for fixed t,r:
+
+A1:    n = N + r - t
+A2:    n = 1 + r - t
+
+B1:    n = -1 -r + t. ( note n(B1) = -b(A2) )
+B2:    n = N -2 -r + t
+
+It can be seen that the restrictions imply:
+
+A1: t in [t-N, t-N/2-1] 
+B1: t in [t-N/2, t-1] 
+A2: t in [t-1, t+N/2-2] 
+B2: t in [t+N/2-1, t+N-2] 
+
+They all are a continuous non-intersecting set, except for A2-B1, which intersect at r=t-1, for which n=0 in both. This is impossible for A2, since the home team at n=0 is always t=0. So:
+
+A2: t in [t, t+N/2-2] 
+
+So for a given t, determine the points (t-N/2-1, t-1, t+N/2-2) and use A1,B1,A2,B2 to find n as r goes from 0 through those points. Finally, use g(r,n) above to find the game.
 
 
 
