@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
 contract Oracle {
-    uint stackAmount;
+    uint public stackAmount;
 
     constructor(uint _stackAmount) public {
         stackAmount = _stackAmount;
