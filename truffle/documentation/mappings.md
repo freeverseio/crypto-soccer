@@ -188,18 +188,13 @@ Step 3: find last round preocessed for that team:
 
 Step 4: compare last round's block with current block
     - if needs to update, play remaining rounds for team t.
+        - in doing so, maybe some rounds have already been processed (by another confronting team). Skip those.
+
+Note: if one just asks the question: is update skills needed? then we need to check the second point. This will avoid useless TXs.
 
 
 IMPORTANT: if we don't do skill updates during a league, we don't need to update the other teams!!!
 We may need to call 'Update skills' during a league, e.g. to change the owner. This doesn't affect game play.
-
-
-
-
-
-
-
-
 
 
 
