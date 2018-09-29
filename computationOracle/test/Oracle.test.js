@@ -62,7 +62,7 @@ contract('Oracle', (accounts) => {
         const tx = await web3.eth.getTransaction(txInfo.tx);
         const gasCost = tx.gasPrice.mul(txInfo.receipt.gasUsed);
         const finalBalance = web3.eth.getBalance(accounts[0]);
-        assert.equal(initialBalance.toNumber(), finalBalance.add(gasCost).add(deposit).toNumber(), "registering store wrong amount");
+        assert.equal(initialBalance.toNumber(), finalBalance.add(gasCost).add(deposit).toNumber(), "register stores wrong amount");
     });
 
     it('unregistering solver return deposit', async () => {
@@ -74,6 +74,6 @@ contract('Oracle', (accounts) => {
         const tx = await web3.eth.getTransaction(txInfo.tx);
         const gasCost = tx.gasPrice.mul(txInfo.receipt.gasUsed);
         const finalBalance = web3.eth.getBalance(accounts[0]);
-        assert.equal(initialBalance.plus(deposit).minus(gasCost).toNumber(), finalBalance.toNumber(), "unregister return wrong amount");
+        assert.equal(initialBalance.plus(deposit).minus(gasCost).toNumber(), finalBalance.toNumber(), "unregister returns wrong amount");
     });
 });
