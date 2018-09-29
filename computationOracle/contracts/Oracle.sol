@@ -17,6 +17,7 @@ contract Oracle {
 
     function unregisterSolver() public {
         require(solvers[msg.sender] != 0, "not registered");
+        msg.sender.transfer(solvers[msg.sender]);
         solvers[msg.sender] = 0;
     }
 

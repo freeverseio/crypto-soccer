@@ -39,7 +39,7 @@ contract('Oracle', (accounts) => {
         await oracle.registerSolver({value: deposit}).should.be.rejected;
     });
 
-    it('unregister not registered solver', async () =>{
+    it('unregister not registered solver', async () => {
         const deposit = 2;
         const oracle = await Oracle.new(deposit);
         await oracle.unregisterSolver().should.be.rejected;
@@ -52,5 +52,28 @@ contract('Oracle', (accounts) => {
         await oracle.unregisterSolver().should.be.fulfilled;
         const result = await oracle.solvers(accounts[0]);
         result.toNumber().should.equal(0);
+    });
+
+    it('register solver cost deposit amount', async () => {
+        const deposit = web3.toWei(2);
+        const oracle = await Oracle.new(deposit);
+        const initialBalance = await web3.eth.getBalance(accounts[0]);
+        const txInfo = await oracle.registerSolver({ value: deposit });
+        const tx = await web3.eth.getTransaction(txInfo.tx);
+        const gasCost = tx.gasPrice.mul(txInfo.receipt.gasUsed);
+        const finalBalance = web3.eth.getBalance(accounts[0]);
+        assert.equal(initialBalance.toNumber(), finalBalance.add(gasCost).add(deposit).toNumber(), "registering store wrong amount");
+    });
+
+    it('unregistering solver return deposit', async () => {
+        const deposit = web3.toWei(2);
+        const oracle = await Oracle.new(deposit);
+        await oracle.registerSolver({ value: deposit });
+        const initialBalance = await web3.eth.getBalance(accounts[0]);
+        const txInfo = await oracle.unregisterSolver();
+        const tx = await web3.eth.getTransaction(txInfo.tx);
+        const gasCost = tx.gasPrice.mul(txInfo.receipt.gasUsed);
+        const finalBalance = web3.eth.getBalance(accounts[0]);
+        assert.equal(initialBalance.plus(deposit).minus(gasCost).toNumber(), finalBalance.toNumber(), "unregister return wrong amount");
     });
 });
