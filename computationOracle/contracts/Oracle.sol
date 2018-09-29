@@ -10,7 +10,7 @@ contract Oracle {
     }
 
     function registerSolver() public payable {
-        require(msg.value == deposit, "wrong stack amount");
+        require(msg.value == deposit, "wrong deposit amount");
         require(solvers[msg.sender] == 0, "already registered");
         solvers[msg.sender] = msg.value;
     }
