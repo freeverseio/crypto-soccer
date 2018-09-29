@@ -14,6 +14,10 @@ contract('Oracle', (accounts) => {
         result.toNumber().should.equal(amount);
     });
 
+    it('deploy with 0 deposit required', async () => {
+        await Oracle.new(0).should.be.rejected;
+    });
+
     it('register solver with correct amount', async () => {
         const amount = 2;
         const oracle = await Oracle.new(amount);
@@ -36,11 +40,18 @@ contract('Oracle', (accounts) => {
         await oracle.registerSolver({value: amount}).should.be.rejected;
     });
 
+    it('unregister not registered solver', async () =>{
+        const amount = 2;
+        const oracle = await Oracle.new(amount);
+        await oracle.unregisterSolver().should.be.rejected;
+    })
+
     it('unregister solver', async () => {
         const amount = 2;
         const oracle = await Oracle.new(amount);
-        await oracle.registerSolver({value: amount});
+        await oracle.registerSolver({ value: amount });
         await oracle.unregisterSolver().should.be.fulfilled;
-        // TODO check the balance
+        const result = await oracle.solvers(accounts[0]);
+        result.toNumber().should.equal(0);
     });
 });

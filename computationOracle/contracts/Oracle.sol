@@ -5,6 +5,7 @@ contract Oracle {
     mapping (address => uint) public solvers;
 
     constructor(uint _stackAmount) public {
+        require(_stackAmount != 0, "deposit can't be 0");
         stackAmount = _stackAmount;
     }
 
@@ -15,7 +16,8 @@ contract Oracle {
     }
 
     function unregisterSolver() public {
-
+        require(solvers[msg.sender] != 0, "not registered");
+        solvers[msg.sender] = 0;
     }
 
     function setResult() public returns (bool) {
