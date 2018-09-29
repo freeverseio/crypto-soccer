@@ -4,7 +4,7 @@ Notation:  pname = playerName,  tname = teamName, idx = index
 
 # Players
 Player is a struct that has:
-    - strin pname = player name, unique.
+    - string pname = player name, unique.
     - uint state = serialization of age and skills.
 
 players[] is a vector of Players.
@@ -22,21 +22,21 @@ teams[] is a vector of Teams.
 
 - mapping(bytes32 => Team) playerToTeam; /// from hash(playerName) to a Team struct.
 - mapping(bytes32 => address) public teamToOwnerAddr; /// from team hash(name) to the owner's address.
-    
+
 # Uniqueness
 
-We ensure uniqueness of pname and tname by simply:  
+We ensure uniqueness of pname and tname by simply:
 
     - require( playerToTeam[pNameHash].playersIdx == 0);
-    - require( teamToOwner[tNameHash]==0 ) 
+    - require( teamToOwner[tNameHash]==0 )
 
 
 # Quering over all players in a team
 
 An example: in playGame, all players in a team are accessed via:
 
-    input to playGame = teamIdx => getSkill(teamIdx, p in 0,...10)  
-        =>  gets team from teams[teamIdx], 
+    input to playGame = teamIdx => getSkill(teamIdx, p in 0,...10)
+        =>  gets team from teams[teamIdx],
             and playerIdx in array from getNumAtIndex(team.playersIdx, p, 20);
 
 
@@ -44,7 +44,7 @@ An example: in playGame, all players in a team are accessed via:
 
 ## Struct
 
-inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; the starting bloc and nStep.
+inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; the starting block and nStep.
 
 struct:
     - uint teamsIdxs: the serialization of teamIdx
@@ -59,7 +59,7 @@ In total, there are nTotalGames = nTeams (nTeams-1)
 Proof: every team plays (n-1) times as local => n (n-1)
 Another proof: there are 2 (n-1) rounds, each with n/2 games.
 
-For 10 teams => 90 games. For 11 => 110 games. For 20 teams => 380 games. 
+For 10 teams => 90 games. For 11 => 110 games. For 20 teams => 380 games.
 
 If we only keep the result of the games, we could add this:
 
@@ -76,7 +76,7 @@ We could even just use 1 bit: "has it been processed?" but maybe it's a pain, gi
 
 ## Scheduling
 
-We need to sort the games. In every round r=0,...,nTeams-2, there are n=1,...,nTeams/2 games. 
+We need to sort the games. In every round r=0,...,nTeams-2, there are n=1,...,nTeams/2 games.
 
 Use a Round-Robin algorithm for tournament scheduling (modify Wikpedia's so that all entries increase instead of decrease).
 
@@ -101,14 +101,13 @@ With our choice, the numbers appearing in any position always increase by 1, and
 
     P(x) = { x if x < n; x-(n-1) otherwise }
 
-The, for a given round r: 
-    game(0,r)          = ( 0,         P(1+r) )     = (0, 1), (0,2),  ...,(0,N-1)
-    game(1,r)          = ( P(N-1+r),  P(2+r) )     = (N-1, 2), (1,3),... (N-2, 1) 
-    game(2,r)          = ( P(N-2+r),  P(3+r) )     = (N-2, 3), (N-1,4),...(N-3, 2) 
-.
-.
-.
-    game(N/2-1,r)   = ( P(N/2+1+r),P(N/2+r))    = (N/2+1,N/2),...
+Then, for a given round r:
+
+    game(0,r)          = ( 0,         P(1+r) )     = (0, 1), (0,2),  ..., (0, N-1)
+    game(1,r)          = ( P(N-1+r),  P(2+r) )     = (N-1, 2), (1,3), ..., (N-2, 1)
+    game(2,r)          = ( P(N-2+r),  P(3+r) )     = (N-2, 3), (N-1,4), ..., (N-3, 2)
+    ...
+    game(N/2-1,r)      = ( P(N/2+1+r),P(N/2+r))    = (N/2+1,N/2),...
 
 So the generic formula, for a given round r and game n, is:
 
@@ -124,12 +123,12 @@ If g <= N (N-1)/2: We are in the first leg of the league.
 
 whose inverse is:
 
-    r = floor( g / (N/2) ) 
+    r = floor( g / (N/2) )
     n = g - r * N/2
 
 from which we obtain the two teams that played at game g:
 
-    - find r,n given g, 
+    - find r,n given g,
     - teams: P(N-n+r) vs P(n+1+r), unless n=0, in which case the first team is team 0.
 
 If g > N (N-1)/2: We are in the second leg of the league. Just change g by { g mod N (N-1)/2 }, apply the previous formulas, and just reverse the final order of teams.
@@ -139,7 +138,7 @@ If g > N (N-1)/2: We are in the second leg of the league. Just change g by { g m
 
 An important function we'll need to implement is one that, given a team, it finds the games in which they play.
 
-For t=0, we have n=0 for all r. So the games are g(0,r). 
+For t=0, we have n=0 for all r. So the games are g(0,r).
 Let's look at t>0. Since:
 
     game(r,n)          = ( P(N-n+r),  P(n+1+r) )
@@ -147,13 +146,13 @@ Let's look at t>0. Since:
 
 We ask: for fixed t = 1,...,N-1, (we exclude the first team!!) when is it the case that either
 
-    P(N-n+r) = t, or P(n+1+r) = t ? 
+    P(N-n+r) = t, or P(n+1+r) = t ?
 
-There must be exactly one solution to each of those, since the 1st answers when is the team at home, and the second, when is the team away. 
+There must be exactly one solution to each of those, since the 1st answers when is the team at home, and the second, when is the team away.
 
 We parametrize the solutions by the round 'r':
-    
-    0 <= r <= N-2,  
+
+    0 <= r <= N-2,
 
 so that given t and r, in which game 'n' of that round do they appear? Note that we need answers for which:
 
@@ -161,22 +160,22 @@ so that given t and r, in which game 'n' of that round do they appear? Note that
 
 Since P(x) = t has two solutions: x=t, x=t+N-1, then we have, for fixed t,r:
 
-A1:    n = N + r - t
-A2:    n = 1 + r - t
+    A1:    n = N + r - t
+    A2:    n = 1 + r - t
 
-B1:    n = -1 -r + t. ( note n(B1) = -b(A2) )
-B2:    n = N -2 -r + t
+    B1:    n = -1 -r + t ( note n(B1) = -b(A2) )
+    B2:    n = N -2 -r + t
 
 It can be seen that the restrictions imply:
 
-A1: t in [t-N, t-N/2-1] 
-B1: t in [t-N/2, t-1] 
-A2: t in [t-1, t+N/2-2] 
-B2: t in [t+N/2-1, t+N-2] 
+    A1: t in [t-N, t-N/2-1]
+    B1: t in [t-N/2, t-1]
+    A2: t in [t-1, t+N/2-2]
+    B2: t in [t+N/2-1, t+N-2]
 
 They all form a continuous non-intersecting set, except for the transition A2-B1, which intersects at r=t-1, for which n=0 in both. This is impossible for A2, since the home team at n=0 is always t=0. So:
 
-A2: t in [t, t+N/2-2] 
+    A2: t in [t, t+N/2-2]
 
 So for a given t, determine the 3 points (t-N/2-1, t-1, t+N/2-2) and use A1,B1,A2,B2 to find n as r goes from 0 through those points. Finally, use g(r,n) above to find the game.
 
@@ -192,11 +191,11 @@ Step 1: find team for that player via mapping(bytes32 => Team) playerToTeam;
 
 Step 2: find league for that team
 
-    - we need a mapping(bytes32) => League 
+    - we need a mapping(bytes32) => League
         - doubt: to League or to leagueIdx? Is it redundant with league.teamIdx?
         - the latter, I don't think so, since we need to scan the teams in a league...
 
-Step 3: find last round preocessed for that team:
+Step 3: find last round processed for that team:
 
     - alternative 1: binary search
     - alternative 2: store uint lastRoundsProcessed = serialization for each team
@@ -215,7 +214,7 @@ We may need to call 'Update skills' during a league, e.g. to change the owner. T
 
 # ideas
 
-- A league could be filled with teams with all-players-with-all-skills-identical = Difficulty. 
+- A league could be filled with teams with all-players-with-all-skills-identical = Difficulty.
 -- if Difficulty = 250/5, then it's an avg team. League creators could set D above, if needed.
 -- there's no need to actually 'create' those players nor store them anywhere.
 
