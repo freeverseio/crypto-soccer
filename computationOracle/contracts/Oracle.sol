@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 contract Oracle {
     uint public stackAmount;
+    mapping (address => uint) public solvers;
 
     constructor(uint _stackAmount) public {
         stackAmount = _stackAmount;
@@ -9,6 +10,8 @@ contract Oracle {
 
     function registerSolver() public payable returns (bool) {
         require(msg.value == stackAmount, "wrong stack amount");
+        require(solvers[msg.sender] == 0, "already registered");
+        solvers[msg.sender] = msg.value;
         return true;
     }
 
