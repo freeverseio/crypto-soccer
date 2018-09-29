@@ -8,11 +8,10 @@ contract Oracle {
         stackAmount = _stackAmount;
     }
 
-    function registerSolver() public payable returns (bool) {
+    function registerSolver() public payable {
         require(msg.value == stackAmount, "wrong stack amount");
         require(solvers[msg.sender] == 0, "already registered");
         solvers[msg.sender] = msg.value;
-        return true;
     }
 
     function unregisterSolver() public {
