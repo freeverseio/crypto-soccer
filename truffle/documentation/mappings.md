@@ -215,7 +215,7 @@ We may need to call 'Update skills' during a league, e.g. to change the owner. T
 # ideas
 
 - A league could be filled with teams with all-players-with-all-skills-identical = Difficulty.
--- if Difficulty = 250/5, then it's an avg team. League creators could set D above, if needed.
--- there's no need to actually 'create' those players nor store them anywhere.
+    - if Difficulty = 250/5, then it's an avg team. League creators could set D above, if needed.
+    - there's no need to actually 'create' those players nor store them anywhere.
 
 
