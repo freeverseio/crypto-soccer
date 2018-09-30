@@ -211,6 +211,26 @@ IMPORTANT: if we don't do skill updates during a league, we don't need to update
 We may need to call 'Update skills' during a league, e.g. to change the owner. This doesn't affect game play.
 
 
+## Initial state of a team in a league
+
+We cannot keep re-writing the player skills, because in particular, we need to know their state at the beginning of a league.
+
+This means that  we need to consider the players state (uint) either as:
+    - an array of states, where we time stamp the block number when each state is written
+    - an array of delta_states (to be added), with the time stamp too (or a delta)
+
+The advantage of using deltas is that, perhaps, we can squeeze them into smaller data.
+
+In any case, when calling 'playGame', for example, in the update-skills process, there has to be an extra search on which skills where the latter for that game.
+
+
+
+
+
+
+
+
+
 
 # ideas
 
