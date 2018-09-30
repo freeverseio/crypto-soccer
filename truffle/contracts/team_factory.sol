@@ -44,6 +44,6 @@ contract TeamFactory is PlayerFactory {
         require (_playerIdx < kMaxPlayersInTeam);
         Team storage t = teams[_teamIdx];
         uint playerIdx = getNumAtIndex(t.playersIdx, _playerIdx, 20);
-        return (playerIdx != 0) ? players[playerIdx].state : getDefaultPlayerState(t, _playerIdx);
+        return (playerIdx != 0) ? players[playerIdx].states[0] : getDefaultPlayerState(t, _playerIdx);
     }
 }

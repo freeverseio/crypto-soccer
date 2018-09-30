@@ -6,7 +6,7 @@ contract Storage {
 
     struct Player {
         string name;
-        uint state;
+        uint[] states;
     }
 
     uint8 constant kMaxPlayersInTeam = 11;
@@ -34,6 +34,8 @@ contract Storage {
 
     constructor() public {
         // create the deault player at pos 0.
-        players.push(Player({name: '_', state: uint(-1)}));
+        uint[] memory state = new uint[](1);
+        state[0] = uint(-1);
+        players.push(Player({name: "_", states: state }));
     }
 }
