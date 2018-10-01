@@ -44,14 +44,14 @@ An example: in playGame, all players in a team are accessed via:
 
 ## Struct
 
-inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; the starting block and nStep.
+- inputs: an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; the starting block and nStep.
 
-struct:
+- struct:
     - uint teamsIdxs: the serialization of teamIdx
     - n0: starting block
     - nStep: separation between blocks: n0, n0 + nStep, n0 + 2 nStep,...
 
-leagues[] is an array of leagues.
+- leagues[] is an array of leagues.
 
 Given Nteams, there are nGamesPerTeam = 2 (nTeams - 1) games to be played by each team.
 In total, there are nTotalGames = nTeams (nTeams-1)
