@@ -24,7 +24,7 @@ contract PlayerFactory is Storage, HelperFunctions {
 
     /// @dev The main Player struct.
     /// @param name is a string, unique for every Player
-    /// @param state is a uint256 that encodes age and skills. Each is a uint16 between 0-9999.
+    /// @param states is an array of uint256, each uint256 that encodes age and skills. Each is a uint16 between 0-9999.
     ///     Note that there is room for up to 74 digits. The list is:
     ///         0-monthOfBirthAfterUnixEpoch; if this goes up to 9999, then the game will run for at least 800 more years.
     ///         1-defense
@@ -51,7 +51,9 @@ contract PlayerFactory is Storage, HelperFunctions {
 
         // push payer, and update mapping and player count
         uint nCreatedPlayers = players.length;
-        players.push(Player({name: _playerName, state: _playerState}));
+        uint[] memory state = new uint[](1);
+        state[0] = _playerState;
+        players.push(Player({name: _playerName, states: state}));
         playerToTeam[playerNameHash] = teams[_teamIdx];
         teams[_teamIdx].playersIdx = setNumAtIndex(
             nCreatedPlayers,
@@ -181,6 +183,6 @@ contract PlayerFactory is Storage, HelperFunctions {
     function getNCreatedPlayers() external view returns(uint) { return players.length;}
 
     function getPlayerState(uint playerIdx) external view returns(uint) {
-        return players[playerIdx].state;
+        return players[playerIdx].states[0];
     }
 }
