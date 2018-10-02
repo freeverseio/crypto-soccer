@@ -245,6 +245,23 @@ We need to add it to the team struct:
 Too bad that we basically 24-28 bits for it. Maybe the space can be reused for other things.
 
 
+# Changing strategy (443, 541, etc)
+
+We shall make further use of the space left in playerState ( 256 - 2 x 70 + 1 = 115 bit). If we limit to a max of 20 games per league, this leaves space for 5 bit chunks. So a player role may now be:
+    0 - undefined
+    1 - keeper
+    2 - defence
+    3 - mid
+    4 - attack
+    5... others (e.g. retired)
+
+So a when a player joins a league all such 20 chunks are set to undefined except for the last one. 
+Say it is a midfielder. So the 20 chunks are 0...00002
+If a user updates a player's role, say, at game five, to attack. It sets the chunks to 0....00322222.
+So, the Oracle/Challenger knows the role in every game. As always, this remains untouched until a new league starts, which is beyond the challenging period.
+
+
+
 
 ## Details of algorithm
 
@@ -262,7 +279,16 @@ Step 2: find league for that team
         - doubt: to League or to leagueIdx? Is it redundant with league.teamIdx?
         - the latter, I don't think so, since we need to scan the teams in a league...
 
-Step 3: play all games that the team has left to be played (some may have been played while updating other teams). Compute team deltas at every game end. If game has already been played, just compute delta. 
+Step 3: Goes through all games where the team must play:
+    - Read the players skills at start of league
+    - If game has not been processed yet:
+        - find players' role in that game
+        - play game
+        - write result (unless called in view mode)
+    - Calculate deam deltas
+
+Step 4: write final player states (unless called in view mode)
+
 
 
 
