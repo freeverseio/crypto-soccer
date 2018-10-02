@@ -1,3 +1,6 @@
+This DOC just callects random thoughts for possible future reference. Don't lose your time looking at it.
+
+
 # Relation between block and time
 
 About 1 block is produced every 10s. 
@@ -17,7 +20,6 @@ Player is a struct that has:
     - string pname = player name, unique.
     - uint state = serialization of age and skills.
 
-We currently use 14bit for each skill (max skill value = 16K). We don't need to put age nor role in the state, necessarily. So skills take about nSkills x 14 = 70 (or 84 if we include age and role). There's plenty of space left. We'll use it later to store 2 state in the same uint256.
 
     - players[] is a vector of Players.
 
@@ -98,7 +100,6 @@ If we only store 'who won', we need 2 bits: 0=not played, 1=team 1, 2= team 2, 3
 We can then store 256/2 = 128 games.
 
 We could even just use 1 bit: "has it been processed?" but maybe it's a pain, given that one needs to look back at the states before...?
-
 
 ## Scheduling
 
@@ -209,10 +210,65 @@ We shall call this procedure finding g(t,r) => "find the game for team t at roun
 
 
 
+## Initial state of a team in a league
 
-# Updating player skills for Oracles
+We cannot keep re-writing the player skills, because in particular, we need to know their state at the beginning of a league.
 
-Instead of keeping all player states + timestamps, just keep 2 states in the same uint:
+This means that  we need to consider the players state (uint) either as:
+    - an array of states, where we time stamp the block number when each state is written
+    - an array of delta_states (to be added), with the time stamp too (or a delta)
+
+The advantage of using deltas is that, perhaps, we can squeeze them into smaller data.
+
+About adding the block number in the playerState unit: the current number is about 2M. 
+So if we use 28bit, we reach 268 x current block. More than enough. We could even use 24bit and
+get 16 x current block. 
+
+We currently use 14bit for each state (max number = 16K). We don't need to put age nor role in the state.
+So we would be using nSkills x 14 + 24 = 5 x 14 + 24 = 70 + 24 = 94 but. PLEEEENTY of space.
+==> YES, we can timestamp de block number in each new player state (even if we leave role and birthDate)
+
+In any case, when calling 'playGame', for example, in the update-skills process, there has to be an extra search on which skills where the latter for that game.
+
+We must also store the team that they belong to in each update. The reason is that 
+
+
+# Updating player skills
+
+Note that players can be restricted to be traded only when NOT in a league. 
+
+Inputs: 
+    - playerIdx 
+    - current block number
+
+Step 1: find current team for that player via mapping(bytes32 => Team) playerToTeam;
+
+Step 2: find league for that team
+
+    - we need a mapping(bytes32) => League
+        - doubt: to League or to leagueIdx? Is it redundant with league.teamIdx?
+        - the latter, I don't think so, since we need to scan the teams in a league...
+
+Step 3: find last round processed for that team:
+
+    - alternative 1: binary search
+    - alternative 2: store uint lastRoundsProcessed = serialization for each team
+
+Step 4: compare last round's block with current block
+    - if needs to update, play remaining rounds for team t.
+        - in doing so, maybe some rounds have already been processed (by another confronting team). Skip those.
+
+Note: if one just asks the question: is update skills needed? then we need to check the second point. This will avoid useless TXs.
+
+
+IMPORTANT: if we don't do skill updates during a league, we don't need to update the other teams!!!
+We may need to call 'Update skills' during a league, e.g. to change the owner. This doesn't affect game play.
+
+
+
+# Different (and much better) approach 
+
+Instead of keeping all player states + timestamps, just keep 2, and store them in the same uint:
 
     - playerState = serialize(state 1, state 0, bool current state)
 
@@ -244,25 +300,6 @@ We need to add it to the team struct:
 
 Too bad that we basically 24-28 bits for it. Maybe the space can be reused for other things.
 
-
-
-## Details of algorithm
-
-Note that players can be restricted to be traded only when NOT in a league. 
-
-Inputs: 
-    - playerIdx 
-
-
-Step 1: find current team for that player via mapping(bytes32 => Team) playerToTeam;
-
-Step 2: find league for that team
-
-    - we need a mapping(bytes32) => League
-        - doubt: to League or to leagueIdx? Is it redundant with league.teamIdx?
-        - the latter, I don't think so, since we need to scan the teams in a league...
-
-Step 3: play all games that the team has left to be played (some may have been played while updating other teams). Compute team deltas at every game end. If game has already been played, just compute delta. 
 
 
 
