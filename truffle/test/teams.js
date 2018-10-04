@@ -59,11 +59,22 @@ contract('Teams', function(accounts) {
     assert.isTrue(goals[1].toNumber()==3);
   });
 
-  it("creates a default team", async () => {
+  it("creates an empty team, shows crazy stats, checks name is correct", async () => {
     await instance.test_createTeam("Los Cojos");
     var name = await instance.test_getTeamName(2);
     assert.isTrue(name == "Los Cojos");
     await printTeamPlayers(2, instance);
+  });
+  
+  it("checks that we cannot add 2 teams with same name", async () => {
+    hasFailed = false;
+    try{ 
+        await createTeam(instance, "Los Cojos", "Reiziger", maxPlayersPerTeam, 2, playerRoles433);
+    } catch (err) {
+      // Great, the transaction failed
+      hasFailed = true;
+    }
+    assert.isTrue(hasFailed);
   });
   
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
