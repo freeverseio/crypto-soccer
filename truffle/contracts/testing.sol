@@ -52,7 +52,7 @@ contract Testing is GameEngine {
 
     // Wrappers for Players
 
-    function test_createRandomPlayer(
+    function test_createBalancedPlayer(
         string _playerName, 
         uint _teamIdx, 
         uint16 _userChoice, 
@@ -61,7 +61,7 @@ contract Testing is GameEngine {
     ) 
         external 
     {
-        return createRandomPlayer(
+        return createBalancedPlayer(
             _playerName, 
             _teamIdx, 
             _userChoice,
@@ -70,7 +70,7 @@ contract Testing is GameEngine {
         );
     }
 
-    function test_createPlayer(
+    function test_createUnbalancedPlayer(
         string _playerName,
         uint _teamIdx,
         uint8 _playerNumberInTeam,
@@ -84,7 +84,7 @@ contract Testing is GameEngine {
     )
         external 
     {
-        return createPlayer(
+        return createUnbalancedPlayer(
             _playerName,
             _teamIdx, 
             _playerNumberInTeam,

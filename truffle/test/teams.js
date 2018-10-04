@@ -126,7 +126,7 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.test_createRandomPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
+      var tx = await instance.test_createBalancedPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
       var playerIdx = catchPlayerIdxFromEvent(tx.logs);
       assert( playerIdx >= 0 );
   }
@@ -198,7 +198,7 @@ async function createTestTeam(
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.test_createPlayer(
+      var tx = await instance.test_createUnbalancedPlayer(
           thisName,
           teamIdx,
           p,

@@ -37,7 +37,7 @@ contract('Players', function(accounts) {
     const playerRole=3; 
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,1); // we have a default player at pos 0
-    await instance.test_createRandomPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
+    await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,2);
     playerState = await instance.test_getPlayerState.call(0);
@@ -49,7 +49,7 @@ contract('Players', function(accounts) {
     hasFailed = false;
     try{ 
       // If you create a player with an existing name, it won't let you, no matter what the rest of stuff is
-      await instance.test_createRandomPlayer("Messi",12,43,22,33);
+      await instance.test_createBalancedPlayer("Messi",12,43,22,33);
     } catch (err) {
       // Great, the transaction failed
       hasFailed = true;
