@@ -9,14 +9,14 @@ import "./ERC721DAppToken.sol";
  * This implementation includes all the required and some optional functionality of the ERC721
  * standard, it also contains some required functionality for Loom DAppChain compatiblity.
  */
-contract CryptoCardsDappChain is ERC721DAppToken, ERC721Token, ERC721Receiver {
+contract CryptoTeamsDappChain is ERC721DAppToken, ERC721Token, ERC721Receiver {
   // Transfer Gateway contract address
   address public gateway;
 
   /**
     * @dev Constructor function
     */
-  constructor(address _gateway) ERC721Token("CryptoCardsDappChain", "CRC") public {
+  constructor(address _gateway) ERC721Token("CryptoTeamsDappChain", "CRC") public {
     gateway = _gateway;
   }
 
