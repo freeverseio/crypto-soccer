@@ -96,7 +96,18 @@ contract Testing is GameEngine {
     function test_getNCreatedTeams() public view returns(uint) { return getNCreatedTeams(); }
     function test_getTeamName(uint idx) public view returns(string) { return getTeamName(idx); }
     function test_createTeam(string _teamName) public { return createTeam(_teamName); }
+    function test_getSkill(uint _teamIdx, uint8 _playerIdx) public view returns(uint) { return getSkill(_teamIdx, _playerIdx); }
 
 
+    // WRAPPERS FOR GAMES
+
+    function test_playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
+        public
+        view
+        returns (uint16[2] memory teamGoals) {
+            return playGame(teamIdx1, teamIdx2, rndNum1, rndNum2, rndNum3, rndNum4);
+        }
+
+    
 
 }

@@ -36,7 +36,7 @@ contract TeamFactory is PlayerFactory {
     function getTeamName(uint idx) internal view returns(string) { return teams[idx].name;}
 
     function getSkill(uint _teamIdx, uint8 _playerIdx)
-        external
+        internal
         view
         returns(uint)
     {
