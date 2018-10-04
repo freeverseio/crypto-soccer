@@ -4,7 +4,7 @@ pragma solidity ^ 0.4.24;
 contract HelperFunctions {
 
     /// @dev encodes an array of nums into a single uint with specific bits
-    function encode(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint result) {
+    function encode(uint8 nElem, uint16[] nums, uint bits) internal pure returns(uint result) {
         require(bits <= 16);
         result = 0;
         uint b = 0;
@@ -18,7 +18,7 @@ contract HelperFunctions {
     }
 
     /// @dev decodes a uint256 into an array of nums with specific bits
-    function decode(uint8 nNumbers, uint longState, uint bits) public pure returns(uint16[] result) {
+    function decode(uint8 nNumbers, uint longState, uint bits) internal pure returns(uint16[] result) {
         require (bits <= 16);
         uint mask = (1 << bits)-1; // (2**bits)-1
         result = new uint16[](nNumbers);
@@ -27,13 +27,14 @@ contract HelperFunctions {
             longState >>= bits;
         }
     }
+    
     /// obtains value at index from big uint256 longState
-    function getNumAtIndex(uint longState, uint8 index, uint bits) public pure returns(uint) {
+    function getNumAtIndex(uint longState, uint8 index, uint bits) internal pure returns(uint) {
         return (longState >> (bits*index))&((1 << bits)-1);
     }
 
     /// encodes value at specific index into longState
-    function setNumAtIndex(uint value, uint longState, uint8 index, uint bits) public pure returns(uint) {
+    function setNumAtIndex(uint value, uint longState, uint8 index, uint bits) internal pure returns(uint) {
         uint maxnum = 1<<bits; // 2**bits
         require(value < maxnum);
         uint b = bits*index;
@@ -44,7 +45,7 @@ contract HelperFunctions {
 
     // only used for testing since web3.eth.solidityUtils not yet available
     function computeKeccak256ForNumber(uint n)
-    public
+    internal
     pure
     returns(uint)
     {
@@ -52,7 +53,7 @@ contract HelperFunctions {
     }
     // only used for testing since web3.eth.solidityUtils not yet available
     function computeKeccak256(string s, uint n1, uint n2)
-    public
+    internal
     pure
     returns(uint)
     {
@@ -65,7 +66,7 @@ contract HelperFunctions {
     // The formula is derived as follows. Throw a random number R in the range [0,M]
     // Then, w1 wins if (w1+w2)*(R/M) < w1, and w2 wins otherise. Clear, this is a weighted dice.
     function throwDice(uint weight1, uint weight2, uint rndNum, uint factor)
-        public
+        internal
         pure
         returns(uint8)
     {
@@ -78,7 +79,7 @@ contract HelperFunctions {
 
     // Generalization of the previous to any number of weights
     function throwDiceArray(uint[] memory weights, uint rndNum, uint factor)
-        public
+        internal
         pure
         returns(uint8)
     {
