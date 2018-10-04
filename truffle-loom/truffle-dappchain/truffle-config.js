@@ -15,6 +15,12 @@ module.exports = {
     loom_dapp_chain: {
       provider: loomTruffleProvider,
       network_id: '*'
+    },
+    development: {
+      network_id: '*',
+      host: '127.0.0.1',
+      port: 8545,
+      gas: 4700000
     }
   }
 }
