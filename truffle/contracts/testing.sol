@@ -16,8 +16,8 @@ import "./games.sol";
 contract Testing is GameEngine {
 
     // Wrappers for helpers:
-    function test_encode(uint8 nElem, uint16[] nums, uint bits) external pure returns(uint result) {
-        return encode(nElem, nums, bits);
+    function test_serialize(uint8 nElem, uint16[] nums, uint bits) external pure returns(uint result) {
+        return serialize(nElem, nums, bits);
     }
 
     function test_decode(uint8 nNumbers, uint longState, uint bits) external pure returns(uint16[] result) {

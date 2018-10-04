@@ -6,8 +6,8 @@ pragma solidity ^ 0.4.24;
 */
 contract HelperFunctions {
 
-    /// @dev encodes an array of nums into a single uint with specific bits
-    function encode(uint8 nElem, uint16[] nums, uint bits) internal pure returns(uint result) {
+    /// @dev serializes an array of nums into a single uint with specific bits
+    function serialize(uint8 nElem, uint16[] nums, uint bits) internal pure returns(uint result) {
         require(bits <= 16);
         result = 0;
         uint b = 0;
@@ -36,7 +36,7 @@ contract HelperFunctions {
         return (longState >> (bits*index))&((1 << bits)-1);
     }
 
-    /// encodes value at specific index into longState
+    /// serializes value at specific index into longState
     function setNumAtIndex(uint value, uint longState, uint8 index, uint bits) internal pure returns(uint) {
         uint maxnum = 1<<bits; // 2**bits
         require(value < maxnum);

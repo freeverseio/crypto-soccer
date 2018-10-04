@@ -118,7 +118,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             states[sk] = states[sk] + excess;
         }
 
-        return encode(7, states, 14);
+        return serialize(7, states, 14);
     }
 
     /// @dev Creates a player where skills are set pseudo-randomly
@@ -128,7 +128,7 @@ contract PlayerFactory is Storage, HelperFunctions {
     /// player number. We will not allow two teams with the same name, and hence, same player numbers will not lead
     /// to the same skills. We can optimize this a bit by getting more 4-digit randoms from the long randoms we
     /// generate, so that we need to generate less
-    /// @param _playerRole encodes the positions:
+    /// @param _playerRole serializes the positions:
     ///         0=keeper, 1=defence, 2=midfield, 3=attack, 4=substitute, 5=retired.
     /// It returns the hash of the player's name
     function createRandomPlayer(

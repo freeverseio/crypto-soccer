@@ -160,8 +160,8 @@ async function printTeamPlayers(teamIdx, instance) {
   console.log("Players in team " + teamIdx);
   for (var p=0;p<maxPlayersPerTeam;p++) {
     process.stdout.write("Player " + p + ": ");
-    encodedSkills = await instance.test_getSkill(teamIdx, p);
-    decodedSkills = await instance.test_decode(nSkills, encodedSkills, bits);
+    serializedSkills = await instance.test_getSkill(teamIdx, p);
+    decodedSkills = await instance.test_decode(nSkills, serializedSkills, bits);
     //console.log('skills:' + decodedSkills)
     for (var sk=0;sk<nSkills;sk++) {
       if (sk==0) totals[0] += unixMonthToAge(decodedSkills[0]);

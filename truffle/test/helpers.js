@@ -9,14 +9,14 @@ contract('Testing', function(accounts) {
     instance = await cryptoSoccer.deployed();
   });
 
-  it("tests encode/decode with bits", async () => {
+  it("tests serialize/decode with bits", async () => {
     input = [1714, 311, 42, 3];
     expected = 206864348850;
     bits = 12;
     len = 4;
 
     // encoding
-    result = await instance.test_encode(len, input, bits);
+    result = await instance.test_serialize(len, input, bits);
     assert.equal(result, expected);
 
     // decoding
@@ -42,7 +42,7 @@ contract('Testing', function(accounts) {
     }
   });
 
-  it("encodes 11 indices into uint256", async () =>{
+  it("serializes 11 indices into uint256", async () =>{
     values = [12, 13, 14, 15, 16, 17, 18, 19 ,20, 21, 22]
     len = 11
     bits = 20
@@ -78,14 +78,14 @@ contract('Testing', function(accounts) {
     nPlayers = 11
     nStates = 7
     bits = 14
-    var encodedStates = Array(nPlayers).fill(0)
+    var serializedStates = Array(nPlayers).fill(0)
     for (player=0; player<nPlayers; player++) {
-      encodedStates[player] = await instance.test_encode(nStates, states[player], bits);
+      serializedStates[player] = await instance.test_serialize(nStates, states[player], bits);
     }
-    console.log("encoded states:\n", encodedStates)
+    console.log("serialized states:\n", serializedStates)
 
     for (player=0; player<nPlayers; player++) {
-      decodedState = await instance.test_decode(nStates, encodedStates[player], bits);
+      decodedState = await instance.test_decode(nStates, serializedStates[player], bits);
       for (i=0; i<nStates; i++) {
         assert.equal(decodedState[i], states[player][i])
       }
