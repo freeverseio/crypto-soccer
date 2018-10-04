@@ -4,7 +4,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Token.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
-contract CryptoPlayers is ERC721Token("CryptoPlayers", "CCC"), Ownable {
+contract CryptoTeams is ERC721Token("CryptoTeams", "CCC"), Ownable {
   mapping(address => bool) private registered;
   address public gateway;
 
@@ -25,3 +25,4 @@ contract CryptoPlayers is ERC721Token("CryptoPlayers", "CCC"), Ownable {
     safeTransferFrom(msg.sender, gateway, tokenId);
   }
 }
+
