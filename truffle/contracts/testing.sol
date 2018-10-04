@@ -1,17 +1,17 @@
 pragma solidity ^ 0.4.24;
 
-/*
-Contract to act as a wrapper for all functions that need to be tested directly.
-This avoids declaring those as 'public' or 'external', when they will not be so when deploying
-
-Inheritance structure:
-    PlayerFactory is HelperFunctions
-    TeamFactory is PlayerFactory
-    GameEngine is TeamFactory
-    Testing is GameEngine
-*/
-
 import "./games.sol";
+
+/*
+    Contract that acts as a wrapper for all functions that need to be tested directly.
+    This avoids declaring those as 'public' or 'external', when they will not be so when deploying
+
+    Inheritance structure:
+        PlayerFactory is HelperFunctions
+        TeamFactory is PlayerFactory
+        GameEngine is TeamFactory
+        Testing is GameEngine
+*/
 
 contract Testing is GameEngine {
 
@@ -52,8 +52,22 @@ contract Testing is GameEngine {
 
     // Wrappers for Players
 
-    function test_createRandomPlayer(string _playerName, uint _teamIdx, uint16 _userChoice, uint8 _playerNumberInTeam, uint8 _playerRole) external {
-        return createRandomPlayer(_playerName, _teamIdx, _userChoice, _playerNumberInTeam, _playerRole);
+    function test_createRandomPlayer(
+        string _playerName, 
+        uint _teamIdx, 
+        uint16 _userChoice, 
+        uint8 _playerNumberInTeam, 
+        uint8 _playerRole
+    ) 
+        external 
+    {
+        return createRandomPlayer(
+            _playerName, 
+            _teamIdx, 
+            _userChoice,
+            _playerNumberInTeam, 
+            _playerRole
+        );
     }
 
     function test_createPlayer(
@@ -67,8 +81,9 @@ contract Testing is GameEngine {
         uint _shoot,
         uint _endurance,
         uint _role
-        )
-        external {
+    )
+        external 
+    {
         return createPlayer(
             _playerName,
             _teamIdx, 
@@ -104,10 +119,9 @@ contract Testing is GameEngine {
     function test_playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
         external
         view
-        returns (uint16[2] memory teamGoals) {
-            return playGame(teamIdx1, teamIdx2, rndNum1, rndNum2, rndNum3, rndNum4);
-        }
-
-    
+        returns (uint16[2] memory teamGoals) 
+    {
+        return playGame(teamIdx1, teamIdx2, rndNum1, rndNum2, rndNum3, rndNum4);
+    }
 
 }

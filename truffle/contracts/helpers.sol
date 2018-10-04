@@ -1,6 +1,9 @@
 pragma solidity ^ 0.4.24;
 
-// contract containing reusable generic functions
+/*  
+    Contract containing reusable generic functions, math, etc.
+    Most of these should be internal pure.
+*/
 contract HelperFunctions {
 
     /// @dev encodes an array of nums into a single uint with specific bits
