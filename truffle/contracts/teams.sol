@@ -31,18 +31,21 @@ contract TeamFactory is PlayerFactory {
         emit TeamCreation(_teamName, teams.length, msg.sender);
     }
 
-    function getNCreatedTeams() internal view returns(uint) { return teams.length;}
-    function getTeamName(uint idx) internal view returns(string) { return teams[idx].name;}
-
+    /// @dev Returns the entire state of the player (age, skills, etc.)
     function getSkill(uint _teamIdx, uint8 _playerIdx)
         internal
         view
         returns(uint)
     {
-        require (_teamIdx < teams.length);
-        require (_playerIdx < kMaxPlayersInTeam);
-        Team storage t = teams[_teamIdx];
-        uint playerIdx = getNumAtIndex(t.playersIdx, _playerIdx, 20);
+        uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, 20);
         return players[playerIdx].state;
     }
+
+/* 
+    @dev Section with functions only for external/testing use.
+*/    
+    function getNCreatedTeams() internal view returns(uint) { return teams.length;}
+    function getTeamName(uint idx) internal view returns(string) { return teams[idx].name;}
+
+
 }

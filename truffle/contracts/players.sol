@@ -167,13 +167,16 @@ contract PlayerFactory is Storage, HelperFunctions {
         createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
     }
 
+
+/* 
+    @dev Section with functions only for external/testing use.
+*/
     function getNCreatedPlayers() internal view returns(uint) { return players.length; }
 
     function getPlayerState(uint playerIdx) internal view returns(uint) {
         return players[playerIdx].state;
     }
 
-    /// @dev Returns player name. Only for external/testing use.
     function getPlayerName(uint playerIdx) internal view returns(string) {
         return players[playerIdx].name;
     }
