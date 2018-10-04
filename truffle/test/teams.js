@@ -65,19 +65,7 @@ contract('Teams', function(accounts) {
     assert.isTrue(name == "Los Cojos");
     await printTeamPlayers(2, instance);
   });
-  it("creates a default team and plays a game. With this seed, it checks that the result is 1-3", async () => {
-    console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
-    await instance.test_createTeam("Los Petardos");
-    var name = await instance.test_getTeamName(3);
-    assert.isTrue(name == "Los Petardos");
-    await printTeamPlayers(3, instance);
-    var goals = await playGame(instance, 2, 3, 18, 232);
-    console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==1);
-    assert.isTrue(goals[1].toNumber()==3);
-  });
-
-
+  
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
     var goals = await playGame(instance, 0, 1, 18, 232);
   });

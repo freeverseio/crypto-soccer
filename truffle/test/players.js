@@ -4,14 +4,17 @@ contract('Players', function(accounts) {
 
   var instance;
   var nTotalPlayers=0;
-  var sourceBalance;
+
+  const playerName="Messi";
+  const teamName="Barca";
+  const teamIdx = 0; 
+  const userChoice=1;
+  const playerNumberInTeam=2;
+  const playerRole=3; 
+
   console.log('Funds in the source account:');
   console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber()/web3.toWei(1, "ether"));
 
-  //// deploy the contract before each test
-  //beforeEach(async () => {
-  //  instance = await cryptoSoccer.deployed();
-  //});
 
   it("tests if contract is deployed correctly", async () => {
     instance = await cryptoSoccer.deployed();
@@ -21,7 +24,7 @@ contract('Players', function(accounts) {
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{
     var nTeams = await  instance.test_getNCreatedTeams.call();
     assert.isTrue(nTeams==0);
-    await instance.test_createTeam("Barca");
+    await instance.test_createTeam(teamName);
     var nTeams = await  instance.test_getNCreatedTeams.call();
     assert.isTrue(nTeams==1);
   });
@@ -29,27 +32,23 @@ contract('Players', function(accounts) {
   it("adds a player to the previously created empty team, and checks nPlayers goes from 0 to 1", async () =>{
     var nTeams = await  instance.test_getNCreatedTeams.call();
     assert.equal(nTeams,1);
-    const playerName="Messi";
-    const teamName="Barca";
-    const teamIdx = 0; // todo: get this idx from the team name, using the contract mappings
-    const userChoice=1;
-    const playerNumberInTeam=2;
-    const playerRole=3; 
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,1); // we have a default player at pos 0
     await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,2);
-    playerState = await instance.test_getPlayerState.call(0);
-    var states = await instance.test_decode(7,playerState,14);
   });
 
   it("tries to add a player with the same name, and checks that it fails", async () =>{
-    nTotalPlayers = await instance.test_getNCreatedPlayers.call();
+    var nTeams = await  instance.test_getNCreatedTeams.call();
+    var nPlayers = await  instance.test_getNCreatedPlayers.call();
+    var lastPlayerName = await instance.test_getPlayerName(1);
+    console.log("Teams created so far " + nTeams + " and nPlayers = " + nPlayers);
+    console.log("lastPlayerName = " + lastPlayerName);
     hasFailed = false;
     try{ 
       // If you create a player with an existing name, it won't let you, no matter what the rest of stuff is
-      await instance.test_createBalancedPlayer("Messi",12,43,22,33);
+     await instance.test_createBalancedPlayer(lastPlayerName,teamIdx,userChoice+1,playerNumberInTeam+1,playerRole);
     } catch (err) {
       // Great, the transaction failed
       hasFailed = true;

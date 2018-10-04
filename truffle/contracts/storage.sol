@@ -32,8 +32,6 @@ contract Storage {
     struct Team {
         string name;
         uint256 playersIdx;
-        uint256 timeOfCreation;
-        uint16 userChoice;
     }
 
     /// @dev An array containing the Team struct for all teams in existence. 

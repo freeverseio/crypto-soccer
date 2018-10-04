@@ -37,10 +37,10 @@ contract PlayerFactory is Storage, HelperFunctions {
         internal
     {
         /// @dev First, make sure this player name is unique. If so, it has never been assigned to a Team.
-        /// @dev All teams, when created, have the first player Idx set to uint(-1), to signal
-        /// @dev that the team has been created. So if playerIdx==0, the playerName is free.
+        /// @dev A team is created if it has a not-null owner addr.
         bytes32 playerNameHash = keccak256(abi.encodePacked(_playerName));
-        require(playerToTeam[playerNameHash].playersIdx == 0);
+        bytes32 teamNameHash = keccak256(abi.encodePacked(playerToTeam[playerNameHash].name));
+        require(teamToOwnerAddr[teamNameHash] == 0, "Player already exists with this name");
 
         /// @dev Update player count
         uint nCreatedPlayers = players.length;
@@ -61,20 +61,6 @@ contract PlayerFactory is Storage, HelperFunctions {
 
         /// @dev Emit the creation event
         emit PlayerCreation(_playerName, nCreatedPlayers, _playerState);
-    }
-
-    /// @dev TODO: remove? What does it do?
-    function getDefaultPlayerState(Team _team, uint8 _playerNumberInTeam)
-        internal
-        pure
-        returns (uint)
-     {
-        uint dna = uint(keccak256(abi.encodePacked(
-            _team.name,
-            _team.userChoice,
-            _playerNumberInTeam
-            )));
-        return computePlayerStateFromRandom(dna, getRole(_playerNumberInTeam,4,3), _team.timeOfCreation);
     }
 
     /// @dev Main interface to create a player by users. We receive a random number,
@@ -149,7 +135,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             _playerNumberInTeam,
             computePlayerStateFromRandom(dna, _playerRole, now)
         );
-     }
+    }
 
     /// @dev Creates a player where skills are set outside the blockchain, and hence, can be arbitrary
     /// @dev To be used, eventually, to generate promo players or super players. 
@@ -179,11 +165,16 @@ contract PlayerFactory is Storage, HelperFunctions {
                      (_role        << (bits*6));
 
         createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
-     }
+    }
 
-    function getNCreatedPlayers() internal view returns(uint) { return players.length;}
+    function getNCreatedPlayers() internal view returns(uint) { return players.length; }
 
     function getPlayerState(uint playerIdx) internal view returns(uint) {
         return players[playerIdx].state;
+    }
+
+    /// @dev Returns player name. Only for external/testing use.
+    function getPlayerName(uint playerIdx) internal view returns(string) {
+        return players[playerIdx].name;
     }
 }

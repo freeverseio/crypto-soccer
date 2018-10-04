@@ -104,6 +104,7 @@ contract Testing is GameEngine {
 
     function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
     function test_getPlayerState(uint playerIdx) external view returns(uint) { return getPlayerState(playerIdx); }
+    function test_getPlayerName(uint playerIdx) external view returns(string) { return getPlayerName(playerIdx); }
 
 
     // WRAPPERS FOR TEAMS
