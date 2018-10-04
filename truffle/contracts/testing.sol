@@ -87,6 +87,9 @@ contract Testing is GameEngine {
         return  getRole(idx, first, second);
     }
 
+    function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
+    function test_getPlayerState(uint playerIdx) external view returns(uint) { return getPlayerState(playerIdx); }
+
 
     // WRAPPERS FOR TEAMS
 

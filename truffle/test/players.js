@@ -25,7 +25,6 @@ contract('Players', function(accounts) {
     var nTeams = await  instance.test_getNCreatedTeams.call();
     assert.isTrue(nTeams==1);
   });
-/*
 
   it("adds a player to the previously created empty team, and checks nPlayers goes from 0 to 1", async () =>{
     var nTeams = await  instance.test_getNCreatedTeams.call();
@@ -57,7 +56,7 @@ contract('Players', function(accounts) {
     }
     assert.isTrue(hasFailed);
   });
-*/
+
 })
 
 
