@@ -65,19 +65,7 @@ contract('Teams', function(accounts) {
     assert.isTrue(name == "Los Cojos");
     await printTeamPlayers(2, instance);
   });
-  it("creates a default team and plays a game. With this seed, it checks that the result is 1-3", async () => {
-    console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
-    await instance.test_createTeam("Los Petardos");
-    var name = await instance.test_getTeamName(3);
-    assert.isTrue(name == "Los Petardos");
-    await printTeamPlayers(3, instance);
-    var goals = await playGame(instance, 2, 3, 18, 232);
-    console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==1);
-    assert.isTrue(goals[1].toNumber()==3);
-  });
-
-
+  
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
     var goals = await playGame(instance, 0, 1, 18, 232);
   });
@@ -126,7 +114,7 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.test_createRandomPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
+      var tx = await instance.test_createBalancedPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
       var playerIdx = catchPlayerIdxFromEvent(tx.logs);
       assert( playerIdx >= 0 );
   }
@@ -160,8 +148,8 @@ async function printTeamPlayers(teamIdx, instance) {
   console.log("Players in team " + teamIdx);
   for (var p=0;p<maxPlayersPerTeam;p++) {
     process.stdout.write("Player " + p + ": ");
-    encodedSkills = await instance.test_getSkill(teamIdx, p);
-    decodedSkills = await instance.test_decode(nSkills, encodedSkills, bits);
+    serializedSkills = await instance.test_getSkill(teamIdx, p);
+    decodedSkills = await instance.test_decode(nSkills, serializedSkills, bits);
     //console.log('skills:' + decodedSkills)
     for (var sk=0;sk<nSkills;sk++) {
       if (sk==0) totals[0] += unixMonthToAge(decodedSkills[0]);
@@ -198,7 +186,7 @@ async function createTestTeam(
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.test_createPlayer(
+      var tx = await instance.test_createUnbalancedPlayer(
           thisName,
           teamIdx,
           p,
