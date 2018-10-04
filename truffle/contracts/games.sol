@@ -1,28 +1,25 @@
 pragma solidity ^ 0.4.24;
-
 import "./teams.sol";
 
+/*
+    Main contract with the Game Engine
+*/
+
 contract GameEngine is TeamFactory {
-    // plays a game and, currently, returns the number of goals by each team.
-    // pending: add effect of endurance, to decrease capabilities as rounds go on
-    // pending: select the attacker who actually shoots and confront his shoot skill with the keeper.
+
+    /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
         internal
         view
         returns (uint16[2] memory teamGoals)
     {
-        // order of globSkills:
-            // 0 - move2attack,
-            // 1 - createShoot,
-            // 2 - defendShoot,
-            // 3 - blockShoot,
-            // 4 - currentEndurance,
-            // 5 - startEndurance
+        /// @dev TODO: use an enum!!
+        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
 
         uint nRounds = rndNum1.length;
-        require (nRounds == rndNum2.length);
-        require (nRounds == rndNum3.length);
-        require (nRounds == rndNum4.length);
+        require (nRounds == rndNum2.length, "We need more randoms for so many round");
+        require (nRounds == rndNum3.length, "We need more randoms for so many round");
+        require (nRounds == rndNum4.length, "We need more randoms for so many round");
 
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
@@ -32,7 +29,7 @@ contract GameEngine is TeamFactory {
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
 
         uint8 teamThatAttacks;
-        // order of globSkills: [move2attack, createShoot, defendShoot, blockShoot, currentEndurance, startEndurance]
+        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
         for (uint round = 0; round < nRounds; round++){
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
@@ -47,28 +44,32 @@ contract GameEngine is TeamFactory {
                         rndNum3[round],
                         rndNum4[round],
                         1000
-                        )
-                    ) {
+                    )
+                ) 
+                {
                     teamGoals[teamThatAttacks]++;
                 }
             }
         }
         return teamGoals;
-     }
+    }
 
+    /// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint[5] skillsTeamA, uint[5] skillsTeamB )
         internal
         pure
     {
-        // recall the endurance is now a val for which 0 is greatest, 2000 is avg starting
-        uint kA = skillsTeamA[4];
-        uint kB = skillsTeamB[4];
+        /// @dev recall the endurance is a val for which 0 is greatest, 2000 is avg starting
+        uint currentEnduranceA = skillsTeamA[4];
+        uint currentEnduranceB = skillsTeamB[4];
         for (uint8 sk=0; sk<4; sk++) {
-            skillsTeamA[sk] = (skillsTeamA[sk] * kA) / 100;
-            skillsTeamB[sk] = (skillsTeamB[sk] * kB) / 100;
+            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
+            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
         }
     }
 
+    /// @dev Decides if a team that creates a shoot manages to score.
+    /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
         uint8 nAttackers,
         uint[kMaxPlayersInTeam] memory attackersSpeed,
@@ -77,22 +78,23 @@ contract GameEngine is TeamFactory {
         uint rndNum1,
         uint rndNum2,
         uint factor
-        )
+    )
         internal
         pure
         returns (bool)
     {
-        // attacker who actually shoots is selected weighted by his speed
+        /// @dev attacker who actually shoots is selected weighted by his speed
         uint[] memory weights = new uint[](nAttackers);
         for (uint8 p=0; p<nAttackers; p++) {
-             weights[p] = attackersSpeed[p];
+            weights[p] = attackersSpeed[p];
         }
         uint8 shooter = throwDiceArray(weights, rndNum1, factor);
 
-        // a goal is scored by confronting his shoot skill to the goalkeeper block skill
+        /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0;
     }
 
+    /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
     function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor)
         internal
         pure
@@ -102,11 +104,12 @@ contract GameEngine is TeamFactory {
             globSkills[1-teamThatAttacks][2],       // defendShoot of defending team against...
             (globSkills[teamThatAttacks][1]*6)/10,  // createShoot of attacking team.
             rndNum,
-            factor) == 1 ?  true : false;
+            factor
+        ) == 1 ? true : false;
     }
 
 
-    // computes basic data needed during the game.
+    /// @dev Computes basic data, including globalSkills, needed during the game.
     function getGameglobSkills(uint _teamIdx)
         internal
         view

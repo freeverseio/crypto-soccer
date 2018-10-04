@@ -31,7 +31,7 @@ contract TeamFactory is PlayerFactory {
         emit TeamCreation(_teamName, teams.length, msg.sender);
     }
 
-    /// @dev Returns the entire state of the player (age, skills, etc.)
+    /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
     function getSkill(uint _teamIdx, uint8 _playerIdx)
         internal
         view
