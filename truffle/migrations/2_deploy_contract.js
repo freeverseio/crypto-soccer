@@ -1,8 +1,6 @@
-var GameEngine = artifacts.require("GameEngine");
-var HelperFunctions = artifacts.require("HelperFunctions");
+var Testing = artifacts.require("Testing");
 
 module.exports = function(deployer) { 
-  deployer.deploy(GameEngine, "0x1234");
-  deployer.deploy(HelperFunctions, "0x1235");
+  deployer.deploy(Testing, "0x1234");
 };
 

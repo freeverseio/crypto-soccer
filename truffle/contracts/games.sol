@@ -1,13 +1,13 @@
 pragma solidity ^ 0.4.24;
 
-import "./team_factory.sol";
+import "./teams.sol";
 
 contract GameEngine is TeamFactory {
     // plays a game and, currently, returns the number of goals by each team.
     // pending: add effect of endurance, to decrease capabilities as rounds go on
     // pending: select the attacker who actually shoots and confront his shoot skill with the keeper.
     function playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
-        public
+        internal
         view
         returns (uint16[2] memory teamGoals)
     {
@@ -138,7 +138,7 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(7, this.getSkill(_teamIdx, p), 14);
+            uint16[] memory skills = decode(7, getSkill(_teamIdx, p), 14);
             endurance += skills[5];
             if (skills[6] == 0) {
                 blockShoot = skills[4];

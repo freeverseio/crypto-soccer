@@ -1,16 +1,17 @@
 pragma solidity ^ 0.4.24;
 
-import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+// import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./storage.sol";
-import "./helper_functions.sol";
+import "./helpers.sol";
 
 contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
     enum Role { Keeper, Defense, Midfield, Attack, Substitute, Retired }
 
-    // @dev obtain player role from its position and strategy first-second-third (i.e. 4-3-3)
-    function getRole(uint idx, uint8 first, uint8 second, uint8 /*third*/) public pure returns(uint8) {
+    // @dev obtain player role from its position and strategy first-second-third (i.e. 4-3-3). 
+    // @dev The 3rd number is not needed (it always equals 10 - first - second)
+    function getRole(uint idx, uint8 first, uint8 second) internal pure returns(uint8) {
         require (idx < kMaxPlayersInTeam);
         if (idx == 0)
             return uint8(Role.Keeper);
@@ -79,7 +80,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             _team.userChoice,
             _playerNumberInTeam
             )));
-            return computePlayerStateFromRandom(dna, getRole(_playerNumberInTeam,4,3,3), _team.timeOfCreation);
+            return computePlayerStateFromRandom(dna, getRole(_playerNumberInTeam,4,3), _team.timeOfCreation);
      }
 
     function computePlayerStateFromRandom(uint longRnd, uint8 playerRole, uint currentTime)
@@ -137,7 +138,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint8 _playerNumberInTeam,
         uint8 _playerRole
         )
-        public
+        internal 
     {
         require (_teamIdx < teams.length);
         uint dna = uint(keccak256(abi.encodePacked(
@@ -165,7 +166,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint _endurance,
         uint _role
         )
-        public {
+        internal {
         // we should make sure all numbers are below 1e5
         require (_teamIdx < teams.length);
         uint bits = 14;
@@ -180,9 +181,9 @@ contract PlayerFactory is Storage, HelperFunctions {
         createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
      }
 
-    function getNCreatedPlayers() external view returns(uint) { return players.length;}
+    function getNCreatedPlayers() internal view returns(uint) { return players.length;}
 
-    function getPlayerState(uint playerIdx) external view returns(uint) {
+    function getPlayerState(uint playerIdx) internal view returns(uint) {
         return players[playerIdx].states[0];
     }
 }

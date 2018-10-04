@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "./player_factory.sol";
+import "./players.sol";
 
 contract TeamFactory is PlayerFactory {
 
@@ -11,7 +11,7 @@ contract TeamFactory is PlayerFactory {
     ///  method doesn't do any checking and should only be called when the
     ///  input data is known to be valid.
     /// @param _teamName The name of the team, which happens to determine the team skills, via hash(_teamName, _userChoice)
-    function createTeam(string _teamName) public {
+    function createTeam(string _teamName) internal {
         // TODO: require maxLen for _teamName
         bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
         require(teamToOwnerAddr[nameHash]==0);
@@ -32,11 +32,11 @@ contract TeamFactory is PlayerFactory {
         emit TeamCreation(_teamName, teams.length, msg.sender);
     }
 
-    function getNCreatedTeams() external view returns(uint) { return teams.length;}
-    function getTeamName(uint idx) external view returns(string) { return teams[idx].name;}
+    function getNCreatedTeams() internal view returns(uint) { return teams.length;}
+    function getTeamName(uint idx) internal view returns(string) { return teams[idx].name;}
 
     function getSkill(uint _teamIdx, uint8 _playerIdx)
-        external
+        internal
         view
         returns(uint)
     {
