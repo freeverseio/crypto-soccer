@@ -1,8 +1,8 @@
 pragma solidity ^ 0.4.24;
 
-import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
+// import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./storage.sol";
-import "./helper_functions.sol";
+import "./helpers.sol";
 
 contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Fired whenever a new player is created

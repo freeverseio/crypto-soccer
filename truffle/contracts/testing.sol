@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "./game_engine.sol";
+import "./games.sol";
 
 // Inheritance structure:
 //  PlayerFactory is HelperFunctions

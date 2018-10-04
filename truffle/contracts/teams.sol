@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "./player_factory.sol";
+import "./players.sol";
 
 contract TeamFactory is PlayerFactory {
 

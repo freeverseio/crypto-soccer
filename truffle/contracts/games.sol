@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "./team_factory.sol";
+import "./teams.sol";
 
 contract GameEngine is TeamFactory {
     // plays a game and, currently, returns the number of goals by each team.
