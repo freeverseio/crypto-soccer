@@ -19,7 +19,6 @@ jobs:
     steps:
       - run: 'sudo npm install -g truffle'
       - checkout
-      - run: cd truffle && npm install
-      - run: cd truffle && truffle test
+      - run: cd truffle && npm install && truffle test
       - run: cd truffle-loom/truffle-ethereum && npm install && truffle compile
       - run: cd truffle-loom/truffle-dappchain && npm install && truffle compile
