@@ -6,8 +6,24 @@ pragma solidity ^ 0.4.24;
 
 contract Storage {
 
-//    enum Role { Undefined, Keeper, Def, Mid, Att, Subst, Retired }
-    enum Role { Keeper, Def, Mid, Att, Subst, Retired }
+    /// @dev Instead of Enums, we use functions. Enums cannot be casted explitcly!
+    /// @dev Ideally, we would just use a 'pre-compile' stage that replaces all
+    /// @dev appearances of these queries by the corresponding number. Then compile. 
+    /// @dev So to emulate: enum Role { Keeper, Def, Mid, Att, Subst, Retired }, we do:
+    function roleKeeper() internal pure returns(uint8)  { return 0; } 
+    function roleDef() internal pure returns(uint8)     { return 1; } 
+    function roleMid() internal pure returns(uint8)     { return 2; } 
+    function roleAtt() internal pure returns(uint8)     { return 3; } 
+
+    /// @dev Likewise for enum State { Birth, Def, Speed, Pass, Shoot, End, Role }
+    function stBirth() internal pure returns(uint8)     { return 0; } 
+    function stDef() internal pure returns(uint8)       { return 1; } 
+    function stSpeed() internal pure returns(uint8)     { return 2; } 
+    function stPass() internal pure returns(uint8)      { return 3; } 
+    function stShoot() internal pure returns(uint8)     { return 4; } 
+    function stEndur() internal pure returns(uint8)     { return 5; } 
+    function stRole() internal pure returns(uint8)      { return 6; } 
+
 
 
     /// @dev The main Player struct.

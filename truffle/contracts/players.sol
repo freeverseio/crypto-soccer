@@ -19,13 +19,13 @@ contract PlayerFactory is Storage, HelperFunctions {
     function getRole(uint idx, uint8 nDefenders, uint8 nMids) internal pure returns(uint8) {
         require (idx < kMaxPlayersInTeam, "Player pos in team larger than 11!");
         if (idx == 0)
-            return uint8(Role.Keeper);
+            return roleKeeper();
         else if (idx <= nDefenders)
-            return uint8(Role.Def);
+            return roleDef();
         else if (idx < nDefenders+nMids+1)
-            return uint8(Role.Mid);
+            return roleMid();
         else
-            return uint8(Role.Att);
+            return roleAtt();
     }
 
     /// @dev An internal method that creates a new player and stores it. This
@@ -75,7 +75,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint16[] memory states = decode(7, rndSeed, 14);
 
         /// @dev Last number is role, as provided from outside. Just store it.
-        states[6] = playerRole;
+        states[stRole()] = playerRole;
 
         /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
         states[0] = 16 + (states[0] % 20);
