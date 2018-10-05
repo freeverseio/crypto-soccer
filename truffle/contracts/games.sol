@@ -143,17 +143,17 @@ contract GameEngine is TeamFactory {
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
             uint16[] memory skills = decode(7, getSkill(_teamIdx, p), 14);
             endurance += skills[5];
-            if (skills[6] == 0) {
+            if (skills[6] == uint16(Role.Keeper)) {
                 blockShoot = skills[4];
             }
-            else if (skills[6] == 1) {
+            else if (skills[6] == uint16(Role.Def)) {
                 move2attack = move2attack + skills[1] + skills[2] + skills[3];
                 defendShoot = defendShoot + skills[2] + skills[1];
             }
-            else if (skills[6] == 2) {
+            else if (skills[6] == uint16(Role.Mid)) {
                 move2attack = move2attack + 2 * skills[1] + 2 * skills[2] + 3 * skills[3];
             }
-            else if (skills[6] == 3) {
+            else if (skills[6] == uint16(Role.Att)) {
                 move2attack = move2attack + skills[1];
                 createShoot = createShoot + skills[2] + skills[3];
                 attackersSpeed[nAttackers] = skills[2];
