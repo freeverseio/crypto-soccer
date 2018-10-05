@@ -1,11 +1,13 @@
 const cryptoSoccer = artifacts.require("Testing");
 const maxPlayersPerTeam = 11;
-const playerRoles433 = [0,1,1,1,1,2,2,2,3,3,3];
-const playerRoles442 = [0,1,1,1,1,2,2,2,2,3,3];
-const playerRoles541 = [0,1,1,1,1,1,2,2,2,2,3];
-const playerRoles631 = [0,1,1,1,1,1,1,2,2,2,3];
-const playerRoles640 = [0,1,1,1,1,1,1,2,2,2,2];
-const playerRoles451 = [0,1,1,1,1,2,2,2,2,2,3];
+
+// Roles: important to agree with Soldity's enum:
+//          enum Role { Undefined, Keeper, Def, Mid, Att, Subst, Retired }
+const UNDEFINED = 0;
+const KEEPER = 0;
+const DEF = 1;
+const MID = 2;
+const ATT = 3;
 
 const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 
@@ -34,15 +36,12 @@ contract('Teams', function(accounts) {
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
-    await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, playerRoles433);
+    await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, createAlineacion(4,3,3));
     await printTeamPlayers(0, instance);
     assert.equal(nCreatedPlayers,maxPlayersPerTeam+1);
   });
 
-
-  // TODO: add test that you cannot create 2 teams with same name
   it("creates another team and plays a game. With this seed, it checks that the result is 1-3", async () => {
-    // await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
     await createTestTeam(
       instance,
       "Sevilla",
@@ -50,7 +49,7 @@ contract('Teams', function(accounts) {
       maxPlayersPerTeam,
       1,
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
-      playerRoles433
+      createAlineacion(4,3,3)
     );
     await printTeamPlayers(1, instance);
     var goals = await playGame(instance, 0, 1, 18, 232);
@@ -69,7 +68,7 @@ contract('Teams', function(accounts) {
   it("checks that we cannot add 2 teams with same name", async () => {
     hasFailed = false;
     try{ 
-        await createTeam(instance, "Los Cojos", "Reiziger", maxPlayersPerTeam, 2, playerRoles433);
+        await createTeam(instance, "Los Cojos", "Reiziger", maxPlayersPerTeam, 2, createAlineacion(4,3,3));
     } catch (err) {
       // Great, the transaction failed
       hasFailed = true;
@@ -215,3 +214,18 @@ async function createTestTeam(
   nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
   console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
 }
+
+function createAlineacion(nDef,nMid,nAtt) {
+    alineacion = [0];
+    for (var p = 0; p<nDef; p++) {
+        alineacion.push(DEF);
+    }
+    for (var p = 0; p<nMid; p++) {
+        alineacion.push(MID);
+    }
+    for (var p = 0; p<nAtt; p++) {
+        alineacion.push(ATT);
+    }
+    return alineacion;
+}
+

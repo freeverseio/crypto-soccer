@@ -13,8 +13,6 @@ contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Event fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
 
-    enum Role { Keeper, Defense, Midfield, Attack, Substitute, Retired }
-
     /// @dev Returns player role given his pos in the team, and a selected strategy 
     /// @dev Strategy (e.g. 4-4-3) is specified by the first 2 nums. 
     /// @dev The 3rd number is not needed (it always equals 10 - nDefenders - nMids)
@@ -22,12 +20,12 @@ contract PlayerFactory is Storage, HelperFunctions {
         require (idx < kMaxPlayersInTeam, "Player pos in team larger than 11!");
         if (idx == 0)
             return uint8(Role.Keeper);
-        else if (idx > 0 && idx <= nDefenders)
-            return uint8(Role.Defense);
-        else if (idx > nDefenders && idx < nDefenders+nMids+1)
-            return uint8(Role.Midfield);
+        else if (idx <= nDefenders)
+            return uint8(Role.Def);
+        else if (idx < nDefenders+nMids+1)
+            return uint8(Role.Mid);
         else
-            return uint8(Role.Attack);
+            return uint8(Role.Att);
     }
 
     /// @dev An internal method that creates a new player and stores it. This

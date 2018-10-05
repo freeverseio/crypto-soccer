@@ -6,6 +6,10 @@ pragma solidity ^ 0.4.24;
 
 contract Storage {
 
+//    enum Role { Undefined, Keeper, Def, Mid, Att, Subst, Retired }
+    enum Role { Keeper, Def, Mid, Att, Subst, Retired }
+
+
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
