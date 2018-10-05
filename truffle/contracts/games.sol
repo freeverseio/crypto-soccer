@@ -34,16 +34,16 @@ contract GameEngine is TeamFactory {
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice( globSkills[0][0], globSkills[1][0], rndNum1[round], 1000);
+            teamThatAttacks = throwDice(globSkills[0][glMove2Attack()], globSkills[1][glMove2Attack()], rndNum1[round], 1000);
             if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], 1000)) {
                 if ( managesToScore(
-                        nAttackers[teamThatAttacks],
-                        attackersSpeed[teamThatAttacks],
-                        attackersShoot[teamThatAttacks],
-                        globSkills[1-teamThatAttacks][3],
-                        rndNum3[round],
-                        rndNum4[round],
-                        1000
+                    nAttackers[teamThatAttacks],
+                    attackersSpeed[teamThatAttacks],
+                    attackersShoot[teamThatAttacks],
+                    globSkills[1-teamThatAttacks][glBlockShoot()],
+                    rndNum3[round],
+                    rndNum4[round],
+                    1000
                     )
                 ) 
                 {
@@ -60,9 +60,9 @@ contract GameEngine is TeamFactory {
         pure
     {
         /// @dev recall the endurance is a val for which 0 is greatest, 2000 is avg starting
-        uint currentEnduranceA = skillsTeamA[4];
-        uint currentEnduranceB = skillsTeamB[4];
-        for (uint8 sk=0; sk<4; sk++) {
+        uint currentEnduranceA = skillsTeamA[glEndurance()];
+        uint currentEnduranceB = skillsTeamB[glEndurance()];
+        for (uint8 sk = glMove2Attack(); sk < glEndurance(); sk++) {
             skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
             skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
         }
@@ -101,8 +101,8 @@ contract GameEngine is TeamFactory {
         returns (bool)
     {
         return throwDice(
-            globSkills[1-teamThatAttacks][2],       // defendShoot of defending team against...
-            (globSkills[teamThatAttacks][1]*6)/10,  // createShoot of attacking team.
+            globSkills[1-teamThatAttacks][glDefendShoot()],       // defendShoot of defending team against...
+            (globSkills[teamThatAttacks][glCreateShoot()]*6)/10,  // createShoot of attacking team.
             rndNum,
             factor
         ) == 1 ? true : false;
@@ -110,6 +110,13 @@ contract GameEngine is TeamFactory {
 
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
+    /// @dev Basically implements the formulas:
+    // move2attack =    defence(defenders + 2*midfields + attackers) +
+    //                  speed(defenders + 2*midfields) +
+    //                  pass(defenders + 3*midfields)
+    // createShoot =    speed(attackers) + pass(attackers)
+    // defendShoot =    speed(defenders) + defence(defenders);
+    // blockShoot  =    shoot(keeper);
     function getGameglobSkills(uint _teamIdx)
         internal
         view
@@ -120,19 +127,6 @@ contract GameEngine is TeamFactory {
             uint[kMaxPlayersInTeam] memory attackersShoot
         )
     {
-        // move2attack =    defence(defenders + 2*midfields + attackers) +
-        //                  speed(defenders + 2*midfields) +
-        //                  pass(defenders + 3*midfields)
-        // createShoot =    speed(attackers) + pass(attackers)
-        // defendShoot =    speed(defenders) + defence(defenders);
-        // blockShoot  =    shoot(keeper);
-        // skills:  0-age
-        //          1-defense
-        //          2-speed
-        //          3-pass
-        //          4-shoot (for a goalkeeper, this is interpreted as ability to block a shoot)
-        //          5-endurance
-        //          6-role (0=goalkeeper, 1=defence, 2=midfield, 3=attacker, 4=retired)
         uint move2attack;
         uint createShoot;
         uint defendShoot;
@@ -161,8 +155,9 @@ contract GameEngine is TeamFactory {
                 nAttackers++;
             }
         }
-        // endurance is converted to a percentage that will be maintained:
-        // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
+        /// @dev endurance is converted to a percentage, 
+        /// @dev used to multiply (and hence decrease) the start endurance.
+        /// @dev 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
         if (endurance < 500) {
             endurance = 70;
         } else if (endurance < 1400) {

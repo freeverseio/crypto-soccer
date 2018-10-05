@@ -6,35 +6,6 @@ pragma solidity ^ 0.4.24;
 
 contract Storage {
 
-    /// @dev Instead of Enums, we use functions. Enums cannot be casted explitcly!
-    /// @dev Ideally, we would just use a 'pre-compile' stage that replaces all
-    /// @dev appearances of these queries by the corresponding number. Then compile. 
-    /// @dev So to emulate: enum Role { Keeper, Def, Mid, Att, Subst, Retired }, we do:
-    function roleKeeper() internal pure returns(uint8)  { return 0; } 
-    function roleDef() internal pure returns(uint8)     { return 1; } 
-    function roleMid() internal pure returns(uint8)     { return 2; } 
-    function roleAtt() internal pure returns(uint8)     { return 3; } 
-
-    /// @dev Likewise for enum State { Birth, Def, Speed, Pass, Shoot, End, Role }
-    function stBirth() internal pure returns(uint8)     { return 0; } 
-    function stDef() internal pure returns(uint8)       { return 1; } 
-    function stSpeed() internal pure returns(uint8)     { return 2; } 
-    function stPass() internal pure returns(uint8)      { return 3; } 
-    function stShoot() internal pure returns(uint8)     { return 4; } 
-    function stEndur() internal pure returns(uint8)     { return 5; } 
-    function stRole() internal pure returns(uint8)      { return 6; }
-
-    /// @dev Summarize: how many states, and from these, how many are skills: 
-    function numStates() internal pure returns(uint8)   { return 7; } 
-    function numSkills() internal pure returns(uint8)   { return 5; } 
-
-    /// @dev The amount of bits used per state to serialize them in a uint256 
-    function bitsPerState() internal pure returns(uint8)   { return 14; } 
-
-    /// @dev The amount of bits used per state to playerIdx them in a uint256 
-    function bitsPerPlayerIdx() internal pure returns(uint8)   { return 20; } 
-
-
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -85,4 +56,43 @@ contract Storage {
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
     }
+
+
+    /// CONSTANTS SECTION
+    /// @dev Instead of Enums, we use functions. Enums cannot be casted explitcly!
+    /// @dev Ideally, we would just use a 'pre-compile' stage that replaces all
+    /// @dev appearances of these queries by the corresponding number. Then compile. 
+    /// @dev So to emulate: enum Role { Keeper, Def, Mid, Att, Subst, Retired }, we do:
+    function roleKeeper() internal pure returns(uint8)  { return 0; } 
+    function roleDef() internal pure returns(uint8)     { return 1; } 
+    function roleMid() internal pure returns(uint8)     { return 2; } 
+    function roleAtt() internal pure returns(uint8)     { return 3; } 
+
+    /// @dev Likewise for enum State { Birth, Def, Speed, Pass, Shoot, End, Role }
+    function stBirth() internal pure returns(uint8)     { return 0; } 
+    function stDef() internal pure returns(uint8)       { return 1; } 
+    function stSpeed() internal pure returns(uint8)     { return 2; } 
+    function stPass() internal pure returns(uint8)      { return 3; } 
+    function stShoot() internal pure returns(uint8)     { return 4; } 
+    function stEndur() internal pure returns(uint8)     { return 5; } 
+    function stRole() internal pure returns(uint8)      { return 6; }
+
+    /// @dev Summarize: how many states, and from these, how many are skills: 
+    function numStates() internal pure returns(uint8)   { return 7; } 
+    function numSkills() internal pure returns(uint8)   { return 5; } 
+
+    /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
+    function glMove2Attack() internal pure returns(uint8)   { return 0; } 
+    function glCreateShoot() internal pure returns(uint8)   { return 1; } 
+    function glDefendShoot() internal pure returns(uint8)   { return 2; } 
+    function glBlockShoot() internal pure returns(uint8)    { return 3; } 
+    function glEndurance() internal pure returns(uint8)     { return 4; } 
+
+    /// @dev The amount of bits used per state to serialize them in a uint256 
+    function bitsPerState() internal pure returns(uint8)   { return 14; } 
+
+    /// @dev The amount of bits used per state to playerIdx them in a uint256 
+    function bitsPerPlayerIdx() internal pure returns(uint8)   { return 20; } 
+
+
 }
