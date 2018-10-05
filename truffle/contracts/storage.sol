@@ -59,40 +59,39 @@ contract Storage {
 
 
     /// CONSTANTS SECTION
-    /// @dev Instead of Enums, we use functions. Enums cannot be casted explitcly!
-    /// @dev Ideally, we would just use a 'pre-compile' stage that replaces all
-    /// @dev appearances of these queries by the corresponding number. Then compile. 
+    /// @dev Instead of Enums, we use consts. Enums cannot be casted explitcly!
+    /// @dev Instead, consts are truly replaced by their value at compile time. 
     /// @dev So to emulate: enum Role { Keeper, Def, Mid, Att, Subst, Retired }, we do:
-    function roleKeeper() internal pure returns(uint8)  { return 0; } 
-    function roleDef() internal pure returns(uint8)     { return 1; } 
-    function roleMid() internal pure returns(uint8)     { return 2; } 
-    function roleAtt() internal pure returns(uint8)     { return 3; } 
+    uint8 constant roleKeeper = 0;
+    uint8 constant roleDef = 1; 
+    uint8 constant roleMid = 2; 
+    uint8 constant roleAtt = 3; 
 
     /// @dev Likewise for enum State { Birth, Def, Speed, Pass, Shoot, End, Role }
-    function stBirth() internal pure returns(uint8)     { return 0; } 
-    function stDef() internal pure returns(uint8)       { return 1; } 
-    function stSpeed() internal pure returns(uint8)     { return 2; } 
-    function stPass() internal pure returns(uint8)      { return 3; } 
-    function stShoot() internal pure returns(uint8)     { return 4; } 
-    function stEndur() internal pure returns(uint8)     { return 5; } 
-    function stRole() internal pure returns(uint8)      { return 6; }
+    uint8 constant stBirth = 0; 
+    uint8 constant stDef = 1; 
+    uint8 constant stSpeed = 2; 
+    uint8 constant stPass = 3; 
+    uint8 constant stShoot = 4; 
+    uint8 constant stEndur = 5; 
+    uint8 constant stRole = 6;
 
     /// @dev Summarize: how many states, and from these, how many are skills: 
-    function numStates() internal pure returns(uint8)   { return 7; } 
-    function numSkills() internal pure returns(uint8)   { return 5; } 
+    uint8 constant numStates = 7; 
+    uint8 constant numSkills = 5; 
 
     /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
-    function glMove2Attack() internal pure returns(uint8)   { return 0; } 
-    function glCreateShoot() internal pure returns(uint8)   { return 1; } 
-    function glDefendShoot() internal pure returns(uint8)   { return 2; } 
-    function glBlockShoot() internal pure returns(uint8)    { return 3; } 
-    function glEndurance() internal pure returns(uint8)     { return 4; } 
+    uint8 constant glMove2Attack = 0; 
+    uint8 constant glCreateShoot = 1; 
+    uint8 constant glDefendShoot = 2; 
+    uint8 constant glBlockShoot = 3; 
+    uint8 constant glEndurance = 4; 
 
     /// @dev The amount of bits used per state to serialize them in a uint256 
-    function bitsPerState() internal pure returns(uint8)   { return 14; } 
+    uint8 constant bitsPerState = 14; 
 
     /// @dev The amount of bits used per state to playerIdx them in a uint256 
-    function bitsPerPlayerIdx() internal pure returns(uint8)   { return 20; } 
+    uint8 constant bitsPerPlayerIdx = 20; 
 
 
 }
