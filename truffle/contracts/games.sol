@@ -141,7 +141,7 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(numStates(), getSkill(_teamIdx, p), 14);
+            uint16[] memory skills = decode(numStates(), getSkill(_teamIdx, p), bitsPerState());
             endurance += skills[stEndur()];
             if (skills[stRole()] == roleKeeper()) {
                 blockShoot = skills[stShoot()];
@@ -157,7 +157,7 @@ contract GameEngine is TeamFactory {
                 move2attack = move2attack + skills[stDef()];
                 createShoot = createShoot + skills[stSpeed()] + skills[stPass()];
                 attackersSpeed[nAttackers] = skills[stSpeed()];
-                attackersShoot[nAttackers] = skills[4];
+                attackersShoot[nAttackers] = skills[stShoot()];
                 nAttackers++;
             }
         }

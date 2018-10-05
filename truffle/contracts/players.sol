@@ -72,7 +72,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         /// @dev Get random numbers between 0 and 9999 and assign them to states, where:
         /// @dev state[0] -> age, state[6] -> role
         /// @dev state[1]...state[5] -> skills
-        uint16[] memory states = decode(numStates(), rndSeed, 14);
+        uint16[] memory states = decode(numStates(), rndSeed, bitsPerState());
 
         /// @dev Last number is role, as provided from outside. Just store it.
         states[stRole()] = playerRole;
@@ -99,7 +99,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             states[sk] = states[sk] + excess;
         }
 
-        return serialize(numStates(), states, 14);
+        return serialize(numStates(), states, bitsPerState());
     }
 
     /// @dev Creates a player where skills are set pseudo-randomly assigned
@@ -151,9 +151,9 @@ contract PlayerFactory is Storage, HelperFunctions {
     )
         internal 
     {
-        /// @dev TODO: we should make sure all numbers are below 2^14-1
+        /// @dev TODO: we should make sure all numbers are below 2^bitsPerState()-1
         require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
-        uint bits = 14;
+        uint bits = bitsPerState();
         uint state = _monthOfBirthAfterUnixEpoch +
                      (_defense     << bits) +
                      (_speed       << (bits*2)) +
