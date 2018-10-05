@@ -72,34 +72,34 @@ contract PlayerFactory is Storage, HelperFunctions {
         /// @dev Get random numbers between 0 and 9999 and assign them to states, where:
         /// @dev state[0] -> age, state[6] -> role
         /// @dev state[1]...state[5] -> skills
-        uint16[] memory states = decode(7, rndSeed, 14);
+        uint16[] memory states = decode(numStates(), rndSeed, 14);
 
         /// @dev Last number is role, as provided from outside. Just store it.
         states[stRole()] = playerRole;
 
         /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
-        states[0] = 16 + (states[0] % 20);
+        states[stBirth()] = 16 + (states[0] % 20);
 
         /// @dev Convert age to monthOfBirthAfterUnixEpoch.
         /// @dev TODO: We can optimize by not declaring these as variables, and putting the exact numbers. 
         /// @dev I leave it this way for clarity, for the time being.
         uint years2secs = 365 * 24 * 3600;
         uint month2secs = 30 * 24 * 3600;
-        states[0] = uint16((currentTime - states[0] * years2secs) / month2secs);
+        states[stBirth()] = uint16((currentTime - states[0] * years2secs) / month2secs);
 
         /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 sk = 1; sk < 6; sk++) {
+        for (uint8 sk = stDef(); sk <= stEndur(); sk++) {
             states[sk] = states[sk] % 50;
             excess += states[sk];
         }
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        excess = (250 - excess)/5;
-        for (sk = 1; sk < 6; sk++) {
+        excess = (250 - excess)/numSkills();
+        for (sk = stDef(); sk <= stEndur(); sk++) {
             states[sk] = states[sk] + excess;
         }
 
-        return serialize(7, states, 14);
+        return serialize(numStates(), states, 14);
     }
 
     /// @dev Creates a player where skills are set pseudo-randomly assigned

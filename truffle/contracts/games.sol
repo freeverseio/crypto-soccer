@@ -141,22 +141,22 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(7, getSkill(_teamIdx, p), 14);
-            endurance += skills[5];
-            if (skills[6] == roleKeeper()) {
-                blockShoot = skills[4];
+            uint16[] memory skills = decode(numStates(), getSkill(_teamIdx, p), 14);
+            endurance += skills[stEndur()];
+            if (skills[stRole()] == roleKeeper()) {
+                blockShoot = skills[stShoot()];
             }
-            else if (skills[6] == roleDef()) {
-                move2attack = move2attack + skills[1] + skills[2] + skills[3];
-                defendShoot = defendShoot + skills[2] + skills[1];
+            else if (skills[stRole()] == roleDef()) {
+                move2attack = move2attack + skills[stDef()] + skills[stSpeed()] + skills[stPass()];
+                defendShoot = defendShoot + skills[stSpeed()] + skills[stDef()];
             }
-            else if (skills[6] == roleMid()) {
-                move2attack = move2attack + 2 * skills[1] + 2 * skills[2] + 3 * skills[3];
+            else if (skills[stRole()] == roleMid()) {
+                move2attack = move2attack + 2 * skills[stDef()] + 2 * skills[stSpeed()] + 3 * skills[stPass()];
             }
-            else if (skills[6] == roleAtt()) {
-                move2attack = move2attack + skills[1];
-                createShoot = createShoot + skills[2] + skills[3];
-                attackersSpeed[nAttackers] = skills[2];
+            else if (skills[stRole()] == roleAtt()) {
+                move2attack = move2attack + skills[stDef()];
+                createShoot = createShoot + skills[stSpeed()] + skills[stPass()];
+                attackersSpeed[nAttackers] = skills[stSpeed()];
                 attackersShoot[nAttackers] = skills[4];
                 nAttackers++;
             }

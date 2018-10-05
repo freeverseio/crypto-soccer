@@ -22,8 +22,11 @@ contract Storage {
     function stPass() internal pure returns(uint8)      { return 3; } 
     function stShoot() internal pure returns(uint8)     { return 4; } 
     function stEndur() internal pure returns(uint8)     { return 5; } 
-    function stRole() internal pure returns(uint8)      { return 6; } 
+    function stRole() internal pure returns(uint8)      { return 6; }
 
+    /// @dev Summarize: how many states, and from these, how many are skills: 
+    function numStates() internal pure returns(uint8)   { return 7; } 
+    function numSkills() internal pure returns(uint8)   { return 5; } 
 
 
     /// @dev The main Player struct.
