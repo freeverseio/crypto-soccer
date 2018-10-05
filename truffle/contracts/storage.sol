@@ -31,6 +31,9 @@ contract Storage {
     /// @dev The amount of bits used per state to serialize them in a uint256 
     function bitsPerState() internal pure returns(uint8)   { return 14; } 
 
+    /// @dev The amount of bits used per state to playerIdx them in a uint256 
+    function bitsPerPlayerIdx() internal pure returns(uint8)   { return 20; } 
+
 
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player

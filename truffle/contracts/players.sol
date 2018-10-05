@@ -54,7 +54,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             nCreatedPlayers,
             teams[_teamIdx].playersIdx,
             _playerNumberInTeam,
-            20
+            bitsPerPlayerIdx()
         );
 
         /// @dev Emit the creation event
