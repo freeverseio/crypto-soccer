@@ -62,36 +62,36 @@ contract Storage {
     /// @dev Instead of Enums, we use consts. Enums cannot be casted explitcly!
     /// @dev Instead, consts are truly replaced by their value at compile time. 
     /// @dev So to emulate: enum Role { Keeper, Def, Mid, Att, Subst, Retired }, we do:
-    uint8 constant roleKeeper = 0;
-    uint8 constant roleDef = 1; 
-    uint8 constant roleMid = 2; 
-    uint8 constant roleAtt = 3; 
+    uint8 constant kRoleKeeper = 0;
+    uint8 constant kRoleDef = 1; 
+    uint8 constant kRoleMid = 2; 
+    uint8 constant kRoleAtt = 3; 
 
     /// @dev Likewise for enum State { Birth, Def, Speed, Pass, Shoot, End, Role }
-    uint8 constant stBirth = 0; 
-    uint8 constant stDef = 1; 
-    uint8 constant stSpeed = 2; 
-    uint8 constant stPass = 3; 
-    uint8 constant stShoot = 4; 
-    uint8 constant stEndur = 5; 
-    uint8 constant stRole = 6;
+    uint8 constant kStatBirth = 0; 
+    uint8 constant kStatDef = 1; 
+    uint8 constant kStatSpeed = 2; 
+    uint8 constant kStatPass = 3; 
+    uint8 constant kStatShoot = 4; 
+    uint8 constant kStatEndur = 5; 
+    uint8 constant kStatRole = 6;
 
     /// @dev Summarize: how many states, and from these, how many are skills: 
-    uint8 constant numStates = 7; 
-    uint8 constant numSkills = 5; 
+    uint8 constant kNumStates = 7; 
+    uint8 constant kNumSkills = 5; 
 
     /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
-    uint8 constant glMove2Attack = 0; 
-    uint8 constant glCreateShoot = 1; 
-    uint8 constant glDefendShoot = 2; 
-    uint8 constant glBlockShoot = 3; 
-    uint8 constant glEndurance = 4; 
+    uint8 constant kMove2Attack = 0; 
+    uint8 constant kCreateShoot = 1; 
+    uint8 constant kDefendShoot = 2; 
+    uint8 constant kBlockShoot = 3; 
+    uint8 constant kEndurance = 4; 
 
     /// @dev The amount of bits used per state to serialize them in a uint256 
-    uint8 constant bitsPerState = 14; 
+    uint8 constant kBitsPerState = 14; 
 
     /// @dev The amount of bits used per state to playerIdx them in a uint256 
-    uint8 constant bitsPerPlayerIdx = 20; 
+    uint8 constant kBitsPerPlayerIdx = 20; 
 
 
 }

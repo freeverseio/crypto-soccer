@@ -19,13 +19,13 @@ contract PlayerFactory is Storage, HelperFunctions {
     function getRole(uint idx, uint8 nDefenders, uint8 nMids) internal pure returns(uint8) {
         require (idx < kMaxPlayersInTeam, "Player pos in team larger than 11!");
         if (idx == 0)
-            return roleKeeper;
+            return kRoleKeeper;
         else if (idx <= nDefenders)
-            return roleDef;
+            return kRoleDef;
         else if (idx < nDefenders+nMids+1)
-            return roleMid;
+            return kRoleMid;
         else
-            return roleAtt;
+            return kRoleAtt;
     }
 
     /// @dev An internal method that creates a new player and stores it. This
@@ -54,7 +54,7 @@ contract PlayerFactory is Storage, HelperFunctions {
             nCreatedPlayers,
             teams[_teamIdx].playersIdx,
             _playerNumberInTeam,
-            bitsPerPlayerIdx
+            kBitsPerPlayerIdx
         );
 
         /// @dev Emit the creation event
@@ -72,34 +72,34 @@ contract PlayerFactory is Storage, HelperFunctions {
         /// @dev Get random numbers between 0 and 9999 and assign them to states, where:
         /// @dev state[0] -> age, state[6] -> role
         /// @dev state[1]...state[5] -> skills
-        uint16[] memory states = decode(numStates, rndSeed, bitsPerState);
+        uint16[] memory states = decode(kNumStates, rndSeed, kBitsPerState);
 
         /// @dev Last number is role, as provided from outside. Just store it.
-        states[stRole] = playerRole;
+        states[kStatRole] = playerRole;
 
         /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
-        states[stBirth] = 16 + (states[0] % 20);
+        states[kStatBirth] = 16 + (states[0] % 20);
 
         /// @dev Convert age to monthOfBirthAfterUnixEpoch.
         /// @dev TODO: We can optimize by not declaring these as variables, and putting the exact numbers. 
         /// @dev I leave it this way for clarity, for the time being.
         uint years2secs = 365 * 24 * 3600;
         uint month2secs = 30 * 24 * 3600;
-        states[stBirth] = uint16((currentTime - states[0] * years2secs) / month2secs);
+        states[kStatBirth] = uint16((currentTime - states[0] * years2secs) / month2secs);
 
         /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 sk = stDef; sk <= stEndur; sk++) {
+        for (uint8 sk = kStatDef; sk <= kStatEndur; sk++) {
             states[sk] = states[sk] % 50;
             excess += states[sk];
         }
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        excess = (250 - excess)/numSkills;
-        for (sk = stDef; sk <= stEndur; sk++) {
+        excess = (250 - excess)/kNumSkills;
+        for (sk = kStatDef; sk <= kStatEndur; sk++) {
             states[sk] = states[sk] + excess;
         }
 
-        return serialize(numStates, states, bitsPerState);
+        return serialize(kNumStates, states, kBitsPerState);
     }
 
     /// @dev Creates a player where skills are set pseudo-randomly assigned
@@ -151,9 +151,9 @@ contract PlayerFactory is Storage, HelperFunctions {
     )
         internal 
     {
-        /// @dev TODO: we should make sure all numbers are below 2^bitsPerState-1
+        /// @dev TODO: we should make sure all numbers are below 2^kBitsPerState-1
         require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
-        uint bits = bitsPerState;
+        uint bits = kBitsPerState;
         uint state = _monthOfBirthAfterUnixEpoch +
                      (_defense     << bits) +
                      (_speed       << (bits*2)) +

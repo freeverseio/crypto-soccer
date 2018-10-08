@@ -37,7 +37,7 @@ contract TeamFactory is PlayerFactory {
         view
         returns(uint)
     {
-        uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, bitsPerPlayerIdx);
+        uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, kBitsPerPlayerIdx);
         return players[playerIdx].state;
     }
 
