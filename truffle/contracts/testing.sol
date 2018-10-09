@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "./games.sol";
+import "./leagues.sol";
 
 /*
     Contract that acts as a wrapper for all functions that need to be tested directly.
@@ -10,10 +10,11 @@ import "./games.sol";
         PlayerFactory is HelperFunctions
         TeamFactory is PlayerFactory
         GameEngine is TeamFactory
-        Testing is GameEngine
+        League is GameEngine
+        Testing is League
 */
 
-contract Testing is GameEngine {
+contract Testing is League {
 
     // Wrappers for helpers:
     function test_serialize(uint8 nElem, uint16[] nums, uint bits) external pure returns(uint result) {
@@ -61,7 +62,7 @@ contract Testing is GameEngine {
     ) 
         external 
     {
-        return createBalancedPlayer(
+        createBalancedPlayer(
             _playerName, 
             _teamIdx, 
             _userChoice,
@@ -84,7 +85,7 @@ contract Testing is GameEngine {
     )
         external 
     {
-        return createUnbalancedPlayer(
+        createUnbalancedPlayer(
             _playerName,
             _teamIdx, 
             _playerNumberInTeam,
@@ -99,7 +100,7 @@ contract Testing is GameEngine {
     }
 
     function test_getRole(uint idx, uint8 first, uint8 second) external pure returns(uint8) {
-        return  getRole(idx, first, second);
+        return getRole(idx, first, second);
     }
 
     function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
@@ -123,6 +124,17 @@ contract Testing is GameEngine {
         returns (uint16[2] memory teamGoals) 
     {
         return playGame(teamIdx1, teamIdx2, rndNum1, rndNum2, rndNum3, rndNum4);
+    }
+
+    // WRAPPERS FOR LEAGUES
+
+    function test_createLeague(uint[] _teamIdxs, uint _blockFirstGame, uint _blocksBetweenGames) external {
+        createLeague(_teamIdxs, _blockFirstGame, _blocksBetweenGames);
+    }
+
+
+    function test_getTeamsInLeague(uint leagueIdx) external view returns (uint[]) {
+        return getTeamsInLeague(leagueIdx);
     }
 
 }

@@ -1,5 +1,13 @@
 const cryptoSoccer = artifacts.require("Testing");
-var k = require('./constants.js');
+const maxPlayersPerTeam = 11;
+
+// Roles: important to agree with Soldity's enum:
+//          enum Role { Undefined, Keeper, Def, Mid, Att, Subst, Retired }
+const UNDEFINED = 0;
+const KEEPER = 0;
+const DEF = 1;
+const MID = 2;
+const ATT = 3;
 
 const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 
@@ -28,9 +36,9 @@ contract('Teams', function(accounts) {
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
-    await createTeam(instance, "Mataro", "Bogarde", k.MaxPlayersInTeam, 0, createAlineacion(4,3,3));
+    await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, createAlineacion(4,3,3));
     await printTeamPlayers(0, instance);
-    assert.equal(nCreatedPlayers,k.MaxPlayersInTeam+1);
+    assert.equal(nCreatedPlayers,maxPlayersPerTeam+1);
   });
 
   it("creates another team and plays a game. With this seed, it checks that the result is 1-3", async () => {
@@ -38,7 +46,7 @@ contract('Teams', function(accounts) {
       instance,
       "Sevilla",
       "Navas",
-      k.MaxPlayersInTeam,
+      maxPlayersPerTeam,
       1,
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
       createAlineacion(4,3,3)
@@ -60,7 +68,7 @@ contract('Teams', function(accounts) {
   it("checks that we cannot add 2 teams with same name", async () => {
     hasFailed = false;
     try{ 
-        await createTeam(instance, "Los Cojos", "Reiziger", k.MaxPlayersInTeam, 2, createAlineacion(4,3,3));
+        await createTeam(instance, "Los Cojos", "Reiziger", maxPlayersPerTeam, 2, createAlineacion(4,3,3));
     } catch (err) {
       // Great, the transaction failed
       hasFailed = true;
@@ -144,14 +152,16 @@ async function getRandomNumbers(instance, nRounds, rndSeed)
 
 async function printTeamPlayers(teamIdx, instance) {
 //  var state = await instance.test_getSkillsOfPlayersInTeam.call(teamIdx);
-  var totals = Array(k.NumStates).fill(0);
+  nSkills = 7
+  bits  = 14
+  var totals = Array(nSkills).fill(0);
   console.log("Players in team " + teamIdx);
-  for (var p=0;p<k.MaxPlayersInTeam;p++) {
+  for (var p=0;p<maxPlayersPerTeam;p++) {
     process.stdout.write("Player " + p + ": ");
     serializedSkills = await instance.test_getSkill(teamIdx, p);
-    decodedSkills = await instance.test_decode(nSkills, serializedSkills, k.BitsPerState);
+    decodedSkills = await instance.test_decode(nSkills, serializedSkills, bits);
     //console.log('skills:' + decodedSkills)
-    for (var sk=0;sk<k.NumStates;sk++) {
+    for (var sk=0;sk<nSkills;sk++) {
       if (sk==0) totals[0] += unixMonthToAge(decodedSkills[0]);
       else totals[sk] += parseInt(decodedSkills[sk]);
       process.stdout.write(skillNames[sk] + "= " + decodedSkills[sk] + "  ");
@@ -208,13 +218,13 @@ async function createTestTeam(
 function createAlineacion(nDef,nMid,nAtt) {
     alineacion = [0];
     for (var p = 0; p<nDef; p++) {
-        alineacion.push(k.RoleDef);
+        alineacion.push(DEF);
     }
     for (var p = 0; p<nMid; p++) {
-        alineacion.push(k.RoleMid);
+        alineacion.push(MID);
     }
     for (var p = 0; p<nAtt; p++) {
-        alineacion.push(k.RoleAtt);
+        alineacion.push(ATT);
     }
     return alineacion;
 }

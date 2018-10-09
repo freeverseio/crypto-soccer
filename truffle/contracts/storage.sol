@@ -22,8 +22,10 @@ contract Storage {
         string name;
         uint state;
     }
+    /// @dev An array containing the Player struct for all players in existence. 
+    /// @dev The ID of each player is actually his index this array.
+    Player[] players;
 
-    uint8 constant kMaxPlayersInTeam = 11;
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -38,9 +40,15 @@ contract Storage {
     /// @dev The ID of each team is actually his index in this array.
     Team[] teams;
 
-    /// @dev An array containing the Player struct for all players in existence. 
-    /// @dev The ID of each player is actually his index this array.
-    Player[] players;
+    /// @dev The main League struct
+    struct League {
+        uint[] teamIdxs;
+        uint blockFirstGame;
+        uint blocksBetweenGames;
+    }
+    /// @dev Array containing all leagues created so far
+    League[] leagues;
+
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
@@ -92,6 +100,9 @@ contract Storage {
 
     /// @dev The amount of bits used per state to playerIdx them in a uint256 
     uint8 constant kBitsPerPlayerIdx = 20; 
+
+    /// @dev Max num of players allowed in a team
+    uint8 constant kMaxPlayersInTeam = 11;
 
 
 }
