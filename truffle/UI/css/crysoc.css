@@ -1,0 +1,58 @@
+
+.container {
+	border: 1px solid #1f8116;
+	width: 90%;
+	max-width: 90% !important;
+	margin-top: 10px;
+	padding-top: 12px;
+	padding-bottom: 8px;
+	background: #FFF;
+	opacity: 1;
+}
+
+.scoreDiv {
+
+    border: 1px solid black;
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.adressesMenu {
+    font-size: 13px;
+    height: 100px;
+    overflow-y: scroll;
+}
+
+div {
+    padding: 15px;
+}
+
+#teams {
+    background-color: aliceblue;
+    width: 45%;
+    float: left;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+#playersStats {
+    background-color: rgb(216, 216, 64);
+    width: 45%;
+    overflow: hidden;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+#playerDiv {
+    display: inline-block;
+    padding: 5px;
+}
+
+table {
+    text-align: center;
+    
+}
