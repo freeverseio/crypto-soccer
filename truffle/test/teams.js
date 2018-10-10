@@ -29,8 +29,8 @@ contract('Teams', function(accounts) {
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
-    await f.createTeam(instance, "Mataro", "Bogarde", k.MaxPlayersInTeam, 0, f.createAlineacion(4,3,3));
-    await printTeamPlayers(0, instance);
+    var newTeamIdx = await f.createTeam(instance, "Mataro", "Bogarde", k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
+    await printTeamPlayers(newTeamIdx, instance);
     assert.equal(nCreatedPlayers,k.MaxPlayersInTeam+1);
   });
 
@@ -61,7 +61,7 @@ contract('Teams', function(accounts) {
   it("checks that we cannot add 2 teams with same name", async () => {
     hasFailed = false;
     try{ 
-        await f.createTeam(instance, "Los Cojos", "Reiziger", k.MaxPlayersInTeam, 2, f.createAlineacion(4,3,3));
+        await f.createTeam(instance, "Los Cojos", "Reiziger", k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
     } catch (err) {
       // Great, the transaction failed
       hasFailed = true;

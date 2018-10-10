@@ -1,6 +1,7 @@
 /*
 const cryptoSoccer = artifacts.require("Testing");
-var k = require('./constants.js');
+var k = require('../jsCommons/constants.js');
+var f = require('../jsCommons/functions.js');
 
 contract('Leagues', function(accounts) {
 
@@ -18,14 +19,14 @@ contract('Leagues', function(accounts) {
   });
 
   it("creates 6 teams", async () => {
-    nTeams = 6;
-    for (var t=0;t<nTeams<t++) {
-   //    await createTeam(instance, "Mataro", "Bogarde", k.MaxPlayersInTeam, 0, createAlineacion(4,3,3));
+    nTeams = 2;
+    for (var t = 0; t < nTeams; t++) {
+        await f.createTeam(instance, "Masnou", "Loop", k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
     }
 
-  }
+  });
   
-
 });
+
 
 */
