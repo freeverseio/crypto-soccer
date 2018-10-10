@@ -1,4 +1,3 @@
-/*
 const cryptoSoccer = artifacts.require("Testing");
 var k = require('../jsCommons/constants.js');
 var f = require('../jsCommons/functions.js');
@@ -18,15 +17,20 @@ contract('Leagues', function(accounts) {
     assert.isTrue(receipt.gasUsed > 2000000);
   });
 
-  it("creates 6 teams", async () => {
-    nTeams = 2;
+  it("creates 4 teams and puts them into a league", async () => {
+    nTeams = 4;
+    teamsIdx = [];
     for (var t = 0; t < nTeams; t++) {
-        await f.createTeam(instance, "Masnou", "Loop", k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
-    }
-
+        var teamName = "team"+t;
+        var playerBasename = "player"+t+"_";
+        var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
+        teamsIdx.push(newTeamIdx);
+        }
+    const blockFirstGame = 100;        
+    const blocksBetweenGames = 10;
+    await instance.test_createLeague(teamsIdx, blockFirstGame, blocksBetweenGames);
+    
   });
   
 });
 
-
-*/
