@@ -16,7 +16,7 @@ module.exports = {
       provider: loomTruffleProvider,
       network_id: '*'
     },
-    development: {
+    gananche: {
       network_id: '*',
       host: '127.0.0.1',
       port: 8545,
