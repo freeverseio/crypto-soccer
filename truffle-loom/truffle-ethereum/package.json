@@ -6,11 +6,15 @@
     "ganache-cli:dev": "scripts/ganache-cli.sh"
   },
   "dependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^2.0.2",
     "ganache-cli": "^6.1.8",
     "loom-truffle-provider": "^0.5.0",
     "openzeppelin-solidity": "1.10.0",
     "truffle": "^4.1.13",
     "truffle-hdwallet-provider": "^0.0.6",
-    "truffle-privatekey-provider": "^0.1.0"
+    "truffle-privatekey-provider": "^0.1.0",
+    "web3": "^1.0.0-beta.36"
   }
 }
