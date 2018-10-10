@@ -1,0 +1,177 @@
+pragma solidity ^ 0.4.24;
+import "./teams.sol";
+
+/*
+    Main contract with the Game Engine
+*/
+
+contract GameEngine is TeamFactory {
+
+    /// @dev Plays a game and, currently, returns the number of goals by each team.
+    function playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
+        internal
+        view
+        returns (uint16[2] memory teamGoals)
+    {
+        /// @dev TODO: use an enum!!
+        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
+
+        uint nRounds = rndNum1.length;
+        require (nRounds == rndNum2.length, "We need more randoms for so many round");
+        require (nRounds == rndNum3.length, "We need more randoms for so many round");
+        require (nRounds == rndNum4.length, "We need more randoms for so many round");
+
+        uint[5][2] memory globSkills;
+        uint[kMaxPlayersInTeam][2] memory attackersSpeed;
+        uint[kMaxPlayersInTeam][2] memory attackersShoot;
+        uint8[2] memory nAttackers;
+        (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
+        (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
+
+        uint8 teamThatAttacks;
+        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
+        for (uint round = 0; round < nRounds; round++){
+            if ( (round == 8) || (round == 13)) {
+                teamsGetTired(globSkills[0], globSkills[1]);
+            }
+            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], 1000);
+            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], 1000)) {
+                if ( managesToScore(
+                    nAttackers[teamThatAttacks],
+                    attackersSpeed[teamThatAttacks],
+                    attackersShoot[teamThatAttacks],
+                    globSkills[1-teamThatAttacks][kBlockShoot],
+                    rndNum3[round],
+                    rndNum4[round],
+                    1000
+                    )
+                ) 
+                {
+                    teamGoals[teamThatAttacks]++;
+                }
+            }
+        }
+        return teamGoals;
+    }
+
+    /// @dev Rescales global skills of both teams according to their endurance
+    function teamsGetTired(uint[5] skillsTeamA, uint[5] skillsTeamB )
+        internal
+        pure
+    {
+        /// @dev recall the endurance is a val for which 0 is greatest, 2000 is avg starting
+        uint currentEnduranceA = skillsTeamA[kEndurance];
+        uint currentEnduranceB = skillsTeamB[kEndurance];
+        for (uint8 sk = kMove2Attack; sk < kEndurance; sk++) {
+            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
+            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+        }
+    }
+
+    /// @dev Decides if a team that creates a shoot manages to score.
+    /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
+    function managesToScore(
+        uint8 nAttackers,
+        uint[kMaxPlayersInTeam] memory attackersSpeed,
+        uint[kMaxPlayersInTeam] memory attackersShoot,
+        uint blockShoot,
+        uint rndNum1,
+        uint rndNum2,
+        uint factor
+    )
+        internal
+        pure
+        returns (bool)
+    {
+        /// @dev attacker who actually shoots is selected weighted by his speed
+        uint[] memory weights = new uint[](nAttackers);
+        for (uint8 p=0; p<nAttackers; p++) {
+            weights[p] = attackersSpeed[p];
+        }
+        uint8 shooter = throwDiceArray(weights, rndNum1, factor);
+
+        /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
+        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0;
+    }
+
+    /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
+    function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor)
+        internal
+        pure
+        returns (bool)
+    {
+        return throwDice(
+            globSkills[1-teamThatAttacks][kDefendShoot],       // defendShoot of defending team against...
+            (globSkills[teamThatAttacks][kCreateShoot]*6)/10,  // createShoot of attacking team.
+            rndNum,
+            factor
+        ) == 1 ? true : false;
+    }
+
+
+    /// @dev Computes basic data, including globalSkills, needed during the game.
+    /// @dev Basically implements the formulas:
+    // move2attack =    defence(defenders + 2*midfields + attackers) +
+    //                  speed(defenders + 2*midfields) +
+    //                  pass(defenders + 3*midfields)
+    // createShoot =    speed(attackers) + pass(attackers)
+    // defendShoot =    speed(defenders) + defence(defenders);
+    // blockShoot  =    shoot(keeper);
+    function getGameglobSkills(uint _teamIdx)
+        internal
+        view
+        returns (
+            uint[5] globSkills,
+            uint8 nAttackers,
+            uint[kMaxPlayersInTeam] memory attackersSpeed,
+            uint[kMaxPlayersInTeam] memory attackersShoot
+        )
+    {
+        uint move2attack;
+        uint createShoot;
+        uint defendShoot;
+        uint blockShoot;
+        uint endurance;
+
+        nAttackers = 0;
+        for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
+            uint16[] memory skills = decode(kNumStates, getSkill(_teamIdx, p), kBitsPerState);
+            endurance += skills[kStatEndur];
+            if (skills[kStatRole] == kRoleKeeper) {
+                blockShoot = skills[kStatShoot];
+            }
+            else if (skills[kStatRole] == kRoleDef) {
+                move2attack = move2attack + skills[kStatDef] + skills[kStatSpeed] + skills[kStatPass];
+                defendShoot = defendShoot + skills[kStatSpeed] + skills[kStatDef];
+            }
+            else if (skills[kStatRole] == kRoleMid) {
+                move2attack = move2attack + 2 * skills[kStatDef] + 2 * skills[kStatSpeed] + 3 * skills[kStatPass];
+            }
+            else if (skills[kStatRole] == kRoleAtt) {
+                move2attack = move2attack + skills[kStatDef];
+                createShoot = createShoot + skills[kStatSpeed] + skills[kStatPass];
+                attackersSpeed[nAttackers] = skills[kStatSpeed];
+                attackersShoot[nAttackers] = skills[kStatShoot];
+                nAttackers++;
+            }
+        }
+        /// @dev endurance is converted to a percentage, 
+        /// @dev used to multiply (and hence decrease) the start endurance.
+        /// @dev 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
+        if (endurance < 500) {
+            endurance = 70;
+        } else if (endurance < 1400) {
+            endurance = 100 - (1400-endurance)/30;
+        } else {
+            endurance = 100;
+        }
+
+        return (
+            [move2attack, createShoot, defendShoot, blockShoot, endurance],
+            nAttackers,
+            attackersSpeed,
+            attackersShoot
+        );
+    }
+}
+

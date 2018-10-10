@@ -1,11 +1,13 @@
-const cryptoSoccer = artifacts.require("GameEngine");
+const cryptoSoccer = artifacts.require("Testing");
 const maxPlayersPerTeam = 11;
-const playerRoles433 = [0,1,1,1,1,2,2,2,3,3,3];
-const playerRoles442 = [0,1,1,1,1,2,2,2,2,3,3];
-const playerRoles541 = [0,1,1,1,1,1,2,2,2,2,3];
-const playerRoles631 = [0,1,1,1,1,1,1,2,2,2,3];
-const playerRoles640 = [0,1,1,1,1,1,1,2,2,2,2];
-const playerRoles451 = [0,1,1,1,1,2,2,2,2,2,3];
+
+// Roles: important to agree with Soldity's enum:
+//          enum Role { Undefined, Keeper, Def, Mid, Att, Subst, Retired }
+const UNDEFINED = 0;
+const KEEPER = 0;
+const DEF = 1;
+const MID = 2;
+const ATT = 3;
 
 const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 
@@ -31,18 +33,15 @@ contract('Teams', function(accounts) {
 
 
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
-    nCreatedPlayers = await instance.getNCreatedPlayers.call();
+    nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nCreatedPlayers,1);
     // TODO: derive from the name and the mapping.
-    await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, playerRoles433);
+    await createTeam(instance, "Mataro", "Bogarde", maxPlayersPerTeam, 0, createAlineacion(4,3,3));
     await printTeamPlayers(0, instance);
     assert.equal(nCreatedPlayers,maxPlayersPerTeam+1);
   });
 
-
-  // TODO: add test that you cannot create 2 teams with same name
   it("creates another team and plays a game. With this seed, it checks that the result is 1-3", async () => {
-    // await createTeam(instance, "Sevilla", "Navas", maxPlayersPerTeam, 1, playerRoles433);
     await createTestTeam(
       instance,
       "Sevilla",
@@ -50,7 +49,7 @@ contract('Teams', function(accounts) {
       maxPlayersPerTeam,
       1,
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
-      playerRoles433
+      createAlineacion(4,3,3)
     );
     await printTeamPlayers(1, instance);
     var goals = await playGame(instance, 0, 1, 18, 232);
@@ -59,25 +58,24 @@ contract('Teams', function(accounts) {
     assert.isTrue(goals[1].toNumber()==3);
   });
 
-  it("creates a default team", async () => {
-    await instance.createTeam("Los Cojos");
-    var name = await instance.getTeamName(2);
+  it("creates an empty team, shows crazy stats, checks name is correct", async () => {
+    await instance.test_createTeam("Los Cojos");
+    var name = await instance.test_getTeamName(2);
     assert.isTrue(name == "Los Cojos");
     await printTeamPlayers(2, instance);
   });
-  it("creates a default team and plays a game. With this seed, it checks that the result is 1-3", async () => {
-    console.log(">>>>>>>> El partidazo de CryptoSoccer: Los Cojos contra Los Petardos <<<<<<<<<<")
-    await instance.createTeam("Los Petardos");
-    var name = await instance.getTeamName(3);
-    assert.isTrue(name == "Los Petardos");
-    await printTeamPlayers(3, instance);
-    var goals = await playGame(instance, 2, 3, 18, 232);
-    console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==1);
-    assert.isTrue(goals[1].toNumber()==3);
+  
+  it("checks that we cannot add 2 teams with same name", async () => {
+    hasFailed = false;
+    try{ 
+        await createTeam(instance, "Los Cojos", "Reiziger", maxPlayersPerTeam, 2, createAlineacion(4,3,3));
+    } catch (err) {
+      // Great, the transaction failed
+      hasFailed = true;
+    }
+    assert.isTrue(hasFailed);
   });
-
-
+  
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
     var goals = await playGame(instance, 0, 1, 18, 232);
   });
@@ -114,37 +112,37 @@ function catchPlayerIdxFromEvent(logs) {
 async function playGame(instance, teamIdx1, teamIdx2, nRounds, rndSeed)
 {
   var rndNums = await getRandomNumbers(instance, nRounds, rndSeed);
-  var goals = await instance.playGame.call(teamIdx1, teamIdx2, rndNums[0], rndNums[1], rndNums[2], rndNums[3]);
+  var goals = await instance.test_playGame.call(teamIdx1, teamIdx2, rndNums[0], rndNums[1], rndNums[2], rndNums[3]);
   return goals;
 }
 
 async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam, teamIdx, playerRoles ) {
   // TODO: derive from the name and the mapping
   console.log("creating team: " + teamName);
-  await instance.createTeam(teamName);
+  await instance.test_createTeam(teamName);
   const userChoice=1;
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.createRandomPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
+      var tx = await instance.test_createBalancedPlayer(thisName,teamIdx,userChoice,p,playerRoles[p]);
       var playerIdx = catchPlayerIdxFromEvent(tx.logs);
       assert( playerIdx >= 0 );
   }
-  nCreatedPlayers = await instance.getNCreatedPlayers.call();
+  nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
   console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
 }
 async function getRandomNumbers(instance, nRounds, rndSeed)
 {
   var result = []
   bits = 10
-  var hash = await instance.computeKeccak256ForNumber(rndSeed);
-  var rndNums1= await instance.decode(nRounds, hash , bits);
-  hash = await instance.computeKeccak256ForNumber(rndSeed+1);
-  var rndNums2= await instance.decode(nRounds, hash, bits);
-  hash = await instance.computeKeccak256ForNumber(rndSeed+2);
-  var rndNums3= await instance.decode(nRounds, hash, bits);
-  hash = await instance.computeKeccak256ForNumber(rndSeed+3);
-  var rndNums4= await instance.decode(nRounds, hash, bits);
+  var hash = await instance.test_computeKeccak256ForNumber(rndSeed);
+  var rndNums1= await instance.test_decode(nRounds, hash , bits);
+  hash = await instance.test_computeKeccak256ForNumber(rndSeed+1);
+  var rndNums2= await instance.test_decode(nRounds, hash, bits);
+  hash = await instance.test_computeKeccak256ForNumber(rndSeed+2);
+  var rndNums3= await instance.test_decode(nRounds, hash, bits);
+  hash = await instance.test_computeKeccak256ForNumber(rndSeed+3);
+  var rndNums4= await instance.test_decode(nRounds, hash, bits);
   result.push(rndNums1);
   result.push(rndNums2);
   result.push(rndNums3);
@@ -153,15 +151,15 @@ async function getRandomNumbers(instance, nRounds, rndSeed)
 }
 
 async function printTeamPlayers(teamIdx, instance) {
-//  var state = await instance.getSkillsOfPlayersInTeam.call(teamIdx);
+//  var state = await instance.test_getSkillsOfPlayersInTeam.call(teamIdx);
   nSkills = 7
   bits  = 14
   var totals = Array(nSkills).fill(0);
   console.log("Players in team " + teamIdx);
   for (var p=0;p<maxPlayersPerTeam;p++) {
     process.stdout.write("Player " + p + ": ");
-    encodedSkills = await instance.getSkill(teamIdx, p);
-    decodedSkills = await instance.decode(nSkills, encodedSkills, bits);
+    serializedSkills = await instance.test_getSkill(teamIdx, p);
+    decodedSkills = await instance.test_decode(nSkills, serializedSkills, bits);
     //console.log('skills:' + decodedSkills)
     for (var sk=0;sk<nSkills;sk++) {
       if (sk==0) totals[0] += unixMonthToAge(decodedSkills[0]);
@@ -194,11 +192,11 @@ async function createTestTeam(
 {
   // TODO: derive from the name and the mapping
   console.log("creating team: " + teamName);
-  await instance.createTeam(teamName);
+  await instance.test_createTeam(teamName);
 
   for (var p=0; p<maxPlayersPerTeam; p++) {
       thisName = playerBasename + p.toString();
-      var tx = await instance.createPlayer(
+      var tx = await instance.test_createUnbalancedPlayer(
           thisName,
           teamIdx,
           p,
@@ -213,6 +211,21 @@ async function createTestTeam(
       var playerIdx = catchPlayerIdxFromEvent(tx.logs);
       assert( playerIdx >= 0 );
   }
-  nCreatedPlayers = await instance.getNCreatedPlayers.call();
+  nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
   console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
 }
+
+function createAlineacion(nDef,nMid,nAtt) {
+    alineacion = [0];
+    for (var p = 0; p<nDef; p++) {
+        alineacion.push(DEF);
+    }
+    for (var p = 0; p<nMid; p++) {
+        alineacion.push(MID);
+    }
+    for (var p = 0; p<nAtt; p++) {
+        alineacion.push(ATT);
+    }
+    return alineacion;
+}
+

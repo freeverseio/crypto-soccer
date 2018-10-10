@@ -20,4 +20,5 @@ jobs:
       - run: 'sudo npm install -g truffle'
       - checkout
       - run: cd truffle && npm install && truffle test
-      - run: cd computationOracle && npm install && truffle test
+      - run: cd truffle-loom/truffle-ethereum && npm install && truffle compile
+      - run: cd truffle-loom/truffle-dappchain && npm install && truffle compile

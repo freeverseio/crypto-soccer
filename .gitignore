@@ -4,3 +4,5 @@ build
 *.swp
 node_modules
 crysoc.code-workspace
+bin
+.DS_store

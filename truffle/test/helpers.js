@@ -1,6 +1,6 @@
-const cryptoSoccer = artifacts.require("HelperFunctions");
+const cryptoSoccer = artifacts.require("Testing");
 
-contract('Helpers', function(accounts) {
+contract('Testing', function(accounts) {
 
   var instance;
 
@@ -9,40 +9,40 @@ contract('Helpers', function(accounts) {
     instance = await cryptoSoccer.deployed();
   });
 
-  it("tests encode/decode with bits", async () => {
+  it("tests serialize/decode with bits", async () => {
     input = [1714, 311, 42, 3];
     expected = 206864348850;
     bits = 12;
     len = 4;
 
     // encoding
-    result = await instance.encode(len, input, bits);
+    result = await instance.test_serialize(len, input, bits);
     assert.equal(result, expected);
 
     // decoding
-    output = await instance.decode(len, expected, bits);
+    output = await instance.test_decode(len, expected, bits);
     for (var i=0; i<len; i++)
       assert.equal(output[i], input[i])
 
     // get num at index
     for (var i=0;i<len;i++) {
-      assert.equal(await instance.getNumAtIndex(expected,i,bits), input[i])
+      assert.equal(await instance.test_getNumAtIndex(expected,i,bits), input[i])
     }
 
     // set num at index
     newInput = [3, 3410, 790, 21]
     result = expected
     for (var i=0;i<len;i++) {
-      result = await instance.setNumAtIndex(newInput[i], result, i, bits)
+      result = await instance.test_setNumAtIndex(newInput[i], result, i, bits)
     }
     expected = 1456376979459
     assert.equal(result, expected)
     for (var i=0;i<len;i++) {
-      assert.equal(await instance.getNumAtIndex(expected,i,bits), newInput[i])
+      assert.equal(await instance.test_getNumAtIndex(expected,i,bits), newInput[i])
     }
-
   });
-  it("encodes 11 indices into uint256", async () =>{
+
+  it("serializes 11 indices into uint256", async () =>{
     values = [12, 13, 14, 15, 16, 17, 18, 19 ,20, 21, 22]
     len = 11
     bits = 20
@@ -51,13 +51,13 @@ contract('Helpers', function(accounts) {
     //expected = 27914334146814444649904307450892 // 10 bits
     result = 0
     for (var i=0;i<len;i++) {
-      result = await instance.setNumAtIndex(values[i], result, i, bits)
+      result = await instance.test_setNumAtIndex(values[i], result, i, bits)
     // console.log('setting value ' + values[i] + ' at idx: ' + i, ' result: '+ result)
     }
     assert.equal(result, expected)
     mask = ((1 << bits)-1)
     for (var i=0;i<len;i++) {
-      value = await instance.getNumAtIndex(result, i, bits)
+      value = await instance.test_getNumAtIndex(result, i, bits)
     // console.log('index at ' + i + ' is ' + value)
     }
   });
@@ -78,14 +78,14 @@ contract('Helpers', function(accounts) {
     nPlayers = 11
     nStates = 7
     bits = 14
-    var encodedStates = Array(nPlayers).fill(0)
+    var serializedStates = Array(nPlayers).fill(0)
     for (player=0; player<nPlayers; player++) {
-      encodedStates[player] = await instance.encode(nStates, states[player], bits);
+      serializedStates[player] = await instance.test_serialize(nStates, states[player], bits);
     }
-    console.log("encoded states:\n", encodedStates)
+    console.log("serialized states:\n", serializedStates)
 
     for (player=0; player<nPlayers; player++) {
-      decodedState = await instance.decode(nStates, encodedStates[player], bits);
+      decodedState = await instance.test_decode(nStates, serializedStates[player], bits);
       for (i=0; i<nStates; i++) {
         assert.equal(decodedState[i], states[player][i])
       }
@@ -99,10 +99,10 @@ contract('Helpers', function(accounts) {
     var winsTeam3=0;
     for (var i=0; i<100; i++) {
       rnd = Math.floor(Math.random() * maxRnd);
-      var winner = await instance.throwDice.call(1,9,rnd, maxRnd);
-      var winner2 = await instance.throwDiceArray.call([1,9],rnd, maxRnd);
+      var winner = await instance.test_throwDice.call(1,9,rnd, maxRnd);
+      var winner2 = await instance.test_throwDiceArray.call([1,9],rnd, maxRnd);
       assert.isTrue(winner.toNumber()==winner2.toNumber());
-      var winner3 = await instance.throwDiceArray.call([1,4,5],rnd, maxRnd);
+      var winner3 = await instance.test_throwDiceArray.call([1,4,5],rnd, maxRnd);
       winsTeam2 += winner.toNumber();
       if (winner3.toNumber()==2) { winsTeam3++};
     }
