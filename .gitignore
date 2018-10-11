@@ -3,6 +3,6 @@
 build
 *.swp
 node_modules
-crysoc.code-workspace
+*.code-workspace
 bin
 .DS_store
