@@ -136,4 +136,12 @@ contract Testing is League {
         return getTeamsInLeague(leagueIdx);
     }
 
+    function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 
+        external 
+        pure 
+        returns (uint8 team1, uint8 team2)
+    {
+        return teamsInGame(round, game, nTeams);
+    }
+
 }

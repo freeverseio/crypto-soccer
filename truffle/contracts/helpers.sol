@@ -120,12 +120,12 @@ contract HelperFunctions {
     function teamsInGame(uint8 round, uint8 game, uint8 nTeams)
         internal
         pure
-        returns(uint8 team1, uint8 team2)
+        returns(uint8, uint8)
     {
         if (game > 0) {
-            return (circulate(nTeams-game+round, nTeams), circulate(nTeams+1+round, nTeams));
+            return (circulate(nTeams-game+round, nTeams), circulate(game+1+round, nTeams));
         } else {
-            return (0, circulate(nTeams+1+round, nTeams));
+            return (0, circulate(game+1+round, nTeams));
         }
     }
 

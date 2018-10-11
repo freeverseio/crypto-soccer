@@ -9,6 +9,20 @@ contract('Testing', function(accounts) {
     instance = await cryptoSoccer.deployed();
   });
 
+  it("tests that we compute correctly the teams playing in a certain day", async () => {
+    nTeams = 6;
+    info = "";
+    for (round=0; round<nTeams-1; round++){
+        info += "Round " + round + ": ";
+        for (game=0; game<3; game++) {
+            result = await instance.test_teamsInGame(round, game, nTeams);
+            info += result[0].toNumber() + "-" + result[1].toNumber() +", ";
+        }
+    }
+    console.log(info);
+    assert.equal(info,"Round 0: 0-1, 5-2, 4-3, Round 1: 0-2, 1-3, 5-4, Round 2: 0-3, 2-4, 1-5, Round 3: 0-4, 3-5, 2-1, Round 4: 0-5, 4-1, 3-2, ")
+  });
+
   it("tests serialize/decode with bits", async () => {
     input = [1714, 311, 42, 3];
     expected = 206864348850;
