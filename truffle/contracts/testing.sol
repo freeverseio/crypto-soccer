@@ -132,8 +132,8 @@ contract Testing is League {
         createLeague(_teamIdxs, _blockFirstGame, _blocksBetweenGames);
     }
 
-    function test_getTeamsInLeague(uint leagueIdx) external view returns (uint[]) {
-        return getTeamsInLeague(leagueIdx);
+    function test_getTeamsIdxsInLeague(uint leagueIdx) external view returns (uint[]) {
+        return getTeamsIdxsInLeague(leagueIdx);
     }
 
     function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 

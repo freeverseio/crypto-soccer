@@ -45,6 +45,8 @@ contract Storage {
         uint[] teamIdxs;
         uint blockFirstGame;
         uint blocksBetweenGames;
+        uint resultsFirstHalf;
+        uint resultsSecondHalf;
     }
     /// @dev Array containing all leagues created so far
     League[] leagues;
@@ -100,6 +102,9 @@ contract Storage {
 
     /// @dev The amount of bits used per state to playerIdx them in a uint256 
     uint8 constant kBitsPerPlayerIdx = 20; 
+
+    /// @dev The amount of bits used game result in a uint256 
+    uint8 constant kBitsPerGameResult = 2; 
 
     /// @dev Max num of players allowed in a team
     uint8 constant kMaxPlayersInTeam = 11;
