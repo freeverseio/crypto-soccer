@@ -117,7 +117,22 @@ contract HelperFunctions {
     ///  in that round, it returns the teams that play that game,
     ///  in order (first plays at home), according to formula:  
     ///  game(n,r) = ( P(N-n+r),  P(n+1+r) )   (except at game 0)
+    ///  Note: for the second half of the league, teams are just exchanged (home/away)
     function teamsInGame(uint8 round, uint8 game, uint8 nTeams)
+        internal
+        pure
+        returns(uint8 team1, uint8 team2)
+    {
+        require(round < 2*(nTeams-1), "This league does not have so many rounds");
+        if (round < (nTeams-1) ) {
+            (team1, team2) = teamsInGameFirstHalf(round, game, nTeams);
+        } else {
+            (team2, team1) = teamsInGameFirstHalf(round, game, nTeams);
+        }
+    }
+
+    /// @dev Same funcion as teamsInGame, valid only for the first half of the league.
+    function teamsInGameFirstHalf(uint8 round, uint8 game, uint8 nTeams)
         internal
         pure
         returns(uint8, uint8)
@@ -128,5 +143,6 @@ contract HelperFunctions {
             return (0, circulate(game+1+round, nTeams));
         }
     }
+
 
 }

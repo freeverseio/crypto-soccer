@@ -12,7 +12,8 @@ contract('Testing', function(accounts) {
   it("tests that we compute correctly the teams playing in a certain day", async () => {
     nTeams = 6;
     info = "";
-    for (round=0; round<nTeams-1; round++){
+    for (round=0; round<2*(nTeams-1); round++){
+        if (round==nTeams-1) info += "\n";
         info += "Round " + round + ": ";
         for (game=0; game<3; game++) {
             result = await instance.test_teamsInGame(round, game, nTeams);
@@ -20,7 +21,8 @@ contract('Testing', function(accounts) {
         }
     }
     console.log(info);
-    assert.equal(info,"Round 0: 0-1, 5-2, 4-3, Round 1: 0-2, 1-3, 5-4, Round 2: 0-3, 2-4, 1-5, Round 3: 0-4, 3-5, 2-1, Round 4: 0-5, 4-1, 3-2, ")
+    correctInfo = "Round 0: 0-1, 5-2, 4-3, Round 1: 0-2, 1-3, 5-4, Round 2: 0-3, 2-4, 1-5, Round 3: 0-4, 3-5, 2-1, Round 4: 0-5, 4-1, 3-2, \nRound 5: 1-0, 2-5, 3-4, Round 6: 2-0, 3-6, 4-5, Round 7: 3-0, 4-7, 5-6, Round 8: 4-0, 5-8, 6-7, Round 9: 5-0, 6-9, 7-8, ";
+    assert.equal(info, correctInfo)
   });
 
   it("tests serialize/decode with bits", async () => {
