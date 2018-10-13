@@ -34,14 +34,12 @@ contract('Leagues', function(accounts) {
     assert.equal(nTeamsInLeague.toNumber(),4);
 });
 
-/*
   it("plays one round of a league", async () => {
-    var nLeagues = await instance.test_getNLeaguesCreated();
-    assert.equal(nLeagues.toNumber(),1);
+    var nLeagues = await instance.test_getNLeaguesCreated.call();
+    var leagueIdx = nLeagues-1;
     var round = 0;
     var seed = 1;
     await instance.test_playRound(leagueIdx, round, seed);
     });
-*/        
 });
 
