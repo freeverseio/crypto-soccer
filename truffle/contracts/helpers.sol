@@ -144,5 +144,14 @@ contract HelperFunctions {
         }
     }
 
-
+    /// @dev returns a set of rndNum arrays given a seed
+    //   var hash = await instance.test_computeKeccak256ForNumber(rndSeed);
+    //   var rndNums1= await instance.test_decode(nRounds, hash , bits);
+    function getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
+        internal
+        pure
+        returns (uint16[] rndNumArray) 
+    {
+        return decode(roundsPerGame, computeKeccak256ForNumber(seed), bitsPerRndNum);
+    }
 }

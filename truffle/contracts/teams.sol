@@ -32,7 +32,7 @@ contract TeamFactory is PlayerFactory {
     }
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
-    function getSkill(uint _teamIdx, uint8 _playerIdx)
+    function getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx)
         internal
         view
         returns(uint)

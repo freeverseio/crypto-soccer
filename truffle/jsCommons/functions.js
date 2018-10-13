@@ -15,6 +15,12 @@ function catchPlayerIdxFromEvent(logs) {
     return playerIdx;
 }
 
+function unixMonthToAge(unixMonthOfBirth) {
+    // in July 2018, we are at month 582 after 1970.
+    age = (582 - unixMonthOfBirth)/12;
+    return parseInt(age*10)/10;
+}
+  
 async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam, playerRoles ) {
     var newTeamIdx = await instance.test_getNCreatedTeams.call(); 
     console.log("creating team: " + teamName);
@@ -23,7 +29,13 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
   
     for (var p=0; p<maxPlayersPerTeam; p++) {
         thisName = playerBasename + p.toString();
-        var tx = await instance.test_createBalancedPlayer(thisName,newTeamIdx,userChoice,p,playerRoles[p]);
+        var tx = await instance.test_createBalancedPlayer(
+            thisName,
+            newTeamIdx,
+            userChoice,
+            p,
+            playerRoles[p]
+        );
     }
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
@@ -69,7 +81,8 @@ async function getRandomNumbers(instance, nRounds, rndSeed)
     createTeam : createTeam,
     catchPlayerIdxFromEvent : catchPlayerIdxFromEvent,
     createAlineacion : createAlineacion,
-    getRandomNumbers : getRandomNumbers
+    getRandomNumbers : getRandomNumbers,
+    unixMonthToAge : unixMonthToAge      
 }
 
 module.exports = functions2export;

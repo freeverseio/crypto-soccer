@@ -113,17 +113,17 @@ contract Testing is League {
     function test_getNCreatedTeams() external view returns(uint) { return getNCreatedTeams(); }
     function test_getTeamName(uint idx) external view returns(string) { return getTeamName(idx); }
     function test_createTeam(string _teamName) external { return createTeam(_teamName); }
-    function test_getSkill(uint _teamIdx, uint8 _playerIdx) external view returns(uint) { return getSkill(_teamIdx, _playerIdx); }
+    function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
 
 
     // WRAPPERS FOR GAMES
 
-    function test_playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
+    function test_playGame(uint teamIdx1, uint teamIdx2, uint seed)
         external
         view
         returns (uint16[2] memory teamGoals) 
     {
-        return playGame(teamIdx1, teamIdx2, rndNum1, rndNum2, rndNum3, rndNum4);
+        return playGame(teamIdx1, teamIdx2, seed);
     }
 
     // WRAPPERS FOR LEAGUES

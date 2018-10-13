@@ -7,8 +7,6 @@ const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 contract('Teams', function(accounts) {
 
   var instance;
-  var nTotalPlayers=0;
-  var sourceBalance;
   console.log('Funds in the source account:');
   console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber()/web3.toWei(1, "ether"));
 
@@ -28,8 +26,9 @@ contract('Teams', function(accounts) {
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nCreatedPlayers,1);
-    // TODO: derive from the name and the mapping.
-    var newTeamIdx = await f.createTeam(instance, "Mataro", "Bogarde", k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
+    teamName = "Mataro";
+    playerBasename = "Bogarde";
+    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
     await printTeamPlayers(newTeamIdx, instance);
     assert.equal(nCreatedPlayers,k.MaxPlayersInTeam+1);
   });
@@ -45,10 +44,11 @@ contract('Teams', function(accounts) {
       f.createAlineacion(4,3,3)
     );
     await printTeamPlayers(1, instance);
-    var goals = await playGame(instance, 0, 1, 18, 232);
+    seed = 232;
+    var goals = await instance.test_playGame(0, 1, seed);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==1);
-    assert.isTrue(goals[1].toNumber()==3);
+    assert.isTrue(goals[0].toNumber()==0);
+    assert.isTrue(goals[1].toNumber()==1);
   });
 
   it("creates an empty team, shows crazy stats, checks name is correct", async () => {
@@ -70,7 +70,8 @@ contract('Teams', function(accounts) {
   });
   
   it("plays a game using a transation, not a call, to compute gas cost", async () => {
-    var goals = await playGame(instance, 0, 1, 18, 232);
+    seed = 232;
+    var goals = await instance.test_playGame(0, 1, seed);
   });
 
   it("plays lots of games and checks total goals", async () => {
@@ -79,52 +80,37 @@ contract('Teams', function(accounts) {
     nGames = 5;
     console.log("Playing " + nGames + " games");
     for (var game=0; game<nGames; game++) {
-      var goals = await playGame(instance, 0, 1, 18, game+1);
+      seed = game + 1;
+      var goals = await instance.test_playGame(0, 1, seed);
       goalsTeam1 += goals[0].toNumber();
       goalsTeam2 += goals[1].toNumber();
       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     }
     console.log("Total Goals: " + goalsTeam1 + " - " + goalsTeam2);
-    assert.isTrue(goalsTeam1==6);
-    assert.isTrue(goalsTeam2==14);
+    assert.isTrue(goalsTeam1==0);
+    assert.isTrue(goalsTeam2==2);
   });
 });
 
-
-async function playGame(instance, teamIdx1, teamIdx2, nRounds, rndSeed)
-{
-  var rndNums = await f.getRandomNumbers(instance, nRounds, rndSeed);
-  var goals = await instance.test_playGame.call(teamIdx1, teamIdx2, rndNums[0], rndNums[1], rndNums[2], rndNums[3]);
-  return goals;
-}
-
-
 async function printTeamPlayers(teamIdx, instance) {
-//  var state = await instance.test_getSkillsOfPlayersInTeam.call(teamIdx);
   var totals = Array(k.NumStates).fill(0);
-  console.log("Players in team " + teamIdx);
+  console.log("Players in team " + teamIdx + ":");
   for (var p=0;p<k.MaxPlayersInTeam;p++) {
-    process.stdout.write("Player " + p + ": ");
-    serializedSkills = await instance.test_getSkill(teamIdx, p);
-    decodedSkills = await instance.test_decode(k.NumSkills, serializedSkills, k.BitsPerState);
-    //console.log('skills:' + decodedSkills)
+    info = "Player " + p + ": ";
+    serialized = await instance.test_getStatePlayerInTeam(p, teamIdx);
+    decoded = await instance.test_decode(k.NumStates, serialized, k.BitsPerState);
     for (var sk=0;sk<k.NumStates;sk++) {
-      if (sk==0) totals[0] += unixMonthToAge(decodedSkills[0]);
-      else totals[sk] += parseInt(decodedSkills[sk]);
-      process.stdout.write(skillNames[sk] + "= " + decodedSkills[sk] + "  ");
+      if (sk==0) totals[0] += f.unixMonthToAge(decoded[0]);
+      else totals[sk] += parseInt(decoded[sk]);
+      info += skillNames[sk] + "= " + decoded[sk] + "  ";
     }
-    process.stdout.write("\n");
+    console.log(info);
   }
   console.log("Totals: " + totals);
 }
 
 
 
-function unixMonthToAge(unixMonthOfBirth) {
-  // in July 2018, we are at month 582 after 1970.
-  age = (582 - unixMonthOfBirth)/12;
-  return parseInt(age*10)/10;
-}
 
 
 async function createTestTeam(
@@ -137,7 +123,6 @@ async function createTestTeam(
   playerRoles
   )
 {
-  // TODO: derive from the name and the mapping
   console.log("creating team: " + teamName);
   await instance.test_createTeam(teamName);
 
@@ -147,12 +132,12 @@ async function createTestTeam(
           thisName,
           teamIdx,
           p,
-          skills[0], // monthOfBirthAfterUnixEpoch
-          skills[1], // defense
-          skills[2], // speed
-          skills[3], // pass
-          skills[4], // shoot
-          skills[5], // endurance
+          skills[k.StatBirth], // monthOfBirthAfterUnixEpoch
+          skills[k.StatDef],
+          skills[k.StatSpeed],
+          skills[k.StatPass],
+          skills[k.StatShoot],
+          skills[k.StatEndur],
           playerRoles[p]
         );
       var playerIdx = f.catchPlayerIdxFromEvent(tx.logs);

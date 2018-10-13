@@ -40,8 +40,8 @@ contract PlayerFactory is Storage, HelperFunctions {
         bytes32 teamNameHash = keccak256(abi.encodePacked(playerToTeam[playerNameHash].name));
         require(teamToOwnerAddr[teamNameHash] == 0, "Player already exists with this name");
 
-        /// @dev Update player count
-        uint nCreatedPlayers = players.length;
+        /// @dev Get newPlayerIdx 
+        uint newPlayerIdx = players.length;
 
         /// @dev Push playert
         players.push(Player({name: _playerName, state: _playerState}));
@@ -51,14 +51,14 @@ contract PlayerFactory is Storage, HelperFunctions {
 
         /// @dev Update inverse relation (from teams to playerIdx)
         teams[_teamIdx].playersIdx = setNumAtIndex(
-            nCreatedPlayers,
+            newPlayerIdx,
             teams[_teamIdx].playersIdx,
             _playerNumberInTeam,
             kBitsPerPlayerIdx
         );
 
         /// @dev Emit the creation event
-        emit PlayerCreation(_playerName, nCreatedPlayers, _playerState);
+        emit PlayerCreation(_playerName, newPlayerIdx, _playerState);
     }
 
     /// @dev Main interface to create a player by users. We receive a random number,

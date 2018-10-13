@@ -8,18 +8,18 @@ import "./teams.sol";
 contract GameEngine is TeamFactory {
 
     /// @dev Plays a game and, currently, returns the number of goals by each team.
-    function playGame(uint teamIdx1, uint teamIdx2, uint[] rndNum1, uint[] rndNum2, uint[] rndNum3, uint[] rndNum4)
+    function playGame(uint teamIdx1, uint teamIdx2, uint seed)
         internal
         view
         returns (uint16[2] memory teamGoals)
     {
-        /// @dev TODO: use an enum!!
-        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
-
-        uint nRounds = rndNum1.length;
-        require (nRounds == rndNum2.length, "We need more randoms for so many round");
-        require (nRounds == rndNum3.length, "We need more randoms for so many round");
-        require (nRounds == rndNum4.length, "We need more randoms for so many round");
+        /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
+        ///  generated from a seed. We do that 4 times. Each of this 4 arrays
+        ///  is used in a particular event of the 18 rounds. 
+        uint16[] memory rndNum1 = getRndNumArrays(seed, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum2 = getRndNumArrays(seed+1, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum3 = getRndNumArrays(seed+2, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum4 = getRndNumArrays(seed+3, kRoundsPerGame, kBitsPerRndNum);
 
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
@@ -30,7 +30,7 @@ contract GameEngine is TeamFactory {
 
         uint8 teamThatAttacks;
         /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
-        for (uint round = 0; round < nRounds; round++){
+        for (uint round = 0; round < kRoundsPerGame; round++){
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
@@ -135,7 +135,7 @@ contract GameEngine is TeamFactory {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(kNumStates, getSkill(_teamIdx, p), kBitsPerState);
+            uint16[] memory skills = decode(kNumStates, getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
             endurance += skills[kStatEndur];
             if (skills[kStatRole] == kRoleKeeper) {
                 blockShoot = skills[kStatShoot];

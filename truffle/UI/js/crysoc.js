@@ -235,10 +235,10 @@ async function getPlayersOfTeam(teamId) {
 
 
 async function getPlayerHTML(teamId, p) {
-    contract.methods.test_getSkill(teamId,p).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
+    contract.methods.test_getStatePlayerInTeam(teamId,p).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
         if (error) {
             console.log(error)
-            alert("test_getSkill error.");
+            alert("test_getStatePlayerInTeam error.");
         } else {
             var serializedSkills = result;
             contract.methods.test_decode(nSkills,serializedSkills,bitPerState).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {

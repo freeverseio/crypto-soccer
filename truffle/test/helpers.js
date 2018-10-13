@@ -98,7 +98,7 @@ contract('Testing', function(accounts) {
     for (player=0; player<nPlayers; player++) {
       serializedStates[player] = await instance.test_serialize(nStates, states[player], bits);
     }
-    console.log("serialized states:\n", serializedStates)
+    // console.log("serialized states:\n", serializedStates)
 
     for (player=0; player<nPlayers; player++) {
       decodedState = await instance.test_decode(nStates, serializedStates[player], bits);

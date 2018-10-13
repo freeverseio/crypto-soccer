@@ -23,6 +23,7 @@
     "openzeppelin-solidity": "1.10.0"
   },
   "devDependencies": {
-    "eth-gas-reporter": "^0.1.9"
+    "eth-gas-reporter": "^0.1.12",
+    "mocha": "^5.2.0"
   }
 }

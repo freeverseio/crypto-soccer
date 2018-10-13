@@ -97,6 +97,12 @@ contract Storage {
     uint8 constant kBlockShoot = 3; 
     uint8 constant kEndurance = 4; 
 
+    /// @dev The number of rounds in a given game (18 rounds = 1 event per 5 mins)
+    uint8 constant kRoundsPerGame = 18; 
+
+    /// @dev The number of bits used for each rndNumber used to determine each game action
+    uint8 constant kBitsPerRndNum = 14; 
+
     /// @dev The amount of bits used per state to serialize them in a uint256 
     uint8 constant kBitsPerState = 14; 
 
