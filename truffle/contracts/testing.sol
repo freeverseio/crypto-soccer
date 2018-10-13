@@ -128,8 +128,11 @@ contract Testing is League {
 
     // WRAPPERS FOR LEAGUES
 
-    function test_createLeague(uint[] _teamIdxs, uint _blockFirstGame, uint _blocksBetweenGames) external {
-        createLeague(_teamIdxs, _blockFirstGame, _blocksBetweenGames);
+    function test_createLeague(uint[] _teamIdxs, uint _blockFirstGame, uint _blocksBetweenGames) 
+        external
+        returns (uint) 
+    {
+        return createLeague(_teamIdxs, _blockFirstGame, _blocksBetweenGames);
     }
 
     function test_getTeamsIdxsInLeague(uint leagueIdx) external view returns (uint[]) {
@@ -144,4 +147,18 @@ contract Testing is League {
         return teamsInGame(round, game, nTeams);
     }
 
+    function test_playRound(uint leagueIdx, uint8 round, uint seed) 
+        external 
+        view 
+    {
+        playRound(leagueIdx, round, seed);  
+    }
+
+    function test_getNLeaguesCreated() external view returns(uint) {
+        return getNLeaguesCreated();
+    }
+
+    function test_getNTeamsInLeague(uint leagueIdx) external view returns(uint) {
+        return getNTeamsInLeague(leagueIdx);
+    }    
 }
