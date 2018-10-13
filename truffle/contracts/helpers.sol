@@ -108,7 +108,7 @@ contract HelperFunctions {
 
     /// @dev A function needed for game scheduling:  
     ///  P(t) = { t if t < T; t-(N-1) otherwise }
-    function circulate(uint8 t, uint8 nTeams) internal pure returns(uint8) {
+    function shiftBack(uint8 t, uint8 nTeams) internal pure returns(uint8) {
         if (t < nTeams) { return t; }
         else { return t-(nTeams-1); }
     }
@@ -127,7 +127,7 @@ contract HelperFunctions {
         if (round < (nTeams-1) ) {
             (team1, team2) = teamsInGameFirstHalf(round, game, nTeams);
         } else {
-            (team2, team1) = teamsInGameFirstHalf(round, game, nTeams);
+            (team2, team1) = teamsInGameFirstHalf(round-(nTeams-1), game, nTeams);
         }
     }
 
@@ -137,11 +137,13 @@ contract HelperFunctions {
         pure
         returns(uint8, uint8)
     {
+        uint8 team1;
         if (game > 0) {
-            return (circulate(nTeams-game+round, nTeams), circulate(game+1+round, nTeams));
-        } else {
-            return (0, circulate(game+1+round, nTeams));
-        }
+            team1 = shiftBack(nTeams-game+round, nTeams);
+        } 
+        uint8 team2 = shiftBack(game+1+round, nTeams);
+        if ( (round % 2) == 0) { return (team1, team2); }        
+        else { return (team2, team1); } 
     }
 
     /// @dev returns a set of rndNum arrays given a seed

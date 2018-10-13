@@ -21,7 +21,7 @@ contract('Testing', function(accounts) {
         }
     }
     console.log(info);
-    correctInfo = "Round 0: 0-1, 5-2, 4-3, Round 1: 0-2, 1-3, 5-4, Round 2: 0-3, 2-4, 1-5, Round 3: 0-4, 3-5, 2-1, Round 4: 0-5, 4-1, 3-2, \nRound 5: 1-0, 2-5, 3-4, Round 6: 2-0, 3-6, 4-5, Round 7: 3-0, 4-7, 5-6, Round 8: 4-0, 5-8, 6-7, Round 9: 5-0, 6-9, 7-8, ";
+    correctInfo = "Round 0: 0-1, 5-2, 4-3, Round 1: 2-0, 3-1, 4-5, Round 2: 0-3, 2-4, 1-5, Round 3: 4-0, 5-3, 1-2, Round 4: 0-5, 4-1, 3-2, \nRound 5: 1-0, 2-5, 3-4, Round 6: 0-2, 1-3, 5-4, Round 7: 3-0, 4-2, 5-1, Round 8: 0-4, 3-5, 2-1, Round 9: 5-0, 1-4, 2-3, ";
     assert.equal(info, correctInfo)
   });
 
