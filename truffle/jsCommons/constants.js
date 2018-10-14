@@ -33,5 +33,11 @@ k = {
 
     /// Max num of players allowed in a team
     MaxPlayersInTeam : 11,
+
+    /// Vals used to store game results (0=undefined, 1=home wins, 2=away wins, 3=tie)
+    Undef : 0,
+    HomeWins : 1,
+    AwayWins : 2,
+    Tie : 3
 }
 module.exports = k;

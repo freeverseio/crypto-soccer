@@ -160,4 +160,13 @@ contract Testing is League {
     function test_getNTeamsInLeague(uint leagueIdx) external view returns(uint) {
         return getNTeamsInLeague(leagueIdx);
     }    
+
+    function test_getWrittenResult(uint leagueIdx, uint8 nTeams, uint8 round, uint8 game)
+        external
+        view 
+        returns(uint)
+    {
+        return getWrittenResult(leagueIdx, nTeams, round, game);
+    }
+
 }

@@ -28,8 +28,8 @@ contract League is GameEngine {
     function playRound(uint leagueIdx, uint8 round, uint seed)
         internal
     {
-        League memory thisLeague = leagues[leagueIdx];
-        uint8 nTeams = uint8(thisLeague.teamIdxs.length);
+        uint[] memory teamIdxs = leagues[leagueIdx].teamIdxs;
+        uint8 nTeams = uint8(teamIdxs.length);
         uint8 homeTeam;
         uint8 awayTeam;
         for (uint8 game = 0; game < nTeams-1; game++) {
@@ -40,8 +40,8 @@ contract League is GameEngine {
                 round,
                 game,
                 playGame(
-                    thisLeague.teamIdxs[homeTeam],
-                    thisLeague.teamIdxs[awayTeam],
+                    teamIdxs[homeTeam],
+                    teamIdxs[awayTeam],
                     seed+game
                 )
             );
@@ -51,6 +51,7 @@ contract League is GameEngine {
     /// @dev writes the result of a game in the serialized uint256
     ///  since there are nTeams/2 games per round, and 2*(nTeams-1) rounds,
     ///  then pos(r,g) = r*nTeams/2 + g
+    ///  The first half of these are written in one uint, the second, in another
     function  writeGameResult(
         uint leagueIdx, 
         uint8 nTeams, 
@@ -64,7 +65,7 @@ contract League is GameEngine {
         if (result[0] > result[1]) { result2write = kHomeWins; }
         if (result[0] < result[1]) { result2write = kAwayWins; }
 
-        if (round<nTeams-1) {
+        if (round < nTeams - 1) {
             leagues[leagueIdx].resultsFirstHalf = setNumAtIndex(
                 result2write, 
                 leagues[leagueIdx].resultsFirstHalf, 
@@ -75,7 +76,27 @@ contract League is GameEngine {
             leagues[leagueIdx].resultsSecondHalf = setNumAtIndex(
                 result2write, 
                 leagues[leagueIdx].resultsSecondHalf, 
+                (round-(nTeams-1))*nTeams+game, 
+                kBitsPerGameResult
+            );
+        }
+    }
+
+    function getWrittenResult(uint leagueIdx, uint8 nTeams, uint8 round, uint8 game) 
+        internal 
+        view 
+        returns(uint) 
+    {
+        if (round < nTeams - 1) {
+            return getNumAtIndex(
+                leagues[leagueIdx].resultsFirstHalf, 
                 round*nTeams+game, 
+                kBitsPerGameResult
+            );
+        } else {
+            return getNumAtIndex(
+                leagues[leagueIdx].resultsSecondHalf, 
+                (round-(nTeams-1))*nTeams+game, 
                 kBitsPerGameResult
             );
         }
