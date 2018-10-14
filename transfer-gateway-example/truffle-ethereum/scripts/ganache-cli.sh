@@ -9,5 +9,5 @@ start_ganache() {
   echo $ganache_pid > ganache.pid
 }
 
-echo "Starting our own ganache instance at port $ganache_port"
+echo "Starting our own ganache instance at port $ganache_port. The resulting PID is saved to file to then be able to kill it by reading that file"
 start_ganache

@@ -79,25 +79,36 @@ function setup {
   cd ..
 }
 
-function start_and_deploy_truffle_ethereum {
+function start_ganache {
   if [ $(check_file_exists truffle-ethereum/ganache.pid) = 0 ]; then
     echo "Start and Deploy Truffle Ethereum"
     echo "...we start Ganache via: yarn ganache-cli:dev, which calls: truffle-ethereum/scripts/ganache-cli.sh"
     echo "...and we send all ganache output to truffle-ethereum/ganache.log"
+    echo "...Ganache PID was read and saved to file to be able to kill it later."
     cd truffle-ethereum
     yarn ganache-cli:dev > ganache.log
+    echo "Waiting 5 secs as it takes a bit to start ganache..."
     sleep 5
-    echo "...we deploy truffle-ethereum via: yarn deploy, which calls: rm -rf build; truffle migrate --reset --network development"
-    yarn deploy > /dev/null 2>&1
+    echo "...DONE"
     cd ..
   else
-    echo "Truffle Ethereum is deployed and running"
+    echo "Mmm... Ganache seems to be already up, please check..."
   fi
+}
+
+function deploy_truffle_ethereum {
+    cd truffle-ethereum
+    echo "...we deploy truffle-ethereum via: yarn deploy, which calls: rm -rf build; truffle migrate --reset --network development"
+    echo "...note that the development network has the same parameters as our standard ganache network"
+    echo "...we send the output to deploy.log"
+    yarn deploy > deploy.log
+    echo "...DONE"
+    cd ..
 }
 
 function stop_truffle_ethereum {
   if [ $(check_file_exists truffle-ethereum/ganache.pid) = 1 ]; then
-    echo "Stop Truffle Ethereum"
+    echo "Stop Truffle Ethereum by reading ganached PID saved to file, and doing a kill -9"
     cd truffle-ethereum
     pid=$(cat ganache.pid)
     kill -9 $pid
@@ -110,9 +121,14 @@ function stop_truffle_ethereum {
 
 function start_dappchain {
   if [ $(check_file_exists dappchain/loom.pid) = 0 ]; then
-    echo "Start DAppChain"
+    echo "Start DAppChain by executing cd dappchain; ./loom reset; ./loom run"
     cd dappchain
-    ./loom reset; ./loom run > /dev/null 2>&1 &
+    ./loom reset; 
+    echo "LOOM ENVIRONMENT INFO:"; 
+    echo "------ ";
+    ./loom env; 
+    echo "------";
+    ./loom run > /dev/null 2>&1 &
     loom_pid=$!
     echo $loom_pid > loom.pid
     sleep 10
@@ -244,7 +260,8 @@ start)
     exit -1
   fi
 
-  start_and_deploy_truffle_ethereum
+  start_ganache
+  deploy_truffle_ethereum
   start_dappchain
   deploy_truffle_dappchain
   start_webapp
@@ -256,7 +273,33 @@ start)
   echo "-----------------------------------------------------------"
 
   ;;
-stop)
+start-ganache)
+  echo "-------------------------------------------------------------------"
+  echo "Waking up ganache..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  if [ $(check_port $ganache_port) != 0 ]; then
+    echo "Ganache port $ganache_port is already in use"
+    echo
+    exit -1
+  fi
+
+  start_ganache
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Ganache should be up and running"
+  echo "-----------------------------------------------------------"
+
+  ;;
+  stop)
   echo "-----------------"
   echo "Stopping services"
   echo "-----------------"

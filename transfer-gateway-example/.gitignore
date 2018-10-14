@@ -9,3 +9,5 @@ crypto_cards_transaction
 simple_stake_address
 ganache.log
 loom.1
+deploy.log
+loom.log
