@@ -149,7 +149,6 @@ contract Testing is League {
 
     function test_playRound(uint leagueIdx, uint8 round, uint seed) 
         external 
-        view 
     {
         playRound(leagueIdx, round, seed);  
     }

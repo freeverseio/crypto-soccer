@@ -27,21 +27,62 @@ contract League is GameEngine {
     ///  For a league with nTeams, there are nTeams-1 games in a round.
     function playRound(uint leagueIdx, uint8 round, uint seed)
         internal
-        view 
     {
-        uint[] memory teamsIdxs = getTeamsIdxsInLeague(leagueIdx);
-        uint8 nTeams = uint8(teamsIdxs.length);
+        League memory thisLeague = leagues[leagueIdx];
+        uint8 nTeams = uint8(thisLeague.teamIdxs.length);
         uint8 homeTeam;
         uint8 awayTeam;
         for (uint8 game = 0; game < nTeams-1; game++) {
             (homeTeam, awayTeam) = teamsInGame(round, game, nTeams);
-            playGame(
-                teamsIdxs[homeTeam],
-                teamsIdxs[awayTeam],
-                seed+game
+            writeGameResult(
+                leagueIdx,
+                nTeams,
+                round,
+                game,
+                playGame(
+                    thisLeague.teamIdxs[homeTeam],
+                    thisLeague.teamIdxs[awayTeam],
+                    seed+game
+                )
             );
         }
     }
+
+    /// @dev writes the result of a game in the serialized uint256
+    ///  since there are nTeams/2 games per round, and 2*(nTeams-1) rounds,
+    ///  then pos(r,g) = r*nTeams/2 + g
+    function  writeGameResult(
+        uint leagueIdx, 
+        uint8 nTeams, 
+        uint8 round, 
+        uint8 game,
+        uint16[2] result
+    ) 
+        internal 
+    {
+        uint8 result2write = kTie;
+        if (result[0] > result[1]) { result2write = kHomeWins; }
+        if (result[0] < result[1]) { result2write = kAwayWins; }
+
+        if (round<nTeams-1) {
+            leagues[leagueIdx].resultsFirstHalf = setNumAtIndex(
+                result2write, 
+                leagues[leagueIdx].resultsFirstHalf, 
+                round*nTeams+game, 
+                kBitsPerGameResult
+            );
+        } else {
+            leagues[leagueIdx].resultsSecondHalf = setNumAtIndex(
+                result2write, 
+                leagues[leagueIdx].resultsSecondHalf, 
+                round*nTeams+game, 
+                kBitsPerGameResult
+            );
+        }
+    }
+
+
+
 
     function getTeamsIdxsInLeague(uint leagueIdx) internal view returns (uint[]) {
         return leagues[leagueIdx].teamIdxs;

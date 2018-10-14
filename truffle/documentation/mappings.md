@@ -100,6 +100,22 @@ We can then store 256/2 = 128 games.
 We could even just use 1 bit: "has it been processed?" but maybe it's a pain, given that one needs to look back at the states before...?
 
 
+## Writing results
+
+If we choose just 2 bits (0=not played, 1=team 1, 2= team 2, 3 = tie) we can have:
+    - uint resultsFirstHalf;
+    - uint resultsSecondHalf;
+each storing 256/2 = 128 results
+
+The position to write game g of round r is: 
+    (recall nRounds = 2 (nTeams-1), nGamesPerRound = nTeams/2)
+
+    pos(r,g) = r*nTeams/2 + g
+which has a max of 2 (nTeams-1) nTeams/2 + nTeams/2 -1 = 2 nTeams nTeams/2 = nTeams^2 -1 = N (N-1)    
+
+
+
+
 ## Scheduling
 
 We need to sort the games. In every round r=0,...,nTeams-2, there are n=1,...,nTeams/2 games.

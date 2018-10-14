@@ -109,11 +109,15 @@ contract Storage {
     /// @dev The amount of bits used per state to playerIdx them in a uint256 
     uint8 constant kBitsPerPlayerIdx = 20; 
 
-    /// @dev The amount of bits used game result in a uint256 
-    uint8 constant kBitsPerGameResult = 2; 
-
     /// @dev Max num of players allowed in a team
     uint8 constant kMaxPlayersInTeam = 11;
 
+    /// @dev The amount of bits used game result in a uint256 
+    uint8 constant kBitsPerGameResult = 2; 
 
+    /// @dev Vals used to store game results (0=undefined, 1=home wins, 2=away wins, 3=tie)
+    uint8 constant kUndef = 0;
+    uint8 constant kHomeWins = 1;
+    uint8 constant kAwayWins = 2;
+    uint8 constant kTie = 3;
 }
