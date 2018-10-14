@@ -87,8 +87,8 @@ function start_ganache {
     echo "...Ganache PID was read and saved to file to be able to kill it later."
     cd truffle-ethereum
     yarn ganache-cli:dev > ganache.log
-    echo "Waiting 5 secs as it takes a bit to start ganache..."
-    sleep 5
+    echo "You should wait for 5 secs here..."
+    #sleep 5
     echo "...DONE"
     cd ..
   else
@@ -131,8 +131,8 @@ function start_loomchain {
     ./loom run > /dev/null 2>&1 &
     loom_pid=$!
     echo $loom_pid > loom.pid
-    echo "Waiting for 10 secs to complete safely..."
-    sleep 10
+    echo "You should wait for 10 secs to complete safely..."
+    #sleep 10
     cd ..
   else
     echo "DAppChain is running"
@@ -158,8 +158,8 @@ function deploy_truffle_dappchain {
     cd truffle-dappchain
     yarn deploy > /dev/null 2>&1 &
     cd ..
-    echo "Waiting for 5 secs to complete safely (original code forced you to wait for 20!"
-    sleep 5
+    echo "You should wait for 20 secs to complete safely"
+    #sleep 20
   else
     echo "Truffle DAppChain is deployed"
   fi
@@ -179,8 +179,8 @@ function start_webapp {
     echo "Running DApp"
     cd webclient
     yarn serve > /dev/null 2>&1 &
-    echo "Waiting for 5 secs..."
-    sleep 5
+    echo "You should wait for 5 secs..."
+    #sleep 5
     cd ..
   else
     echo "Dapp is running"
@@ -267,10 +267,14 @@ start)
   fi
 
   start_ganache
+  sleep 5;
   deploy_truffle_ethereum
   start_loomchain
+  sleep 10;
   deploy_truffle_dappchain
+  sleep 20;
   start_webapp
+  sleep 5;
   run_mapping
 
   echo
@@ -550,6 +554,9 @@ cleanup)
    echo "Usage for individual: $0 {start-ganache|stop-ganache|start-loomchain|stop-loomchain|start-webapp|stop-webapp|deploy-ethereum|deploy-dapp|mapping}"
    echo "   ..logical order: start-ganache => deploy-ethereum => start-loomchain => deploy-dapp => start-webapp => mapping"
    echo ""
+   echo "   ..typical use : "
+   echo "     ..first time: $0 start-ganache; $0 start-ganache"
+   echo "     ..many times: $0 deploy-ethereum or $0 deploy-dapp"
 esac
 
 exit 0
