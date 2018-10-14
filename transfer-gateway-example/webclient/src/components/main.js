@@ -21,17 +21,17 @@ export default class Main extends React.Component {
       <ul className="navbar-nav mr-auto">
         <li className="nav-item">
           <NavLink to="/eth" activeClassName="active" className="nav-link">
-            Ethereum Account Toni
+            Ethereum Account
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/gateway" activeClassName="active" className="nav-link">
-            Ethereum Gateway Toni
+            Ethereum Gateway
           </NavLink>
         </li>
         <li className="nav-item">
           <NavLink to="/dappchain" activeClassName="active" className="nav-link">
-            DAppChain Account Toni
+            DAppChain Account
           </NavLink>
         </li>
       </ul>

@@ -106,7 +106,7 @@ function deploy_truffle_ethereum {
     cd ..
 }
 
-function stop_truffle_ethereum {
+function stop_ganache {
   if [ $(check_file_exists truffle-ethereum/ganache.pid) = 1 ]; then
     echo "Stop Truffle Ethereum by reading ganached PID saved to file, and doing a kill -9"
     cd truffle-ethereum
@@ -119,7 +119,7 @@ function stop_truffle_ethereum {
   fi
 }
 
-function start_dappchain {
+function start_loomchain {
   if [ $(check_file_exists dappchain/loom.pid) = 0 ]; then
     echo "Start DAppChain by executing cd dappchain; ./loom reset; ./loom run"
     cd dappchain
@@ -131,6 +131,7 @@ function start_dappchain {
     ./loom run > /dev/null 2>&1 &
     loom_pid=$!
     echo $loom_pid > loom.pid
+    echo "Waiting for 10 secs to complete safely..."
     sleep 10
     cd ..
   else
@@ -138,7 +139,7 @@ function start_dappchain {
   fi
 }
 
-function stop_dappchain {
+function stop_loomchain {
   if [ $(check_file_exists dappchain/loom.pid) = 1 ]; then
     echo "Stop DAppChain"
     cd dappchain
@@ -157,7 +158,8 @@ function deploy_truffle_dappchain {
     cd truffle-dappchain
     yarn deploy > /dev/null 2>&1 &
     cd ..
-    sleep 20
+    echo "Waiting for 5 secs to complete safely (original code forced you to wait for 20!"
+    sleep 5
   else
     echo "Truffle DAppChain is deployed"
   fi
@@ -177,6 +179,7 @@ function start_webapp {
     echo "Running DApp"
     cd webclient
     yarn serve > /dev/null 2>&1 &
+    echo "Waiting for 5 secs..."
     sleep 5
     cd ..
   else
@@ -198,6 +201,7 @@ function stop_webdapp {
 }
 
 case "$1" in
+################################ SETUP ##############################
 setup)
   echo "------------------------------------------------------------------------------------------"
   echo "Installing necessary packages, this can take up to 3 minutes (depending on internet speed)"
@@ -217,6 +221,7 @@ setup)
   echo "-------------------------------------"
 
   ;;
+################################ STATUS ##############################
 status)
   echo "-----------------"
   echo "Services statuses"
@@ -230,6 +235,7 @@ status)
   echo
 
   ;;
+################################ START EVERYTHING ##############################
 start)
   echo "-------------------------------------------------------------------"
   echo "Initializing background services, it can take (40 seconds) ..."
@@ -262,7 +268,7 @@ start)
 
   start_ganache
   deploy_truffle_ethereum
-  start_dappchain
+  start_loomchain
   deploy_truffle_dappchain
   start_webapp
   run_mapping
@@ -273,7 +279,147 @@ start)
   echo "-----------------------------------------------------------"
 
   ;;
-start-ganache)
+################################ STOP EVERYTHING ##############################
+  stop)
+  echo "-----------------"
+  echo "Stopping services"
+  echo "-----------------"
+  echo
+
+  stop_ganache
+  stop_webdapp
+  stop_loomchain
+  stop_ganache
+
+  echo
+  echo "----------------"
+  echo "Services stopped"
+  echo "----------------"
+
+  ;;
+################################ START ONLY WEB-APP ##############################
+start-webapp)
+  echo "-------------------------------------------------------------------"
+  echo "Starting webapp..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+  start_webapp
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Web app started, check http://localhost:8080"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ STOP ONLY WEBAPP ##############################
+stop-webapp)
+  echo "-------------------------------------------------------------------"
+  echo "Stopping webapp..."
+  echo "-------------------------------------------------------------------"
+  echo
+  stop_webapp
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Web app stopped"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ START LOOM CHAIN ##############################
+start-loomchain)
+  echo "-------------------------------------------------------------------"
+  echo "Initializing Loomchain ..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  if [ $(check_port $dapp_port) != 0 ]; then
+    echo "Dapp port $dapp_port is already in use"
+    echo
+    exit -1
+  fi
+
+  if [ $(check_port $dappchain_port_1) != 0 ] || [ $(check_port $dappchain_port_2) != 0 ]; then
+    echo "Some port from DAppChain already in use [$dappchain_port_1 or $dappchain_port_2]"
+    echo
+    exit -1
+  fi
+
+  start_loomchain
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Services initialized and ready, check http://localhost:8080"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ STOP ONLY LOOM CHAIN ##############################
+start-loomchain)
+  echo "-------------------------------------------------------------------"
+  echo "Stopping Loomchain ..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  stop_loomchain
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Services initialized and ready, check http://localhost:8080"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ DEPLOY DAPP CONTRACT ##############################
+deploy-dapp)
+  echo "-------------------------------------------------------------------"
+  echo "Deploying DappChain ..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  if [ $(check_port $dapp_port) != 0 ]; then
+    echo "Dapp port $dapp_port is already in use"
+    echo
+    exit -1
+  fi
+
+  if [ $(check_port $dappchain_port_1) != 0 ] || [ $(check_port $dappchain_port_2) != 0 ]; then
+    echo "Some port from DAppChain already in use [$dappchain_port_1 or $dappchain_port_2]"
+    echo
+    exit -1
+  fi
+
+  deploy_truffle_dappchain
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Services initialized and ready, check http://localhost:8080"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ START ONLY GANACHE ##############################
+  start-ganache)
   echo "-------------------------------------------------------------------"
   echo "Waking up ganache..."
   echo "-------------------------------------------------------------------"
@@ -299,15 +445,14 @@ start-ganache)
   echo "-----------------------------------------------------------"
 
   ;;
-  stop)
+################################ STOP ONLY GANACHE ##############################
+  stop-ganache)
   echo "-----------------"
-  echo "Stopping services"
+  echo "Stopping Ganache"
   echo "-----------------"
   echo
 
-  stop_webdapp
-  stop_dappchain
-  stop_truffle_ethereum
+  stop_ganache
 
   echo
   echo "----------------"
@@ -315,12 +460,56 @@ start-ganache)
   echo "----------------"
 
   ;;
+################################ DEPLOY ETHEREUM CONTRACTS ##############################
+  deploy-ethereum)
+  echo "-------------------------------------------------------------------"
+  echo "Deploying Ethereum contracts..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  deploy_truffle_ethereum
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Ethreum contracts deployed"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ RUN MAPPING ONLY ##############################
+  mapping)
+  echo "-------------------------------------------------------------------"
+  echo "Running mapping..."
+  echo "-------------------------------------------------------------------"
+  echo
+
+  if [ $(is_setup_already) = 0 ]; then
+    echo "Please use the setup command first: ./transfer_gateway setup"
+    echo
+    exit -1
+  fi
+
+  run_mapping
+
+  echo
+  echo "-----------------------------------------------------------"
+  echo "Running mapping...DONE"
+  echo "-----------------------------------------------------------"
+
+  ;;
+################################ RESTART EVERYTHING ##############################
 restart)
   $0 stop
   sleep 1
   $0 start
 
   ;;
+################################ CLEAN IT ALL ##############################
 cleanup)
   echo "-----------------------------------------"
   echo "Cleaning packages and binaries downloaded"
@@ -355,7 +544,12 @@ cleanup)
 
   ;;
 *)
-   echo "Usage: $0 {setup|start|status|stop|restart|cleanup}"
+   echo ""
+   echo "Usage for all-in-one: $0 {setup|start|status|stop|restart|cleanup}"
+   echo ""
+   echo "Usage for individual: $0 {start-ganache|stop-ganache|start-loomchain|stop-loomchain|start-webapp|stop-webapp|deploy-ethereum|deploy-dapp|mapping}"
+   echo "   ..logical order: start-ganache => deploy-ethereum => start-loomchain => deploy-dapp => start-webapp => mapping"
+   echo ""
 esac
 
 exit 0
