@@ -8,7 +8,7 @@ const ABIpath = '../build/contracts/Testing.json'
 
 // TXs data
 const gasPrice = 4000000000
-const maxGas = 4000000
+const maxGas = 6000000
 
 // useful variables
 const maxNumPlayers = 11;
@@ -181,13 +181,9 @@ function playMatch() {
     var local = parseInt($('#localTeamInput').val())
     var visitor = parseInt($('#visitorTeamInput').val())
     nRounds=18
-    var rnd1 = getRandArray(nRounds);
-    var rnd2 = getRandArray(nRounds);
-    var rnd3 = getRandArray(nRounds);
-    var rnd4 = getRandArray(nRounds);
-    //toni
+    var rnd = getRandomInt(1,10000);
 
-    contract.methods.test_playGame(local, visitor, rnd1, rnd2, rnd3, rnd4).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
+    contract.methods.test_playGame(local, visitor, rnd).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
         if (error) {
             console.log(error)
             alert("playGame error.");
@@ -235,7 +231,7 @@ async function getPlayersOfTeam(teamId) {
 
 
 async function getPlayerHTML(teamId, p) {
-    contract.methods.test_getStatePlayerInTeam(teamId,p).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
+    contract.methods.test_getStatePlayerInTeam(p, teamId).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
         if (error) {
             console.log(error)
             alert("test_getStatePlayerInTeam error.");
