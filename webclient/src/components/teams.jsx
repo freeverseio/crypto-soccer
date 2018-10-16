@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Card } from 'semantic-ui-react'
+import { Card, Divider } from 'semantic-ui-react'
 import TeamCard from './team_card';
+import TeamPlayerTable from './team_players_table';
 
 class Teams extends PureComponent {
     constructor(props){
@@ -28,15 +29,19 @@ class Teams extends PureComponent {
                     key={i}
                     index={i}
                     ethLeagueManager={ethLeagueManager}
-                    onClick={index => this.setState({selectedIndex: index})}
+                    onClick={index => this.setState({ selectedIndex: index })}
                 />
             );
         }
 
         return (
-            <Card.Group>
-                {teams}
-            </Card.Group>
+            <React.Fragment>
+                <Card.Group>
+                    {teams}
+                </Card.Group>
+                <Divider/>
+                <TeamPlayerTable index={selectedIndex}/>
+            </React.Fragment>
         );
     }
 }
