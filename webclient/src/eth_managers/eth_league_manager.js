@@ -28,4 +28,8 @@ export default class EthLeagueManager {
     async countTeams() {
         return this.contract.methods.test_getNCreatedTeams().call({ from: this.address });
     }
+
+    async teamName(index){
+        return this.contract.methods.test_getTeamName(index).call({ from: this.address });
+    }
 }
