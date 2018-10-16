@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Connection from './components/connection';
+import Main from './components/main';
+import 'semantic-ui-css/semantic.min.css';
 
 import EthLeagueManager from './eth_managers/eth_league_manager';
 
 import leagueJSON from './contracts/League.json';
 import testingJSON from './contracts/Testing.json';
+
 
 const provider = 'http://localhost:8545';
 
@@ -26,18 +28,11 @@ class App extends Component {
   render() {
     const { ethLeagueManager } = this.state;
 
-    let welcome = ethLeagueManager ? "connected !" : "not connected !";
-    welcome += " to Crypto Soccer";
-
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>{provider}</p>
-          <p>
-            {welcome}
-          </p>
-        </header>
+        <Connection provider={provider} ethLeagueManager={ethLeagueManager} />
+        <Main />
+        <footer>This is the footer</footer>
       </div>
     );
   }
