@@ -22,7 +22,7 @@ class Teams extends Component {
 
         let teams = [];
         for (var i = 0; i < count; i++) {
-            teams.push(<TeamCard key={i}/>);
+            teams.push(<TeamCard key={i} index={i} ethLeagueManager={ethLeagueManager}/>);
         }
 
         return (
