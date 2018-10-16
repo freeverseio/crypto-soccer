@@ -50,6 +50,14 @@ contract Testing is League {
         return throwDiceArray(weights, rndNum, factor);
     }
 
+    function test_getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
+        external
+        pure
+        returns (uint16[] rndNumArray) 
+    {
+        return getRndNumArrays(seed, roundsPerGame, bitsPerRndNum);
+    }
+
 
     // Wrappers for Players
 

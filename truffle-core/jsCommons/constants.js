@@ -31,6 +31,9 @@ k = {
     /// The amount of bits used per state to playerIdx them in a uint256 
     BitsPerPlayerIdx : 20, 
 
+    /// The number of bits used for each rndNumber used to determine each game action
+    BitsPerRndNum : 14,
+
     /// Max num of players allowed in a team
     MaxPlayersInTeam : 11,
 

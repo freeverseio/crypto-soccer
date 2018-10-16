@@ -1,4 +1,5 @@
 const cryptoSoccer = artifacts.require("Testing");
+var k = require('../jsCommons/constants.js');
 
 contract('Testing', function(accounts) {
 
@@ -125,6 +126,21 @@ contract('Testing', function(accounts) {
     console.log("For dice to be OK, this number should be close to 90: " + winsTeam2);
     console.log("For dice to be OK, this number should be close to 50: " + winsTeam3);
   });
-})
+
+  it("tests the function getRndNumArrays used to get the randoms used in a game", async () =>{
+    roundsPerGame = 18;
+    seed = 0;
+    info = "";
+    var rndArray = await instance.test_getRndNumArrays.call(seed, roundsPerGame, k.BitsPerRndNum);
+    for (var round=0; round < roundsPerGame; round++) { info += ", " + rndArray[round].toNumber(); }
+    info += "\n";
+    rndArray = await instance.test_getRndNumArrays.call(seed+1, roundsPerGame, k.BitsPerRndNum);
+    for (var round=0; round < roundsPerGame; round++) { info += ", " + rndArray[round].toNumber(); }
+    expectedInfo = ", 9571, 15311, 12640, 3044, 13878, 35, 5252, 12069, 2982, 16161, 902, 10850, 837, 9048, 13866, 5410, 11481, 9271\n, 3318, 8168, 15915, 10226, 13101, 2753, 12204, 4818, 3316, 10440, 6118, 16220, 11981, 11419, 8307, 7556, 11602, 1080";
+    assert.equal(info,expectedInfo);
+});
+
+});
+
 
 
