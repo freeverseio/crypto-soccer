@@ -11,7 +11,7 @@ class TeamCard extends PureComponent {
     }
 
     render() {
-        const { ethLeagueManager, index } = this.props;
+        const { ethLeagueManager, index, onClick} = this.props;
         const { name } = this.state;
 
         if (ethLeagueManager){
@@ -20,7 +20,7 @@ class TeamCard extends PureComponent {
         }
 
         return (
-            <Card>
+            <Card onClick={() => onClick(index)}>
                 <Card.Content>
                     <Image floated='right' size='mini' src='https://react.semantic-ui.com/images/avatar/large/steve.jpg' />
                     <Card.Header>{name}</Card.Header>

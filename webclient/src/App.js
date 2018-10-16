@@ -9,7 +9,7 @@ import leagueJSON from './contracts/League.json';
 import testingJSON from './contracts/Testing.json';
 
 
-const provider = 'http://localhost:8545';
+const provider = 'http://192.168.1.145:8545';
 
 class App extends Component {
   constructor(props) {
