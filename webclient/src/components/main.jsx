@@ -1,15 +1,15 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Form, Container, Segment, Divider } from 'semantic-ui-react'
 import Teams from './teams';
 
-class Main extends Component {
+class Main extends PureComponent {
     constructor(props){
         super(props);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
 
         this.state = {
-            name: ''
+            name: '',
         }
     }
 
@@ -25,8 +25,6 @@ class Main extends Component {
     }
     
     render() {
-        const { ethLeagueManager } = this.props;
-
         return (
             <Container>
                 <Segment>
@@ -37,7 +35,7 @@ class Main extends Component {
                         </Form.Group>
                     </Form>
                     <Divider/>
-                    <Teams ethLeagueManager={ethLeagueManager}/>
+                    <Teams ethLeagueManager={this.props.ethLeagueManager}/>
                 </Segment>
             </Container>
         )
