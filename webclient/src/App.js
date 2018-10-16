@@ -10,7 +10,7 @@ import testingJSON from './contracts/Testing.json';
 const provider = 'http://localhost:8545';
 
 class App extends Component {
-  constructor(props){
+  constructor(props) {
     super(props);
 
     this.state = {
@@ -26,22 +26,17 @@ class App extends Component {
   render() {
     const { ethLeagueManager } = this.state;
 
+    let welcome = ethLeagueManager ? "connected !" : "not connected !";
+    welcome += " to Crypto Soccer";
+
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <p>Ganache</p>
+          <p>{provider}</p>
           <p>
-            { ethLeagueManager ? "connected !" : "not connected !" }
+            {welcome}
           </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
         </header>
       </div>
     );
