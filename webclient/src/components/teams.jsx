@@ -1,9 +1,11 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { Card, Divider } from 'semantic-ui-react'
 import TeamCard from './team_card';
 import TeamPlayerTable from './team_players_table';
 
-class Teams extends PureComponent {
+
+// TODO : make it pure component
+class Teams extends Component {
     constructor(props){
         super(props);
 
