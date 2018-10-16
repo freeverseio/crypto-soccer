@@ -12,9 +12,11 @@ class Main extends Component {
             name: ''
         }
     }
+
     handleSubmit(event){
         const { ethLeagueManager } = this.props;
         ethLeagueManager.createTeam(this.state.name);
+        this.setState({name: ''});
         event.preventDefault();
     }
 
