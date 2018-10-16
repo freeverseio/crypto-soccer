@@ -24,4 +24,8 @@ export default class EthLeagueManager {
             gas: 6721975
         });
     }
+
+    async countTeams() {
+        return await this.contract.methods.test_getNCreatedTeams.call().call({ from: this.address });
+    }
 }
