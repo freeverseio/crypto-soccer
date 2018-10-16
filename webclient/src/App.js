@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+// importing the compiled contracts
+import leagueJSON from './contracts/League.json';
+
 class App extends Component {
   render() {
     return (
