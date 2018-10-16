@@ -5,3 +5,5 @@ class Teams extends Component {
         return "Hello World!";
     }
 }
+
+export default Teams;
