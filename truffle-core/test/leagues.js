@@ -52,7 +52,7 @@ contract('Leagues', function(accounts) {
             if (result == k.AwayWins) { info += " AwayWins";};
             if (result == k.Tie) { info += " Tie";};
         } 
-        expectedInfo="LeagueIdx 0, with nTeams=4. RESULTS for round 0:Game 0:  AwayWinsGame 1:  Tie";
+        expectedInfo="LeagueIdx 0, with nTeams=4. RESULTS for round 0:Game 0:  TieGame 1:  HomeWins";
         assert.equal(info,expectedInfo);
     });
 

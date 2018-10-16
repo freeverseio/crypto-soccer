@@ -34,8 +34,8 @@ contract GameEngine is TeamFactory {
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], 1000);
-            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], 1000)) {
+            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
+            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
                     attackersSpeed[teamThatAttacks],
@@ -43,7 +43,7 @@ contract GameEngine is TeamFactory {
                     globSkills[1-teamThatAttacks][kBlockShoot],
                     rndNum3[round],
                     rndNum4[round],
-                    1000
+                    kMaxRndNum
                     )
                 ) 
                 {

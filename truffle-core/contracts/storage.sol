@@ -102,6 +102,7 @@ contract Storage {
 
     /// @dev The number of bits used for each rndNumber used to determine each game action
     uint8 constant kBitsPerRndNum = 14; 
+    uint16 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
 
     /// @dev The amount of bits used per state to serialize them in a uint256 
     uint8 constant kBitsPerState = 14; 

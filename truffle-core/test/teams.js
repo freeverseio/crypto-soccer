@@ -33,7 +33,7 @@ contract('Teams', function(accounts) {
     assert.equal(nCreatedPlayers,k.MaxPlayersInTeam+1);
   });
 
-  it("creates another team and plays a game. With this seed, it checks that the result is 1-3", async () => {
+  it("creates another team and plays a game. With this seed, it checks that the result is 1-5", async () => {
     await createTestTeam(
       instance,
       "Sevilla",
@@ -47,8 +47,8 @@ contract('Teams', function(accounts) {
     seed = 232;
     var goals = await instance.test_playGame(0, 1, seed);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    assert.isTrue(goals[0].toNumber()==0);
-    assert.isTrue(goals[1].toNumber()==1);
+    assert.isTrue(goals[0].toNumber()==1);
+    assert.isTrue(goals[1].toNumber()==5);
   });
 
   it("creates an empty team, shows crazy stats, checks name is correct", async () => {
@@ -87,8 +87,8 @@ contract('Teams', function(accounts) {
       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     }
     console.log("Total Goals: " + goalsTeam1 + " - " + goalsTeam2);
-    assert.isTrue(goalsTeam1==0);
-    assert.isTrue(goalsTeam2==2);
+    assert.isTrue(goalsTeam1==6);
+    assert.isTrue(goalsTeam2==5);
   });
 });
 
