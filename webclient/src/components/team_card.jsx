@@ -20,21 +20,13 @@ class TeamCard extends PureComponent {
         }
 
         return (
-            <Card onClick={() => onClick(index)}>
-                <Card.Content>
-                    <Image floated='right' size='mini' src='https://react.semantic-ui.com/images/avatar/large/steve.jpg' />
-                    <Card.Header>{name}</Card.Header>
-                    <Card.Meta>Amazing Team!</Card.Meta>
-                    <Card.Description>
-                        {name} is will win!
-                    </Card.Description>
-                </Card.Content>
-                <Card.Content extra>
-                    <Button basic color='red'>
-                        Delete
-                </Button>
-                </Card.Content>
-            </Card>
+            <Card
+                onClick={() => onClick(index)}
+                image='https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/11/21/13/borat.jpg'
+                header={name}
+                meta='Team'
+                description={name + " is amazing!"}
+            />
         )
     }
 }
