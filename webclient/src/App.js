@@ -32,7 +32,6 @@ class App extends Component {
       <div className="App">
         <Connection provider={provider} ethLeagueManager={ethLeagueManager} />
         <Main ethLeagueManager={ethLeagueManager}/>
-        <footer>This is the footer</footer>
       </div>
     );
   }
