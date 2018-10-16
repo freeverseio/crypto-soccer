@@ -31,7 +31,7 @@ class App extends Component {
     return (
       <div className="App">
         <Connection provider={provider} ethLeagueManager={ethLeagueManager} />
-        <Main />
+        <Main ethLeagueManager={ethLeagueManager}/>
         <footer>This is the footer</footer>
       </div>
     );

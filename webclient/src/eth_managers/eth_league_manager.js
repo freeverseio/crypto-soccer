@@ -14,11 +14,12 @@ export default class EthLeagueManager {
 
     constructor(contract) {
         this.contract = contract
+        this.address = '0x82cC3f53b9DD7Fc8F546DB9eBC497b8D69B1AebA';
     }
 
-    async createTeam(address, name) {
-        this.contract.test_createTeam(name).send({
-            from: address,
+    async createTeam(name) {
+        this.contract.methods.test_createTeam(name).send({
+            from: this.address,
             gasPrice: 20000000000,
             gas: 6721975
         });
