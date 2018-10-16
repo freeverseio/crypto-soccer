@@ -180,9 +180,7 @@ function playMatch() {
 
     var local = parseInt($('#localTeamInput').val())
     var visitor = parseInt($('#visitorTeamInput').val())
-    nRounds=18
-    var rnd = getRandomInt(1,10000);
-
+    var rnd = getRandomInt(1,1000000); 
     contract.methods.test_playGame(local, visitor, rnd).call({ from: jsonSelectedAddr, gasPrice: gasPrice, gas: maxGas }, function (error, result) {
         if (error) {
             console.log(error)
