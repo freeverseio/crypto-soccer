@@ -8,13 +8,14 @@ export default class EthLeagueManager {
             contractJSON.abi,
             contractJSON.networks[networkId].address
         )
+        const addresses = await web3.eth.getAccounts();
 
-        return new EthLeagueManager(contract)
+        return new EthLeagueManager(contract, addresses[0]);
     }
 
-    constructor(contract) {
+    constructor(contract, address) {
         this.contract = contract
-        this.address = '0x82cC3f53b9DD7Fc8F546DB9eBC497b8D69B1AebA';
+        this.address = address;
     }
 
     async createTeam(name) {
