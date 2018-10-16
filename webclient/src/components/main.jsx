@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Form, Container, Segment, Divider } from 'semantic-ui-react'
+import { Form, Segment, Divider } from 'semantic-ui-react'
 import Teams from './teams';
 
 class Main extends PureComponent {
@@ -21,23 +21,21 @@ class Main extends PureComponent {
     }
 
     handleChange(event){
-        this.setState({name: event.target.value});
+        this.setState({ name: event.target.value });
     }
-    
+
     render() {
         return (
-            <Container>
-                <Segment>
-                    <Form onSubmit={this.handleSubmit}>
-                        <Form.Group widths='equal'>
-                            <Form.Input placeholder='Name' name='name' value={this.state.name} onChange={this.handleChange} />
-                            <Form.Button content='Create Team' />
-                        </Form.Group>
-                    </Form>
-                    <Divider/>
-                    <Teams ethLeagueManager={this.props.ethLeagueManager}/>
-                </Segment>
-            </Container>
+            <Segment>
+                <Form onSubmit={this.handleSubmit}>
+                    <Form.Group widths='equal'>
+                        <Form.Input placeholder='Name' name='name' value={this.state.name} onChange={this.handleChange} />
+                        <Form.Button content='Create Team' />
+                    </Form.Group>
+                </Form>
+                <Divider />
+                <Teams ethLeagueManager={this.props.ethLeagueManager} />
+            </Segment>
         )
     }
 }
