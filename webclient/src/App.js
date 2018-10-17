@@ -16,6 +16,9 @@ class App extends Component {
       testingFacade: '',
       teams: []
     }
+
+    this.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+    this.web3 = new Web3(this.web3Provider);
   }
 
   async getTeams(testingFacade) {
@@ -31,9 +34,8 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const web3 = new Web3(provider);
-    const accounts = await web3.eth.getAccounts();
-    const testingContract = await createTestingContract(web3);
+    const accounts = await this.web3.eth.getAccounts();
+    const testingContract = await createTestingContract(this.web3);
     const testingFacade = new TestingFacade(testingContract, accounts[0]);
     const teams = await this.getTeams(testingFacade);
 
