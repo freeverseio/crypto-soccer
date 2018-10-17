@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Form, Segment, Divider } from 'semantic-ui-react'
-import Teams from './teams';
+import { Card, Form, Segment, Divider } from 'semantic-ui-react'
+import TeamCard from './team_card';
+import TeamPlayerTable from './team_players_table';
 
 class Main extends PureComponent {
     constructor(props){
@@ -20,8 +21,26 @@ class Main extends PureComponent {
         event.preventDefault();
     }
 
-    handleChange(event){
+    handleChange(event) {
         this.setState({ name: event.target.value });
+    }
+
+    teamCardList = () => {
+        const { teams, ethLeagueManager } = this.props;
+
+        return (
+            teams.map((team, key) => {
+                return (
+                    <TeamCard
+                        key={key}
+                        index={key}
+                        name={team}
+                        ethLeagueManager={ethLeagueManager}
+                        onClick={index => this.setState({ selectedIndex: index })}
+                    />
+                )
+            })
+        )
     }
 
     render() {
@@ -34,7 +53,11 @@ class Main extends PureComponent {
                     </Form.Group>
                 </Form>
                 <Divider />
-                <Teams ethLeagueManager={this.props.ethLeagueManager} />
+                <Card.Group>
+                    {this.teamCardList()}
+                </Card.Group>
+                <Divider />
+                {/* <TeamPlayerTable index={selectedIndex}/> */}
             </Segment>
         )
     }
