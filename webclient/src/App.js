@@ -15,7 +15,7 @@ class App extends Component {
       teams: []
     }
 
-    this.web3Provider = new Web3.providers.HttpProvider('http://localhost:8545');
+    this.web3Provider = new Web3.providers.WebsocketProvider('ws://localhost:8545');
     this.web3 = new Web3(this.web3Provider);
   }
 
@@ -36,6 +36,14 @@ class App extends Component {
     const testingContract = await createTestingContract(this.web3);
     const testingFacade = new TestingFacade(testingContract, accounts[0]);
     const teams = await this.getTeams(testingFacade);
+
+    testingContract.events.TeamCreation()
+      .on('data', event => {
+          this.getTeams(testingFacade)
+          .then(teams => this.setState({teams}));
+      })
+      .on('changed', reason => console.log("(WW) TeleportOracle: " + reason))
+      .on('error', reason => console.log("(EE) TeleportOracle: " + reason));
 
     this.setState({ testingFacade, teams });
   }
