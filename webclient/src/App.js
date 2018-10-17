@@ -24,7 +24,7 @@ class App extends Component {
     let teams = [];
     for (let i = 0; i < count; i++) {
       const name = await ethLeagueManager.teamName(i);
-      teams.push(name);
+      teams.push({index: i, name: name});
     }
 
     return teams;

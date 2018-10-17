@@ -27,13 +27,14 @@ class Main extends PureComponent {
     render() {
         const { teams, ethLeagueManager } = this.props;
 
-        const cardList = teams.map((team, key) => (
+        const cardList = teams.map(team => (
             <Card
+                key={team.index}
                 image='https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/11/21/13/borat.jpg'
-                header={team}
+                header={team.name}
                 meta='Team'
-                description={team + " is amazing!"}
-                onClick={() => console.log(team)}
+                description={team.name + " is amazing!"}
+                onClick={() => console.log(team.index)}
             />
         ));
 
