@@ -12,7 +12,7 @@ export const createTestingContract = async web3 => {
     return contract;
 }
 
-export class EthLeagueManager {
+export class TestingFacade {
     constructor(contract, account) {
         this.contract = contract
         this.address = account;
