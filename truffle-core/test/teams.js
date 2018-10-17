@@ -45,7 +45,7 @@ contract('Teams', function(accounts) {
     );
     await printTeamPlayers(1, instance);
     seed = 232;
-    var goals = await instance.test_playGame(0, 1, seed);
+    var goals = await instance.test_playGame.call(0, 1, seed);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     assert.isTrue(goals[0].toNumber()==1);
     assert.isTrue(goals[1].toNumber()==5);
@@ -81,7 +81,7 @@ contract('Teams', function(accounts) {
     console.log("Playing " + nGames + " games");
     for (var game=0; game<nGames; game++) {
       seed = game + 1;
-      var goals = await instance.test_playGame(0, 1, seed);
+      var goals = await instance.test_playGame.call(0, 1, seed);
       goalsTeam1 += goals[0].toNumber();
       goalsTeam2 += goals[1].toNumber();
       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
