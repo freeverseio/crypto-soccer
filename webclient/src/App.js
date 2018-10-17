@@ -13,24 +13,37 @@ class App extends Component {
     super(props);
 
     this.state = {
-      ethLeagueManager: ''
+      ethLeagueManager: '',
+      teams: []
     }
+  }
+
+  async getTeams(ethLeagueManager) {
+    const count = await ethLeagueManager.countTeams();
+
+    let teams = [];
+    for (let i = 0; i < count; i++) {
+      const name = await ethLeagueManager.teamName(i);
+      teams.push(name);
+    }
+
+    return teams;
   }
 
   async componentDidMount() {
     const web3 = new Web3(provider);
     const accounts = await web3.eth.getAccounts();
     const ethLeagueManager = await EthLeagueManager.createAsync(web3, accounts[0]);
-    this.setState({ethLeagueManager});
+    const teams = await this.getTeams(ethLeagueManager);
+
+    this.setState({ ethLeagueManager, teams });
   }
 
   render() {
-    const { ethLeagueManager } = this.state;
-
     return (
       <div className="App">
-        <Connection provider={provider} ethLeagueManager={ethLeagueManager} />
-        <Main ethLeagueManager={ethLeagueManager}/>
+        <Connection provider={provider} {...this.state} />
+        <Main {...this.state} />
       </div>
     );
   }
