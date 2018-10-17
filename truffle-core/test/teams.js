@@ -45,7 +45,7 @@ contract('Teams', function(accounts) {
     );
     await printTeamPlayers(1, instance);
     seed = 232;
-    var goals = await instance.test_playGame(0, 1, seed);
+    var goals = await instance.test_playGame.call(0, 1, seed);
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     assert.isTrue(goals[0].toNumber()==1);
     assert.isTrue(goals[1].toNumber()==5);
@@ -81,7 +81,7 @@ contract('Teams', function(accounts) {
     console.log("Playing " + nGames + " games");
     for (var game=0; game<nGames; game++) {
       seed = game + 1;
-      var goals = await instance.test_playGame(0, 1, seed);
+      var goals = await instance.test_playGame.call(0, 1, seed);
       goalsTeam1 += goals[0].toNumber();
       goalsTeam2 += goals[1].toNumber();
       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
@@ -90,6 +90,16 @@ contract('Teams', function(accounts) {
     assert.isTrue(goalsTeam1==6);
     assert.isTrue(goalsTeam2==5);
   });
+
+  it("creates a team via .call() instead of Tx and checks that you can create 2 teams with same name", async () => {
+    teamName="test";
+    var newTeamIdx = await instance.test_getNCreatedTeams.call(); 
+    await instance.test_createTeam.call(teamName);
+    var newTeamIdx2 = await instance.test_getNCreatedTeams.call(); 
+    assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
+    await instance.test_createTeam.call(teamName);
+  });
+
 });
 
 async function printTeamPlayers(teamIdx, instance) {

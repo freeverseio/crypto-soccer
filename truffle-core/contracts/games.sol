@@ -7,10 +7,12 @@ import "./teams.sol";
 
 contract GameEngine is TeamFactory {
 
+    event TeamAttacks(uint8 homeOrAway, uint8 round);
+    event ShootResult(bool isGoal, uint8 attackerIdx, uint8 round);
+
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint seed)
         internal
-        view
         returns (uint16[2] memory teamGoals)
     {
         /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
@@ -30,11 +32,12 @@ contract GameEngine is TeamFactory {
 
         uint8 teamThatAttacks;
         /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
-        for (uint round = 0; round < kRoundsPerGame; round++){
+        for (uint8 round = 0; round < kRoundsPerGame; round++){
             if ( (round == 8) || (round == 13)) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
+            emit TeamAttacks(teamThatAttacks, round);
             if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
@@ -43,7 +46,8 @@ contract GameEngine is TeamFactory {
                     globSkills[1-teamThatAttacks][kBlockShoot],
                     rndNum3[round],
                     rndNum4[round],
-                    kMaxRndNum
+                    kMaxRndNum,
+                    round
                     )
                 ) 
                 {
@@ -68,9 +72,39 @@ contract GameEngine is TeamFactory {
         }
     }
 
+    /// @dev Wrapper for the function that actually computes if they manage to score.
+    ///  This one emits the event, in case they do.
+    function managesToScore(
+        uint8 nAttackers,
+        uint[kMaxPlayersInTeam] memory attackersSpeed,
+        uint[kMaxPlayersInTeam] memory attackersShoot,
+        uint blockShoot,
+        uint rndNum1,
+        uint rndNum2,
+        uint factor,
+        uint8 round
+    )
+        internal
+        returns (bool)
+    {
+        (bool isGoal, uint8 shooter) = 
+            managesToScorePure(
+                nAttackers,
+                attackersSpeed,
+                attackersShoot,
+                blockShoot,
+                rndNum1,
+                rndNum2,
+                factor
+            );
+        emit ShootResult(isGoal, shooter, round);
+        return isGoal; 
+    }
+
+
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
-    function managesToScore(
+    function managesToScorePure(
         uint8 nAttackers,
         uint[kMaxPlayersInTeam] memory attackersSpeed,
         uint[kMaxPlayersInTeam] memory attackersShoot,
@@ -81,7 +115,7 @@ contract GameEngine is TeamFactory {
     )
         internal
         pure
-        returns (bool)
+        returns (bool, uint8)
     {
         /// @dev attacker who actually shoots is selected weighted by his speed
         uint[] memory weights = new uint[](nAttackers);
@@ -91,7 +125,10 @@ contract GameEngine is TeamFactory {
         uint8 shooter = throwDiceArray(weights, rndNum1, factor);
 
         /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0;
+        return (
+            throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0,
+            shooter
+        );
     }
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
