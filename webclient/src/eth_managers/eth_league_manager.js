@@ -1,18 +1,18 @@
 import leagueJSON from '../contracts/League.json';
 import testingJSON from '../contracts/Testing.json';
 
-export default class EthLeagueManager {
-    static async createAsync(web3, account) {
-        const contractJSON = testingJSON;
-        const networkId = await web3.eth.net.getId();
-        const contract = new web3.eth.Contract(
-            contractJSON.abi,
-            contractJSON.networks[networkId].address
-        )
+export const createTestingContract = async web3 => {
+    const contractJSON = testingJSON;
+    const networkId = await web3.eth.net.getId();
+    const contract = new web3.eth.Contract(
+        contractJSON.abi,
+        contractJSON.networks[networkId].address
+    )
 
-        return new EthLeagueManager(contract, account);
-    }
+    return contract;
+}
 
+export class EthLeagueManager {
     constructor(contract, account) {
         this.contract = contract
         this.address = account;
