@@ -6,8 +6,6 @@ import 'semantic-ui-css/semantic.min.css';
 
 import { createTestingContract, TestingFacade } from './ethereum/testing_contract';
 
-const provider = 'http://localhost:8545';
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -45,7 +43,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Connection provider={provider} {...this.state} />
+        <Connection provider={this.web3Provider} {...this.state} />
         <Main {...this.state} />
       </div>
     );

@@ -11,7 +11,7 @@ class Connection extends Component {
                     {ethLeagueManager ? "connected" : "disconnected "}
                 </Header>
                 <Header as='h2' floated='left'>
-                    {provider}
+                    {provider.host}
                 </Header>
             </Segment>
         )
