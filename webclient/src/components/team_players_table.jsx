@@ -3,13 +3,15 @@ import { Icon, Label, Menu, Table } from 'semantic-ui-react'
 
 class TeamPlayersTable extends PureComponent {
     render() {
-        const { index } = this.props;
+        const { team } = this.props;
+
+        console.log(team);
 
         return (
             <Table celled>
                 <Table.Header>
                     <Table.Row>
-                        <Table.HeaderCell>Team n. {index}</Table.HeaderCell>
+                        <Table.HeaderCell>Team</Table.HeaderCell>
                         <Table.HeaderCell>Header</Table.HeaderCell>
                         <Table.HeaderCell>Header</Table.HeaderCell>
                     </Table.Row>

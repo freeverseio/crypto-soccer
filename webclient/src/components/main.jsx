@@ -9,7 +9,6 @@ class Main extends PureComponent {
         this.handleSubmit = this.handleSubmit.bind(this);
 
         this.state = {
-            name: '',
         }
     }
 
@@ -25,7 +24,8 @@ class Main extends PureComponent {
     }
 
     render() {
-        const { teams, ethLeagueManager } = this.props;
+        const { teams } = this.props;
+        const { team } = this.state;
 
         const cardList = teams.map(team => (
             <Card
@@ -34,7 +34,7 @@ class Main extends PureComponent {
                 header={team.name}
                 meta='Team'
                 description={team.name + " is amazing!"}
-                onClick={() => console.log(team.index)}
+                onClick={() => this.setState({ team })}
             />
         ));
 
@@ -51,7 +51,7 @@ class Main extends PureComponent {
                     {cardList}
                 </Card.Group>
                 <Divider />
-                {/* <TeamPlayerTable index={selectedIndex}/> */}
+                <TeamPlayerTable team={team} />
             </Segment>
         )
     }
