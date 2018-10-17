@@ -42,8 +42,8 @@ class App extends Component {
           this.getTeams(testingFacade)
           .then(teams => this.setState({teams}));
       })
-      .on('changed', reason => console.log("(WW) TeleportOracle: " + reason))
-      .on('error', reason => console.log("(EE) TeleportOracle: " + reason));
+      .on('changed', reason => console.log("(WW): " + reason))
+      .on('error', reason => console.log("(EE): " + reason));
 
     this.setState({ testingFacade, teams });
   }

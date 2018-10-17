@@ -1,4 +1,4 @@
-import leagueJSON from '../contracts/League.json';
+// import leagueJSON from '../contracts/League.json';
 import testingJSON from '../contracts/Testing.json';
 
 export const createTestingContract = async web3 => {

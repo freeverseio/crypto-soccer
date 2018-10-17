@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Icon, Label, Menu, Table } from 'semantic-ui-react'
+import { Label, Table } from 'semantic-ui-react'
 
 class TeamPlayersTable extends PureComponent {
     render() {
