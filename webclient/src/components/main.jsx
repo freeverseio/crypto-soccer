@@ -9,6 +9,7 @@ class Main extends PureComponent {
         this.handleSubmit = this.handleSubmit.bind(this);
 
         this.state = {
+            name: ''
         }
     }
 

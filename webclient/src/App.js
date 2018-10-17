@@ -13,7 +13,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      ethLeagueManager: '',
+      testingFacade: '',
       teams: []
     }
   }
@@ -34,10 +34,10 @@ class App extends Component {
     const web3 = new Web3(provider);
     const accounts = await web3.eth.getAccounts();
     const testingContract = await createTestingContract(web3);
-    const testingFacede = new TestingFacade(testingContract, accounts[0]);
-    const teams = await this.getTeams(testingFacede);
+    const testingFacade = new TestingFacade(testingContract, accounts[0]);
+    const teams = await this.getTeams(testingFacade);
 
-    this.setState({ testingFacede, teams });
+    this.setState({ testingFacade, teams });
   }
 
   render() {
