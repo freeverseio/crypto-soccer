@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import Connection from './components/connection';
 import Main from './components/main';
+import Web3 from 'web3';
 import 'semantic-ui-css/semantic.min.css';
 
 import EthLeagueManager from './eth_managers/eth_league_manager';
-
-import leagueJSON from './contracts/League.json';
-import testingJSON from './contracts/Testing.json';
-
 
 const provider = 'http://localhost:8545';
 
@@ -21,8 +18,10 @@ class App extends Component {
   }
 
   async componentDidMount() {
-    const ethLeagueManager = await EthLeagueManager.createAsync(provider, testingJSON);
-    this.setState({ ethLeagueManager });
+    const web3 = new Web3(provider);
+    const accounts = await web3.eth.getAccounts();
+    const ethLeagueManager = await EthLeagueManager.createAsync(web3, accounts[0]);
+    this.setState({ethLeagueManager});
   }
 
   render() {
