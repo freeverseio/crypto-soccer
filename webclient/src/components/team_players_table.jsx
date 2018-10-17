@@ -5,37 +5,36 @@ class TeamPlayersTable extends PureComponent {
     render() {
         const { team } = this.props;
 
-        console.log(team);
+        const players = () => {
+            if (!team)
+                return <div />
+
+            return (
+                team.players.map(player => (
+                    <Table.Row>
+                        <Table.Cell>
+                            <Label ribbon>{player.player}</Label>
+                        </Table.Cell>
+                        <Table.Cell>Cell</Table.Cell>
+                        <Table.Cell>Cell</Table.Cell>
+                    </Table.Row>
+                ))
+            )
+        }
 
         return (
             <Table celled>
                 <Table.Header>
                     <Table.Row>
-                        <Table.HeaderCell>Team</Table.HeaderCell>
+                        <Table.HeaderCell>Team {team && team.name}</Table.HeaderCell>
                         <Table.HeaderCell>Header</Table.HeaderCell>
                         <Table.HeaderCell>Header</Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
 
                 <Table.Body>
-                    <Table.Row>
-                        <Table.Cell>
-                            <Label ribbon>First</Label>
-                        </Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                    </Table.Row>
-                    <Table.Row>
-                        <Table.Cell>Cell</Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                    </Table.Row>
-                    <Table.Row>
-                        <Table.Cell>Cell</Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                        <Table.Cell>Cell</Table.Cell>
-                    </Table.Row>
-                </Table.Body>
+                    {players()}
+               </Table.Body>
             </Table>
         )
     }

@@ -33,4 +33,8 @@ export class TestingFacade {
     async teamName(index){
         return this.contract.methods.test_getTeamName(index).call({ from: this.address });
     }
+
+    async player(teamIndex, index) {
+        return this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
+    }
 }
