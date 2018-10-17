@@ -90,6 +90,16 @@ contract('Teams', function(accounts) {
     assert.isTrue(goalsTeam1==6);
     assert.isTrue(goalsTeam2==5);
   });
+
+  it("creates a team via .call() instead of Tx and checks that you can create 2 teams with same name", async () => {
+    teamName="test";
+    var newTeamIdx = await instance.test_getNCreatedTeams.call(); 
+    await instance.test_createTeam.call(teamName);
+    var newTeamIdx2 = await instance.test_getNCreatedTeams.call(); 
+    assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
+    await instance.test_createTeam.call(teamName);
+  });
+
 });
 
 async function printTeamPlayers(teamIdx, instance) {
