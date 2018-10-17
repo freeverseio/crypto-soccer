@@ -13,8 +13,8 @@ class Main extends PureComponent {
     }
 
     handleSubmit(event) {
-        const { ethLeagueManager } = this.props;
-        ethLeagueManager.createTeam(this.state.name);
+        const { testingFacade } = this.props;
+        testingFacade.createTeam(this.state.name);
         this.setState({name: ''});
         event.preventDefault();
     }

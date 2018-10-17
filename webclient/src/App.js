@@ -18,12 +18,12 @@ class App extends Component {
     }
   }
 
-  async getTeams(ethLeagueManager) {
-    const count = await ethLeagueManager.countTeams();
+  async getTeams(testingFacade) {
+    const count = await testingFacade.countTeams();
 
     let teams = [];
     for (let i = 0; i < count; i++) {
-      const name = await ethLeagueManager.teamName(i);
+      const name = await testingFacade.teamName(i);
       teams.push({index: i, name: name});
     }
 
@@ -34,10 +34,10 @@ class App extends Component {
     const web3 = new Web3(provider);
     const accounts = await web3.eth.getAccounts();
     const testingContract = await createTestingContract(web3);
-    const ethLeagueManager = new TestingFacade(testingContract, accounts[0]);
-    const teams = await this.getTeams(ethLeagueManager);
+    const testingFacede = new TestingFacade(testingContract, accounts[0]);
+    const teams = await this.getTeams(testingFacede);
 
-    this.setState({ ethLeagueManager, teams });
+    this.setState({ testingFacede, teams });
   }
 
   render() {
