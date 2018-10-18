@@ -12,10 +12,18 @@ export const createTestingContract = async web3 => {
     return contract;
 }
 
+function unixMonthToAge(unixMonthOfBirth) {
+    // in July 2018, we are at month 582 after 1970.
+    const age = (582 - unixMonthOfBirth) / 12;
+    return parseInt(age * 10) / 10;
+}
+
 export class TestingFacade {
     constructor(contract, account) {
         this.contract = contract
         this.address = account;
+        this.skillNumber = 7;
+        this.bitPerState = 14;
     }
 
     async createTeam(name) {
@@ -36,5 +44,14 @@ export class TestingFacade {
 
     async player(teamIndex, index) {
         return this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
+    }
+
+    async playerSkills(teamIndex, index) {
+        const serialized = await this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
+        const result = await this.contract.methods.test_decode(this.skillNumber, serialized, this.bitPerState).call({ from: this.address });
+        for (let i=0; i < this.skillNumber ; i++)
+            result[i] = unixMonthToAge(result[i]);
+
+        return result;
     }
 }
