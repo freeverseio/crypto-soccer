@@ -7,11 +7,11 @@ class TeamPlayersTable extends PureComponent {
 
         const players = () => {
             if (!team)
-                return <div />
+                return <Table.Cell />
 
             return (
                 team.players.map(player => (
-                    <Table.Row>
+                    <Table.Row key={player.index}>
                         <Table.Cell>
                             <Label ribbon>{player.player}</Label>
                         </Table.Cell>
