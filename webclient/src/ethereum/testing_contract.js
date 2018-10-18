@@ -42,10 +42,6 @@ export class TestingFacade {
         return this.contract.methods.test_getTeamName(index).call({ from: this.address });
     }
 
-    async player(teamIndex, index) {
-        return this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
-    }
-
     async playerSkills(teamIndex, index) {
         const serialized = await this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
         const result = await this.contract.methods.test_decode(this.skillNumber, serialized, this.bitPerState).call({ from: this.address });
