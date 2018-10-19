@@ -23,6 +23,8 @@ class App extends Component {
     const count = await testingFacade.countTeams();
 
     let teams = [];
+    // Please use descriptive index names. Here, instead of (i,j), 
+    // you could use (team, player), or (t,p). Otherwise playerSkills(i,j) is a bit obscure
     for (let i = 0; i < count; i++) {
       const name = await testingFacade.teamName(i);
       let players = [];
