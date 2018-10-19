@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Segment, Divider, Button, Icon, Grid } from 'semantic-ui-react'
+import { Card, Form, Segment, Divider, Button, Icon, Grid, Header, GridColumn } from 'semantic-ui-react'
 import TeamPlayerTable from './team_players_table';
 import TeamSelect from './team_select';
 
@@ -33,12 +33,14 @@ class Main extends PureComponent {
         if (!this.teamB) return;
 
         testingFacade.playGame(this.teamA, this.teamB)
-        .then(console.log);
+        .then(result => this.setState({result: result}));
     }
 
     render() {
         const { teams } = this.props;
-        const { team } = this.state;
+        const { team, result } = this.state;
+
+        console.log(result)
 
         const cardList = teams.map(team => (
             <Card
@@ -68,8 +70,16 @@ class Main extends PureComponent {
                                 </Button>
                             </Grid.Column>
                             <Grid.Column width={6}>
-                                <TeamSelect fluid placeholder='Select team B' teams={teams} onChange={(e, data) => this.teamB = data.value}/>
+                                <TeamSelect fluid placeholder='Select team B' teams={teams} onChange={(e, data) => this.teamB = data.value} />
                             </Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <GridColumn width={8}>
+                                <Header textAlign='center' as="h1">{result && result[0]}</Header>
+                            </GridColumn>
+                            <GridColumn width={8}>
+                                <Header textAlign='center' as="h1">{result && result[1]}</Header>
+                            </GridColumn>
                         </Grid.Row>
                     </Grid>
                 </Segment>
