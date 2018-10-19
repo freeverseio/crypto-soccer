@@ -9,7 +9,7 @@ class TeamPlayersTable extends PureComponent {
 
         const players = () => {
             if (!team)
-                return <Table.Cell />
+                return <Table.Row />
 
             return (
                 team.players.map(player => (

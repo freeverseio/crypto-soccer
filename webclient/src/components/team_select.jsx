@@ -5,10 +5,11 @@ import { Select } from 'semantic-ui-react';
 
 const TeamSelect = (params) => {
     console.log(params);
+    const teams = params.teams;
+    const options = teams.map(team => ({ key: team.index, value: team.index, text: team.name }))
     return (
-        <Select placeholder='Select your country' options={countryOptions} />
+        <Select  {...params} options={options} />
     );
 }
-
 
 export default TeamSelect;

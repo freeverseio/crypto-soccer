@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Card, Form, Segment, Divider } from 'semantic-ui-react'
+import { Card, Form, Segment, Divider, Button, Icon, Grid } from 'semantic-ui-react'
 import TeamPlayerTable from './team_players_table';
+import TeamSelect from './team_select';
 
 class Main extends PureComponent {
     constructor(props){
@@ -41,6 +42,26 @@ class Main extends PureComponent {
 
         return (
             <Segment>
+                <Segment>
+                    <Grid relaxed>
+                        <Grid.Row>
+                            <Grid.Column width={6}>
+                                <TeamSelect fluid placeholder='Select team A' teams={teams} />
+                            </Grid.Column>
+                            <Grid.Column width={4}>
+                                <Button animated fluid>
+                                    <Button.Content visible>Play</Button.Content>
+                                    <Button.Content hidden>
+                                        <Icon name='arrow right' />
+                                    </Button.Content>
+                                </Button>
+                            </Grid.Column>
+                            <Grid.Column width={6}>
+                                <TeamSelect fluid placeholder='Select team B' teams={teams} />
+                            </Grid.Column>
+                        </Grid.Row>
+                    </Grid>
+                </Segment>
                 <Form onSubmit={this.handleSubmit}>
                     <Form.Group widths='equal'>
                         <Form.Input placeholder='Name' name='name' value={this.state.name} onChange={this.handleChange} />
