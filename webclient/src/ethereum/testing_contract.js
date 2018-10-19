@@ -86,4 +86,9 @@ export class TestingFacade {
         const absIndex = 10 * teamIndex + index + 1 + teamIndex;
         return await this.contract.methods.test_getPlayerName(absIndex).call();
     }
+
+    async playGame(teamAIndex, teamBIndex){
+        const seed = 0;
+        return await this.contract.methods.test_playGame(teamAIndex, teamBIndex, seed).call();
+    }
 }

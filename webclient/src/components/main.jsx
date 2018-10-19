@@ -8,9 +8,10 @@ class Main extends PureComponent {
         super(props);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.playGame = this.playGame.bind(this);
 
         this.state = {
-            name: ''
+            name: '',
         }
     }
 
@@ -23,6 +24,16 @@ class Main extends PureComponent {
 
     handleChange(event) {
         this.setState({ name: event.target.value });
+    }
+
+    playGame(){
+        const { testingFacade } = this.props;
+
+        if (!this.teamA) return;
+        if (!this.teamB) return;
+
+        testingFacade.playGame(this.teamA, this.teamB)
+        .then(console.log);
     }
 
     render() {
@@ -46,10 +57,10 @@ class Main extends PureComponent {
                     <Grid relaxed>
                         <Grid.Row>
                             <Grid.Column width={6}>
-                                <TeamSelect fluid placeholder='Select team A' teams={teams} />
+                                <TeamSelect fluid placeholder='Select team A' teams={teams} onChange={(e, data) => this.teamA = data.value} />
                             </Grid.Column>
                             <Grid.Column width={4}>
-                                <Button animated fluid>
+                                <Button animated fluid onClick={() => this.playGame()}>
                                     <Button.Content visible>Play</Button.Content>
                                     <Button.Content hidden>
                                         <Icon name='arrow right' />
@@ -57,7 +68,7 @@ class Main extends PureComponent {
                                 </Button>
                             </Grid.Column>
                             <Grid.Column width={6}>
-                                <TeamSelect fluid placeholder='Select team B' teams={teams} />
+                                <TeamSelect fluid placeholder='Select team B' teams={teams} onChange={(e, data) => this.teamB = data.value}/>
                             </Grid.Column>
                         </Grid.Row>
                     </Grid>
