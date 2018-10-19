@@ -13,6 +13,9 @@ class Main extends PureComponent {
         this.state = {
             name: '',
         }
+
+        this.teamA = -1;
+        this.teamB = -1;
     }
 
     handleSubmit(event) {
@@ -29,8 +32,8 @@ class Main extends PureComponent {
     playGame(){
         const { testingFacade } = this.props;
 
-        if (!this.teamA) return;
-        if (!this.teamB) return;
+        if (this.teamA < 0) return;
+        if (this.teamB < 0) return;
 
         testingFacade.playGame(this.teamA, this.teamB)
         .then(result => this.setState({result: result}));
@@ -39,8 +42,6 @@ class Main extends PureComponent {
     render() {
         const { teams } = this.props;
         const { team, result } = this.state;
-
-        console.log(result)
 
         const cardList = teams.map(team => (
             <Card

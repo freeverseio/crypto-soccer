@@ -88,7 +88,7 @@ export class TestingFacade {
     }
 
     async playGame(teamAIndex, teamBIndex){
-        const seed = 0;
+        const seed = Math.floor(Math.random() * 10000);
         return await this.contract.methods.test_playGame(teamAIndex, teamBIndex, seed).call();
     }
 }
