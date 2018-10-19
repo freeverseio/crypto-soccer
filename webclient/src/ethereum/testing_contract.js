@@ -81,4 +81,8 @@ export class TestingFacade {
 
         return result;
     }
+
+    async playerName(index){
+        return await this.contract.methods.test_getPlayerName(index).call();
+    }
 }

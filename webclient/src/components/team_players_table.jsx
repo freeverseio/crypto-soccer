@@ -15,7 +15,7 @@ class TeamPlayersTable extends PureComponent {
                 team.players.map(player => (
                     <Table.Row key={player.index}>
                         <Table.Cell>
-                            <Label ribbon>{player.index}</Label>
+                            <Label ribbon>{player.name}</Label>
                         </Table.Cell>
                         <Table.Cell>{player.skills[0]}</Table.Cell>
                         <Table.Cell>{player.skills[1]}</Table.Cell>
