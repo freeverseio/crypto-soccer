@@ -30,7 +30,7 @@ class App extends Component {
       let players = [];
       for (let j = 0; j < 11; j++) {
         const skills = await testingFacade.playerSkills(i, j);
-        const name = await testingFacade.playerName(j);
+        const name = await testingFacade.playerName(i, j);
         players.push({ index: j, name, skills });
       }
       teams.push({ 

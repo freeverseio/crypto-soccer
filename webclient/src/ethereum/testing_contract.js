@@ -82,7 +82,8 @@ export class TestingFacade {
         return result;
     }
 
-    async playerName(index){
-        return await this.contract.methods.test_getPlayerName(index).call();
+    async playerName(teamIndex, index){
+        const absIndex = 10 * teamIndex + index + 1 + teamIndex;
+        return await this.contract.methods.test_getPlayerName(absIndex).call();
     }
 }
