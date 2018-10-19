@@ -3,6 +3,8 @@
     One restriction: functions in this file cannot use other functions in this file :-(
 */
 
+const k = require('./constants');
+
 function catchPlayerIdxFromEvent(logs) {
     var playerIdx = -1;
     for (var i = 0; i < logs.length; i++) {
