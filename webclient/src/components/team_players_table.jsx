@@ -1,6 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Label, Table } from 'semantic-ui-react'
 
+const roleNames = ['Goalkeeper','Defender','Midfielder','Forward'];
+
 class TeamPlayersTable extends PureComponent {
     render() {
         const { team } = this.props;
@@ -21,7 +23,7 @@ class TeamPlayersTable extends PureComponent {
                         <Table.Cell>{player.skills[3]}</Table.Cell>
                         <Table.Cell>{player.skills[4]}</Table.Cell>
                         <Table.Cell>{player.skills[5]}</Table.Cell>
-                        <Table.Cell>{player.skills[6]}</Table.Cell>
+                        <Table.Cell>{roleNames[player.skills[6]]}</Table.Cell>
                     </Table.Row>
                 ))
             )
@@ -31,14 +33,14 @@ class TeamPlayersTable extends PureComponent {
             <Table celled>
                 <Table.Header>
                     <Table.Row>
-                        <Table.HeaderCell>{team && team.name}</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 0</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 1</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 2</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 3</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 4</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 5</Table.HeaderCell>
-                        <Table.HeaderCell>Skill 6</Table.HeaderCell>
+                        <Table.HeaderCell>Team {team && team.name}</Table.HeaderCell>
+                        <Table.HeaderCell>Age</Table.HeaderCell>
+                        <Table.HeaderCell>Defense</Table.HeaderCell>
+                        <Table.HeaderCell>Speed</Table.HeaderCell>
+                        <Table.HeaderCell>Pass</Table.HeaderCell>
+                        <Table.HeaderCell>Shoot</Table.HeaderCell>
+                        <Table.HeaderCell>Endurance</Table.HeaderCell>
+                        <Table.HeaderCell>Role</Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
 

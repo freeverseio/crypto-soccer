@@ -77,8 +77,7 @@ export class TestingFacade {
     async playerSkills(teamIndex, index) {
         const serialized = await this.contract.methods.test_getStatePlayerInTeam(index, teamIndex).call({ from: this.address });
         const result = await this.contract.methods.test_decode(this.skillNumber, serialized, this.bitPerState).call({ from: this.address });
-        for (let i=0; i < this.skillNumber ; i++)
-            result[i] = unixMonthToAge(result[i]);
+        result[0] = unixMonthToAge(result[0]);
 
         return result;
     }
