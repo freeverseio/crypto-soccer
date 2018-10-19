@@ -31,7 +31,7 @@ class Main extends PureComponent {
         const cardList = teams.map(team => (
             <Card
                 key={team.index}
-                image='https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/11/21/13/borat.jpg'
+                image='https://upload.wikimedia.org/wikipedia/it/0/07/Fc_barcelona.png'
                 header={team.name}
                 meta='Team'
                 description={team.name + " is amazing!"}
