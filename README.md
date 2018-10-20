@@ -1,18 +1,14 @@
 [![CircleCI](https://circleci.com/gh/asiniscalchi/crypto-soccer/tree/master.svg?style=svg&circle-token=173cdb7fbdceb2e47e428c1121addf7746b937e9)](https://circleci.com/gh/asiniscalchi/crypto-soccer/tree/master)
 
-# Install the required dependencies:
-cd truffle-core
-npm install
+You have to run Ganache on port 8545.
 
-# Run tests by starting ganache first:
-ganache-cli --deterministic
+# Install the contract on Ganache:
+$ cd truffle-core
+$ npm install
+$ truffle migrate --network ganache --reset
 
-# and then:
-cd truffle
-truffle test --network ganache
+# Run the UI
+$ cd webclient
+$ npm install
+$ npm start
 
-# To use the UI: (make sure you have compiled first)
-cd truffle
-truffle compile
-python -m SimpleHTTPServer
-go to a browser and connect to: http://0.0.0.0:8000/UI/index.html
