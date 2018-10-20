@@ -15,9 +15,9 @@ class Header extends Component {
                 <Menu pointing secondary>
                     <Link to='/'><Menu.Item name='home' active={activeItem === 'home'} onClick={this.handleItemClick} /></Link>
                     <Link to='/play'><Menu.Item name='play' active={activeItem === 'play'} onClick={this.handleItemClick} /></Link>
-                    <Menu.Item name='teams' active={activeItem === 'teams'} onClick={this.handleItemClick} />
-                    <Menu.Item name='market' active={activeItem === 'market'} onClick={this.handleItemClick} />
-                    <Menu.Item name='shop' active={activeItem === 'shop'} onClick={this.handleItemClick} />
+                    <Link to='/teams'><Menu.Item name='teams' active={activeItem === 'teams'} onClick={this.handleItemClick} /></Link>
+                    <Link to='/market'><Menu.Item name='market' active={activeItem === 'market'} onClick={this.handleItemClick} /></Link>
+                    <Link to='/shop'><Menu.Item name='shop' active={activeItem === 'shop'} onClick={this.handleItemClick} /></Link>
                 </Menu>
             </div>
         )
