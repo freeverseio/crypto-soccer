@@ -59,9 +59,11 @@ class App extends Component {
   }
 
   render() {
+    const url = this.web3.currentProvider.connection.url;
+
     return (
       <div className="App">
-        <Header {...this.state} />
+        <Header url={url} />
         <Main {...this.state} />
       </div>
     );

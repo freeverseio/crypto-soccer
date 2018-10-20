@@ -10,7 +10,7 @@ import Shop from './shop';
 const Main = (props) => (
     <main>
         <Switch>
-            <Route exact path='/' render={() => <Home />} />
+            <Route exact path='/' render={() => <Home {...props}/>} />
             <Route exact path='/play' render={() => <Play {...props} />} />
             <Route exact path='/teams' render={() => <Teams {...props} />} />
             <Route exact path='/market' render={() => <Market {...props} />} />
