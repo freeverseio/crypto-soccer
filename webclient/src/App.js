@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import Header from './components/header';
-import Main from './components/main';
+import Header from './views/header';
+import Main from './views/main';
 import Web3 from 'web3';
 import 'semantic-ui-css/semantic.min.css';
 
