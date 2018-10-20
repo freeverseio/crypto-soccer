@@ -175,7 +175,7 @@ function printGameEvents(gameEvents) {
         var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks,r);
         console.log("Opportunity for team " + t[1] + "...");
         var result = f.getEntryForAGivenRound(gameEvents.shootResult,r);
-        if (result==[]) { console.log("... well defended, did not prosper!");}
+        if (result.length==0) { console.log("... well tackled by defenders, did not prosper!");}
         else {
             console.log("... that leads to a shoot by attacker " + result[2]);
             if (result[1]) { console.log("... and GOAAAAL!")} 
