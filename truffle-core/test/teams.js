@@ -170,16 +170,18 @@ async function createTestTeam(
 
 function printGameEvents(gameEvents) {
     console.log("EVENTS: ");
-    console.log(gameEvents.shootResult + " " +k.RoundsPerGame);
     for (var r = 0; r < k.RoundsPerGame; r++) {
+        // we add a bit of noise so that events are not always at minute 5,10,15...
+        var rndNoise = Math.round(-2+Math.floor(Math.random() * 4)); 
+        var thisMinute = (r+1)*5 + rndNoise;
         var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks,r);
-        console.log("Opportunity for team " + t[1] + "...");
+        console.log("Min " +thisMinute + ": Opportunity for team " + t[1] + "...");
         var result = f.getEntryForAGivenRound(gameEvents.shootResult,r);
-        if (result.length==0) { console.log("... well tackled by defenders, did not prosper!");}
+        if (result.length==0) { console.log("  ... well tackled by defenders, did not prosper!");}
         else {
-            console.log("... that leads to a shoot by attacker " + result[2]);
-            if (result[1]) { console.log("... and GOAAAAL!")} 
-            else {console.log("... blocked by the goalkeeper!!");} 
+            console.log("  ... that leads to a shoot by attacker " + result[2]);
+            if (result[1]) { console.log("  ... and GOAAAAL!")} 
+            else {console.log("  ... blocked by the goalkeeper!!");} 
         }
     }
 }
