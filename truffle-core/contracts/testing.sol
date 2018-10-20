@@ -58,6 +58,14 @@ contract Testing is League {
         return getRndNumArrays(seed, roundsPerGame, bitsPerRndNum);
     }
 
+    function test_getGameId(uint teamIdx1, uint teamIdx2, uint seed) 
+        external
+        pure
+        returns (uint gameId) 
+    {
+        return getGameId(teamIdx1, teamIdx2, seed);
+    }
+
 
     // Wrappers for Players
 

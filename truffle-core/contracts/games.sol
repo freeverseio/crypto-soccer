@@ -7,8 +7,10 @@ import "./teams.sol";
 
 contract GameEngine is TeamFactory {
 
-    event TeamAttacks(uint8 homeOrAway, uint8 round);
-    event ShootResult(bool isGoal, uint8 attackerIdx, uint8 round);
+    /// @dev gameId is needed to identify the game to which the events belong.
+    ///  Currently, the hash of concat(teamIdx1, teamIdx2, seed)
+    event TeamAttacks(uint8 homeOrAway, uint8 round, uint gameId);
+    event ShootResult(bool isGoal, uint8 attackerIdx, uint8 round, uint gameId);
 
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint seed)
@@ -29,6 +31,7 @@ contract GameEngine is TeamFactory {
         uint8[2] memory nAttackers;
         (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
+        uint gameId = getGameId(teamIdx1, teamIdx2, seed);
 
         uint8 teamThatAttacks;
         /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
@@ -37,7 +40,7 @@ contract GameEngine is TeamFactory {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
-            emit TeamAttacks(teamThatAttacks, round);
+            emit TeamAttacks(teamThatAttacks, round, gameId);
             if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
@@ -47,7 +50,8 @@ contract GameEngine is TeamFactory {
                     rndNum3[round],
                     rndNum4[round],
                     kMaxRndNum,
-                    round
+                    round,
+                    gameId
                     )
                 ) 
                 {
@@ -82,7 +86,8 @@ contract GameEngine is TeamFactory {
         uint rndNum1,
         uint rndNum2,
         uint factor,
-        uint8 round
+        uint8 round,
+        uint gameId
     )
         internal
         returns (bool)
@@ -97,7 +102,7 @@ contract GameEngine is TeamFactory {
                 rndNum2,
                 factor
             );
-        emit ShootResult(isGoal, shooter, round);
+        emit ShootResult(isGoal, shooter, round, gameId);
         return isGoal; 
     }
 

@@ -25,6 +25,9 @@ k = {
     BlockShoot : 3, 
     Endurance : 4, 
 
+    /// @dev The number of rounds in a given game (18 rounds = 1 event per 5 mins)
+    RoundsPerGame : 18,
+
     /// The amount of bits used per state to serialize them in a uint256 
     BitsPerState : 14, 
 

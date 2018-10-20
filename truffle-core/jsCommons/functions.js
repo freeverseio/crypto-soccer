@@ -17,6 +17,31 @@ function catchPlayerIdxFromEvent(logs) {
     return playerIdx;
 }
 
+function catchGameResults(logs, gameId) {
+    teamThatAttacks = [];
+    shootResult = [];
+    for (var i = 0; i < logs.length; i++) {
+        var log = logs[i];
+        if ((log.event == "TeamAttacks") && (log.args.gameId.toNumber() == gameId)) {
+            homeOrAway = log.args.homeOrAway.toNumber();
+            round = log.args.round.toNumber();
+            teamThatAttacks.push(round, homeOrAway);
+        }
+        if ((log.event == "ShootResult") && (log.args.gameId.toNumber() == gameId)) {
+            isGoal = log.args.isGoal.toNumber();
+            attackerIdx = log.args.attackerIdx.toNumber();
+            round = log.args.round.toNumber();
+            shootResult.push(round, isGoal, attackerIdx);
+        }
+    }
+    return {
+        teamThatAttacks : teamThatAttacks,
+        shootResult : shootResult
+    };
+}
+
+
+
 function unixMonthToAge(unixMonthOfBirth) {
     // in July 2018, we are at month 582 after 1970.
     age = (582 - unixMonthOfBirth)/12;
@@ -84,7 +109,8 @@ async function getRandomNumbers(instance, nRounds, rndSeed)
     catchPlayerIdxFromEvent : catchPlayerIdxFromEvent,
     createAlineacion : createAlineacion,
     getRandomNumbers : getRandomNumbers,
-    unixMonthToAge : unixMonthToAge      
+    unixMonthToAge : unixMonthToAge,
+    catchGameResults : catchGameResults      
 }
 
 module.exports = functions2export;

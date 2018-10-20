@@ -66,6 +66,18 @@ contract HelperFunctions {
         return uint(keccak256(abi.encodePacked(s, n1, n2)));
     }
 
+    /// @dev Returns a unit that identifies a game: 
+    ///  the hash of concat(uint,uint,uint) using the hash function used in this game.
+    ///  Only used for testing since web3.eth.solidityUtils not yet available
+    function getGameId(uint n0, uint n1, uint n2)
+        internal
+        pure
+        returns(uint)
+    {
+        return uint(keccak256(abi.encodePacked(n0, n1, n2)));
+    }
+
+
     /// @dev Throws a dice that returns 0 with probability weight1/(weight1+weight2), and 1 otherwise.
     /// @dev So, returning 0 has semantics: "the responsible for weight1 is selected".
     /// @dev We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
