@@ -23,18 +23,16 @@ class App extends Component {
     const count = await testingFacade.countTeams();
 
     let teams = [];
-    // Please use descriptive index names. Here, instead of (i,j), 
-    // you could use (team, player), or (t,p). Otherwise playerSkills(i,j) is a bit obscure
-    for (let i = 0; i < count; i++) {
-      const name = await testingFacade.teamName(i);
+    for (let team = 0; team < count; team++) {
+      const name = await testingFacade.teamName(team);
       let players = [];
-      for (let j = 0; j < 11; j++) {
-        const skills = await testingFacade.playerSkills(i, j);
-        const name = await testingFacade.playerName(i, j);
-        players.push({ index: j, name, skills });
+      for (let player = 0; player < 11; player++) {
+        const skills = await testingFacade.playerSkills(team, player);
+        const name = await testingFacade.playerName(team, player);
+        players.push({ index: player, name, skills });
       }
       teams.push({ 
-        index: i, 
+        index: team, 
         name: name,
         players: players
       });
