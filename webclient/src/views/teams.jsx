@@ -20,8 +20,6 @@ class Teams extends PureComponent {
                 <TeamCreator contract={testingFacade}/>
                 <Divider />
                 <TeamList teams={teams} onChange={team => this.setState({team})} />
-                <Divider />
-                <TeamPlayerTable team={team} />
             </Segment>
         )
     }

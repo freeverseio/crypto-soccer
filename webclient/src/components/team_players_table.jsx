@@ -33,7 +33,7 @@ class TeamPlayersTable extends PureComponent {
             <Table compact>
                 <Table.Header>
                     <Table.Row>
-                        <Table.HeaderCell>Team {team && team.name}</Table.HeaderCell>
+                        <Table.HeaderCell></Table.HeaderCell>
                         <Table.HeaderCell>Age</Table.HeaderCell>
                         <Table.HeaderCell>Defense</Table.HeaderCell>
                         <Table.HeaderCell>Speed</Table.HeaderCell>
