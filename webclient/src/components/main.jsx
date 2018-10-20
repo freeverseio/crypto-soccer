@@ -2,31 +2,16 @@ import React, { PureComponent } from 'react';
 import { Card, Form, Segment, Divider, Button, Icon, Grid, Header, GridColumn } from 'semantic-ui-react'
 import TeamPlayerTable from './team_players_table';
 import TeamSelect from './team_select';
+import TeamCreator from './team_creator';
 
 class Main extends PureComponent {
     constructor(props){
         super(props);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
         this.playGame = this.playGame.bind(this);
 
-        this.state = {
-            name: '',
-        }
-
+        this.state = {};
         this.teamA = -1;
         this.teamB = -1;
-    }
-
-    handleSubmit(event) {
-        const { testingFacade } = this.props;
-        testingFacade.createTeam(this.state.name);
-        this.setState({name: ''});
-        event.preventDefault();
-    }
-
-    handleChange(event) {
-        this.setState({ name: event.target.value });
     }
 
     playGame(){
@@ -40,7 +25,7 @@ class Main extends PureComponent {
     }
 
     render() {
-        const { teams } = this.props;
+        const { testingFacade, teams } = this.props;
         const { team, result } = this.state;
 
         const cardList = teams.map(team => (
@@ -84,12 +69,7 @@ class Main extends PureComponent {
                         </Grid.Row>
                     </Grid>
                 </Segment>
-                <Form onSubmit={this.handleSubmit}>
-                    <Form.Group widths='equal'>
-                        <Form.Input placeholder='Name' name='name' value={this.state.name} onChange={this.handleChange} />
-                        <Form.Button content='Create Team' />
-                    </Form.Group>
-                </Form>
+                <TeamCreator contract={testingFacade}/>
                 <Divider />
                 <Card.Group>
                     {cardList}
