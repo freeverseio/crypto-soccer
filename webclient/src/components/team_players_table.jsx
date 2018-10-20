@@ -30,7 +30,7 @@ class TeamPlayersTable extends PureComponent {
         }
 
         return (
-            <Table celled>
+            <Table compact>
                 <Table.Header>
                     <Table.Row>
                         <Table.HeaderCell>Team {team && team.name}</Table.HeaderCell>
