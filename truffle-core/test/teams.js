@@ -50,7 +50,8 @@ contract('Teams', function(accounts) {
     // plays game as a transaction, so that events are generated (and stored in the BChain)
     var tx = await instance.test_playGame(0, 1, seed);
     var gameId = await instance.test_getGameId(0, 1, seed);
-    var gameEvents = f.catchGameResults(tx,gameId) ;
+    var gameEvents = f.catchGameResults(tx.logs,gameId) ;
+    printGameEvents(gameEvents);
 
 
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
@@ -58,6 +59,7 @@ contract('Teams', function(accounts) {
     assert.isTrue(goals[1].toNumber()==5);
   });
 
+  /*
   it("creates an empty team, shows crazy stats, checks name is correct", async () => {
     await instance.test_createTeam("Los Cojos");
     var name = await instance.test_getTeamName(2);
@@ -106,7 +108,7 @@ contract('Teams', function(accounts) {
     assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
     await instance.test_createTeam.call(teamName);
   });
-
+*/
 });
 
 async function printTeamPlayers(teamIdx, instance) {
@@ -164,3 +166,18 @@ async function createTestTeam(
   console.log('Final nPlayers in the entire game = ' + nCreatedPlayers);
 }
 
+function printGameEvents(gameEvents) {
+    console.log("EVENTS: ");
+    console.log(gameEvents.shootResult + " " +k.RoundsPerGame);
+    for (var r = 0; r < k.RoundsPerGame; r++) {
+        var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks,r);
+        console.log("Opportunity for team " + t[1] + "...");
+        var result = f.getEntryForAGivenRound(gameEvents.shootResult,r);
+        if (result==[]) { console.log("... well defended, did not prosper!");}
+        else {
+            console.log("... that leads to a shoot by attacker " + result[2]);
+            if (result[1]) { console.log("... and GOAAAAL!")} 
+            else {console.log("... blocked by the goalkeeper!!");} 
+        }
+    }
+}

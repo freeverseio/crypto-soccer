@@ -22,16 +22,16 @@ function catchGameResults(logs, gameId) {
     shootResult = [];
     for (var i = 0; i < logs.length; i++) {
         var log = logs[i];
-        if ((log.event == "TeamAttacks") && (log.args.gameId.toNumber() == gameId)) {
+        if ((log.event == "TeamAttacks") && (log.args.gameId.toNumber()==gameId)) {
             homeOrAway = log.args.homeOrAway.toNumber();
             round = log.args.round.toNumber();
-            teamThatAttacks.push(round, homeOrAway);
+            teamThatAttacks.push([round, homeOrAway]);
         }
-        if ((log.event == "ShootResult") && (log.args.gameId.toNumber() == gameId)) {
-            isGoal = log.args.isGoal.toNumber();
+        if ((log.event == "ShootResult") && (log.args.gameId.toNumber()==gameId)) {
+            isGoal = log.args.isGoal;
             attackerIdx = log.args.attackerIdx.toNumber();
             round = log.args.round.toNumber();
-            shootResult.push(round, isGoal, attackerIdx);
+            shootResult.push([round, isGoal, attackerIdx]);
         }
     }
     return {
@@ -40,7 +40,16 @@ function catchGameResults(logs, gameId) {
     };
 }
 
-
+// receives an array where every entry is an array itself.
+// the latter has, as first element, the round to which it belongs
+function getEntryForAGivenRound(array, round) {
+    for (var e = 0; e < array.length; e++) {
+        if (array[e][0]==round) {
+            return array[e];
+        }
+    }
+    return [];
+}
 
 function unixMonthToAge(unixMonthOfBirth) {
     // in July 2018, we are at month 582 after 1970.
@@ -110,7 +119,8 @@ async function getRandomNumbers(instance, nRounds, rndSeed)
     createAlineacion : createAlineacion,
     getRandomNumbers : getRandomNumbers,
     unixMonthToAge : unixMonthToAge,
-    catchGameResults : catchGameResults      
+    catchGameResults : catchGameResults,
+    getEntryForAGivenRound : getEntryForAGivenRound      
 }
 
 module.exports = functions2export;
