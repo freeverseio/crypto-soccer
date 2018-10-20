@@ -1,14 +1,24 @@
 import React, { Component } from 'react';
-import { Segment } from 'semantic-ui-react'
+import { Menu, Segment } from 'semantic-ui-react'
 
 class Header extends Component {
+    state = { activeItem: 'home' };
+
+    handleItemClick = (e, { name }) => this.setState({ activeItem: name });
+
     render() {
-        const { testingFacade } = this.props;
+        const { activeItem } = this.state;
 
         return (
-            <Segment clearing>
-                    {testingFacade ? "connected" : "disconnected "}
-            </Segment>
+            <div>
+                <Menu pointing secondary>
+                    <Menu.Item name='home' active={activeItem === 'home'} onClick={this.handleItemClick} />
+                    <Menu.Item name='play' active={activeItem === 'play'} onClick={this.handleItemClick} />
+                    <Menu.Item name='teams' active={activeItem === 'teams'} onClick={this.handleItemClick} />
+                    <Menu.Item name='market' active={activeItem === 'market'} onClick={this.handleItemClick} />
+                    <Menu.Item name='shop' active={activeItem === 'shop'} onClick={this.handleItemClick} />
+                </Menu>
+            </div>
         )
     }
 }
