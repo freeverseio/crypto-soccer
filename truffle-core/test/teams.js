@@ -47,19 +47,22 @@ contract('Teams', function(accounts) {
     seed = 232;
     var goals = await instance.test_playGame.call(0, 1, seed);
     
-    // plays game as a transaction, so that events are generated (and stored in the BChain)
-    var tx = await instance.test_playGame(0, 1, seed);
-    var gameId = await instance.test_getGameId(0, 1, seed);
-    var gameEvents = f.catchGameResults(tx.logs,gameId) ;
-    printGameEvents(gameEvents);
-
-
     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
     assert.isTrue(goals[0].toNumber()==1);
     assert.isTrue(goals[1].toNumber()==5);
   });
 
-  /*
+  it("reads the game events of the previous game", async () => {
+    // plays same game as before, but now as a transaction, 
+    // so that events are generated (and stored in the BChain)
+    var tx = await instance.test_playGame(0, 1, seed);
+    // reads the gameID, which is basically the hash(teamIdx1, teamIdx2,seed)
+    var gameId = await instance.test_getGameId(0, 1, seed);
+    // catches events and prints them out
+    var gameEvents = f.catchGameResults(tx.logs,gameId) ;
+    printGameEvents(gameEvents);
+  });
+
   it("creates an empty team, shows crazy stats, checks name is correct", async () => {
     await instance.test_createTeam("Los Cojos");
     var name = await instance.test_getTeamName(2);
@@ -108,7 +111,6 @@ contract('Teams', function(accounts) {
     assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
     await instance.test_createTeam.call(teamName);
   });
-*/
 });
 
 async function printTeamPlayers(teamIdx, instance) {
