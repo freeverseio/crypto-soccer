@@ -4,11 +4,15 @@ You have to run Ganache on port 8545.
 
 # Install the contract on Ganache:
 $ cd truffle-core
+
 $ npm install
+
 $ truffle migrate --network ganache --reset
 
 # Run the UI
 $ cd webclient
+
 $ npm install
+
 $ npm start
 
