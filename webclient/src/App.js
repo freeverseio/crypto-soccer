@@ -61,7 +61,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Header provider={this.web3Provider} {...this.state} />
+        <Header {...this.state} />
         <Main {...this.state} />
       </div>
     );
