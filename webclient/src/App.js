@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Connection from './components/connection';
+import Header from './components/header';
 import Main from './components/main';
 import Web3 from 'web3';
 import 'semantic-ui-css/semantic.min.css';
@@ -61,7 +61,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Connection provider={this.web3Provider} {...this.state} />
+        <Header provider={this.web3Provider} {...this.state} />
         <Main {...this.state} />
       </div>
     );
