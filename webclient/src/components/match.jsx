@@ -20,12 +20,12 @@ class Match extends Component {
         if (teamB < 0) return;
 
         contract.playGame(teamA, teamB)
-            .then(result => this.setState({ result: result }));
+            .then(summary => this.setState({ summary }));
     }
 
     render() {
         const { teams } = this.props;
-        const { teamA, teamB, result } = this.state;
+        const { teamA, teamB, summary } = this.state;
 
         return (
             <Segment>
@@ -48,13 +48,14 @@ class Match extends Component {
                     </Grid.Row>
                     <Grid.Row>
                         <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{result && result[0]}</Header>
+                            <Header textAlign='center' as="h1">{summary && summary.result[0]}</Header>
                         </GridColumn>
                         <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{result && result[1]}</Header>
+                            <Header textAlign='center' as="h1">{summary && summary.result[1]}</Header>
                         </GridColumn>
                     </Grid.Row>
                 </Grid>
+                <p>{summary && summary.events}</p>
             </Segment>
         );
     }

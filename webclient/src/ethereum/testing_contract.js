@@ -108,52 +108,61 @@ export class TestingFacade {
 
         // catches events and prints them out
         const gameEvents = this.catchGameResults(tx.events, gameId);
-        
-        console.log(gameEvents);
-        //return result;
-    }
+        const summary = this.printGameEvents(gameEvents);
 
+        console.log(summary);
+        
+        return summary;
+    }
 
     catchGameResults(logs, gameId) {
         const teamAttacksEvents = logs.TeamAttacks;
-        let teamThatAttacks = teamAttacksEvents.map(attack => ({
-            round: Number(attack.returnValues.round),
-            type: ATTACK_EVENT,
-            homeOrAway: attack.returnValues.homeOrAway
-        }));
+        let teamThatAttacks = teamAttacksEvents.map(attack => ([
+            Number(attack.returnValues.homeOrAway),
+            Number(attack.returnValues.round)
+        ]));
 
         const shootResultEvents = logs.ShootResult;
-        let shootResult = shootResultEvents.map(shoot => ({
-            round: Number(shoot.returnValues.round),
-            type: SHOOT_EVENT,
-            isGoal: shoot.returnValues.isGoal,
-            attackerIdx: shoot.returnValues.attackerIdx
-        }));
+        let shootResult = shootResultEvents.map(shoot => ([
+            Number(shoot.returnValues.round),
+            shoot.returnValues.isGoal,
+            Number(shoot.returnValues.attackerIdx)
+        ]));
 
-        const allEvents = teamThatAttacks.concat(shootResult);
-        const result =  allEvents.sort((a,b) => (a.round - b.round));
-
-        console.log(result);
-        
-        this.printGameEvents(result)
-        return result;
+        return {
+            teamThatAttacks: teamThatAttacks,
+            shootResult: shootResult
+        };
     }
 
     printGameEvents(gameEvents) {
         console.log("EVENTS: ");
+        console.log(gameEvents)
+        let summary = {
+            events: [],
+            result: [0,0]
+        }
+
         for (var r = 0; r < k.RoundsPerGame; r++) {
             // we add a bit of noise so that events are not always at minute 5,10,15...
             var rndNoise = Math.round(-2 + Math.floor(Math.random() * 4));
             var thisMinute = (r + 1) * 5 + rndNoise;
-            var t = gameEvents.teamThatAttacks[r];
-            console.log("Min " + thisMinute + ": Opportunity for team " + t[1] + "...");
+            var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks, r);
+            summary.events.push("Min " + thisMinute + ": Opportunity for team " + t[1] + "...");
             var result = f.getEntryForAGivenRound(gameEvents.shootResult, r);
-            if (result.length == 0) { console.log("  ... well tackled by defenders, did not prosper!"); }
+            if (result.length == 0) { summary.events.push("  ... well tackled by defenders, did not prosper!"); }
             else {
-                console.log("  ... that leads to a shoot by attacker " + result[2]);
-                if (result[1]) { console.log("  ... and GOAAAAL!") }
-                else { console.log("  ... blocked by the goalkeeper!!"); }
+                summary.events.push("  ... that leads to a shoot by attacker " + result[2]);
+                if (result[1]) {
+                    summary.events.push("  ... and GOAAAAL!");
+
+                }
+                else {
+                    summary.events.push("  ... blocked by the goalkeeper!!");
+                }
             }
         }
+
+        return summary;
     }
 }
