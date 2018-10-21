@@ -3,8 +3,13 @@ import testingJSON from '../contracts/Testing.json';
 import f from '../jsCommons/functions';
 
 export const createTestingContract = async web3 => {
+    const connected = await web3.eth.net.isListening();
     const contractJSON = testingJSON;
     const networkId = await web3.eth.net.getId();
+
+    if (!contractJSON.networks[networkId])
+        return;
+    
     const contract = new web3.eth.Contract(
         contractJSON.abi,
         contractJSON.networks[networkId].address

@@ -44,6 +44,9 @@ class App extends Component {
   async componentDidMount() {
     const accounts = await this.web3.eth.getAccounts();
     const testingContract = await createTestingContract(this.web3);
+    if (!testingContract)
+      return;
+
     const testingFacade = new TestingFacade(testingContract, accounts[0]);
     const teams = await this.getTeams(testingFacade);
 
