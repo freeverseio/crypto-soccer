@@ -52,8 +52,17 @@ class App extends Component {
 
     testingContract.events.TeamCreation()
       .on('data', event => {
-          this.getTeams(testingFacade)
-          .then(teams => this.setState({teams}));
+        this.getTeams(testingFacade)
+          .then(teams => this.setState({ teams }));
+      })
+      .on('changed', reason => console.log("(WW): " + reason))
+      .on('error', reason => console.log("(EE): " + reason));
+
+    console.log(testingContract.events)
+
+    testingContract.events.TeamAttacks()
+      .on('data', event => {
+        // console.log(event);
       })
       .on('changed', reason => console.log("(WW): " + reason))
       .on('error', reason => console.log("(EE): " + reason));

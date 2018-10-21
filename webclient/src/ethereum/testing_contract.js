@@ -1,6 +1,7 @@
 // import leagueJSON from '../contracts/League.json';
 import testingJSON from '../contracts/Testing.json';
 import f from '../jsCommons/functions';
+import k from '../jsCommons/constants';
 
 export const createTestingContract = async web3 => {
     const connected = await web3.eth.net.isListening();
@@ -92,8 +93,60 @@ export class TestingFacade {
         return await this.contract.methods.test_getPlayerName(absIndex).call();
     }
 
-    async playGame(teamAIndex, teamBIndex){
+    async playGame(teamAIndex, teamBIndex) {
         const seed = Math.floor(Math.random() * 10000);
-        return await this.contract.methods.test_playGame(teamAIndex, teamBIndex, seed).call();
+        const tx = await this.contract.methods.test_playGame(teamAIndex, teamBIndex, seed).send(
+            {
+                from: this.address,
+                gas: 6721975
+            });
+
+        const gameId = await this.contract.methods.test_getGameId(teamAIndex, teamBIndex, seed).call();
+
+        // catches events and prints them out
+        const gameEvents = this.catchGameResults(tx.events, gameId);
+        
+        console.log(gameEvents);
+        //return result;
+    }
+
+    catchGameResults(logs, gameId) {
+        const teamAttacksEvents = logs.TeamAttacks;
+        let teamThatAttacks = teamAttacksEvents.map(attack => ({
+            homeOrAway: attack.returnValues.homeOrAway,
+            round: attack.returnValues.round
+        }));
+
+        const shootResultEvents = logs.ShootResult;
+        let shootResult = shootResultEvents.map(shoot => ({
+            isGoal: shoot.returnValues.isGoal,
+            attackerIdx: shoot.returnValues.attackerIdx,
+            round: shoot.returnValues.round
+        }));
+        
+        const result = {
+            teamThatAttacks: teamThatAttacks,
+            shootResult: shootResult
+        };
+        this.printGameEvents(result)
+        return result;
+    }
+
+    printGameEvents(gameEvents) {
+        console.log("EVENTS: ");
+        for (var r = 0; r < k.RoundsPerGame; r++) {
+            // we add a bit of noise so that events are not always at minute 5,10,15...
+            var rndNoise = Math.round(-2 + Math.floor(Math.random() * 4));
+            var thisMinute = (r + 1) * 5 + rndNoise;
+            var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks, r);
+            console.log("Min " + thisMinute + ": Opportunity for team " + t[1] + "...");
+            var result = f.getEntryForAGivenRound(gameEvents.shootResult, r);
+            if (result.length == 0) { console.log("  ... well tackled by defenders, did not prosper!"); }
+            else {
+                console.log("  ... that leads to a shoot by attacker " + result[2]);
+                if (result[1]) { console.log("  ... and GOAAAAL!") }
+                else { console.log("  ... blocked by the goalkeeper!!"); }
+            }
+        }
     }
 }
