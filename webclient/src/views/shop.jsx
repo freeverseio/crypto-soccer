@@ -1,5 +1,5 @@
 import React from 'react';
 
 export default props => (
-    <p>The shop</p>
+    <iframe src="https://opensea.io/assets/gizeritem" width="100%" height="800px" />
 )
