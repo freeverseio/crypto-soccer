@@ -56,5 +56,32 @@ contract('Leagues', function(accounts) {
         assert.equal(info,expectedInfo);
     });
 
+    it("plays all remaining rounds of a league", async () => {
+        var nLeagues = await instance.test_getNLeaguesCreated.call();
+        var leagueIdx = nLeagues-1;
+        var info = "LeagueIdx " + leagueIdx;
+        for (var round = 0; round < 2 * (nTeams-1); round++) {
+            seed = round;
+            await instance.test_playRound(leagueIdx, round, seed);
+            var info = "Round " + round + ": ";
+            for (var game = 0; game<nTeams/2; game++){
+                info += "\n  Game " + game + ":  ";
+                teams = await instance.test_teamsInGame.call(round, game, nTeams);
+                // console.log(teams)
+                info += teams[0].toNumber() + " vs " + teams[1].toNumber() + " => ";
+                result = await instance.test_getWrittenResult.call(leagueIdx, nTeams, round, game);
+                result = result.toNumber();
+                if (result == k.Undef) { info += " UNDEF";};
+                if (result == k.HomeWins) { info += " HomeWins";};
+                if (result == k.AwayWins) { info += " AwayWins";};
+                if (result == k.Tie) { info += " Tie";};
+                info += "    ";
+            } 
+            console.log(info);
+        }
+    });
+
+       
+
 
 });
