@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Segment, Button, Icon, Grid, Header, GridColumn, Item } from 'semantic-ui-react'
+import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress } from 'semantic-ui-react'
 import TeamSelect from './team_select';
 
 class Match extends Component {
@@ -10,7 +10,9 @@ class Match extends Component {
             teamA: -1,
             teamB: -1,
             result: [],
-            events: []
+            events: [],
+            totalEvents: 0,
+            playing: false
         };
     }
 
@@ -22,15 +24,34 @@ class Match extends Component {
         if (teamB < 0) return;
 
         contract.playGame(teamA, teamB)
-            .then(summary => this.setState({
-                result: summary.result,
-                events: summary.events
-            }));
+            .then(summary => {
+                this.setState({ 
+                    playing: true, 
+                    totalEvents: summary.events.length,
+                    result: [0,0],
+                    events: [],
+                 })
+                const delta = 500;
+                for (let i = 1; i <= summary.events.length; i++) {
+                    setTimeout(() => {
+                        const slice = summary.events.slice(0, i);
+                        this.setState({
+                            events: slice
+                        })
+                    }, delta * i);
+                }
+                setTimeout(() => {
+                    this.setState({
+                        result: summary.result,
+                        playing: false
+                    })
+                }, delta * summary.events.length);
+            });
     }
 
     render() {
         const { teams } = this.props;
-        const { teamA, teamB, result, events } = this.state;
+        const { teamA, teamB, result, events, totalEvents, playing } = this.state;
 
         return (
             <React.Fragment>
@@ -62,12 +83,12 @@ class Match extends Component {
                         </Grid.Row>
 
                     </Grid>
-
                 </Segment>
                 <Segment>
+                    {playing && <Progress percent={100 * events.length / totalEvents} indicating />}
                     <Item.Group divided>
-                        {events.map(event => (
-                            <Item>
+                        {events.slice(0).reverse().map((event, key) => (
+                            <Item key={key}>
                                 <Item.Image size='small' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
                                 <Item.Content verticalAlign='middle'>
                                     <Item.Header>{event}</Item.Header>
