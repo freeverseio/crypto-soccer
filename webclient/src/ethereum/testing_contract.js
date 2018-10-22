@@ -110,8 +110,6 @@ export class TestingFacade {
         const gameEvents = this.catchGameResults(tx.events, gameId);
         const summary = this.printGameEvents(gameEvents);
 
-        console.log(summary);
-        
         return summary;
     }
 
@@ -136,8 +134,6 @@ export class TestingFacade {
     }
 
     printGameEvents(gameEvents) {
-        console.log("EVENTS: ");
-        console.log(gameEvents)
         let summary = {
             events: [],
             result: [0,0]

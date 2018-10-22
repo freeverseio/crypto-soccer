@@ -58,15 +58,6 @@ class App extends Component {
       .on('changed', reason => console.log("(WW): " + reason))
       .on('error', reason => console.log("(EE): " + reason));
 
-    console.log(testingContract.events)
-
-    testingContract.events.TeamAttacks()
-      .on('data', event => {
-        // console.log(event);
-      })
-      .on('changed', reason => console.log("(WW): " + reason))
-      .on('error', reason => console.log("(EE): " + reason));
-
     this.setState({ testingFacade, teams });
   }
 

@@ -85,7 +85,7 @@ class Match extends Component {
                     </Grid>
                 </Segment>
                 <Segment>
-                    {playing && <Progress percent={100 * events.length / totalEvents} indicating />}
+                    {playing && <Progress percent={100 * events.length / totalEvents} success />}
                     <Item.Group divided>
                         {events.slice(0).reverse().map((event, key) => (
                             <Item key={key}>
