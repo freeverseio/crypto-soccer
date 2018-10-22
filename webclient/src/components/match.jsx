@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Segment, Button, Icon, Grid, Header, GridColumn } from 'semantic-ui-react'
+import { Segment, Button, Icon, Grid, Header, GridColumn, Item } from 'semantic-ui-react'
 import TeamSelect from './team_select';
 
 class Match extends Component {
@@ -9,6 +9,8 @@ class Match extends Component {
         this.state = {
             teamA: -1,
             teamB: -1,
+            result: [],
+            events: []
         };
     }
 
@@ -20,12 +22,15 @@ class Match extends Component {
         if (teamB < 0) return;
 
         contract.playGame(teamA, teamB)
-            .then(summary => this.setState({ summary }));
+            .then(summary => this.setState({
+                result: summary.result,
+                events: summary.events
+            }));
     }
 
     render() {
         const { teams } = this.props;
-        const { teamA, teamB, summary } = this.state;
+        const { teamA, teamB, result, events } = this.state;
 
         return (
             <Segment>
@@ -48,14 +53,27 @@ class Match extends Component {
                     </Grid.Row>
                     <Grid.Row>
                         <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{summary && summary.result[0]}</Header>
+                            <Header textAlign='center' as="h1">{result[0]}</Header>
                         </GridColumn>
                         <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{summary && summary.result[1]}</Header>
+                            <Header textAlign='center' as="h1">{result[1]}</Header>
+                        </GridColumn>
+                    </Grid.Row>
+                    <Grid.Row>
+                        <GridColumn width={16}>
+                            <Item.Group>
+                                {events.map(event => (
+                                    <Item>
+                                        <Item.Image size='small' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+                                        <Item.Content verticalAlign='middle'>
+                                            <Item.Header as='a'>{event}</Item.Header>
+                                        </Item.Content>
+                                    </Item>
+                                ))}
+                            </Item.Group>
                         </GridColumn>
                     </Grid.Row>
                 </Grid>
-                <p>{summary && summary.events}</p>
             </Segment>
         );
     }
