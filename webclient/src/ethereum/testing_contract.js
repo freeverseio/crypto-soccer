@@ -3,11 +3,7 @@ import testingJSON from '../contracts/Testing.json';
 import f from '../jsCommons/functions';
 import k from '../jsCommons/constants';
 
-const SHOOT_EVENT = 'SHOOT_EVENT';
-const ATTACK_EVENT= 'ATTACK_EVENT';
-
 export const createTestingContract = async web3 => {
-    const connected = await web3.eth.net.isListening();
     const contractJSON = testingJSON;
     const networkId = await web3.eth.net.getId();
 
@@ -146,7 +142,7 @@ export class TestingFacade {
             var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks, r);
             summary.events.push("Min " + thisMinute + ": Opportunity for team " + t[1] + "...");
             var result = f.getEntryForAGivenRound(gameEvents.shootResult, r);
-            if (result.length == 0) { summary.events.push("  ... well tackled by defenders, did not prosper!"); }
+            if (result.length === 0) { summary.events.push("  ... well tackled by defenders, did not prosper!"); }
             else {
                 summary.events.push("  ... that leads to a shoot by attacker " + result[2]);
                 if (result[1]) {
