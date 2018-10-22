@@ -40,12 +40,6 @@ class Match extends Component {
                         })
                     }, delta * i);
                 }
-                setTimeout(() => {
-                    this.setState({
-                        result: summary.result,
-                        playing: false
-                    })
-                }, delta * summary.events.length);
             });
     }
 

@@ -132,7 +132,6 @@ export class TestingFacade {
     printGameEvents(gameEvents) {
         let summary = {
             events: [],
-            result: [0,0]
         }
 
         for (var r = 0; r < k.RoundsPerGame; r++) {
