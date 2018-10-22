@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress } from 'semantic-ui-react'
+import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress, Image } from 'semantic-ui-react'
 import TeamSelect from './team_select';
 
 class Match extends Component {
@@ -136,11 +136,20 @@ class Match extends Component {
                 </Segment>
                 <Segment>
                     {playing && <Progress percent={100 * events.length / totalEvents} success />}
-                    <Item.Group divided>
-                        {events.slice(0).reverse().map((event, key) => (
-                               this.parseEvent(key, event) 
-                        ))}
-                    </Item.Group> 
+                    <Grid relaxed>
+                        <Grid.Row>
+                            <GridColumn width={4}>
+                                <Item.Group divided>
+                                    {events.slice(0).reverse().map((event, key) => (
+                                        this.parseEvent(key, event)
+                                    ))}
+                                </Item.Group>
+                            </GridColumn>
+                            <GridColumn width={12}>
+                                <Image src="http://www.codethislab.com/wp-content/uploads/2016/07/7c989a40659221.5787b557aa8e5.jpg" />
+                            </GridColumn>
+                        </Grid.Row>
+                    </Grid>
                 </Segment>
             </React.Fragment>
         );
