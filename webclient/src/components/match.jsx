@@ -33,48 +33,50 @@ class Match extends Component {
         const { teamA, teamB, result, events } = this.state;
 
         return (
-            <Segment>
-                <Grid relaxed>
-                    <Grid.Row>
-                        <Grid.Column width={6}>
-                            <TeamSelect fluid placeholder='Select team A' teams={teams} value={teamA} onChange={(_, data) => this.setState({ teamA: data.value })} />
-                        </Grid.Column>
-                        <Grid.Column width={4}>
-                            <Button animated fluid onClick={() => this.playGame()}>
-                                <Button.Content visible>Play</Button.Content>
-                                <Button.Content hidden>
-                                    <Icon name='arrow right' />
-                                </Button.Content>
-                            </Button>
-                        </Grid.Column>
-                        <Grid.Column width={6}>
-                            <TeamSelect fluid placeholder='Select team B' teams={teams} value={teamB} onChange={(_, data) => this.setState({ teamB: data.value })} />
-                        </Grid.Column>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{result[0]}</Header>
-                        </GridColumn>
-                        <GridColumn width={8}>
-                            <Header textAlign='center' as="h1">{result[1]}</Header>
-                        </GridColumn>
-                    </Grid.Row>
-                    <Grid.Row>
-                        <GridColumn width={16}>
-                            <Item.Group>
-                                {events.map(event => (
-                                    <Item>
-                                        <Item.Image size='small' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                                        <Item.Content verticalAlign='middle'>
-                                            <Item.Header as='a'>{event}</Item.Header>
-                                        </Item.Content>
-                                    </Item>
-                                ))}
-                            </Item.Group>
-                        </GridColumn>
-                    </Grid.Row>
-                </Grid>
-            </Segment>
+            <React.Fragment>
+                <Segment>
+                    <Grid relaxed>
+                        <Grid.Row>
+                            <Grid.Column width={6}>
+                                <TeamSelect fluid placeholder='Select team A' teams={teams} value={teamA} onChange={(_, data) => this.setState({ teamA: data.value })} />
+                            </Grid.Column>
+                            <Grid.Column width={4}>
+                                <Button animated fluid onClick={() => this.playGame()}>
+                                    <Button.Content visible>Play</Button.Content>
+                                    <Button.Content hidden>
+                                        <Icon name='arrow right' />
+                                    </Button.Content>
+                                </Button>
+                            </Grid.Column>
+                            <Grid.Column width={6}>
+                                <TeamSelect fluid placeholder='Select team B' teams={teams} value={teamB} onChange={(_, data) => this.setState({ teamB: data.value })} />
+                            </Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <GridColumn width={8}>
+                                <Header textAlign='center' as="h1">{result[0]}</Header>
+                            </GridColumn>
+                            <GridColumn width={8}>
+                                <Header textAlign='center' as="h1">{result[1]}</Header>
+                            </GridColumn>
+                        </Grid.Row>
+
+                    </Grid>
+
+                </Segment>
+                <Segment>
+                    <Item.Group divided>
+                        {events.map(event => (
+                            <Item>
+                                <Item.Image size='small' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+                                <Item.Content verticalAlign='middle'>
+                                    <Item.Header>{event}</Item.Header>
+                                </Item.Content>
+                            </Item>
+                        ))}
+                    </Item.Group>
+                </Segment>
+            </React.Fragment>
         );
     }
 }
