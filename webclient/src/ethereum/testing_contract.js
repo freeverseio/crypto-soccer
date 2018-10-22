@@ -146,6 +146,7 @@ export class TestingFacade {
                 summary.events.push("  ... that leads to a shoot by attacker " + result[2]);
                 if (result[1]) {
                     summary.events.push("  ... and GOAAAAL!");
+                    console.log(result)
 
                 }
                 else {

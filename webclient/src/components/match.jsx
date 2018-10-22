@@ -38,6 +38,8 @@ class Match extends Component {
                         this.setState({
                             events: slice
                         })
+                        if (i === summary.events.length)
+                            this.setState({playing: false})
                     }, delta * i);
                 }
             });
