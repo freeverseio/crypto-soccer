@@ -123,7 +123,7 @@ export class TestingFacade {
         ]));
 
         const shootResultEvents = logs.ShootResult;
-        let shootResult = shootResultEvents && shootResultEvents.map(shoot => ([
+        let shootResult = shootResultEvents.length !== 0 && shootResultEvents.map(shoot => ([
             Number(shoot.returnValues.round),
             shoot.returnValues.isGoal,
             Number(shoot.returnValues.attackerIdx)

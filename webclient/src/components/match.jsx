@@ -62,7 +62,7 @@ class Match extends Component {
                                 <TeamSelect fluid placeholder='Select team A' teams={teams} value={teamA} onChange={(_, data) => this.setState({ teamA: data.value })} />
                             </Grid.Column>
                             <Grid.Column width={4}>
-                                <Button animated fluid onClick={() => this.playGame()}>
+                                <Button animated fluid loading={playing} disabled={playing} onClick={() => this.playGame()}>
                                     <Button.Content visible>Play</Button.Content>
                                     <Button.Content hidden>
                                         <Icon name='arrow right' />
