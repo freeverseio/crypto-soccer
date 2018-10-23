@@ -146,7 +146,7 @@ class Match extends Component {
                                 </Item.Group>
                             </GridColumn>
                             <GridColumn width={12}>
-                                {playing && <Image src="http://www.codethislab.com/wp-content/uploads/2016/07/7c989a40659221.5787b557aa8e5.jpg" />}
+                                <Image src="http://www.codethislab.com/wp-content/uploads/2016/07/7c989a40659221.5787b557aa8e5.jpg" />
                             </GridColumn>
                         </Grid.Row>
                     </Grid>
