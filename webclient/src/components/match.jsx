@@ -111,7 +111,7 @@ class Match extends Component {
                                 </Item.Group>
                             </GridColumn>
                             <GridColumn width={12}>
-                                <Image src="soccer_field.jpg" />
+                                <Image src="soccer_field.jpg" fluid />
                             </GridColumn>
                         </Grid.Row>
                     </Grid>
