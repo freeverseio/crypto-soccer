@@ -1,5 +1,5 @@
 import React from 'react';
-import { Item, Accordion, Icon } from 'semantic-ui-react'
+import { Item } from 'semantic-ui-react'
 import TeamPlayerTable from '../components/team_players_table';
 
 export default props => {
@@ -12,15 +12,7 @@ export default props => {
                 <Item.Header as='a'>{team.name}</Item.Header>
                 <Item.Meta>TODO Description</Item.Meta>
                 <Item.Description>
-                    <Accordion>
-                        <Accordion.Title active={true} index={0} >
-          <Icon name='dropdown' />
-          What is a dog?
-        </Accordion.Title>
-                        <Accordion.Content>
-                            <TeamPlayerTable team={team} />
-                        </Accordion.Content>
-                    </Accordion>
+                    <TeamPlayerTable team={team} />
                 </Item.Description>
             </Item.Content>
         </Item>
