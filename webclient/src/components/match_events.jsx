@@ -1,9 +1,9 @@
 import React from 'react';
-import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress, Image } from 'semantic-ui-react'
+import { Item } from 'semantic-ui-react'
 
 export const AttackEvent = (props) => (
     <Item>
-        <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+        <Item.Image size='tiny' src='svg/attack.svg' />
         <Item.Content verticalAlign='middle'>
             <Item.Header>{props.min && props.min}</Item.Header>
             <Item.Description>{props.text && props.text}</Item.Description>
@@ -13,7 +13,7 @@ export const AttackEvent = (props) => (
 
 export const DefendEvent = (props) => (
     <Item>
-        <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+        <Item.Image size='tiny' src='svg/defend.svg' />
         <Item.Content verticalAlign='middle'>
             <Item.Description>{props.text && props.text}</Item.Description>
         </Item.Content>
@@ -22,7 +22,7 @@ export const DefendEvent = (props) => (
 
 export const ShootEvent = (props) => (
     <Item>
-        <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+        <Item.Image size='tiny' src='svg/shoot.svg' />
         <Item.Content verticalAlign='middle'>
             <Item.Description>{props.text && props.text}</Item.Description>
         </Item.Content>
@@ -31,7 +31,7 @@ export const ShootEvent = (props) => (
 
 export const GoalEvent = (props) => (
     <Item>
-        <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+        <Item.Image size='tiny' src='svg/goal.svg' />
         <Item.Content verticalAlign='middle'>
             <Item.Header>{props.text && props.text}</Item.Header>
         </Item.Content>
@@ -40,7 +40,7 @@ export const GoalEvent = (props) => (
 
 export const BlockedEvent = (props) => (
     <Item>
-        <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
+        <Item.Image size='tiny' src='svg/catch.svg' />
         <Item.Content verticalAlign='middle'>
             <Item.Description>{props.text && props.text}</Item.Description>
         </Item.Content>
