@@ -132,20 +132,23 @@ export class TestingFacade {
     printGameEvents(gameEvents) {
         let summary = [];
 
+        console.log(gameEvents)
+
+
         for (var r = 0; r < k.RoundsPerGame; r++) {
             // we add a bit of noise so that events are not always at minute 5,10,15...
             var rndNoise = Math.round(-2 + Math.floor(Math.random() * 4));
             var thisMinute = (r + 1) * 5 + rndNoise;
-            var t = f.getEntryForAGivenRound(gameEvents.teamThatAttacks, r);
-            summary.push({type: "attack", min: "Min. " + thisMinute, text: "Opportunity for team " + t[1] + "..."});
-            var result = f.getEntryForAGivenRound(gameEvents.shootResult, r);
-            if (result.length === 0) { 
+            let t = gameEvents.teamThatAttacks.find(a => a[1] === r);
+            summary.push({type: "attack", min: "Min. " + thisMinute, text: "Opportunity for team " + t[0] + "..."});
+            var result = gameEvents.shootResult.find(a => a[0] === r);
+            if (!result) { 
                 summary.push({type: "defended", text: "  ... well tackled by defenders, did not prosper!"}); 
             }
             else {
                 summary.push({type: "shot", text: "  ... that leads to a shoot by attacker " + result[2]})
                 if (result[1]) {
-                    summary.push({type: 'gool', text: "  ... and GOAAAAL!!!!!!"})
+                    summary.push({type: 'gool', text: "  ... and GOAAAAL!!!!!! team " + result[2]})
                 }
                 else {
                     summary.push({type: 'blocked', text: "  ... blocked by the goalkeeper!!"});
