@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress, Image } from 'semantic-ui-react'
 import TeamSelect from './team_select';
+import { AttackEvent, DefendEvent, GoalEvent, BlockedEvent, ShootEvent } from './match_events';
 
 class Match extends Component {
     constructor(props) {
@@ -48,55 +49,19 @@ class Match extends Component {
 
     parseEvent = (key, event) => {
         if (event.type === "attack")
-            return (
-                <Item key={key}>
-                    <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                    <Item.Content verticalAlign='middle'>
-                        <Item.Header>{event.min}</Item.Header>
-                        <Item.Description>{event.text}</Item.Description>
-                    </Item.Content>
-                </Item>
-            )
+            return (<AttackEvent min={event.min} text={event.text} />);
 
         if (event.type === "defended")
-            return (
-                <Item key={key}>
-                    <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                    <Item.Content verticalAlign='middle'>
-                        <Item.Description>{event.text}</Item.Description>
-                    </Item.Content>
-                </Item>
-            )
+            return (<DefendEvent text={event.text} />);
 
         if (event.type === "shot")
-            return (
-                <Item key={key}>
-                    <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                    <Item.Content verticalAlign='middle'>
-                        <Item.Description>{event.text}</Item.Description>
-                    </Item.Content>
-                </Item>
-            )
+            return (<ShootEvent text={event.text} />);
 
         if (event.type === "gool")
-            return (
-                <Item key={key}>
-                    <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                    <Item.Content verticalAlign='middle'>
-                        <Item.Header>{event.text}</Item.Header>
-                    </Item.Content>
-                </Item>
-            )
+            return (<GoalEvent text={event.text} />);
 
         if (event.type === "blocked")
-            return (
-                <Item key={key}>
-                    <Item.Image size='tiny' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                    <Item.Content verticalAlign='middle'>
-                        <Item.Description>{event.text}</Item.Description>
-                    </Item.Content>
-                </Item>
-            )
+            return (<BlockedEvent text={event.text} />);
     }
 
     render() {
