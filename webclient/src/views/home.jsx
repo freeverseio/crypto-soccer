@@ -1,5 +1,6 @@
 import React from 'react';
+import { Image } from 'semantic-ui-react'
 
 export default props => (
-    <p>Here what happened in the Cripto Soccer World</p>
+    <Image src="cs_homepage.png" fluid />
 )

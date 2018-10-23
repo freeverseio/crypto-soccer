@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress } from 'semantic-ui-react'
+import { Segment, Button, Icon, Grid, Header, GridColumn, Item, Progress, Image } from 'semantic-ui-react'
 import TeamSelect from './team_select';
+import { AttackEvent, DefendEvent, GoalEvent, BlockedEvent, ShootEvent } from './match_events';
 
 class Match extends Component {
     constructor(props) {
@@ -27,22 +28,40 @@ class Match extends Component {
             .then(summary => {
                 this.setState({ 
                     playing: true, 
-                    totalEvents: summary.events.length,
+                    totalEvents: summary.length,
                     result: [0,0],
                     events: [],
                  })
                 const delta = 500;
-                for (let i = 1; i <= summary.events.length; i++) {
+                for (let i = 1; i <= summary.length; i++) {
                     setTimeout(() => {
-                        const slice = summary.events.slice(0, i);
+                        const slice = summary.slice(0, i);
+
                         this.setState({
                             events: slice
                         })
-                        if (i === summary.events.length)
+                        if (i === summary.length)
                             this.setState({playing: false})
                     }, delta * i);
                 }
             });
+    }
+
+    parseEvent = (key, event) => {
+        if (event.type === "attack")
+            return (<AttackEvent min={event.min} text={event.text} />);
+
+        if (event.type === "defended")
+            return (<DefendEvent text={event.text} />);
+
+        if (event.type === "shot")
+            return (<ShootEvent text={event.text} />);
+
+        if (event.type === "gool")
+            return (<GoalEvent text={event.text} />);
+
+        if (event.type === "blocked")
+            return (<BlockedEvent text={event.text} />);
     }
 
     render() {
@@ -82,16 +101,20 @@ class Match extends Component {
                 </Segment>
                 <Segment>
                     {playing && <Progress percent={100 * events.length / totalEvents} success />}
-                    <Item.Group divided>
-                        {events.slice(0).reverse().map((event, key) => (
-                            <Item key={key}>
-                                <Item.Image size='small' src='https://images2.corriereobjects.it/methode_image/2016/05/04/Cultura/Foto%20Cultura%20-%20Trattate/italia-germania-1982_650x435%20(1)-kOeB-U43180371083434wgE-1224x916@Corriere-Web-Sezioni-593x443.jpg?v=20160505000206' />
-                                <Item.Content verticalAlign='middle'>
-                                    <Item.Header>{event}</Item.Header>
-                                </Item.Content>
-                            </Item>
-                        ))}
-                    </Item.Group>
+                    <Grid relaxed>
+                        <Grid.Row>
+                            <GridColumn width={4}>
+                                <Item.Group divided>
+                                    {events.slice(0).reverse().map((event, key) => (
+                                        this.parseEvent(key, event)
+                                    ))}
+                                </Item.Group>
+                            </GridColumn>
+                            <GridColumn width={12}>
+                                <Image src="soccer_field.jpg" fluid />
+                            </GridColumn>
+                        </Grid.Row>
+                    </Grid>
                 </Segment>
             </React.Fragment>
         );
