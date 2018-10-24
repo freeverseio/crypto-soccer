@@ -148,7 +148,7 @@ export class TestingFacade {
             else {
                 summary.push({type: "shot", text: "  ... that leads to a shoot by attacker " + result[2]})
                 if (result[1]) {
-                    summary.push({type: 'gool', text: "  ... and GOAAAAL!!!!!! team " + result[2]})
+                    summary.push({type: 'gool', team: result[2], text: "  ... and GOAAAAL!!!!!! team " + result[2]})
                 }
                 else {
                     summary.push({type: 'blocked', text: "  ... blocked by the goalkeeper!!"});
