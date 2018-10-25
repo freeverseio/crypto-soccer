@@ -141,14 +141,14 @@ export class TestingFacade {
             var thisMinute = (r + 1) * 5 + rndNoise;
             let t = gameEvents.teamThatAttacks.find(a => a[1] === r);
             summary.push({type: "attack", min: "Min. " + thisMinute, text: "Opportunity for team " + t[0] + "..."});
-            var result = gameEvents.shootResult.find(a => a[0] === r);
+            var result = gameEvents.shootResult.find(a => a[2] === r);
             if (!result) { 
                 summary.push({type: "defended", text: "  ... well tackled by defenders, did not prosper!"}); 
             }
             else {
-                summary.push({type: "shot", text: "  ... that leads to a shoot by attacker " + result[2]})
-                if (result[1]) {
-                    summary.push({type: 'gool', team: result[2], text: "  ... and GOAAAAL!!!!!! team " + result[2]})
+                summary.push({type: "shot", text: "  ... that leads to a shoot by attacker " + result[1]})
+                if (result[0]) {
+                    summary.push({type: 'gool', team: t[0], text: "  ... and GOAAAAL!!!!!! team " + t[0]})
                 }
                 else {
                     summary.push({type: 'blocked', text: "  ... blocked by the goalkeeper!!"});
