@@ -37,8 +37,18 @@ class Match extends Component {
                     setTimeout(() => {
                         const slice = summary.slice(0, i);
 
+                        let result = [0,0];
+
+                        for (let i=0 ; i<slice.length ; i++){
+                            const event = slice[i];
+                            if (event.type === 'gool'){
+                                result[event.team]++;
+                            }
+                        }
+
                         this.setState({
-                            events: slice
+                            events: slice,
+                            result
                         })
                         if (i === summary.length)
                             this.setState({playing: false})
