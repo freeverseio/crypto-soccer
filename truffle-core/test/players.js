@@ -45,7 +45,8 @@ contract('Players', function(accounts) {
     playerIdx = 1;
     var state = await instance.test_getPlayerState(playerIdx);
     var decoded = await instance.test_decode(k.NumStates, state, k.BitsPerState);
-    expected = [192, 47, 61, 46, 34, 62, 3]; 
+    console.log(decoded);
+    expected = [193, 47, 61, 46, 34, 62, 3]; 
     info = "Player " + playerIdx+ " skills: "
     for (var st=0; st<k.NumStates; st++) {
         thisState = decoded[st].toNumber();
@@ -54,7 +55,6 @@ contract('Players', function(accounts) {
     }
     console.log(info);
   });
-
 
   it("tries to add a player with the same name, and checks that it fails", async () =>{
     var nTeams = await  instance.test_getNCreatedTeams.call();
@@ -72,7 +72,6 @@ contract('Players', function(accounts) {
     }
     assert.isTrue(hasFailed);
   });
-
 
 
 })
