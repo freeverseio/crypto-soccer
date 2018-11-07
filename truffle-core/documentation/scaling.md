@@ -1,4 +1,12 @@
-# Relation between block and time
+# Numerology
+
+## CKitties stats: see https://etherscan.io/token/0x06012c8cf97bead5deae237070f9587f8e7a266d
+
+Exisiting cats: 1,160,408, 
+Different owners: 68698 addresses
+Total transfers: 3,068,744
+
+## Bits to store block numbers? 
 
 About 1 block is produced every 10s. 
     - about 3M blocks per year: we would need 22 bit
@@ -7,21 +15,64 @@ About 1 block is produced every 10s.
     - if we want the time between games to be 1 week => 16 bit
 
 
+## Bits to store monthOfBirthAfterUnixEpoch (i.e. after 1970)
 
-# Explanation about mappings in this game.
+10bit = 85 years
+12bit = 341 years  
+13bit = 682 years  (ENOUGH)
 
-Notation:  pname = playerName,  tname = teamName, idx = index
+## Bits to store player state (they start with an avg of 50 points per skill)
+
+10bit = 1024
+12bit = 4098
+13bit = 16386
+
+## Bits to store teamIdx (i.e. what's the max num of teams that can be created?)
+
+25bit = 33.5M teams (good number since we can squeeze 10 in a uint256, and use the remaining 6 bits to say how many teams are to be read 2^6 = 64)
+
+26bit = 67M teams (allows 9 teams per uint256)
+27bit = 134M teams (allows 9, 27x9=234)
+28bit = 268 teams (allows 9, 28x9=252)
+
+## Leagues
+- Games played by a team in a league: nGamesPerTeam = 2 (nTeams - 1)
+- Total games that make a league: nTeams (nTeams-1)    (a square minus de diagonal)
+
+10 teams => 90 games overall, 18 for one team
+11 teams => 110 games, 20 for one team
+16 teams => 240 games, 30 for one team
+
+## Max games that can be computed in one block
+
+Max gas per block = 8M.
+Currently, 1 game = 260K. Let it be 300K.
+
+
+
+
+
+
+
+
+
 
 # Players
+
 Player is a struct that has:
     - string pname = player name, unique.
-    - uint state = serialization of age and skills.
+    - uint state = serialization of skills. Currently we also store birthMonth, and role. 
 
-We currently use 14bit for each skill (max skill value = 16K). We don't need to put age nor role in the state, necessarily. So skills take about nSkills x 14 = 70 (or 84 if we include age and role). There's plenty of space left. We'll use it later to store 2 state in the same uint256.
+We propose that role is taken out and made part of the league struct (as explained in another file). 
 
-    - players[] is a vector of Players.
+Assuming we keep birthMonth, how many states can we keep?
 
-the genesis player (at pos 0) has name: _ and state uint(-1)
+12bit => each state = 5x12= 60 => 4 states, since 12 + 4 x (5x12) = 252 bit ==> still 4 left!
+
+(11 does not allow going to 5)
+
+Let's keep 12bit => 4 states, plus 4 left.
+
 
 # Teams
 Team is a struct that has:
@@ -29,60 +80,26 @@ Team is a struct that has:
     - uint256 playersIdx = serialization of all idx (positions in player[] array)
 
 
-    - teams[] is a vector of Teams.
-
-# Mappings
-
-    - mapping(bytes32 => Team) playerToTeam; /// from hash(playerName) to a Team struct.
-    - mapping(bytes32 => address) public teamToOwnerAddr; /// from team hash(name) to the owner's address.
-
-# Uniqueness
-
-We ensure uniqueness of pname and tname by simply:
-
-    - require( playerToTeam[pNameHash].playersIdx == 0);
-    - require( teamToOwner[tNameHash]==0 )
-
-
-# Quering over all players in a team
-
-An example: in playGame, all players in a team are accessed via:
-
-    input to playGame = teamIdx => getSkill(teamIdx, p in 0,...10)
-        =>  gets team from teams[teamIdx],
-            and playerIdx in array from getNumAtIndex(team.playersIdx, p, 20);
-
-
 # League
 
-## Struct
-
-inputs: 
-    - an array of teamIdx with nTeams elements, or a serialization of it. It could contain nTeams explicitly in the last value; 
+inputs needed for league creation: 
+    - the teamIdx of each team that signs up.
     - the starting block
     - the number of blocks to wait between consecutive games
 
 struct:
-    - uint teamsIdxs: the serialization of teamIdx
-    - serialization of (n0, nStep): 
-        - starting block of first match to be played
-        - nStep: separation between blocks: n0, n0 + nStep, n0 + 2 nStep,...
+    - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A)
+    - (optional) uint256 teamIdx_B (space for 9 more teams)
 
-In a league of max 20 teams, they could have a max of 12 bit, not enough.
-In a league of max 10 teams, 25 bit per team => 33M teams.
+bits for n0: 31 (max of 400 years of game)
+bits for nStep: 17 (max of 2 weaks between games)
+bits for nTeams: 5 (max of 32 teams)
+bits per teamIdx: 28 (max 266M teams)
 
-We need about 29 bit for block number, and about 17 for nStep.
-This leaves about 209 bit for other teams if we needed it. The nTeams may be limited by number of games below.
+bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
 
+So if we use the optional teamIdx_B => space for 7 +9 = total 16 teams per league.
 
-    - leagues[] is an array of leagues.
-
-
-Given nTeams, there are nGamesPerTeam = 2 (nTeams - 1) games to be played by each team.
-In total, there are nTotalGames = nTeams (nTeams-1) in a league.
-
-Proof: every team plays (n-1) times as local => n (n-1)
-Another proof: there are 2 (n-1) rounds, each with n/2 games.
 
 For 10 teams => 90 games. For 11 => 110 games. For 20 teams => 380 games.
 
