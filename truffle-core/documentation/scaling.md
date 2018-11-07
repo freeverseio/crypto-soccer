@@ -46,14 +46,29 @@ About 1 block is produced every 10s.
 ## Max games that can be computed in one block
 
 Max gas per block = 8M.
+Max gas for a reasonable large Tx = 4M.
 Currently, 1 game = 260K. Let it be 300K.
 
+18 games = 5.4M  => so a league of 10 seems like the upper limit if we want to allow challenging in one atomic Tx.
 
+If we allow challenging in 2 rounds, then it's fine to use leagues of 16 teams.
 
+## Bits per game result
 
+If we just care about who won => 2 bits (0=undef, 1=home, 2=away, 3=tie)
 
+2 bit = who wins => 128 results in uint256
 
+## Leagues goal average
 
+If we assume that the maxGoals per game per team = 8, then we need
+
+10 teams => 18 for one team => -144...144 => 9bit
+11 teams => 20 for one team => ... 9bit
+16 teams => 30 for one team => ... 9bit too!
+
+So we can keep the goal avg of 28 teams in one uint :-)
+Indeed, for 16teams, we still have 256-16x9 = 112bits left, which could store 56 extra games.
 
 
 
@@ -90,31 +105,22 @@ inputs needed for league creation:
 struct:
     - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A)
     - (optional) uint256 teamIdx_B (space for 9 more teams)
+    - uint256 resultsFirstHalf
+    - uint256 resultsSecondHalf
+    - uint256 goalAverages
 
-bits for n0: 31 (max of 400 years of game)
-bits for nStep: 17 (max of 2 weaks between games)
-bits for nTeams: 5 (max of 32 teams)
-bits per teamIdx: 28 (max 266M teams)
+
+- bits for n0: 31 (max of 400 years of game)
+- bits for nStep: 17 (max of 2 weaks between games)
+- bits for nTeams: 5 (max of 32 teams)
+- bits per teamIdx: 28 (max 266M teams)
+- bits per goalAvg: 9 (max -256...256)
+- bits per result: 2 (0=undef, 1=home, 2=away, 3=tie)
 
 bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
+So if we use the optional teamIdx_B => space for 7 + 9 = total 16 teams per league.
 
-So if we use the optional teamIdx_B => space for 7 +9 = total 16 teams per league.
 
-
-For 10 teams => 90 games. For 11 => 110 games. For 20 teams => 380 games.
-
-If we only keep the result of the games, we could add this:
-
-    - uint games: serialization of game results
-
-Say we use 4 bits for the score of each team (0,...,15). We could have 256/4=64 scores => 32 games.
-Say we use 3 bits for the score of each team (0,...,7). We could have 256/3=85.3 scores.
-
-If we only store 'who won', we need 2 bits: 0=not played, 1=team 1, 2= team 2, 3 = tie
-
-We can then store 256/2 = 128 games.
-
-We could even just use 1 bit: "has it been processed?" but maybe it's a pain, given that one needs to look back at the states before...?
 
 
 ## Writing results
