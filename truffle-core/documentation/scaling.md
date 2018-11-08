@@ -129,12 +129,19 @@ We will limit the maxplayers in a team to 14. Using 28b for each playerIdx, we c
 Team is a struct that has:
     - string tname = unique
     - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
-    - uint256 playersIdxB = serialization of 5 playerIdx + 4 leagueIdx + leaguePointer (2bit)
+    - uint256 playersIdxB = serialization of 5 playerIdx + 4 leagueIdx + updateState(2bit)
 
 - in playersIdxB: 256 - 5 x 28 = 116...
-- ...so we can fit up to 4 leagueIdx of 28bit each + pointer: 4 x 28 + 2 = 114.
+- ...so we can fit up to 4 leagueIdx of 28bit each + updateState: 4 x 28 + 2 = 114.
 
-The 4 leagueIdx are set to 0 when an update happens. So we know the leagues that we need
+updateState: (0 = no news; 1 = it is in challenge period, 2 = )... TODO FINISH
+
+The 4 leagueIdx, and updateState, start at 0.
+When team joins a league, the first entry if filled, etc.
+If the 4 entries are filled, the team cannot join another league without being updated.
+
+
+are set to 0 when an update happens. So we know the leagues that we need
 to go through to update a team.
 
 
@@ -166,11 +173,20 @@ struct:
 bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
 So if we use the optional teamIdx_B => space for 7 + 9 = total 16 teams per league.
 
-The update of a team through a league always requires updating 3 uint256 of the league struct. 
+The update of a team through a league always requires updating 4 uint256 of the league struct. 
 
 
 # Costs
 
-Updating a team
+Updating a team can only be made at the end of a league, to avoid having to store the last
+block it was updated.
+
+Updating a team in a given league involves:
+
+- rewriting 14 uint256 player states
+- rewriting 4 uint256 of a league: resultsFirstHalf, resultsSecondHalf, goalAverages, oneOnOneBalance
+- rewriting (setting to zero) the 
+
+
 
 
