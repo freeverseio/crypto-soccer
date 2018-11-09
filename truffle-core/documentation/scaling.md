@@ -144,7 +144,29 @@ If the 4 entries are filled, the team cannot join another league without being u
 are set to 0 when an update happens. So we know the leagues that we need
 to go through to update a team.
 
+## Teams
+Team is a struct that has:
+    - string tname = unique
+    - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
+    - uint256 playersIdxB = serialization of up to 9 playerIdx
+    - uint256 leagues[] = serializes:
+            - the leagueIdx it has joined that are not processed yet (28 bit)
+            - the block number of joining (29 bit)
+            - 1 bool to indicate if this team in this league has been updated by the BC already
+            - if the previous is not true, then:
+            - the block number (29bit) of the last time an updater updated that team in that league (used to determine if challenge period is over or not)
+            - the hash of the written new team state
 
+
+Rationale: when updating, the updater writes the block number for every league
+it participated, and the hash of the written state. 
+
+The bool is still 0. This indicates that it can be challenged.
+If a challeger finds it lies, then it re-updates the states of the players, and the hashes...
+...but he has only force the BC to update one league. He sets the bool to 1 for that league.
+At most, this will have to repeat it for as many leagues as needed to be updated.
+
+When the challenge time is over (which is implicitly checked next time this teams joins a league), then all leagues[] are reset to zero.
 
 ## League
 
