@@ -111,7 +111,9 @@ for every-other team, so it's enough to store the final value.
 
 Player is a struct that has:
     - string pname = player name, unique.
-    - uint state = serialization of skills. Currently we also store birthMonth, and role. 
+    - uint state = state0 + state1 + stateBit
+        - state0/state1:serialization of skills. Currently we also store birthMonth, and role. 
+        - stateBit: indicates which of the 2 states is the last updated state
 
 We propose that role is taken out and made part of the league struct (as explained in another file). 
 
@@ -148,25 +150,23 @@ to go through to update a team.
 Team is a struct that has:
     - string tname = unique
     - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
-    - uint256 playersIdxB = serialization of up to 9 playerIdx
-    - uint256 leagues[] = serializes:
-            - the leagueIdx it has joined that are not processed yet (28 bit)
-            - the block number of joining (29 bit)
-            - 1 bool to indicate if this team in this league has been updated by the BC already
-            - if the previous is not true, then:
-            - the block number (29bit) of the last time an updater updated that team in that league (used to determine if challenge period is over or not)
-            - the hash of the written new team state
+    - uint256 playersIdxB = serialization of up to 7 playerIdx (7x28=196) 
+                                + blockNumLastUpdate ( + 28b = 224)
+                                + currentLeagueIdx ( +28 = 252)
+                                + wasProcessedByBC ( +1 = 253)
+    - address lastUpdaterAddr = who wrote the last update
 
 
-Rationale: when updating, the updater writes the block number for every league
-it participated, and the hash of the written state. 
+- blockNumLastUpdate (29bit): he block number (29bit) of the last time an updater updated that team in that league (used to determine if challenge period is over or not). If this number is zero, it means that it has not been updated yet. If non-zero, it is used implicitly to know if the challenging time has passed, in case the team wants to join another league.
 
-The bool is still 0. This indicates that it can be challenged.
-If a challeger finds it lies, then it re-updates the states of the players, and the hashes...
-...but he has only force the BC to update one league. He sets the bool to 1 for that league.
-At most, this will have to repeat it for as many leagues as needed to be updated.
+Rationale: when updating, the updater computes & writes the state of all players in team at the end of each league. It writes the blockNumLastUpdate.
 
-When the challenge time is over (which is implicitly checked next time this teams joins a league), then all leagues[] are reset to zero.
+The bool wasProcessedByBC is still 0. This, together witn nonzero blockNumLastUpdate: indicates that it can be challenged.
+
+If a challeger finds it lies, then it re-updates the states of the players via a BC Tx. He sets the bool to 1, meaning that the team is totally ready to join another league, regardless of the value of blockNumLastUpdate. 
+
+==> Note that we only need two playerstates: old (at the begininning of the league, and at the end). 
+
 
 ## League
 
@@ -198,16 +198,61 @@ So if we use the optional teamIdx_B => space for 7 + 9 = total 16 teams per leag
 The update of a team through a league always requires updating 4 uint256 of the league struct. 
 
 
+
+# Main Functions to control Updaters/Challengers
+
+## ComputeNewState(teamIdx) - can be called in view mode
+- returns:
+-- new state for every player in the team, after evolving through a league. 
+
+1. Starts with the state of the team before starting the league
+2. Computes all playGames for that team in the league (if some games were already updated, skips them)
+3. Applies whatever evolution rules we have for each game
+4. Returns final state of all players.
+
+Notes: 
+- if team is in challenging period, this function checks it, and considers the 'old' state as starting point.
+- to know if a game is safely written:
+    - first it checks if the entry in 'results' is nonzero. 
+    If so, then checks if the opponent's team:
+    - has a currentLeagueIdx that is different (which can only happen if challenging period was over)
+    - if not, check if blockNumLastUpdate is old enough.
+
+
+## WriteNewStateByUpdater(teamIdx, newPlayerStates)
+- rewrites the 16 uint new player states after having called ComputeNewState in view mode, while swithcing stateBit for them (in the same uint256)
+- rewrites 4 uint for league:
+    - uint256 resultsFirstHalf
+    - uint256 resultsSecondHalf
+    - uint256 goalAverages
+    - uint256 oneOnOneBalance
+- writes blockNumLastUpdate inside uint256 playerIdxsB
+- writes lastUpdaterAddr
+
+
+## ChallengeUpdate(teamIdx, newPlayerStates)
+- checks if team is in challenging period, otherwise halts.
+- calls ComputeNewState via a Tx
+- if newState coincides with what the last updater wrote, halts. Otherwise 
+- writes the new player states (no need to change stateBit, as updater already did)
+- sets wasProcessedByBC to 1. 
+- no need to re-write blockNumLastUpdate, though it's free to do so (all in the same uint)
+- no need to re-write lastUpdaterAddr, since it was the BC who did it
+- gets the money from lastUpdaterAddr's deposit.
+
+
+
 # Costs
 
-Updating a team can only be made at the end of a league, to avoid having to store the last
-block it was updated.
+Updating a team in a league rewrites:
+- (16+4+1) uints = 21 uints
+- 1 address
 
-Updating a team in a given league involves:
+ 
 
-- rewriting 14 uint256 player states
-- rewriting 4 uint256 of a league: resultsFirstHalf, resultsSecondHalf, goalAverages, oneOnOneBalance
-- rewriting (setting to zero) the 
+
+
+ 
 
 
 
