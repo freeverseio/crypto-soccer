@@ -127,34 +127,12 @@ Let's keep 12bit => 4 states, plus 4 left.
 
 
 ## Teams
-We will limit the maxplayers in a team to 14. Using 28b for each playerIdx, we can do:
-Team is a struct that has:
-    - string tname = unique
-    - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
-    - uint256 playersIdxB = serialization of 5 playerIdx + 4 leagueIdx + updateState(2bit)
-
-- in playersIdxB: 256 - 5 x 28 = 116...
-- ...so we can fit up to 4 leagueIdx of 28bit each + updateState: 4 x 28 + 2 = 114.
-
-updateState: (0 = no news; 1 = it is in challenge period, 2 = )... TODO FINISH
-
-The 4 leagueIdx, and updateState, start at 0.
-When team joins a league, the first entry if filled, etc.
-If the 4 entries are filled, the team cannot join another league without being updated.
-
-
-are set to 0 when an update happens. So we know the leagues that we need
-to go through to update a team.
-
-## Teams
 Team is a struct that has:
     - string tname = unique
     - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
     - uint256 playersIdxB = serialization of up to 7 playerIdx (7x28=196) 
-                                + blockNumLastUpdate ( + 28b = 224)
+                                + previousLeagueIdx ( +28 = 252)
                                 + currentLeagueIdx ( +28 = 252)
-                                + wasProcessedByBC ( +1 = 253)
-    - address lastUpdaterAddr = who wrote the last update
 
 
 - blockNumLastUpdate (29bit): he block number (29bit) of the last time an updater updated that team in that league (used to determine if challenge period is over or not). If this number is zero, it means that it has not been updated yet. If non-zero, it is used implicitly to know if the challenging time has passed, in case the team wants to join another league.
@@ -170,109 +148,127 @@ If a challeger finds it lies, then it re-updates the states of the players via a
 
 ## League
 
+Miners have the state of all teams at league join. 
+Challengers can process at most one team through the league. For that, they
+need to know that state of all players, and all teams at start of league.
+These are not written anywhere, so they need to be provided as input by the 
+challenger, and check that their hashes correspond to the previous leagues final hashes.
+
+So the input of the challenger is nTeams x 14 uints, or since actually the state is 60bit,
+and 4 fit in a 256, then we need nTeams x nPlayers/4 (e.g. 16 x 16/4 = 64 uints!).
+
+One possibility is that these first re-write the player states, and the playGame works as usual. 
+
 inputs needed for league creation: 
     - the teamIdx of each team that signs up.
     - the starting block
     - the number of blocks to wait between consecutive games
 
 struct:
-    - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A)
-    - (optional) uint256 teamIdx_B (space for 9 more teams)
-    - uint256 resultsFirstHalf
-    - uint256 resultsSecondHalf
-    - uint256 goalAverages
-    - uint256 oneOnOneBalance
+    - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A for 7 teams)
+    - uint256 teamIdx_B (space for 9 more teams)
+    - address firstUpdaterAddr= who wrote the very first update for this league
+    - address challengerUpdaterAddr = who wrote the last update
+    - blockNumLastUpdate (28b) + wasUpdatedByBLockchain (18b)  
+    - firstLeagueHash = MerkleRoot( initHash, finalHash[16], hash(results) )
+    - challengerLeagueHash = same, written by last challenger
+    - initHash = hash(  stateTeam1 + ... + stateTeamN )
+    - finalHash[16] = [hash(stateTeam1), ..., hash(stateTeamN)]
+    - uint results[8]
 
-
+- bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
 - bits for n0: 31 (max of 400 years of game)
 - bits for nStep: 17 (max of 2 weaks between games)
 - bits for nTeams: 5 (max of 32 teams)
 - bits per teamIdx: 28 (max 266M teams)
-- bits per result: 2 (0=undef, 1=home, 2=away, 3=tie)
-- bits per goalAvg: 9 (max -256...256)
-- bits per oneOnOneBalance: 2 (0=undef, 1=team1, 2=team2, 3=tie)
-
-bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
-So if we use the optional teamIdx_B => space for 7 + 9 = total 16 teams per league.
-
-The update of a team through a league always requires updating 4 uint256 of the league struct. 
+- bits for wasUpdatedByBLockchain: 18 (1 bool per finalHash, for initHash, and LeagueHash)
+- for results: 4bit (15 goals) x 2 x nTeams x (nTeams-1) = 7.5 * 256 => 8 uints
 
 
 
 # Main Functions to control Updaters/Challengers
 
-## ComputeNewState(teamIdx) - can be called in view mode
+Updaters keep the entire state. We will disregard for the time being possible 
+evolution of players between leagues. 
+
+## isPlayer or isTeam or isLeague in challenging state, or safely updated?
+
+these functions just look at player's current team, looks at current league, and checks if blockNumLastUpdate is:
+    - 0 => not updated yet
+    - less than needed => in challenge state
+    - old enough => safely updated.
+
+
+
+## ComputeLeague(leagueIdx) - can be called in view mode
 - returns:
--- new state for every player in the team, after evolving through a league. 
-
-1. Starts with the state of the team before starting the league
-2. Computes all playGames for that team in the league (if some games were already updated, skips them)
-3. Applies whatever evolution rules we have for each game
-4. Returns final state of all players.
-
-Notes: 
-- if team is in challenging period, this function checks it, and considers the 'old' state as starting point.
-- to know if a game is safely written:
-    - first it checks if the entry in 'results' is nonzero. 
-    If so, then checks if the opponent's team:
-    - has a currentLeagueIdx that is different (which can only happen if challenging period was over)
-    - if not, check if blockNumLastUpdate is old enough.
+-- the LeagueHash, initHash, finalHash
+-- the results of all games
+-- the states of all players in all teams of the league
 
 
-## WriteNewStateByUpdater(teamIdx, newPlayerStates)
-- rewrites the 16 uint new player states after having called ComputeNewState in view mode, while swithcing stateBit for them (in the same uint256)
-- rewrites 4 uint for league:
-    - uint256 resultsFirstHalf
-    - uint256 resultsSecondHalf
-    - uint256 goalAverages
-    - uint256 oneOnOneBalance
-- writes blockNumLastUpdate inside uint256 playerIdxsB
-- writes lastUpdaterAddr
-
-
-## ChallengeUpdate(teamIdx, newPlayerStates)
-- checks if team is in challenging period, otherwise halts.
-- calls ComputeNewState via a Tx
-- if newState coincides with what the last updater wrote, halts. Otherwise 
-- writes the new player states (no need to change stateBit, as updater already did)
-- sets wasProcessedByBC to 1. 
-- no need to re-write blockNumLastUpdate, though it's free to do so (all in the same uint)
-- no need to re-write lastUpdaterAddr, since it was the BC who did it
-- gets the money from lastUpdaterAddr's deposit.
-
-
-
-# Costs
-
-Updating a team in a league rewrites:
-- (16+4+1) uints = 21 uints
-- 1 address
-
- 5000 per word SSTORAGE => 105K  ==> expect 130K gas
- add 4000 for each if we need to access them (!), maybe we don't for most or any
+1. Computes all playGames for that team in the league (if some games were already updated, skips them) Doubt: how to pass the initial state of teams to playGame without actually writing it to each team.
+2. Applies whatever evolution rules we have for each game
+3. Computes all results, states, and finalHash.
 
 
 
 
-# Extension to 1 update for any number of leagues
-## Teams
-Team is a struct that has:
-    - string tname = unique
-    - uint256 playersIdxA = serialization of 9 playerIdx (positions in player[] array)
-    - uint256 playersIdxB = serialization of up to 7 playerIdx (7x28=196) 
-                                + blockNumLastUpdate ( + 28b = 224)
+## WriteLeagueByUpdater(leagueIdx, MerkleRoot)
 
-    - address lastUpdaterAddr = who wrote the last update
+1. writes the firstLeagueHash, firstUpdaterAddr, blockNumLastUpdate.
 
-    - uint256 leagues[], where each league has:
-            - leagueIdx 
-            - wasProcessedByBC 
+Obviously, wasUpdatedByBLockchain = 0...0 (16bit)
+
+
+## ChallengeUpdateForFirstTime(leagueIdx, initHash, finalHash[16], results[8])
+0. checks if league is in challenging period, otherwise halts.
+1. checks if league is challenged for first time, otherwise halts.
+2. computes challengerLeagueHash from input data.
+2. Just writes initHash, finalHash[16], and results[8]. 
+3. Writes challengerUpdaterAddr, blockNumLastUpdate. Stops.
+
+Still, wasUpdatedByBLockchain = 0...0 (16bit)
+
+
+## ChallengeUpdate(leagueIdx, MerkleProofsInit[16][5], allLeaguePlayersStates, selectedTeam, challengerLeagueHash)
+0. checks if league is in challenging period, otherwise halts.
+1. checks if league is in challenge > 1 and that selectedTeam wasUpdatedByBLockchain, otherwise halts.
+2. If wasUpdatedByBLockchain for initHash = 1, skip to 6.
+3. For each team in league: 
+    - computes hash, 
+    - goes to previousLeagueIdx, uses MerkleProofsInit to show the hash is correct,
+        if any is not: halts
+4. Computes initHash, sets wasUpdatedByBLockchain for initHash to 1, and set blockNumLastUpdate
+5. If initHash not equal to what is written: rewrite, halt (no need to prove more)
+6. Plays all league (many playGame) for selectTeam 
+    - either by writing allLeaguePlayersStates first (costly)
+    - ideally, by just using the call data
+7. writes ONLY the results computed, and 
+    - note that some results will be written twice when new challenger comes, but must coincide
+8. writes ONLY the finalHash[selectedTeam]
+9. sets to 1 the wasUpdatedByBLockchain for that team
+10. If BOTH results and hash were correct: halt
+11. Get the money from previous updater (not from firstUpdater)
+12. if challengerLeagueHash coincides with firstLeagueHash, halt.
+13. write new challengerLeagueHash.
+
+
+If rounds arrive to nTeams (max possibility), the LeagueHash is computed automatically.
+
+At any point, when the blockNumLastUpdate is old enough:
+
+- either challengerLeagueHash = firstLeagueHash => first updater's deposit is released.
+- otherwise: last challenger gets first updater's deposit too.
+
+In all cases, the challenger gets (at least) the deposit from all previous challengers!
 
 
 
 
 
 
+doubt if the first challenger actually provides a good input that has the same firstLeagueHash as the first updater (he's silly)... what happens? write something for this?
 
 
 
