@@ -6,6 +6,8 @@ const CryptoPlayers = artifacts.require('CryptoPlayers');
 
 contract('CryptoPlayers', (accounts) => {
     it('deployment', async () => {
-        await CryptoPlayers.new().should.be.fulfilled;
+        const name = "name";
+        const symbol = "symbol";
+        await CryptoPlayers.new(name, symbol).should.be.fulfilled;
     });
 });
