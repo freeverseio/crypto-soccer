@@ -27,6 +27,7 @@ About 1 block is produced every 10s.
 12bit = 4098
 13bit = 16386
 
+
 ## Bits to store playerIdx (i.e. what's the max num of players that can be created?)
 
 Currently: 
@@ -66,43 +67,18 @@ Currently, 1 game = 260K. Let it be 300K.
 
 If we allow challenging in 2 rounds, then it's fine to use leagues of 16 teams.
 
+LETS LIMIT TO LEAGUES OF 10 for the time being.
+
 ## Bits per game result
 
-If we just care about who won => 2 bits (0=undef, 1=home, 2=away, 3=tie)
+max goals per team per game = 15 (4bit)
 
-2 bit = who wins => 128 results in uint256
+if nTeams = 10
+4 x 2 x 10 x (10-1) = 7.5 * 256 => 3 uints
 
-## Leagues goal average
+if nTeams = 16
+4 x 2 x 16 x (16-1) = 7.5 * 256 => 8 uints
 
-If we assume that the maxGoals per game per team = 8, then we need
-
-10 teams => 18 for one team => -144...144 => 9bit
-11 teams => 20 for one team => ... 9bit
-16 teams => 30 for one team => ... 9bit too!
-
-So we can keep the goal avg of 28 teams in one uint :-)
-Indeed, for 16teams, we still have 256-16x9 = 112bits left.
-
-## Leagues 1 against 1 balance
-
-To decide a winner of a league in case of tie of points, 
-we need to look at the 2 respective games between teams that tie.
-These are a total of nTeams x (nTeams-1)/2 values = half the number of games in a league.
-We need 2 bits for each (0=undef, 1=team1, 2=team2, 3=tie)
-
-10 teams => 45 values
-11 teams => 55 values
-16 teams => 120 values => 240 bit => fits in 1 uint
-
-
-Note that when we update a team for the entire league, we compute the 2 relevant games
-for every-other team, so it's enough to store the final value.
-
-## If we wanted to store all results, we would need:
-
-- if maxGoals = 14 (4 bits) => 1 game = 8bit =>
-    => 10 teams = 90 x 8 / 256 = 3 uint256 
-    => 16 teams = 240 x 8 / 256 = 8 uint256  (too much)
 
 
 # Main Structs
@@ -111,11 +87,10 @@ for every-other team, so it's enough to store the final value.
 
 Player is a struct that has:
     - string pname = player name, unique.
-    - uint state = state0 + state1 + stateBit
-        - state0/state1:serialization of skills. Currently we also store birthMonth, and role. 
-        - stateBit: indicates which of the 2 states is the last updated state
+    - uint state = serialization of skills(70bit) + currentTeamIdx + prevTeamIdx
 
-We propose that role is taken out and made part of the league struct (as explained in another file). 
+
+Currently we also store birthMonth, and role as skills (revisar). We propose that role is taken out and made part of the league struct (as explained in another file). 
 
 Assuming we keep birthMonth, how many states can we keep?
 
@@ -135,29 +110,14 @@ Team is a struct that has:
                                 + currentLeagueIdx ( +28 = 252)
 
 
-- blockNumLastUpdate (29bit): he block number (29bit) of the last time an updater updated that team in that league (used to determine if challenge period is over or not). If this number is zero, it means that it has not been updated yet. If non-zero, it is used implicitly to know if the challenging time has passed, in case the team wants to join another league.
-
-Rationale: when updating, the updater computes & writes the state of all players in team at the end of each league. It writes the blockNumLastUpdate.
-
-The bool wasProcessedByBC is still 0. This, together witn nonzero blockNumLastUpdate: indicates that it can be challenged.
-
-If a challeger finds it lies, then it re-updates the states of the players via a BC Tx. He sets the bool to 1, meaning that the team is totally ready to join another league, regardless of the value of blockNumLastUpdate. 
-
-==> Note that we only need two playerstates: old (at the begininning of the league, and at the end). 
-
 
 ## League
 
-Miners have the state of all teams at league join. 
+Updaters have the state of all teams at league join. 
 Challengers can process at most one team through the league. For that, they
 need to know that state of all players, and all teams at start of league.
 These are not written anywhere, so they need to be provided as input by the 
 challenger, and check that their hashes correspond to the previous leagues final hashes.
-
-So the input of the challenger is nTeams x 14 uints, or since actually the state is 60bit,
-and 4 fit in a 256, then we need nTeams x nPlayers/4 (e.g. 16 x 16/4 = 64 uints!).
-
-One possibility is that these first re-write the player states, and the playGame works as usual. 
 
 inputs needed for league creation: 
     - the teamIdx of each team that signs up.
@@ -165,16 +125,23 @@ inputs needed for league creation:
     - the number of blocks to wait between consecutive games
 
 struct:
+    Provided by a user creating the league (and others that join):
     - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A for 7 teams)
     - uint256 teamIdx_B (space for 9 more teams)
-    - address firstUpdaterAddr= who wrote the very first update for this league
-    - address challengerUpdaterAddr = who wrote the last update
-    - blockNumLastUpdate (28b) + wasUpdatedByBLockchain (18b)  
-    - firstLeagueHash = MerkleRoot( initHash, finalHash[16], hash(results) )
-    - challengerLeagueHash = same, written by last challenger
+
+    Provided by first updater:
+    - address firstUpdaterAddr = who wrote the very first update for this league
+    - firstMerkleRoot = MerkleRoot( initHash, finalHash[16], hash(results) )
+    - blockNumLastUpdate (28b) + wasUpdatedByBLockchain (18b, initially all zero)  
+
+    Provided by challengers:
+    - address challengerAddr = who wrote the last challenge
+    - challengerMerkleRoot 
     - initHash = hash(  stateTeam1 + ... + stateTeamN )
     - finalHash[16] = [hash(stateTeam1), ..., hash(stateTeamN)]
-    - uint results[8]
+    - uint results[8]   
+
+Some data on bits used:
 
 - bits left for teamidx_A = 203 = 28x7 + 7 => space for 7 teams
 - bits for n0: 31 (max of 400 years of game)
