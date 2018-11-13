@@ -1,8 +1,8 @@
 const CryptoPlayers = artifacts.require('CryptoPlayers')
 
 module.exports = (deployer) => {
-  const name = "name";
-  const symbol = "symbol";
+  const name = "CryptoSoccerPlayers";
+  const symbol = "CSP";
 
   deployer.deploy(CryptoPlayers, name, symbol)
     .then(instance => {
