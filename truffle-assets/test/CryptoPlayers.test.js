@@ -28,11 +28,12 @@ contract('CryptoPlayers', (accounts) => {
         result.toNumber().should.be.equal(state);
     });
 
-    // it('mint a player', async () => {
-    //     const contract = await CryptoPlayers.new(name, symbol);
-    //     const tokenId = 1;
-    //     const tokenURI = "http://russo";
-    //     await contract.mintWithTokenURI(accounts[0], tokenId, tokenURI).should.be.fulfilled;
-    //     await contract.tokenURI(tokenId).should.eventually.equal(tokenURI);
-    // });
+    it('get URI', async () => {
+        const contract = await CryptoPlayers.new(name, symbol, CID);
+        const tokenId = 1;
+        const state = 999;
+        await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
+        const result = await contract.tokenURI(tokenId).should.be.fulfilled;
+        result.should.be.equal(CID + '#' + state);
+    });
 });
