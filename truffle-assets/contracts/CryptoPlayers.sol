@@ -39,9 +39,10 @@ contract CryptoPlayers is ERC721Full {
         }
         bytes memory bstr = new bytes(length);
         uint k = length - 1;
-        while (i != 0){
-            bstr[k--] = byte(48 + i % 10);
-            i /= 10;
+        uint tmp = i;
+        while (tmp != 0){
+            bstr[k--] = byte(48 + tmp % 10);
+            tmp /= 10;
         }
         return string(bstr);
     }
