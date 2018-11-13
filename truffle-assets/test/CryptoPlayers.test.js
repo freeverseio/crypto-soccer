@@ -34,6 +34,6 @@ contract('CryptoPlayers', (accounts) => {
         const state = 999;
         await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
         const result = await contract.tokenURI(tokenId).should.be.fulfilled;
-        result.should.be.equal(CID + '#' + state);
+        result.should.be.equal(CID + '/?state=' + state);
     });
 });
