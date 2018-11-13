@@ -5,9 +5,16 @@ require('chai')
 const CryptoPlayers = artifacts.require('CryptoPlayers');
 
 contract('CryptoPlayers', (accounts) => {
+    const name = "name";
+    const symbol = "symbol";
+
     it('deployment', async () => {
-        const name = "name";
-        const symbol = "symbol";
         await CryptoPlayers.new(name, symbol).should.be.fulfilled;
+    });
+
+    it('check name and symbol', async () => {
+        const contract = await CryptoPlayers.new(name, symbol);
+        await contract.name().should.eventually.equal(name);
+        await contract.symbol().should.eventually.equal(symbol);
     });
 });
