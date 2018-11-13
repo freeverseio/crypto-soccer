@@ -23,7 +23,7 @@ contract CryptoPlayersMintable is CryptoPlayers, MinterRole {
         onlyMinter
         returns (bool)
     {
-       _mint(to, tokenId);
+        _mint(to, tokenId);
         return true;
     }
 }
