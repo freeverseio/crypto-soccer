@@ -14,6 +14,7 @@ contract CryptoPlayersMock is CryptoPlayers {
 
     function mint(address to, uint256 tokenId, uint256 state) public {
         _mint(to, tokenId);
+        _setState(tokenId, state);
     }
 
     function burn(uint256 tokenId) public {

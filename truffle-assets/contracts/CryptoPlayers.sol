@@ -22,4 +22,9 @@ contract CryptoPlayers is ERC721Full {
         require(_exists(tokenId), "unexistent token");
         return _tokenState[tokenId];
     }
+
+    function _setState(uint256 tokenId, uint256 state) internal {
+        require(_exists(tokenId), "unexistent token");
+        _tokenState[tokenId] = state;
+    }
 }

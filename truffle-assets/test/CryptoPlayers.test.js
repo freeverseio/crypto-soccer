@@ -19,13 +19,13 @@ contract('CryptoPlayers', (accounts) => {
         await contract.symbol().should.eventually.equal(symbol);
     });
 
-    it('get URI', async () => {
+    it('get state', async () => {
         const contract = await CryptoPlayers.new(name, symbol, CID);
         const tokenId = 1;
-        const state = 0;
+        const state = 999;
         await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
-        const URI = await contract.tokenURI(tokenId).should.be.fulfilled;
-        URI.should.be.equal(CID);
+        const result = await contract.state(tokenId).should.be.fulfilled;
+        result.toNumber().should.be.equal(state);
     });
 
     // it('mint a player', async () => {
