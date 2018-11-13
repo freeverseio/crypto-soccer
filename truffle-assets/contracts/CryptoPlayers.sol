@@ -4,13 +4,8 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
 
 contract CryptoPlayers is ERC721Full, ERC721Mintable {
-    struct Props {
-        uint8 defense;
-        uint8 attack;
-    }
-
-    // Mapping from token ID to its props
-    mapping (uint256 => Props) private _tokenProps;
+    // Mapping from token ID to its state
+    mapping (uint256 => uint256) private _tokenState;
     string private _tokenCID;
 
     constructor(string name, string symbol, string CID) public 
@@ -24,8 +19,8 @@ contract CryptoPlayers is ERC721Full, ERC721Mintable {
         return _tokenCID;
     }
 
-    function defense(uint256 tokenId) public view returns (uint) {
+    function defense(uint256 tokenId) public view returns (uint256) {
         require(_exists(tokenId), "unexistent token");
-        return _tokenProps[tokenId].defense;
+        return _tokenState[tokenId];
     }
 }
