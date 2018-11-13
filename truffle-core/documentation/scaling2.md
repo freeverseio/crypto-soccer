@@ -87,18 +87,13 @@ if nTeams = 16
 
 Player is a struct that has:
     - string pname = player name, unique.
-    - uint state = serialization of skills(70bit) + currentTeamIdx + prevTeamIdx
+    - uint state = serialization of skills(70bit) 
+                    + currentTeamIdx 
+                    + prevTeamIdx
 
 
 Currently we also store birthMonth, and role as skills (revisar). We propose that role is taken out and made part of the league struct (as explained in another file). 
 
-Assuming we keep birthMonth, how many states can we keep?
-
-12bit => each state = 5x12= 60 => 4 states, since 12 + 4 x (5x12) = 252 bit ==> still 4 left!
-
-(11 does not allow going to 5)
-
-Let's keep 12bit => 4 states, plus 4 left.
 
 
 ## Teams
@@ -119,11 +114,6 @@ need to know that state of all players, and all teams at start of league.
 These are not written anywhere, so they need to be provided as input by the 
 challenger, and check that their hashes correspond to the previous leagues final hashes.
 
-inputs needed for league creation: 
-    - the teamIdx of each team that signs up.
-    - the starting block
-    - the number of blocks to wait between consecutive games
-
 struct:
     Provided by a user creating the league (and others that join):
     - uint256 init: containing a serialization of (n0, nStep, nTeams, teamIdx_A for 7 teams)
@@ -137,7 +127,7 @@ struct:
     Provided by challengers:
     - address challengerAddr = who wrote the last challenge
     - challengerMerkleRoot 
-    - initHash = hash(  stateTeam1 + ... + stateTeamN )
+    - initHash = hash(  hash(stateTeam1) + ... + hash(stateTeamN) )
     - finalHash[16] = [hash(stateTeam1), ..., hash(stateTeamN)]
     - uint results[8]   
 
@@ -149,7 +139,13 @@ Some data on bits used:
 - bits for nTeams: 5 (max of 32 teams)
 - bits per teamIdx: 28 (max 266M teams)
 - bits for wasUpdatedByBLockchain: 18 (1 bool per finalHash, for initHash, and LeagueHash)
-- for results: 4bit (15 goals) x 2 x nTeams x (nTeams-1) = 7.5 * 256 => 8 uints
+
+- for results: 4bit (15 goals) x 2 x nTeams x (nTeams-1) 
+                            (for nTeams = 16)= 7.5 * 256    = 8 uints
+                            (for nTeams = 10)               = 3 uints
+
+- on initHash: just concatenate all playerStates of a teams, and hash. Concatenate all hashes, and hash. The reason why we include hashes instead of concatenating all playerStates of all teams, is that each hash has to be done anyway to prove that it's in the previous-league Merkle tree, and it sounds cheaper.
+
 
 
 
@@ -158,84 +154,102 @@ Some data on bits used:
 Updaters keep the entire state. We will disregard for the time being possible 
 evolution of players between leagues. 
 
+
 ## isPlayer or isTeam or isLeague in challenging state, or safely updated?
 
-these functions just look at player's current team, looks at current league, and checks if blockNumLastUpdate is:
-    - 0 => not updated yet
-    - less than needed => in challenge state
-    - old enough => safely updated.
+- isPlayerBusyPlayingLeague?
+Player.currentTeam -> team.currentLeague -> n + nGames x deltaN < now ?
 
+- isPlayerStateUpdated?
+Player.currentTeam -> team.currentLeague -> blockNumLastUpdate != 0 ?
 
+- isPlayerInChallengingPeriod?
+Player.currentTeam -> team.currentLeague -> blockNumLastUpdate + challengePeriod < now ?
 
-## ComputeLeague(leagueIdx) - can be called in view mode
-- returns:
--- the LeagueHash, initHash, finalHash
--- the results of all games
--- the states of all players in all teams of the league
+- isPlayerReadyForNewStuff = isPlayerStateUpdated && !isPlayerInChallengingPeriod
 
-
-1. Computes all playGames for that team in the league (if some games were already updated, skips them) Doubt: how to pass the initial state of teams to playGame without actually writing it to each team.
-2. Applies whatever evolution rules we have for each game
-3. Computes all results, states, and finalHash.
+Same for teams or leagues
 
 
 
 
 ## WriteLeagueByUpdater(leagueIdx, MerkleRoot)
 
-1. writes the firstLeagueHash, firstUpdaterAddr, blockNumLastUpdate.
+1. writes the firstMerkleRoot, firstUpdaterAddr, blockNumLastUpdate.
 
-Obviously, wasUpdatedByBLockchain = 0...0 (16bit)
+Obviously, does not touch wasUpdatedByBLockchain = 0...0 (16bit)
+
 
 
 ## ChallengeUpdateForFirstTime(leagueIdx, initHash, finalHash[16], results[8])
+
 0. checks if league is in challenging period, otherwise halts.
-1. checks if league is challenged for first time, otherwise halts.
-2. computes challengerLeagueHash from input data.
-2. Just writes initHash, finalHash[16], and results[8]. 
-3. Writes challengerUpdaterAddr, blockNumLastUpdate. Stops.
+1. checks if league was challenged for first time, otherwise halts.
+2. computes challengerMerkleRoot from input data. If equal to firstMerkleRoot, halts.
+2. Writes initHash, finalHash[16], results[8], challengerUpdaterAddr, firstMerkleRoot.
+3. Re-writes blockNumLastUpdate.
 
 Still, wasUpdatedByBLockchain = 0...0 (16bit)
 
 
-## ChallengeUpdate(leagueIdx, MerkleProofsInit[16][5], allLeaguePlayersStates, selectedTeam, challengerLeagueHash)
-0. checks if league is in challenging period, otherwise halts.
-1. checks if league is in challenge > 1 and that selectedTeam wasUpdatedByBLockchain, otherwise halts.
-2. If wasUpdatedByBLockchain for initHash = 1, skip to 6.
-3. For each team in league: 
-    - computes hash, 
-    - goes to previousLeagueIdx, uses MerkleProofsInit to show the hash is correct,
-        if any is not: halts
-4. Computes initHash, sets wasUpdatedByBLockchain for initHash to 1, and set blockNumLastUpdate
-5. If initHash not equal to what is written: rewrite, halt (no need to prove more)
-6. Plays all league (many playGame) for selectTeam 
-    - either by writing allLeaguePlayersStates first (costly)
-    - ideally, by just using the call data
-7. writes ONLY the results computed, and 
-    - note that some results will be written twice when new challenger comes, but must coincide
-8. writes ONLY the finalHash[selectedTeam]
-9. sets to 1 the wasUpdatedByBLockchain for that team
-10. If BOTH results and hash were correct: halt
-11. Get the money from previous updater (not from firstUpdater)
-12. if challengerLeagueHash coincides with firstLeagueHash, halt.
-13. write new challengerLeagueHash.
 
 
-If rounds arrive to nTeams (max possibility), the LeagueHash is computed automatically.
+## ChallengeUpdate(leagueIdx, finalHash[16], results[8], MerkleProofsInit[16][5], allLeaguePlayersStates, selectedTeam, challengerLeagueHash)
+
+0.  - require league is in challenging period.
+    - require league is in challenge > 1 (e.g. firstMerkleRoot != 0), and that 
+    wasUpdatedByBLockchain for selectedTeam == 0.
+
+1. Computes hash(team.playerStates) for all teams, and initHash.
+
+2. If the bit wasUpdatedByBLockchain for initHash = 1, compare your initHash to the written one. 
+    - If different, halt.
+    - If equal, jump to Step 6.
+
+3. Prove that proposed computed initHash is correct by proving that each computed hash(team.playerStates) is contained the the previous team's league Merkle tree, by:    
+    For each team in league: 
+    - goes to team.previousLeagueIdx, uses MerkleProofsInit[team][:] to show the hash was contained in it. 
+    - if any of this is not true for a team: halts     
+
+4. Set wasUpdatedByBLockchain for initHash to 1, 
+
+5. If initHash not equal to what is written (you've already proven he was lying):
+    - rewrites initHash, finalHash[16], results[8], challengerUpdaterAddr, firstMerkleRoot.
+    - set blockNumLastUpdate
+    - halts
+
+6. Plays all league (many playGame) for selectTeam, based on the provided allLeaguePlayersStates in this TX call.
+
+7. sets to 1 the wasUpdatedByBLockchain for that team
+
+8. Require that either hash(selectedTeam) or the results of the computed games for selected team are different from those written previously (proving that they previously lied). If equal: 
+    - set to 1 the wasUpdatedByBLockchain for that team,... 
+    - set blockNumLastUpdate
+    - and HALT (basically, you're silly, but we'll use your money to set to 1 that bit)
+
+
+9. write ONLY the results for the computed games (for selectedTeam). Note that some results may be written twice when new challenger comes, but must coincide.
+
+10. write ONLY the finalHash[selectedTeam]
+
+11 Transfer the deposit from previous updater (not from firstUpdater) to challengerAddr.
+
+12. require challengerMerkleRoot != firstMerkleRoot, otherwise halt: (firstUpdater did not lie, his deposit will not be taken)
+
+13. write new challengerMerkleRoot.
+
+14. set blockNumLastUpdate
+
+If rounds arrive to nTeams (max possibility), the MerkleRoot is computed by the BC.
 
 At any point, when the blockNumLastUpdate is old enough:
 
-- either challengerLeagueHash = firstLeagueHash => first updater's deposit is released.
+- either challengerMerkleRoot = firstMerkleRoot => first updater's deposit is released.
 - otherwise: last challenger gets first updater's deposit too.
 
 In all cases, the challenger gets (at least) the deposit from all previous challengers!
 
 
-
-
-
-
-doubt if the first challenger actually provides a good input that has the same firstLeagueHash as the first updater (he's silly)... what happens? write something for this?
 
 
 
