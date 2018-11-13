@@ -7,15 +7,24 @@ const CryptoPlayers = artifacts.require('CryptoPlayers');
 contract('CryptoPlayers', (accounts) => {
     const name = "name";
     const symbol = "symbol";
+    const CID = "http://freeverse.io";
 
     it('deployment', async () => {
-        await CryptoPlayers.new(name, symbol).should.be.fulfilled;
+        await CryptoPlayers.new(name, symbol, CID).should.be.fulfilled;
     });
 
     it('check name and symbol', async () => {
-        const contract = await CryptoPlayers.new(name, symbol);
+        const contract = await CryptoPlayers.new(name, symbol, CID);
         await contract.name().should.eventually.equal(name);
         await contract.symbol().should.eventually.equal(symbol);
+    });
+
+    it('get URI', async () => {
+        const contract = await CryptoPlayers.new(name, symbol, CID);
+        const tokenId = 1;
+        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
+        const URI = await contract.tokenURI(tokenId).should.be.fulfilled;
+        URI.should.be.equal(CID);
     });
 
     // it('mint a player', async () => {
