@@ -8,7 +8,7 @@ contract CryptoPlayers is ERC721Full {
         uint8 attack;
     }
 
-    // Mapping from token ID to owner
+    // Mapping from token ID to its props
     mapping (uint256 => Props) private _tokenProps;
 
     constructor(string name, string symbol) public 
