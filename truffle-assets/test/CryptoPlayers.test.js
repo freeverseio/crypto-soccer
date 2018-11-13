@@ -22,7 +22,8 @@ contract('CryptoPlayers', (accounts) => {
     it('get URI', async () => {
         const contract = await CryptoPlayers.new(name, symbol, CID);
         const tokenId = 1;
-        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
+        const state = 0;
+        await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
         const URI = await contract.tokenURI(tokenId).should.be.fulfilled;
         URI.should.be.equal(CID);
     });
