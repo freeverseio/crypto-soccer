@@ -1,9 +1,8 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721Mintable.sol";
 
-contract CryptoPlayers is ERC721Full, ERC721Mintable {
+contract CryptoPlayers is ERC721Full {
     // Mapping from token ID to its state
     mapping (uint256 => uint256) private _tokenState;
     string private _tokenCID;
