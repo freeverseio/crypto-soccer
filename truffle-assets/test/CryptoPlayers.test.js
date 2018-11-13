@@ -18,11 +18,11 @@ contract('CryptoPlayers', (accounts) => {
         await contract.symbol().should.eventually.equal(symbol);
     });
 
-    it('mint a player', async () => {
-        const contract = await CryptoPlayers.new(name, symbol);
-        const tokenId = 1;
-        const tokenURI = "http://russo";
-        await contract.mintWithTokenURI(accounts[0], tokenId, tokenURI).should.be.fulfilled;
-        await contract.tokenURI(tokenId).should.eventually.equal(tokenURI);
-    });
+    // it('mint a player', async () => {
+    //     const contract = await CryptoPlayers.new(name, symbol);
+    //     const tokenId = 1;
+    //     const tokenURI = "http://russo";
+    //     await contract.mintWithTokenURI(accounts[0], tokenId, tokenURI).should.be.fulfilled;
+    //     await contract.tokenURI(tokenId).should.eventually.equal(tokenURI);
+    // });
 });
