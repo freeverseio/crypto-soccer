@@ -7,7 +7,7 @@ const CryptoPlayers = artifacts.require('CryptoPlayersMock');
 contract('CryptoPlayers', (accounts) => {
     const name = "name";
     const symbol = "symbol";
-    const CID = "http://freeverse.io";
+    const CID = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
 
     it('deployment', async () => {
         await CryptoPlayers.new(name, symbol, CID).should.be.fulfilled;
