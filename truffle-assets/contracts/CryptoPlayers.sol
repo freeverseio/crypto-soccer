@@ -5,7 +5,6 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol";
 contract CryptoPlayers is ERC721Full("CryptoSoccerPlayers", "CSP") {
     // Mapping from token ID to its state
     mapping (uint256 => uint256) private _tokenState;
-    string private _tokenCID;
 
     function getState(uint256 tokenId) public view returns (uint256) {
         require(_exists(tokenId), "unexistent token");
