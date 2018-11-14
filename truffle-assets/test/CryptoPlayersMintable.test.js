@@ -23,7 +23,7 @@ contract('CryptoPlayersMintableMintable', (accounts) => {
         const contract = await CryptoPlayersMintable.new(name, symbol, CID);
         const tokenId = 1;
         await contract.mint(accounts[0], tokenId).should.be.fulfilled;
-        const result = await contract.state(tokenId).should.be.fulfilled;
+        const result = await contract.getState(tokenId).should.be.fulfilled;
         result.toNumber().should.not.be.equal('0');
     });
 
