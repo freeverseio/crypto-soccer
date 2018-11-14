@@ -47,7 +47,7 @@ contract CryptoPlayers is ERC721Full {
         return string(bstr);
     }
 
-    function strConcat(string _a, string _b, string _c) internal returns (string){
+    function strConcat(string _a, string _b, string _c) internal pure returns (string){
         bytes memory _ba = bytes(_a);
         bytes memory _bb = bytes(_b);
         bytes memory _bc = bytes(_c);
