@@ -5,35 +5,22 @@ require('chai')
 const CryptoPlayers = artifacts.require('CryptoPlayersMock');
 
 contract('CryptoPlayers', (accounts) => {
-    const name = "name";
-    const symbol = "symbol";
-    const CID = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
-
     it('deployment', async () => {
-        await CryptoPlayers.new(name, symbol, CID).should.be.fulfilled;
+        await CryptoPlayers.new().should.be.fulfilled;
     });
 
     it('check name and symbol', async () => {
-        const contract = await CryptoPlayers.new(name, symbol, CID);
-        await contract.name().should.eventually.equal(name);
-        await contract.symbol().should.eventually.equal(symbol);
+        const contract = await CryptoPlayers.new();
+        await contract.name().should.eventually.equal("CryptoSoccerPlayers");
+        await contract.symbol().should.eventually.equal("CSP");
     });
 
     it('get state', async () => {
-        const contract = await CryptoPlayers.new(name, symbol, CID);
+        const contract = await CryptoPlayers.new();
         const tokenId = 1;
         const state = 999;
         await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
         const result = await contract.getState(tokenId).should.be.fulfilled;
         result.toNumber().should.be.equal(state);
-    });
-
-    it('get URI', async () => {
-        const contract = await CryptoPlayers.new(name, symbol, CID);
-        const tokenId = 1;
-        const state = 999;
-        await contract.mint(accounts[0], tokenId, state).should.be.fulfilled;
-        const result = await contract.tokenURI(tokenId).should.be.fulfilled;
-        result.should.be.equal(CID + '/?state=' + state);
     });
 });

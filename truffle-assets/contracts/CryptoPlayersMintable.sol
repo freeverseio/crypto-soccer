@@ -7,11 +7,6 @@ contract CryptoPlayersMintable is CryptoPlayers, MinterRole {
     /// @dev Event fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
 
-    constructor(string name, string symbol, string CID) public 
-    CryptoPlayers(name, symbol, CID)
-    {
-    }
-
   /**
    * @dev Function to mint tokens
    * @param to The address that will receive the minted tokens.
@@ -51,6 +46,4 @@ contract CryptoPlayersMintable is CryptoPlayers, MinterRole {
         state += (_role << (bits*6));
         return state;
     }
-
-
 }
