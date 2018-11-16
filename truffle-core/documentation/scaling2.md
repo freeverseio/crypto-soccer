@@ -88,8 +88,8 @@ if nTeams = 16
 Player is a struct that has:
     - string pname = player name, unique.
     - uint state = serialization of skills(70bit) 
-                    + currentTeamIdx 
-                    + prevTeamIdx
+                    + currentTeamIdx (28bit)
+                    + prevTeamIdx (28bit)
 
 
 Currently we also store birthMonth, and role as skills (revisar). We propose that role is taken out and made part of the league struct (as explained in another file). 
