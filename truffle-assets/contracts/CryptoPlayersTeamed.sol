@@ -3,16 +3,8 @@ pragma solidity ^0.4.24;
 import "./CryptoPlayersMintable.sol";
 
 contract CryptoPlayersTeamed is CryptoPlayersMintable {
-    // Mapping from player ID to its team
-    mapping (uint256 => uint256) private _playerTeam;
+    // Mapping from team ID to its name
+    mapping (uint256 => string) private _teamName;
 
-    function getTeam(uint256 playerId) public view returns (uint256) {
-        require(_exists(playerId), "unexistent player");
-        return _playerTeam[playerId];
-    }
 
-    function _setTeam(uint256 playerId, uint256 teamId) internal {
-        require(_exists(playerId), "unexistent player");
-        _playerTeam[playerId] = teamId;
-    }
 }

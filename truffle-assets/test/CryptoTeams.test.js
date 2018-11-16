@@ -17,7 +17,8 @@ contract('CryptoTeams', (accounts) => {
         let supply = await contract.totalSupply().should.be.fulfilled;
         supply.toNumber().should.be.equal(0);
         const tokenId = 1;
-        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
+        const teamName = "panzerotto";
+        await contract.mint(accounts[0], tokenId, teamName).should.be.fulfilled;
         supply = await contract.totalSupply().should.be.fulfilled;
         supply.toNumber().should.be.equal(1);
     });
