@@ -28,7 +28,7 @@ contract('CryptoTeams', (accounts) => {
         const id = 1;
         const teamName = "panzerotto";
         await contract.mint(accounts[0], id, teamName).should.be.fulfilled;
-        const name = await contract.getName(id).should.be.fulfilled;
-        name.should.be.equal(teamName);
+        const result = await contract.getName(id).should.be.fulfilled;
+        result.should.be.equal(teamName);
     });
 });
