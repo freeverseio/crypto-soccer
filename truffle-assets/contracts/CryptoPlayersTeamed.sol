@@ -11,4 +11,9 @@ contract CryptoPlayersTeamed is CryptoPlayersMintable {
     constructor(CryptoTeams cryptoTeams)  public {
         _criptoTeams = cryptoTeams;
     }   
+
+    function getTeam(uint256 playerId) external view returns(uint256){
+        require(_exists(playerId), "unexistent player");
+        return _playerTeam[playerId];
+    }
 }
