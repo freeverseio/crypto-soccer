@@ -4,7 +4,7 @@ require('chai')
 
 const CryptoPlayers = artifacts.require('CryptoPlayersTeamed');
 
-contract('CryptoPlayers', (accounts) => {
+contract('CryptoPlayersTeamed', (accounts) => {
     it('deployment', async () => {
         await CryptoPlayers.new().should.be.fulfilled;
     });
