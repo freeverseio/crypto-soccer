@@ -1,10 +1,14 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoPlayersMintable.sol";
+import "./CryptoTeams.sol";
 
 contract CryptoPlayersTeamed is CryptoPlayersMintable {
-    // Mapping from team ID to its name
-    mapping (uint256 => string) private _teamName;
+    CryptoTeams private _criptoTeams;
+    // Mapping from player ID to its team ID
+    mapping (uint256 => uint256) private _playerTeam;
 
-
+    constructor(CryptoTeams cryptoTeams)  public {
+        _criptoTeams = cryptoTeams;
+    }   
 }

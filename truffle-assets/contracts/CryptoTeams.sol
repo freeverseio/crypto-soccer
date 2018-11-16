@@ -4,21 +4,16 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 
-contract CryptoTeams is ERC721Enumerable, ERC721Metadata, MinterRole {
+contract CryptoTeams is ERC721Enumerable, ERC721Metadata("CryptoSoccerTeams", "CST"), MinterRole {
     // Mapping from team ID to its name
     mapping (uint256 => string) private _teamName;
-
-    constructor(string name, string symbol) ERC721Metadata(name, symbol)
-        public
-    {
-    }
 
     function getName(uint256 teamId) public view returns (string) {
         require(_exists(teamId), "unexistent team");
         return _teamName[teamId];
     }
 
-    function _setName(uint256 teamId, string name) public view returns (string) {
+    function _setName(uint256 teamId, string name) internal returns (string) {
         require(_exists(teamId), "unexistent team");
         return _teamName[teamId] = name;
     }
