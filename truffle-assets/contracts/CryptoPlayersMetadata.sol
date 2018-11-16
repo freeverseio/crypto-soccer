@@ -1,8 +1,8 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayers.sol";
+import "./CryptoPlayersMintable.sol";
 
-contract CryptoPlayersMetadata is CryptoPlayers {
+contract CryptoPlayersMetadata is CryptoPlayersMintable {
     string private _tokenCID;
 
     constructor( string CID) public 
