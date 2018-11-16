@@ -3,9 +3,11 @@ Recall the main structs:
 ## Players
 
 - string pname = player name, unique.
-- uint state = serialization of skills + currentTeamIdx + prevTeamIdx
+- uint state = serialization of skills + currentTeamIdx
 
 skills = function( teamName, userChoice, positionInTeam)
+
+players[]
 
 ## Teams
 
@@ -34,22 +36,33 @@ What if all starting players are assigned implicitly to consecutive teams.
 
 So for the first league, we do not write playerToTeam.
 
-1. Imagine a user joins and provides:  tname, userChoice. 
+
+
+
+
+1. Imagine a user joins and provides:  teamName, userChoice. 
 
 2. We add to teams[end+1] a team whose only initialized struct is the tname+userChoice concatenated or not. We also write teamToOwnerAddr. As byproduct, forbids 2 equal teamNames.
 
 At this point, both updaters or challenger can compute (not read) the playerStates. They don't even need to access any written player struct at all. For each player in the team, they look at the team.playersIdxA, see that ==0, and hence, deduce this playerState needs to be computed from 
 	- hash(tname + userChoice + 0,...10)
 
-3. (optional) 
-	Imagine someone wants to sell a player now. User (or updater!) sends a 
-	- TX: update(player 7, teamIdx=34, name="Toni"),
-		- writes the playerStruct
-		- writes the mapping playerToTeam (forbidding existing names)
 
-	Then, the sell/buy TX:
-		- updates the new team's playerIdx
-		- update the entry in the old team playerIdx (all of them) the same way we would. Note that we don't update the others, so that we know that those players 
+Never write players (!!!)
+
+playerIdx always fixed at birth = teanNumer * numPlayersPerTeam + positionInTeam
+
+When selling:
+
+**** mapping playerIdx -> team.  (NO CAL)
+
+When quering team for a given playerIdx:
+	- exists in mapping? 
+		- if No => formula
+		- if yes => mapping
+
+
+
 
 
 4. When joining a league, as always, we add their teamIdx and write 'currentLeagueIdx'
@@ -77,6 +90,52 @@ Further savings: if we don't allow playerName to be defined by user, we can save
 
 
 
+
+
+----
+
+SELLING
+
+Imagine someone wants to sell a player now. There are 2 main cases. 
+
+1. If player has never evolved or joined a league. Maybe because the name or skills are cool. 
+The user himself can create the TX (also an updaterm of course).
+
+	- TX put for sale: update(player 7, teamIdx=34),
+		- writes the playerState=uint(skills + currentTeamIdx) by computing it on the fly from teamName+Userchoice+...
+
+	- TX: the sell/buy TX:
+		- updates the new team's playerIdx
+		- update the entry in the old team playerIdx (all of them) the same way we would. Note that we don't update the others, so that we know that those players 
+
+
+
+2. If player has evolved or playerd leagues. An updater MUST first update the state:
+
+	- TX put for sale:  => emit even "please update me!" 
+
+	- TX update by updater (provides state and the TX checks that the hash is correct)
+		- writes the playerState=uint(skills + currentTeamIdx) by providing his last computed state.
+
+	- TX: the sell/buy TX:
+		- updates the new team's playerIdx
+		- update the entry in the old team playerIdx (all of them) the same way we would. Note that we don't update the others, so that we know that those players 
+
+
+
+TODOs:
+- finish this file (player Creation) with ...
+- update scaling2 now that we don't have playerNames!!!! no mapping....
+- structs, logica become updater/challenger, freeze while participating....
+- refactoring playGame 'in a txt file' now that it will use data from outside.
+- introduce tactics (442) between games (see scaling.md)
+- API for: think about evolvePlayer or evolveTeam
+	- when playing a game
+	- when time passes:
+		- age effect?
+		- decide training to focus on skills: share 10 points among the 5 skills, or a max of 2-3.
+		- or maybe playing a game gives
+			- instant reward (skills++) together with extra training points.
 
 
 
