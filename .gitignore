@@ -7,3 +7,5 @@ node_modules
 bin
 .DS_store
 package-lock.json
+.idea
+*.pyc
