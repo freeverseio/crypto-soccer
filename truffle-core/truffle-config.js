@@ -19,8 +19,14 @@ module.exports = {
     ganache: {
       network_id: '*',
       host: '127.0.0.1',
-      port: 8545,
-      gas: 4700000
+      port: 8545
+    }
+  },
+  mocha: {
+    reporter: 'eth-gas-reporter',
+    reporterOptions: {
+      currency: 'EUR',
+      gasPrice: 21
     }
   }
 }
