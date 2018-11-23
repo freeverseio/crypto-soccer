@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../CryptoPlayers.sol";
+import "../ERC721/CryptoPlayers.sol";
 
 /**
  * @title CryptoPlayersMock
