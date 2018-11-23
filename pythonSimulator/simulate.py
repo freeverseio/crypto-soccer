@@ -27,8 +27,9 @@ roles640 = [0,1,1,1,1,1,1,2,2,2,2]
 roles451 = [0,1,1,1,1,2,2,2,2,2,3]
 
 ROUNDS = 18
-MAX_DICE_RAND = 1000-1 # basically, discretization used to determine who wins the dice
+MAX_DICE_RAND = 16383 # = 2^kBitsPerRndNum-1, basically, discretization used to determine who wins the dice
 
+BITS_PER_SKILL = 14
 
 class Player:
     age     = None
@@ -50,23 +51,21 @@ def intSeed2RndSeed(intSeed, maxRnd = 1000000000):
     np.random.seed(intSeed)
     return np.random.randint(0,maxRnd,1)
 
-def createRandomPlayer(rndSeed, role):
-    np.random.seed(rndSeed)
+def createRandomPlayer(role):
     newPlayer = Player()
     newPlayer.role = role
     newPlayer.age = 16 + random.random()*19     # states[0] = 16 + (states[0] % 20)
     newPlayer.skills = np.random.randint(0,49,5)          # states[sk] = states[sk] % 50
-    excess = int( (250-newPlayer.skills.sum())/5 )        # excess = (250 - excess)/5
+    excess = (250-newPlayer.skills.sum())/5        # excess = (250 - excess)/5
     newPlayer.skills += excess
     return newPlayer
 
 
-def createRandomTeam(intSeed, roles):
+def createRandomTeam(roles):
     newTeam = Team()
     newTeam.players = []
-    rndSeed = intSeed2RndSeed(intSeed)
     for p in range(nPlayers):
-        newTeam.players.append(createRandomPlayer(rndSeed+p, roles[p]))
+        newTeam.players.append(createRandomPlayer(roles[p]))
     return newTeam
 
 def showTeam(team):
@@ -147,17 +146,23 @@ def manages2Score(teamThatAttacks, teamThatDefends, rndNum1, rndNum2, maxRndNum)
     return throwDice( attackers[shooterIdx].skills[SH] * 0.7, goalieBlock, rndNum2, maxRndNum) == 0
 
 
-def playGame(team1, team2, intSeed):
+def teamGetsTired(t1):
+    t1.blockShoot *= t1.endurance*0.01
+    t1.createShoot *= t1.endurance*0.01
+    t1.defendShoot *= t1.endurance*0.01
+
+def playGame(team1, team2):
     t1 = copy.deepcopy(team1)
     t2 = copy.deepcopy(team2)
     computeTeamGlobalSkills(t1)
     computeTeamGlobalSkills(t2)
-    rndSeed = intSeed2RndSeed(intSeed)
-    np.random.seed(rndSeed)
 
     t1.goals = 0
     t2.goals = 0
     for round in range(ROUNDS):
+        if (round == 8) or (round == 13):
+            teamGetsTired(t1)
+            teamGetsTired(t2)
         teamAttacks = throwDice(t1.move2attack, t2.move2attack, np.random.randint(0,MAX_DICE_RAND), MAX_DICE_RAND)
         if teamAttacks == 0:
             teamThatAttacks = t1
