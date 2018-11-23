@@ -1,5 +1,5 @@
 pragma solidity ^ 0.4.24;
-import "./ERC721/teams.sol";
+import "./factories/teams.sol";
 
 /*
     Main contract with the Game Engine

@@ -1,29 +1,19 @@
 {
-  "name": "cryptosoccer",
-  "version": "1.0.0",
-  "description": "\"cool soccer\"",
-  "main": "package.js",
+  "name": "truffle-assets",
+  "version": "0.0.1",
+  "description": "",
+  "main": "truffle-config.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://gitlab.com/toni.mateos/cryptosoccer.git"
+    "test": "truffle test"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://gitlab.com/toni.mateos/cryptosoccer/issues"
-  },
-  "homepage": "https://gitlab.com/toni.mateos/cryptosoccer#README",
   "dependencies": {
-    "openzeppelin-solidity": "1.10.0"
-  },
-  "devDependencies": {
-    "eth-gas-reporter": "^0.1.12",
-    "mocha": "^5.2.0"
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "openzeppelin-solidity": "^2.0.0"
   }
 }
