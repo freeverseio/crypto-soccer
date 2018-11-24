@@ -2,30 +2,20 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
+const TeamFactory = artifacts.require('TeamFactory');
 const CryptoTeams = artifacts.require('CryptoTeams');
 
 contract('CryptoTeams', (accounts) => {
-    it('deployment', async () => {
-        await CryptoTeams.new().should.be.fulfilled;
+    let contract = null;
+    let teamFactory = null;
+
+    beforeEach(async () => {
+        teamFactory = await TeamFactory.new().should.be.fulfilled;
+        contract = await CryptoTeams.new(teamFactory.address).should.be.fulfilled;
     });
 
-    it('mint a team', async () => {
-        const contract = await CryptoTeams.new().should.be.fulfilled;
-        let supply = await contract.totalSupply().should.be.fulfilled;
-        supply.toNumber().should.be.equal(0);
-        const tokenId = 1;
-        const teamName = "panzerotto";
-        await contract.mint(accounts[0], tokenId, teamName).should.be.fulfilled;
-        supply = await contract.totalSupply().should.be.fulfilled;
-        supply.toNumber().should.be.equal(1);
-    });
-
-    it('check name of minted team', async () => {
-        const contract = await CryptoTeams.new().should.be.fulfilled;
-        const id = 1;
-        const teamName = "panzerotto";
-        await contract.mint(accounts[0], id, teamName).should.be.fulfilled;
-        const result = await contract.getName(id).should.be.fulfilled;
-        result.should.be.equal(teamName);
-    });
+    it('TeamFactory address', async () => {
+        const result = await contract.getTeamFactory().should.be.fulfilled;
+        result.should.be.equal(teamFactory.address);
+    }); 
 });

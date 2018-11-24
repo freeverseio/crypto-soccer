@@ -7,6 +7,11 @@ import "../ERC721/CryptoTeams.sol";
  * This mock just provides a public mint and burn functions for testing purposes
  */
 contract CryptoTeamsMock is CryptoTeams {
+    constructor(address teamFactory)
+    CryptoTeams(teamFactory) 
+    public 
+    {}
+
     function mint(address to, uint256 tokenId) public {
         _mint(to, tokenId);
     }
