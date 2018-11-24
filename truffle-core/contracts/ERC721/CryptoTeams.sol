@@ -15,9 +15,6 @@ contract CryptoTeams is ERC165, IERC721, TeamFactory {
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
     bytes4 private constant _ERC721_RECEIVED = 0x150b7a02;
 
-    // Mapping from token ID to owner
-    mapping (uint256 => address) private _tokenOwner;
-
     // Mapping from token ID to approved address
     mapping (uint256 => address) private _tokenApprovals;
 
@@ -62,7 +59,7 @@ contract CryptoTeams is ERC165, IERC721, TeamFactory {
      * @return owner address currently marked as the owner of the given token ID
      */
     function ownerOf(uint256 tokenId) public view returns (address) {
-        address owner = _tokenOwner[tokenId];
+        address owner = teamToOwnerAddr[bytes32(tokenId)];
         require(owner != address(0));
         return owner;
     }
@@ -177,7 +174,7 @@ contract CryptoTeams is ERC165, IERC721, TeamFactory {
      * @return whether the token exists
      */
     function _exists(uint256 tokenId) internal view returns (bool) {
-        address owner = _tokenOwner[tokenId];
+        address owner = teamToOwnerAddr[bytes32(tokenId)];
         return owner != address(0);
     }
 
@@ -227,8 +224,8 @@ contract CryptoTeams is ERC165, IERC721, TeamFactory {
      * @param tokenId uint256 ID of the token to be added to the tokens list of the given address
      */
     function _addTokenTo(address to, uint256 tokenId) internal {
-        require(_tokenOwner[tokenId] == address(0));
-        _tokenOwner[tokenId] = to;
+        require(teamToOwnerAddr[bytes32(tokenId)] == address(0));
+        teamToOwnerAddr[bytes32(tokenId)] = to;
         _ownedTokensCount[to] = _ownedTokensCount[to].add(1);
     }
 
@@ -243,7 +240,7 @@ contract CryptoTeams is ERC165, IERC721, TeamFactory {
     function _removeTokenFrom(address from, uint256 tokenId) internal {
         require(ownerOf(tokenId) == from);
         _ownedTokensCount[from] = _ownedTokensCount[from].sub(1);
-        _tokenOwner[tokenId] = address(0);
+        teamToOwnerAddr[bytes32(tokenId)] = address(0);
     }
 
     /**
