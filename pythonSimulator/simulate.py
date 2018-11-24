@@ -12,6 +12,8 @@ PA = 2
 SH = 3
 EN = 4
 
+skNames = ["Defense", "Speed", "Pass", "Shoot", "Stamina"]
+
 nPlayers = 11
 
 GOALIE = 0
