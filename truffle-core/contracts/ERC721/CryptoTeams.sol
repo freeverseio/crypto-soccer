@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/utils/Address.sol";
 import "openzeppelin-solidity/contracts/introspection/ERC165.sol";
 
-contract CryptoTeams is ERC165, IERC721 {
+contract CryptoTeams is ERC165, IERC721, TeamFactory {
     using SafeMath for uint256;
     using Address for address;
 
