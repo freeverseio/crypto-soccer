@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersMetadata');
+const CryptoPlayers = artifacts.require('CryptoPlayersMetadataMock');
 
 contract('CryptoPlayersMetadata', (accounts) => {
     const CID = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";

@@ -1,0 +1,18 @@
+pragma solidity ^0.4.24;
+
+import "../ERC721/CryptoPlayersMetadata.sol";
+
+/**
+ * @title CryptoPlayersMock
+ * This mock just provides a public mint and burn functions for testing purposes
+ */
+contract CryptoPlayersMetadataMock is CryptoPlayersMetadata {
+    function mint(address to, uint256 tokenId) public {
+        _mint(to, tokenId);
+        _setState(tokenId, 999);
+    }
+
+    function burn(uint256 tokenId) public {
+        _burn(ownerOf(tokenId), tokenId);
+    }
+}

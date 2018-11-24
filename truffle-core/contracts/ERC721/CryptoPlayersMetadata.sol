@@ -1,14 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersMintable.sol";
+import "./CryptoPlayers.sol";
 
-contract CryptoPlayersMetadata is CryptoPlayersMintable {
+contract CryptoPlayersMetadata is CryptoPlayers {
     string private _tokenCID;
-
-    constructor( string CID) public 
-    {
-        _tokenCID = CID;
-    }
 
     function tokenURI(uint256 tokenId) external view returns (string) {
         require(_exists(tokenId), "unexistent token");
