@@ -5,17 +5,25 @@ require('chai')
 const CryptoPlayers = artifacts.require('CryptoPlayersMetadataMock');
 
 contract('CryptoPlayersMetadata', (accounts) => {
-    const CID = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
+    const URI = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
 
     it('deployment', async () => {
-        await CryptoPlayers.new(CID).should.be.fulfilled;
+        await CryptoPlayers.new().should.be.fulfilled;
+    });
+
+    it('set base URI', async () => {
+        const contract = await CryptoPlayers.new();
+        await contract.setBaseURI(URI).should.be.fulfilled;
+        const result = await contract.getBaseURI().should.be.fulfilled;
+        result.should.be.equal(URI);
     });
 
     it('get URI', async () => {
-        const contract = await CryptoPlayers.new(CID);
+        const contract = await CryptoPlayers.new();
+        await contract.setBaseURI(URI).should.be.fulfilled;
         const tokenId = 1;
         await contract.mint(accounts[0], tokenId).should.be.fulfilled;
         const result = await contract.tokenURI(tokenId).should.be.fulfilled;
-        result.should.be.equal(CID + '/?state=967199688875838827974656004');
+        result.should.be.equal(URI + '/?state=999');
     });
 });

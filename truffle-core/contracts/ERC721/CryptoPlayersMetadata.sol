@@ -3,13 +3,21 @@ pragma solidity ^0.4.24;
 import "./CryptoPlayers.sol";
 
 contract CryptoPlayersMetadata is CryptoPlayers {
-    string private _tokenCID;
+    string private _baseURI;
+
+    function setBaseURI(string URI) public {
+        _baseURI = URI;
+    }
+
+    function getBaseURI() external view returns (string) {
+        return _baseURI;
+    }
 
     function tokenURI(uint256 tokenId) external view returns (string) {
         require(_exists(tokenId), "unexistent token");
         uint256 state = getState(tokenId);
         string memory stateString = uint2str(state);
-        return strConcat(_tokenCID, "/?state=", stateString);
+        return strConcat(_baseURI, "/?state=", stateString);
     }
 
     function uint2str(uint i) internal pure returns (string){
