@@ -45,20 +45,44 @@ def getHistogram(goals):
     histNorm = hist[0]*100.0/sum(hist[0])
     return histNorm
 
+def getProbabilityOfWinning(goals1, goals2):
+    wins = 1.*sum( goals1 > goals2)
+    ties = 1.*sum( goals1 == goals2)
+    loss = 1.*sum( goals1 < goals2)
+    return wins/goals1.size, ties/goals1.size, loss/goals1.size
 
 
-np.random.seed(0)
-nGames = 100;
-skillValueT1 = 50
+def createPlot1(nGames):
+    #
+    # fixes Team1 to all 50
+    # varies Team2 from 20 to 100
+    # output: plot of pWin, pTie for team1.
+    #
+    np.random.seed(0)
+    skillValueT1 = 50
 
-skillValuesT2 = [10 + s*2 for s in range(45)]
+    # skillValuesT2 = [10 + s*2 for s in range(46)]
+    skillValuesT2 = np.array([20 + s*2 for s in range(40)])
+    pWin = np.empty(skillValuesT2.size)
+    pTie = np.empty(skillValuesT2.size)
+    pLoss = np.empty(skillValuesT2.size)
 
-for skillValue2 in skillValuesT2:
-    print "\n%d against %d" %(skillValueT1, skillValue2)
-    goals1, goals2 = analyzeAllPlayersEqualButDiffTeams(skillValueT1,skillValue2, 'allplayers50-100.png', nGames)
+    for s, skillValue2 in enumerate(skillValuesT2):
+        print "\n%d against %d" %(skillValueT1, skillValue2)
+        goals1, goals2 = analyzeAllPlayersEqualButDiffTeams(skillValueT1,skillValue2, 'allplayers50-100.png', nGames)
+        pWin[s], pTie[s], pLoss[s] = getProbabilityOfWinning(goals1, goals2)
+
+    fig, ax = plt.subplots()
+    line1, = ax.plot(skillValuesT2, pWin, label='Win prob')
+    line2, = ax.plot(skillValuesT2, pTie, label='Tie prob')
+    ax.legend()
+    ax.set_xlabel('Skills of all players in Team 2')
+    ax.set_ylabel('Probability')
+    ax.set_title('Team 1: all-50.  Team 2: all-N')
+    plt.savefig('team1-all50_team2-allVarying.png')
 
 
-
+createPlot1(100)  # ideal plot: nGames = 1e4
 
 
 
