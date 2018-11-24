@@ -60,6 +60,20 @@ def createRandomPlayer(role):
     newPlayer.skills += excess
     return newPlayer
 
+def createDeterminedlayer(skills, age, role):
+    newPlayer = Player()
+    newPlayer.role = role
+    newPlayer.age = age
+    newPlayer.skills = skills
+    return newPlayer
+
+def createAllPlayersEqualTeam(skills, age, roles):
+    newTeam = Team()
+    newTeam.players = []
+    for p in range(nPlayers):
+        newTeam.players.append(createDeterminedlayer(skills, age, roles[p]))
+    return newTeam
+
 
 def createRandomTeam(roles):
     newTeam = Team()
