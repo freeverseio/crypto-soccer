@@ -101,7 +101,6 @@ contract('Leagues', function(accounts) {
       [220, 50,50,50,50,50], // age, defense, speed, pass, shoot, endurance
       f.createAlineacion(4,3,3)
     );
-    await printTeamPlayers(1, instance);
     seed = 232;
     var goals = await instance.test_playGame.call(0, 1, seed);
     
