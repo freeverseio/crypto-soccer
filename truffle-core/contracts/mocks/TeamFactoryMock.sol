@@ -125,7 +125,7 @@ contract TeamFactoryMock is TeamFactory {
     // WRAPPERS FOR TEAMS
 
     function test_getNCreatedTeams() external view returns(uint) { return getNCreatedTeams(); }
-    function test_getTeamName(uint idx) external view returns(string) { return getTeamName(idx); }
+    function test_getTeamName(uint idx) public view returns(string) { return getTeamName(idx); }
     function test_createTeam(string _teamName) external { return createTeam(_teamName); }
     function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
 }

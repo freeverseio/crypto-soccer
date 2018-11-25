@@ -46,6 +46,4 @@ contract TeamFactory is PlayerFactory {
 */    
     function getNCreatedTeams() public view returns(uint) { return teams.length;}
     function getTeamName(uint idx) public view returns(string) { return teams[idx].name;}
-
-
 }
