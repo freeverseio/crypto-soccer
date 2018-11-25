@@ -35,6 +35,7 @@ contract GameEngine is CryptoSoccer {
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
         uint[kMaxPlayersInTeam][2] memory attackersShoot;
+
         uint8[2] memory nAttackers;
         (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
@@ -125,7 +126,7 @@ contract GameEngine is CryptoSoccer {
         uint rndNum2,
         uint factor
     )
-        internal
+        view internal 
         returns (bool, uint8)
     {
         /// @dev attacker who actually shoots is selected weighted by his speed
@@ -144,7 +145,7 @@ contract GameEngine is CryptoSoccer {
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
     function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor)
-        internal
+        view internal
         returns (bool)
     {
         return _teamFactory.throwDice(

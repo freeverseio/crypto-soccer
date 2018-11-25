@@ -6,8 +6,13 @@ import "./games.sol";
 */
 
 contract League is GameEngine {
+    constructor(address teamFactory) public
+    GameEngine(teamFactory)
+    {
+    }
+
     /// @dev The main League struct
-    struct League {
+    struct LeagueProps {
         uint[] teamIdxs;
         uint blockFirstGame;
         uint blocksBetweenGames;
@@ -15,14 +20,14 @@ contract League is GameEngine {
         uint resultsSecondHalf;
     }
     /// @dev Array containing all leagues created so far
-    League[] leagues;
+    LeagueProps[] leagues;
 
     /// @dev Creates a league and returns the new league idx
     function createLeague(uint[] _teamIdxs, uint _blockFirstGame, uint _blocksBetweenGames) 
         internal 
         returns (uint)
     {
-        leagues.push(League({
+        leagues.push(LeagueProps({
             teamIdxs: _teamIdxs, 
             blockFirstGame: _blockFirstGame, 
             blocksBetweenGames: _blocksBetweenGames,
