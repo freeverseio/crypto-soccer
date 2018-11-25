@@ -21,12 +21,12 @@ contract Testing is League {
     }
     // WRAPPERS FOR GAMES
 
-    // function test_playGame(uint teamIdx1, uint teamIdx2, uint seed)
-    //     external
-    //     returns (uint16[2] memory teamGoals) 
-    // {
-    //     return playGame(teamIdx1, teamIdx2, seed);
-    // }
+    function test_playGame(uint teamIdx1, uint teamIdx2, uint seed)
+        external
+        returns (uint16[2] memory teamGoals) 
+    {
+        return playGame(teamIdx1, teamIdx2, seed);
+    }
 
 
     function test_playRound(uint leagueIdx, uint8 round, uint seed) 

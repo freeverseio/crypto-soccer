@@ -1,19 +1,29 @@
-const cryptoSoccer = artifacts.require("Testing");
+require('chai')
+    .use(require('chai-as-promised'))
+    .should();
+
+const TeamFactory = artifacts.require("TeamFactoryMock");
+const Testing = artifacts.require("Testing");
+
 var k = require('../jsCommons/constants.js');
 var f = require('../jsCommons/functions.js');
 
 contract('Leagues', function(accounts) {
-
-    var instance;
+    let teamFactory;
+    let instance;
     console.log('Funds in the source account:');
-    console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber()/web3.toWei(1, "ether"));
+    console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber() / web3.toWei(1, "ether"));
 
-    it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {
-        instance = await cryptoSoccer.new();
-        var receipt = await web3.eth.getTransactionReceipt(instance.transactionHash);
-        console.log("League\n\tdeployment cost: ", receipt.gasUsed, "\n\tcontract address:", receipt.contractAddress)
-        assert.isTrue(receipt.gasUsed > 2000000);
+    it('deployment', async () => {
+        teamFactory = await TeamFactory.new().should.be.fulfilled;
+        instance = await Testing.new(teamFactory.address).should.be.fulfilled;
     });
+
+    // it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {
+    //     var receipt = await web3.eth.getTransactionReceipt(instance.transactionHash);
+    //     console.log("League\n\tdeployment cost: ", receipt.gasUsed, "\n\tcontract address:", receipt.contractAddress)
+    //     assert.isTrue(receipt.gasUsed > 2000000);
+    // });
 
     it("creates 4 teams and puts them into a league. Checks a number of indicators.", async () => {
         nTeams = 4;
@@ -21,7 +31,7 @@ contract('Leagues', function(accounts) {
         for (var t = 0; t < nTeams; t++) {
             var teamName = "team"+t;
             var playerBasename = "player"+t+"_";
-            var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
+            var newTeamIdx = await f.createTeam(teamFactory, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4,3,3));
             teamsIdx.push(newTeamIdx);
         }
         const blockFirstGame = 100;        
@@ -35,17 +45,17 @@ contract('Leagues', function(accounts) {
     });
 
     it("plays one round of a league, and checks that written results are as expected", async () => {
-        var nLeagues = await instance.test_getNLeaguesCreated.call();
+        var nLeagues = await instance.test_getNLeaguesCreated.call().should.be.fulfilled;
         var leagueIdx = nLeagues-1;
         var round = 0;
         var seed = 1;
-        await instance.test_playRound(leagueIdx, round, seed);
-        var nTeams = await instance.test_getNTeamsInLeague.call(leagueIdx) ;
+        await instance.test_playRound(leagueIdx, round, seed).should.be.fulfilled;
+        var nTeams = await instance.test_getNTeamsInLeague.call(leagueIdx).should.be.fulfilled;
         var result;
         var info = "LeagueIdx " + leagueIdx + ", with nTeams=" + nTeams + ". RESULTS for round 0:";
         for (var game = 0; game<nTeams/2; game++){
             info += "Game " + game + ": ";
-            result = await instance.test_getWrittenResult.call(leagueIdx, nTeams, round, game);
+            result = await instance.test_getWrittenResult.call(leagueIdx, nTeams, round, game).should.be.fulfilled;
             result = result.toNumber();
             if (result == k.Undef) { info += " UNDEF";};
             if (result == k.HomeWins) { info += " HomeWins";};
@@ -83,7 +93,7 @@ contract('Leagues', function(accounts) {
 
         it("creates another team and plays a game. With this seed, it checks that the result is 1-5", async () => {
     await createTestTeam(
-      instance,
+      teamFactory,
       "Sevilla",
       "Navas",
       k.MaxPlayersInTeam,
