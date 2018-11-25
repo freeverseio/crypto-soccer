@@ -3,7 +3,6 @@ require('chai')
     .should();
 
 const Testing = artifacts.require("TeamFactoryMock");
-const TeamFactory = artifacts.require("TeamFactory");
 
 var k = require('../jsCommons/constants.js');
 
