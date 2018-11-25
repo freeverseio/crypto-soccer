@@ -22,7 +22,8 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
 
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint seed)
-        internal
+        public
+        view
         returns (uint16[2] memory teamGoals)
     {
         /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
@@ -157,16 +158,6 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
         ) == 1 ? true : false;
     }
 
-    function getTeamState(uint256 team) internal returns(uint256[kMaxPlayersInTeam]){
-        uint256[kMaxPlayersInTeam] teamState;
-        for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint256 state =_teamFactory.getStatePlayerInTeam(p, team);
-            teamState[p] = state;
-        }
-        return teamState;
-    }
-
-
     /// @dev Computes basic data, including globalSkills, needed during the game.
     /// @dev Basically implements the formulas:
     // move2attack =    defence(defenders + 2*midfields + attackers) +
@@ -191,7 +182,7 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
         uint blockShoot;
         uint endurance;
 
-        uint[kMaxPlayersInTeam] memory teamState = getTeamState(_teamIdx);
+        uint[kMaxPlayersInTeam] memory teamState = _teamFactory.getTeamState(_teamIdx);
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
             uint16[] memory skills = decode(kNumStates, teamState[p], kBitsPerState);
