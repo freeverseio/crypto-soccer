@@ -1,7 +1,6 @@
 const TeamFactory = artifacts.require("TeamFactory");
 const CryptoPlayers = artifacts.require("CryptoPlayers");
 const CryptoTeams = artifacts.require("CryptoTeams");
-const Testing = artifacts.require("Testing");
 const League = artifacts.require("League");
 
 module.exports = function (deployer) {
@@ -25,12 +24,6 @@ module.exports = function (deployer) {
         .then(league => {
           console.log(`League deployed at address: ${league.address}`);
           console.log(`League transaction at hash: ${league.transactionHash}`);
-        })
-        .catch(console.error);
-      deployer.deploy(Testing, teamFactory.address)
-        .then(testing => {
-          console.log(`Testing deployed at address: ${testing.address}`);
-          console.log(`Testing transaction at hash: ${testing.transactionHash}`);
         })
         .catch(console.error);
     })
