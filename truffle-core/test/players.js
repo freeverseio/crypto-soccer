@@ -20,7 +20,6 @@ contract('Players', function(accounts) {
 
   it("tests if contract is deployed correctly", async () => {
     instance = await cryptoSoccer.new();
-    assert.isTrue(true);
   });
 
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{
