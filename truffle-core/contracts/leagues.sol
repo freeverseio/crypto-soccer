@@ -48,7 +48,7 @@ contract League is GameEngine {
         uint8 homeTeam;
         uint8 awayTeam;
         for (uint8 game = 0; game < nTeams-1; game++) {
-            (homeTeam, awayTeam) = _teamFactory.teamsInGame(round, game, nTeams);
+            (homeTeam, awayTeam) = teamsInGame(round, game, nTeams);
             writeGameResult(
                 leagueIdx,
                 nTeams,
@@ -81,14 +81,14 @@ contract League is GameEngine {
         if (result[0] < result[1]) { result2write = kAwayWins; }
 
         if (round < nTeams - 1) {
-            leagues[leagueIdx].resultsFirstHalf = _teamFactory.setNumAtIndex(
+            leagues[leagueIdx].resultsFirstHalf = setNumAtIndex(
                 result2write, 
                 leagues[leagueIdx].resultsFirstHalf, 
                 round*nTeams+game, 
                 kBitsPerGameResult
             );
         } else {
-            leagues[leagueIdx].resultsSecondHalf = _teamFactory.setNumAtIndex(
+            leagues[leagueIdx].resultsSecondHalf = setNumAtIndex(
                 result2write, 
                 leagues[leagueIdx].resultsSecondHalf, 
                 (round-(nTeams-1))*nTeams+game, 
@@ -103,13 +103,13 @@ contract League is GameEngine {
         returns(uint) 
     {
         if (round < nTeams - 1) {
-            return _teamFactory.getNumAtIndex(
+            return getNumAtIndex(
                 leagues[leagueIdx].resultsFirstHalf, 
                 round*nTeams+game, 
                 kBitsPerGameResult
             );
         } else {
-            return _teamFactory.getNumAtIndex(
+            return getNumAtIndex(
                 leagues[leagueIdx].resultsSecondHalf, 
                 (round-(nTeams-1))*nTeams+game, 
                 kBitsPerGameResult

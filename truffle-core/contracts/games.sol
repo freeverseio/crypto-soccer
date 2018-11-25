@@ -1,13 +1,14 @@
 pragma solidity ^ 0.4.24;
 
 import "./CryptoSoccer.sol";
+import "./factories/helpers.sol";
 import "./factories/teams.sol";
 
 /*
     Main contract with the Game Engine
 */
 
-contract GameEngine is CryptoSoccer {
+contract GameEngine is CryptoSoccer, HelperFunctions {
     TeamFactory internal _teamFactory;
 
     constructor(address teamFactory) public {
@@ -27,48 +28,46 @@ contract GameEngine is CryptoSoccer {
         /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
         ///  generated from a seed. We do that 4 times. Each of this 4 arrays
         ///  is used in a particular event of the 18 rounds. 
-        uint16[] memory rndNum1 = _teamFactory.getRndNumArrays(seed, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum2 = _teamFactory.getRndNumArrays(seed+1, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum3 = _teamFactory.getRndNumArrays(seed+2, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum4 = _teamFactory.getRndNumArrays(seed+3, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum1 = getRndNumArrays(seed, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum2 = getRndNumArrays(seed+1, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum3 = getRndNumArrays(seed+2, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rndNum4 = getRndNumArrays(seed+3, kRoundsPerGame, kBitsPerRndNum);
 
-        // TODO !!!!!! decomment all
+        uint[5][2] memory globSkills;
+        uint[kMaxPlayersInTeam][2] memory attackersSpeed;
+        uint[kMaxPlayersInTeam][2] memory attackersShoot;
 
-        // uint[5][2] memory globSkills;
-        // uint[kMaxPlayersInTeam][2] memory attackersSpeed;
-        // uint[kMaxPlayersInTeam][2] memory attackersShoot;
+        uint8[2] memory nAttackers;
+        (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
+        (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
+        uint gameId = getGameId(teamIdx1, teamIdx2, seed);
 
-        // uint8[2] memory nAttackers;
-        // (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
-        // (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
-        // uint gameId = _teamFactory.getGameId(teamIdx1, teamIdx2, seed);
-
-        // uint8 teamThatAttacks;
-        // /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
-        // for (uint8 round = 0; round < kRoundsPerGame; round++){
-        //     if ( (round == 8) || (round == 13)) {
-        //         teamsGetTired(globSkills[0], globSkills[1]);
-        //     }
-        //     teamThatAttacks = _teamFactory.throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
-        //     emit TeamAttacks(teamThatAttacks, round, gameId);
-        //     if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
-        //         if ( managesToScore(
-        //             nAttackers[teamThatAttacks],
-        //             attackersSpeed[teamThatAttacks],
-        //             attackersShoot[teamThatAttacks],
-        //             globSkills[1-teamThatAttacks][kBlockShoot],
-        //             rndNum3[round],
-        //             rndNum4[round],
-        //             kMaxRndNum,
-        //             round,
-        //             gameId
-        //             )
-        //         ) 
-        //         {
-        //             teamGoals[teamThatAttacks]++;
-        //         }
-        //     }
-        // }
+        uint8 teamThatAttacks;
+        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
+        for (uint8 round = 0; round < kRoundsPerGame; round++){
+            if ( (round == 8) || (round == 13)) {
+                teamsGetTired(globSkills[0], globSkills[1]);
+            }
+            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
+            emit TeamAttacks(teamThatAttacks, round, gameId);
+            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
+                if ( managesToScore(
+                    nAttackers[teamThatAttacks],
+                    attackersSpeed[teamThatAttacks],
+                    attackersShoot[teamThatAttacks],
+                    globSkills[1-teamThatAttacks][kBlockShoot],
+                    rndNum3[round],
+                    rndNum4[round],
+                    kMaxRndNum,
+                    round,
+                    gameId
+                    )
+                ) 
+                {
+                    teamGoals[teamThatAttacks]++;
+                }
+            }
+        }
         return teamGoals;
     }
 
@@ -136,11 +135,11 @@ contract GameEngine is CryptoSoccer {
         for (uint8 p=0; p<nAttackers; p++) {
             weights[p] = attackersSpeed[p];
         }
-        uint8 shooter = _teamFactory.throwDiceArray(weights, rndNum1, factor);
+        uint8 shooter = throwDiceArray(weights, rndNum1, factor);
 
         /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return (
-            _teamFactory.throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0,
+            throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, factor) == 0,
             shooter
         );
     }
@@ -150,7 +149,7 @@ contract GameEngine is CryptoSoccer {
         view internal
         returns (bool)
     {
-        return _teamFactory.throwDice(
+        return throwDice(
             globSkills[1-teamThatAttacks][kDefendShoot],       // defendShoot of defending team against...
             (globSkills[teamThatAttacks][kCreateShoot]*6)/10,  // createShoot of attacking team.
             rndNum,
@@ -185,7 +184,7 @@ contract GameEngine is CryptoSoccer {
 
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = _teamFactory.decode(kNumStates, _teamFactory.getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
+            uint16[] memory skills = decode(kNumStates, _teamFactory.getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
             endurance += skills[kStatEndur];
             if (skills[kStatRole] == kRoleKeeper) {
                 blockShoot = skills[kStatShoot];
