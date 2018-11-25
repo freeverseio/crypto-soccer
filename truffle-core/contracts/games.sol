@@ -157,6 +157,15 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
         ) == 1 ? true : false;
     }
 
+    function getTeamState(uint256 team) internal returns(uint256[kMaxPlayersInTeam]){
+        uint256[kMaxPlayersInTeam] teamState;
+        for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
+            uint256 state =_teamFactory.getStatePlayerInTeam(p, team);
+            teamState[p] = state;
+        }
+        return teamState;
+    }
+
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
     /// @dev Basically implements the formulas:
@@ -182,9 +191,10 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
         uint blockShoot;
         uint endurance;
 
+        uint[kMaxPlayersInTeam] memory teamState = getTeamState(_teamIdx);
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(kNumStates, _teamFactory.getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
+            uint16[] memory skills = decode(kNumStates, teamState[p], kBitsPerState);
             endurance += skills[kStatEndur];
             if (skills[kStatRole] == kRoleKeeper) {
                 blockShoot = skills[kStatShoot];
