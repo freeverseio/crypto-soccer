@@ -4,7 +4,7 @@ pragma solidity ^ 0.4.24;
 contract HelperFunctions {
 
     /// @dev Serializes an array of nElem numbers into a single uint with specific bits used for each num.
-    function serialize(uint8 nElem, uint16[] nums, uint bits) internal pure returns(uint256 result) {
+    function serialize(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint256 result) {
         require(bits*nElem <= 256, "Not enough space in a uint256 to serialize");
         require(bits <= 16, "Not enough bits to encode each number, since they are read as uint16");
         result = 0;
@@ -17,7 +17,7 @@ contract HelperFunctions {
     }
 
     /// @dev Decodes a serialized uint256 into an array of nums with specific bits used for each num
-    function decode(uint8 nElem, uint serialized, uint bits) internal pure returns(uint16[] decoded) {
+    function decode(uint8 nElem, uint serialized, uint bits) public pure returns(uint16[] decoded) {
         require (bits <= 16, "Not enough bits to encode each number, since they are read as uint16");
         uint mask = (1 << bits)-1; // (2**bits)-1
         decoded = new uint16[](nElem);
@@ -34,7 +34,7 @@ contract HelperFunctions {
 
     /// @dev Sets the number at a given index in a serialized uint256
     function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits) 
-        internal 
+        public 
         pure 
         returns(uint) 
     {
@@ -49,7 +49,7 @@ contract HelperFunctions {
     /// @dev Returns the hash of a uint using the hash function used in this game.
     /// @dev Only used for testing since web3.eth.solidityUtils not yet available
     function computeKeccak256ForNumber(uint n)
-        internal
+        public
         pure
         returns(uint)
     {
@@ -59,7 +59,7 @@ contract HelperFunctions {
     /// @dev Returns the hash of concat(string,uint,uint) using the hash function used in this game.
     /// @dev Only used for testing since web3.eth.solidityUtils not yet available
     function computeKeccak256(string s, uint n1, uint n2)
-        internal
+        public
         pure
         returns(uint)
     {
@@ -70,7 +70,7 @@ contract HelperFunctions {
     ///  the hash of concat(uint,uint,uint) using the hash function used in this game.
     ///  Only used for testing since web3.eth.solidityUtils not yet available
     function getGameId(uint n0, uint n1, uint n2)
-        internal
+        public
         pure
         returns(uint)
     {
@@ -85,7 +85,7 @@ contract HelperFunctions {
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
     /// @dev maxRndNum controls the resolution or fine-graining of the algorithm.
     function throwDice(uint weight1, uint weight2, uint rndNum, uint maxRndNum)
-        internal
+        public
         pure
         returns(uint8)
     {
@@ -99,7 +99,7 @@ contract HelperFunctions {
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
     function throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
-        internal
+        public
         pure
         returns(uint8)
     {
@@ -131,7 +131,7 @@ contract HelperFunctions {
     ///  game(n,r) = ( P(N-n+r),  P(n+1+r) )   (except at game 0)
     ///  Note: for the second half of the league, teams are just exchanged (home/away)
     function teamsInGame(uint8 round, uint8 game, uint8 nTeams)
-        internal
+        public
         pure
         returns(uint8 team1, uint8 team2)
     {
@@ -162,7 +162,7 @@ contract HelperFunctions {
     //   var hash = await instance.test_computeKeccak256ForNumber(rndSeed);
     //   var rndNums1= await instance.test_decode(nRounds, hash , bits);
     function getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
-        internal
+        public
         pure
         returns (uint16[] rndNumArray) 
     {

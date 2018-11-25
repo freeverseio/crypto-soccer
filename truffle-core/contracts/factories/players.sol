@@ -16,7 +16,7 @@ contract PlayerFactory is Storage, HelperFunctions {
     /// @dev Returns player role given his pos in the team, and a selected strategy 
     /// @dev Strategy (e.g. 4-4-3) is specified by the first 2 nums. 
     /// @dev The 3rd number is not needed (it always equals 10 - nDefenders - nMids)
-    function getRole(uint idx, uint8 nDefenders, uint8 nMids) internal pure returns(uint8) {
+    function getRole(uint idx, uint8 nDefenders, uint8 nMids) public pure returns(uint8) {
         require (idx < kMaxPlayersInTeam, "Player pos in team larger than 11!");
         if (idx == 0)
             return kRoleKeeper;
@@ -119,7 +119,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint8 _playerNumberInTeam,
         uint8 _playerRole
     )
-        internal 
+        public 
     {
         require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
         uint dna = uint(keccak256(abi.encodePacked(
@@ -149,7 +149,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         uint _endurance,
         uint _role
     )
-        internal 
+        public 
     {
         /// @dev TODO: we should make sure all numbers are below 2^kBitsPerState-1
         require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
@@ -169,13 +169,13 @@ contract PlayerFactory is Storage, HelperFunctions {
 /* 
     @dev Section with functions only for external/testing use.
 */
-    function getNCreatedPlayers() internal view returns(uint) { return players.length; }
+    function getNCreatedPlayers() public view returns(uint) { return players.length; }
 
-    function getPlayerState(uint playerIdx) internal view returns(uint) {
+    function getPlayerState(uint playerIdx) public view returns(uint) {
         return players[playerIdx].state;
     }
 
-    function getPlayerName(uint playerIdx) internal view returns(string) {
+    function getPlayerName(uint playerIdx) public view returns(string) {
         return players[playerIdx].name;
     }
 }

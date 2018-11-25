@@ -17,53 +17,51 @@ import "../leagues.sol";
 contract Testing is League {
 
     // Wrappers for helpers:
-    function test_serialize(uint8 nElem, uint16[] nums, uint bits) external pure returns(uint result) {
-        return serialize(nElem, nums, bits);
+    function test_serialize(uint8 nElem, uint16[] nums, uint bits) external returns(uint result) {
+        return _teamFactory.serialize(nElem, nums, bits);
     }
 
-    function test_decode(uint8 nNumbers, uint longState, uint bits) external pure returns(uint16[] result) {
-        return decode(nNumbers, longState, bits);
+    function test_decode(uint8 nNumbers, uint longState, uint bits) external returns(uint16[] result) {
+        return _teamFactory.decode(nNumbers, longState, bits);
     }
 
-    function test_getNumAtIndex(uint longState, uint8 index, uint bits) external pure returns(uint) {
-        return getNumAtIndex(longState, index, bits);
+    function test_getNumAtIndex(uint longState, uint8 index, uint bits) external returns(uint) {
+        return _teamFactory.getNumAtIndex(longState, index, bits);
     }
 
-    function test_setNumAtIndex(uint value, uint longState, uint8 index, uint bits) external pure returns(uint) {
-        return setNumAtIndex(value, longState, index, bits);
+    function test_setNumAtIndex(uint value, uint longState, uint8 index, uint bits) external returns(uint) {
+        return _teamFactory.setNumAtIndex(value, longState, index, bits);
     }
 
-    function test_computeKeccak256ForNumber(uint n) external pure returns(uint)
+    function test_computeKeccak256ForNumber(uint n) external returns(uint)
     {
-        return computeKeccak256ForNumber(n);
+        return _teamFactory.computeKeccak256ForNumber(n);
     }
 
-    function test_computeKeccak256(string s, uint n1, uint n2) external pure returns(uint) {
-        return computeKeccak256(s, n1, n2);
+    function test_computeKeccak256(string s, uint n1, uint n2) external returns(uint) {
+        return _teamFactory.computeKeccak256(s, n1, n2);
     }
 
-    function test_throwDice(uint weight1, uint weight2, uint rndNum, uint factor) external pure returns(uint8) {
-        return throwDice(weight1, weight2, rndNum, factor);
+    function test_throwDice(uint weight1, uint weight2, uint rndNum, uint factor) external returns(uint8) {
+        return _teamFactory.throwDice(weight1, weight2, rndNum, factor);
     }
 
-    function test_throwDiceArray(uint[] weights, uint rndNum, uint factor) external pure returns(uint8) {
-        return throwDiceArray(weights, rndNum, factor);
+    function test_throwDiceArray(uint[] weights, uint rndNum, uint factor) external returns(uint8) {
+        return _teamFactory.throwDiceArray(weights, rndNum, factor);
     }
 
     function test_getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
         external
-        pure
         returns (uint16[] rndNumArray) 
     {
-        return getRndNumArrays(seed, roundsPerGame, bitsPerRndNum);
+        return _teamFactory.getRndNumArrays(seed, roundsPerGame, bitsPerRndNum);
     }
 
     function test_getGameId(uint teamIdx1, uint teamIdx2, uint seed) 
         external
-        pure
         returns (uint gameId) 
     {
-        return getGameId(teamIdx1, teamIdx2, seed);
+        return _teamFactory.getGameId(teamIdx1, teamIdx2, seed);
     }
 
 
@@ -78,7 +76,7 @@ contract Testing is League {
     ) 
         external 
     {
-        createBalancedPlayer(
+        _teamFactory.createBalancedPlayer(
             _playerName, 
             _teamIdx, 
             _userChoice,
@@ -101,7 +99,7 @@ contract Testing is League {
     )
         external 
     {
-        createUnbalancedPlayer(
+        _teamFactory.createUnbalancedPlayer(
             _playerName,
             _teamIdx, 
             _playerNumberInTeam,
@@ -115,21 +113,21 @@ contract Testing is League {
         );
     }
 
-    function test_getRole(uint idx, uint8 first, uint8 second) external pure returns(uint8) {
-        return getRole(idx, first, second);
+    function test_getRole(uint idx, uint8 first, uint8 second) external returns(uint8) {
+        return _teamFactory.getRole(idx, first, second);
     }
 
-    function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
-    function test_getPlayerState(uint playerIdx) external view returns(uint) { return getPlayerState(playerIdx); }
-    function test_getPlayerName(uint playerIdx) external view returns(string) { return getPlayerName(playerIdx); }
+    function test_getNCreatedPlayers() external view returns(uint) { return _teamFactory.getNCreatedPlayers(); }
+    function test_getPlayerState(uint playerIdx) external view returns(uint) { return _teamFactory.getPlayerState(playerIdx); }
+    function test_getPlayerName(uint playerIdx) external view returns(string) { return _teamFactory.getPlayerName(playerIdx); }
 
 
     // WRAPPERS FOR TEAMS
 
-    function test_getNCreatedTeams() external view returns(uint) { return getNCreatedTeams(); }
-    function test_getTeamName(uint idx) external view returns(string) { return getTeamName(idx); }
-    function test_createTeam(string _teamName) external { return createTeam(_teamName); }
-    function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
+    function test_getNCreatedTeams() external view returns(uint) { return _teamFactory.getNCreatedTeams(); }
+    function test_getTeamName(uint idx) external view returns(string) { return _teamFactory.getTeamName(idx); }
+    function test_createTeam(string _teamName) external { return _teamFactory.createTeam(_teamName); }
+    function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return _teamFactory.getStatePlayerInTeam(_playerIdx, _teamIdx); }
 
 
     // WRAPPERS FOR GAMES
@@ -156,10 +154,9 @@ contract Testing is League {
 
     function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 
         external 
-        pure 
         returns (uint8 team1, uint8 team2)
     {
-        return teamsInGame(round, game, nTeams);
+        return _teamFactory.teamsInGame(round, game, nTeams);
     }
 
     function test_playRound(uint leagueIdx, uint8 round, uint seed) 
