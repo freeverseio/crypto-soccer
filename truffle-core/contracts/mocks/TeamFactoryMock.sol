@@ -10,25 +10,26 @@ contract TeamFactoryMock is TeamFactory {
     // Wrappers for helpers:
 
     function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 
-        external 
+        public 
+        pure 
         returns (uint8 team1, uint8 team2)
     {
         return teamsInGame(round, game, nTeams);
     }
 
-    function test_serialize(uint8 nElem, uint16[] nums, uint bits) external returns(uint result) {
+    function test_serialize(uint8 nElem, uint16[] nums, uint bits) public pure returns(uint result) {
         return serialize(nElem, nums, bits);
     }
 
-    function test_decode(uint8 nNumbers, uint longState, uint bits) external returns(uint16[] result) {
+    function test_decode(uint8 nNumbers, uint longState, uint bits) public pure returns(uint16[] result) {
         return decode(nNumbers, longState, bits);
     }
 
-    function test_getNumAtIndex(uint longState, uint8 index, uint bits) external returns(uint) {
+    function test_getNumAtIndex(uint longState, uint8 index, uint bits) public pure returns(uint) {
         return getNumAtIndex(longState, index, bits);
     }
 
-    function test_setNumAtIndex(uint value, uint longState, uint8 index, uint bits) external returns(uint) {
+    function test_setNumAtIndex(uint value, uint longState, uint8 index, uint bits) public pure returns(uint) {
         return setNumAtIndex(value, longState, index, bits);
     }
 

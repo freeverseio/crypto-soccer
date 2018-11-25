@@ -32,41 +32,43 @@ contract GameEngine is CryptoSoccer {
         uint16[] memory rndNum3 = _teamFactory.getRndNumArrays(seed+2, kRoundsPerGame, kBitsPerRndNum);
         uint16[] memory rndNum4 = _teamFactory.getRndNumArrays(seed+3, kRoundsPerGame, kBitsPerRndNum);
 
-        uint[5][2] memory globSkills;
-        uint[kMaxPlayersInTeam][2] memory attackersSpeed;
-        uint[kMaxPlayersInTeam][2] memory attackersShoot;
+        // TODO !!!!!! decomment all
 
-        uint8[2] memory nAttackers;
-        (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
-        (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
-        uint gameId = _teamFactory.getGameId(teamIdx1, teamIdx2, seed);
+        // uint[5][2] memory globSkills;
+        // uint[kMaxPlayersInTeam][2] memory attackersSpeed;
+        // uint[kMaxPlayersInTeam][2] memory attackersShoot;
 
-        uint8 teamThatAttacks;
-        /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
-        for (uint8 round = 0; round < kRoundsPerGame; round++){
-            if ( (round == 8) || (round == 13)) {
-                teamsGetTired(globSkills[0], globSkills[1]);
-            }
-            teamThatAttacks = _teamFactory.throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
-            emit TeamAttacks(teamThatAttacks, round, gameId);
-            if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
-                if ( managesToScore(
-                    nAttackers[teamThatAttacks],
-                    attackersSpeed[teamThatAttacks],
-                    attackersShoot[teamThatAttacks],
-                    globSkills[1-teamThatAttacks][kBlockShoot],
-                    rndNum3[round],
-                    rndNum4[round],
-                    kMaxRndNum,
-                    round,
-                    gameId
-                    )
-                ) 
-                {
-                    teamGoals[teamThatAttacks]++;
-                }
-            }
-        }
+        // uint8[2] memory nAttackers;
+        // (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
+        // (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
+        // uint gameId = _teamFactory.getGameId(teamIdx1, teamIdx2, seed);
+
+        // uint8 teamThatAttacks;
+        // /// @dev order of globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance, 5-startEndurance]
+        // for (uint8 round = 0; round < kRoundsPerGame; round++){
+        //     if ( (round == 8) || (round == 13)) {
+        //         teamsGetTired(globSkills[0], globSkills[1]);
+        //     }
+        //     teamThatAttacks = _teamFactory.throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rndNum1[round], kMaxRndNum);
+        //     emit TeamAttacks(teamThatAttacks, round, gameId);
+        //     if ( managesToShoot(teamThatAttacks, globSkills, rndNum2[round], kMaxRndNum)) {
+        //         if ( managesToScore(
+        //             nAttackers[teamThatAttacks],
+        //             attackersSpeed[teamThatAttacks],
+        //             attackersShoot[teamThatAttacks],
+        //             globSkills[1-teamThatAttacks][kBlockShoot],
+        //             rndNum3[round],
+        //             rndNum4[round],
+        //             kMaxRndNum,
+        //             round,
+        //             gameId
+        //             )
+        //         ) 
+        //         {
+        //             teamGoals[teamThatAttacks]++;
+        //         }
+        //     }
+        // }
         return teamGoals;
     }
 

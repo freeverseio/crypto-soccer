@@ -1,4 +1,10 @@
-const cryptoSoccer = artifacts.require("Testing");
+require('chai')
+    .use(require('chai-as-promised'))
+    .should();
+
+const Testing = artifacts.require("TeamFactoryMock");
+const TeamFactory = artifacts.require("TeamFactory");
+
 var k = require('../jsCommons/constants.js');
 
 contract('Testing', function(accounts) {
@@ -7,7 +13,7 @@ contract('Testing', function(accounts) {
 
   // deploy the contract before each test
   beforeEach(async () => {
-    instance = await cryptoSoccer.deployed();
+    instance = await Testing.new().should.be.fulfilled;
   });
 
   it("tests that we compute correctly the teams playing in a certain day", async () => {
@@ -17,7 +23,7 @@ contract('Testing', function(accounts) {
         if (round==nTeams-1) info += "\n";
         info += "Round " + round + ": ";
         for (game=0; game<3; game++) {
-            result = await instance.test_teamsInGame(round, game, nTeams);
+            result = await instance.test_teamsInGame(round, game, nTeams).should.be.fulfilled;
             info += result[0].toNumber() + "-" + result[1].toNumber() +", ";
         }
     }

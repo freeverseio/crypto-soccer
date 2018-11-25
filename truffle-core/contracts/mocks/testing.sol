@@ -29,11 +29,11 @@ contract Testing is League {
     // }
 
 
-    // function test_playRound(uint leagueIdx, uint8 round, uint seed) 
-    //     external 
-    // {
-    //     playRound(leagueIdx, round, seed);  
-    // }
+    function test_playRound(uint leagueIdx, uint8 round, uint seed) 
+        external 
+    {
+        playRound(leagueIdx, round, seed);  
+    }
 
     // // WRAPPERS FOR LEAGUES
 
