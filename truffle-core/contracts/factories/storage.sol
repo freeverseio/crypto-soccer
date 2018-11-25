@@ -40,18 +40,6 @@ contract Storage {
     /// @dev The ID of each team is actually his index in this array.
     Team[] teams;
 
-    /// @dev The main League struct
-    struct League {
-        uint[] teamIdxs;
-        uint blockFirstGame;
-        uint blocksBetweenGames;
-        uint resultsFirstHalf;
-        uint resultsSecondHalf;
-    }
-    /// @dev Array containing all leagues created so far
-    League[] leagues;
-
-
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => Team) public playerToTeam;

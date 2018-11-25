@@ -6,6 +6,16 @@ import "./games.sol";
 */
 
 contract League is GameEngine {
+    /// @dev The main League struct
+    struct League {
+        uint[] teamIdxs;
+        uint blockFirstGame;
+        uint blocksBetweenGames;
+        uint resultsFirstHalf;
+        uint resultsSecondHalf;
+    }
+    /// @dev Array containing all leagues created so far
+    League[] leagues;
 
     /// @dev Creates a league and returns the new league idx
     function createLeague(uint[] _teamIdxs, uint _blockFirstGame, uint _blocksBetweenGames) 
