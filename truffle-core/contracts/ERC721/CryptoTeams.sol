@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../factories/teams.sol";
+import "./teams.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";

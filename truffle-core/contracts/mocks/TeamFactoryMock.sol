@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../factories/teams.sol";
+import "../ERC721/teams.sol";
 
 /**
  * @title TeamFactoryMock

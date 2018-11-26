@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../factories/players.sol";
+import "../ERC721/players.sol";
 
 /**
  * @title PlayerFactoryMock

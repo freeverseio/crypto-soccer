@@ -1,6 +1,6 @@
 pragma solidity ^ 0.4.24;
 
-import "../leagues.sol";
+import "../engine/leagues.sol";
 
 /*
     Contract that acts as a wrapper for all functions that need to be tested directly.

@@ -2,7 +2,7 @@ pragma solidity ^ 0.4.24;
 
 // TODO: import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./storage.sol";
-import "./helpers.sol";
+import "../helpers.sol";
 
 /*
     Contract to manage player creation
