@@ -1,11 +1,19 @@
 pragma solidity ^ 0.4.24;
-import "./teams.sol";
+
+import "../CryptoSoccer.sol";
+import "../helpers.sol";
+import "../ERC721/teams.sol";
 
 /*
     Main contract with the Game Engine
 */
 
-contract GameEngine is TeamFactory {
+contract GameEngine is CryptoSoccer, HelperFunctions {
+    TeamFactory internal _teamFactory;
+
+    constructor(address teamFactory) public {
+        _teamFactory = TeamFactory(teamFactory);
+    }
 
     /// @dev gameId is needed to identify the game to which the events belong.
     ///  Currently, the hash of concat(teamIdx1, teamIdx2, seed)
@@ -14,7 +22,7 @@ contract GameEngine is TeamFactory {
 
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint seed)
-        internal
+        public
         returns (uint16[2] memory teamGoals)
     {
         /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
@@ -28,6 +36,7 @@ contract GameEngine is TeamFactory {
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
         uint[kMaxPlayersInTeam][2] memory attackersShoot;
+
         uint8[2] memory nAttackers;
         (globSkills[0], nAttackers[0], attackersSpeed[0], attackersShoot[0]) = getGameglobSkills(teamIdx1);
         (globSkills[1], nAttackers[1], attackersSpeed[1], attackersShoot[1]) = getGameglobSkills(teamIdx2);
@@ -118,7 +127,7 @@ contract GameEngine is TeamFactory {
         uint rndNum2,
         uint factor
     )
-        internal
+        internal 
         pure
         returns (bool, uint8)
     {
@@ -150,7 +159,6 @@ contract GameEngine is TeamFactory {
         ) == 1 ? true : false;
     }
 
-
     /// @dev Computes basic data, including globalSkills, needed during the game.
     /// @dev Basically implements the formulas:
     // move2attack =    defence(defenders + 2*midfields + attackers) +
@@ -175,9 +183,10 @@ contract GameEngine is TeamFactory {
         uint blockShoot;
         uint endurance;
 
+        uint[kMaxPlayersInTeam] memory teamState = _teamFactory.getTeamState(_teamIdx);
         nAttackers = 0;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(kNumStates, getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
+            uint16[] memory skills = decode(kNumStates, teamState[p], kBitsPerState);
             endurance += skills[kStatEndur];
             if (skills[kStatRole] == kRoleKeeper) {
                 blockShoot = skills[kStatShoot];

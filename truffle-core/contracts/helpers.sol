@@ -28,7 +28,7 @@ contract HelperFunctions {
     }
 
     /// @dev Returns value at a given position (index) from a serialized uint256
-    function getNumAtIndex(uint serialized, uint8 index, uint bits) public pure returns(uint) {
+    function getNumAtIndex(uint serialized, uint8 index, uint bits) internal pure returns(uint) {
         return (serialized >> (bits*index))&((1 << bits)-1);
     }
 

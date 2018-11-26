@@ -1,6 +1,6 @@
-const cryptoSoccer = artifacts.require("Testing");
-var k = require('../jsCommons/constants.js');
-var f = require('../jsCommons/functions.js');
+const cryptoSoccer = artifacts.require("TeamFactoryMock");
+var k = require('../../jsCommons/constants.js');
+var f = require('../../jsCommons/functions.js');
 
 contract('Players', function(accounts) {
 
@@ -19,8 +19,7 @@ contract('Players', function(accounts) {
 
 
   it("tests if contract is deployed correctly", async () => {
-    instance = await cryptoSoccer.deployed();
-    assert.isTrue(true);
+    instance = await cryptoSoccer.new();
   });
 
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{

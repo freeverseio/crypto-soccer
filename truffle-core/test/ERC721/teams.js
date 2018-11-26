@@ -1,0 +1,78 @@
+require('chai')
+    .use(require('chai-as-promised'))
+    .should();
+
+const TeamFactoryMock = artifacts.require("TeamFactoryMock");
+var k = require('../../jsCommons/constants.js');
+var f = require('../../jsCommons/functions.js');
+
+const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
+
+contract('Teams', function (accounts) {
+  let instance;
+
+  beforeEach(async () => {
+    instance = await TeamFactoryMock.new().should.be.fulfilled;
+  });
+
+  it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {
+    var receipt = await web3.eth.getTransactionReceipt(instance.transactionHash);
+    console.log("GameEngine\n\tdeployment cost: ", receipt.gasUsed, "\n\tcontract address:", receipt.contractAddress)
+    assert.isTrue(receipt.gasUsed > 2000000);
+  });
+
+  it('get unexistent team', async () => {
+    await instance.getTeamName(0).should.be.rejected;
+    await instance.getTeamName(1).should.be.rejected;
+  })
+
+  it("creates an entire team, an checks that we have 11 players at the end", async () => {
+    nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
+    assert.equal(nCreatedPlayers, 1);
+    teamName = "Mataro";
+    playerBasename = "Bogarde";
+    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3));
+    await printTeamPlayers(newTeamIdx, instance);
+    assert.equal(nCreatedPlayers, k.MaxPlayersInTeam + 1);
+  });
+
+  it("create team", async () => {
+    const name = "Los Cojos";
+    await instance.createTeam(name).should.be.fulfilled;
+    const result = await instance.getTeamName(0).should.be.fulfilled;
+    result.should.be.equal(name)
+  });
+
+  it("checks that we cannot add 2 teams with same name", async () => {
+    const name = "Los Cojos";
+    await instance.createTeam(name).should.be.fulfilled;
+    await instance.createTeam(name).should.be.rejected;
+  });
+
+  it("creates a team via .call() instead of Tx and checks that you can create 2 teams with same name", async () => {
+    teamName = "test";
+    var newTeamIdx = await instance.test_getNCreatedTeams.call();
+    await instance.test_createTeam.call(teamName);
+    var newTeamIdx2 = await instance.test_getNCreatedTeams.call();
+    assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
+    await instance.test_createTeam.call(teamName);
+  });
+});
+
+async function printTeamPlayers(teamIdx, instance) {
+  var totals = Array(k.NumStates).fill(0);
+  console.log("Players in team " + teamIdx + ":");
+  for (var p = 0; p < k.MaxPlayersInTeam; p++) {
+    info = "Player " + p + ": ";
+    serialized = await instance.test_getStatePlayerInTeam(p, teamIdx);
+    decoded = await instance.test_decode(k.NumStates, serialized, k.BitsPerState);
+    for (var sk = 0; sk < k.NumStates; sk++) {
+      if (sk == 0) totals[0] += f.unixMonthToAge(decoded[0]);
+      else totals[sk] += parseInt(decoded[sk]);
+      info += skillNames[sk] + "= " + decoded[sk] + "  ";
+    }
+    console.log(info);
+  }
+  console.log("Totals: " + totals);
+}
+

@@ -11,7 +11,7 @@ contract TeamFactory is PlayerFactory {
     /// @dev method doesn't do any checking and should only be called when the
     /// @dev input data is known to be valid.
     /// @param _teamName The name of the team, which happens to determine the team skills, via hash(_teamName, _userChoice)
-    function createTeam(string _teamName) internal {
+    function createTeam(string _teamName) public {
         // TODO: require maxLen for _teamName
 
         /// @dev Make sure team name did not exist before.
@@ -33,7 +33,7 @@ contract TeamFactory is PlayerFactory {
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
     function getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx)
-        internal
+        public
         view
         returns(uint)
     {
@@ -44,8 +44,14 @@ contract TeamFactory is PlayerFactory {
 /* 
     @dev Section with functions only for external/testing use.
 */    
-    function getNCreatedTeams() internal view returns(uint) { return teams.length;}
-    function getTeamName(uint idx) internal view returns(string) { return teams[idx].name;}
+    function getNCreatedTeams() public view returns(uint) { return teams.length;}
+    function getTeamName(uint idx) public view returns(string) { return teams[idx].name;}
 
-
+    function getTeamState(uint256 team) public view returns(uint256[kMaxPlayersInTeam]){
+        uint256[kMaxPlayersInTeam] memory teamState;
+        for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
+            teamState[p] = getStatePlayerInTeam(p, team);
+        }
+        return teamState;
+    }
 }
