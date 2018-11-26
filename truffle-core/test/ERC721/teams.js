@@ -3,8 +3,8 @@ require('chai')
     .should();
 
 const TeamFactoryMock = artifacts.require("TeamFactoryMock");
-var k = require('../jsCommons/constants.js');
-var f = require('../jsCommons/functions.js');
+var k = require('../../jsCommons/constants.js');
+var f = require('../../jsCommons/functions.js');
 
 const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 

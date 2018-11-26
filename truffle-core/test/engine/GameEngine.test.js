@@ -5,8 +5,8 @@ require('chai')
 
 const TeamFactory = artifacts.require('TeamFactoryMock');
 const GameEngine = artifacts.require('GameEngine');
-const f = require('../jsCommons/functions.js');
-const k = require('../jsCommons/constants.js');
+const f = require('../../jsCommons/functions.js');
+const k = require('../../jsCommons/constants.js');
 
 contract('GameEngine', (accounts) => {
     let teamFactory;

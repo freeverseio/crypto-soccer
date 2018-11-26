@@ -5,8 +5,8 @@ require('chai')
 const TeamFactory = artifacts.require("TeamFactoryMock");
 const Testing = artifacts.require("Testing");
 
-var k = require('../jsCommons/constants.js');
-var f = require('../jsCommons/functions.js');
+var k = require('../../jsCommons/constants.js');
+var f = require('../../jsCommons/functions.js');
 
 contract('Leagues', function(accounts) {
     let teamFactory;
