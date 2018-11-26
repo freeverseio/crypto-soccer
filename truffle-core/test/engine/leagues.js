@@ -101,13 +101,12 @@ contract('Leagues', function(accounts) {
     //         [220, 50, 50, 50, 50, 50], // age, defense, speed, pass, shoot, endurance
     //         f.createAlineacion(4, 3, 3)
     //     ).should.be.fulfilled;
-    //     team.toNumber.should.be.equal(1);
     //     seed = 232;
     //     var goals = await instance.test_playGame.call(0, 1, seed).should.be.fulfilled;
 
     //     console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
-    //     assert.isTrue(goals[0].toNumber() == 1);
-    //     assert.isTrue(goals[1].toNumber() == 5);
+    //     goals[0].toNumber().should.be.equal(1);
+    //     goals[1].toNumber().should.be.equal(5);
     // });
 
 
@@ -127,7 +126,6 @@ contract('Leagues', function(accounts) {
     var goals = await instance.test_playGame(0, 1, seed);
   });
 
-// TODO: reactive me 
 //   it("plays lots of games and checks total goals", async () => {
 //     var goalsTeam1 = 0;
 //     var goalsTeam2 = 0;
@@ -141,8 +139,8 @@ contract('Leagues', function(accounts) {
 //       console.log("Goals: " + goals[0].toNumber() + " - " + goals[1].toNumber());
 //     }
 //     console.log("Total Goals: " + goalsTeam1 + " - " + goalsTeam2);
-//     assert.isTrue(goalsTeam1==6);
-//     assert.isTrue(goalsTeam2==5);
+//     goalsTeam1.should.be.equal(6);
+//     goalsTeam2.should.be.equal(5);
 //   });
 });
 

@@ -48,7 +48,7 @@ contract TeamFactory is PlayerFactory {
     function getTeamName(uint idx) public view returns(string) { return teams[idx].name;}
 
     function getTeamState(uint256 team) public view returns(uint256[kMaxPlayersInTeam]){
-        uint256[kMaxPlayersInTeam] teamState;
+        uint256[kMaxPlayersInTeam] memory teamState;
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
             teamState[p] = getStatePlayerInTeam(p, team);
         }

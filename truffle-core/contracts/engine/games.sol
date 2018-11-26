@@ -23,7 +23,6 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playGame(uint teamIdx1, uint teamIdx2, uint seed)
         public
-        view
         returns (uint16[2] memory teamGoals)
     {
         /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
@@ -128,7 +127,8 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
         uint rndNum2,
         uint factor
     )
-        view internal 
+        internal 
+        pure
         returns (bool, uint8)
     {
         /// @dev attacker who actually shoots is selected weighted by his speed
@@ -147,7 +147,8 @@ contract GameEngine is CryptoSoccer, HelperFunctions {
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
     function managesToShoot(uint8 teamThatAttacks, uint[5][2] globSkills, uint rndNum, uint factor)
-        view internal
+        internal
+        pure
         returns (bool)
     {
         return throwDice(
