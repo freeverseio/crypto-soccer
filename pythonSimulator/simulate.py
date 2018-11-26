@@ -66,7 +66,11 @@ def createDeterminedlayer(skills, age, role):
     newPlayer = Player()
     newPlayer.role = role
     newPlayer.age = age
-    newPlayer.skills = skills
+    finalSkills = copy.deepcopy(skills[0:5])
+    # is the goalie's skill is explicit, it comes in the last entry
+    if skills.size == 6 and role == GOALIE:
+        finalSkills[SH] = skills[5]
+    newPlayer.skills = finalSkills
     return newPlayer
 
 def createAllPlayersEqualTeam(skills, age, roles):

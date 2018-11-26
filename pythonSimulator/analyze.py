@@ -16,13 +16,13 @@ def analyzeAllPlayersEqualButDiffTeams(skillValue1, skillValue2, plotOutFile, nG
     # showTeam(team2)
     return analyzeTeam1AgainstTeam2(nGames, team1, team2, plotOutFile)
 
-def analyzeAllPlayersEqualExplicitSkills(skills1, skills2, plotOutFile, nGames):
+def analyzeAllPlayersEqualExplicitSkills(skills1, skills2, doHist, nGames):
     age = 20
     team1 = createAllPlayersEqualTeam(skills1, age, roles433)
     team2 = createAllPlayersEqualTeam(skills2, age, roles433)
     # showTeam(team1)
     # showTeam(team2)
-    return analyzeTeam1AgainstTeam2(nGames, team1, team2, plotOutFile)
+    return analyzeTeam1AgainstTeam2(nGames, team1, team2, doHist)
 
 
 
@@ -33,10 +33,11 @@ def analyzeAllPlayersEqualTeams(skillValue, plotOutFile, nGames):
     analyzeTeam1AgainstTeam2(nGames, team, team, plotOutFile)
 
 
-def analyzeTeam1AgainstTeam2(nGames, team1, team2, plotOutFile):
+def analyzeTeam1AgainstTeam2(nGames, team1, team2, doHist):
     goals1, goals2 = playNGames(nGames, team1, team2)
-    print "Average Goals T1: %.2f,  Distr: %s" %(goals1.mean(), printHistogram(goals1))
-    print "Average Goals T2: %.2f,  Distr: %s" %(goals2.mean(), printHistogram(goals2))
+    if doHist:
+        print "Average Goals T1: %.2f,  Distr: %s" %(goals1.mean(), printHistogram(goals1))
+        print "Average Goals T2: %.2f,  Distr: %s" %(goals2.mean(), printHistogram(goals2))
     return goals1, goals2
 
 
@@ -78,18 +79,23 @@ def createPlot1(nGames):
 
     for s, skillValue2 in enumerate(skillValuesT2):
         print "\n%d against %d" %(skillValueT1, skillValue2)
-        goals1, goals2 = analyzeAllPlayersEqualButDiffTeams(skillValueT1,skillValue2, 'allplayers50-100.png', nGames)
+        goals1, goals2 = analyzeAllPlayersEqualButDiffTeams(skillValueT1,skillValue2, False, nGames)
         pWin[s], pTie[s], pLoss[s] = getProbabilityOfWinning(goals1, goals2)
 
     fig, ax = plt.subplots()
     line1, = ax.plot(skillValuesT2, pWin, label='Win prob')
     line2, = ax.plot(skillValuesT2, pTie, label='Tie prob')
-    ax.legend()
-    ax.set_xlabel('Skills of all players in Team 2')
-    ax.set_ylabel('Probability')
-    ax.set_title('Team 1: all-50.  Team 2: all-N')
+    setPlot(ax, 'Skills of all players in Team 2', 'Probability','Team 1: all-50.  Team 2: all-N')
     plt.savefig('team1-all50_team2-allVarying.png')
 
+def setPlot(ax, xlabel, ylabel, title):
+    ax.legend()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.grid(True,'both')
+    ax.set_ylim(0,1)
+    ax.set_yticks([0.1*t for t in range(11)], True)
 
 def createPlot2(nGames):
     #
@@ -98,45 +104,40 @@ def createPlot2(nGames):
     # output: plot of pWin, pTie for team1, one curve per skill varied.
     #
     np.random.seed(0)
-    nSkills = 5
-    skills1 = 50 * np.ones(nSkills)
-    skillValuesT2 = np.array([20 + s * 2 for s in range(40)])
+    nSkills = 6  # the last skill is the goalie
+    skills1 = 50 * np.ones(nSkills-1)
+    skillValuesT2 = np.array([20 + s * 4 for s in range(20)])
 
     pWin = np.empty([skillValuesT2.size, nSkills])
     pTie = np.empty([skillValuesT2.size, nSkills])
     pLoss = np.empty([skillValuesT2.size, nSkills])
+    skNames.append('Goalie')
 
     for sk in range(nSkills):
+        print "Varying skill: %s" %skNames[sk]
         skills2 = 50 * np.ones(nSkills)
         for s, skillValue2 in enumerate(skillValuesT2):
             skills2[sk] = skillValue2
-            goals1, goals2 = analyzeAllPlayersEqualExplicitSkills(skills1,skills2, 'allplayers50-100.png', nGames)
+            goals1, goals2 = analyzeAllPlayersEqualExplicitSkills(skills1,skills2, False, nGames)
             pWin[s, sk], pTie[s, sk], pLoss[s,sk] = getProbabilityOfWinning(goals1, goals2)
 
     fig, ax = plt.subplots()
-
     for sk in range(nSkills):
         ax.plot(skillValuesT2, pWin[:,sk], label=skNames[sk])
-    ax.legend()
-    ax.set_xlabel('Value of specific skill varied')
-    ax.set_ylabel('Probability of Win')
-    ax.set_title('Team 1: all-50.  Team 2: all-50-except-1-skill')
+    setPlot(ax, 'Value of specific skill varied', 'Probability of Win','Team 1: all-50.  Team 2: all-50-except-1-skill')
     plt.savefig('team1-all50_team2-oneSkillVariedAtATime-probWin.png')
 
     plt.clf()
-    fig, ax = plt.subplots()
 
+    fig, ax = plt.subplots()
     for sk in range(nSkills):
         ax.plot(skillValuesT2, pTie[:,sk], label=skNames[sk])
-    ax.legend()
-    ax.set_xlabel('Value of specific skill varied')
-    ax.set_ylabel('Probability of Tie')
-    ax.set_title('Team 1: all-50.  Team 2: all-50-except-1-skill')
+    setPlot(ax, 'Value of specific skill varied', 'Probability of Tie','Team 1: all-50.  Team 2: all-50-except-1-skill')
     plt.savefig('team1-all50_team2-oneSkillVariedAtATime-probTie.png')
 
 
-# createPlot1(100)  # ideal plot: nGames = 1e4
-createPlot2(10000 )  # ideal plot: nGames = 1e4
+createPlot1(10000)  # ideal plot: nGames = 1e4
+# createPlot2(10000)  # ideal plot: nGames = 1e4
 
 
 
