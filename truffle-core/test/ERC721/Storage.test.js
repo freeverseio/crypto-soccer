@@ -13,7 +13,7 @@ contract('CryptoTeams', (accounts) => {
 
     it('no initial players', async () =>{
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
-        count.toNumber().should.be.equal(0);
+        count.toNumber().should.be.equal(1);
     });
 
     it('no initial teams', async () =>{
