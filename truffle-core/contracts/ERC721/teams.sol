@@ -38,7 +38,7 @@ contract TeamFactory is PlayerFactory {
         returns(uint)
     {
         uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, kBitsPerPlayerIdx);
-        return players[playerIdx].state;
+        return getPlayerState(playerIdx);
     }
 
 /* 

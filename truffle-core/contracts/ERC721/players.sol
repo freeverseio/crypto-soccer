@@ -41,10 +41,10 @@ contract PlayerFactory is Storage, HelperFunctions {
         require(teamToOwnerAddr[teamNameHash] == 0, "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
-        uint newPlayerIdx = players.length;
+        uint newPlayerIdx = getNCreatedPlayers();
 
         /// @dev Push playert
-        players.push(Player({name: _playerName, state: _playerState}));
+        addPlayer(_playerName, _playerState);
 
         /// @dev Update mapping
         playerToTeam[playerNameHash] = teams[_teamIdx];
@@ -169,13 +169,7 @@ contract PlayerFactory is Storage, HelperFunctions {
 /* 
     @dev Section with functions only for external/testing use.
 */
-    function getNCreatedPlayers() public view returns(uint) { return players.length; }
+   
 
-    function getPlayerState(uint playerIdx) public view returns(uint) {
-        return players[playerIdx].state;
-    }
 
-    function getPlayerName(uint playerIdx) public view returns(string) {
-        return players[playerIdx].name;
-    }
 }

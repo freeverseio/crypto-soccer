@@ -25,7 +25,21 @@ contract Storage is CryptoSoccer {
     }
     /// @dev An array containing the Player struct for all players in existence. 
     /// @dev The ID of each player is actually his index this array.
-    Player[] players;
+    Player[] private players;
+
+    function addPlayer(string memory name, uint state) public {
+        players.push(Player({name: name, state: state}));
+    }
+
+    function getPlayerState(uint playerIdx) public view returns(uint) {
+        return players[playerIdx].state;
+    }
+
+    function getPlayerName(uint playerIdx) public view returns(string) {
+        return players[playerIdx].name;
+    }
+
+    function getNCreatedPlayers() public view returns(uint) { return players.length; }
 
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
