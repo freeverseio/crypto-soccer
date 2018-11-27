@@ -20,4 +20,10 @@ contract('CryptoTeams', (accounts) => {
         const count = await contract.getNCreatedTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(0);
     })
+
+    it('team name by player', async () => {
+        const hashName = "porca";
+        const name = await contract.teamNameByPlayer(hashName).should.be.fulfilled;
+        name.should.be.equal("");
+    })
 });
