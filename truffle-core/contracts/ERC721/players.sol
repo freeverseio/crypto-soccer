@@ -50,12 +50,14 @@ contract PlayerFactory is Storage, HelperFunctions {
         addPlayerToTeam(playerNameHash, _teamIdx);
 
         /// @dev Update inverse relation (from teams to playerIdx)
-        teams[_teamIdx].playersIdx = setNumAtIndex(
+        uint256 playerIdx = setNumAtIndex(
             newPlayerIdx,
-            teams[_teamIdx].playersIdx,
+            getTeamPlayersIdx(_teamIdx),
             _playerNumberInTeam,
             kBitsPerPlayerIdx
         );
+
+        setTeamPlayersIdx(_teamIdx, playerIdx );
 
         /// @dev Emit the creation event
         emit PlayerCreation(_playerName, newPlayerIdx, _playerState);
@@ -121,9 +123,11 @@ contract PlayerFactory is Storage, HelperFunctions {
     )
         public 
     {
-        require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
-        uint dna = uint(keccak256(abi.encodePacked(
-            teams[_teamIdx].name,
+        require (_teamIdx < getNCreatedTeams(), "Trying to assign a player to a team not created yet");
+        uint dna = uint(
+            keccak256(
+                abi.encodePacked(
+            getTeamName(_teamIdx),
             _userChoice,
             _playerNumberInTeam
         )));
@@ -152,7 +156,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         public 
     {
         /// @dev TODO: we should make sure all numbers are below 2^kBitsPerState-1
-        require (_teamIdx < teams.length, "Trying to assign a player to a team not created yet");
+        require (_teamIdx < getNCreatedTeams(), "Trying to assign a player to a team not created yet");
         uint bits = kBitsPerState;
         uint state = _monthOfBirthAfterUnixEpoch +
                      (_defense     << bits) +

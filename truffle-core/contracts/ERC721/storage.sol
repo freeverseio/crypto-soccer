@@ -37,7 +37,7 @@ contract Storage is CryptoSoccer {
 
     /// @dev An array containing the Team struct for all teams in existence. 
     /// @dev The ID of each team is actually his index in this array.
-    Team[] teams;
+    Team[] private teams;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
@@ -85,5 +85,25 @@ contract Storage is CryptoSoccer {
 
     function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
         playerToTeam[playerHashName] = teams[idx];
+    }
+
+    function getNCreatedTeams() public view returns(uint) {
+        return teams.length;
+    }
+
+    function getTeamName(uint idx) public view returns(string) { 
+        return teams[idx].name;
+    }
+
+    function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
+        teams[team].playersIdx = playersIdx;
+    }
+
+    function getTeamPlayersIdx(uint256 team) public returns (uint256) {
+        return teams[team].playersIdx;
+    }
+
+    function addTeam(string memory name, uint256 playersIdx) public {
+        teams.push(Team({name: name, playersIdx: playersIdx}));
     }
 }

@@ -18,17 +18,13 @@ contract TeamFactory is PlayerFactory {
         bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
         require(getTeamOwner(nameHash) == 0);
 
-        /// @dev Create empty team and store assigned name.
-        Team memory emptyTeam;
-        emptyTeam.name = _teamName;
-
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
-        teams.push(emptyTeam);
+        addTeam(_teamName, 0);
         setTeamOwner(nameHash, msg.sender);
 
         // emit the team creation event
-        emit TeamCreation(_teamName, teams.length, msg.sender);
+        emit TeamCreation(_teamName, getNCreatedTeams(), msg.sender);
     }
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
@@ -37,15 +33,14 @@ contract TeamFactory is PlayerFactory {
         view
         returns(uint)
     {
-        uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, kBitsPerPlayerIdx);
+        uint playerIdx = getNumAtIndex(getTeamPlayersIdx(_teamIdx), _playerIdx, kBitsPerPlayerIdx);
         return getPlayerState(playerIdx);
     }
 
 /* 
     @dev Section with functions only for external/testing use.
 */    
-    function getNCreatedTeams() public view returns(uint) { return teams.length;}
-    function getTeamName(uint idx) public view returns(string) { return teams[idx].name;}
+
 
     function getTeamState(uint256 team) public view returns(uint256[kMaxPlayersInTeam]){
         uint256[kMaxPlayersInTeam] memory teamState;
