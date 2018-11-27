@@ -57,7 +57,15 @@ contract Storage is CryptoSoccer {
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
-    mapping(bytes32 => Team) public playerToTeam;
+    mapping(bytes32 => Team) private playerToTeam;
+
+    function teamNameByPlayer(bytes32 playerHashName) public view returns(string){
+        return(playerToTeam[playerHashName].name);
+    }
+
+    function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
+        playerToTeam[playerHashName] = teams[idx];
+    }
 
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
