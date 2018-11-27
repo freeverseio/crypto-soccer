@@ -20,7 +20,7 @@ contract TeamFactory is PlayerFactory {
 
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
-        addTeam(_teamName, 0);
+        addTeam(_teamName);
         setTeamOwner(nameHash, msg.sender);
 
         // emit the team creation event

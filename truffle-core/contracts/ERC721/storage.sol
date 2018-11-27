@@ -103,7 +103,7 @@ contract Storage is CryptoSoccer {
         return teams[team].playersIdx;
     }
 
-    function addTeam(string memory name, uint256 playersIdx) public {
-        teams.push(Team({name: name, playersIdx: playersIdx}));
+    function addTeam(string memory name) public {
+        teams.push(Team({name: name, playersIdx: 0}));
     }
 }
