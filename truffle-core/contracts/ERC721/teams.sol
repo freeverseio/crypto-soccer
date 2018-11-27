@@ -16,7 +16,7 @@ contract TeamFactory is PlayerFactory {
 
         /// @dev Make sure team name did not exist before.
         bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
-        require(teamToOwnerAddr[nameHash]==0);
+        require(getTeamOwner(nameHash) == 0);
 
         /// @dev Create empty team and store assigned name.
         Team memory emptyTeam;
@@ -25,7 +25,7 @@ contract TeamFactory is PlayerFactory {
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
         teams.push(emptyTeam);
-        teamToOwnerAddr[nameHash] = msg.sender;
+        setTeamOwner(nameHash, msg.sender);
 
         // emit the team creation event
         emit TeamCreation(_teamName, teams.length, msg.sender);

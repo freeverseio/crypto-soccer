@@ -45,7 +45,8 @@ contract Storage is CryptoSoccer {
 
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
-    mapping(bytes32 => address) public teamToOwnerAddr;
+    mapping(bytes32 => address) private teamToOwnerAddr;
+    
 
     /// @dev Upong deployment of the game, we create the first null player
     /// @dev Choose a silly serialized state (meaningless age, skills, etc)
@@ -53,7 +54,15 @@ contract Storage is CryptoSoccer {
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
     }
+    
+    function getTeamOwner(bytes32 teamHashName) public view returns(address){
+        return teamToOwnerAddr[teamHashName];
+    }
 
+    function setTeamOwner(bytes32 teamHashName, address owner) public view {
+        teamToOwnerAddr[teamHashName] = owner;
+    }
+    
     function addPlayer(string memory name, uint state) public {
         players.push(Player({name: name, state: state}));
     }

@@ -38,7 +38,7 @@ contract PlayerFactory is Storage, HelperFunctions {
         /// @dev A team is created if it has a not-null owner addr.
         bytes32 playerNameHash = keccak256(abi.encodePacked(_playerName));
         bytes32 teamNameHash = keccak256(abi.encodePacked(teamNameByPlayer(playerNameHash)));
-        require(teamToOwnerAddr[teamNameHash] == 0, "Player already exists with this name");
+        require(getTeamOwner(teamNameHash) == 0, "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
         uint newPlayerIdx = getNCreatedPlayers();
