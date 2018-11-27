@@ -6,7 +6,6 @@ import "../CryptoSoccer.sol";
 */
 
 contract Storage is CryptoSoccer {
-
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -27,21 +26,6 @@ contract Storage is CryptoSoccer {
     /// @dev The ID of each player is actually his index this array.
     Player[] private players;
 
-    function addPlayer(string memory name, uint state) public {
-        players.push(Player({name: name, state: state}));
-    }
-
-    function getPlayerState(uint playerIdx) public view returns(uint) {
-        return players[playerIdx].state;
-    }
-
-    function getPlayerName(uint playerIdx) public view returns(string) {
-        return players[playerIdx].name;
-    }
-
-    function getNCreatedPlayers() public view returns(uint) { return players.length; }
-
-
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
     /// @dev and select his favourite one.
@@ -59,14 +43,6 @@ contract Storage is CryptoSoccer {
     /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => Team) private playerToTeam;
 
-    function teamNameByPlayer(bytes32 playerHashName) public view returns(string){
-        return(playerToTeam[playerHashName].name);
-    }
-
-    function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
-        playerToTeam[playerHashName] = teams[idx];
-    }
-
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
     mapping(bytes32 => address) public teamToOwnerAddr;
@@ -76,5 +52,29 @@ contract Storage is CryptoSoccer {
     /// @dev to differentiate it from 0.
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
+    }
+
+    function addPlayer(string memory name, uint state) public {
+        players.push(Player({name: name, state: state}));
+    }
+
+    function getPlayerState(uint playerIdx) public view returns(uint) {
+        return players[playerIdx].state;
+    }
+
+    function getPlayerName(uint playerIdx) public view returns(string) {
+        return players[playerIdx].name;
+    }
+
+    function getNCreatedPlayers() public view returns(uint) { 
+        return players.length;
+    }
+
+    function teamNameByPlayer(bytes32 playerHashName) public view returns(string){
+        return(playerToTeam[playerHashName].name);
+    }
+
+    function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
+        playerToTeam[playerHashName] = teams[idx];
     }
 }
