@@ -1,11 +1,12 @@
 pragma solidity ^ 0.4.24;
 
 import "../CryptoSoccer.sol";
+import "./CryptoTeams.sol";
 /*
     Defines all storage structures and mappings
 */
 
-contract Storage is CryptoSoccer {
+contract Storage is CryptoSoccer, CryptoTeams {
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -26,19 +27,7 @@ contract Storage is CryptoSoccer {
     /// @dev The ID of each player is actually his index this array.
     Player[] private players;
 
-    /// @dev The player skills in each team are obtained from hashing: name + userChoice
-    /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
-    /// @dev and select his favourite one.
-    /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
-    struct Team {
-        string name;
-        uint256 playersIdx;
-        address owner;
-    }
 
-    /// @dev An array containing the Team struct for all teams in existence. 
-    /// @dev The ID of each team is actually his index in this array.
-    mapping(uint256 => Team) private teams;
     // Team[] private teams;a
     uint256 private teamsCount = 1;
 
