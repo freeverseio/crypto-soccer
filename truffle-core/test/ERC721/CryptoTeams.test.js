@@ -10,4 +10,31 @@ contract('CryptoTeams', (accounts) => {
     beforeEach(async () => {
         contract = await CryptoTeams.new().should.be.fulfilled;
     });
+
+    it('no initial teams', async () => {
+        const count = await contract.getNCreatedTeams().should.be.fulfilled;
+        count.toNumber().should.be.equal(0);
+    })
+
+    it('team owner', async () => {
+        let owner = await contract.teamOwnerOf(0).should.be.rejected;
+        await contract.addTeam("team", accounts[0]).should.be.fulfilled;
+        owner = await contract.teamOwnerOf(1).should.be.fulfilled;
+        owner.should.be.equal(accounts[0]);
+    })
+
+    it('team name', async () => {
+        const team = "team";
+        await contract.getTeamName(0).should.be.rejected;
+        await contract.getTeamName(1).should.be.rejected;
+        await contract.addTeam(team, accounts[0]).should.be.fulfilled;
+        const name = await contract.getTeamName(1).should.be.fulfilled;
+        name.should.be.equal(team);
+    });
+
+    it('create team', async () => {
+        await contract.addTeam("team", accounts[0]).should.be.fulfilled;
+        const name = await contract.getTeamName(1).should.be.fulfilled;
+        name.should.be.equal("team");
+    })
 });

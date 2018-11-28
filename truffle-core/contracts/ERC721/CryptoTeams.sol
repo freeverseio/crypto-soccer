@@ -28,14 +28,14 @@ contract CryptoTeams is ERC721 {
 
     /// @dev An array containing the Team struct for all teams in existence. 
     /// @dev The ID of each team is actually his index in this array.
-    mapping(uint256 => Team) internal teams;
+    mapping(uint256 => Team) private teams;
    
     // Team[] private teams;a
-    uint256 internal teamsCount = 1;
+    uint256 private teamsCount = 1;
 
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
-    mapping(bytes32 => uint256) internal teamToOwnerAddr;
+    mapping(bytes32 => uint256) private teamToOwnerAddr;
 
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
         uint256 teamIdx = teamToOwnerAddr[teamHashName];
