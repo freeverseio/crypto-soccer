@@ -42,10 +42,6 @@ contract Storage is CryptoSoccer, CryptoTeams {
         players.push(Player({name: "_", state: uint(-1) }));
     }
     
-
-
-
-
     function addPlayer(string memory name, uint state) public {
         players.push(Player({name: name, state: state}));
     }
@@ -70,22 +66,5 @@ contract Storage is CryptoSoccer, CryptoTeams {
     function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
         require(idx != 0);
         playerToTeam[playerHashName] = idx;
-    }
-
- 
-
-    function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
-        require(team != 0);
-        teams[team].playersIdx = playersIdx;
-    }
-
-    function getTeamPlayersIdx(uint256 team) public returns (uint256) {
-        require(team != 0);
-        return teams[team].playersIdx;
-    }
-
-
-    function _teamExists(uint256 idx) internal returns (bool){
-        return teams[idx].owner != address(0);
     }
 }
