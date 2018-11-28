@@ -31,15 +31,15 @@ contract('Teams', function (accounts) {
     nCreatedPlayers.toNumber().should.be.equal(0);
     teamName = "Mataro";
     playerBasename = "Bogarde";
-    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3));
-    await printTeamPlayers(newTeamIdx, instance);
+    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3)).should.be.fulfilled;
+    await printTeamPlayers(newTeamIdx, instance).should.be.fulfilled;
     nCreatedPlayers.toNumber().should.be.equal(k.MaxPlayersInTeam)
   });
 
   it("create team", async () => {
     const name = "Los Cojos";
     await instance.createTeam(name).should.be.fulfilled;
-    const result = await instance.getTeamName(0).should.be.fulfilled;
+    const result = await instance.getTeamName(1).should.be.fulfilled;
     result.should.be.equal(name)
   });
 
