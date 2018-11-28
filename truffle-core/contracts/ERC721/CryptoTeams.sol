@@ -18,21 +18,36 @@ contract CryptoTeams is ERC721 {
     struct Team {
         string name;
         uint256 playersIdx;
-        address owner;
     }
 
-    mapping(uint256 => Team) _TeamProps;
+    /// @dev An array containing the Team struct for all teams in existence. 
+    /// @dev The ID of each team is actually his index in this array.
+    mapping(uint256 => Team) internal teams;
+    // Team[] private teams;a
+    uint256 internal teamsCount = 0;
 
-    // function getNCreatedTeams() public view returns(uint) {
-    //     return teams.length;
-    // }
+    /// @dev A mapping from team hash(name) to the owner's address.
+    /// @dev Facilitates checking if a teamName already exists.
+    mapping(bytes32 => uint256) internal teamToOwnerAddr;
 
-    // function addTeam(string memory name) public {
-    //     uint256 tokenId = getNCreatedTeams() - 1;
-    //     //_mint()
-    //     teams.push(Team({name: name, playersIdx: 0}));
-    // }
+    function addTeam(string memory name, address owner) public {
+        bytes32 nameHash = keccak256(abi.encodePacked(name));
+        // require(getTeamOwner(nameHash) == 0);
 
+        teams[teamsCount] = Team({name: name, playersIdx: 0});
+        teamToOwnerAddr[nameHash] = teamsCount;
+        _mint(owner, teamsCount);
+        teamsCount++;
+    }
 
+    function getTeamOwner(bytes32 teamHashName) public view returns(address){
+        uint256 teamIdx = teamToOwnerAddr[teamHashName];
+        return ownerOf(teamIdx);
+    }
+
+    function getTeamName(uint idx) public view returns(string) { 
+        require(_exists(idx+1));
+        return teams[idx+1].name;
+    }
 }
 
