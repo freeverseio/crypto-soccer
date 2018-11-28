@@ -13,7 +13,7 @@ contract('Players', function(accounts) {
 
   const playerName="Messi";
   const teamName="Barca";
-  const teamIdx = 0; 
+  const teamIdx = 1; 
   const userChoice=1;
   const playerNumberInTeam=2;
   const playerRole=3; 
@@ -39,7 +39,7 @@ contract('Players', function(accounts) {
     assert.equal(nTeams,1);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
     assert.equal(nTotalPlayers,0); 
-    await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
+    await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole).should.be.fulfilled;
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,1);
   });

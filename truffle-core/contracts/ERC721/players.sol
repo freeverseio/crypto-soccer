@@ -123,7 +123,6 @@ contract PlayerFactory is Storage, HelperFunctions {
     )
         public 
     {
-        require (_teamIdx < getNCreatedTeams(), "Trying to assign a player to a team not created yet");
         uint dna = uint(
             keccak256(
                 abi.encodePacked(
