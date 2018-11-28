@@ -39,6 +39,13 @@ contract('Storage', (accounts) => {
         await contract.addTeam(team, accounts[0]).should.be.fulfilled;
         const name = await contract.getTeamName(0).should.be.fulfilled;
         name.should.be.equal(team);
+    });
+
+    it('team owner', async () => {
+        let owner = await contract.teamOwnerOf(0).should.be.rejected;
+        await contract.addTeam("team", accounts[0]).should.be.fulfilled;
+        owner = await contract.teamOwnerOf(0).should.be.fulfilled;
+        owner.should.be.equal(accounts[0]);
     })
 
     it('team name by player', async () => {

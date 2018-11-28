@@ -61,7 +61,11 @@ contract Storage is CryptoSoccer {
         uint256 teamIdx = teamToOwnerAddr[teamHashName];
         return teams[teamIdx].owner;
     }
-    
+
+    function teamOwnerOf(uint256 _tokenId) external view returns (address){
+        return teams[_tokenId+1].owner;
+    }  
+
     function addPlayer(string memory name, uint state) public {
         players.push(Player({name: name, state: state}));
     }
