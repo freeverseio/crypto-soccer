@@ -32,5 +32,10 @@ contract CryptoTeams is ERC721 {
    
     // Team[] private teams;a
     uint256 internal teamsCount = 1;
+
+    /// @dev A mapping from team hash(name) to the owner's address.
+    /// @dev Facilitates checking if a teamName already exists.
+    mapping(bytes32 => uint256) internal teamToOwnerAddr;
+    
 }
 

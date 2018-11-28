@@ -28,17 +28,12 @@ contract Storage is CryptoSoccer, CryptoTeams {
     Player[] private players;
 
 
-    // Team[] private teams;a
-    uint256 private teamsCount = 1;
+ 
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => uint256) private playerToTeam;
 
-    /// @dev A mapping from team hash(name) to the owner's address.
-    /// @dev Facilitates checking if a teamName already exists.
-    mapping(bytes32 => uint256) private teamToOwnerAddr;
-    
 
     /// @dev Upong deployment of the game, we create the first null player
     /// @dev Choose a silly serialized state (meaningless age, skills, etc)
