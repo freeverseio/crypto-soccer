@@ -36,6 +36,19 @@ contract CryptoTeams is ERC721 {
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
     mapping(bytes32 => uint256) internal teamToOwnerAddr;
+
+    function getTeamOwner(bytes32 teamHashName) public view returns(address){
+        uint256 teamIdx = teamToOwnerAddr[teamHashName];
+        return teams[teamIdx].owner;
+    }
     
+    function addTeam(string memory name, address owner) public {
+        bytes32 nameHash = keccak256(abi.encodePacked(name));
+        require(getTeamOwner(nameHash) == 0);
+
+        teams[teamsCount] = Team({name: name, playersIdx: 0, owner: owner});
+        teamToOwnerAddr[nameHash] = teamsCount;
+        teamsCount++;
+    }
 }
 
