@@ -48,6 +48,7 @@ contract CryptoTeams is ERC721 {
 
         teams[teamsCount] = Team({name: name, playersIdx: 0, owner: owner});
         teamToOwnerAddr[nameHash] = teamsCount;
+        _mint(owner, teamsCount);
         teamsCount++;
     }
 
