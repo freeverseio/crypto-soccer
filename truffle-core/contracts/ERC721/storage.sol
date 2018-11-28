@@ -38,7 +38,9 @@ contract Storage is CryptoSoccer {
 
     /// @dev An array containing the Team struct for all teams in existence. 
     /// @dev The ID of each team is actually his index in this array.
-    Team[] private teams;
+    mapping(uint256 => Team) private teams;
+    // Team[] private teams;a
+    uint256 private teamsCount = 0;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
@@ -54,7 +56,7 @@ contract Storage is CryptoSoccer {
     /// @dev to differentiate it from 0.
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
-        teams.push(Team({name: "_", playersIdx: 0, owner: 0}));
+        teamsCount++;
     }
     
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
@@ -63,7 +65,9 @@ contract Storage is CryptoSoccer {
     }
 
     function teamOwnerOf(uint256 _tokenId) external view returns (address){
-        return teams[_tokenId+1].owner;
+        address owner = teams[_tokenId+1].owner;
+        require(owner != address(0));
+        return owner;
     }  
 
     function addPlayer(string memory name, uint state) public {
@@ -92,10 +96,11 @@ contract Storage is CryptoSoccer {
     }
 
     function getNCreatedTeams() public view returns(uint) {
-        return teams.length - 1;
+        return teamsCount - 1;
     }
 
     function getTeamName(uint idx) public view returns(string) { 
+        require(_teamExists(idx));
         return teams[idx+1].name;
     }
 
@@ -111,7 +116,14 @@ contract Storage is CryptoSoccer {
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         require(getTeamOwner(nameHash) == 0);
 
-        teams.push(Team({name: name, playersIdx: 0, owner: owner}));
-        teamToOwnerAddr[nameHash] = teams.length;
+        teams[teamsCount] = Team({name: name, playersIdx: 0, owner: owner});
+        teamToOwnerAddr[nameHash] = teamsCount;
+        teamsCount++;
     }
+
+    function _teamExists(uint256 idx) internal returns (bool){
+        return teams[idx+1].owner != address(0);
+    }
+
+
 }

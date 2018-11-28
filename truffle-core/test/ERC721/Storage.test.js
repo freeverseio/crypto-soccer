@@ -48,16 +48,16 @@ contract('Storage', (accounts) => {
         owner.should.be.equal(accounts[0]);
     })
 
-    // it('team name by player', async () => {
-    //     const team = "team";
-    //     const player = "player";
-    //     const playerState = 44535;
-    //     let name = await contract.teamNameByPlayer(player).should.be.fulfilled;
-    //     name.should.be.equal("");
-    //     await contract.addTeam(team, accounts[0]);
-    //     await contract.addPlayer(player, playerState);
-    //     await contract.addPlayerToTeam(player, 0);
-    //     name = await contract.teamNameByPlayer(player).should.be.fulfilled;
-    //     name.should.be.equal(team);
-    // });
+    it('team name by player', async () => {
+        const team = "team";
+        const player = "player";
+        const playerState = 44535;
+        let name = await contract.teamNameByPlayer(player).should.be.fulfilled;
+        name.should.be.equal("");
+        await contract.addTeam(team, accounts[0]);
+        await contract.addPlayer(player, playerState);
+        await contract.addPlayerToTeam(player, 0);
+        name = await contract.teamNameByPlayer(player).should.be.fulfilled;
+        name.should.be.equal(team);
+    });
 });

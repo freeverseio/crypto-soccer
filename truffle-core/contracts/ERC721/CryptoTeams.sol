@@ -18,6 +18,7 @@ contract CryptoTeams is ERC721 {
     struct Team {
         string name;
         uint256 playersIdx;
+        address owner;
     }
 
     mapping(uint256 => Team) _TeamProps;
