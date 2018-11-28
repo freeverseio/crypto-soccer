@@ -11,7 +11,6 @@ contract CryptoTeams is ERC721 {
         _burn(ownerOf(tokenId), tokenId);
     }
 
-
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
     /// @dev and select his favourite one.
@@ -21,19 +20,17 @@ contract CryptoTeams is ERC721 {
         uint256 playersIdx;
     }
 
-    /// @dev An array containing the Team struct for all teams in existence. 
-    /// @dev The ID of each team is actually his index in this array.
-    Team[] private teams;
+    mapping(uint256 => Team) _TeamProps;
 
-    function getNCreatedTeams() public view returns(uint) {
-        return teams.length;
-    }
+    // function getNCreatedTeams() public view returns(uint) {
+    //     return teams.length;
+    // }
 
-    function addTeam(string memory name) public {
-        uint256 tokenId = getNCreatedTeams() - 1;
-        //_mint()
-        teams.push(Team({name: name, playersIdx: 0}));
-    }
+    // function addTeam(string memory name) public {
+    //     uint256 tokenId = getNCreatedTeams() - 1;
+    //     //_mint()
+    //     teams.push(Team({name: name, playersIdx: 0}));
+    // }
 
 
 }

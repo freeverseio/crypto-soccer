@@ -4,7 +4,7 @@ require('chai')
 
 const Storage = artifacts.require('Storage');
 
-contract('CryptoTeams', (accounts) => {
+contract('Storage', (accounts) => {
     let contract = null;
 
     beforeEach(async () => {
@@ -39,7 +39,7 @@ contract('CryptoTeams', (accounts) => {
         const playerState = 44535;
         let name = await contract.teamNameByPlayer(player).should.be.fulfilled;
         name.should.be.equal("");
-        await contract.addTeam(team);
+        await contract.addTeam(team, accounts[0]);
         await contract.addPlayer(player, playerState);
         await contract.addPlayerToTeam(player, 0);
         name = await contract.teamNameByPlayer(player).should.be.fulfilled;

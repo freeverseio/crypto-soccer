@@ -14,14 +14,9 @@ contract TeamFactory is PlayerFactory {
     function createTeam(string _teamName) public {
         // TODO: require maxLen for _teamName
 
-        /// @dev Make sure team name did not exist before.
-        bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
-        require(getTeamOwner(nameHash) == 0);
-
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
-        addTeam(_teamName);
-        setTeamOwner(nameHash, msg.sender);
+        addTeam(_teamName, msg.sender);
 
         // emit the team creation event
         emit TeamCreation(_teamName, getNCreatedTeams(), msg.sender);

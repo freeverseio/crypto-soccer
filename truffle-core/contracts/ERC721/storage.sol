@@ -33,6 +33,7 @@ contract Storage is CryptoSoccer {
     struct Team {
         string name;
         uint256 playersIdx;
+        address owner;
     }
 
     /// @dev An array containing the Team struct for all teams in existence. 
@@ -45,7 +46,7 @@ contract Storage is CryptoSoccer {
 
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
-    mapping(bytes32 => address) private teamToOwnerAddr;
+    mapping(bytes32 => Team) private teamToOwnerAddr;
     
 
     /// @dev Upong deployment of the game, we create the first null player
@@ -56,11 +57,7 @@ contract Storage is CryptoSoccer {
     }
     
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
-        return teamToOwnerAddr[teamHashName];
-    }
-
-    function setTeamOwner(bytes32 teamHashName, address owner) public view {
-        teamToOwnerAddr[teamHashName] = owner;
+        return teamToOwnerAddr[teamHashName].owner;
     }
     
     function addPlayer(string memory name, uint state) public {
@@ -103,7 +100,11 @@ contract Storage is CryptoSoccer {
         return teams[team].playersIdx;
     }
 
-    function addTeam(string memory name) public {
-        teams.push(Team({name: name, playersIdx: 0}));
+    function addTeam(string memory name, address owner) public {
+        bytes32 nameHash = keccak256(abi.encodePacked(name));
+        require(getTeamOwner(nameHash) == 0);
+
+        teams.push(Team({name: name, playersIdx: 0, owner: owner}));
+        teamToOwnerAddr[nameHash] = Team({name: name, playersIdx: 0, owner: owner});
     }
 }
