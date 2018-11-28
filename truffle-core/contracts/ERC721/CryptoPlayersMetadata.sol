@@ -13,12 +13,12 @@ contract CryptoPlayersMetadata is CryptoPlayers {
         return _baseURI;
     }
 
-    function tokenURI(uint256 tokenId) external view returns (string) {
-        require(_exists(tokenId), "unexistent token");
-        uint256 state = getState(tokenId);
-        string memory stateString = uint2str(state);
-        return strConcat(_baseURI, "/?state=", stateString);
-    }
+    // function tokenURI(uint256 tokenId) external view returns (string) {
+    //     require(_exists(tokenId), "unexistent token");
+    //     uint256 state = getState(tokenId);
+    //     string memory stateString = uint2str(state);
+    //     return strConcat(_baseURI, "/?state=", stateString);
+    // }
 
     function uint2str(uint i) internal pure returns (string){
         if (i == 0) return "0";

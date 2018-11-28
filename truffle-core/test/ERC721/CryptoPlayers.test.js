@@ -15,11 +15,11 @@ contract('CryptoPlayers', (accounts) => {
         await contract.symbol().should.eventually.equal("CSP");
     });
 
-    it('get state', async () => {
-        const contract = await CryptoPlayers.new();
-        const tokenId = 1;
-        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
-        const result = await contract.getState(tokenId).should.be.fulfilled;
-        result.toNumber().should.be.equal(999);
-    });
+    // it('get state', async () => {
+    //     const contract = await CryptoPlayers.new();
+    //     const tokenId = 1;
+    //     await contract.mint(accounts[0], tokenId).should.be.fulfilled;
+    //     const result = await contract.getState(tokenId).should.be.fulfilled;
+    //     result.toNumber().should.be.equal(999);
+    // });
 });

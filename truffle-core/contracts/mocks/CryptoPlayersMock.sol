@@ -9,7 +9,6 @@ import "../ERC721/CryptoPlayers.sol";
 contract CryptoPlayersMock is CryptoPlayers {
     function mint(address to, uint256 tokenId) public {
         _mint(to, tokenId);
-        _setState(tokenId, 999);
     }
 
     function burn(uint256 tokenId) public {
