@@ -39,13 +39,12 @@ contract CryptoTeams is ERC721 {
 
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
         uint256 teamIdx = teamToOwnerAddr[teamHashName];
-        return teams[teamIdx].owner;
+        return ownerOf(teamIdx);
     }
     
     function addTeam(string memory name, address owner) public {
         bytes32 nameHash = keccak256(abi.encodePacked(name));
-        require(getTeamOwner(nameHash) == 0);
-
+        require(teamToOwnerAddr[nameHash] == 0);
         teams[teamsCount] = Team({name: name, playersIdx: 0, owner: owner});
         teamToOwnerAddr[nameHash] = teamsCount;
         _mint(owner, teamsCount);
