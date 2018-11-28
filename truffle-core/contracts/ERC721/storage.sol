@@ -44,12 +44,7 @@ contract Storage is CryptoSoccer, CryptoTeams {
     
 
 
-    function teamOwnerOf(uint256 _tokenId) external view returns (address){
-        require(_tokenId != 0);
-        address owner = teams[_tokenId].owner;
-        require(owner != address(0));
-        return owner;
-    }  
+
 
     function addPlayer(string memory name, uint state) public {
         players.push(Player({name: name, state: state}));
@@ -77,15 +72,7 @@ contract Storage is CryptoSoccer, CryptoTeams {
         playerToTeam[playerHashName] = idx;
     }
 
-    function getNCreatedTeams() public view returns(uint) {
-        return teamsCount - 1;
-    }
-
-    function getTeamName(uint idx) public view returns(string) { 
-        require(idx != 0);
-        require(_teamExists(idx));
-        return teams[idx].name;
-    }
+ 
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
         require(team != 0);
