@@ -8,6 +8,10 @@ import "../ERC721/teams.sol";
  */
 contract TeamFactoryMock is TeamFactory {
     // Wrappers for helpers:
+    constructor(address cryptoTeams) public
+    TeamFactory(cryptoTeams){
+
+    }
 
     function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 
         public 

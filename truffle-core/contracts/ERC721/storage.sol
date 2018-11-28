@@ -2,11 +2,39 @@ pragma solidity ^ 0.4.24;
 
 import "../CryptoSoccer.sol";
 import "./CryptoTeams.sol";
+import "./CryptoPlayers.sol";
 /*
     Defines all storage structures and mappings
 */
 
-contract Storage is CryptoSoccer, CryptoTeams {
+contract Storage is CryptoSoccer {
+    CryptoTeams private _cryptoTeams; 
+
+    constructor(address cryptoTeams) public {
+        _cryptoTeams = CryptoTeams(cryptoTeams);
+        players.push(Player({name: "_", state: uint(-1) }));
+    }
+
+    function addTeam(string memory name, address owner) public {
+        _cryptoTeams.addTeam(name, owner);
+    }
+
+    function getTeamName(uint idx) public view returns(string) { 
+        return _cryptoTeams.getTeamName(idx);
+    }
+
+    function getNCreatedTeams() public view returns(uint) {
+        return _cryptoTeams.getNCreatedTeams();
+    }
+
+    function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
+        _cryptoTeams.setTeamPlayersIdx(team, playersIdx);
+    }
+
+    function getTeamPlayersIdx(uint256 team) public returns (uint256) {
+        return _cryptoTeams.getTeamPlayersIdx(team);
+    }
+
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -35,13 +63,6 @@ contract Storage is CryptoSoccer, CryptoTeams {
     mapping(bytes32 => uint256) private playerToTeam;
 
 
-    /// @dev Upong deployment of the game, we create the first null player
-    /// @dev Choose a silly serialized state (meaningless age, skills, etc)
-    /// @dev to differentiate it from 0.
-    constructor() public {
-        players.push(Player({name: "_", state: uint(-1) }));
-    }
-    
     function addPlayer(string memory name, uint state, uint256 teamIdx) public {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         players.push(Player({name: name, state: state}));

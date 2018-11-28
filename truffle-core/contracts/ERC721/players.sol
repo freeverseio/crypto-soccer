@@ -9,7 +9,9 @@ import "../helpers.sol";
 */
 
 contract PlayerFactory is Storage, HelperFunctions {
-
+    constructor(address cryptoTeams) public 
+    Storage(cryptoTeams)
+    {}
     /// @dev Event fired whenever a new player is created
     event PlayerCreation(string playerName, uint playerIdx, uint playerState);
 

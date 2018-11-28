@@ -2,6 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
+const CryptoTeams = artifacts.require('CryptoTeams');
 const TeamFactoryMock = artifacts.require("TeamFactoryMock");
 var k = require('../../jsCommons/constants.js');
 var f = require('../../jsCommons/functions.js');
@@ -12,7 +13,8 @@ contract('Teams', function (accounts) {
   let instance;
 
   beforeEach(async () => {
-    instance = await TeamFactoryMock.new().should.be.fulfilled;
+    const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
+    instance = await TeamFactoryMock.new(cryptoTeams.address).should.be.fulfilled;
   });
 
   it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {

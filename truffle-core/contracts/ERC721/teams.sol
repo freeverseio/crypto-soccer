@@ -3,6 +3,10 @@ pragma solidity ^ 0.4.24;
 import "./players.sol";
 
 contract TeamFactory is PlayerFactory {
+    constructor(address cryptoTeams) public 
+    PlayerFactory(cryptoTeams){
+
+    }
 
     /// @dev Fired whenever a new team is created
     event TeamCreation(string teamName, uint nCreatedTeams, address owner);

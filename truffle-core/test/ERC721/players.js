@@ -2,6 +2,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should();
 
+const CryptoTeams = artifacts.require('CryptoTeams');
 const cryptoSoccer = artifacts.require("TeamFactoryMock");
 var k = require('../../jsCommons/constants.js');
 var f = require('../../jsCommons/functions.js');
@@ -23,7 +24,8 @@ contract('Players', function(accounts) {
 
 
   it("tests if contract is deployed correctly", async () => {
-    instance = await cryptoSoccer.new();
+    const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
+    instance = await cryptoSoccer.new(cryptoTeams.address);
   });
 
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{
