@@ -53,32 +53,21 @@ contract CryptoTeams is ERC721 {
     }
 
     function getTeamName(uint idx) public view returns(string) { 
-        require(idx != 0);
-        require(_teamExists(idx));
+        require(_exists(idx));
         return teams[idx].name;
     }
 
     function getNCreatedTeams() public view returns(uint) {
         return teamsCount - 1;
     }
-    function teamOwnerOf(uint256 _tokenId) external view returns (address){
-        require(_tokenId != 0);
-        address owner = teams[_tokenId].owner;
-        require(owner != address(0));
-        return owner;
-    }  
-
-    function _teamExists(uint256 idx) internal returns (bool){
-        return teams[idx].owner != address(0);
-    }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
-        require(team != 0);
+        require(_exists(team));
         teams[team].playersIdx = playersIdx;
     }
 
     function getTeamPlayersIdx(uint256 team) public returns (uint256) {
-        require(team != 0);
+        require(_exists(team));
         return teams[team].playersIdx;
     }
 }
