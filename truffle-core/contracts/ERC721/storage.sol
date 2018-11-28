@@ -99,11 +99,11 @@ contract Storage is CryptoSoccer {
     }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
-        teams[team].playersIdx = playersIdx;
+        teams[team+1].playersIdx = playersIdx;
     }
 
     function getTeamPlayersIdx(uint256 team) public returns (uint256) {
-        return teams[team].playersIdx;
+        return teams[team+1].playersIdx;
     }
 
     function addTeam(string memory name, address owner) public {
@@ -111,6 +111,6 @@ contract Storage is CryptoSoccer {
         require(getTeamOwner(nameHash) == 0);
 
         teams.push(Team({name: name, playersIdx: 0, owner: owner}));
-        teamToOwnerAddr[nameHash] = teams.length-1;
+        teamToOwnerAddr[nameHash] = teams.length;
     }
 }

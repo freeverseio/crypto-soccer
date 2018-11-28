@@ -1,3 +1,7 @@
+require('chai')
+  .use(require('chai-as-promised'))
+  .should();
+
 const cryptoSoccer = artifacts.require("TeamFactoryMock");
 var k = require('../../jsCommons/constants.js');
 var f = require('../../jsCommons/functions.js');
@@ -31,17 +35,17 @@ contract('Players', function(accounts) {
   });
 
   it("adds a player to the previously created empty team, and checks nPlayers goes from 0 to 1", async () =>{
-    var nTeams = await  instance.test_getNCreatedTeams.call();
+    var nTeams = await  instance.test_getNCreatedTeams.call().should.be.fulfilled;
     assert.equal(nTeams,1);
-    nTotalPlayers = await instance.test_getNCreatedPlayers.call();
-    assert.equal(nTotalPlayers,1); // we have a default player at pos 0
+    nTotalPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
+    assert.equal(nTotalPlayers,0); 
     await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
-    assert.equal(nTotalPlayers,2);
+    assert.equal(nTotalPlayers,1);
   });
 
   it("reads skills of a player and check it is as expected", async () =>{
-    playerIdx = 1;
+    playerIdx = 0;
     var state = await instance.test_getPlayerState(playerIdx);
     var decoded = await instance.test_decode(k.NumStates, state, k.BitsPerState);
     console.log(decoded);
@@ -58,7 +62,7 @@ contract('Players', function(accounts) {
   it("tries to add a player with the same name, and checks that it fails", async () =>{
     var nTeams = await  instance.test_getNCreatedTeams.call();
     var nPlayers = await  instance.test_getNCreatedPlayers.call();
-    var lastPlayerName = await instance.test_getPlayerName(1);
+    var lastPlayerName = await instance.test_getPlayerName(0);
     console.log("Teams created so far " + nTeams + " team, and nPlayers = " + nPlayers);
     console.log("lastPlayerName = " + lastPlayerName);
     hasFailed = false;
