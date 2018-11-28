@@ -17,9 +17,9 @@ contract('CryptoTeams', (accounts) => {
     })
 
     it('team owner', async () => {
-        await contract.teamOwnerOf(0).should.be.rejected;
+        await contract.ownerOf(0).should.be.rejected;
         await contract.addTeam("team", accounts[0]).should.be.fulfilled;
-        const owner = await contract.teamOwnerOf(1).should.be.fulfilled;
+        const owner = await contract.ownerOf(1).should.be.fulfilled;
         owner.should.be.equal(accounts[0]);
     })
 
