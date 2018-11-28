@@ -2,6 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
+const CryptoPlayers = artifacts.require('CryptoPlayers');
 const CryptoTeams = artifacts.require('CryptoTeams');
 const TeamFactoryMock = artifacts.require("TeamFactoryMock");
 var k = require('../../jsCommons/constants.js');
@@ -11,10 +12,13 @@ const skillNames = ["Age","Defense","Speed","Pass","Shoot","Endurance","Role"];
 
 contract('Teams', function (accounts) {
   let instance;
+  let cryptoPlayers;
+  let cryptoTeams;
 
   beforeEach(async () => {
-    const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-    instance = await TeamFactoryMock.new(cryptoTeams.address).should.be.fulfilled;
+    cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
+    cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
+    instance = await TeamFactoryMock.new(cryptoTeams.address, cryptoPlayers.address).should.be.fulfilled;
   });
 
   it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {
@@ -24,8 +28,8 @@ contract('Teams', function (accounts) {
   });
 
   it('get unexistent team', async () => {
-    await instance.getTeamName(0).should.be.rejected;
-    await instance.getTeamName(1).should.be.rejected;
+    await cryptoTeams.getTeamName(0).should.be.rejected;
+    await cryptoTeams.getTeamName(1).should.be.rejected;
   })
 
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
@@ -41,7 +45,7 @@ contract('Teams', function (accounts) {
   it("create team", async () => {
     const name = "Los Cojos";
     await instance.createTeam(name).should.be.fulfilled;
-    const result = await instance.getTeamName(1).should.be.fulfilled;
+    const result = await cryptoTeams.getTeamName(1).should.be.fulfilled;
     result.should.be.equal(name)
   });
 

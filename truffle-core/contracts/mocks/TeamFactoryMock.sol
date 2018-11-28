@@ -8,8 +8,8 @@ import "../ERC721/teams.sol";
  */
 contract TeamFactoryMock is TeamFactory {
     // Wrappers for helpers:
-    constructor(address cryptoTeams) public
-    TeamFactory(cryptoTeams){
+    constructor(address cryptoTeams, address cryptoPlayers) public
+    TeamFactory(cryptoTeams, cryptoPlayers){
 
     }
 
@@ -121,15 +121,15 @@ contract TeamFactoryMock is TeamFactory {
         return getRole(idx, first, second);
     }
 
-    function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
-    function test_getPlayerState(uint playerIdx) external view returns(uint) { return getPlayerState(playerIdx); }
-    function test_getPlayerName(uint playerIdx) external view returns(string) { return getPlayerName(playerIdx); }
+    function test_getNCreatedPlayers() external view returns(uint) { return _cryptoPlayers.getNCreatedPlayers(); }
+    function test_getPlayerState(uint playerIdx) external view returns(uint) { return _cryptoPlayers.getPlayerState(playerIdx); }
+    function test_getPlayerName(uint playerIdx) external view returns(string) { return _cryptoPlayers.getPlayerName(playerIdx); }
 
 
     // WRAPPERS FOR TEAMS
 
-    function test_getNCreatedTeams() external view returns(uint) { return getNCreatedTeams(); }
-    function test_getTeamName(uint idx) public view returns(string) { return getTeamName(idx); }
+    function test_getNCreatedTeams() external view returns(uint) { return _cryptoTeams.getNCreatedTeams(); }
+    function test_getTeamName(uint idx) public view returns(string) { return _cryptoTeams.getTeamName(idx); }
     function test_createTeam(string _teamName) external { return createTeam(_teamName); }
     function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
 }

@@ -2,6 +2,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should();
 
+const CryptoPlayers = artifacts.require('CryptoPlayers');
 const CryptoTeams = artifacts.require('CryptoTeams');
 const cryptoSoccer = artifacts.require("TeamFactoryMock");
 var k = require('../../jsCommons/constants.js');
@@ -22,10 +23,29 @@ contract('Players', function(accounts) {
   console.log('Funds in the source account:');
   console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber()/web3.toWei(1, "ether"));
 
-
   it("tests if contract is deployed correctly", async () => {
+    const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
     const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-    instance = await cryptoSoccer.new(cryptoTeams.address);
+    instance = await cryptoSoccer.new(cryptoTeams.address, cryptoPlayers.address);
+  });
+
+  it('team name of unexistent player', async () => {
+    await instance.teamNameByPlayer("unexistent").should.be.rejected;
+  });
+
+  it('team name by player', async () => {
+    const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
+    const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
+    const contract = await cryptoSoccer.new(cryptoTeams.address, cryptoPlayers.address);
+    const team = "team";
+    const player = "player";
+    const playerState = 44535;
+    await cryptoTeams.addTeam(team, accounts[0]);
+    await cryptoPlayers.addPlayer(player, playerState, 1);
+    const index = await cryptoPlayers.getTeamIndexByPlayer(player).should.be.fulfilled;
+    index.toNumber().should.be.equal(1);
+    const name = await contract.teamNameByPlayer(player).should.be.fulfilled;
+    name.should.be.equal(team);
   });
 
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{
