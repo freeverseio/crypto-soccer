@@ -40,7 +40,7 @@ contract Storage is CryptoSoccer {
     /// @dev The ID of each team is actually his index in this array.
     mapping(uint256 => Team) private teams;
     // Team[] private teams;a
-    uint256 private teamsCount = 0;
+    uint256 private teamsCount = 1;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
@@ -56,7 +56,6 @@ contract Storage is CryptoSoccer {
     /// @dev to differentiate it from 0.
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
-        teamsCount++;
     }
     
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
@@ -65,7 +64,7 @@ contract Storage is CryptoSoccer {
     }
 
     function teamOwnerOf(uint256 _tokenId) external view returns (address){
-        address owner = teams[_tokenId+1].owner;
+        address owner = teams[_tokenId].owner;
         require(owner != address(0));
         return owner;
     }  
@@ -101,15 +100,15 @@ contract Storage is CryptoSoccer {
 
     function getTeamName(uint idx) public view returns(string) { 
         require(_teamExists(idx));
-        return teams[idx+1].name;
+        return teams[idx].name;
     }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
-        teams[team+1].playersIdx = playersIdx;
+        teams[team].playersIdx = playersIdx;
     }
 
     function getTeamPlayersIdx(uint256 team) public returns (uint256) {
-        return teams[team+1].playersIdx;
+        return teams[team].playersIdx;
     }
 
     function addTeam(string memory name, address owner) public {
@@ -122,8 +121,6 @@ contract Storage is CryptoSoccer {
     }
 
     function _teamExists(uint256 idx) internal returns (bool){
-        return teams[idx+1].owner != address(0);
+        return teams[idx].owner != address(0);
     }
-
-
 }

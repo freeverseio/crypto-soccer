@@ -11,6 +11,11 @@ contract CryptoTeams is ERC721 {
         _burn(ownerOf(tokenId), tokenId);
     }
 
+    function _mint(address to, uint256 tokenId) internal {
+        require(tokenId != 0);
+        super._mint(to, tokenId);
+    }
+
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
     /// @dev and select his favourite one.
