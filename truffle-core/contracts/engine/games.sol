@@ -2,7 +2,7 @@ pragma solidity ^ 0.4.24;
 
 import "../CryptoSoccer.sol";
 import "../helpers.sol";
-import "../ERC721/teams.sol";
+import "../factory/teams.sol";
 
 /*
     Main contract with the Game Engine

@@ -3,8 +3,8 @@ pragma solidity ^ 0.4.24;
 // TODO: import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../CryptoSoccer.sol";
 import "../helpers.sol";
-import "./CryptoTeams.sol";
-import "./CryptoPlayers.sol";
+import "../ERC721/CryptoTeams.sol";
+import "../ERC721/CryptoPlayers.sol";
 
 /*
     Contract to manage player creation
