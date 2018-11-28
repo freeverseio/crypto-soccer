@@ -68,6 +68,12 @@ contract Storage is CryptoSoccer, CryptoTeams {
     function teamNameByPlayer(string name) public view returns(string){
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 teamIdx = playerToTeam[playerNameHash];
-        return(teams[teamIdx].name);
+        return getTeamName(teamIdx);
+    }
+
+    function playerExists(string name) public view returns (bool){
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        uint256 teamIdx = playerToTeam[playerNameHash];
+        return teamIdx != 0;
     }
 }

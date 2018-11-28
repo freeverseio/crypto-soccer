@@ -34,14 +34,10 @@ contract PlayerFactory is Storage, HelperFunctions {
     function createPlayerInternal(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState)
         internal
     {
-        /// @dev First, make sure this player name is unique. If so, it has never been assigned to a Team.
-        /// @dev A team is created if it has a not-null owner addr.
-        bytes32 teamNameHash = keccak256(abi.encodePacked(teamNameByPlayer(_playerName)));
-        require(getTeamOwner(teamNameHash) == 0, "Player already exists with this name");
+        require(!playerExists(_playerName), "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
         uint newPlayerIdx = getNCreatedPlayers();
-
         /// @dev Push playert
         addPlayer(_playerName, _playerState, _teamIdx);
 
