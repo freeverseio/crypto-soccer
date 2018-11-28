@@ -63,7 +63,7 @@ contract('Storage', (accounts) => {
         name.should.be.equal("");
         await contract.addTeam(team, accounts[0]);
         await contract.addPlayer(player, playerState);
-        await contract.addPlayerToTeam(player, 0);
+        await contract.addPlayerToTeam(player, 1);
         name = await contract.teamNameByPlayer(player).should.be.fulfilled;
         name.should.be.equal(team);
     });
