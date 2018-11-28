@@ -46,7 +46,7 @@ contract Storage is CryptoSoccer {
 
     /// @dev A mapping from team hash(name) to the owner's address.
     /// @dev Facilitates checking if a teamName already exists.
-    mapping(bytes32 => Team) private teamToOwnerAddr;
+    mapping(bytes32 => uint256) private teamToOwnerAddr;
     
 
     /// @dev Upong deployment of the game, we create the first null player
@@ -54,10 +54,12 @@ contract Storage is CryptoSoccer {
     /// @dev to differentiate it from 0.
     constructor() public {
         players.push(Player({name: "_", state: uint(-1) }));
+        teams.push(Team({name: "_", playersIdx: 0, owner: 0}));
     }
     
     function getTeamOwner(bytes32 teamHashName) public view returns(address){
-        return teamToOwnerAddr[teamHashName].owner;
+        uint256 teamIdx = teamToOwnerAddr[teamHashName];
+        return teams[teamIdx].owner;
     }
     
     function addPlayer(string memory name, uint state) public {
@@ -65,15 +67,15 @@ contract Storage is CryptoSoccer {
     }
 
     function getPlayerState(uint playerIdx) public view returns(uint) {
-        return players[playerIdx].state;
+        return players[playerIdx + 1].state;
     }
 
     function getPlayerName(uint playerIdx) public view returns(string) {
-        return players[playerIdx].name;
+        return players[playerIdx + 1].name;
     }
 
     function getNCreatedPlayers() public view returns(uint) { 
-        return players.length;
+        return players.length - 1;
     }
 
     function teamNameByPlayer(bytes32 playerHashName) public view returns(string){
@@ -81,15 +83,15 @@ contract Storage is CryptoSoccer {
     }
 
     function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
-        playerToTeam[playerHashName] = teams[idx];
+        playerToTeam[playerHashName] = teams[idx+1];
     }
 
     function getNCreatedTeams() public view returns(uint) {
-        return teams.length;
+        return teams.length - 1;
     }
 
     function getTeamName(uint idx) public view returns(string) { 
-        return teams[idx].name;
+        return teams[idx+1].name;
     }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
@@ -105,6 +107,6 @@ contract Storage is CryptoSoccer {
         require(getTeamOwner(nameHash) == 0);
 
         teams.push(Team({name: name, playersIdx: 0, owner: owner}));
-        teamToOwnerAddr[nameHash] = Team({name: name, playersIdx: 0, owner: owner});
+        teamToOwnerAddr[nameHash] = teams.length-1;
     }
 }

@@ -13,7 +13,7 @@ contract('Storage', (accounts) => {
 
     it('no initial players', async () =>{
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
+        count.toNumber().should.be.equal(0);
     });
 
     it('no initial teams', async () =>{
@@ -26,12 +26,20 @@ contract('Storage', (accounts) => {
         const state = 34324;
         await contract.addPlayer(name, state).should.be.fulfilled;
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
+        count.toNumber().should.be.equal(1);
         const nameResult = await contract.getPlayerName(count-1);
         nameResult.should.be.equal(name);
         const stateResult = await contract.getPlayerState(count-1);
         stateResult.toNumber().should.be.equal(state);
     });
+
+    it('team name', async() => {
+        const team = "team";
+        await contract.getTeamName(0).should.be.rejected;
+        await contract.addTeam(team, accounts[0]).should.be.fulfilled;
+        const name = await contract.getTeamName(0).should.be.fulfilled;
+        name.should.be.equal(team);
+    })
 
     it('team name by player', async () => {
         const team = "team";
