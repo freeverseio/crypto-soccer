@@ -37,25 +37,26 @@ contract TeamFactoryMock is TeamFactory {
         return setNumAtIndex(value, longState, index, bits);
     }
 
-    function test_computeKeccak256ForNumber(uint n) external returns(uint)
+    function test_computeKeccak256ForNumber(uint n) external pure returns(uint)
     {
         return computeKeccak256ForNumber(n);
     }
 
-    function test_computeKeccak256(string s, uint n1, uint n2) external returns(uint) {
+    function test_computeKeccak256(string s, uint n1, uint n2) external pure returns(uint) {
         return computeKeccak256(s, n1, n2);
     }
 
-    function test_throwDice(uint weight1, uint weight2, uint rndNum, uint factor) external returns(uint8) {
+    function test_throwDice(uint weight1, uint weight2, uint rndNum, uint factor) external pure returns(uint8) {
         return throwDice(weight1, weight2, rndNum, factor);
     }
 
-    function test_throwDiceArray(uint[] weights, uint rndNum, uint factor) external returns(uint8) {
+    function test_throwDiceArray(uint[] weights, uint rndNum, uint factor) external pure returns(uint8) {
         return throwDiceArray(weights, rndNum, factor);
     }
 
     function test_getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
         external
+        pure
         returns (uint16[] rndNumArray) 
     {
         return getRndNumArrays(seed, roundsPerGame, bitsPerRndNum);
@@ -63,6 +64,7 @@ contract TeamFactoryMock is TeamFactory {
 
     function test_getGameId(uint teamIdx1, uint teamIdx2, uint seed) 
         external
+        pure
         returns (uint gameId) 
     {
         return getGameId(teamIdx1, teamIdx2, seed);
@@ -117,7 +119,7 @@ contract TeamFactoryMock is TeamFactory {
         );
     }
 
-    function test_getRole(uint idx, uint8 first, uint8 second) external returns(uint8) {
+    function test_getRole(uint idx, uint8 first, uint8 second) external pure returns(uint8) {
         return getRole(idx, first, second);
     }
 
