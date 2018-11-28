@@ -42,8 +42,10 @@ contract Storage is CryptoSoccer, CryptoTeams {
         players.push(Player({name: "_", state: uint(-1) }));
     }
     
-    function addPlayer(string memory name, uint state) public {
+    function addPlayer(string memory name, uint state, uint256 teamIdx) public {
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         players.push(Player({name: name, state: state}));
+        playerToTeam[playerNameHash] = teamIdx;
     }
 
     function getPlayerState(uint playerIdx) public view returns(uint) {
@@ -58,13 +60,14 @@ contract Storage is CryptoSoccer, CryptoTeams {
         return players.length - 1;
     }
 
-    function teamNameByPlayer(bytes32 playerHashName) public view returns(string){
-        uint256 teamIdx = playerToTeam[playerHashName];
-        return(teams[teamIdx].name);
+    function getTeamIndexByPlayer(string name) public view returns (uint256){
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        return playerToTeam[playerNameHash];
     }
 
-    function addPlayerToTeam(bytes32 playerHashName, uint256 idx) public {
-        require(idx != 0);
-        playerToTeam[playerHashName] = idx;
+    function teamNameByPlayer(string name) public view returns(string){
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        uint256 teamIdx = playerToTeam[playerNameHash];
+        return(teams[teamIdx].name);
     }
 }

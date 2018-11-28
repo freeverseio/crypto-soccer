@@ -24,7 +24,8 @@ contract('Storage', (accounts) => {
     it('add player', async () => {
         const name = "player";
         const state = 34324;
-        await contract.addPlayer(name, state).should.be.fulfilled;
+        const teamId = 1;
+        await contract.addPlayer(name, state, teamId).should.be.fulfilled;
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
         const nameResult = await contract.getPlayerName(count-1);
@@ -55,16 +56,19 @@ contract('Storage', (accounts) => {
         owner.should.be.equal(accounts[0]);
     })
 
+    it('team name of unexistent player', async () => {
+        await contract.teamNameByPlayer("unexistent").should.be.rejected;
+    });
+
     it('team name by player', async () => {
         const team = "team";
         const player = "player";
         const playerState = 44535;
-        let name = await contract.teamNameByPlayer(player).should.be.fulfilled;
-        name.should.be.equal("");
         await contract.addTeam(team, accounts[0]);
-        await contract.addPlayer(player, playerState);
-        await contract.addPlayerToTeam(player, 1);
-        name = await contract.teamNameByPlayer(player).should.be.fulfilled;
+        await contract.addPlayer(player, playerState, 1);
+        const index = await contract.getTeamIndexByPlayer(player).should.be.fulfilled;
+        index.toNumber().should.be.equal(1);
+        const name = await contract.teamNameByPlayer(player).should.be.fulfilled;
         name.should.be.equal(team);
     });
 });

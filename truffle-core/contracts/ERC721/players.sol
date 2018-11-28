@@ -36,18 +36,14 @@ contract PlayerFactory is Storage, HelperFunctions {
     {
         /// @dev First, make sure this player name is unique. If so, it has never been assigned to a Team.
         /// @dev A team is created if it has a not-null owner addr.
-        bytes32 playerNameHash = keccak256(abi.encodePacked(_playerName));
-        bytes32 teamNameHash = keccak256(abi.encodePacked(teamNameByPlayer(playerNameHash)));
+        bytes32 teamNameHash = keccak256(abi.encodePacked(teamNameByPlayer(_playerName)));
         require(getTeamOwner(teamNameHash) == 0, "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
         uint newPlayerIdx = getNCreatedPlayers();
 
         /// @dev Push playert
-        addPlayer(_playerName, _playerState);
-
-        /// @dev Update mapping
-        addPlayerToTeam(playerNameHash, _teamIdx);
+        addPlayer(_playerName, _playerState, _teamIdx);
 
         /// @dev Update inverse relation (from teams to playerIdx)
         uint256 playerIdx = setNumAtIndex(
