@@ -16,12 +16,17 @@ contract CryptoTeams is ERC721 {
     mapping(bytes32 => uint256) private _nameHashTeam;
     uint256 private _nextTeamId = 1;
 
-    function addTeam(string memory name, address owner) public {
+    function _mint(address to, uint256 tokenId, string memory name) internal {
+        require(to != address(0));
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         require(_nameHashTeam[nameHash] == 0);
-        _teamProps[_nextTeamId] = Props({name: name, playersIdx: 0});
-        _nameHashTeam[nameHash] = _nextTeamId;
-        _mint(owner, _nextTeamId);
+        _teamProps[tokenId] = Props({name: name, playersIdx: 0});
+        _nameHashTeam[nameHash] = tokenId;
+        _mint(to, tokenId);
+    }
+
+    function addTeam(string memory name, address owner) public {
+        _mint(owner, _nextTeamId, name);
         _nextTeamId++;
     }
 
