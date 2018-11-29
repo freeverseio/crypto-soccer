@@ -15,7 +15,6 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable {
 
     mapping(uint256 => Props) internal _teamProps;
     mapping(bytes32 => uint256) internal _nameHashTeam;
-    uint256 internal _nextTeamId = 1;
 
     function _mint(address to, uint256 tokenId, string memory name) internal {
         require(to != address(0));

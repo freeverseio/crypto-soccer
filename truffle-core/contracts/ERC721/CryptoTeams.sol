@@ -5,8 +5,8 @@ import "./CryptoTeamsMetadata.sol";
 
 contract CryptoTeams is CryptoTeamsBase {
     function addTeam(string memory name, address owner) public {
-        _mint(owner, _nextTeamId, name);
-        _nextTeamId++;
+        uint256 nextTeamId = totalSupply() + 1;
+        _mint(owner, nextTeamId, name);
     }
 
     function getTeamName(uint idx) public view returns(string) { 
