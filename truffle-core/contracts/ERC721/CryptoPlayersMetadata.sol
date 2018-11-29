@@ -1,8 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayers.sol";
+import "./CryptoPlayersBase.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 
-contract CryptoPlayersMetadata is CryptoPlayers {
+contract CryptoPlayersMetadata is CryptoPlayersBase, ERC721Metadata("CryptoSoccerPlayers", "CSP") {
     string private _baseURI;
 
     function setBaseURI(string URI) public {
