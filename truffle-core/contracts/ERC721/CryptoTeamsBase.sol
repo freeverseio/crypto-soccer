@@ -22,6 +22,11 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return _teamProps[tokenId].name;
     }
 
+    function _setTeamName(uint256 tokenId, string name) internal {
+        require(_exists(tokenId));
+        _teamProps[tokenId].name = name;
+    }
+
     function _setTeamPlayersIdx(uint256 tokenId, uint256 playersIdx) internal {
         require(_exists(tokenId));
         _teamProps[tokenId].playersIdx = playersIdx;
@@ -33,12 +38,11 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     }
 
     function _mint(address to, uint256 tokenId, string memory name) internal {
-        require(to != address(0));
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         require(_nameHashTeam[nameHash] == 0);
-        _teamProps[tokenId] = Props({name: name, playersIdx: 0});
-        _nameHashTeam[nameHash] = tokenId;
         _mint(to, tokenId);
+        _setTeamName(tokenId, name);
+        _nameHashTeam[nameHash] = tokenId;
     }
 
     function _mint(address to, uint256 tokenId) internal onlyMinter {
