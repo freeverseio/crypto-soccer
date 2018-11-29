@@ -10,18 +10,15 @@ contract CryptoTeams is CryptoTeamsBase, CryptoTeamsMetadata {
     }
 
     function getTeamName(uint idx) public view returns(string) { 
-        require(_exists(idx));
-        return _teamProps[idx].name;
+        return _getTeamName(idx);
     }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
-        require(_exists(team));
-        _teamProps[team].playersIdx = playersIdx;
+        _setTeamPlayersIdx(team, playersIdx);
     }
 
     function getTeamPlayersIdx(uint256 team) public view returns (uint256) {
-        require(_exists(team));
-        return _teamProps[team].playersIdx;
+        return _getTeamPlayersIdx(team);
     }
 }
 
