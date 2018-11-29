@@ -23,7 +23,7 @@ contract TeamFactory is PlayerFactory {
         _cryptoTeams.addTeam(_teamName, msg.sender);
 
         // emit the team creation event
-        emit TeamCreation(_teamName, _cryptoTeams.getNCreatedTeams(), msg.sender);
+        emit TeamCreation(_teamName, _cryptoTeams.totalSupply(), msg.sender);
     }
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team

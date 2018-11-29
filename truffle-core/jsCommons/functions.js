@@ -58,7 +58,7 @@ function unixMonthToAge(unixMonthOfBirth) {
 }
   
 async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam, playerRoles ) {
-    var newTeamIdx = await instance.test_getNCreatedTeams.call()+1; 
+    var newTeamIdx = await instance.totalSupply.call()+1; 
     console.log("creating team: " + teamName);
     await instance.test_createTeam(teamName);
     const userChoice=1;

@@ -36,10 +36,6 @@ contract CryptoTeams is ERC721, ERC721Enumerable {
         return _teamProps[idx].name;
     }
 
-    function getNCreatedTeams() public view returns(uint) {
-        return totalSupply();
-    }
-
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {
         require(_exists(team));
         _teamProps[team].playersIdx = playersIdx;

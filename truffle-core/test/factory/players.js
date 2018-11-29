@@ -49,15 +49,15 @@ contract('Players', function(accounts) {
   });
 
   it("creates an empty team, checks that nTeams moves from 0 to 1", async () =>{
-    var nTeams = await  instance.test_getNCreatedTeams.call();
+    var nTeams = await  instance.totalSupply.call();
     assert.isTrue(nTeams==0);
     await instance.test_createTeam(teamName);
-    var nTeams = await  instance.test_getNCreatedTeams.call();
+    var nTeams = await  instance.totalSupply.call();
     assert.isTrue(nTeams==1);
   });
 
   it("adds a player to the previously created empty team, and checks nPlayers goes from 0 to 1", async () =>{
-    var nTeams = await  instance.test_getNCreatedTeams.call().should.be.fulfilled;
+    var nTeams = await  instance.totalSupply.call().should.be.fulfilled;
     assert.equal(nTeams,1);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
     assert.equal(nTotalPlayers,0); 
@@ -82,7 +82,7 @@ contract('Players', function(accounts) {
   });
 
   it("tries to add a player with the same name, and checks that it fails", async () =>{
-    var nTeams = await  instance.test_getNCreatedTeams.call();
+    var nTeams = await  instance.totalSupply.call();
     var nPlayers = await  instance.test_getNCreatedPlayers.call();
     var lastPlayerName = await instance.test_getPlayerName(0);
     console.log("Teams created so far " + nTeams + " team, and nPlayers = " + nPlayers);

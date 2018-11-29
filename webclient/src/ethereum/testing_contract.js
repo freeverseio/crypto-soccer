@@ -40,7 +40,7 @@ export class TestingFacade {
         const maxPlayersPerTeam = 11;
         const playerRoles = f.createAlineacion(4, 3, 3);
 
-        const newTeamIdx = await instance.methods.test_getNCreatedTeams().call({ from: this.address });
+        const newTeamIdx = await instance.methods.totalSupply().call({ from: this.address });
         console.log("creating team: " + newTeamIdx + ", name " + teamName);
         await instance.methods.test_createTeam(teamName).send(
             {
@@ -72,7 +72,7 @@ export class TestingFacade {
     }
 
     async countTeams() {
-        return this.contract.methods.test_getNCreatedTeams().call({ from: this.address });
+        return this.contract.methods.totalSupply().call({ from: this.address });
     }
 
     async teamName(index){

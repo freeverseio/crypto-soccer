@@ -157,7 +157,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         public 
     {
         /// @dev TODO: we should make sure all numbers are below 2^kBitsPerState-1
-        require (_teamIdx < _cryptoTeams.getNCreatedTeams(), "Trying to assign a player to a team not created yet");
+        require (_teamIdx < _cryptoTeams.totalSupply(), "Trying to assign a player to a team not created yet");
         uint bits = kBitsPerState;
         uint state = _monthOfBirthAfterUnixEpoch +
                      (_defense     << bits) +

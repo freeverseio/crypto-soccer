@@ -57,9 +57,9 @@ contract('Teams', function (accounts) {
 
   it("creates a team via .call() instead of Tx and checks that you can create 2 teams with same name", async () => {
     teamName = "test";
-    var newTeamIdx = await instance.test_getNCreatedTeams.call();
+    var newTeamIdx = await instance.totalSupply.call();
     await instance.test_createTeam.call(teamName);
-    var newTeamIdx2 = await instance.test_getNCreatedTeams.call();
+    var newTeamIdx2 = await instance.totalSupply.call();
     assert.equal(newTeamIdx.toNumber(), newTeamIdx2.toNumber()); // meaning that nothing has been stored in the blockchain
     await instance.test_createTeam.call(teamName);
   });
