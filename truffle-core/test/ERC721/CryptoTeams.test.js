@@ -12,8 +12,8 @@ contract('CryptoTeams', (accounts) => {
     });
 
     it('no initial teams', async () => {
-        const count = await contract.getNCreatedTeams().should.be.fulfilled;
-        count.toNumber().should.be.equal(0);
+        const total = await contract.totalSupply().should.be.fulfilled;
+        total.toNumber().should.be.equal(0);
     })
 
     it('team owner', async () => {
@@ -36,5 +36,7 @@ contract('CryptoTeams', (accounts) => {
         await contract.addTeam("team", accounts[0]).should.be.fulfilled;
         const name = await contract.getTeamName(1).should.be.fulfilled;
         name.should.be.equal("team");
+        const total = await contract.totalSupply().should.be.fulfilled;
+        total.toNumber().should.be.equal(1);
     })
 });

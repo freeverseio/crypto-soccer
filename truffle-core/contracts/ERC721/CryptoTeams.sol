@@ -1,8 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 
-contract CryptoTeams is ERC721 {
+contract CryptoTeams is ERC721, ERC721Enumerable {
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
     /// @dev and select his favourite one.
@@ -36,7 +37,7 @@ contract CryptoTeams is ERC721 {
     }
 
     function getNCreatedTeams() public view returns(uint) {
-        return _nextTeamId - 1;
+        return totalSupply();
     }
 
     function setTeamPlayersIdx(uint256 team, uint256 playersIdx) public {

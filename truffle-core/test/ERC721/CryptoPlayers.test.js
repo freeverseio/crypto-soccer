@@ -9,7 +9,7 @@ contract('CryptoPlayers', (accounts) => {
 
     beforeEach(async () => {
         contract = await CryptoPlayers.new().should.be.fulfilled;
-    });
+    })
 
     it('check name and symbol', async () => {
         const contract = await CryptoPlayers.new();
