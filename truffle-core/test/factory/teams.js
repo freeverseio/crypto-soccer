@@ -19,6 +19,7 @@ contract('Teams', function (accounts) {
     cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
     cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
     instance = await TeamFactoryMock.new(cryptoTeams.address, cryptoPlayers.address).should.be.fulfilled;
+    cryptoTeams.addMinter(instance.address);
   });
 
   it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {

@@ -27,6 +27,7 @@ contract('Players', function(accounts) {
     const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
     const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
     instance = await cryptoSoccer.new(cryptoTeams.address, cryptoPlayers.address);
+    cryptoTeams.addMinter(instance.address);
   });
 
   it('team name of unexistent player', async () => {
