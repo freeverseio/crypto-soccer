@@ -42,7 +42,7 @@ contract('Players', function(accounts) {
     const player = "player";
     const playerState = 44535;
     await cryptoTeams.addTeam(team, accounts[0]);
-    await cryptoPlayers.addPlayer(player, playerState, 1);
+    await cryptoPlayers.addPlayer(player, playerState, 1, accounts[0]);
     const index = await cryptoPlayers.getTeamIndexByPlayer(player).should.be.fulfilled;
     index.toNumber().should.be.equal(1);
     const name = await contract.teamNameByPlayer(player).should.be.fulfilled;
@@ -62,13 +62,13 @@ contract('Players', function(accounts) {
     assert.equal(nTeams,1);
     nTotalPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
     assert.equal(nTotalPlayers,0); 
-    await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole).should.be.fulfilled;
+    await instance.test_createBalancedPlayer(playerName,teamIdx,userChoice,playerNumberInTeam,playerRole, accounts[0]).should.be.fulfilled;
     nTotalPlayers = await instance.test_getNCreatedPlayers.call();
     assert.equal(nTotalPlayers,1);
   });
 
   it("reads skills of a player and check it is as expected", async () =>{
-    playerIdx = 0;
+    playerIdx = 1;
     var state = await instance.test_getPlayerState(playerIdx).should.be.fulfilled;
     var decoded = await instance.test_decode(k.NumStates, state, k.BitsPerState).should.be.fulfilled;
     console.log(decoded);

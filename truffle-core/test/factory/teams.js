@@ -38,7 +38,7 @@ contract('Teams', function (accounts) {
     nCreatedPlayers.toNumber().should.be.equal(0);
     teamName = "Mataro";
     playerBasename = "Bogarde";
-    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3)).should.be.fulfilled;
+    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3), accounts[0]).should.be.fulfilled;
     await printTeamPlayers(newTeamIdx, instance).should.be.fulfilled;
     nCreatedPlayers.toNumber().should.be.equal(k.MaxPlayersInTeam)
   });
