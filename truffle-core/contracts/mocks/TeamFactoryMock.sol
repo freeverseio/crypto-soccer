@@ -78,7 +78,8 @@ contract TeamFactoryMock is TeamFactory {
         uint _teamIdx, 
         uint16 _userChoice, 
         uint8 _playerNumberInTeam, 
-        uint8 _playerRole
+        uint8 _playerRole,
+        address owner
     ) 
         external 
     {
@@ -87,7 +88,8 @@ contract TeamFactoryMock is TeamFactory {
             _teamIdx, 
             _userChoice,
             _playerNumberInTeam, 
-            _playerRole
+            _playerRole,
+            owner
         );
     }
 
@@ -101,7 +103,8 @@ contract TeamFactoryMock is TeamFactory {
         uint _pass,
         uint _shoot,
         uint _endurance,
-        uint _role
+        uint _role,
+        address owner
     )
         external 
     {
@@ -115,7 +118,8 @@ contract TeamFactoryMock is TeamFactory {
             _pass,
             _shoot,
             _endurance,
-            _role
+            _role,
+            owner
         );
     }
 

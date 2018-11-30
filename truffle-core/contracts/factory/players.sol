@@ -41,7 +41,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
     /// @dev An internal method that creates a new player and stores it. This
     /// @dev method doesn't do any checking and should only be called when the
     /// @dev input data is known to be valid.
-    function createPlayerInternal(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState)
+    function createPlayerInternal(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState, address owner)
         internal
     {
         require(!_cryptoPlayers.playerExists(_playerName), "Player already exists with this name");
@@ -49,7 +49,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         /// @dev Get newPlayerIdx 
         uint newPlayerIdx = _cryptoPlayers.getNCreatedPlayers();
         /// @dev Push playert
-        _cryptoPlayers.addPlayer(_playerName, _playerState, _teamIdx);
+        _cryptoPlayers.addPlayer(_playerName, _playerState, _teamIdx, owner);
 
         /// @dev Update inverse relation (from teams to playerIdx)
         uint256 playerIdx = setNumAtIndex(
@@ -121,7 +121,8 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         uint _teamIdx,
         uint16 _userChoice,
         uint8 _playerNumberInTeam,
-        uint8 _playerRole
+        uint8 _playerRole,
+        address owner
     )
         public 
     {
@@ -136,7 +137,8 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
             _playerName,
             _teamIdx,
             _playerNumberInTeam,
-            computePlayerStateFromRandom(dna, _playerRole, now)
+            computePlayerStateFromRandom(dna, _playerRole, now),
+            owner
         );
     }
 
@@ -152,7 +154,8 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         uint _pass,
         uint _shoot,
         uint _endurance,
-        uint _role
+        uint _role,
+        address owner
     )
         public 
     {
@@ -167,7 +170,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
                      (_endurance   << (bits*5)) +
                      (_role        << (bits*6));
 
-        createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state);
+        createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, state, owner);
     }
 
 

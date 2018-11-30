@@ -4,10 +4,6 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 
 contract CryptoPlayersBase is ERC721, ERC721Enumerable {
-    constructor() public {
-        players.push(Player({name: "_", state: uint(-1) }));
-    }
-
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -27,28 +23,39 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     /// @dev An array containing the Player struct for all players in existence. 
     /// @dev The ID of each player is actually his index this array.
-    Player[] private players;
+    mapping(uint256 => Player) _indexPlayer;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => uint256) private playerToTeam;
 
-    function _addPlayer(string memory name, uint state, uint256 teamIdx) internal {
+    function _addPlayer(string memory name, uint state, uint256 teamIdx, address owner) internal {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        players.push(Player({name: name, state: state}));
+        uint256 playerId = totalSupply() + 1;
+        _mint(owner, playerId);
+        _setPlayerName(playerId, name);
+        _setPlayerState(playerId, state);
         playerToTeam[playerNameHash] = teamIdx;
     }
 
+    function _setPlayerState(uint256 playerId, uint256 state) internal {
+        _indexPlayer[playerId].state = state;
+    }
+
     function _getPlayerState(uint playerIdx) internal view returns(uint) {
-        return players[playerIdx + 1].state;
+        return _indexPlayer[playerIdx].state;
     }
 
     function _getNCreatedPlayers() internal view returns(uint) { 
-        return players.length - 1;
+        return totalSupply();
     }
 
     function _getPlayerName(uint playerIdx) internal view returns(string) {
-        return players[playerIdx + 1].name;
+        return _indexPlayer[playerIdx].name;
+    }
+
+    function _setPlayerName(uint256 playerId, string memory name) internal {
+        _indexPlayer[playerId].name = name;
     }
 
     function _getTeamIndexByPlayer(string name) internal view returns (uint256){

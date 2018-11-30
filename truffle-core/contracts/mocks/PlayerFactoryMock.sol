@@ -11,10 +11,10 @@ contract PlayerFactoryMock is PlayerFactory {
         return super.getRole(idx, nDefenders, nMids);
     }
 
-    function createPlayerInternal_(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState)
+    function createPlayerInternal_(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState, address owner)
         public
     {
-        return super.createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, _playerState);
+        return super.createPlayerInternal(_playerName, _teamIdx, _playerNumberInTeam, _playerState, owner);
     }
 
     function computePlayerStateFromRandom_(uint rndSeed, uint8 playerRole, uint currentTime)
@@ -30,11 +30,12 @@ contract PlayerFactoryMock is PlayerFactory {
         uint _teamIdx,
         uint16 _userChoice,
         uint8 _playerNumberInTeam,
-        uint8 _playerRole
+        uint8 _playerRole,
+        address owner
     )
         public 
     {
-        super.createBalancedPlayer(_playerName, _teamIdx, _userChoice, _playerNumberInTeam, _playerRole);
+        super.createBalancedPlayer(_playerName, _teamIdx, _userChoice, _playerNumberInTeam, _playerRole, owner);
     }
 
     function createUnbalancedPlayer_(
@@ -47,7 +48,8 @@ contract PlayerFactoryMock is PlayerFactory {
         uint _pass,
         uint _shoot,
         uint _endurance,
-        uint _role
+        uint _role,
+        address owner
     )
         public 
     {
@@ -61,7 +63,8 @@ contract PlayerFactoryMock is PlayerFactory {
         _pass,
         _shoot,
         _endurance,
-        _role
+        _role,
+        owner
         );
     }
 

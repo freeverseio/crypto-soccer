@@ -3,8 +3,8 @@ pragma solidity ^0.4.24;
 import "./CryptoPlayersMetadata.sol";
 
 contract CryptoPlayers is CryptoPlayersMetadata {
-    function addPlayer(string memory name, uint state, uint256 teamIdx) public {
-        _addPlayer(name, state, teamIdx);
+    function addPlayer(string memory name, uint state, uint256 teamIdx, address owner) public {
+        _addPlayer(name, state, teamIdx, owner);
     }
 
     function getPlayerState(uint playerIdx) public view returns(uint) {
