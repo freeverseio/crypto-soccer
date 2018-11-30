@@ -27,9 +27,38 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     /// @dev An array containing the Player struct for all players in existence. 
     /// @dev The ID of each player is actually his index this array.
-    Player[] internal players;
+    Player[] private players;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
-    mapping(bytes32 => uint256) internal playerToTeam;
+    mapping(bytes32 => uint256) private playerToTeam;
+
+    function _addPlayer(string memory name, uint state, uint256 teamIdx) internal {
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        players.push(Player({name: name, state: state}));
+        playerToTeam[playerNameHash] = teamIdx;
+    }
+
+    function _getPlayerState(uint playerIdx) internal view returns(uint) {
+        return players[playerIdx + 1].state;
+    }
+
+    function _getNCreatedPlayers() internal view returns(uint) { 
+        return players.length - 1;
+    }
+
+    function _getPlayerName(uint playerIdx) internal view returns(string) {
+        return players[playerIdx + 1].name;
+    }
+
+    function _getTeamIndexByPlayer(string name) internal view returns (uint256){
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        return playerToTeam[playerNameHash];
+    }
+
+    function _playerExists(string name) internal view returns (bool){
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        uint256 teamIdx = playerToTeam[playerNameHash];
+        return teamIdx != 0;
+    }
 }
