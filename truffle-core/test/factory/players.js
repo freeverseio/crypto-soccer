@@ -85,7 +85,7 @@ contract('Players', function(accounts) {
   it("tries to add a player with the same name, and checks that it fails", async () =>{
     var nTeams = await  instance.totalSupply.call();
     var nPlayers = await  instance.test_getNCreatedPlayers.call();
-    var lastPlayerName = await instance.test_getPlayerName(0);
+    var lastPlayerName = await instance.test_getPlayerName(1);
     console.log("Teams created so far " + nTeams + " team, and nPlayers = " + nPlayers);
     console.log("lastPlayerName = " + lastPlayerName);
     hasFailed = false;

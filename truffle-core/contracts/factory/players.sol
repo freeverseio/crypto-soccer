@@ -47,7 +47,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         require(!_cryptoPlayers.playerExists(_playerName), "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
-        uint newPlayerIdx = _cryptoPlayers.getNCreatedPlayers();
+        uint newPlayerIdx = _cryptoPlayers.getNCreatedPlayers()+1;
         /// @dev Push playert
         _cryptoPlayers.addPlayer(_playerName, _playerState, _teamIdx, owner);
 
