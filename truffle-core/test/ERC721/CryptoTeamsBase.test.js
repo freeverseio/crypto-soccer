@@ -17,11 +17,11 @@ contract('CryptoTeamsBase', (accounts) => {
     })
 
     it('id 0 is forbidden', async () => {
-        await contract.mint(accounts[0], 0, "team").should.be.fulfilled;
+        await contract.mintWithTeamName(accounts[0], 0, "team").should.be.fulfilled;
     });
 
-    it('create team', async () => {
-        await contract.mint(accounts[0], 1, "team").should.be.fulfilled;
+    it('mint team', async () => {
+        await contract.mintWithTeamName(accounts[0], 1, "team").should.be.fulfilled;
         const name = await contract.getTeamName(1).should.be.fulfilled;
         name.should.be.equal("team");
         const total = await contract.totalSupply().should.be.fulfilled;
@@ -30,14 +30,14 @@ contract('CryptoTeamsBase', (accounts) => {
 
     it('team owner', async () => {
         const id = 1;
-        await contract.mint(accounts[0], id, "team").should.be.fulfilled;
+        await contract.mintWithTeamName(accounts[0], id, "team").should.be.fulfilled;
         const owner = await contract.ownerOf(id).should.be.fulfilled;
         owner.should.be.equal(accounts[0]);
     });
 
     it('team name', async () => {
         const id = 1;
-        await contract.mint(accounts[0], id, "team").should.be.fulfilled;
+        await contract.mintWithTeamName(accounts[0], id, "team").should.be.fulfilled;
         const name = await contract.getTeamName(id).should.be.fulfilled;
         name.should.be.equal("team");
     });
