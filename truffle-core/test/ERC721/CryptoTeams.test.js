@@ -19,7 +19,7 @@ contract('CryptoTeams', (accounts) => {
         await contract.addTeam("team", accounts[0]).should.be.fulfilled;
         count = await contract.totalSupply().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        const name = await contract.getTeamName(id).should.be.fulfilled;
+        const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
     })
 });

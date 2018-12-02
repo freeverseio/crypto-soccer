@@ -131,7 +131,7 @@ contract TeamFactoryMock is TeamFactory {
     // WRAPPERS FOR TEAMS
 
     function totalSupply() external view returns(uint) { return _cryptoTeams.totalSupply(); }
-    function test_getTeamName(uint idx) public view returns(string) { return _cryptoTeams.getTeamName(idx); }
+    function test_getTeamName(uint idx) public view returns(string) { return _cryptoTeams.getName(idx); }
     function test_createTeam(string _teamName) external { return createTeam(_teamName); }
     function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
 }

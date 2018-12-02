@@ -54,12 +54,12 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         /// @dev Update inverse relation (from teams to playerIdx)
         uint256 playerIdx = setNumAtIndex(
             newPlayerIdx,
-            _cryptoTeams.getTeamPlayersIdx(_teamIdx),
+            _cryptoTeams.getPlayersIdx(_teamIdx),
             _playerNumberInTeam,
             kBitsPerPlayerIdx
         );
 
-        _cryptoTeams.setTeamPlayersIdx(_teamIdx, playerIdx );
+        _cryptoTeams.setPlayersIdx(_teamIdx, playerIdx );
 
         /// @dev Emit the creation event
         emit PlayerCreation(_playerName, newPlayerIdx, _playerState);
@@ -128,7 +128,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         uint dna = uint(
             keccak256(
                 abi.encodePacked(
-            _cryptoTeams.getTeamName(_teamIdx),
+            _cryptoTeams.getName(_teamIdx),
             _userChoice,
             _playerNumberInTeam
         )));
@@ -176,6 +176,6 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
 */
     function teamNameByPlayer(string name) public view returns(string){
         uint256 teamIdx = _cryptoPlayers.getTeamIndexByPlayer(name);
-        return _cryptoTeams.getTeamName(teamIdx);
+        return _cryptoTeams.getName(teamIdx);
     }
 }
