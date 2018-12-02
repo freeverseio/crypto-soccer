@@ -17,36 +17,32 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
-    function _getTeamName(uint256 tokenId) internal view returns(string){
+    function getTeamName(uint256 tokenId) public view returns(string){
         require(_exists(tokenId));
         return _teamProps[tokenId].name;
     }
 
-    function _setTeamName(uint256 tokenId, string name) internal {
+    function setTeamName(uint256 tokenId, string name) public {
         require(_exists(tokenId));
         _teamProps[tokenId].name = name;
     }
 
-    function _setTeamPlayersIdx(uint256 tokenId, uint256 playersIdx) internal {
+    function setTeamPlayersIdx(uint256 tokenId, uint256 playersIdx) public {
         require(_exists(tokenId));
         _teamProps[tokenId].playersIdx = playersIdx;
     }
 
-    function _getTeamPlayersIdx(uint256 tokenId) internal view returns (uint256) {
+    function getTeamPlayersIdx(uint256 tokenId) public view returns (uint256) {
         require(_exists(tokenId));
         return _teamProps[tokenId].playersIdx;
     }
 
-    function _mint(address to, uint256 tokenId, string memory name) internal {
+    function mint(address to, uint256 tokenId, string memory name) public onlyMinter {
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         require(_nameHashTeam[nameHash] == 0);
         _mint(to, tokenId);
-        _setTeamName(tokenId, name);
+        setTeamName(tokenId, name);
         _nameHashTeam[nameHash] = tokenId;
-    }
-
-    function _mint(address to, uint256 tokenId) internal onlyMinter {
-        super._mint(to, tokenId);
     }
 }
 
