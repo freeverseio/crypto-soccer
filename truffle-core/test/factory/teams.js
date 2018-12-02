@@ -29,8 +29,8 @@ contract('Teams', function (accounts) {
   });
 
   it('get unexistent team', async () => {
-    await cryptoTeams.getTeamName(0).should.be.rejected;
-    await cryptoTeams.getTeamName(1).should.be.rejected;
+    await cryptoTeams.getName(0).should.be.rejected;
+    await cryptoTeams.getName(1).should.be.rejected;
   })
 
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
@@ -46,7 +46,7 @@ contract('Teams', function (accounts) {
   it("create team", async () => {
     const name = "Los Cojos";
     await instance.createTeam(name).should.be.fulfilled;
-    const result = await cryptoTeams.getTeamName(1).should.be.fulfilled;
+    const result = await cryptoTeams.getName(1).should.be.fulfilled;
     result.should.be.equal(name)
   });
 
