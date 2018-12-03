@@ -45,11 +45,12 @@ contract('Players', function(accounts) {
     var state = await instance.test_getPlayerState(playerIdx);
     var decoded = await instance.test_decode(k.NumStates, state, k.BitsPerState);
     console.log(decoded);
-    expected = [193, 47, 61, 46, 34, 62, 3]; 
+    expected = [194, 47, 61, 46, 34, 62, 3]; 
     info = "Player " + playerIdx+ " skills: "
     for (var st=0; st<k.NumStates; st++) {
         thisState = decoded[st].toNumber();
-        assert(thisState == expected[st]);
+	thisState.should.be.equal(expected[st]);
+//        assert(thisState == expected[st]);
         info += " " + thisState;
     }
     console.log(info);
