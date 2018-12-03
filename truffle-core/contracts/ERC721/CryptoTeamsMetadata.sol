@@ -59,7 +59,7 @@ contract CryptoTeamsMetadata is ERC165, CryptoTeamsBase, IERC721Metadata {
      * @dev Internal function to set the token URI for all token
      * @param uri string URI to assign
      */
-    function _setTokenURI(string uri) internal {
+    function _setTokensURI(string uri) internal {
         _teamURI = uri;
     }
 }
