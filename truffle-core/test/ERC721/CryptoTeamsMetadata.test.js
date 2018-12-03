@@ -30,14 +30,16 @@ contract('CryptoTeamsMetadata', (accounts) => {
         const id = 1; 
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        uri.should.be.equal("");
+        uri.should.be.equal("?playersId=0");
     });
 
     it('set tokens URI', async () => {
         const id = 1; 
+        const playersId = 33434;
         await contract.setTokensURI("URI").should.be.fulfilled;
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        await contract.setPlayersIdx(id, playersId).should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        uri.should.be.equal("URI");
+        uri.should.be.equal("URI?playersId=" + playersId);
     });
 });
