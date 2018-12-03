@@ -11,7 +11,7 @@ contract CryptoTeamsMetadata is ERC165, CryptoTeamsBase, IERC721Metadata {
     // Token symbol
     string constant private _symbol = "CST";
 
-    string private _teamURI;
+    string private _teamsURI;
 
     bytes4 private constant InterfaceId_ERC721Metadata = 0x5b5e139f;
     /**
@@ -52,15 +52,15 @@ contract CryptoTeamsMetadata is ERC165, CryptoTeamsBase, IERC721Metadata {
      */
     function tokenURI(uint256 tokenId) external view returns (string) {
         require(_exists(tokenId));
-        return _teamURI;
+        return _teamsURI;
     }
 
     /**
      * @dev Internal function to set the token URI for all token
      * @param uri string URI to assign
      */
-    function _setTokensURI(string uri) internal {
-        _teamURI = uri;
+    function setTokensURI(string uri) public {
+        _teamsURI = uri;
     }
 }
 

@@ -4,7 +4,7 @@ require('chai')
 
 const CryptoTeams = artifacts.require('CryptoTeamsMetadata');
 
-contract('CryptoTeamsBase', (accounts) => {
+contract('CryptoTeamsMetadata', (accounts) => {
     let contract = null;
 
     beforeEach(async () => {
@@ -21,5 +21,13 @@ contract('CryptoTeamsBase', (accounts) => {
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
         uri.should.be.equal("");
+    });
+
+    it('set tokens URI', async () => {
+        const id = 1; 
+        await contract.setTokensURI("URI").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        const uri = await contract.tokenURI(id).should.be.fulfilled;
+        uri.should.be.equal("URI");
     });
 });
