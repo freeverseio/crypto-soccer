@@ -11,6 +11,16 @@ contract('CryptoTeamsMetadata', (accounts) => {
         contract = await CryptoTeams.new().should.be.fulfilled;
     });
 
+    it('symbol', async () => {
+        const symbol = await contract.symbol().should.be.fulfilled;
+        symbol.should.be.equal("CST");
+    });
+    
+    it('name', async () => {
+        const name = await contract.name().should.be.fulfilled;
+        name.should.be.equal("CryptoSoccerTeams");
+    });
+
     it('tokenURI of unexistend team', async () => {
         await contract.tokenURI(0).should.be.rejected;
         await contract.tokenURI(1).should.be.rejected;
