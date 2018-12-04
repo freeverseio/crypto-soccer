@@ -66,21 +66,4 @@ contract('Teams', function (accounts) {
   });
 });
 
-async function printTeamPlayers(teamIdx, instance) {
-  var totals = Array(k.NumStates).fill(0);
-  console.log("Players in team " + teamIdx + ":");
-  for (var p = 1; p < k.MaxPlayersInTeam + 1; p++) {
-    console.log("player -> " + p);
-    info = "Player " + p + ": ";
-    serialized = await instance.test_getStatePlayerInTeam(p, teamIdx);
-    // decoded = await instance.test_decode(k.NumStates, serialized, k.BitsPerState);
-    // for (var sk = 0; sk < k.NumStates; sk++) {
-    //   if (sk == 0) totals[0] += f.unixMonthToAge(decoded[0]);
-    //   else totals[sk] += parseInt(decoded[sk]);
-    //   info += skillNames[sk] + "= " + decoded[sk] + "  ";
-    // }
-    console.log(info);
-  }
-  console.log("Totals: " + totals);
-}
 
