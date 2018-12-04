@@ -16,7 +16,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
     ///         4-shoot (for a goalkeeper, this is interpreted as ability to block a shoot)
     ///         5-endurance
     ///         6-role
-    struct Player {
+    struct Props {
         string name;
         uint256 state;
         uint256 teamId;
@@ -24,11 +24,11 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     /// @dev An array containing the Player struct for all players in existence. 
     /// @dev The ID of each player is actually his index this array.
-    mapping(uint256 => Player) _indexPlayer;
+    mapping(uint256 => Props) _playerProps;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
-    mapping(bytes32 => uint256) private playerToTeam;
+    mapping(bytes32 => uint256) private _nameHashPlayer;
 
     function _addPlayer(string memory name, uint state, uint256 teamIdx, address owner) internal {
         require(teamIdx != 0);
@@ -37,18 +37,18 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
         _mint(owner, playerId);
         _setPlayerName(playerId, name);
         _setPlayerState(playerId, state);
-        _indexPlayer[playerId].teamId = teamIdx;
-        playerToTeam[playerNameHash] = playerId;
+        _playerProps[playerId].teamId = teamIdx;
+        _nameHashPlayer[playerNameHash] = playerId;
     }
 
     function _setPlayerState(uint256 playerId, uint256 state) internal {
         require(_exists(playerId));
-        _indexPlayer[playerId].state = state;
+        _playerProps[playerId].state = state;
     }
 
     function _getPlayerState(uint playerId) internal view returns(uint) {
         require(_exists(playerId));
-        return _indexPlayer[playerId].state;
+        return _playerProps[playerId].state;
     }
 
     function _getNCreatedPlayers() internal view returns(uint) { 
@@ -57,24 +57,24 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     function _getPlayerName(uint playerId) internal view returns(string) {
         require(_exists(playerId));
-        return _indexPlayer[playerId].name;
+        return _playerProps[playerId].name;
     }
 
     function _setPlayerName(uint256 playerId, string memory name) internal {
         require(_exists(playerId));
-        _indexPlayer[playerId].name = name;
+        _playerProps[playerId].name = name;
     }
 
     function _getTeamIndexByPlayer(string name) internal view returns (uint256){
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 id = playerToTeam[playerNameHash];
+        uint256 id = _nameHashPlayer[playerNameHash];
         require(id != 0);
-        return _indexPlayer[id].teamId;
+        return _playerProps[id].teamId;
     }
 
     function _playerExists(string name) internal view returns (bool){
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 teamIdx = playerToTeam[playerNameHash];
+        uint256 teamIdx = _nameHashPlayer[playerNameHash];
         return teamIdx != 0;
     }
 }
