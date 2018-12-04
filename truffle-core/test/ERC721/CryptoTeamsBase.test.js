@@ -30,6 +30,12 @@ contract('CryptoTeamsBase', (accounts) => {
         total.toNumber().should.be.equal(id);
     });
 
+    it('mint team with id more tha 2**22 is forbidden', async () => {
+        const id = 2**22;
+        await contract.mintWithName(accounts[0], id+1, "team").should.be.rejected;
+        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+    })
+
     it('mint team with an existent id', async () =>  {
         const id = 1;
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;

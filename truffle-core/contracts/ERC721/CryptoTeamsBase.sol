@@ -33,6 +33,7 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     }
 
     function mintWithName(address to, uint256 tokenId, string memory name) public onlyMinter {
+        require(tokenId <= 2**22, "id out of range");
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         require(_nameHashTeam[nameHash] == 0);
         _mint(to, tokenId);
