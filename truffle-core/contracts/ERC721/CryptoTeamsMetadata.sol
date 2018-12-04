@@ -53,7 +53,7 @@ contract CryptoTeamsMetadata is ERC165, CryptoTeamsBase, IERC721Metadata, Helper
      */
     function tokenURI(uint256 tokenId) external view returns (string) {
         require(_exists(tokenId));
-        uint256 playersId = getPlayersIdx(tokenId);
+        uint256 playersId = getPlayersIds(tokenId);
         string memory playersIdString = uint2str(playersId);
         string memory uri = strConcat(_teamsURI, "?playersId=", playersIdString);
         return uri;

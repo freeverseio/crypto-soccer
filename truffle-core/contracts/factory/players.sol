@@ -54,12 +54,12 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         /// @dev Update inverse relation (from teams to playerIdx)
         uint256 playerIdx = setNumAtIndex(
             newPlayerIdx,
-            _cryptoTeams.getPlayersIdx(_teamIdx),
+            _cryptoTeams.getPlayersIds(_teamIdx),
             _playerNumberInTeam,
             kBitsPerPlayerIdx
         );
 
-        _cryptoTeams.setPlayersIdx(_teamIdx, playerIdx );
+        _cryptoTeams.setPlayersIds(_teamIdx, playerIdx );
 
         /// @dev Emit the creation event
         emit PlayerCreation(_playerName, newPlayerIdx, _playerState);
