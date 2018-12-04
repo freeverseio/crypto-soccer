@@ -37,7 +37,8 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
         _mint(owner, playerId);
         _setPlayerName(playerId, name);
         _setPlayerState(playerId, state);
-        playerToTeam[playerNameHash] = teamIdx;
+        _indexPlayer[playerId].teamId = teamIdx;
+        playerToTeam[playerNameHash] = playerId;
     }
 
     function _setPlayerState(uint256 playerId, uint256 state) internal {
@@ -66,7 +67,9 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     function _getTeamIndexByPlayer(string name) internal view returns (uint256){
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        return playerToTeam[playerNameHash];
+        uint256 id = playerToTeam[playerNameHash];
+        require(id != 0);
+        return _indexPlayer[id].teamId;
     }
 
     function _playerExists(string name) internal view returns (bool){
