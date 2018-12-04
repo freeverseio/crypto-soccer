@@ -35,8 +35,8 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 playerId = totalSupply() + 1;
         _mint(owner, playerId);
-        _setPlayerName(playerId, name);
-        _setPlayerState(playerId, state);
+        _playerProps[playerId].name = name;
+        _playerProps[playerId].state = state;
         _playerProps[playerId].teamId = teamIdx;
         _nameHashPlayer[playerNameHash] = playerId;
     }
@@ -54,11 +54,6 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
     function _getPlayerName(uint playerId) internal view returns(string) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
-    }
-
-    function _setPlayerName(uint256 playerId, string memory name) internal {
-        require(_exists(playerId));
-        _playerProps[playerId].name = name;
     }
 
     function _getTeamIndexByPlayer(string name) internal view returns (uint256){
