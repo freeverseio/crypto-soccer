@@ -2,8 +2,9 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
+import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 
-contract CryptoPlayersBase is ERC721, ERC721Enumerable {
+contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -30,15 +31,23 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
     /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => uint256) private _nameHashPlayer;
 
-    function _addPlayer(string memory name, uint state, uint256 teamIdx, address owner) internal {
-        require(teamIdx != 0);
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 playerId = totalSupply() + 1;
-        _mint(owner, playerId);
-        _playerProps[playerId].name = name;
-        _playerProps[playerId].state = state;
-        _playerProps[playerId].teamId = teamIdx;
-        _nameHashPlayer[playerNameHash] = playerId;
+    function mintWithName(address to, uint256 tokenId, string memory name) public onlyMinter {
+        require(tokenId > 0 && tokenId <= 2**22, "id out of range");
+        bytes32 nameHash = keccak256(abi.encodePacked(name));
+        require(_nameHashPlayer[nameHash] == 0);
+        _mint(to, tokenId);
+        _playerProps[tokenId].name = name;
+        _nameHashPlayer[nameHash] = tokenId;
+    }
+
+    function _setTeam(uint256 playerId, uint256 teamId) internal {
+        require(_exists(playerId));
+        _playerProps[playerId].teamId = teamId;
+    }
+
+    function _getTeam(uint256 playerId) internal returns (uint256) {
+        require(_exists(playerId));
+        return _playerProps[playerId].teamId;
     }
 
     function _setState(uint256 playerId, uint256 state) internal {

@@ -4,7 +4,10 @@ import "./CryptoPlayersMetadata.sol";
 
 contract CryptoPlayers is CryptoPlayersMetadata {
     function addPlayer(string memory name, uint state, uint256 teamIdx, address owner) public {
-        _addPlayer(name, state, teamIdx, owner);
+        uint256 nextPlayerId = totalSupply() + 1;
+        mintWithName(owner, nextPlayerId, name);
+        _setState(nextPlayerId, state);
+        _setTeam(nextPlayerId, teamIdx);
     }
 
     function getPlayerState(uint playerIdx) public view returns(uint) {
