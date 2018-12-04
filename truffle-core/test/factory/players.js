@@ -76,12 +76,7 @@ contract('Players', function(accounts) {
     info = "Player " + playerIdx+ " skills: "
     for (var st=0; st<k.NumStates; st++) {
         thisState = decoded[st].toNumber();
-<<<<<<< HEAD:truffle-core/test/factory/players.js
         thisState.should.be.equal(expected[st]);
-=======
-	thisState.should.be.equal(expected[st]);
-//        assert(thisState == expected[st]);
->>>>>>> master:truffle-core/test/ERC721/players.js
         info += " " + thisState;
     }
     console.log(info);
