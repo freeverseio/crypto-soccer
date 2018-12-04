@@ -24,7 +24,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
 
     /// @dev An array containing the Player struct for all players in existence. 
     /// @dev The ID of each player is actually his index this array.
-    mapping(uint256 => Props) _playerProps;
+    mapping(uint256 => Props) private _playerProps;
 
     /// @dev A mapping from hash(playerName) to a Team struct.
     /// @dev Facilitates checking if a playerName already exists.
