@@ -34,12 +34,12 @@ contract('Teams', function (accounts) {
   })
 
   it("creates an entire team, an checks that we have 11 players at the end", async () => {
-    nCreatedPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
+    let nCreatedPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
     nCreatedPlayers.toNumber().should.be.equal(0);
     teamName = "Mataro";
     playerBasename = "Bogarde";
-    var newTeamIdx = await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3), accounts[0]).should.be.fulfilled;
-    await printTeamPlayers(newTeamIdx, instance).should.be.fulfilled;
+    await f.createTeam(instance, teamName, playerBasename, k.MaxPlayersInTeam, f.createAlineacion(4, 3, 3), accounts[0]).should.be.fulfilled;
+    nCreatedPlayers = await instance.test_getNCreatedPlayers.call().should.be.fulfilled;
     nCreatedPlayers.toNumber().should.be.equal(k.MaxPlayersInTeam)
   });
 
