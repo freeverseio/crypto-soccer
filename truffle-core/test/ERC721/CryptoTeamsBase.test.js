@@ -18,7 +18,7 @@ contract('CryptoTeamsBase', (accounts) => {
 
     it('id 0 is forbidden', async () => {
         const id = 0;
-        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], id, "team").should.be.rejected;
     });
 
     it('mint team', async () => {
