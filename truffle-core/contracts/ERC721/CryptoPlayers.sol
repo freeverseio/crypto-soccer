@@ -12,7 +12,7 @@ contract CryptoPlayers is CryptoPlayersMetadata {
     }
 
     function getNCreatedPlayers() public view returns(uint) { 
-        return _getNCreatedPlayers();
+        return totalSupply();
     }
 
     function getPlayerName(uint playerIdx) public view returns(string) {

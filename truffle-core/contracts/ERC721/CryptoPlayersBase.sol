@@ -51,10 +51,6 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
         return _playerProps[playerId].state;
     }
 
-    function _getNCreatedPlayers() internal view returns(uint) { 
-        return totalSupply();
-    }
-
     function _getPlayerName(uint playerId) internal view returns(string) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
