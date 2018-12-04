@@ -8,7 +8,7 @@ contract CryptoPlayers is CryptoPlayersMetadata {
     }
 
     function getPlayerState(uint playerIdx) public view returns(uint) {
-        return _getPlayerState(playerIdx);
+        return _getState(playerIdx);
     }
 
     function getNCreatedPlayers() public view returns(uint) { 
@@ -16,7 +16,7 @@ contract CryptoPlayers is CryptoPlayersMetadata {
     }
 
     function getPlayerName(uint playerIdx) public view returns(string) {
-        return _getPlayerName(playerIdx);
+        return _getName(playerIdx);
     }
 
     function getTeamIndexByPlayer(string name) public view returns (uint256){
