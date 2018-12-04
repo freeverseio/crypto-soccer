@@ -18,7 +18,8 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable {
     ///         6-role
     struct Player {
         string name;
-        uint state;
+        uint256 state;
+        uint256 teamId;
     }
 
     /// @dev An array containing the Player struct for all players in existence. 
