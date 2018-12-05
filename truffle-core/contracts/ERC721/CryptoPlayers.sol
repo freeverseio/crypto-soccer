@@ -27,6 +27,7 @@ contract CryptoPlayers is CryptoPlayersMetadata {
     }
 
     function playerExists(string name) public view returns (bool){
-        return _playerExists(name);
+        uint256 id = _getPlayer(name);
+        return id != 0;
     }
 }

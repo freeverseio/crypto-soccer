@@ -65,16 +65,15 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         return _playerProps[playerId].name;
     }
 
-    function _getTeamIndexByPlayer(string name) internal view returns (uint256){
+    function _getPlayer(string name) internal view returns(uint256) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 id = _nameHashPlayer[playerNameHash];
         require(id != 0);
-        return _playerProps[id].teamId;
+        return id;
     }
 
-    function _playerExists(string name) internal view returns (bool){
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 teamIdx = _nameHashPlayer[playerNameHash];
-        return teamIdx != 0;
+    function _getTeamIndexByPlayer(string name) internal view returns (uint256){
+        uint256 id = _getPlayer(name);
+        return _playerProps[id].teamId;
     }
 }
