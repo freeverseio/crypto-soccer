@@ -76,4 +76,12 @@ contract('CryptoTeamsBase', (accounts) => {
         const result = await contract.getPlayersIds(id).should.be.fulfilled;
         result.toNumber().should.be.equal(playersIds);
     });
+
+    it('get team id by name', async () => {
+        const id = 1;
+        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        const result = await contract.getTeamId("team").should.be.fulfilled;
+        result.toNumber().should.be.equal(id);
+        await contract.getTeamId("team1").should.be.rejected;
+    });
 });
