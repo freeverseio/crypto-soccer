@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 contract CryptoPlayersMetadata is ERC721Metadata("CryptoSoccerPlayers", "CSP"), CryptoPlayersBase, HelperFunctions {
     string private _URI;
 
-    function _setTokensURI(string uri) internal {
+    function _setTokensURI(string uri) internal { // TODO add modifier
         _URI = uri;
     }
 
