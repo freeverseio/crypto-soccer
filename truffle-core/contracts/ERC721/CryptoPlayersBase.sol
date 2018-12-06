@@ -40,7 +40,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         _nameHashPlayer[nameHash] = tokenId;
     }
 
-    function _setTeam(uint256 playerId, uint256 teamId) internal {
+    function _setTeam(uint256 playerId, uint256 teamId) internal onlyMinter {
         require(_exists(playerId));
         _playerProps[playerId].teamId = teamId;
     }
@@ -50,7 +50,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         return _playerProps[playerId].teamId;
     }
 
-    function _setState(uint256 playerId, uint256 state) internal {
+    function _setState(uint256 playerId, uint256 state) internal onlyMinter {
         require(_exists(playerId));
         _playerProps[playerId].state = state;
     }
