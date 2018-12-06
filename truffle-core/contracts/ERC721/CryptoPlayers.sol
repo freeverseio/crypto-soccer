@@ -14,12 +14,13 @@ contract CryptoPlayers is CryptoPlayersMetadata {
         return totalSupply();
     }
 
-    function getTeamIndexByPlayer(string name) public view returns (uint256){
-        return getTeamIndexByPlayer(name);
-    }
-
     function playerExists(string name) public view returns (bool){
         uint256 id = getPlayerId(name);
         return id != 0;
+    }
+
+    function getTeamIndexByPlayer(string name) public view returns (uint256){
+        uint256 id = getPlayerId(name);
+        return getTeam(id);
     }
 }

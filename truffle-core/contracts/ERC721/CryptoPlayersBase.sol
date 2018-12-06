@@ -23,12 +23,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         uint256 teamId;
     }
 
-    /// @dev An array containing the Player struct for all players in existence. 
-    /// @dev The ID of each player is actually his index this array.
     mapping(uint256 => Props) private _playerProps;
-
-    /// @dev A mapping from hash(playerName) to a Team struct.
-    /// @dev Facilitates checking if a playerName already exists.
     mapping(bytes32 => uint256) private _nameHashPlayer;
 
     function mintWithName(address to, uint256 tokenId, string memory name) public onlyMinter {
@@ -45,7 +40,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         _playerProps[playerId].teamId = teamId;
     }
 
-    function getTeam(uint256 playerId) external view returns (uint256) {
+    function getTeam(uint256 playerId) public view returns (uint256) {
         require(_exists(playerId));
         return _playerProps[playerId].teamId;
     }
@@ -70,10 +65,5 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         uint256 id = _nameHashPlayer[playerNameHash];
         require(id != 0);
         return id;
-    }
-
-    function getTeamIndexByPlayer(string name) public view returns (uint256){
-        uint256 id = getPlayerId(name);
-        return _playerProps[id].teamId;
     }
 }
