@@ -10,4 +10,8 @@ contract CryptoTeamsMetadataMock is CryptoTeamsMetadata {
     function setPlayersIds(uint256 tokenId, uint256 playersIdx) public {
         _setPlayersIds(tokenId, playersIdx);
     }
+
+    function setTokensURI(string uri) public {
+        super._setTokensURI(uri);
+    }
 }
