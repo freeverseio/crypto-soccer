@@ -11,4 +11,8 @@ contract Horizon {
         _cryptoPlayers = CryptoPlayers(cryptoPlayers);
         _cryptoTeams = CryptoTeams(cryptoTeams);
     }
+
+    function createTeam(string name) public {
+
+    }
 }
