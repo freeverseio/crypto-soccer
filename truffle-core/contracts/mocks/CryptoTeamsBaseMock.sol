@@ -14,4 +14,8 @@ contract CryptoTeamsBaseMock is CryptoTeamsBase {
     function burn(uint256 tokenId) public {
         _burn(ownerOf(tokenId), tokenId);
     }
+
+    function setPlayersIds(uint256 tokenId, uint256 playersIdx) public {
+        _setPlayersIds(tokenId, playersIdx);
+    }
 }

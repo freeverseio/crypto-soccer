@@ -22,7 +22,7 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return _teamProps[tokenId].name;
     }
 
-    function setPlayersIds(uint256 tokenId, uint256 playersIdx) public {
+    function _setPlayersIds(uint256 tokenId, uint256 playersIdx) internal {
         require(_exists(tokenId));
         _teamProps[tokenId].playersIdx = playersIdx;
     }

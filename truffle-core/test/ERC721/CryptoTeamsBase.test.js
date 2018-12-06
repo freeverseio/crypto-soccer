@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoTeams = artifacts.require('CryptoTeamsBase');
+const CryptoTeams = artifacts.require('CryptoTeamsBaseMock');
 
 contract('CryptoTeamsBase', (accounts) => {
     let contract = null;
