@@ -15,6 +15,8 @@ contract('Horizon', (accounts) => {
         cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
         cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
         instance = await Horizon.new(cryptoPlayers.address, cryptoTeams.address).should.be.fulfilled;
+        await cryptoPlayers.addMinter(instance.address).should.be.fulfilled;
+        await cryptoTeams.addMinter(instance.address).should.be.fulfilled;
     });
 
     it('create Team', async () => {
