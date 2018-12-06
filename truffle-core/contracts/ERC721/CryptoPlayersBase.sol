@@ -45,7 +45,7 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         _playerProps[playerId].teamId = teamId;
     }
 
-    function _getTeam(uint256 playerId) internal view returns (uint256) {
+    function getTeam(uint256 playerId) external view returns (uint256) {
         require(_exists(playerId));
         return _playerProps[playerId].teamId;
     }
@@ -55,25 +55,25 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         _playerProps[playerId].state = state;
     }
 
-    function _getState(uint playerId) internal view returns(uint) {
+    function getState(uint playerId) external view returns(uint) {
         require(_exists(playerId));
         return _playerProps[playerId].state;
     }
 
-    function _getName(uint playerId) internal view returns(string) {
+    function getName(uint playerId) external view returns(string) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
     }
 
-    function _getPlayer(string name) internal view returns(uint256) {
+    function getPlayerId(string name) public view returns(uint256) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 id = _nameHashPlayer[playerNameHash];
         require(id != 0);
         return id;
     }
 
-    function _getTeamIndexByPlayer(string name) internal view returns (uint256){
-        uint256 id = _getPlayer(name);
+    function getTeamIndexByPlayer(string name) public view returns (uint256){
+        uint256 id = getPlayerId(name);
         return _playerProps[id].teamId;
     }
 }

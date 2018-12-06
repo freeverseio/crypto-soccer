@@ -128,8 +128,8 @@ contract TeamFactoryMock is TeamFactory {
     }
 
     function test_getNCreatedPlayers() external view returns(uint) { return _cryptoPlayers.getNCreatedPlayers(); }
-    function test_getPlayerState(uint playerIdx) external view returns(uint) { return _cryptoPlayers.getPlayerState(playerIdx); }
-    function test_getPlayerName(uint playerIdx) external view returns(string) { return _cryptoPlayers.getPlayerName(playerIdx); }
+    function test_getPlayerState(uint playerIdx) external view returns(uint) { return _cryptoPlayers.getState(playerIdx); }
+    function test_getPlayerName(uint playerIdx) external view returns(string) { return _cryptoPlayers.getName(playerIdx); }
 
 
     // WRAPPERS FOR TEAMS

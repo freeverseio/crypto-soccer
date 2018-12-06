@@ -33,7 +33,7 @@ contract TeamFactory is PlayerFactory {
         returns(uint)
     {
         uint playerIdx = getNumAtIndex(_cryptoTeams.getPlayersIds(_teamIdx), _playerIdx, kBitsPerPlayerIdx);
-        return _cryptoPlayers.getPlayerState(playerIdx);
+        return _cryptoPlayers.getState(playerIdx);
     }
 
 /* 
