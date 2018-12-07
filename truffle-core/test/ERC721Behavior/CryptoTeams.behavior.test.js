@@ -6,7 +6,7 @@ require('chai')
     .use(require('chai-bignumber')(BigNumber))
     .should();
 
-const CryptoTeams = artifacts.require('CryptoTeamsBaseMock');
+const CryptoTeams = artifacts.require('CryptoTeamsMock');
 
 contract('CryptoTeams', ([_, creator, ...accounts]) => {
     beforeEach(async function () {
