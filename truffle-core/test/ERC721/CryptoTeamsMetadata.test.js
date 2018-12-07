@@ -42,4 +42,11 @@ contract('CryptoTeamsMetadata', (accounts) => {
         const uri = await contract.tokenURI(id).should.be.fulfilled;
         uri.should.be.equal("URI?playersId=" + playersId);
     });
+
+    it('set URI without being URIer', async () => {
+        const id = 1; 
+        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        await contract.renounceURIer().should.be.fulfilled;
+        await contract.setTokensURI("URI").should.be.rejected;
+    });
 });

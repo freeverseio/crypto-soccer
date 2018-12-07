@@ -2,42 +2,42 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";
 
-contract MinterRole {
+contract URIerRole {
     using Roles for Roles.Role;
 
-    event MinterAdded(address indexed account);
-    event MinterRemoved(address indexed account);
+    event URIerAdded(address indexed account);
+    event URIerRemoved(address indexed account);
 
-    Roles.Role private _minters;
+    Roles.Role private _uriers;
 
     constructor () internal {
-        _addMinter(msg.sender);
+        _addURIer(msg.sender);
     }
 
-    modifier onlyMinter() {
-        require(isMinter(msg.sender));
+    modifier onlyURIer() {
+        require(isURIer(msg.sender));
         _;
     }
 
-    function isMinter(address account) public view returns (bool) {
-        return _minters.has(account);
+    function isURIer(address account) public view returns (bool) {
+        return _uriers.has(account);
     }
 
-    function addMinter(address account) public onlyMinter {
-        _addMinter(account);
+    function addURIer(address account) public onlyURIer {
+        _addURIer(account);
     }
 
-    function renounceMinter() public {
-        _removeMinter(msg.sender);
+    function renounceURIer() public {
+        _removeURIer(msg.sender);
     }
 
-    function _addMinter(address account) internal {
-        _minters.add(account);
-        emit MinterAdded(account);
+    function _addURIer(address account) internal {
+        _uriers.add(account);
+        emit URIerAdded(account);
     }
 
-    function _removeMinter(address account) internal {
-        _minters.remove(account);
-        emit MinterRemoved(account);
+    function _removeURIer(address account) internal {
+        _uriers.remove(account);
+        emit URIerRemoved(account);
     }
 }

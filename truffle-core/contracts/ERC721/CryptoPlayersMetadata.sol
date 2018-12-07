@@ -1,13 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersBase.sol";
-import "../helpers.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
+import "./CryptoPlayersBase.sol";
+import "./URIerRole.sol";
+import "../helpers.sol";
 
-contract CryptoPlayersMetadata is ERC721Metadata("CryptoSoccerPlayers", "CSP"), CryptoPlayersBase, HelperFunctions {
+contract CryptoPlayersMetadata is ERC721Metadata("CryptoSoccerPlayers", "CSP"), CryptoPlayersBase, URIerRole, HelperFunctions {
     string private _URI;
 
-    function _setTokensURI(string uri) internal { // TODO add modifier
+    function _setTokensURI(string uri) internal onlyURIer { 
         _URI = uri;
     }
 

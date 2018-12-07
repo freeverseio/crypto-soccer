@@ -8,6 +8,6 @@ import "../ERC721/CryptoPlayersMetadata.sol";
  */
 contract CryptoPlayersMetadataMock is CryptoPlayersMetadata {
     function setTokensURI(string uri) public {
-        super._setTokensURI(uri);
+        _setTokensURI(uri);
     }
 }

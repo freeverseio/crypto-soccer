@@ -6,7 +6,6 @@ const CryptoPlayers = artifacts.require('CryptoPlayersMetadataMock');
 
 contract('CryptoPlayersMetadata', (accounts) => {
     let contract = null;
-    const URI = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
 
     beforeEach(async () => {
         contract = await CryptoPlayers.new().should.be.fulfilled;
@@ -30,8 +29,15 @@ contract('CryptoPlayersMetadata', (accounts) => {
     it('tokenURI of existent player', async () => {
         const id = 1; 
         await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
-        await contract.setTokensURI(URI)
+        await contract.setTokensURI("URI").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        uri.should.be.equal(URI + "?state=0");
+        uri.should.be.equal("URI?state=0");
+    });
+
+    it('set URI without being URIer', async () => {
+        const id = 1; 
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.renounceURIer().should.be.fulfilled;
+        await contract.setTokensURI("URI").should.be.rejected;
     });
 });

@@ -1,10 +1,11 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoTeamsBase.sol";
-import "../helpers.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
+import "./CryptoTeamsBase.sol";
+import "./URIerRole.sol";
+import "../helpers.sol";
 
-contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), CryptoTeamsBase, HelperFunctions  {
+contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), CryptoTeamsBase, URIerRole, HelperFunctions  {
     string private _teamsURI;
 
     /**
@@ -24,7 +25,7 @@ contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), Cryp
      * @dev Internal function to set the token URI for all token
      * @param uri string URI to assign
      */
-    function _setTokensURI(string uri) internal {  // TODO add modifier
+    function _setTokensURI(string uri) internal onlyURIer { 
         _teamsURI = uri;
     }
 }
