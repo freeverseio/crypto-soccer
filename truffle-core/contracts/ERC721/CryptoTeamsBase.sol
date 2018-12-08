@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
+import "./CryptoPlayersBase.sol";
 
 contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
@@ -14,6 +15,7 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         uint256 playersIdx;
     }
 
+    CryptoPlayersBase private _cryptoPlayers;
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
