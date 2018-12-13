@@ -90,9 +90,19 @@ def extractSvgContentAsNode(filename):
                 nodes += [node]
         return nodes, atts
 
+usage_string='''
+
+extract player_001.svg:
+    ./svgtool -i player_001.svg
+
+merge extracted svgs:
+    ./svgtool  -i player_001_extracted/Cuello.svg  player_001_extracted/Cabeza.svg player_001_extracted/Cejas.svg player_001_extracted/DientesVampiro.svg -o cuello_cabeza
+'''
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='script to extract elements from svg',
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    parser = argparse.ArgumentParser(description='script to extract elements from svg or merge svgs',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            usage=usage_string
             )
     parser.add_argument('-o', '--output', help='name of resulting svg file', required=False)
     parser.add_argument('-i', '--input', nargs='+', help='list of svg files to merge (separated by spaces). If only one file is given then, we assume that you want to extract the svg contents', required=True)
