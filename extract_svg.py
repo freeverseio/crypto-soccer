@@ -28,8 +28,6 @@ svg_footer = '''</switch>
 </svg>
 '''
 
-# get
-
 def getNodeTypeStr(node):
     if node.nodeType == node.ELEMENT_NODE:
         return 'ELEMENT_NODE'
@@ -59,7 +57,6 @@ def createSvgFromNode(node, filename):
     f.write(svg_footer)
     f.close()
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='script to extract elements from svg',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -69,24 +66,23 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     doc = minidom.parse(args.input)
-    blocks = doc.getElementsByTagName('g')[1:]
+    #blocks = doc.getElementsByTagName('g')[1:]
     #for b in blocks:
     #    print b.getAttribute('id')
 
-    print doc.childNodes
-    print doc.firstChild.toxml()
+    #print doc.childNodes
+    #print doc.firstChild.toxml()
     #print doc.lastChild.toxml()
-    #print doc.getElementsByTagName('
 
-    svgs = doc.getElementsByTagName('svg')
-    if len(svgs) > 1:
+    svgNodes = doc.getElementsByTagName('svg')
+    if len(svgNodes) > 1:
         print 'Error: Unable to parse more than one svg tag.'
         sys.exit(-1)
 
-    #svg = svgs[0]
-    switch = doc.getElementsByTagName('switch')[0]
-    if switch.hasChildNodes:
-        gnode = getChildNodeWithName(switch, 'g')
+    #svgNode = svgNodes[0]
+    switchNode = doc.getElementsByTagName('switch')[0]
+    if switchNode.hasChildNodes:
+        gnode = getChildNodeWithName(switchNode, 'g')
         for node in gnode.childNodes:
             #print 'child name:', node.nodeName, 'type:', getNodeTypeStr(node)
             if node.nodeType == node.ELEMENT_NODE and node.hasAttribute('id'):
