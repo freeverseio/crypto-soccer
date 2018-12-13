@@ -50,41 +50,75 @@ def getChildNodeWithName(node, name):
         if n.nodeName == name:
             return n;
 
-def createSvgFromNode(node, filename):
+def createSvgFromNodes(nodes, filename):
     f = open(filename + '.svg', 'w')
     f.write(svg_header)
-    f.write(node.toxml())
+    if len(nodes) > 1:
+        f.write('<g>')
+
+    for n in nodes:
+        if n:
+            f.write(n.toxml() + '\n')
+
+    if len(nodes) > 1:
+        f.write('</g>')
+
     f.write(svg_footer)
     f.close()
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='script to extract elements from svg',
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter
-            )
-    parser.add_argument('--input', help='input svg path', required=True)
-
-    args = parser.parse_args()
-
-    doc = minidom.parse(args.input)
-    #blocks = doc.getElementsByTagName('g')[1:]
-    #for b in blocks:
-    #    print b.getAttribute('id')
-
-    #print doc.childNodes
-    #print doc.firstChild.toxml()
-    #print doc.lastChild.toxml()
-
+def extractSvgContentAsNode(filename):
+    doc = minidom.parse(filename)
     svgNodes = doc.getElementsByTagName('svg')
     if len(svgNodes) > 1:
-        print 'Error: Unable to parse more than one svg tag.'
+        print 'Error: Unable to parse more than one svg tag from file', filename
         sys.exit(-1)
 
     #svgNode = svgNodes[0]
     switchNode = doc.getElementsByTagName('switch')[0]
     if switchNode.hasChildNodes:
         gnode = getChildNodeWithName(switchNode, 'g')
+        if gnode and gnode.nodeType == gnode.ELEMENT_NODE and gnode.hasAttribute('id'):
+            att = gnode.getAttribute('id')
+            return gnode, att
+
+        nodes = []
+        atts = []
         for node in gnode.childNodes:
             #print 'child name:', node.nodeName, 'type:', getNodeTypeStr(node)
             if node.nodeType == node.ELEMENT_NODE and node.hasAttribute('id'):
-                att = node.getAttribute('id')
-                createSvgFromNode(node, att)
+                atts += [node.getAttribute('id')]
+                nodes += [node]
+        return nodes, atts
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='script to extract elements from svg',
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+            )
+    parser.add_argument('-o', '--output', help='name of resulting svg file', required=False)
+    parser.add_argument('-i', '--input', nargs='+', help='list of svg files to merge (separated by spaces). If only one file is given then, we assume that you want to extract the svg contents', required=True)
+
+    args = parser.parse_args()
+
+    files = args.input
+    outputname = args.output
+
+    extract = len(files) == 1
+
+    if extract:
+        inputfilename = files[0]
+        if outputname:
+            dirname = outputname
+        else:
+            dirname = os.path.splitext(inputfilename)[0] + '_extracted'
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
+        nodes, atts = extractSvgContentAsNode(inputfilename)
+        for node,att in zip(nodes,atts):
+            createSvgFromNodes([node], os.path.join(dirname, att))
+
+    else: # merge svgs
+        nodes = []
+        for f in files:
+            node, _ = extractSvgContentAsNode(f)
+            nodes += [node]
+        createSvgFromNodes(nodes, outputname)
