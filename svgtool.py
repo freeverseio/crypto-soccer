@@ -93,10 +93,10 @@ def extractSvgContentAsNode(filename):
 usage_string='''
 
 extract player_001.svg:
-    ./svgtool -i player_001.svg
+    ./svgtool.py -i player_001.svg
 
 merge extracted svgs:
-    ./svgtool  -i player_001_extracted/Cuello.svg  player_001_extracted/Cabeza.svg player_001_extracted/Cejas.svg player_001_extracted/DientesVampiro.svg -o cuello_cabeza
+    ./svgtool.py  -i player_001_extracted/Cuello.svg  player_001_extracted/Cabeza.svg player_001_extracted/Cejas.svg player_001_extracted/DientesVampiro.svg -o output
 '''
 
 if __name__ == "__main__":
