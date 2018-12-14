@@ -3,6 +3,10 @@ pragma solidity ^ 0.4.24;
 import "./players.sol";
 
 contract TeamFactory is PlayerFactory {
+    constructor(address cryptoTeams, address cryptoPlayers) public 
+    PlayerFactory(cryptoTeams, cryptoPlayers){
+
+    }
 
     /// @dev Fired whenever a new team is created
     event TeamCreation(string teamName, uint nCreatedTeams, address owner);
@@ -14,21 +18,12 @@ contract TeamFactory is PlayerFactory {
     function createTeam(string _teamName) public {
         // TODO: require maxLen for _teamName
 
-        /// @dev Make sure team name did not exist before.
-        bytes32 nameHash = keccak256(abi.encodePacked(_teamName));
-        require(teamToOwnerAddr[nameHash]==0);
-
-        /// @dev Create empty team and store assigned name.
-        Team memory emptyTeam;
-        emptyTeam.name = _teamName;
-
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
-        teams.push(emptyTeam);
-        teamToOwnerAddr[nameHash] = msg.sender;
+        _cryptoTeams.addTeam(_teamName, msg.sender);
 
         // emit the team creation event
-        emit TeamCreation(_teamName, teams.length, msg.sender);
+        emit TeamCreation(_teamName, _cryptoTeams.totalSupply(), msg.sender);
     }
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
@@ -37,15 +32,14 @@ contract TeamFactory is PlayerFactory {
         view
         returns(uint)
     {
-        uint playerIdx = getNumAtIndex(teams[_teamIdx].playersIdx, _playerIdx, kBitsPerPlayerIdx);
-        return players[playerIdx].state;
+        uint playerIdx = getNumAtIndex(_cryptoTeams.getPlayersIds(_teamIdx), _playerIdx, kBitsPerPlayerIdx);
+        return _cryptoPlayers.getState(playerIdx);
     }
 
 /* 
     @dev Section with functions only for external/testing use.
 */    
-    function getNCreatedTeams() public view returns(uint) { return teams.length;}
-    function getTeamName(uint idx) public view returns(string) { return teams[idx].name;}
+
 
     function getTeamState(uint256 team) public view returns(uint256[kMaxPlayersInTeam]){
         uint256[kMaxPlayersInTeam] memory teamState;

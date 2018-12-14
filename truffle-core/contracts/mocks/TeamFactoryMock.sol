@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../ERC721/teams.sol";
+import "../factory/teams.sol";
 
 /**
  * @title TeamFactoryMock
@@ -8,6 +8,10 @@ import "../ERC721/teams.sol";
  */
 contract TeamFactoryMock is TeamFactory {
     // Wrappers for helpers:
+    constructor(address cryptoTeams, address cryptoPlayers) public
+    TeamFactory(cryptoTeams, cryptoPlayers){
+
+    }
 
     function test_teamsInGame(uint8 round, uint8 game, uint8 nTeams) 
         public 
@@ -74,7 +78,8 @@ contract TeamFactoryMock is TeamFactory {
         uint _teamIdx, 
         uint16 _userChoice, 
         uint8 _playerNumberInTeam, 
-        uint8 _playerRole
+        uint8 _playerRole,
+        address owner
     ) 
         external 
     {
@@ -83,7 +88,8 @@ contract TeamFactoryMock is TeamFactory {
             _teamIdx, 
             _userChoice,
             _playerNumberInTeam, 
-            _playerRole
+            _playerRole,
+            owner
         );
     }
 
@@ -97,7 +103,8 @@ contract TeamFactoryMock is TeamFactory {
         uint _pass,
         uint _shoot,
         uint _endurance,
-        uint _role
+        uint _role,
+        address owner
     )
         external 
     {
@@ -111,7 +118,8 @@ contract TeamFactoryMock is TeamFactory {
             _pass,
             _shoot,
             _endurance,
-            _role
+            _role,
+            owner
         );
     }
 
@@ -119,15 +127,15 @@ contract TeamFactoryMock is TeamFactory {
         return getRole(idx, first, second);
     }
 
-    function test_getNCreatedPlayers() external view returns(uint) { return getNCreatedPlayers(); }
-    function test_getPlayerState(uint playerIdx) external view returns(uint) { return getPlayerState(playerIdx); }
-    function test_getPlayerName(uint playerIdx) external view returns(string) { return getPlayerName(playerIdx); }
+    function test_getNCreatedPlayers() external view returns(uint) { return _cryptoPlayers.getNCreatedPlayers(); }
+    function test_getPlayerState(uint playerIdx) external view returns(uint) { return _cryptoPlayers.getState(playerIdx); }
+    function test_getPlayerName(uint playerIdx) external view returns(string) { return _cryptoPlayers.getName(playerIdx); }
 
 
     // WRAPPERS FOR TEAMS
 
-    function test_getNCreatedTeams() external view returns(uint) { return getNCreatedTeams(); }
-    function test_getTeamName(uint idx) public view returns(string) { return getTeamName(idx); }
+    function totalSupply() external view returns(uint) { return _cryptoTeams.totalSupply(); }
+    function test_getTeamName(uint idx) public view returns(string) { return _cryptoTeams.getName(idx); }
     function test_createTeam(string _teamName) external { return createTeam(_teamName); }
     function test_getStatePlayerInTeam(uint8 _playerIdx, uint _teamIdx) external view returns(uint) { return getStatePlayerInTeam(_playerIdx, _teamIdx); }
 }

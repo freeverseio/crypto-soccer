@@ -153,7 +153,7 @@ function createBalancedPlayer(teamId, playerName, userChoice, playerNumberInTeam
 
 function getCreatedTeams() {
 
-    contract.methods.test_getNCreatedTeams().call({ from: jsonSelectedAddr }, function (error, result) {
+    contract.methods.totalSupply().call({ from: jsonSelectedAddr }, function (error, result) {
         if (error) {
             console.log(error)
             alert("getNCreatedTeams error.");

@@ -2,12 +2,14 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersMock');
+const CryptoPlayers = artifacts.require('CryptoPlayers');
 
 contract('CryptoPlayers', (accounts) => {
-    it('deployment', async () => {
-        await CryptoPlayers.new().should.be.fulfilled;
-    });
+    let contract = null;
+
+    beforeEach(async () => {
+        contract = await CryptoPlayers.new().should.be.fulfilled;
+    })
 
     it('check name and symbol', async () => {
         const contract = await CryptoPlayers.new();
@@ -15,11 +17,21 @@ contract('CryptoPlayers', (accounts) => {
         await contract.symbol().should.eventually.equal("CSP");
     });
 
-    it('get state', async () => {
-        const contract = await CryptoPlayers.new();
-        const tokenId = 1;
-        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
-        const result = await contract.getState(tokenId).should.be.fulfilled;
-        result.toNumber().should.be.equal(999);
+    it('no initial players', async () => {
+        const count = await contract.getNCreatedPlayers().should.be.fulfilled;
+        count.toNumber().should.be.equal(0);
+    });
+
+    it('add player', async () => {
+        const name = "player";
+        const state = 34324;
+        const teamId = 1;
+        await contract.addPlayer(name, state, teamId, accounts[0]).should.be.fulfilled;
+        const count = await contract.getNCreatedPlayers().should.be.fulfilled;
+        count.toNumber().should.be.equal(1);
+        const nameResult = await contract.getName(count);
+        nameResult.should.be.equal(name);
+        const stateResult = await contract.getState(count);
+        stateResult.toNumber().should.be.equal(state);
     });
 });

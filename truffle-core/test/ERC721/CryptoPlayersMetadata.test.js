@@ -5,25 +5,39 @@ require('chai')
 const CryptoPlayers = artifacts.require('CryptoPlayersMetadataMock');
 
 contract('CryptoPlayersMetadata', (accounts) => {
-    const URI = "QmUC4KA1Vi3DizRrTj9Z4uyrL6a7zjS7wNnvR5iNzYALSh";
+    let contract = null;
 
-    it('deployment', async () => {
-        await CryptoPlayers.new().should.be.fulfilled;
+    beforeEach(async () => {
+        contract = await CryptoPlayers.new().should.be.fulfilled;
+    })
+
+   it('symbol', async () => {
+        const symbol = await contract.symbol().should.be.fulfilled;
+        symbol.should.be.equal("CSP");
+    });
+    
+    it('name', async () => {
+        const name = await contract.name().should.be.fulfilled;
+        name.should.be.equal("CryptoSoccerPlayers");
     });
 
-    it('set base URI', async () => {
-        const contract = await CryptoPlayers.new();
-        await contract.setBaseURI(URI).should.be.fulfilled;
-        const result = await contract.getBaseURI().should.be.fulfilled;
-        result.should.be.equal(URI);
+    it('tokenURI of unexistend player', async () => {
+        await contract.tokenURI(0).should.be.rejected;
+        await contract.tokenURI(1).should.be.rejected;
     });
 
-    it('get URI', async () => {
-        const contract = await CryptoPlayers.new();
-        await contract.setBaseURI(URI).should.be.fulfilled;
-        const tokenId = 1;
-        await contract.mint(accounts[0], tokenId).should.be.fulfilled;
-        const result = await contract.tokenURI(tokenId).should.be.fulfilled;
-        result.should.be.equal(URI + '/?state=999');
+    it('tokenURI of existent player', async () => {
+        const id = 1; 
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.setTokensURI("URI").should.be.fulfilled;
+        const uri = await contract.tokenURI(id).should.be.fulfilled;
+        uri.should.be.equal("URI?state=0");
+    });
+
+    it('set URI without being URIer', async () => {
+        const id = 1; 
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.renounceURIer().should.be.fulfilled;
+        await contract.setTokensURI("URI").should.be.rejected;
     });
 });

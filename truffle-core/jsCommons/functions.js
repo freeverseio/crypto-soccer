@@ -57,8 +57,8 @@ function unixMonthToAge(unixMonthOfBirth) {
     return parseInt(age*10)/10;
 }
   
-async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam, playerRoles ) {
-    var newTeamIdx = await instance.test_getNCreatedTeams.call(); 
+async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam, playerRoles, owner ) {
+    var newTeamIdx = await instance.totalSupply.call()+1; 
     console.log("creating team: " + teamName);
     await instance.test_createTeam(teamName);
     const userChoice=1;
@@ -70,7 +70,8 @@ async function createTeam(instance, teamName, playerBasename, maxPlayersPerTeam,
             newTeamIdx,
             userChoice,
             p,
-            playerRoles[p]
+            playerRoles[p],
+            owner
         );
     }
     nCreatedPlayers = await instance.test_getNCreatedPlayers.call();
