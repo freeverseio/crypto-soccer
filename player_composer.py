@@ -3,9 +3,17 @@ import os, sys
 import subprocess
 from xml.dom import minidom
 import argparse
+import sha3
 from playerdb import *
 
 # see : /System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/xml/dom/minidom.py
+
+def get_decimal_hash(x):
+    return int(sha3.sha3_256(x).hexdigest(),16)
+
+def rgb2hex(r,g,b):
+    hex = "#{:02x}{:02x}{:02x}".format(r,g,b)
+    return hex
 
 def get_svg_header(x=0, y=0, w=700, h=1000):
     return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x} {y} {w} {h}" xmlns:xlink="http://www.w3.org/1999/xlink">'.format(x=x,y=y,w=w,h=h)
@@ -102,7 +110,7 @@ class SvgGroup:
         result+='\n</g>'
         return result
 
-def createSvg(groups, filename):
+def create_svg(groups, filename):
     f = open(filename + '.svg', 'w')
     f.write(get_svg_header())
     f.write('\n<g>')
@@ -139,16 +147,23 @@ def get_body(n, color):
         paths = [get_head(n,color), get_neck(n, color), get_arms(n, color)]
         )
 
-def generatePlayer():
-    return [get_body(0, "red")]
-    return result;
+def get_body_color(hash_str):
+    return '#' + hash_str[0:6]
 
+def generate_player(name):
+    hash_str = sha3.sha3_256(name).hexdigest()
+    body_style = 0
+    body_color = get_body_color(hash_str)
+
+    return [
+            get_body(body_style, body_color),
+           ]
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='script to extract elements from svg or merge svgs',
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            usage=''
+            usage='./generate_player -n <name> -o <output_name>'
             )
     parser.add_argument('-n', '--name', help='name from which to generate a player', required=True)
     parser.add_argument('-o', '--output', help='name from which to generate a player', required=True)
@@ -158,4 +173,4 @@ if __name__ == "__main__":
     player_name = args.name
     output_name = args.output
 
-    createSvg(generate_player(), output_name)
+    create_svg(generate_player(player_name), output_name)
