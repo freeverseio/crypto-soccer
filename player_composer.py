@@ -11,6 +11,41 @@ from playerdb import *
 def is_odd(n):
     return n & 1
 
+def clamp(val, minimum=0, maximum=255):
+    if val < minimum:
+        return minimum
+    if val > maximum:
+        return maximum
+    return val
+
+def colorscale(hexstr, scalefactor):
+    """
+    Scales a hex string by ``scalefactor``. Returns scaled hex string.
+
+    To darken the color, use a float value between 0 and 1.
+    To brighten the color, use a float value greater than 1.
+
+    >>> colorscale("#DF3C3C", .5)
+    #6F1E1E
+    >>> colorscale("#52D24F", 1.6)
+    #83FF7E
+    >>> colorscale("#4F75D2", 1)
+    #4F75D2
+    """
+
+    hexstr = hexstr.strip('#')
+
+    if scalefactor < 0 or len(hexstr) != 6:
+        return hexstr
+
+    r, g, b = int(hexstr[:2], 16), int(hexstr[2:4], 16), int(hexstr[4:], 16)
+
+    r = clamp(r * scalefactor)
+    g = clamp(g * scalefactor)
+    b = clamp(b * scalefactor)
+
+    return "#%02x%02x%02x" % (r, g, b)
+
 def get_decimal_hash(x):
     return int(sha3.sha3_256(x).hexdigest(),16)
 
@@ -293,6 +328,12 @@ def get_tshirt_color(hash_str):
 def get_tshirt_border_color(hash_str):
     return '#' + hash_str[18:24]
 
+def get_shorts_color(hash_str):
+    return '#' + hash_str[24:30]
+
+def get_iris_color(hash_str):
+    return '#' + hash_str[30:36]
+
 def get_teeth_extra_type(n):
     if is_odd(n):
         return None
@@ -309,11 +350,11 @@ def generate_player(name):
     nose_type = 0
     ears_type = 0
     eyebrows_type = 0
-    eyebrows_color='#2A2111'
+    eyebrows_color=colorscale(hair_color, 0.3) #'#2A2111'
     pupils_type = 0
     pupils_color = body_color #'#66CC66'
     iris_type = 0
-    iris_color = 'black'
+    iris_color = get_iris_color(hash_str) #'black'
     teeth_type = 0
     teeth_extra_type = get_teeth_extra_type(int(hash_str[0], 16))
     tshirt_type = 0
