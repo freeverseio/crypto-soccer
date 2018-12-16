@@ -61,15 +61,17 @@ def get_svg_footer():
 
 class SvgPath:
     fill=None
+    fill_opacity=None
     d=None
     stroke=None
     stroke_width=None
     stroke_linecap=None
     stroke_linejoin=None
 
-    def __init__(self, fill, d, stroke=None, stroke_width=None, stroke_linecap=None, stroke_linejoin=None):
+    def __init__(self, fill, d, fill_opacity=None, stroke=None, stroke_width=None, stroke_linecap=None, stroke_linejoin=None):
         self.fill = fill
         self.d = d
+        self.fill_opacity=fill_opacity
         self.stroke=stroke
         self.stroke_width=stroke_width
         self.stroke_linecap=stroke_linecap
@@ -78,6 +80,8 @@ class SvgPath:
     def toxml(self):
         result='\n<path fill="{p.fill}" d="{p.d}"'.format(p=self)
 
+        if self.fill_opacity:
+            result += ' fill-opacity="{p.fill_opacity}"'.format(p=self)
         if self.stroke:
             result += ' stroke="{p.stroke}"'.format(p=self)
         if self.stroke_width:
@@ -192,6 +196,22 @@ def get_eyebrows_path(n, color):
             stroke_linejoin="round",
             stroke_width="9")
 
+def get_shield_border_path(n, color):
+    return SvgPath(fill='none',
+            d=shield_border_db[n],
+            stroke=color,
+            stroke_linecap="round",
+            stroke_linejoin="round",
+            stroke_width="10.7")
+
+def get_shield_top_path(n, color):
+    return SvgPath(fill='none',
+            d=shield_border_db[n],
+            stroke=color,
+            stroke_linecap="round",
+            stroke_linejoin="round",
+            stroke_width="12.75")
+
 def get_arms(n, color):
     return SvgGroup(
         name = 'body',
@@ -201,13 +221,26 @@ def get_arms(n, color):
             ]
         )
 
+def get_shield(n, color, border_color):
+    return SvgGroup(
+        name = 'body',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=shield_filling_db[n]),
+            get_shield_border_path(n, border_color),
+            get_shield_top_path(n, border_color)
+            ]
+        )
+
 def get_head(n, color):
     return SvgGroup(
         name = 'body',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
-            get_head_path(n,color),
             get_neck_path(n, color),
+            SvgPath(fill='#55321B', fill_opacity=0.098, d=neck_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=neck_side_shadow_db[n]),
+            get_head_path(n,color),
             ]
         )
 
@@ -215,7 +248,9 @@ def get_hair(n, color):
     return SvgGroup(
         name = 'hair',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
-        paths = [SvgPath(fill=color, d=hair_db[n])]
+        paths = [
+            SvgPath(fill=color, d=hair_db[n])
+            ]
         )
 
 def get_lips(n):
@@ -323,8 +358,35 @@ def get_shorts(n, color):
         paths = [
             SvgPath(fill=color, d=short_start_db[n]),
             SvgPath(fill=color, d=short_end_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=shorts_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=left_leg_shadow_db[n]),
             ]
         )
+
+def get_torso_shadow(n):
+    return SvgGroup(
+        name = 'torso_shadow',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=torso_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=left_arm_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=right_arm_shadow_db[n]),
+            ]
+        )
+
+def get_facial_shadow(n):
+    return SvgGroup(
+        name = 'torso_shadow',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill='#55321B', fill_opacity=0.098, d=ears_shadow_db[n]),
+            SvgPath(fill='#4E3B26', fill_opacity=0.498, d=eyes_shadow_db[n]),
+            SvgPath(fill='#4E3923', fill_opacity=0.498, d=mouth_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.2, d=teeth_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.2, d=cheeks_shadow_db[n]),
+            SvgPath(fill='#2C2411', fill_opacity=0.298, d=face_shadow_db[n]),
+    ]
+    )
 
 def get_body_color(hash_str):
     return '#' + hash_str[0:6]
@@ -343,6 +405,12 @@ def get_shorts_color(hash_str):
 
 def get_iris_color(hash_str):
     return '#' + hash_str[30:36]
+
+def get_shield_color(hash_str):
+    return '#' + hash_str[36:42]
+
+def get_shield_border_color(hash_str):
+    return '#' + hash_str[42:48]
 
 def get_teeth_extra_type(n):
     if is_odd(n):
@@ -373,12 +441,17 @@ def generate_player(name):
     tshirt_border_color = get_tshirt_border_color(hash_str)
     shorts_type=0
     shorts_color=get_shorts_color(hash_str)
+    shield_type=0
+    shield_color=get_shield_color(hash_str)
+    shield_border_color=get_shield_border_color(hash_str)
 
     return [
             get_arms(body_type, body_color),
             get_shorts(shorts_type, shorts_color),
             get_tshirt_border(tshirt_border_type, tshirt_border_color),
             get_tshirt(tshirt_type, tshirt_color),
+            get_shield(shield_type, shield_color, shield_border_color),
+            get_torso_shadow(body_type),
             get_head(body_type, body_color),
             get_hair(hair_type, hair_color),
             get_lips(lips_type),
@@ -388,6 +461,7 @@ def generate_player(name):
             get_pupils(pupils_type, pupils_color),
             get_eyebrows(eyebrows_type, eyebrows_color),
             get_teeth(teeth_type, teeth_extra_type),
+            get_facial_shadow(body_type),
            ]
 
 
