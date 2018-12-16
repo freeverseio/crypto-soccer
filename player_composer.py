@@ -157,14 +157,22 @@ def get_eyebrows_path(n, color):
             stroke_linejoin="round",
             stroke_width="9")
 
-def get_body(n, color):
+def get_arms(n, color):
+    return SvgGroup(
+        name = 'body',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            get_arms_path(n, color)
+            ]
+        )
+
+def get_head(n, color):
     return SvgGroup(
         name = 'body',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
             get_head_path(n,color),
             get_neck_path(n, color),
-            get_arms_path(n, color)
             ]
         )
 
@@ -264,6 +272,15 @@ def get_tshirt(n, color):
             ]
         )
 
+def get_tshirt_border(n, color):
+    return SvgGroup(
+        name = 'tshirtborder',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=tshirt_border_db[n]),
+            ]
+        )
+
 def get_body_color(hash_str):
     return '#' + hash_str[0:6]
 
@@ -272,6 +289,9 @@ def get_hair_color(hash_str):
 
 def get_tshirt_color(hash_str):
     return '#' + hash_str[12:18]
+
+def get_tshirt_border_color(hash_str):
+    return '#' + hash_str[18:24]
 
 def get_teeth_extra_type(n):
     if is_odd(n):
@@ -298,9 +318,14 @@ def generate_player(name):
     teeth_extra_type = get_teeth_extra_type(int(hash_str[0], 16))
     tshirt_type = 0
     tshirt_color = get_tshirt_color(hash_str)
+    tshirt_border_type = 0
+    tshirt_border_color = get_tshirt_border_color(hash_str)
 
     return [
-            get_body(body_type, body_color),
+            get_arms(body_type, body_color),
+            get_tshirt_border(tshirt_border_type, tshirt_border_color),
+            get_tshirt(tshirt_type, tshirt_color),
+            get_head(body_type, body_color),
             get_hair(hair_type, hair_color),
             get_lips(lips_type),
             get_nose(nose_type, nose_color),
@@ -309,7 +334,6 @@ def generate_player(name):
             get_pupils(pupils_type, pupils_color),
             get_eyebrows(eyebrows_type, eyebrows_color),
             get_teeth(teeth_type, teeth_extra_type),
-            get_tshirt(tshirt_type, tshirt_color),
            ]
 
 
