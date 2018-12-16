@@ -119,7 +119,6 @@ def create_svg(groups, filename):
         f.write(group.toxml())
 
     f.write('\n</g>')
-
     f.write(get_svg_footer())
     f.close()
 
@@ -147,16 +146,42 @@ def get_body(n, color):
         paths = [get_head(n,color), get_neck(n, color), get_arms(n, color)]
         )
 
+def get_hair(n, color):
+    return SvgGroup(
+        name = 'hair',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [SvgPath(fill=color, d=hair_db[n])]
+        )
+
+def get_lips(n):
+    return SvgGroup(
+        name = 'lips',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill='#BD6A5B', d=lip_inf_db[n]),
+            SvgPath(fill='#BD6A5B', d=lip_sup_db[n]),
+            SvgPath(fill='#B05F4F', d=mouth_db[n]),
+            ]
+        )
+
 def get_body_color(hash_str):
     return '#' + hash_str[0:6]
 
+def get_hair_color(hash_str):
+    return '#' + hash_str[6:12]
+
 def generate_player(name):
     hash_str = sha3.sha3_256(name).hexdigest()
-    body_style = 0
+    body_type = 0
     body_color = get_body_color(hash_str)
+    hair_type = 0
+    hair_color = get_hair_color(hash_str)
+    lips_type = 0
 
     return [
-            get_body(body_style, body_color),
+            get_body(body_type, body_color),
+            get_hair(hair_type, hair_color),
+            get_lips(lips_type),
            ]
 
 
