@@ -8,6 +8,9 @@ from playerdb import *
 
 # see : /System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/xml/dom/minidom.py
 
+def is_odd(n):
+    return n & 1
+
 def get_decimal_hash(x):
     return int(sha3.sha3_256(x).hexdigest(),16)
 
@@ -16,7 +19,7 @@ def rgb2hex(r,g,b):
     return hex
 
 def get_svg_header(x=0, y=0, w=700, h=1000):
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x} {y} {w} {h}" xmlns:xlink="http://www.w3.org/1999/xlink">'.format(x=x,y=y,w=w,h=h)
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x} {y} {w} {h}" enable-background="new {x} {y} {w} {h}" xmlns:xlink="http://www.w3.org/1999/xlink">'.format(x=x,y=y,w=w,h=h)
 
 def get_svg_footer():
     return '</svg>'
@@ -122,28 +125,47 @@ def create_svg(groups, filename):
     f.write(get_svg_footer())
     f.close()
 
-def get_arms(n, color):
+def get_arms_path(n, color):
     return SvgPath(
         fill=color,
         d=arms_db[n],
         )
 
-def get_head(n, color):
+def get_head_path(n, color):
     return SvgPath(
         fill=color,
         d=head_db[n],
         )
-def get_neck(n, color):
+def get_neck_path(n, color):
     return SvgPath(
         fill=color,
         d=neck_db[n],
         )
+def get_nose_path(n, color):
+    return SvgPath(fill='none',
+            d=nose_db[n],
+            stroke=color,
+            stroke_linecap="round",
+            stroke_linejoin="round",
+            stroke_width="18")
+
+def get_eyebrows_path(n, color):
+    return SvgPath(fill='none',
+            d=eyebrows_db[n],
+            stroke=color,
+            stroke_linecap="round",
+            stroke_linejoin="round",
+            stroke_width="9")
 
 def get_body(n, color):
     return SvgGroup(
         name = 'body',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
-        paths = [get_head(n,color), get_neck(n, color), get_arms(n, color)]
+        paths = [
+            get_head_path(n,color),
+            get_neck_path(n, color),
+            get_arms_path(n, color)
+            ]
         )
 
 def get_hair(n, color):
@@ -164,11 +186,73 @@ def get_lips(n):
             ]
         )
 
+def get_nose(n, color):
+    return SvgGroup(
+        name = 'nose',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [get_nose_path(n, color)]
+        )
+
+def get_ears(n, color):
+    return SvgGroup(
+        name = 'ears',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [SvgPath(fill=color, d=ears_db[n])]
+        )
+
+def get_eyebrows(n, color):
+    return SvgGroup(
+        name = 'eyebrows',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [get_eyebrows_path(n, color)]
+        )
+
+def get_pupils(n, color):
+    return SvgGroup(
+        name = 'pupils',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=pupil_left_db[n]),
+            SvgPath(fill=color, d=pupil_right_db[n]),
+            ]
+        )
+
+def get_iris(n, color):
+    return SvgGroup(
+        name = 'iris',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=iris_left_db[n]),
+            SvgPath(fill=color, d=iris_right_db[n]),
+            ]
+        )
+
 def get_body_color(hash_str):
     return '#' + hash_str[0:6]
 
 def get_hair_color(hash_str):
     return '#' + hash_str[6:12]
+
+def get_teeth(n, extras_number):
+
+    paths = [
+        SvgPath(fill='#E8E8E8', d=teeth_inf_db[n]),
+        SvgPath(fill='#FFFFFF', d=teeth_sup_db[n]),
+        ]
+
+    if extras_number != None:
+        paths += [SvgPath(fill='#FFFFFF', d=teeth_extras_db[extras_number])]
+
+    return SvgGroup(
+        name = 'teeth',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = paths,
+        )
+
+def get_teeth_extra_type(n):
+    if is_odd(n):
+        return None
+    return 0
 
 def generate_player(name):
     hash_str = sha3.sha3_256(name).hexdigest()
@@ -177,11 +261,28 @@ def generate_player(name):
     hair_type = 0
     hair_color = get_hair_color(hash_str)
     lips_type = 0
+    nose_color = '#B05F4F'
+    nose_type = 0
+    ears_type = 0
+    eyebrows_type = 0
+    eyebrows_color='#2A2111'
+    pupils_type = 0
+    pupils_color = body_color #'#66CC66'
+    iris_type = 0
+    iris_color = 'black'
+    teeth_type = 0
+    teeth_extra_type = get_teeth_extra_type(int(hash_str[0], 16))
 
     return [
             get_body(body_type, body_color),
             get_hair(hair_type, hair_color),
             get_lips(lips_type),
+            get_nose(nose_type, nose_color),
+            get_ears(ears_type, body_color),
+            get_iris(iris_type, iris_color),
+            get_pupils(pupils_type, pupils_color),
+            get_eyebrows(eyebrows_type, eyebrows_color),
+            get_teeth(0, teeth_extra_type),
            ]
 
 
