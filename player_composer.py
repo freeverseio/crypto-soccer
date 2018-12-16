@@ -227,12 +227,6 @@ def get_iris(n, color):
             ]
         )
 
-def get_body_color(hash_str):
-    return '#' + hash_str[0:6]
-
-def get_hair_color(hash_str):
-    return '#' + hash_str[6:12]
-
 def get_teeth(n, extras_number):
 
     paths = [
@@ -248,6 +242,36 @@ def get_teeth(n, extras_number):
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = paths,
         )
+
+def get_iris(n, color):
+    return SvgGroup(
+        name = 'iris',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=iris_left_db[n]),
+            SvgPath(fill=color, d=iris_right_db[n]),
+            ]
+        )
+
+def get_tshirt(n, color):
+    return SvgGroup(
+        name = 'tshirt',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=torso_db[n]),
+            SvgPath(fill=color, d=sleeves_db[n]),
+            SvgPath(fill=color, d=shoulders_db[n]),
+            ]
+        )
+
+def get_body_color(hash_str):
+    return '#' + hash_str[0:6]
+
+def get_hair_color(hash_str):
+    return '#' + hash_str[6:12]
+
+def get_tshirt_color(hash_str):
+    return '#' + hash_str[12:18]
 
 def get_teeth_extra_type(n):
     if is_odd(n):
@@ -272,6 +296,8 @@ def generate_player(name):
     iris_color = 'black'
     teeth_type = 0
     teeth_extra_type = get_teeth_extra_type(int(hash_str[0], 16))
+    tshirt_type = 0
+    tshirt_color = get_tshirt_color(hash_str)
 
     return [
             get_body(body_type, body_color),
@@ -282,7 +308,8 @@ def generate_player(name):
             get_iris(iris_type, iris_color),
             get_pupils(pupils_type, pupils_color),
             get_eyebrows(eyebrows_type, eyebrows_color),
-            get_teeth(0, teeth_extra_type),
+            get_teeth(teeth_type, teeth_extra_type),
+            get_tshirt(tshirt_type, tshirt_color),
            ]
 
 
