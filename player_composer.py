@@ -316,6 +316,16 @@ def get_tshirt_border(n, color):
             ]
         )
 
+def get_shorts(n, color):
+    return SvgGroup(
+        name = 'shorts',
+        transform = "matrix( 1, 0, 0, 1, 0,0)",
+        paths = [
+            SvgPath(fill=color, d=short_start_db[n]),
+            SvgPath(fill=color, d=short_end_db[n]),
+            ]
+        )
+
 def get_body_color(hash_str):
     return '#' + hash_str[0:6]
 
@@ -361,9 +371,12 @@ def generate_player(name):
     tshirt_color = get_tshirt_color(hash_str)
     tshirt_border_type = 0
     tshirt_border_color = get_tshirt_border_color(hash_str)
+    shorts_type=0
+    shorts_color=get_shorts_color(hash_str)
 
     return [
             get_arms(body_type, body_color),
+            get_shorts(shorts_type, shorts_color),
             get_tshirt_border(tshirt_border_type, tshirt_border_color),
             get_tshirt(tshirt_type, tshirt_color),
             get_head(body_type, body_color),
