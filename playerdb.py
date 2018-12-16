@@ -167,11 +167,11 @@ tshirt_border_db = [
 tshirt_border_type_1,
 ]
 
-short_start_db = [
+shorts_start_db = [
 shorts_start_type_1,
 ]
 
-short_end_db = [
+shorts_end_db = [
 shorts_end_type_1,
 ]
 

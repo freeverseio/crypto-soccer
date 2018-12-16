@@ -356,8 +356,8 @@ def get_shorts(n, color):
         name = 'shorts',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
-            SvgPath(fill=color, d=short_start_db[n]),
-            SvgPath(fill=color, d=short_end_db[n]),
+            SvgPath(fill=color, d=shorts_start_db[n]),
+            SvgPath(fill=color, d=shorts_end_db[n]),
             SvgPath(fill='#2C2411', fill_opacity=0.298, d=shorts_shadow_db[n]),
             SvgPath(fill='#2C2411', fill_opacity=0.298, d=left_leg_shadow_db[n]),
             ]
