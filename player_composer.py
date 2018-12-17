@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 import subprocess
-from xml.dom import minidom
+#from xml.dom import minidom
 import argparse
 import sha3
 from playerdb import *
@@ -214,7 +214,7 @@ def get_shield_top_path(n, color):
 
 def get_arms(n, color):
     return SvgGroup(
-        name = 'body',
+        name = 'arms',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
             get_arms_path(n, color)
@@ -223,7 +223,7 @@ def get_arms(n, color):
 
 def get_shield(n, color, border_color):
     return SvgGroup(
-        name = 'body',
+        name = 'shield',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
             SvgPath(fill=color, d=shield_filling_db[n]),
@@ -234,7 +234,7 @@ def get_shield(n, color, border_color):
 
 def get_head(n, color):
     return SvgGroup(
-        name = 'body',
+        name = 'head',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
             get_neck_path(n, color),
@@ -376,7 +376,7 @@ def get_torso_shadow(n):
 
 def get_facial_shadow(n):
     return SvgGroup(
-        name = 'torso_shadow',
+        name = 'facial_shadow',
         transform = "matrix( 1, 0, 0, 1, 0,0)",
         paths = [
             SvgPath(fill='#55321B', fill_opacity=0.098, d=ears_shadow_db[n]),
