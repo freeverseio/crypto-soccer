@@ -123,8 +123,11 @@ if __name__ == "__main__":
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         nodes, atts = extractSvgContentAsNode(inputfilename)
+
+        i = 0
         for node,att in zip(nodes,atts):
-            createSvgFromNodes([node], os.path.join(dirname, att))
+            createSvgFromNodes([node], os.path.join(dirname, '_'.join([str(i), att])))
+            i+=1
 
     else: # merge svgs
         nodes = []
