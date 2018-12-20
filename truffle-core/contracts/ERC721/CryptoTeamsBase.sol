@@ -19,6 +19,10 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
+    function setPlayersContract(address cryptoPlayers) public {
+        _cryptoPlayers = CryptoPlayersBase(cryptoPlayers);
+    }
+
     function getName(uint256 tokenId) public view returns(string){
         require(_exists(tokenId));
         return _teamProps[tokenId].name;
