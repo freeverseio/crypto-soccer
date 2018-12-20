@@ -18,6 +18,6 @@ jobs:
 
     steps:
       - run: 'sudo npm install -g npm@latest'
-      - run: 'sudo npm install -g truffle'
+      - run: 'npm install truffle'
       - checkout
       - run: cd truffle-core && npm install && truffle test
