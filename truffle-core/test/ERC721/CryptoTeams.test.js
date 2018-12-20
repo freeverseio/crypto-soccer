@@ -2,16 +2,13 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayers');
 const CryptoTeams = artifacts.require('CryptoTeams');
 
 contract('CryptoTeams', (accounts) => {
     let contract = null;
 
     beforeEach(async () => {
-        cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
         contract = await CryptoTeams.new().should.be.fulfilled;
-        await contract.setPlayersContract(cryptoPlayers.address);
     });
 
     it('add team', async () => {
@@ -24,5 +21,5 @@ contract('CryptoTeams', (accounts) => {
         count.toNumber().should.be.equal(1);
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
-    })
+    });
 });
