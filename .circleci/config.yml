@@ -17,6 +17,6 @@ jobs:
       # - image: circleci/mongo:3.4.4
 
     steps:
-      # - run: 'npm install truffle'
       - checkout
+      - run: 'sudo npm install -g truffle'
       - run: cd truffle-core && npm install && truffle test
