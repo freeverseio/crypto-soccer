@@ -5,6 +5,8 @@
 version: 2
 jobs:
   build:
+      working_directory: ~/repo
+
     docker:
       # specify the version you desire here
       - image: circleci/node:8.12
@@ -17,7 +19,6 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - run: 'sudo npm install -g npm@latest'
       - run: 'npm install truffle'
       - checkout
       - run: cd truffle-core && npm install && truffle test
