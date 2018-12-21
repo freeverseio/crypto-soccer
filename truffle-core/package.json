@@ -18,6 +18,7 @@
     "eth-gas-reporter": "^0.1.12",
     "ethjs-abi": "^0.2.1",
     "openzeppelin-solidity": "^2.0.0",
+    "truffle": "^5.0.0",
     "web-utils": "^1.0.0",
     "web3-utils": "^1.0.0-beta.36"
   }
