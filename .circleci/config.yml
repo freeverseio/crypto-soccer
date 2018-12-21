@@ -19,4 +19,4 @@ jobs:
     steps:
       - checkout
       - run: 'sudo npm install -g truffle'
-      - run: cd truffle-core && export npm_config_prefix=~/.npm-prefix npm install && truffle test
+      - run: cd truffle-core && sudo npm install && truffle test
