@@ -19,6 +19,10 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
+    function transferFrom(address from, address to, uint256 tokenId) public {
+        super.transferFrom(from, to, tokenId);
+    }
+
     function setPlayersContract(address cryptoPlayers) public {
         _cryptoPlayers = CryptoPlayersBase(cryptoPlayers);
     }
