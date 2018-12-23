@@ -28,10 +28,16 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(uint256 => Props) private _playerProps;
     mapping(bytes32 => uint256) private _nameHashPlayer;
 
+    event Log(address);
+
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
         if (spender == address(_cryptoTeamsBase))
             return true;
         return super._isApprovedOrOwner(spender, tokenId);
+    }
+
+    function setTeamsContract(address cryptoTeams) public {
+        _cryptoTeamsBase = CryptoTeamsBase(cryptoTeams);
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
