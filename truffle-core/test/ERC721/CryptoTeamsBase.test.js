@@ -136,4 +136,14 @@ contract('CryptoTeamsBase', (accounts) => {
         const playerOwner = await cryptoPlayers.ownerOf(playerId).should.be.fulfilled;
         playerOwner.should.be.equal(accounts[1]);
     });
+
+    it('if team adds a player, player knows his team', async () => {
+        const playerId = 1;
+        const teamId = 1;
+        await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.addPlayer(teamId, playerId).should.be.fulfilled;
+        const team = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
+        team.toNumber().should.be.equal(teamId);
+    });
 });

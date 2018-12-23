@@ -7,7 +7,7 @@ contract CryptoPlayers is CryptoPlayersMetadata {
         uint256 nextPlayerId = totalSupply() + 1;
         mintWithName(owner, nextPlayerId, name);
         _setState(nextPlayerId, state);
-        _setTeam(nextPlayerId, teamIdx);
+        //_setTeam(nextPlayerId, teamIdx);
     }
 
     function getNCreatedPlayers() public view returns(uint) { 
