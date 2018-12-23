@@ -13,14 +13,20 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     struct Props {
         string name;
         uint256 playersIdx;
+        uint256[] players;
     }
 
     CryptoPlayersBase private _cryptoPlayers;
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
+    function _playerExists(uint256 playerId) internal view returns (bool) {
+        _cryptoPlayers.ownerOf(playerId);
+        return true;
+    }
+
     function addPlayer(uint256 teamId, uint256 position, uint256 playerId) public {
-        require(false);
+        require(_playerExists(playerId), "unexistent player");
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
