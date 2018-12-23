@@ -31,7 +31,6 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
         if (spender == address(_cryptoTeamsBase))
             return true;
-
         return super._isApprovedOrOwner(spender, tokenId);
     }
 
