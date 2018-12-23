@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
+import "./CryptoTeamsBase.sol";
 
 contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     /// @dev The main Player struct.
@@ -23,8 +24,16 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         uint256 teamId;
     }
 
+    CryptoTeamsBase private _cryptoTeamsBase;
     mapping(uint256 => Props) private _playerProps;
     mapping(bytes32 => uint256) private _nameHashPlayer;
+
+    function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
+        if (spender == address(_cryptoTeamsBase))
+            return true;
+
+        return super._isApprovedOrOwner(spender, tokenId);
+    }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
         super.transferFrom(from, to, tokenId);

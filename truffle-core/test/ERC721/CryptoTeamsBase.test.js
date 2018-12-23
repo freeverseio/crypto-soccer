@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersBaseMock');
+const CryptoPlayers = artifacts.require('CryptoPlayersBase');
 const CryptoTeams = artifacts.require('CryptoTeamsBaseMock');
 
 contract('CryptoTeamsBase', (accounts) => {
@@ -123,16 +123,16 @@ contract('CryptoTeamsBase', (accounts) => {
         players[0].toNumber().should.be.equal(playerId);
     });
 
-    // it('selling team changes players ownership', async () => {
-    //     const playerId = 1;
-    //     const teamId = 1;
-    //     await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
-    //     await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
-    //     await cryptoPlayers.setTeam(playerId, teamId).should.be.fulfilled;
-    //     await contract.safeTransferFrom(accounts[0], accounts[1], teamId).should.be.fulfilled;
-    //     const teamOwner = await contract.ownerOf(teamId).should.be.fulfilled;
-    //     teamOwner.should.be.equal(accounts[1]);
-    //     const playerOwner = await cryptoPlayers.ownerOf(playerId).should.be.fulfilled;
-    //     playerOwner.should.be.equal(accounts[1]);
-    // });
+    it('selling team changes players ownership', async () => {
+        const playerId = 1;
+        const teamId = 1;
+        await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.addPlayer(teamId, playerId).should.be.fulfilled;
+        await contract.safeTransferFrom(accounts[0], accounts[1], teamId).should.be.fulfilled;
+        const teamOwner = await contract.ownerOf(teamId).should.be.fulfilled;
+        teamOwner.should.be.equal(accounts[1]);
+        const playerOwner = await cryptoPlayers.ownerOf(playerId).should.be.fulfilled;
+        playerOwner.should.be.equal(accounts[1]);
+    });
 });

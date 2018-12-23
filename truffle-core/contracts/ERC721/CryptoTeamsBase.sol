@@ -30,8 +30,13 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         _teamProps[teamId].players.push(playerId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public {
-        super.transferFrom(from, to, tokenId);
+    function transferFrom(address from, address to, uint256 teamId) public {
+        super.transferFrom(from, to, teamId);
+        uint count = _teamProps[teamId].players.length;
+        for (uint i = 0 ; i < count ; i++){
+            uint256 playerId = _teamProps[teamId].players[i];
+            _cryptoPlayers.transferFrom(from, to, playerId);
+        }
     }
 
     function setPlayersContract(address cryptoPlayers) public {
