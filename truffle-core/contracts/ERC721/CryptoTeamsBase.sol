@@ -21,8 +21,8 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(bytes32 => uint256) private _nameHashTeam;
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
-        _cryptoPlayers.ownerOf(playerId);
-        return true;
+        address owner = _cryptoPlayers.ownerOf(playerId);
+        return owner != address(0);
     }
 
     function addPlayer(uint256 teamId, uint256 position, uint256 playerId) public {

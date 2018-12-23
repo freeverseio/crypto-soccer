@@ -102,7 +102,16 @@ contract('CryptoTeamsBase', (accounts) => {
         const unexistentPlayerId = 1;
         const position = 0;
         await contract.addPlayer(teamId, position, unexistentPlayerId).should.be.rejected;
-    })
+    });
+
+    it('add existent player to team', async () => {
+        const teamId = 1;
+        const playerId = 1;
+        await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        const position = 0;
+        await contract.addPlayer(teamId, position, playerId).should.be.fulfilled;
+    });
 
     it('add player to team', async () => {
         const teamId = 1;
