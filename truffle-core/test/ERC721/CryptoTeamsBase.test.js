@@ -109,8 +109,7 @@ contract('CryptoTeamsBase', (accounts) => {
         const playerId = 1;
         await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
-        const position = 0;
-        await contract.addPlayer(teamId, position, playerId).should.be.fulfilled;
+        await contract.addPlayer(teamId, playerId).should.be.fulfilled;
     });
 
     it('add player to team', async () => {
@@ -118,8 +117,10 @@ contract('CryptoTeamsBase', (accounts) => {
         const playerId = 1;
         await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
-        const players = await contract.getPlayersIds(teamId).should.be.fulfilled;
-        players.toNumber().should.be.equal(4);
+        await contract.addPlayer(teamId, playerId).should.be.fulfilled;
+        const players = await contract.getPlayers(teamId).should.be.fulfilled;
+        players.length.should.be.equal(1);
+        players[0].toNumber().should.be.equal(playerId);
     });
 
     // it('selling team changes players ownership', async () => {

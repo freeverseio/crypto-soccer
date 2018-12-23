@@ -25,8 +25,9 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return owner != address(0);
     }
 
-    function addPlayer(uint256 teamId, uint256 position, uint256 playerId) public {
+    function addPlayer(uint256 teamId, uint256 playerId) public {
         require(_playerExists(playerId), "unexistent player");
+        _teamProps[teamId].players.push(playerId);
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public {
@@ -50,6 +51,11 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     function getPlayersIds(uint256 tokenId) public view returns (uint256) {
         require(_exists(tokenId));
         return _teamProps[tokenId].playersIdx;
+    }
+
+    function getPlayers(uint256 teamId) external view returns (uint256[]) {
+        require(_exists(teamId));
+        return _teamProps[teamId].players;
     }
 
     function getTeamId(string name) external view returns (uint256) {
