@@ -118,8 +118,8 @@ contract('CryptoTeamsBase', (accounts) => {
         const playerId = 1;
         await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
-        
-
+        const players = await contract.getPlayersIds(teamId).should.be.fulfilled;
+        players.toNumber().should.be.equal(4);
     });
 
     // it('selling team changes players ownership', async () => {
