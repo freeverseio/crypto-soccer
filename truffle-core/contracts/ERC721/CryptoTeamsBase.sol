@@ -16,32 +16,11 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         uint256[] players;
     }
 
-    CryptoPlayersBase private _cryptoPlayers;
     mapping(uint256 => Props) private _teamProps;
     mapping(bytes32 => uint256) private _nameHashTeam;
 
-    function _playerExists(uint256 playerId) internal view returns (bool) {
-        address owner = _cryptoPlayers.ownerOf(playerId);
-        return owner != address(0);
-    }
-
     function addPlayer(uint256 teamId, uint256 playerId) public {
-        require(_playerExists(playerId), "unexistent player");
         _teamProps[teamId].players.push(playerId);
-        _cryptoPlayers.setTeam(playerId, teamId);
-    }
-
-    function transferFrom(address from, address to, uint256 teamId) public {
-        super.transferFrom(from, to, teamId);
-        uint count = _teamProps[teamId].players.length;
-        for (uint i = 0 ; i < count ; i++){
-            uint256 playerId = _teamProps[teamId].players[i];
-            _cryptoPlayers.transferFrom(from, to, playerId);
-        }
-    }
-
-    function setPlayersContract(address cryptoPlayers) public {
-        _cryptoPlayers = CryptoPlayersBase(cryptoPlayers);
     }
 
     function getName(uint256 tokenId) public view returns(string){
@@ -59,7 +38,7 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return _teamProps[tokenId].playersIdx;
     }
 
-    function getPlayers(uint256 teamId) external view returns (uint256[]) {
+    function getPlayers(uint256 teamId) public view returns (uint256[]) {
         require(_exists(teamId));
         return _teamProps[teamId].players;
     }

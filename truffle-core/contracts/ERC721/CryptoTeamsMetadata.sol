@@ -1,11 +1,11 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
-import "./CryptoTeamsBase.sol";
+import "./CryptoTeamsLink.sol";
 import "./URIerRole.sol";
 import "../helpers.sol";
 
-contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), CryptoTeamsBase, URIerRole, HelperFunctions  {
+contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), CryptoTeamsLink, URIerRole, HelperFunctions  {
     string private _teamsURI;
 
     /**
