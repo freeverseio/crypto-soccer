@@ -18,8 +18,7 @@ jobs:
 
     steps:
       - checkout
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@5'
+      - run: 'sudo apt update'
+      - run: 'sudo apt dist-upgrade'
       - run: 'sudo npm install -g truffle'
       - run: cd truffle-core && sudo npm install && truffle test
