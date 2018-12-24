@@ -1,10 +1,10 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoTeamsBase.sol";
-import "./CryptoPlayersBase.sol";
+import "./CryptoPlayersLink.sol";
 
 contract CryptoTeamsLink is CryptoTeamsBase {
-    CryptoPlayersBase private _cryptoPlayers;
+    CryptoPlayersLink private _cryptoPlayers;
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
         address owner = _cryptoPlayers.ownerOf(playerId);
@@ -27,7 +27,7 @@ contract CryptoTeamsLink is CryptoTeamsBase {
     }
 
     function setPlayersContract(address cryptoPlayers) public {
-        _cryptoPlayers = CryptoPlayersBase(cryptoPlayers);
+        _cryptoPlayers = CryptoPlayersLink(cryptoPlayers);
     }
 }
 
