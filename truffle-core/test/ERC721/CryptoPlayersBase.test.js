@@ -22,6 +22,20 @@ contract('CryptoPlayersBase', (accounts) => {
         await contract.mintWithName(accounts[0], id, "player").should.be.rejected;
     });
 
+    it('get name', async () => {
+        const id = 1;
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        const name = await contract.getName(id).should.be.fulfilled;
+        name.should.be.equal("player");
+    });
+
+    it('get player id', async () => {
+        const id = 1;
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        const result = await contract.getPlayerId("player").should.be.fulfilled;
+        result.toNumber().should.be.equal(id);
+    });
+
     it('when players is sold, he has no team', async () => {
         const playerId = 1;
         const teamId = 1;
