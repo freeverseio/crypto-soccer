@@ -65,15 +65,4 @@ contract('CryptoTeamsLink', (accounts) => {
         const team = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
         team.toNumber().should.be.equal(teamId);
     });
-
-    it('when players is sold, he has no team', async () => {
-        const playerId = 1;
-        const teamId = 1;
-        await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
-        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
-        await contract.addPlayer(teamId, playerId).should.be.fulfilled;
-        await cryptoPlayers.safeTransferFrom(accounts[0], accounts[1], playerId).should.be.fulfilled;
-        const team = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
-        team.toNumber().should.be.equal(0);
-    });
 });
