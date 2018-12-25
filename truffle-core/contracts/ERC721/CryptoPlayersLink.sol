@@ -18,6 +18,10 @@ contract CryptoPlayersLink is CryptoPlayersBase {
 
     function transferFrom(address from, address to, uint256 playerId) public {
         super.transferFrom(from, to, playerId);
-        setTeam(playerId, 0);
+        _setTeam(playerId, 0);
+    }
+
+    function setTeam(uint256 playerId, uint256 teamId) public {
+        _setTeam(playerId, teamId);
     }
 }
