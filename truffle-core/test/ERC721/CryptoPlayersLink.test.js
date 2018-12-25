@@ -17,4 +17,11 @@ contract('CryptoPlayersLink', (accounts) => {
         await contract.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
         await contract.setTeam(playerId, teamId).should.be.rejected;
     });
+
+    it('get team contract', async () => {
+        const address = "0x0000000000000000000000000000000000000001";
+        await contract.setTeamsContract(address).should.be.fulfilled;
+        const result = await contract.getTeamsContract().should.be.fulfilled;
+        result.should.be.equal(address);
+    });
 });

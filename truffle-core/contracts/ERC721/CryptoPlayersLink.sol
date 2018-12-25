@@ -16,12 +16,12 @@ contract CryptoPlayersLink is CryptoPlayersBase {
         _cryptoTeams = CryptoTeamsLink(cryptoTeams);
     }
 
-    function transferFrom(address from, address to, uint256 playerId) public {
-        super.transferFrom(from, to, playerId);
-        _setTeam(playerId, 0);
+    function getTeamsContract() external view returns (address) {
+        return _cryptoTeams;
     }
 
     function setTeam(uint256 playerId, uint256 teamId) public {
+        require(msg.sender == address(_cryptoTeams));
         _setTeam(playerId, teamId);
     }
 }
