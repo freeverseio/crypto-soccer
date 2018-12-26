@@ -30,13 +30,13 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     }
 
     function mintWithName(address to, string memory name) public onlyMinter {
-        uint256 teamId = getTeamId(name);
+        uint256 teamId = calculateId(name);
         require(!_exists(teamId));
         _mint(to, teamId);
         _teamProps[teamId].name = name;
     }
 
-    function getTeamId(string name) public pure returns (uint256) {
+    function calculateId(string name) public pure returns (uint256) {
         bytes32 nameHash = keccak256(abi.encodePacked(name));
         uint256 id = uint256(nameHash);
         return id;
