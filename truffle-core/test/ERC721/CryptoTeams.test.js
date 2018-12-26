@@ -14,9 +14,8 @@ contract('CryptoTeams', (accounts) => {
     it('add team', async () => {
         let count = await contract.totalSupply().should.be.fulfilled;
         count.toNumber().should.be.equal(0);
-        const id = 1; // TODO this smells : how I get this id from ? 
-                      // I have to know the internal behavior of the component ---> WRONG
         await contract.addTeam("team", accounts[0]).should.be.fulfilled;
+        const id = await contract.calculateId("team").should.be.fulfilled;
         count = await contract.totalSupply().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
         const name = await contract.getName(id).should.be.fulfilled;
