@@ -23,15 +23,14 @@ contract('CryptoPlayers', (accounts) => {
     });
 
     it('add player', async () => {
-        const name = "player";
         const state = 34324;
-        const teamId = 1;
-        await contract.addPlayer(name, state, teamId, accounts[0]).should.be.fulfilled;
+        await contract.addPlayer("player", state, accounts[0]).should.be.fulfilled;
+        const id = await contract.getPlayerId("player").should.be.fulfilled;
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        const nameResult = await contract.getName(count);
-        nameResult.should.be.equal(name);
-        const stateResult = await contract.getState(count);
+        const name = await contract.getName(id);
+        name.should.be.equal("player");
+        const stateResult = await contract.getState(id);
         stateResult.toNumber().should.be.equal(state);
     });
 });

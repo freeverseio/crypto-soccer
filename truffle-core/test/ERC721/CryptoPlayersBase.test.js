@@ -17,29 +17,30 @@ contract('CryptoPlayersBase', (accounts) => {
     });
 
     it('mint 2 player with same name', async () => {
-        const id = 1;
-        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
-        await contract.mintWithName(accounts[0], id, "player").should.be.rejected;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.rejected;
     });
 
     it('get name', async () => {
-        const id = 1;
-        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const id = await contract.getPlayerId("player").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("player");
     });
 
-    it('get player id', async () => {
-        const id = 1;
-        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
-        const result = await contract.getPlayerId("player").should.be.fulfilled;
-        result.toNumber().should.be.equal(id);
+    it('get player id of existing player', async () => {
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        await contract.getPlayerId("player").should.be.fulfilled;
+    });
+
+    it('get player id of unexisting player', async () => {
+        await contract.getPlayerId("player").should.be.rejected;
     });
 
     it('when players is sold, he has no team', async () => {
-        const playerId = 1;
         const teamId = 1;
-        await contract.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await contract.getPlayerId("player").should.be.fulfilled;
         await contract.setTeam(playerId, teamId).should.be.fulfilled;
         await contract.safeTransferFrom(accounts[0], accounts[1], playerId).should.be.fulfilled;
         const team = await contract.getTeam(playerId).should.be.fulfilled;

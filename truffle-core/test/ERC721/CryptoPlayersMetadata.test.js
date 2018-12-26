@@ -27,16 +27,15 @@ contract('CryptoPlayersMetadata', (accounts) => {
     });
 
     it('tokenURI of existent player', async () => {
-        const id = 1; 
-        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const id = await contract.getPlayerId("player").should.be.fulfilled;
         await contract.setTokensURI("URI").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
         uri.should.be.equal("URI?state=0");
     });
 
     it('set URI without being URIer', async () => {
-        const id = 1; 
-        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
         await contract.renounceURIer().should.be.fulfilled;
         await contract.setTokensURI("URI").should.be.rejected;
     });

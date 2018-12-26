@@ -25,29 +25,29 @@ contract('CryptoTeamsLink', (accounts) => {
     });
 
     it('add existent player to team', async () => {
-        const playerId = 1;
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.calculateId("team").should.be.fulfilled;
-        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
     });
 
     it('add player to team', async () => {
-        const playerId = 1;
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.calculateId("team").should.be.fulfilled;
-        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         const players = await contract.getPlayers(teamId).should.be.fulfilled;
         players.length.should.be.equal(1);
-        players[0].toNumber().should.be.equal(playerId);
+        players[0].toNumber().should.be.equal(playerId.toNumber());
     });
 
     it('selling team changes players ownership', async () => {
-        const playerId = 1;
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.calculateId("team").should.be.fulfilled;
-        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         await contract.safeTransferFrom(accounts[0], accounts[1], teamId).should.be.fulfilled;
         const teamOwner = await contract.ownerOf(teamId).should.be.fulfilled;
@@ -57,10 +57,10 @@ contract('CryptoTeamsLink', (accounts) => {
     });
 
     it('if team adds a player, player knows his team', async () => {
-        const playerId = 1;
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.calculateId("team").should.be.fulfilled;
-        await cryptoPlayers.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         const team = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
         team.toNumber().should.be.equal(teamId.toNumber());
