@@ -5,11 +5,9 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 import "./CryptoPlayersBase.sol";
 
+/// @title CryptoTeamsBase represents a team of players.
+/// @notice ERC721 compliant.
 contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
-    /// @dev The player skills in each team are obtained from hashing: name + userChoice
-    /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
-    /// @dev and select his favourite one.
-    /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
     struct Props {
         string name;
         uint256[] players;
