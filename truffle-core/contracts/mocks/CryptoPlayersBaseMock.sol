@@ -7,7 +7,7 @@ import "../ERC721/CryptoPlayersBase.sol";
  * This mock just provides a public mint and burn functions for testing purposes
  */
 contract CryptoPlayersBaseMock is CryptoPlayersBase {
-    function setTeam(uint256 playerId, uint256 teamId) public onlyMinter {
+    function setTeam(uint256 playerId, uint256 teamId) public {
         _setTeam(playerId, teamId);
     }
 }

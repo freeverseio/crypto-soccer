@@ -7,9 +7,5 @@ contract CryptoTeams is CryptoTeamsMetadata {
         uint256 nextTeamId = totalSupply() + 1;
         mintWithName(owner, nextTeamId, name);
     }
-
-    function setPlayersIds(uint256 tokenId, uint256 playersIdx) public {
-        _setPlayersIds(tokenId, playersIdx);
-    }
 }
 

@@ -21,5 +21,5 @@ contract('CryptoTeams', (accounts) => {
         count.toNumber().should.be.equal(1);
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
-    })
+    });
 });

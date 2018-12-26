@@ -22,13 +22,27 @@ contract('CryptoPlayersBase', (accounts) => {
         await contract.mintWithName(accounts[0], id, "player").should.be.rejected;
     });
 
-    it('after transfer team is 0', async () => {
+    it('get name', async () => {
         const id = 1;
-        const teamId = 1;
         await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
-        await contract.setTeam(id, teamId).should.be.fulfilled;
-        await contract.safeTransferFrom(accounts[0], accounts[1], id).should.be.fulfilled;
-        const result = await contract.getTeam(id).should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
+        const name = await contract.getName(id).should.be.fulfilled;
+        name.should.be.equal("player");
+    });
+
+    it('get player id', async () => {
+        const id = 1;
+        await contract.mintWithName(accounts[0], id, "player").should.be.fulfilled;
+        const result = await contract.getPlayerId("player").should.be.fulfilled;
+        result.toNumber().should.be.equal(id);
+    });
+
+    it('when players is sold, he has no team', async () => {
+        const playerId = 1;
+        const teamId = 1;
+        await contract.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.setTeam(playerId, teamId).should.be.fulfilled;
+        await contract.safeTransferFrom(accounts[0], accounts[1], playerId).should.be.fulfilled;
+        const team = await contract.getTeam(playerId).should.be.fulfilled;
+        team.toNumber().should.be.equal(0);
     });
 });

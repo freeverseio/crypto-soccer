@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
+import "./CryptoTeamsBase.sol";
 
 contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     /// @dev The main Player struct.
@@ -26,11 +27,6 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     mapping(uint256 => Props) private _playerProps;
     mapping(bytes32 => uint256) private _nameHashPlayer;
 
-    function transferFrom(address from, address to, uint256 tokenId) public {
-        super.transferFrom(from, to, tokenId);
-        _playerProps[tokenId].teamId = 0;
-    }
-
     function mintWithName(address to, uint256 tokenId, string memory name) public onlyMinter {
         require(tokenId > 0 && tokenId <= 2**22, "id out of range");
         bytes32 nameHash = keccak256(abi.encodePacked(name));
@@ -40,7 +36,12 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         _nameHashPlayer[nameHash] = tokenId;
     }
 
-    function _setTeam(uint256 playerId, uint256 teamId) internal onlyMinter {
+    function transferFrom(address from, address to, uint256 playerId) public {
+        super.transferFrom(from, to, playerId);
+        _setTeam(playerId, 0);
+    }
+
+    function _setTeam(uint256 playerId, uint256 teamId) internal {
         require(_exists(playerId));
         _playerProps[playerId].teamId = teamId;
     }

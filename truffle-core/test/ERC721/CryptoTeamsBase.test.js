@@ -6,6 +6,7 @@ const CryptoTeams = artifacts.require('CryptoTeamsBaseMock');
 
 contract('CryptoTeamsBase', (accounts) => {
     let contract = null;
+    let cryptoPlayers = null;
 
     beforeEach(async () => {
         contract = await CryptoTeams.new().should.be.fulfilled;
@@ -60,28 +61,26 @@ contract('CryptoTeamsBase', (accounts) => {
         await contract.getName(1).should.be.rejected;
     });
 
-    it('get playersIds of unexistent team', async () => {
-        await contract.getPlayersIds(1).should.be.rejected;
-    });
-
-    it('set playersIds of unexistent team', async () => {
-        await contract.setPlayersIds(1, 0).should.be.rejected;
-    });
-
-    it('set playersIds', async () => {
-        const id = 1;
-        const playersIds = 31231234;
-        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
-        await contract.setPlayersIds(id, playersIds).should.be.fulfilled;
-        const result = await contract.getPlayersIds(id).should.be.fulfilled;
-        result.toNumber().should.be.equal(playersIds);
-    });
-
     it('get team id by name', async () => {
         const id = 1;
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
         const result = await contract.getTeamId("team").should.be.fulfilled;
         result.toNumber().should.be.equal(id);
         await contract.getTeamId("team1").should.be.rejected;
+    });
+
+    it('new team has no players', async () => {
+        const id = 1;
+        await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
+        const players = await contract.getPlayers(id).should.be.fulfilled;
+        players.length.should.be.equal(0);
+    });
+
+    it('add unexistent player to team', async () => {
+        const teamId = 1;
+        await contract.mintWithName(accounts[0], teamId, "team").should.be.fulfilled;
+        const unexistentPlayerId = 1;
+        const position = 0;
+        await contract.addPlayer(teamId, position, unexistentPlayerId).should.be.rejected;
     });
 });
