@@ -61,10 +61,6 @@ contract('CryptoTeamsBase', (accounts) => {
         await contract.getName(1).should.be.rejected;
     });
 
-    it('get playersIds of unexistent team', async () => {
-        await contract.getPlayersIds(1).should.be.rejected;
-    });
-
     it('get team id by name', async () => {
         const id = 1;
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
@@ -76,8 +72,8 @@ contract('CryptoTeamsBase', (accounts) => {
     it('new team has no players', async () => {
         const id = 1;
         await contract.mintWithName(accounts[0], id, "team").should.be.fulfilled;
-        const playerIds = await contract.getPlayersIds(id).should.be.fulfilled;
-        playerIds.toNumber().should.be.equal(0);
+        const players = await contract.getPlayers(id).should.be.fulfilled;
+        players.length.should.be.equal(0);
     });
 
     it('add unexistent player to team', async () => {

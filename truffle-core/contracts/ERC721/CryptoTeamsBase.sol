@@ -28,11 +28,6 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return _teamProps[tokenId].name;
     }
 
-    function getPlayersIds(uint256 tokenId) public view returns (uint256) {
-        require(_exists(tokenId));
-        return _teamProps[tokenId].playersIdx;
-    }
-
     function getPlayers(uint256 teamId) public view returns (uint256[]) {
         require(_exists(teamId));
         return _teamProps[teamId].players;
