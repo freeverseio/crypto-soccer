@@ -12,7 +12,6 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
     /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
     struct Props {
         string name;
-        uint256 playersIdx;
         uint256[] players;
     }
 
