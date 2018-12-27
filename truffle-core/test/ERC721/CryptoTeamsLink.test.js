@@ -18,7 +18,7 @@ contract('CryptoTeamsLink', (accounts) => {
 
     it('add unexistent player to team', async () => {
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.calculateId("team").should.be.fulfilled;
+        const teamId = await contract.getTeamId("team").should.be.fulfilled;
         const unexistentPlayerId = 1;
         const position = 0;
         await contract.addPlayer(teamId, position, unexistentPlayerId).should.be.rejected;
@@ -26,7 +26,7 @@ contract('CryptoTeamsLink', (accounts) => {
 
     it('add existent player to team', async () => {
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.calculateId("team").should.be.fulfilled;
+        const teamId = await contract.getTeamId("team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
         const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
@@ -34,7 +34,7 @@ contract('CryptoTeamsLink', (accounts) => {
 
     it('add player to team', async () => {
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.calculateId("team").should.be.fulfilled;
+        const teamId = await contract.getTeamId("team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
         const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
@@ -45,7 +45,7 @@ contract('CryptoTeamsLink', (accounts) => {
 
     it('selling team changes players ownership', async () => {
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.calculateId("team").should.be.fulfilled;
+        const teamId = await contract.getTeamId("team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
         const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
@@ -58,7 +58,7 @@ contract('CryptoTeamsLink', (accounts) => {
 
     it('if team adds a player, player knows his team', async () => {
         await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.calculateId("team").should.be.fulfilled;
+        const teamId = await contract.getTeamId("team").should.be.fulfilled;
         await cryptoPlayers.mintWithName(accounts[0], "player").should.be.fulfilled;
         const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;

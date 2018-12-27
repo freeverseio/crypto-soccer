@@ -15,7 +15,7 @@ contract('CryptoTeams', (accounts) => {
         let count = await contract.totalSupply().should.be.fulfilled;
         count.toNumber().should.be.equal(0);
         await contract.addTeam("team", accounts[0]).should.be.fulfilled;
-        const id = await contract.calculateId("team").should.be.fulfilled;
+        const id = await contract.getTeamId("team").should.be.fulfilled;
         count = await contract.totalSupply().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
         const name = await contract.getName(id).should.be.fulfilled;
