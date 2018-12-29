@@ -14,7 +14,7 @@ contract Horizon is HelperFunctions {
     }
 
     function createTeam(string name) public {
-        _cryptoTeams.addTeam(name, msg.sender);
+        _cryptoTeams.mintWithName(msg.sender, name);
         uint256 teamId = _cryptoTeams.getTeamId(name);
 
         for (uint i = 0; i<11; i++) {

@@ -3,8 +3,5 @@ pragma solidity ^0.4.24;
 import "./CryptoTeamsMetadata.sol";
 
 contract CryptoTeams is CryptoTeamsMetadata {
-    function addTeam(string memory name, address owner) public {
-        mintWithName(owner, name);
-    }
 }
 
