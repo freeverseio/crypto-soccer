@@ -2,12 +2,11 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
-import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 import "./CryptoPlayersBase.sol";
 
 /// @title CryptoTeamsBase represents a team of players.
 /// @notice ERC721 compliant.
-contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
+contract CryptoTeamsBase is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint256[] players;
@@ -15,20 +14,14 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
 
     mapping(uint256 => Props) private _teamProps;
 
-    function mintWithName(address to, string memory name) public onlyMinter {
-        uint256 teamId = _calculateId(name);
-        require(!_exists(teamId));
-        _mint(to, teamId);
-        _teamProps[teamId].name = name;
-    }
-
     function getName(uint256 tokenId) public view returns(string){
         require(_exists(tokenId));
         return _teamProps[tokenId].name;
     }
 
-    function _addPlayer(uint256 teamId, uint256 playerId) internal {
-        _teamProps[teamId].players.push(playerId);
+    function _setName(uint256 teamId, string name) internal {
+        require(_exists(teamId));
+        _teamProps[teamId].name = name;
     }
 
     function getPlayers(uint256 teamId) public view returns (uint256[]) {
@@ -36,16 +29,8 @@ contract CryptoTeamsBase is ERC721, ERC721Enumerable, MinterRole {
         return _teamProps[teamId].players;
     }
 
-    function getTeamId(string name) public view returns (uint256) {
-        uint256 id = _calculateId(name);
-        require(_exists(id));
-        return id;
-    }
-
-    function _calculateId(string name) internal pure returns (uint256) {
-        bytes32 nameHash = keccak256(abi.encodePacked(name));
-        uint256 id = uint256(nameHash);
-        return id;
+    function _addPlayer(uint256 teamId, uint256 playerId) internal {
+        _teamProps[teamId].players.push(playerId);
     }
 }
 

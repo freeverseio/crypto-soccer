@@ -1,14 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoTeamsBase.sol";
+import "./CryptoTeamsMintable.sol";
 import "./CryptoPlayersLink.sol";
 
-contract CryptoTeamsLink is CryptoTeamsBase {
+contract CryptoTeamsLink is CryptoTeamsMintable {
     CryptoPlayersLink private _cryptoPlayers;
 
-    function _playerExists(uint256 playerId) internal view returns (bool) {
-        address owner = _cryptoPlayers.ownerOf(playerId);
-        return owner != address(0);
+    function setPlayersContract(address cryptoPlayers) public {
+        _cryptoPlayers = CryptoPlayersLink(cryptoPlayers);
     }
 
     function addPlayer(uint256 teamId, uint256 playerId) public {
@@ -26,8 +25,8 @@ contract CryptoTeamsLink is CryptoTeamsBase {
         }
     }
 
-    function setPlayersContract(address cryptoPlayers) public {
-        _cryptoPlayers = CryptoPlayersLink(cryptoPlayers);
+    function _playerExists(uint256 playerId) private view returns (bool) {
+        address owner = _cryptoPlayers.ownerOf(playerId);
+        return owner != address(0);
     }
 }
-
