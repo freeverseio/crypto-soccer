@@ -16,13 +16,13 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     mapping(uint256 => Props) private _playerProps;
 
     /**
-     * @dev Transfers the ownership of a given token ID to another address
-     * and reset the owner Team
+     * @dev Transfers the ownership of a given player ID to another address
+     * and reset the owner Team ID
      * Usage of this method is discouraged, use `safeTransferFrom` whenever possible
      * Requires the msg sender to be the owner, approved, or operator
-     * @param from current owner of the token
-     * @param to address to receive the ownership of the given token ID
-     * @param tokenId uint256 ID of the token to be transferred
+     * @param from current owner of the player
+     * @param to address to receive the ownership of the given player ID
+     * @param playerId uint256 ID of the player to be transferred
     */
     function transferFrom(address from, address to, uint256 playerId) public {
         super.transferFrom(from, to, playerId);

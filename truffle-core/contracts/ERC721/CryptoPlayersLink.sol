@@ -11,11 +11,12 @@ contract CryptoPlayersLink is CryptoPlayersMintable {
     CryptoTeamsLink private _cryptoTeams;
 
     /**
-     * @dev Tells whether an operator is approved by a given owner
-     * It approves the team contract
-     * @param owner owner address which you want to query the approval of
-     * @param operator operator address which you want to query the approval of
-     * @return bool whether the given operator is approved by the given owner
+     * @dev Returns whether the given spender can transfer a given token ID
+     * team contract can transfer all token ID
+     * @param spender address of the spender to query
+     * @param tokenId uint256 ID of the token to be transferred
+     * @return bool whether the msg.sender is approved for the given token ID,
+     *    is an operator of the owner, or is the owner of the token
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
         if (spender == address(_cryptoTeams))

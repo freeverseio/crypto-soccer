@@ -12,6 +12,7 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, MinterRole {
         uint256 playerId = calculateId(name);
         _mint(to, playerId);
         _setName(playerId, name);
+        _setState(playerId, 0);
     }
 
     function getPlayerId(string name) public view returns(uint256) {
