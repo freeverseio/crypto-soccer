@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 
-contract CryptoPlayersBase is ERC721, ERC721Enumerable {
+contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
