@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersBase.sol";
+import "./CryptoPlayersMintable.sol";
 import "./CryptoTeamsLink.sol";
 
-contract CryptoPlayersLink is CryptoPlayersBase {
+contract CryptoPlayersLink is CryptoPlayersMintable {
     CryptoTeamsLink private _cryptoTeams;
 
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {

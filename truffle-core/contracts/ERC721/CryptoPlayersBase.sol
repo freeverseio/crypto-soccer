@@ -2,10 +2,8 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
-import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
-import "./CryptoTeamsBase.sol";
 
-contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
+contract CryptoPlayersBase is ERC721, ERC721Enumerable {
     /// @dev The main Player struct.
     /// @dev name is a string, unique for every Player
     /// @dev state is a uint256 that serializes age, skills, role.
@@ -26,12 +24,6 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
 
     mapping(uint256 => Props) private _playerProps;
 
-    function mintWithName(address to, string memory name) public onlyMinter {
-        uint256 playerId = _calculateId(name);
-        _mint(to, playerId);
-        _playerProps[playerId].name = name;
-    }
-
     function transferFrom(address from, address to, uint256 playerId) public {
         super.transferFrom(from, to, playerId);
         _setTeam(playerId, 0);
@@ -47,30 +39,23 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
         return _playerProps[playerId].teamId;
     }
 
-    function _setState(uint256 playerId, uint256 state) internal onlyMinter {
+    function _setState(uint256 playerId, uint256 state) internal {
         require(_exists(playerId));
         _playerProps[playerId].state = state;
     }
 
-    function getState(uint playerId) public view returns(uint) {
+    function getState(uint256 playerId) public view returns(uint) {
         require(_exists(playerId));
         return _playerProps[playerId].state;
     }
 
-    function getName(uint playerId) external view returns(string) {
+    function getName(uint256 playerId) external view returns(string) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
     }
 
-    function getPlayerId(string name) public view returns(uint256) {
-        uint256 id = _calculateId(name);
-        require(_exists(id));
-        return id;
-    }
-
-    function _calculateId(string name) internal pure returns (uint256) {
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 id = uint256(playerNameHash);
-        return id;
+    function _setName(uint256 playerId, string name) internal {
+        require(_exists(playerId));
+        _playerProps[playerId].name = name;
     }
 }

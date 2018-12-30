@@ -1,16 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "../ERC721/CryptoPlayersBase.sol";
+import "../ERC721/CryptoPlayersMintable.sol";
 
 /**
- * @title CryptoPlayersBaseMock
+ * @title CryptoPlayersMintableMock
  * This mock just provides a public mint and burn functions for testing purposes
  */
-contract CryptoPlayersBaseMock is CryptoPlayersBase {
-    function mint(address to, uint256 tokenId) public {
-        _mint(to, tokenId);
-    }
-
+contract CryptoPlayersMintableMock is CryptoPlayersMintable {
     function setTeam(uint256 playerId, uint256 teamId) public {
         _setTeam(playerId, teamId);
     }
