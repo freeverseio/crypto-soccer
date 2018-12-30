@@ -18,29 +18,18 @@ contract('CryptoTeamsBase', (accounts) => {
     })
 
     it('mint team', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const id = await contract.getTeamId("team").should.be.fulfilled;
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
-        name.should.be.equal("team");
+        name.should.be.equal("");
         const total = await contract.totalSupply().should.be.fulfilled;
         total.toNumber().should.be.equal(1);
     });
 
-    it('mint team with same name is forbidden', async () =>  {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        await contract.mint(accounts[0], "team").should.be.rejected;
-    });
-
-    it('team owner', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const id = await contract.getTeamId("team").should.be.fulfilled;
-        const owner = await contract.ownerOf(id).should.be.fulfilled;
-        owner.should.be.equal(accounts[0]);
-    });
-
     it('team name', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const id = await contract.getTeamId("team").should.be.fulfilled;
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
+        await contract.setName(id, "team").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
     });
@@ -49,27 +38,10 @@ contract('CryptoTeamsBase', (accounts) => {
         await contract.getName(1).should.be.rejected;
     });
 
-    it('getTeam team id', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const id = await contract.getTeamId("team").should.be.fulfilled;
-    });
-
-    it('getTeam team id of unexistent tema', async () => {
-        const id = await contract.getTeamId("team").should.be.rejected;
-    });
-
     it('new team has no players', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const id = await contract.getTeamId("team").should.be.fulfilled;
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
         const players = await contract.getPlayers(id).should.be.fulfilled;
         players.length.should.be.equal(0);
-    });
-
-    it('add unexistent player to team', async () => {
-        await contract.mint(accounts[0], "team").should.be.fulfilled;
-        const teamId = await contract.getTeamId("team").should.be.fulfilled;
-        const unexistentPlayerId = 1;
-        const position = 0;
-        await contract.addPlayer(teamId, position, unexistentPlayerId).should.be.rejected;
     });
 });
