@@ -3,6 +3,10 @@ pragma solidity ^0.4.24;
 import "./CryptoPlayersStorage.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 
+/**
+ * @title CryptoPlayersMintable
+ * @dev CryptoPlayers minting logic
+ */
 contract CryptoPlayersMintable is CryptoPlayersStorage, MinterRole {
     function mintWithName(address to, string memory name) public onlyMinter {
         uint256 playerId = calculateId(name);
