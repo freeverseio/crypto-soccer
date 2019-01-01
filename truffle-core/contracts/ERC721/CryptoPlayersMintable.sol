@@ -35,7 +35,6 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
     /// @dev a balanced player whose skills add up to 250.
     function _computeState(uint256 rndSeed, uint8 playerRole) internal view returns(uint256)
     {
-        uint256 currentTime = block.timestamp;
         /// @dev Get random numbers between 0 and 9999 and assign them to states, where:
         /// @dev state[0] -> age, state[6] -> role
         /// @dev state[1]...state[5] -> skills
@@ -52,7 +51,7 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
         /// @dev I leave it this way for clarity, for the time being.
         uint years2secs = 365 * 24 * 3600;
         uint month2secs = 30 * 24 * 3600;
-        states[kStatBirth] = uint16((currentTime - states[0] * years2secs) / month2secs);
+        states[kStatBirth] = uint16((block.timestamp - states[0] * years2secs) / month2secs);
 
         /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
