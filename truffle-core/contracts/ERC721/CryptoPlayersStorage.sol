@@ -76,4 +76,24 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
         require(_exists(playerId));
         _playerProps[playerId].name = name;
     }
+
+    function getDefence(uint256 playerId) external view returns (uint16) {
+        return 0;
+    }
+
+    function getSpeed(uint256 playerId) external view returns (uint16) {
+        return 0;
+    }
+
+    function getPass(uint256 playerId) external view returns (uint16) {
+        return 0;
+    }
+
+    function getShoot(uint256 playerId) external view returns (uint16) {
+        return 0;
+    }
+
+    function getEndurance(uint256 playerId) external view returns (uint16) {
+        return 0;
+    }
 }
