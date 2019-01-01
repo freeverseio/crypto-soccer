@@ -25,15 +25,11 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     }
 
     mapping(uint256 => Props) private _playerProps;
-    mapping(bytes32 => uint256) private _nameHashPlayer;
 
-    function mintWithName(address to, uint256 tokenId, string memory name) public onlyMinter {
-        require(tokenId > 0 && tokenId <= 2**22, "id out of range");
-        bytes32 nameHash = keccak256(abi.encodePacked(name));
-        require(_nameHashPlayer[nameHash] == 0);
-        _mint(to, tokenId);
-        _playerProps[tokenId].name = name;
-        _nameHashPlayer[nameHash] = tokenId;
+    function mintWithName(address to, string memory name) public onlyMinter {
+        uint256 playerId = _calculateId(name);
+        _mint(to, playerId);
+        _playerProps[playerId].name = name;
     }
 
     function transferFrom(address from, address to, uint256 playerId) public {
@@ -67,9 +63,14 @@ contract CryptoPlayersBase is ERC721, ERC721Enumerable, MinterRole {
     }
 
     function getPlayerId(string name) public view returns(uint256) {
+        uint256 id = _calculateId(name);
+        require(_exists(id));
+        return id;
+    }
+
+    function _calculateId(string name) internal pure returns (uint256) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 id = _nameHashPlayer[playerNameHash];
-        require(id != 0);
+        uint256 id = uint256(playerNameHash);
         return id;
     }
 }

@@ -12,17 +12,17 @@ contract('CryptoPlayersLink', (accounts) => {
     });
 
     it('set team not possible by any account', async () =>{
-        const playerId = 1;
         const teamId = 1;
-        await contract.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await contract.getPlayerId("player").should.be.fulfilled;
         await contract.setTeam(playerId, teamId).should.be.rejected;
     });
 
     it('set team possible by team account', async () => {
-        const playerId = 1;
         const teamId = 1;
         await contract.setTeamsContract(accounts[0]).should.be.fulfilled;
-        await contract.mintWithName(accounts[0], playerId, "player").should.be.fulfilled;
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const playerId = await contract.getPlayerId("player").should.be.fulfilled;
         await contract.setTeam(playerId, teamId).should.be.fulfilled;
     })
 

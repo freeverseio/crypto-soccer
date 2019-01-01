@@ -14,7 +14,7 @@ contract CryptoTeamsLink is CryptoTeamsBase {
     function addPlayer(uint256 teamId, uint256 playerId) public {
         require(_playerExists(playerId), "unexistent player");
         _cryptoPlayers.setTeam(playerId, teamId);
-        super.addPlayer(teamId, playerId);
+        _addPlayer(teamId, playerId);
     }
 
     function transferFrom(address from, address to, uint256 teamId) public {
