@@ -21,11 +21,16 @@ contract('CryptoPlayersMintable', (accounts) => {
         await contract.mintWithName(accounts[0], "player").should.be.rejected;
     });
 
-    it('get name', async () => {
+    it('name is correct', async () => {
         await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("player");
+    });
+
+    it('compute id from name', async () => {
+        const id = await contract.computeId("player").should.be.fulfilled;
+        id.toNumber().should.be.equal(2.28092867984879e+76);
     });
 
     it('get player id of existing player', async () => {
