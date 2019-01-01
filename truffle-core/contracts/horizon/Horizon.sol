@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "../helpers.sol";
+import "../HelperFunctions.sol";
 import "../ERC721/CryptoPlayers.sol";
 import "../ERC721/CryptoTeams.sol";
 

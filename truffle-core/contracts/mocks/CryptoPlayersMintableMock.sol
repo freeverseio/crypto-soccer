@@ -14,4 +14,8 @@ contract CryptoPlayersMintableMock is CryptoPlayersMintable {
     function computeId(string name) public pure returns (uint256) {
         return _computeId(name);
     }
+
+    function computeState(uint256 rndSeed, uint8 playerRole) public view returns(uint256) {
+        return _computeState(rndSeed, playerRole);
+    }
 }

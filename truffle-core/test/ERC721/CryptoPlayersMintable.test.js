@@ -51,4 +51,18 @@ contract('CryptoPlayersMintable', (accounts) => {
         const team = await contract.getTeam(playerId).should.be.fulfilled;
         team.toNumber().should.be.equal(0);
     });
+
+    it('state of minted player', async () => {
+        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        const id = await contract.getPlayerId("player").should.be.fulfilled;
+        const state = await contract.getState(id).should.be.fulfilled;
+        state.toNumber().should.be.equal(4.840858019534117e+22);
+    });
+
+    it('compute state', async () => {
+        const seed = 1;
+        const role = 2;
+        const state = await contract.computeState(seed, role).should.be.fulfilled;
+        state.toNumber().should.be.equal(3.8744659411803626e+25);
+    })
 });
