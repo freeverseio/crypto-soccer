@@ -77,6 +77,16 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
         _playerProps[playerId].name = name;
     }
 
+    function _setGenome(
+        uint16 defence,
+        uint16 speed,
+        uint16 pass,
+        uint16 shoot,
+        uint16 endurance
+    ) internal {
+
+    }
+
     function getDefence(uint256 playerId) external view returns (uint16) {
         return 0;
     }

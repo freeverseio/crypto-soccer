@@ -55,4 +55,19 @@ contract('CryptoPlayersStorage', (accounts) => {
         const state = await contract.getState(id).should.be.fulfilled;
         state.toNumber().should.be.equal(1);
     });
+
+    it('default skills', async () => {
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
+        const defence = await contract.getDefence(id).should.be.fulfilled;
+        defence.toNumber().should.be.equal(0);
+        const speed = await contract.getSpeed(id).should.be.fulfilled;
+        speed.toNumber().should.be.equal(0);
+        const pass = await contract.getPass(id).should.be.fulfilled;
+        pass.toNumber().should.be.equal(0);
+        const shoot = await contract.getShoot(id).should.be.fulfilled;
+        shoot.toNumber().should.be.equal(0);
+        const endurance = await contract.getEndurance(id).should.be.fulfilled;
+        endurance.toNumber().should.be.equal(0);
+    });
 });
