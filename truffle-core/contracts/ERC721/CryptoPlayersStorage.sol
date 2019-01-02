@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     struct Props {
         string name;
-        uint256 state;
+        uint88 genome;
         uint256 teamId;
     }
 
@@ -46,22 +46,6 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     }
 
     /**
-     * @dev sets state of existing player
-     */
-    function _setState(uint256 playerId, uint256 state) internal {
-        require(_exists(playerId));
-        _playerProps[playerId].state = state;
-    }
-
-    /**
-     * @dev returns state of existing player
-     */
-    function getState(uint256 playerId) public view returns(uint) {
-        require(_exists(playerId));
-        return _playerProps[playerId].state;
-    }
-
-    /**
      * @dev returns name of exiting player
      */
     function getName(uint256 playerId) external view returns(string) {
@@ -75,5 +59,54 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     function _setName(uint256 playerId, string name) internal {
         require(_exists(playerId));
         _playerProps[playerId].name = name;
+    }
+
+    function _setGenome(
+        uint256 playerId,
+        uint16 birth,
+        uint16 defence,
+        uint16 speed,
+        uint16 pass,
+        uint16 shoot,
+        uint16 endurance
+    ) internal {
+        require(_exists(playerId));
+        uint88 genome;
+        genome |= birth;
+        genome |= uint88(defence) << 14;
+        genome |= uint88(speed) << 14 * 2;
+        genome |= uint88(pass) << 14 * 3;
+        genome |= uint88(shoot) << 14 * 4;
+        genome |= uint88(endurance) << 14 * 5;
+        _playerProps[playerId].genome = genome;
+    }
+
+    function getGenome(uint256 playerId) public view returns (uint88){
+        require(_exists(playerId));
+        return _playerProps[playerId].genome;
+    }
+
+    function getBirth(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome);
+    }
+
+    function getDefence(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
+    }
+
+    function getSpeed(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
+    }
+
+    function getPass(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
+    }
+
+    function getShoot(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
+    }
+
+    function getEndurance(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 5);
     }
 }
