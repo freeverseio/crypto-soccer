@@ -51,18 +51,18 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
 
         /// @dev The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 sk = 0; sk < 5; sk++) {
-            skills[sk] = skills[sk] % 50;
-            excess += skills[sk];
+        for (i = 0; i < 5; i++) {
+            skills[i] = skills[i] % 50;
+            excess += skills[i];
         }
 
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        uint16 mm = (250 - excess) % 5;
-        excess = (250 - excess)/5;
-        for (sk = 0; sk < 5; sk++) {
-            skills[sk] = skills[sk] + excess;
-        }
-        for (i = 0 ; i < mm ; i++)
+        uint16 delta = (250 - excess) / 5;
+        for (i = 0; i < 5; i++) 
+            skills[i] = skills[i] + delta;
+
+        uint16 remainder = (250 - excess) % 5;
+        for (i = 0 ; i < remainder ; i++)
             skills[i]++;
 
         return skills;
