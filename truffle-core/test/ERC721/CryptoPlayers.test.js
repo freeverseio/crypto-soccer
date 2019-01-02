@@ -21,16 +21,4 @@ contract('CryptoPlayers', (accounts) => {
         const count = await contract.getNCreatedPlayers().should.be.fulfilled;
         count.toNumber().should.be.equal(0);
     });
-
-    it('add player', async () => {
-        const state = 34324;
-        await contract.addPlayer("player", state, accounts[0]).should.be.fulfilled;
-        const id = await contract.getPlayerId("player").should.be.fulfilled;
-        const count = await contract.getNCreatedPlayers().should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
-        const name = await contract.getName(id);
-        name.should.be.equal("player");
-        const stateResult = await contract.getState(id);
-        stateResult.toNumber().should.be.equal(state);
-    });
 });

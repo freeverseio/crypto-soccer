@@ -11,10 +11,6 @@ contract CryptoPlayersStorageMock is CryptoPlayersStorage {
         _mint(to, tokenId);
     }
 
-    function setState(uint256 playerId, uint256 state) public {
-        _setState(playerId, state);
-    }
-
     function setName(uint256 playerId, string name) public {
         _setName(playerId, name);
     }

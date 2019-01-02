@@ -15,7 +15,7 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
         uint256 state = _computeState(playerId, 0);
         _mint(to, playerId);
         _setName(playerId, name);
-        _setState(playerId, state);
+        // _setGenome(playerId, state);
     }
 
     function getPlayerId(string name) public view returns(uint256) {

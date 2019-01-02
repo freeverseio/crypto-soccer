@@ -9,7 +9,6 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     struct Props {
         string name;
-        uint256 state;
         uint88 genome;
         uint256 teamId;
     }
@@ -44,22 +43,6 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     function getTeam(uint256 playerId) public view returns (uint256) {
         require(_exists(playerId));
         return _playerProps[playerId].teamId;
-    }
-
-    /**
-     * @dev sets state of existing player
-     */
-    function _setState(uint256 playerId, uint256 state) internal {
-        require(_exists(playerId));
-        _playerProps[playerId].state = state;
-    }
-
-    /**
-     * @dev returns state of existing player
-     */
-    function getState(uint256 playerId) public view returns(uint) {
-        require(_exists(playerId));
-        return _playerProps[playerId].state;
     }
 
     /**
@@ -98,7 +81,7 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
         _playerProps[playerId].genome = genome;
     }
 
-    function getGenome(uint256 playerId) external view returns (uint256){
+    function getGenome(uint256 playerId) public view returns (uint88){
         require(_exists(playerId));
         return _playerProps[playerId].genome;
     }
