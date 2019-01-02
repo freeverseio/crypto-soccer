@@ -13,7 +13,7 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
     function mintWithName(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
         uint16 birth = uint16(block.number);  // TODO: reformulate
-        uint16[5] memory skills = _computeSkills(name);
+        uint16[5] memory skills = _computeSkills(playerId);
         _mint(to, playerId);
         _setName(playerId, name);
         _setGenome(
@@ -39,26 +39,32 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
         return id;
     }
 
-    function _computeSkills(string name) internal pure returns (uint16[5]) {
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 seed = uint256(playerNameHash);
+    function _computeSkills(uint256 seed) internal view returns (uint16[5]) {
+        uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number-1))));
+        uint256 rna = rand + seed;
 
-        uint16[5] memory states;
+        uint16[5] memory skills;
         for (uint8 i = 0; i<5; i++) {
-            states[i] = uint16(seed & 0x3fff);
-            seed >>= 14;
+            skills[i] = uint16(rna & 0x3fff);
+            rna >>= 14;
         }
-        /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
+
+        /// @dev The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 sk = 0; sk < 5; sk++) {
-            states[sk] = states[sk] % 50;
-            excess += states[sk];
+        for (i = 0; i < 5; i++) {
+            skills[i] = skills[i] % 50;
+            excess += skills[i];
         }
+
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        excess = (250 - excess)/5;
-        for (sk = 0; sk < 5; sk++) {
-            states[sk] = states[sk] + excess;
-        }
-        return states;
+        uint16 delta = (250 - excess) / 5;
+        for (i = 0; i < 5; i++) 
+            skills[i] = skills[i] + delta;
+
+        uint16 remainder = (250 - excess) % 5;
+        for (i = 0 ; i < remainder ; i++)
+            skills[i]++;
+
+        return skills;
     }
 }

@@ -52,16 +52,23 @@ contract('CryptoPlayersMintable', (accounts) => {
         team.toNumber().should.be.equal(0);
     });
 
-    it('genome of minted player', async () => {
+    it('minted player skills sum is 250', async () => {
         await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
-        const genome = await contract.getGenome(id).should.be.fulfilled;
-        genome.toString(16).should.be.equal('f804400d80200088015');
+        const defence = await contract.getDefence(id).should.be.fulfilled;
+        const speed = await contract.getSpeed(id).should.be.fulfilled;
+        const pass = await contract.getPass(id).should.be.fulfilled;
+        const shoot = await contract.getShoot(id).should.be.fulfilled;
+        const endurance = await contract.getEndurance(id).should.be.fulfilled;
+        const sum = defence.toNumber() + speed.toNumber() + pass.toNumber() + shoot.toNumber() + endurance.toNumber();
+        sum.should.be.equal(250);
     });
 
-    it('skills sum is 250', async () => {
-        const state = await contract.computeSkills("player").should.be.fulfilled;
-        const sum = state.reduce((a, b) => a + b.toNumber(), 0);
-        sum.should.be.equal(250);
-    })
+    it('sum of computed skills is 250', async () => {
+        for (var i = 0; i < 10; i++) {
+            const skills = await contract.computeSkills(Math.random()).should.be.fulfilled;
+            const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+            sum.should.be.equal(250);
+        }
+    });
 });
