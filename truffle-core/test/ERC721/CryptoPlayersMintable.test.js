@@ -56,13 +56,12 @@ contract('CryptoPlayersMintable', (accounts) => {
         await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         const genome = await contract.getGenome(id).should.be.fulfilled;
-        genome.toString(16).should.be.equal('0');
+        genome.toString(16).should.be.equal('f804400d80200088015');
     });
 
-    it('compute genome', async () => {
-        const seed = 1;
-        const role = 2;
-        const state = await contract.computeState(seed, role).should.be.fulfilled;
-        state.toString(16).should.be.equal('200c803200c803200c8185');
+    it('skills sum is 250', async () => {
+        const state = await contract.computeSkills("player").should.be.fulfilled;
+        const sum = state.reduce((a, b) => a + b.toNumber(), 0);
+        sum.should.be.equal(250);
     })
 });

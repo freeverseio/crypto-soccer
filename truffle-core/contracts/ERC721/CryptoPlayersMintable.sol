@@ -12,10 +12,19 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunctions, MinterRole {
     function mintWithName(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
-        uint256 state = _computeState(playerId, 0);
         _mint(to, playerId);
         _setName(playerId, name);
-        // _setGenome(playerId, state);
+        uint16 birth = uint16(block.number);  // TODO: reformulate
+        uint16[5] memory skills = _computeSkills(name);
+        _setGenome(
+            playerId, 
+            birth,
+            skills[0],
+            skills[1],
+            skills[2],
+            skills[3],
+            skills[4]
+            );
     }
 
     function getPlayerId(string name) public view returns(uint256) {
@@ -30,41 +39,31 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
         return id;
     }
 
-    /// @dev Main interface to create a player by users. We receive a random number,
-    /// @dev computed elsewhere (e.g. from hash(name+userChoice+dorsal)) and create 
-    /// @dev a balanced player whose skills add up to 250.
-    function _computeState(uint256 rndSeed, uint8 playerRole) internal view returns(uint256)
-    {
-        /// @dev Get random numbers between 0 and 9999 and assign them to states, where:
-        /// @dev state[0] -> age, state[6] -> role
-        /// @dev state[1]...state[5] -> skills
-        uint16[] memory states = decode(kNumStates, rndSeed, kBitsPerState);
+    function _computeSkills(string name) internal pure returns (uint16[5]) {
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        uint256 seed = uint256(playerNameHash);
+        uint16[5] memory states = decodeHere(seed);
+        return states; 
+    }
 
-        /// @dev Last number is role, as provided from outside. Just store it.
-        states[kStatRole] = playerRole;
-
-        /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
-        states[kStatBirth] = 16 + (states[0] % 20);
-
-        /// @dev Convert age to monthOfBirthAfterUnixEpoch.
-        /// @dev TODO: We can optimize by not declaring these as variables, and putting the exact numbers. 
-        /// @dev I leave it this way for clarity, for the time being.
-        uint years2secs = 365 * 24 * 3600;
-        uint month2secs = 30 * 24 * 3600;
-        states[kStatBirth] = uint16((block.timestamp - states[0] * years2secs) / month2secs);
-
+    function decodeHere(uint256 serialized) internal pure returns (uint16[5]) {
+        uint256 copy = serialized;
+        uint16[5] memory states;
+        for (uint8 i = 0; i<5; i++) {
+            states[i] = uint16(copy & 0x3fff);
+            copy >>= 14;
+        }
         /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 sk = kStatDef; sk <= kStatEndur; sk++) {
+        for (uint8 sk = 0; sk < 5; sk++) {
             states[sk] = states[sk] % 50;
             excess += states[sk];
         }
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        excess = (250 - excess)/kNumSkills;
-        for (sk = kStatDef; sk <= kStatEndur; sk++) {
+        excess = (250 - excess)/5;
+        for (sk = 0; sk < 5; sk++) {
             states[sk] = states[sk] + excess;
         }
-
-        return serialize(kNumStates, states, kBitsPerState);
+        return states;
     }
 }

@@ -20,8 +20,7 @@ contract Horizon is HelperFunctions {
         for (uint i = 0; i<11; i++) {
             string memory postFix = uint2str(i);
             string memory playerName = strConcat(name, "_", postFix);
-            uint256 state = 0; // TODO set a balanced state
-            _cryptoPlayers.addPlayer(playerName, state, msg.sender);
+            _cryptoPlayers.mintWithName(msg.sender, playerName);
             uint256 playerId = _cryptoPlayers.getPlayerId(playerName);
             _cryptoTeams.addPlayer(teamId, playerId);
         }

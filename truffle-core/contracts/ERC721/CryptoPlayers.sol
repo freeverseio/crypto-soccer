@@ -3,10 +3,6 @@ pragma solidity ^0.4.24;
 import "./CryptoPlayersMetadata.sol";
 
 contract CryptoPlayers is CryptoPlayersMetadata {
-    function addPlayer(string memory name, uint state, address owner) public {
-        mintWithName(owner, name);
-    }
-
     function getNCreatedPlayers() public view returns(uint) { 
         return totalSupply();
     }
