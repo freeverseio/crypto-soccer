@@ -52,7 +52,7 @@ contract('CryptoPlayersMintable', (accounts) => {
         team.toNumber().should.be.equal(0);
     });
 
-    it('sum of skills is 250', async () => {
+    it('minted player skills sum is 250', async () => {
         await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         const defence = await contract.getDefence(id).should.be.fulfilled;
@@ -62,5 +62,13 @@ contract('CryptoPlayersMintable', (accounts) => {
         const endurance = await contract.getEndurance(id).should.be.fulfilled;
         const sum = defence.toNumber() + speed.toNumber() + pass.toNumber() + shoot.toNumber() + endurance.toNumber();
         sum.should.be.equal(250);
-    })
+    });
+
+    it('sum of computed skills is 250', async () => {
+        for (var i = 0; i < 10; i++) {
+            const skills = await contract.computeSkills(Math.random()).should.be.fulfilled;
+            const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+            sum.should.be.equal(250);
+        }
+    });
 });

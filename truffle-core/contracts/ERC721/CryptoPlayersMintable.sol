@@ -57,10 +57,14 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
         }
 
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
+        uint16 mm = (250 - excess) % 5;
         excess = (250 - excess)/5;
         for (sk = 0; sk < 5; sk++) {
             skills[sk] = skills[sk] + excess;
         }
+        for (i = 0 ; i < mm ; i++)
+            skills[i]++;
+
         return skills;
     }
 }
