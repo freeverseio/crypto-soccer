@@ -80,6 +80,7 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
 
     function _setGenome(
         uint256 playerId,
+        uint16 birth,
         uint16 defence,
         uint16 speed,
         uint16 pass,
@@ -88,7 +89,8 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     ) internal {
         require(_exists(playerId));
         uint88 genome;
-        genome |= defence << 14;
+        genome |= birth;
+        genome |= uint88(defence) << 14;
         genome |= uint88(speed) << 14 * 2;
         genome |= uint88(pass) << 14 * 3;
         genome |= uint88(shoot) << 14 * 4;
@@ -99,6 +101,10 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     function getGenome(uint256 playerId) external view returns (uint256){
         require(_exists(playerId));
         return _playerProps[playerId].genome;
+    }
+
+    function getBirth(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome);
     }
 
     function getDefence(uint256 playerId) external view returns (uint16) {
