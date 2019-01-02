@@ -70,4 +70,38 @@ contract('CryptoPlayersStorage', (accounts) => {
         const endurance = await contract.getEndurance(id).should.be.fulfilled;
         endurance.toNumber().should.be.equal(0);
     });
+
+    it('set genome', async () => {
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
+        const defence = 0x01;
+        const speed = 0x02;
+        const pass = 0x03;
+        const shoot = 0x04;
+        const endurance = 0x05;
+        await contract.setGenome(id, defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const genome = await contract.getGenome(id).should.be.fulfilled;
+        genome.toString(16).should.be.equal('50004000300020001');
+    });
+
+    it('get skills', async () => {
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
+        const defence = 0x01;
+        const speed = 0x02;
+        const pass = 0x03;
+        const shoot = 0x04;
+        const endurance = 0x05;
+        await contract.setGenome(id, defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        let skill = await contract.getDefence(id).should.be.fulfilled;
+        skill.toNumber().should.be.equal(defence);
+        skill = await contract.getSpeed(id).should.be.fulfilled;
+        skill.toNumber().should.be.equal(speed);
+        skill = await contract.getPass(id).should.be.fulfilled;
+        skill.toNumber().should.be.equal(pass);
+        skill = await contract.getShoot(id).should.be.fulfilled;
+        skill.toNumber().should.be.equal(shoot);
+        skill = await contract.getEndurance(id).should.be.fulfilled;
+        skill.toNumber().should.be.equal(endurance);
+    });
 });
