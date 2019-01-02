@@ -12,10 +12,10 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunctions, MinterRole {
     function mintWithName(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
-        _mint(to, playerId);
-        _setName(playerId, name);
         uint16 birth = uint16(block.number);  // TODO: reformulate
         uint16[5] memory skills = _computeSkills(name);
+        _mint(to, playerId);
+        _setName(playerId, name);
         _setGenome(
             playerId, 
             birth,
@@ -42,16 +42,11 @@ contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunc
     function _computeSkills(string name) internal pure returns (uint16[5]) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 seed = uint256(playerNameHash);
-        uint16[5] memory states = decodeHere(seed);
-        return states; 
-    }
 
-    function decodeHere(uint256 serialized) internal pure returns (uint16[5]) {
-        uint256 copy = serialized;
         uint16[5] memory states;
         for (uint8 i = 0; i<5; i++) {
-            states[i] = uint16(copy & 0x3fff);
-            copy >>= 14;
+            states[i] = uint16(seed & 0x3fff);
+            seed >>= 14;
         }
         /// @dev The next 5 are states skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
