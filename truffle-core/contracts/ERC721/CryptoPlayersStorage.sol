@@ -10,7 +10,7 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint256 state;
-        uint256 genome;
+        uint112 genome;
         uint256 teamId;
     }
 
@@ -87,12 +87,12 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
         uint16 endurance
     ) internal {
         require(_exists(playerId));
-        uint256 genome;
+        uint112 genome;
         genome |= defence;
-        genome |= uint256(speed) << 16;
-        genome |= uint256(pass) << 16 * 2;
-        genome |= uint256(shoot) << 16 * 3;
-        genome |= uint256(endurance) << 16 * 4;
+        genome |= uint112(speed) << 14;
+        genome |= uint112(pass) << 14 * 2;
+        genome |= uint112(shoot) << 14 * 3;
+        genome |= uint112(endurance) << 14 * 4;
         _playerProps[playerId].genome = genome;
     }
 
@@ -102,23 +102,22 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     }
 
     function getDefence(uint256 playerId) external view returns (uint16) {
-        uint16 defence = uint16(_playerProps[playerId].genome);
-        return defence;
+        return 0x3fff & uint16(_playerProps[playerId].genome);
     }
 
     function getSpeed(uint256 playerId) external view returns (uint16) {
-        return  uint16(_playerProps[playerId].genome >> 16);
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
     }
 
     function getPass(uint256 playerId) external view returns (uint16) {
-        return  uint16(_playerProps[playerId].genome >> 16 * 2);
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
     }
 
     function getShoot(uint256 playerId) external view returns (uint16) {
-        return  uint16(_playerProps[playerId].genome >> 16 * 3);
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
     }
 
     function getEndurance(uint256 playerId) external view returns (uint16) {
-        return  uint16(_playerProps[playerId].genome >> 16 * 4);
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
     }
 }

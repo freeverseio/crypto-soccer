@@ -81,7 +81,7 @@ contract('CryptoPlayersStorage', (accounts) => {
         const endurance = 0x05;
         await contract.setGenome(id, defence, speed, pass, shoot, endurance).should.be.fulfilled;
         const genome = await contract.getGenome(id).should.be.fulfilled;
-        genome.toString(16).should.be.equal('50004000300020001');
+        genome.toString(16).should.be.equal('500100030008001');
     });
 
     it('get skills', async () => {
