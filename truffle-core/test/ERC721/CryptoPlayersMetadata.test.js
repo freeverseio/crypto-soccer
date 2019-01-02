@@ -31,7 +31,8 @@ contract('CryptoPlayersMetadata', (accounts) => {
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         await contract.setTokensURI("URI").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        uri.should.be.equal("URI?genome=73201580638377182003210");
+        const genome = await contract.getGenome(id).should.be.fulfilled;
+        uri.should.be.equal("URI?genome=" + genome.toString(10));
     });
 
     it('set URI without being URIer', async () => {
