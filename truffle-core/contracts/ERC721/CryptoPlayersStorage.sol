@@ -10,7 +10,7 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint256 state;
-        uint112 genome;
+        uint88 genome;
         uint256 teamId;
     }
 
@@ -87,12 +87,12 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
         uint16 endurance
     ) internal {
         require(_exists(playerId));
-        uint112 genome;
+        uint88 genome;
         genome |= defence;
-        genome |= uint112(speed) << 14;
-        genome |= uint112(pass) << 14 * 2;
-        genome |= uint112(shoot) << 14 * 3;
-        genome |= uint112(endurance) << 14 * 4;
+        genome |= uint88(speed) << 14;
+        genome |= uint88(pass) << 14 * 2;
+        genome |= uint88(shoot) << 14 * 3;
+        genome |= uint88(endurance) << 14 * 4;
         _playerProps[playerId].genome = genome;
     }
 
