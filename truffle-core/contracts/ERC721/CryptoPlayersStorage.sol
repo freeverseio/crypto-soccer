@@ -88,11 +88,11 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     ) internal {
         require(_exists(playerId));
         uint88 genome;
-        genome |= defence;
-        genome |= uint88(speed) << 14;
-        genome |= uint88(pass) << 14 * 2;
-        genome |= uint88(shoot) << 14 * 3;
-        genome |= uint88(endurance) << 14 * 4;
+        genome |= defence << 14;
+        genome |= uint88(speed) << 14 * 2;
+        genome |= uint88(pass) << 14 * 3;
+        genome |= uint88(shoot) << 14 * 4;
+        genome |= uint88(endurance) << 14 * 5;
         _playerProps[playerId].genome = genome;
     }
 
@@ -102,22 +102,22 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     }
 
     function getDefence(uint256 playerId) external view returns (uint16) {
-        return 0x3fff & uint16(_playerProps[playerId].genome);
-    }
-
-    function getSpeed(uint256 playerId) external view returns (uint16) {
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
     }
 
-    function getPass(uint256 playerId) external view returns (uint16) {
+    function getSpeed(uint256 playerId) external view returns (uint16) {
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
     }
 
-    function getShoot(uint256 playerId) external view returns (uint16) {
+    function getPass(uint256 playerId) external view returns (uint16) {
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
     }
 
-    function getEndurance(uint256 playerId) external view returns (uint16) {
+    function getShoot(uint256 playerId) external view returns (uint16) {
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
+    }
+
+    function getEndurance(uint256 playerId) external view returns (uint16) {
+        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 5);
     }
 }
