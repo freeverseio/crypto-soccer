@@ -62,8 +62,15 @@ contract CryptoPlayersTeam is CryptoPlayersMintable {
         return _cryptoTeams;
     }
 
-    function setTeam(uint256 playerId, uint256 teamId) public {
-        require(msg.sender == address(_cryptoTeams));
+    function setTeam(uint256 playerId, uint256 teamId) public onlyTeamsContract {
         _setTeam(playerId, teamId);
+    }
+
+    /**
+     * @dev Throws if called by any account other that the CyptoTeams.
+     */
+    modifier onlyTeamsContract() {
+        require(msg.sender == address(_cryptoTeams));
+        _;
     }
 }
