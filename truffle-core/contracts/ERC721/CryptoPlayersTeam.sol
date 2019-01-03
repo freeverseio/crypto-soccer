@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoPlayersMintable.sol";
+import "./CoachRole.sol";
 import "./CryptoTeamsPlayers.sol";
 
 /**
  * @title CryptoPlayersTeam
  * @dev CryptPlayers team logic
  */
-contract CryptoPlayersTeam is CryptoPlayersMintable {
-    CryptoTeamsPlayers private _cryptoTeams;
+contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     mapping(uint256 => uint256) _playerTeam;
 
     /**
@@ -49,28 +49,10 @@ contract CryptoPlayersTeam is CryptoPlayersMintable {
      *    is an operator of the owner, or is the owner of the token
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
-        if (spender == address(_cryptoTeams))
-            return true;
-        return super._isApprovedOrOwner(spender, tokenId);
+        return isCoach(spender) || super._isApprovedOrOwner(spender, tokenId);
     }
 
-    function setTeamsContract(address cryptoTeams) public {
-        _cryptoTeams = CryptoTeamsPlayers(cryptoTeams);
-    }
-
-    function getTeamsContract() external view returns (address) {
-        return _cryptoTeams;
-    }
-
-    function setTeam(uint256 playerId, uint256 teamId) public onlyTeamsContract {
+    function setTeam(uint256 playerId, uint256 teamId) public onlyCoach {
         _setTeam(playerId, teamId);
-    }
-
-    /**
-     * @dev Throws if called by any account other that the CyptoTeams.
-     */
-    modifier onlyTeamsContract() {
-        require(msg.sender == address(_cryptoTeams));
-        _;
     }
 }

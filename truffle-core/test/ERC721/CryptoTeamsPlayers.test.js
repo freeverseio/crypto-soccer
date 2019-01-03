@@ -13,7 +13,7 @@ contract('CryptoTeamsPlayers', (accounts) => {
         cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
         contract = await CryptoTeams.new().should.be.fulfilled;
         await contract.setPlayersContract(cryptoPlayers.address).should.be.fulfilled;
-        await cryptoPlayers.setTeamsContract(contract.address).should.be.fulfilled;
+        await cryptoPlayers.addCoach(contract.address).should.be.fulfilled;
     });
 
     it('add unexistent player to team', async () => {
