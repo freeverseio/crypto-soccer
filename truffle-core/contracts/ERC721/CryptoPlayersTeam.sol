@@ -20,7 +20,8 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     }
     
     function setTeam(uint256 playerId, uint256 teamId) public onlyCoach {
-        _setTeam(playerId, teamId);
+        require(_exists(playerId));
+        _playerTeam[playerId] = teamId;
     }
 
     /**
@@ -35,14 +36,6 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     function transferFrom(address from, address to, uint256 playerId) public {
         super.transferFrom(from, to, playerId);
         _playerTeam[playerId] = 0;
-    }
-
-    /**
-     * @dev sets team id for existing player
-     */
-    function _setTeam(uint256 playerId, uint256 teamId) internal {
-        require(_exists(playerId));
-        _playerTeam[playerId] = teamId;
     }
 
     /**
