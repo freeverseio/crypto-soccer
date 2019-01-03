@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "./CryptoTeamsMintable.sol";
 import "./CryptoPlayersTeam.sol";
 
-contract CryptoTeamsLink is CryptoTeamsMintable {
+contract CryptoTeamsPlayers is CryptoTeamsMintable {
     CryptoPlayersTeam private _cryptoPlayers;
 
     function setPlayersContract(address cryptoPlayers) public {
