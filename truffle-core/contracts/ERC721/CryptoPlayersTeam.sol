@@ -10,6 +10,18 @@ import "./CryptoTeamsPlayers.sol";
  */
 contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     mapping(uint256 => uint256) _playerTeam;
+    
+    /**
+     * @dev returns team id of existing player
+     */
+    function getTeam(uint256 playerId) public view returns (uint256) {
+        require(_exists(playerId));
+        return _playerTeam[playerId];
+    }
+    
+    function setTeam(uint256 playerId, uint256 teamId) public onlyCoach {
+        _setTeam(playerId, teamId);
+    }
 
     /**
      * @dev Transfers the ownership of a given player ID to another address
@@ -22,7 +34,7 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     */
     function transferFrom(address from, address to, uint256 playerId) public {
         super.transferFrom(from, to, playerId);
-        _setTeam(playerId, 0);
+        _playerTeam[playerId] = 0;
     }
 
     /**
@@ -34,13 +46,6 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     }
 
     /**
-     * @dev returns team id of existing player
-     */
-    function getTeam(uint256 playerId) public view returns (uint256) {
-        require(_exists(playerId));
-        return _playerTeam[playerId];
-    }
-    /**
      * @dev Returns whether the given spender can transfer a given token ID
      * team contract can transfer all token ID
      * @param spender address of the spender to query
@@ -50,9 +55,5 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
         return isCoach(spender) || super._isApprovedOrOwner(spender, tokenId);
-    }
-
-    function setTeam(uint256 playerId, uint256 teamId) public onlyCoach {
-        _setTeam(playerId, teamId);
     }
 }
