@@ -10,7 +10,7 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
  * @dev CryptoPlayers minting logic
  */
 contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunctions, MinterRole {
-    function mintWithName(address to, string memory name) public onlyMinter {
+    function mint(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
         uint16 birth = uint16(block.number);  // TODO: reformulate
         uint16[5] memory skills = _computeSkills(playerId);

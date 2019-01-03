@@ -17,12 +17,12 @@ contract('CryptoPlayersMintable', (accounts) => {
     });
 
     it('mint 2 player with same name', async () => {
-        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
-        await contract.mintWithName(accounts[0], "player").should.be.rejected;
+        await contract.mint(accounts[0], "player").should.be.fulfilled;
+        await contract.mint(accounts[0], "player").should.be.rejected;
     });
 
     it('name is correct', async () => {
-        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        await contract.mint(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("player");
@@ -34,7 +34,7 @@ contract('CryptoPlayersMintable', (accounts) => {
     });
 
     it('get player id of existing player', async () => {
-        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        await contract.mint(accounts[0], "player").should.be.fulfilled;
         await contract.getPlayerId("player").should.be.fulfilled;
     });
 
@@ -43,7 +43,7 @@ contract('CryptoPlayersMintable', (accounts) => {
     });
 
     it('minted player skills sum is 250', async () => {
-        await contract.mintWithName(accounts[0], "player").should.be.fulfilled;
+        await contract.mint(accounts[0], "player").should.be.fulfilled;
         const id = await contract.getPlayerId("player").should.be.fulfilled;
         const defence = await contract.getDefence(id).should.be.fulfilled;
         const speed = await contract.getSpeed(id).should.be.fulfilled;

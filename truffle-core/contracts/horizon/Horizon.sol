@@ -14,13 +14,13 @@ contract Horizon is HelperFunctions {
     }
 
     function createTeam(string name) public {
-        _cryptoTeams.mintWithName(msg.sender, name);
+        _cryptoTeams.mint(msg.sender, name);
         uint256 teamId = _cryptoTeams.getTeamId(name);
 
         for (uint i = 0; i<11; i++) {
             string memory postFix = uint2str(i);
             string memory playerName = strConcat(name, "_", postFix);
-            _cryptoPlayers.mintWithName(msg.sender, playerName);
+            _cryptoPlayers.mint(msg.sender, playerName);
             uint256 playerId = _cryptoPlayers.getPlayerId(playerName);
             _cryptoTeams.addPlayer(teamId, playerId);
         }

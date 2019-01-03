@@ -13,7 +13,7 @@ contract('CryptoTeamsMintable', (accounts) => {
     });
 
     it('mint team', async () => {
-        await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
+        await contract.mint(accounts[0], "team").should.be.fulfilled;
         const id = await contract.getTeamId("team").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
@@ -22,19 +22,19 @@ contract('CryptoTeamsMintable', (accounts) => {
     });
 
     it('mint team with same name is forbidden', async () =>  {
-        await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
-        await contract.mintWithName(accounts[0], "team").should.be.rejected;
+        await contract.mint(accounts[0], "team").should.be.fulfilled;
+        await contract.mint(accounts[0], "team").should.be.rejected;
     });
 
     it('name of minted team', async () => {
-        await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
+        await contract.mint(accounts[0], "team").should.be.fulfilled;
         const id = await contract.getTeamId("team").should.be.fulfilled;
         const name = await contract.getName(id).should.be.fulfilled;
         name.should.be.equal("team");
     });
 
     it('get team id', async () => {
-        await contract.mintWithName(accounts[0], "team").should.be.fulfilled;
+        await contract.mint(accounts[0], "team").should.be.fulfilled;
         const id = await contract.getTeamId("team").should.be.fulfilled;
     });
 
