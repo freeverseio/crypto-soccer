@@ -4,10 +4,10 @@ import "./CryptoPlayersMintable.sol";
 import "./CryptoTeamsLink.sol";
 
 /**
- * @title CryptoPlayersLink
- * @dev CryptPlayers team link logic
+ * @title CryptoPlayersTeam
+ * @dev CryptPlayers team logic
  */
-contract CryptoPlayersLink is CryptoPlayersMintable {
+contract CryptoPlayersTeam is CryptoPlayersMintable {
     CryptoTeamsLink private _cryptoTeams;
     mapping(uint256 => uint256) _playerTeam;
 
