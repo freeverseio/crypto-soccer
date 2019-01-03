@@ -25,7 +25,7 @@ contract CryptoTeamsMetadata is ERC721Metadata("CryptoSoccerTeams", "CST"), Cryp
      * @dev Internal function to set the token URI for all token
      * @param uri string URI to assign
      */
-    function _setTokensURI(string uri) internal onlyURIer { 
+    function setTokensURI(string uri) public onlyURIer { 
         _teamsURI = uri;
     }
 }
