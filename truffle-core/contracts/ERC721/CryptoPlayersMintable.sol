@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersStorage.sol";
+import "./CryptoPlayersProps.sol";
 import "../CryptoSoccer.sol";
 import "../HelperFunctions.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
  * @title CryptoPlayersMintable
  * @dev CryptoPlayers minting logic
  */
-contract CryptoPlayersMintable is CryptoPlayersStorage, CryptoSoccer, HelperFunctions, MinterRole {
+contract CryptoPlayersMintable is CryptoPlayersProps, CryptoSoccer, HelperFunctions, MinterRole {
     function mint(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
         uint16 birth = uint16(block.number);  // TODO: reformulate
