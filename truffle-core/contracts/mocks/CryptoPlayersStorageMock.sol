@@ -15,10 +15,6 @@ contract CryptoPlayersStorageMock is CryptoPlayersStorage {
         _setName(playerId, name);
     }
 
-    function setTeam(uint256 playerId, uint256 teamId) public {
-        _setTeam(playerId, teamId);
-    }
-
     function setGenome(
         uint256 playerId,
         uint16 birth,

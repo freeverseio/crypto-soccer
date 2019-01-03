@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoTeamsMintable.sol";
-import "./CryptoPlayersLink.sol";
+import "./CryptoPlayersTeam.sol";
 
-contract CryptoTeamsLink is CryptoTeamsMintable {
-    CryptoPlayersLink private _cryptoPlayers;
+contract CryptoTeamsPlayers is CryptoTeamsMintable {
+    CryptoPlayersTeam private _cryptoPlayers;
 
     function setPlayersContract(address cryptoPlayers) public {
-        _cryptoPlayers = CryptoPlayersLink(cryptoPlayers);
+        _cryptoPlayers = CryptoPlayersTeam(cryptoPlayers);
     }
 
     function addPlayer(uint256 teamId, uint256 playerId) public {

@@ -2,10 +2,10 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersLink');
-const CryptoTeams = artifacts.require('CryptoTeamsLink');
+const CryptoPlayers = artifacts.require('CryptoPlayersTeam');
+const CryptoTeams = artifacts.require('CryptoTeamsPlayers');
 
-contract('CryptoTeamsLink', (accounts) => {
+contract('CryptoTeamsPlayers', (accounts) => {
     let contract = null;
     let cryptoPlayers = null;
 
