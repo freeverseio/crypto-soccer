@@ -10,40 +10,9 @@ contract CryptoPlayersStorage is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint88 genome;
-        uint256 teamId;
     }
 
     mapping(uint256 => Props) private _playerProps;
-
-    /**
-     * @dev Transfers the ownership of a given player ID to another address
-     * and reset the owner Team ID
-     * Usage of this method is discouraged, use `safeTransferFrom` whenever possible
-     * Requires the msg sender to be the owner, approved, or operator
-     * @param from current owner of the player
-     * @param to address to receive the ownership of the given player ID
-     * @param playerId uint256 ID of the player to be transferred
-    */
-    function transferFrom(address from, address to, uint256 playerId) public {
-        super.transferFrom(from, to, playerId);
-        _setTeam(playerId, 0);
-    }
-
-    /**
-     * @dev sets team id for existing player
-     */
-    function _setTeam(uint256 playerId, uint256 teamId) internal {
-        require(_exists(playerId));
-        _playerProps[playerId].teamId = teamId;
-    }
-
-    /**
-     * @dev returns team id of existing player
-     */
-    function getTeam(uint256 playerId) public view returns (uint256) {
-        require(_exists(playerId));
-        return _playerProps[playerId].teamId;
-    }
 
     /**
      * @dev returns name of exiting player
