@@ -30,5 +30,14 @@ contract('Horizon', (accounts) => {
         teamCount.toNumber().should.be.equal(1);
         const playerCount = await cryptoPlayers.totalSupply().should.be.fulfilled;
         playerCount.toNumber().should.be.equal(11);
+
+        // TODO way to much for a single test
+        const teamId = await cryptoTeams.getTeamId("team").should.be.fulfilled;
+        const players = await cryptoTeams.getPlayers(teamId).should.be.fulfilled;
+        for(var i=0 ; i < players.length ; i++){
+            const playerId = players[i];
+            const result = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
+            result.toNumber().should.be.equal(teamId.toNumber());
+        }
     })
 });
