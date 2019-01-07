@@ -7,7 +7,11 @@ import "./URIerRole.sol";
 contract CryptoPlayersMetadata is ERC721Metadata("CryptoSoccerPlayers", "CSP"), CryptoPlayersTeam, URIerRole {
     string private _URI;
 
-    function setTokensURI(string uri) public onlyURIer { 
+    function getBaseTokenURI() external view returns (string) {
+        return _URI;
+    }
+
+    function setBaseTokenURI(string uri) public onlyURIer { 
         _URI = uri;
     }
 
