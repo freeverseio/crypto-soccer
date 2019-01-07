@@ -47,6 +47,17 @@ contract('CryptoPlayersProps', (accounts) => {
         genome.toString(16).should.be.equal('14004000c002000400c');
     });
 
+    it('get infos of unexistent player', async () => {
+        const id = 1;
+        await contract.getGenome(id).should.be.rejected;
+        await contract.getBirth(id).should.be.rejected;
+        await contract.getDefence(id).should.be.rejected;
+        await contract.getSpeed(id).should.be.rejected;
+        await contract.getPass(id).should.be.rejected;
+        await contract.getShoot(id).should.be.rejected;
+        await contract.getEndurance(id).should.be.rejected;
+    });
+
     it('get infos coded into genome', async () => {
         const id = 1;
         await contract.mint(accounts[0], id).should.be.fulfilled;
