@@ -12,42 +12,70 @@ contract CryptoPlayersProps is ERC721, ERC721Enumerable {
         uint88 genome;
     }
 
+    // Mapping from player ID to Props
     mapping(uint256 => Props) private _playerProps;
 
     /**
-     * @dev returns name of exiting player
+     * @return name of existing player
      */
     function getName(uint256 playerId) external view returns(string) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
     }
 
+    /**
+     * @return genome of existing player
+     */
     function getGenome(uint256 playerId) public view returns (uint88){
         require(_exists(playerId));
         return _playerProps[playerId].genome;
     }
 
+    /**
+     * @return birth of existing player
+     */
     function getBirth(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome);
     }
-
+    
+    /**
+     * @return defence of existing player
+     */
     function getDefence(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
     }
-
+    
+    /**
+     * @return speed of existing player
+     */
     function getSpeed(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
     }
-
+    
+    /**
+     * @return pass of existing player
+     */
     function getPass(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
     }
-
+    
+    /**
+     * @return shoot of existing player
+     */
     function getShoot(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
     }
-
+    
+    /**
+     * @return endurance of existing player
+     */
     function getEndurance(uint256 playerId) external view returns (uint16) {
+        require(_exists(playerId));
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 5);
     }
 
@@ -79,4 +107,3 @@ contract CryptoPlayersProps is ERC721, ERC721Enumerable {
         _playerProps[playerId].genome = genome;
     }
 }
-
