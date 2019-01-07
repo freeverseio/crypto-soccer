@@ -17,8 +17,10 @@ contract CryptoPlayersMetadata is ERC721Metadata("CryptoSoccerPlayers", "CSP"), 
 
     function tokenURI(uint256 tokenId) external view returns (string) {
         require(_exists(tokenId), "unexistent token");
-        uint88 genome = getGenome(tokenId);
-        string memory genomeString = uint2str(genome);
-        return strConcat(_URI, "?genome=", genomeString);
+        return strConcat(
+            _URI, 
+            "/", 
+            uint2str(tokenId)
+            );
     }
 }
