@@ -10,6 +10,12 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
  * @dev CryptoPlayers minting logic
  */
 contract CryptoPlayersMintable is CryptoPlayersProps, CryptoSoccer, HelperFunctions, MinterRole {
+    /**
+     * @dev Function to mint players
+     * @param to The address that will receive the minted players.
+     * @param name The player name to mint.
+     * @return A boolean that indicates if the operation was successful.
+     */
     function mint(address to, string memory name) public onlyMinter {
         uint256 playerId = _computeId(name);
         uint16 birth = uint16(block.number);  // TODO: reformulate
@@ -27,6 +33,9 @@ contract CryptoPlayersMintable is CryptoPlayersProps, CryptoSoccer, HelperFuncti
             );
     }
 
+    /**
+     * @return player ID from player name
+     */
     function getPlayerId(string name) public view returns(uint256) {
         uint256 id = _computeId(name);
         require(_exists(id));
@@ -39,6 +48,11 @@ contract CryptoPlayersMintable is CryptoPlayersProps, CryptoSoccer, HelperFuncti
         return id;
     }
 
+    /**
+     * @dev Compute the pseudorandom skills, sum of the skills is 250
+     * @param seed to generate the skills
+     * @return 5 skills
+     */
     function _computeSkills(uint256 seed) internal view returns (uint16[5]) {
         uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number-1))));
         uint256 rna = rand + seed;
