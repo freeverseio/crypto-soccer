@@ -9,17 +9,14 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: circleci/node:8.10
+      - image: circleci/node:9.11.1
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
+     - image: trufflesuite/ganache-cli
 
     steps:
       - checkout
-      - run: 'sudo apt update'
-      - run: 'sudo apt dist-upgrade'
-      # - run: 'sudo apt install build-essential'
-      - run: 'sudo npm install -g truffle'
       - run: cd truffle-core && npm install && truffle test
