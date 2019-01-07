@@ -19,7 +19,7 @@ contract('Horizon', (accounts) => {
         await cryptoTeams.addMinter(instance.address).should.be.fulfilled;
         await cryptoPlayers.renounceMinter().should.be.fulfilled;
         await cryptoTeams.renounceMinter().should.be.fulfilled;
-        await cryptoPlayers.setTeamsContract(cryptoTeams.address).should.be.fulfilled;
+        await cryptoPlayers.addCoach(cryptoTeams.address).should.be.fulfilled;
         await cryptoTeams.setPlayersContract(cryptoPlayers.address).should.be.fulfilled;
     });
 
