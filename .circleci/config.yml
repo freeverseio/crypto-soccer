@@ -19,4 +19,5 @@ jobs:
 
     steps:
       - checkout
+      - run: 'sudo npm install -g truffle'
       - run: cd truffle-core && npm install && truffle test
