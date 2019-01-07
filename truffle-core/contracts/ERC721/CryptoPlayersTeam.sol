@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoPlayersMintable.sol";
-import "./CoachRole.sol";
+import "./TeamsContractRole.sol";
 import "./CryptoTeamsPlayers.sol";
 
 /**
  * @title CryptoPlayersTeam
  * @dev CryptPlayers team logic
  */
-contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
+contract CryptoPlayersTeam is CryptoPlayersMintable, TeamsContractRole {
     // Mapping from player ID to team ID
     mapping(uint256 => uint256) _playerTeam;
     
@@ -23,7 +23,7 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
     /**
      * @dev set the team of existing player
      */ 
-    function setTeam(uint256 playerId, uint256 teamId) public onlyCoach {
+    function setTeam(uint256 playerId, uint256 teamId) public onlyTeamsContract {
         require(_exists(playerId));
         _playerTeam[playerId] = teamId;
     }
@@ -49,6 +49,6 @@ contract CryptoPlayersTeam is CryptoPlayersMintable, CoachRole {
      *    is an operator of the owner, or is the owner of the token
      */
     function _isApprovedOrOwner(address spender, uint256 tokenId) internal view returns (bool) {
-        return isCoach(spender) || super._isApprovedOrOwner(spender, tokenId);
+        return isTeamsContract(spender) || super._isApprovedOrOwner(spender, tokenId);
     }
 }
