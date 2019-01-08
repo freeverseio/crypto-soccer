@@ -12,6 +12,15 @@ module.exports = function (deployer) {
       console.log(`CryptoTeams deployed at address: ${cryptoTeams.address}`);
       console.log(`CryptoTeams transaction at hash: ${cryptoTeams.transactionHash}`);
 
+      await cryptoTeams.setPlayersContract(cryptoPlayers.address);
+      console.log("CryptoTeam can set player team");
+
+      await cryptoPlayers.addTeamsContract(cryptoTeams.address);
+      console.log("CryptoTeams can change players ownership");
+
+      await cryptoPlayers.renounceTeamsContract();
+      console.log("Deployer can't change players ownership");
+
       const horizon = await deployer.deploy(Horizon, cryptoPlayers.address, cryptoTeams.address);
       console.log(`Horizon deployed at address: ${horizon.address}`);
       console.log(`Horizon transaction at hash: ${horizon.transactionHash}`);
@@ -27,12 +36,6 @@ module.exports = function (deployer) {
 
       await cryptoTeams.renounceMinter();
       console.log("Deployer can't mint teams");
-
-      await cryptoPlayers.addTeamsContract(cryptoTeams.address);
-      console.log("CryptoTeams can change players ownership");
-
-      await cryptoPlayers.renounceTeamsContract();
-      console.log("Deployer can't change players ownership");
     })
     .catch(console.error);
 };
