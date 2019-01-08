@@ -10,6 +10,10 @@ contract CryptoTeamsPlayers is CryptoTeamsMintable {
         _cryptoPlayers = CryptoPlayersTeam(cryptoPlayers);
     }
 
+    function getCryptoPlayers() external view returns (address) {
+        return address(_cryptoPlayers);
+    }
+
     function addPlayer(uint256 teamId, uint256 playerId) public {
         require(_playerExists(playerId), "unexistent player");
         _cryptoPlayers.setTeam(playerId, teamId);

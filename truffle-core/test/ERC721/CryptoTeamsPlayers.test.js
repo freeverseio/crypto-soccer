@@ -15,6 +15,11 @@ contract('CryptoTeamsPlayers', (accounts) => {
         await cryptoPlayers.addTeamsContract(contract.address).should.be.fulfilled;
     });
 
+    it('check cryptoPlayers address', async () => {
+        const result = await contract.getCryptoPlayers().should.be.fulfilled;
+        result.should.be.equal(cryptoPlayers.address);
+    });
+
     it('add unexistent player to team', async () => {
         await contract.mint(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.getTeamId("team").should.be.fulfilled;
