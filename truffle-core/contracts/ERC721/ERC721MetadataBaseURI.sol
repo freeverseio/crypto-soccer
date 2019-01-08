@@ -20,8 +20,8 @@ contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
         require(_exists(tokenId), "unexistent token");
         return strConcat(
             _URI, 
-            "/", 
-            uint2str(tokenId)
+            uint2str(tokenId),
+            ""
             );
     }
 

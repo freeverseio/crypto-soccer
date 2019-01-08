@@ -36,7 +36,7 @@ contract('ERC721MetadataBaseURI', (accounts) => {
         await contract.mint(accounts[0], id).should.be.fulfilled;
         await contract.setBaseTokenURI("URI").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        uri.should.be.equal("URI/" + id.toString(10));
+        uri.should.be.equal("URI" + id.toString(10));
     });
 
     it('set URI without being URIer', async () => {
