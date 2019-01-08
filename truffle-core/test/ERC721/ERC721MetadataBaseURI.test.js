@@ -2,23 +2,23 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersMetadata');
+const ERC721MetadataBaseURI = artifacts.require('ERC721MetadataBaseURIMock');
 
-contract('CryptoPlayersMetadata', (accounts) => {
+contract('ERC721MetadataBaseURI', (accounts) => {
     let contract = null;
 
     beforeEach(async () => {
-        contract = await CryptoPlayers.new().should.be.fulfilled;
+        contract = await ERC721MetadataBaseURI.new("name", "symbol").should.be.fulfilled;
     })
 
    it('symbol', async () => {
         const symbol = await contract.symbol().should.be.fulfilled;
-        symbol.should.be.equal("CSP");
+        symbol.should.be.equal("symbol");
     });
     
     it('name', async () => {
         const name = await contract.name().should.be.fulfilled;
-        name.should.be.equal("CryptoSoccerPlayers");
+        name.should.be.equal("name");
     });
 
     it('initial base token URI', async () => {
@@ -26,22 +26,20 @@ contract('CryptoPlayersMetadata', (accounts) => {
         uri.should.be.equal('');
     });
 
-    it('tokenURI of unexistend player', async () => {
+    it('tokenURI of unexistend token', async () => {
         await contract.tokenURI(0).should.be.rejected;
         await contract.tokenURI(1).should.be.rejected;
     });
 
     it('tokenURI of existent player', async () => {
-        await contract.mint(accounts[0], "player").should.be.fulfilled;
-        const id = await contract.getPlayerId("player").should.be.fulfilled;
+        const id = 1;
+        await contract.mint(accounts[0], id).should.be.fulfilled;
         await contract.setBaseTokenURI("URI").should.be.fulfilled;
         const uri = await contract.tokenURI(id).should.be.fulfilled;
-        const genome = await contract.getGenome(id).should.be.fulfilled;
         uri.should.be.equal("URI/" + id.toString(10));
     });
 
     it('set URI without being URIer', async () => {
-        await contract.mint(accounts[0], "player").should.be.fulfilled;
         await contract.renounceURIer().should.be.fulfilled;
         await contract.setBaseTokenURI("URI").should.be.rejected;
     });
