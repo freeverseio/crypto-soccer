@@ -1,6 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersMetadata.sol";
+import "./CryptoPlayersTeam.sol";
+import "./CryptoMetadata.sol";
 
-contract CryptoPlayers is CryptoPlayersMetadata {
+contract CryptoPlayers is CryptoPlayersTeam, CryptoMetadata("CryptoSoccerPlayers", "CSP") {
 }
