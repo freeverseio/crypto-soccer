@@ -8,7 +8,7 @@ module.exports = function (deployer) {
       console.log(`CryptoPlayers deployed at address: ${cryptoPlayers.address}`);
       console.log(`CryptoPlayers transaction at hash: ${cryptoPlayers.transactionHash}`);
 
-      const basePlayersURI = "https://www.freeverse.io/api/players";
+      const basePlayersURI = "https://www.freeverse.io/api/player";
       await cryptoPlayers.setBaseTokenURI(basePlayersURI);
       console.log("CryptoPlayers base URI: " + basePlayersURI);
 
@@ -18,6 +18,10 @@ module.exports = function (deployer) {
       const cryptoTeams = await deployer.deploy(CryptoTeams);
       console.log(`CryptoTeams deployed at address: ${cryptoTeams.address}`);
       console.log(`CryptoTeams transaction at hash: ${cryptoTeams.transactionHash}`);
+
+      const baseTeamsURI = "https://www.freeverse.io/api/team";
+      await cryptoTeams.setBaseTokenURI(baseTeamsURI);
+      console.log("CryptoTeams base URI: " + baseTeamsURI);
 
       await cryptoTeams.setPlayersContract(cryptoPlayers.address);
       console.log("CryptoTeam can set player team");
