@@ -11,8 +11,7 @@ contract('CryptoTeamsPlayers', (accounts) => {
 
     beforeEach(async () => {
         cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-        contract = await CryptoTeams.new().should.be.fulfilled;
-        await contract.setPlayersContract(cryptoPlayers.address).should.be.fulfilled;
+        contract = await CryptoTeams.new(cryptoPlayers.address).should.be.fulfilled;
         await cryptoPlayers.addTeamsContract(contract.address).should.be.fulfilled;
     });
 

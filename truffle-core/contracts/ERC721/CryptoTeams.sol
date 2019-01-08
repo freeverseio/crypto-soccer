@@ -4,5 +4,6 @@ import "./CryptoTeamsPlayers.sol";
 import "./ERC721MetadataBaseURI.sol";
 
 contract CryptoTeams is CryptoTeamsPlayers, ERC721MetadataBaseURI("CryptoSoccerTeams", "CST") {
+    constructor (address cryptoPlayers) CryptoTeamsPlayers(cryptoPlayers) public {}
 }
 

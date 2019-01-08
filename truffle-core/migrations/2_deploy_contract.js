@@ -15,16 +15,13 @@ module.exports = function (deployer) {
       await cryptoPlayers.renounceURIer();
       console.log("Deployer can't change base URI");
 
-      const cryptoTeams = await deployer.deploy(CryptoTeams);
+      const cryptoTeams = await deployer.deploy(CryptoTeams, cryptoPlayers.address);
       console.log(`CryptoTeams deployed at address: ${cryptoTeams.address}`);
       console.log(`CryptoTeams transaction at hash: ${cryptoTeams.transactionHash}`);
 
       const baseTeamsURI = "https://www.freeverse.io/api/team/";
       await cryptoTeams.setBaseTokenURI(baseTeamsURI);
       console.log("CryptoTeams base URI: " + baseTeamsURI);
-
-      await cryptoTeams.setPlayersContract(cryptoPlayers.address);
-      console.log("CryptoTeam can set player team");
 
       await cryptoPlayers.addTeamsContract(cryptoTeams.address);
       console.log("CryptoTeams can change players ownership");

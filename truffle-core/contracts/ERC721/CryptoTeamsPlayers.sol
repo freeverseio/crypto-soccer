@@ -6,7 +6,7 @@ import "./CryptoPlayersTeam.sol";
 contract CryptoTeamsPlayers is CryptoTeamsMintable {
     CryptoPlayersTeam private _cryptoPlayers;
 
-    function setPlayersContract(address cryptoPlayers) public {
+    constructor(address cryptoPlayers) public {
         _cryptoPlayers = CryptoPlayersTeam(cryptoPlayers);
     }
 
