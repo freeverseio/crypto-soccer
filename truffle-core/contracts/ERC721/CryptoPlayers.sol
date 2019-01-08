@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
 import "./CryptoPlayersTeam.sol";
-import "./CryptoMetadata.sol";
+import "./ERC721MetadataBaseURI.sol";
 
-contract CryptoPlayers is CryptoPlayersTeam, CryptoMetadata("CryptoSoccerPlayers", "CSP") {
+contract CryptoPlayers is CryptoPlayersTeam, ERC721MetadataBaseURI("CryptoSoccerPlayers", "CSP") {
 }

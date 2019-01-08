@@ -1,10 +1,9 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
-import "./CryptoPlayersTeam.sol";
 import "./URIerRole.sol";
 
-contract CryptoMetadata is ERC721Metadata, URIerRole {
+contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
     string private _URI;
 
     constructor (string name, string symbol) ERC721Metadata(name, symbol) public {}
