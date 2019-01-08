@@ -29,7 +29,7 @@ module.exports = function (deployer) {
       await cryptoPlayers.renounceTeamsContract();
       console.log("Deployer can't change players ownership");
 
-      const horizon = await deployer.deploy(Horizon, cryptoPlayers.address, cryptoTeams.address);
+      const horizon = await deployer.deploy(Horizon, cryptoTeams.address);
       console.log(`Horizon deployed at address: ${horizon.address}`);
       console.log(`Horizon transaction at hash: ${horizon.transactionHash}`);
 

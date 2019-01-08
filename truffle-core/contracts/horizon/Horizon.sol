@@ -8,9 +8,9 @@ contract Horizon is HelperFunctions {
     CryptoPlayers private _cryptoPlayers;
     CryptoTeams private _cryptoTeams;
 
-    constructor(address cryptoPlayers, address cryptoTeams) public {
-        _cryptoPlayers = CryptoPlayers(cryptoPlayers);
+    constructor(address cryptoTeams) public {
         _cryptoTeams = CryptoTeams(cryptoTeams);
+        _cryptoPlayers = CryptoPlayers(_cryptoTeams.getCryptoPlayers());
     }
 
     function createTeam(string name) public {

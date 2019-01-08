@@ -13,15 +13,14 @@ contract('Horizon', (accounts) => {
 
     beforeEach(async () => {
         cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-        cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-        horizon = await Horizon.new(cryptoPlayers.address, cryptoTeams.address).should.be.fulfilled;
+        cryptoTeams = await CryptoTeams.new(cryptoPlayers.address).should.be.fulfilled;
+        horizon = await Horizon.new(cryptoTeams.address).should.be.fulfilled;
         await cryptoPlayers.addMinter(horizon.address).should.be.fulfilled;
         await cryptoPlayers.renounceMinter().should.be.fulfilled;
         await cryptoTeams.addMinter(horizon.address).should.be.fulfilled;
         await cryptoTeams.renounceMinter().should.be.fulfilled;
         await cryptoPlayers.addTeamsContract(cryptoTeams.address).should.be.fulfilled;
         await cryptoPlayers.renounceTeamsContract().should.be.fulfilled;
-        await cryptoTeams.setPlayersContract(cryptoPlayers.address).should.be.fulfilled;
     });
 
     it('create Team', async () => {
