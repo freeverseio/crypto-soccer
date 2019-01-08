@@ -9,8 +9,10 @@ require('chai')
 const CryptoTeams = artifacts.require('CryptoTeamsMock');
 
 contract('CryptoTeams', ([_, creator, ...accounts]) => {
+    const cryptoPlayersAddress = 0;
+
     beforeEach(async function () {
-        this.token = await CryptoTeams.new({ from: creator });
+        this.token = await CryptoTeams.new(cryptoPlayersAddress, { from: creator });
     });
 
     shouldBehaveLikeERC721(creator, creator, accounts);
