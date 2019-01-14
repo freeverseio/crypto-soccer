@@ -55,7 +55,7 @@ contract('CryptoPlayersMintable', (accounts) => {
     });
 
     it('sum of computed skills is 250', async () => {
-        for (var i = 0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
             const skills = await contract.computeSkills(Math.random()).should.be.fulfilled;
             const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
             sum.should.be.equal(250);
