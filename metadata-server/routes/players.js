@@ -1,7 +1,7 @@
 var express = require('express');
 const Web3 = require('web3');
 const schema = require('./example_schema.json');
-const jsonInterface = require('../public/contracts/CryptoPlayers.json').abi;
+const jsonInterface = require('../../truffle-core/build/contracts/CryptoPlayers.json').abi;
 const config = require('../config.json');
 
 var router = express.Router();
