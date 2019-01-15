@@ -30,7 +30,7 @@ describe('routing', () => {
             .send({
                 from: identity.address,
                 gas: 4712388,
-                gasPrice: 100000000000
+                gasPrice: provider.gasPrice
             })
             .on('error', error => console.log("(EE) " + error))
             // .on('transactionHash', transactionHash => console.log("(II) transactionHash: " + transactionHash))
