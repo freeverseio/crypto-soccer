@@ -11,6 +11,15 @@ $ npm install
 $ npm start
 ```
 
+# config.json
+```
+{
+    "provider": "ws://127.0.0.1:8545", // ex. Ganache
+    "crypto_player_address": "0x73E02FefD1d31607b8d5c9Ee9F0c465033C1ebf3", 
+    "players_image_base_URL": "https://www.freenode.io/players/image/"
+}
+```
+
 # ERC721 Metadata JSON Schema 
 ```
 {

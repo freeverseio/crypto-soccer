@@ -6,8 +6,8 @@ const config = require('../config.json');
 
 const router = express.Router();
 
-const web3 = new Web3(Web3.givenProvider || config.provider);
-const instance = new web3.eth.Contract(jsonInterface, config.cryptoPlayerAddress);
+const web3 = new Web3(config.provider);
+const instance = new web3.eth.Contract(jsonInterface, config.crypto_player_address);
 
 /* GET JSON schema for players with id. */
 router.get('/:id', async (req, res, next) => {
