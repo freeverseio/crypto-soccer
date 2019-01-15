@@ -35,10 +35,7 @@ describe('player', () => {
             data: contractJSON.bytecode
         })
             .send(sendOptions)
-            .on('error', error => console.log("(EE) " + error))
-            // .on('transactionHash', transactionHash => console.log("(II) transactionHash: " + transactionHash))
-            // .on('receipt', receipt => console.log("(II) address: ", receipt.contractAddress)) // contains the new contract address
-            // .on('confirmation', (confirmationNumber, receipt) => console.log("(II) confirmation: " + confirmationNumber))
+            .on('error', console.error)
             .catch(console.error);
         await instance.methods.mint(identity.address, "player").send(sendOptions).should.be.fulfilled;
         id = await instance.methods.getPlayerId("player").call().should.be.fulfilled;
