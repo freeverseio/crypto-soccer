@@ -33,10 +33,6 @@ describe("routing", () => {
                 .end((err, res) => {
                     res.should.have.status(200);
                     res.body.should.be.a('object');
-                    const json = JSON.parse(res.text);
-                    json.name.should.be.equal("Dave Starbelly");
-                    json.description.should.be.equal("Friendly OpenSea Creature that enjoys long swims in the ocean.");
-                    json.image.should.be.equal("https://storage.googleapis.com/opensea-prod.appspot.com/creature/3.png");
                 });
         });
     });
