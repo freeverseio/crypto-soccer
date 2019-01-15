@@ -8,12 +8,12 @@ const playersJSON = require('../routes/playersJSON');
 const config = require('../config.json');
 
 // Configure chai
-chai.use(require('chai-http'));
 chai.use(require('chai-as-promised'));
 chai.should();
 
 describe('player', () => {
     let instance = null;
+    let id = null;
 
     before(async () => {
         const identity = EthCrypto.createIdentity();
@@ -41,10 +41,10 @@ describe('player', () => {
             // .on('confirmation', (confirmationNumber, receipt) => console.log("(II) confirmation: " + confirmationNumber))
             .catch(console.error);
         await instance.methods.mint(identity.address, "player").send(sendOptions).should.be.fulfilled;
+        id = await instance.methods.getPlayerId("player").call().should.be.fulfilled;
     });
 
     it('check ERC721 metadata', async () => {
-        const id = await instance.methods.getPlayerId("player").call().should.be.fulfilled;
         const schema = await playersJSON(instance, id).should.be.fulfilled;
         schema.name.should.be.equal("player");
         schema.description.should.be.equal("put a description");
@@ -52,7 +52,6 @@ describe('player', () => {
     });
 
     it('check OpenSea metadata', async () => {
-        const id = await instance.methods.getPlayerId("player").call().should.be.fulfilled;
         const schema = await playersJSON(instance, id).should.be.fulfilled;
         schema.attributes.length.should.be.equal(5);
         const speed = await instance.methods.getSpeed(id).call().should.be.fulfilled;
