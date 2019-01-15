@@ -13,9 +13,11 @@ chai.should();
 
 describe('routing', () => {
     const identity = EthCrypto.createIdentity();
-    console.log(identity)
     const provider = ganache.provider({
-        accounts: [{secretKey: identity.privateKey, balance: Web3.utils.toWei('100', 'ether') }]
+        accounts: [{
+            secretKey: identity.privateKey, 
+            balance: Web3.utils.toWei('100', 'ether') 
+        }]
     })
     const web3 = new Web3(provider);
     const contract = new web3.eth.Contract(contractJSON.abi);
@@ -31,20 +33,13 @@ describe('routing', () => {
                 gasPrice: 100000000000
             })
             .on('error', error => console.log("(EE) " + error))
-            .on('transactionHash', transactionHash => console.log("(II) transactionHash: " + transactionHash))
-            .on('receipt', receipt => console.log("(II) address: ", receipt.contractAddress)) // contains the new contract address
-            .on('confirmation', (confirmationNumber, receipt) => console.log("(II) confirmation: " + confirmationNumber))
-            .then(blackHole => {
-                console.log("(II) ... done");
-                return blackHole;
-            })
-            .catch(reason => {
-                console.error(reason);
-                process.exit(1);
-            });
+            // .on('transactionHash', transactionHash => console.log("(II) transactionHash: " + transactionHash))
+            // .on('receipt', receipt => console.log("(II) address: ", receipt.contractAddress)) // contains the new contract address
+            // .on('confirmation', (confirmationNumber, receipt) => console.log("(II) confirmation: " + confirmationNumber))
+            .catch(console.error)
     });
 
     it('check deployment', () => {
-        console.log(instance.address);
+        console.log(instance.options.address);
     });
 });
