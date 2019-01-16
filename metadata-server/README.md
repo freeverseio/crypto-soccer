@@ -1,12 +1,21 @@
 # crypto-soccer-metadata-server
 Return a JSON description generated from the token (player/team) id.
 
-![Alt](./doc/flow_diagram.svg)
 
 Endpoints:
 * /players/\<ID>
 * /teams/\<ID>
-  
+
+# UML Sequence diagram  
+
+![Alt](./doc/flow_diagram.svg)
+
+ERC721 browser (OpenSea) get the metadata server URI running the CryptoPlayers::tokenURI(id) getter.
+
+Metadata server returns a JSON schema following the ERC721 Metadata rules.
+
+Image server returns the image of the token.
+
 # install & run
 ``` 
 $ npm install
