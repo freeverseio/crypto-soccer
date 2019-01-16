@@ -10,9 +10,9 @@ Endpoints:
 
 ![Alt](./doc/flow_diagram.svg)
 
-ERC721 browser (OpenSea) get the metadata server URI running the CryptoPlayers::tokenURI(id) getter.
+ERC721 browser (OpenSea) get the metadata server URI by CryptoPlayers::tokenURI(id).
 
-Metadata server returns a JSON schema following the ERC721 Metadata rules.
+Metadata server returns a JSON schema filled with the infos of CryptoPlayers.
 
 Image server returns the image of the token.
 
