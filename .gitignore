@@ -4,7 +4,6 @@ build
 *.swp
 node_modules
 *.code-workspace
-bin
 .DS_store
 package-lock.json
 .idea
