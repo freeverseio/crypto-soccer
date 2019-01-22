@@ -12,9 +12,6 @@ module.exports = function (deployer) {
       await cryptoPlayers.setBaseTokenURI(basePlayersURI);
       console.log("CryptoPlayers base URI: " + basePlayersURI);
 
-      await cryptoPlayers.renounceURIer();
-      console.log("Deployer can't change base URI");
-
       const cryptoTeams = await deployer.deploy(CryptoTeams, cryptoPlayers.address);
       console.log(`CryptoTeams deployed at address: ${cryptoTeams.address}`);
       console.log(`CryptoTeams transaction at hash: ${cryptoTeams.transactionHash}`);
