@@ -1,13 +1,19 @@
 const config = require('../config.json');
 
 module.exports = async (instance, id) => {
-    const name = await instance.methods.getName(id).call();
-    const image = config.players_image_base_URL + id;
-    const speed = await instance.methods.getSpeed(id).call();
-    const defence = await instance.methods.getDefence(id).call();
-    const endurance = await instance.methods.getEndurance(id).call();
-    const shoot = await instance.methods.getShoot(id).call();
-    const pass = await instance.methods.getPass(id).call();
+    try {
+        var name = await instance.methods.getName(id).call();
+        var image = config.players_image_base_URL + id;
+        var speed = await instance.methods.getSpeed(id).call();
+        var defence = await instance.methods.getDefence(id).call();
+        var endurance = await instance.methods.getEndurance(id).call();
+        var shoot = await instance.methods.getShoot(id).call();
+        var pass = await instance.methods.getPass(id).call();
+    }
+    catch (err) {
+        console.error(err);
+        return {};
+    }
 
     const schema = {
         "name": name,
