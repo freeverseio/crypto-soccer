@@ -23,23 +23,23 @@ module.exports = async (instance, id) => {
         "attributes": [
             {
                 "trait_type": "speed",
-                "value": speed
+                "value": Number(speed)
             },
             {
                 "trait_type": "defence",
-                "value": defence
+                "value": Number(defence)
             },
             {
                 "trait_type": "endurance",
-                "value": endurance
+                "value": Number(endurance)
             },
             {
                 "trait_type": "shoot",
-                "value": shoot
+                "value": Number(shoot)
             },
             {
                 "trait_type": "pass",
-                "value": pass
+                "value": Number(pass)
             }
         ]
     };
