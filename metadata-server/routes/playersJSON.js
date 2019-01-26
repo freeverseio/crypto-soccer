@@ -18,7 +18,8 @@ module.exports = async (instance, id) => {
     const schema = {
         "name": name,
         "description": "put a description",
-        "image": image,
+        "image": "https://srv.latostadora.com/designall.dll/guybrush_threepwood--i:1413852880551413850;w:520;m:1;b:FFFFFF.jpg",
+        "external_url": "https://www.freeverse.io/",
         "attributes": [
             {
                 "trait_type": "speed",
