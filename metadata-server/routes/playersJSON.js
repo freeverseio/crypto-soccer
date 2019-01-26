@@ -53,10 +53,6 @@ module.exports = async ({playersContract, teamsContract, playerId}) => {
                 "value": teamName
             },
             {
-                "trait_type": "personality",
-                "value": "happy"
-            },
-            {
                 "display_type": "boost_number",
                 "trait_type": "shoot_power",
                 "value": 10
