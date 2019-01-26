@@ -44,7 +44,7 @@ describe('player', () => {
     it('check ERC721 metadata', async () => {
         const schema = await playersJSON(instance, id).should.be.fulfilled;
         schema.name.should.be.equal("player");
-        schema.description.should.be.equal("put a description");
+        schema.description.should.not.be.undefined;
         // schema.image.should.be.equal(config.players_image_base_URL + id);
         schema.image.should.be.equal('https://srv.latostadora.com/designall.dll/guybrush_threepwood--i:1413852880551413850;w:520;m:1;b:FFFFFF.jpg');
     });
@@ -52,7 +52,7 @@ describe('player', () => {
     it('check OpenSea metadata', async () => {
         const schema = await playersJSON(instance, id).should.be.fulfilled;
         schema.external_url.should.be.equal("https://www.freeverse.io/");
-        schema.attributes.length.should.be.equal(5);
+        schema.attributes.length.should.be.equal(9);
         const speed = await instance.methods.getSpeed(id).call().should.be.fulfilled;
         schema.attributes[0].trait_type.should.be.equal('speed');
         schema.attributes[0].value.should.be.equal(Number(speed));
