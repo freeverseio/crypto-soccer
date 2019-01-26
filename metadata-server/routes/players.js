@@ -8,13 +8,13 @@ const config = require('../config.json');
 const router = express.Router();
 
 const web3 = new Web3(config.provider);
-const instance = new web3.eth.Contract(jsonInterface, config.crypto_player_address);
-const teams = new web3.eth.Contract(teamsJSONInterface, config.crypto_teams_contract);
+const playersContract = new web3.eth.Contract(jsonInterface, config.crypto_player_address);
+const teamsContract = new web3.eth.Contract(teamsJSONInterface, config.crypto_teams_contract);
 
 /* GET JSON schema for players with id. */
 router.get('/:id', async (req, res, next) => {
   const id = req.params.id;
-  const schema = await playersJSON(instance, id);
+  const schema = await playersJSON({ playersContract, teamsContract, playerId });
   res.send(schema);
 });
 
