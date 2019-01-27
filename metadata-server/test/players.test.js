@@ -1,11 +1,8 @@
 // Import the dependencies for testing
 const chai = require('chai');
-const Web3 = require('web3');
 const EthCrypto = require('eth-crypto');
-const ganache = require("ganache-cli");
+const { deployer } = require('./environmentDeployer');
 const playersJSON = require('../routes/playersJSON');
-const cryptoPlayersDeployer = require('./cryptoPlayersDeployer');
-const cryptoTeamsDeployer = require('./cryptoTeamsDeployer');
 
 // Configure chai
 chai.use(require('chai-as-promised'));
@@ -18,35 +15,11 @@ describe('player', () => {
 
     before(async () => {
         const identity = EthCrypto.createIdentity();
-        const provider = ganache.provider({
-            accounts: [{
-                secretKey: identity.privateKey,
-                balance: Web3.utils.toWei('100', 'ether')
-            }]
-        });
+        const environment = await deployer(identity).should.be.fulfilled;
 
-        playersContract = await cryptoPlayersDeployer({ provider, sender: identity.address });
-        teamsContract = await cryptoTeamsDeployer({ provider, playersContract, sender: identity.address });
-
-        await playersContract.methods.mint(identity.address, "player").send({
-            from: identity.address,
-            gas: 4712388,
-            gasPrice: provider.gasPrice
-        }).should.be.fulfilled;
-        playerId = await playersContract.methods.getPlayerId("player").call().should.be.fulfilled;
-
-        await teamsContract.methods.mint(identity.address, "team").send({
-            from: identity.address,
-            gas: 4712388,
-            gasPrice: provider.gasPrice
-        }).should.be.fulfilled;
-        const teamId = await teamsContract.methods.getTeamId("team").call().should.be.fulfilled;
-
-        await teamsContract.methods.addPlayer(teamId, playerId).send({
-            from: identity.address,
-            gas: 4712388,
-            gasPrice: provider.gasPrice
-        }).should.be.fulfilled;
+        playersContract = environment.playersContract;
+        teamsContract = environment.teamsContract;
+        playerId = environment.playerId;
     });
 
     it('check ERC721 metadata', async () => {
