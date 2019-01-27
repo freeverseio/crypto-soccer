@@ -76,5 +76,7 @@ describe('player', () => {
         const pass = await playersContract.methods.getPass(playerId).call().should.be.fulfilled;
         schema.attributes[4].trait_type.should.be.equal('pass');
         schema.attributes[4].value.should.be.equal(Number(pass));
+        schema.attributes[5].trait_type.should.be.equal('team');
+        schema.attributes[5].value.should.be.equal('team');
     });
 });
