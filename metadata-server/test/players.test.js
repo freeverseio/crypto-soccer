@@ -2,18 +2,19 @@
 const chai = require('chai');
 const Web3 = require('web3');
 const EthCrypto = require('eth-crypto');
-const contractJSON = require('../../truffle-core/build/contracts/CryptoPlayers.json')
 const ganache = require("ganache-cli");
 const playersJSON = require('../routes/playersJSON');
-const config = require('../config.json');
+const cryptoPlayersDeployer = require('./cryptoPlayersDeployer');
+const cryptoTeamsDeployer = require('./cryptoTeamsDeployer');
 
 // Configure chai
 chai.use(require('chai-as-promised'));
 chai.should();
 
 describe('player', () => {
-    let instance = null;
-    let id = null;
+    let playersContract = null;
+    let teamsContract = null;
+    let playerId = null;
 
     before(async () => {
         const identity = EthCrypto.createIdentity();
@@ -22,27 +23,34 @@ describe('player', () => {
                 secretKey: identity.privateKey,
                 balance: Web3.utils.toWei('100', 'ether')
             }]
-        })
-        const web3 = new Web3(provider);
-        const contract = new web3.eth.Contract(contractJSON.abi);
-        const sendOptions = {
+        });
+
+        playersContract = await cryptoPlayersDeployer({ provider, sender: identity.address });
+        teamsContract = await cryptoTeamsDeployer({ provider, playersContract, sender: identity.address });
+
+        await playersContract.methods.mint(identity.address, "player").send({
             from: identity.address,
             gas: 4712388,
             gasPrice: provider.gasPrice
-        };
+        }).should.be.fulfilled;
+        playerId = await playersContract.methods.getPlayerId("player").call().should.be.fulfilled;
 
-        instance = await contract.deploy({
-            data: contractJSON.bytecode
-        })
-            .send(sendOptions)
-            .on('error', console.error)
-            .catch(console.error);
-        await instance.methods.mint(identity.address, "player").send(sendOptions).should.be.fulfilled;
-        id = await instance.methods.getPlayerId("player").call().should.be.fulfilled;
+        await teamsContract.methods.mint(identity.address, "team").send({
+            from: identity.address,
+            gas: 4712388,
+            gasPrice: provider.gasPrice
+        }).should.be.fulfilled;
+        const teamId = await teamsContract.methods.getTeamId("team").call().should.be.fulfilled;
+
+        await teamsContract.methods.addPlayer(teamId, playerId).send({
+            from: identity.address,
+            gas: 4712388,
+            gasPrice: provider.gasPrice
+        }).should.be.fulfilled;
     });
 
     it('check ERC721 metadata', async () => {
-        const schema = await playersJSON(instance, id).should.be.fulfilled;
+        const schema = await playersJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
         schema.name.should.be.equal("player");
         schema.description.should.not.be.undefined;
         // schema.image.should.be.equal(config.players_image_base_URL + id);
@@ -50,22 +58,22 @@ describe('player', () => {
     });
 
     it('check OpenSea metadata', async () => {
-        const schema = await playersJSON(instance, id).should.be.fulfilled;
+        const schema = await playersJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
         schema.external_url.should.be.equal("https://www.freeverse.io/");
         schema.attributes.length.should.be.equal(9);
-        const speed = await instance.methods.getSpeed(id).call().should.be.fulfilled;
+        const speed = await playersContract.methods.getSpeed(playerId).call().should.be.fulfilled;
         schema.attributes[0].trait_type.should.be.equal('speed');
         schema.attributes[0].value.should.be.equal(Number(speed));
-        const defence = await instance.methods.getDefence(id).call().should.be.fulfilled;
+        const defence = await playersContract.methods.getDefence(playerId).call().should.be.fulfilled;
         schema.attributes[1].trait_type.should.be.equal('defence');
         schema.attributes[1].value.should.be.equal(Number(defence));
-        const endurance = await instance.methods.getEndurance(id).call().should.be.fulfilled;
+        const endurance = await playersContract.methods.getEndurance(playerId).call().should.be.fulfilled;
         schema.attributes[2].trait_type.should.be.equal('endurance');
         schema.attributes[2].value.should.be.equal(Number(endurance));
-        const shoot = await instance.methods.getShoot(id).call().should.be.fulfilled;
+        const shoot = await playersContract.methods.getShoot(playerId).call().should.be.fulfilled;
         schema.attributes[3].trait_type.should.be.equal('shoot');
         schema.attributes[3].value.should.be.equal(Number(shoot));
-        const pass = await instance.methods.getPass(id).call().should.be.fulfilled;
+        const pass = await playersContract.methods.getPass(playerId).call().should.be.fulfilled;
         schema.attributes[4].trait_type.should.be.equal('pass');
         schema.attributes[4].value.should.be.equal(Number(pass));
     });
