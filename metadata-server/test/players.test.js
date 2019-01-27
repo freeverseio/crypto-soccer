@@ -52,4 +52,8 @@ describe('player', () => {
         schema.attributes[5].trait_type.should.be.equal('team');
         schema.attributes[5].value.should.be.equal('team');
     });
+
+    it('team metadata when player has no team', async () => {
+
+    });
 });
