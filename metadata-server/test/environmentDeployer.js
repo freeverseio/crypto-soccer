@@ -3,23 +3,30 @@ const ganache = require("ganache-cli");
 const cryptoPlayersDeployer = require('./cryptoPlayersDeployer');
 const cryptoTeamsDeployer = require('./cryptoTeamsDeployer');
 
+let provider = null;
+let playersContract = null;
+
+module.exports.mintPlayer = async (sender, name) => {
+    await playersContract.methods.mint(sender, name).send({
+        from: sender,
+        gas: 4712388,
+        gasPrice: provider.gasPrice
+    }).should.be.fulfilled;
+    const playerId = await playersContract.methods.getPlayerId(name).call().should.be.fulfilled;
+    return playerId;
+}
+
 module.exports.deployer = async (identity) => {
-    const provider = ganache.provider({
+    provider = ganache.provider({
         accounts: [{
             secretKey: identity.privateKey,
             balance: Web3.utils.toWei('100', 'ether')
         }]
     });
 
-    const playersContract = await cryptoPlayersDeployer({ provider, sender: identity.address });
+    playersContract = await cryptoPlayersDeployer({ provider, sender: identity.address });
     const teamsContract = await cryptoTeamsDeployer({ provider, playersContract, sender: identity.address });
-
-    await playersContract.methods.mint(identity.address, "player").send({
-        from: identity.address,
-        gas: 4712388,
-        gasPrice: provider.gasPrice
-    }).should.be.fulfilled;
-    const playerId = await playersContract.methods.getPlayerId("player").call().should.be.fulfilled;
+    const playerId = await module.exports.mintPlayer(identity.address, "player").should.be.fulfilled;
 
     await teamsContract.methods.mint(identity.address, "team").send({
         from: identity.address,

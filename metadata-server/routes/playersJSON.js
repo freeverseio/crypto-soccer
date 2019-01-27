@@ -10,7 +10,7 @@ module.exports = async ({playersContract, teamsContract, playerId}) => {
         var shoot = await playersContract.methods.getShoot(playerId).call();
         var pass = await playersContract.methods.getPass(playerId).call();
         const teamId = await playersContract.methods.getTeam(playerId).call();
-        var teamName = await teamsContract.methods.getName(teamId).call();
+        var teamName = teamId == 0 ? "" : await teamsContract.methods.getName(teamId).call();
     }
     catch (err) {
         console.error(err);

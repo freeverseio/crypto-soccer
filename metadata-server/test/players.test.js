@@ -1,7 +1,7 @@
 // Import the dependencies for testing
 const chai = require('chai');
 const EthCrypto = require('eth-crypto');
-const { deployer } = require('./environmentDeployer');
+const { deployer, mintPlayer } = require('./environmentDeployer');
 const playersJSON = require('../routes/playersJSON');
 
 // Configure chai
@@ -9,14 +9,13 @@ chai.use(require('chai-as-promised'));
 chai.should();
 
 describe('player', () => {
+    const identity = EthCrypto.createIdentity();
     let playersContract = null;
     let teamsContract = null;
     let playerId = null;
 
     before(async () => {
-        const identity = EthCrypto.createIdentity();
         const environment = await deployer(identity).should.be.fulfilled;
-
         playersContract = environment.playersContract;
         teamsContract = environment.teamsContract;
         playerId = environment.playerId;
@@ -54,6 +53,11 @@ describe('player', () => {
     });
 
     it('team metadata when player has no team', async () => {
-
-    });
+        const playerId = await mintPlayer(identity.address, "no team player").should.be.fulfilled;
+        const schema = await playersJSON({ playersContract, teamsContract, playerId }).should.be.fulfilled;
+        schema.should.not.be.undefined;
+        schema.name.should.be.equal("no team player");
+        schema.attributes[5].trait_type.should.be.equal('team');
+        schema.attributes[5].value.should.be.equal('');
+   });
 });
