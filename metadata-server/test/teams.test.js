@@ -35,6 +35,6 @@ describe('teams', () => {
             await addPlayer(identity.address, teamId, playerId).should.be.fulfilled;
         }
         const schema = await generateJSON({ playersContract, teamsContract, teamId }).should.be.fulfilled;
-        schema.attributes.length.should.be.equal(6);
+        schema.attributes.length.should.be.equal(11);
     });
 });
