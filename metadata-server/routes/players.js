@@ -2,7 +2,6 @@ const express = require('express');
 const Web3 = require('web3');
 const jsonInterface = require('../../truffle-core/build/contracts/CryptoPlayers.json').abi;
 const teamsJSONInterface = require('../../truffle-core/build/contracts/CryptoTeams.json').abi;
-const playersJSON = require('./playersJSON');
 const config = require('../config.json');
 
 const router = express.Router();
@@ -14,8 +13,82 @@ const teamsContract = new web3.eth.Contract(teamsJSONInterface, config.crypto_te
 /* GET JSON schema for players with id. */
 router.get('/:id', async (req, res, next) => {
   const playerId = req.params.id;
-  const schema = await playersJSON({ playersContract, teamsContract, playerId });
+  const schema = await generateJSON({ playersContract, teamsContract, playerId });
   res.send(schema);
 });
 
+const generateJSON = async ({ playersContract, teamsContract, playerId }) => {
+  try {
+    var name = await playersContract.methods.getName(playerId).call();
+    var image = config.players_image_base_URL + playerId;
+    var speed = await playersContract.methods.getSpeed(playerId).call();
+    var defence = await playersContract.methods.getDefence(playerId).call();
+    var endurance = await playersContract.methods.getEndurance(playerId).call();
+    var shoot = await playersContract.methods.getShoot(playerId).call();
+    var pass = await playersContract.methods.getPass(playerId).call();
+    const teamId = await playersContract.methods.getTeam(playerId).call();
+    var teamName = teamId == 0 ? "" : await teamsContract.methods.getName(teamId).call();
+  }
+  catch (err) {
+    console.error(err);
+    return {};
+  }
+
+  const schema = {
+    "name": name,
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+    "image": "https://srv.latostadora.com/designall.dll/guybrush_threepwood--i:1413852880551413850;w:520;m:1;b:FFFFFF.jpg",
+    "external_url": "https://www.freeverse.io/",
+    "attributes": [
+      {
+        "trait_type": "speed",
+        "value": Number(speed),
+        "max_value": 100
+      },
+      {
+        "trait_type": "defence",
+        "value": Number(defence),
+        "max_value": 100
+      },
+      {
+        "trait_type": "endurance",
+        "value": Number(endurance),
+        "max_value": 100
+      },
+      {
+        "trait_type": "shoot",
+        "value": Number(shoot),
+        "max_value": 100
+      },
+      {
+        "trait_type": "pass",
+        "value": Number(pass),
+        "max_value": 100
+      },
+      {
+        "trait_type": "team",
+        "value": teamName
+      },
+      {
+        "display_type": "boost_number",
+        "trait_type": "shoot_power",
+        "value": 10
+      },
+      {
+        "display_type": "boost_percentage",
+        "trait_type": "pass_increase",
+        "value": 5
+      },
+      {
+        "display_type": "number",
+        "trait_type": "generation",
+        "value": 0
+      }
+    ]
+  };
+
+  return schema;
+};
+
 module.exports = router;
+module.exports.generateJSON = generateJSON;

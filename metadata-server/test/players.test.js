@@ -2,7 +2,7 @@
 const chai = require('chai');
 const EthCrypto = require('eth-crypto');
 const { deployer, mintPlayer } = require('./environmentDeployer');
-const playersJSON = require('../routes/playersJSON');
+const { generateJSON } = require('../routes/players');
 
 // Configure chai
 chai.use(require('chai-as-promised'));
@@ -22,7 +22,7 @@ describe('player', () => {
     });
 
     it('check ERC721 metadata', async () => {
-        const schema = await playersJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
+        const schema = await generateJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
         schema.name.should.be.equal("player");
         schema.description.should.not.be.undefined;
         // schema.image.should.be.equal(config.players_image_base_URL + id);
@@ -30,7 +30,7 @@ describe('player', () => {
     });
 
     it('check OpenSea metadata', async () => {
-        const schema = await playersJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
+        const schema = await generateJSON({playersContract, teamsContract, playerId}).should.be.fulfilled;
         schema.external_url.should.be.equal("https://www.freeverse.io/");
         schema.attributes.length.should.be.equal(9);
         const speed = await playersContract.methods.getSpeed(playerId).call().should.be.fulfilled;
@@ -54,7 +54,7 @@ describe('player', () => {
 
     it('team metadata when player has no team', async () => {
         const playerId = await mintPlayer(identity.address, "no team player").should.be.fulfilled;
-        const schema = await playersJSON({ playersContract, teamsContract, playerId }).should.be.fulfilled;
+        const schema = await generateJSON({ playersContract, teamsContract, playerId }).should.be.fulfilled;
         schema.should.not.be.undefined;
         schema.name.should.be.equal("no team player");
         schema.attributes[5].trait_type.should.be.equal('team');

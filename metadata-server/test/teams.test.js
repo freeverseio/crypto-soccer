@@ -2,7 +2,7 @@
 const chai = require('chai');
 const EthCrypto = require('eth-crypto');
 const { deployer, mintPlayer, addPlayer } = require('./environmentDeployer');
-const teamsJSON = require('../routes/teamsJSON');
+const { generateJSON } = require('../routes/teams');
 
 // Configure chai
 chai.use(require('chai-as-promised'));
@@ -22,7 +22,7 @@ describe('teams', () => {
     });
 
     it('check ERC721 metadata', async () => {
-        const schema = await teamsJSON({playersContract, teamsContract, teamId}).should.be.fulfilled;
+        const schema = await generateJSON({playersContract, teamsContract, teamId}).should.be.fulfilled;
         schema.name.should.be.equal("team");
         schema.description.should.not.be.undefined;
         // schema.image.should.be.equal(config.players_image_base_URL + id);
@@ -34,7 +34,7 @@ describe('teams', () => {
             const playerId = await mintPlayer(identity.address, "player" + i).should.be.fulfilled;
             await addPlayer(identity.address, teamId, playerId).should.be.fulfilled;
         }
-        const schema = await teamsJSON({ playersContract, teamsContract, teamId }).should.be.fulfilled;
+        const schema = await generateJSON({ playersContract, teamsContract, teamId }).should.be.fulfilled;
         schema.attributes.length.should.be.equal(6);
     });
 });
