@@ -3,6 +3,7 @@ const Web3 = require('web3');
 const jsonInterface = require('../../truffle-core/build/contracts/CryptoPlayers.json').abi;
 const teamsJSONInterface = require('../../truffle-core/build/contracts/CryptoTeams.json').abi;
 const config = require('../config.json');
+const spawn = require("child_process").spawn;
 
 const router = express.Router();
 
@@ -19,8 +20,11 @@ router.get('/:id', async (req, res, next) => {
 
 const generateJSON = async ({ playersContract, teamsContract, playerId }) => {
   try {
+    const pythonProcess = spawn('python',["../extract_svg/player_composer.py", '-n', playerId, '-o', 'public/images/' + playerId]);
+    pythonProcess.stdout.on('data', data => console.log(data.toString())) 
+    pythonProcess.stderr.on('data', data => console.log(data.toString()))
     var name = await playersContract.methods.getName(playerId).call();
-    var image = config.players_image_base_URL + playerId;
+    var image = 'http://metadata.busyverse.com:3000/images/' + playerId + '.svg';
     var speed = await playersContract.methods.getSpeed(playerId).call();
     var defence = await playersContract.methods.getDefence(playerId).call();
     var endurance = await playersContract.methods.getEndurance(playerId).call();
@@ -37,7 +41,7 @@ const generateJSON = async ({ playersContract, teamsContract, playerId }) => {
   const schema = {
     "name": name,
     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
-    "image": "https://srv.latostadora.com/designall.dll/guybrush_threepwood--i:1413852880551413850;w:520;m:1;b:FFFFFF.jpg",
+    "image": image,
     "external_url": "https://www.freeverse.io/",
     "attributes": [
       {

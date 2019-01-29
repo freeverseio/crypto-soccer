@@ -26,7 +26,7 @@ describe('player', () => {
         schema.name.should.be.equal("player");
         schema.description.should.not.be.undefined;
         // schema.image.should.be.equal(config.players_image_base_URL + id);
-        schema.image.should.be.equal('https://srv.latostadora.com/designall.dll/guybrush_threepwood--i:1413852880551413850;w:520;m:1;b:FFFFFF.jpg');
+        schema.image.should.be.equal('http://metadata.busyverse.com:3000/images/' + playerId + '.svg');
     });
 
     it('check OpenSea metadata', async () => {
