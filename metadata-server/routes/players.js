@@ -4,6 +4,7 @@ const jsonInterface = require('../../truffle-core/build/contracts/CryptoPlayers.
 const teamsJSONInterface = require('../../truffle-core/build/contracts/CryptoTeams.json').abi;
 const config = require('../config.json');
 const spawn = require("child_process").spawn;
+const path = require('path');
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/:id', async (req, res, next) => {
 
 const generateJSON = async ({ playersContract, teamsContract, playerId }) => {
   try {
-    const pythonProcess = spawn('python',["../extract_svg/player_composer.py", '-n', playerId, '-o', 'public/images/' + playerId]);
+    const pythonProcess = spawn('python',[path.join(__dirname, "../../extract_svg/player_composer.py"), '-n', playerId, '-o', 'public/images/' + playerId]);
     pythonProcess.stdout.on('data', data => console.log(data.toString())) 
     pythonProcess.stderr.on('data', data => console.log(data.toString()))
     var name = await playersContract.methods.getName(playerId).call();
