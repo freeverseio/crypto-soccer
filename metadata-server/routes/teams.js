@@ -13,7 +13,7 @@ const teamsContract = new web3.eth.Contract(teamsJSONInterface, config.crypto_te
 /* GET JSON schema for teams with id. */
 router.get('/:id', async (req, res, next) => {
   const teamId = req.params.id;
-  const schema = await teamsJSON({ playersContract, teamsContract, teamId });
+  const schema = await generateJSON({ playersContract, teamsContract, teamId });
   res.send(schema);
 });
 
