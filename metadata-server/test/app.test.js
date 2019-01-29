@@ -38,4 +38,15 @@ describe("routing", () => {
                 });
         });
     });
+
+    describe("images", () => {
+        it("/images/README.md" , () => {
+            chai.request(app)
+                .get('/images/README.md')
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.be.a('object');
+                });
+        });
+    });
 });
