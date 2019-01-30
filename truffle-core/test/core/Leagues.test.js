@@ -28,4 +28,21 @@ contract('Leagues', (accounts) => {
     it('update league with state 0', async () => {
         await leagues.updateLeague(0).should.be.rejected;
     });
+
+    it('update not created league', async () => {
+        await leagues.updateLeague(2).should.be.rejected;
+    })
+
+    it('create league with state 1', async () => {
+        await leagues.createLeague(1).should.be.fulfilled;
+        const init = await leagues.getInit().should.be.fulfilled;
+        init.toNumber().should.be.equal(1);
+    });
+
+    it('update league with state 1', async () => {
+        await leagues.createLeague(1).should.be.fulfilled;
+        await leagues.updateLeague(2).should.be.fulfilled;
+        const status = await leagues.getFinal().should.be.fulfilled;
+        status.toNumber().should.be.equal(2);
+    });
 });
