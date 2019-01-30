@@ -20,4 +20,12 @@ contract('Leagues', (accounts) => {
         const final = await leagues.getFinal().should.be.fulfilled;
         final.toNumber().should.be.equal(0);
     });
+
+    it('create league with state 0', async () => {
+        await leagues.createLeague(0).should.be.rejected;
+    });
+
+    it('update league with state 0', async () => {
+        await leagues.updateLeague(0).should.be.rejected;
+    });
 });
