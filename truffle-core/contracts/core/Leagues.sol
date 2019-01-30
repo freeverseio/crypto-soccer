@@ -18,8 +18,8 @@ contract Leagues {
     }
 
     function updateLeague(uint256 current) public {
-        require(_init != 0, "league not created");
         require(current != 0, "invalid league current state");
+        require(_init != 0, "league not created");
         _final = current;
     }
 }
