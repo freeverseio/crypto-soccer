@@ -1,6 +1,8 @@
 pragma solidity ^ 0.4.24;
 
 contract Leagues {
+    // teams ids of the league
+    uint256[] _teamIds;
     uint256 private _init;
     uint256 private _final;
 
@@ -12,7 +14,11 @@ contract Leagues {
         return _final;
     }
 
-    function createLeague(uint256 init) public {
+    function getTeamIds() external view returns (uint256[] memory) {
+        return _teamIds;
+    }
+
+    function createLeague(uint256 init, uint256[] memory teamIds) public {
         require(init != 0, "invalid league init state");
         _init = init;
     }
