@@ -1,35 +1,31 @@
 pragma solidity ^ 0.4.24;
 
 contract Leagues {
-    // teams ids of the league
+    // teams ids in the league
     uint256[] private _teamIds;
-    // init state hash of the league
-    uint256 private _init;
-    // final state hash of the league
-    uint256 private _final;
+    // init block of the league
+    uint256 private _blockInit;
+    // step blocks of the league
+    uint256 private _blockStep;
 
-    function getInit() external view returns (uint256) {
-        return _init;
+    function getBlockInit() external view returns (uint256) {
+        return _blockInit;
     }
 
-    function getFinal() external view returns (uint256) {
-        return _final;
+    function getBlockStep() external view returns (uint256) {
+        return _blockStep;
     }
 
     function getTeamIds() external view returns (uint256[] memory) {
         return _teamIds;
     }
 
-    function create(uint256 init, uint256[] memory teamIds) public {
-        require(init != 0, "invalid league init state");
+    function create(uint256 blockInit, uint256 blockStep, uint256[] memory teamIds) public {
+        require(blockInit > block.number, "invalid init block");
+        require(blockStep > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         _teamIds = teamIds;
-        _init = init;
-    }
-
-    function update(uint256 current) public {
-        require(current != 0, "invalid league current state");
-        require(_init != 0, "league not created");
-        _final = current;
+        _blockInit = blockInit;
+        _blockStep = blockStep;
     }
 }
