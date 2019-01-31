@@ -18,8 +18,8 @@ jobs:
 
     steps:
       - checkout
-      # - run: 'sudo apt update'
-      # - run: 'sudo apt dist-upgrade'
+      - run: 'sudo apt update'
+      - run: 'sudo apt dist-upgrade'
       # - run: 'sudo apt install build-essential'
       - run: 'sudo npm install -g truffle@v4'
       - run: cd truffle-core && npm install && truffle compile && truffle test
