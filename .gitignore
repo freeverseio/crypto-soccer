@@ -5,6 +5,5 @@ build
 node_modules
 *.code-workspace
 .DS_store
-package-lock.json
 .idea
 *.pyc
