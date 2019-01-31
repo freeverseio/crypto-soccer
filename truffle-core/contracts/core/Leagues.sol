@@ -2,15 +2,17 @@ pragma solidity ^ 0.4.24;
 
 contract Leagues {
     // teams ids of the league
-    uint256[] _teamIds;
+    uint256[] private _teamIds;
+    // init state hash of the league
     uint256 private _init;
+    // final state hash of the league
     uint256 private _final;
 
-    function getInit() public view returns (uint256) {
+    function getInit() external view returns (uint256) {
         return _init;
     }
 
-    function getFinal() public view returns (uint256) {
+    function getFinal() external view returns (uint256) {
         return _final;
     }
 
