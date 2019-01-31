@@ -20,6 +20,7 @@ contract Leagues {
 
     function create(uint256 init, uint256[] memory teamIds) public {
         require(init != 0, "invalid league init state");
+        _teamIds = teamIds;
         _init = init;
     }
 

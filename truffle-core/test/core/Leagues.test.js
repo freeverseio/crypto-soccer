@@ -43,6 +43,8 @@ contract('Leagues', (accounts) => {
         const initState = 1;
         const teamIds = [1, 2];
         await leagues.create(initState, teamIds).should.be.fulfilled;
+        const result = await leagues.getTeamIds().should.be.fulfilled;
+        result.length.should.be.equal(2);
     })
 
     it('create league with state 1', async () => {
