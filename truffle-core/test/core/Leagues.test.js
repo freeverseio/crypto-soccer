@@ -27,33 +27,33 @@ contract('Leagues', (accounts) => {
     })
 
     it('create league with state 0', async () => {
-        await leagues.createLeague(0, []).should.be.rejected;
+        await leagues.create(0, []).should.be.rejected;
     });
 
     it('update league with state 0', async () => {
-        await leagues.updateLeague(0).should.be.rejected;
+        await leagues.update(0).should.be.rejected;
     });
 
     it('update not created league', async () => {
-        await leagues.updateLeague(2).should.be.rejected;
+        await leagues.update(2).should.be.rejected;
     });
 
 
     it('create league with 2 teams', async () => {
         const initState = 1;
         const teamIds = [1, 2];
-        await leagues.createLeague(initState, teamIds).should.be.fulfilled;
+        await leagues.create(initState, teamIds).should.be.fulfilled;
     })
 
     it('create league with state 1', async () => {
-        await leagues.createLeague(1, []).should.be.fulfilled;
+        await leagues.create(1, []).should.be.fulfilled;
         const init = await leagues.getInit().should.be.fulfilled;
         init.toNumber().should.be.equal(1);
     });
 
     it('update league with state 1', async () => {
-        await leagues.createLeague(1, []).should.be.fulfilled;
-        await leagues.updateLeague(2).should.be.fulfilled;
+        await leagues.create(1, []).should.be.fulfilled;
+        await leagues.update(2).should.be.fulfilled;
         const status = await leagues.getFinal().should.be.fulfilled;
         status.toNumber().should.be.equal(2);
     });

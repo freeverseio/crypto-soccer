@@ -18,12 +18,12 @@ contract Leagues {
         return _teamIds;
     }
 
-    function createLeague(uint256 init, uint256[] memory teamIds) public {
+    function create(uint256 init, uint256[] memory teamIds) public {
         require(init != 0, "invalid league init state");
         _init = init;
     }
 
-    function updateLeague(uint256 current) public {
+    function update(uint256 current) public {
         require(current != 0, "invalid league current state");
         require(_init != 0, "league not created");
         _final = current;
