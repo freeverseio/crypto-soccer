@@ -20,12 +20,12 @@ contract Leagues {
         return _teamIds;
     }
 
-    function create(uint256 blockInit, uint256 blockStep, uint256[] memory teamIds) public {
-        require(blockInit > block.number, "invalid init block");
+    function create(uint256 blockInitDelta, uint256 blockStep, uint256[] memory teamIds) public {
+        require(blockInitDelta > 0, "invalid init block");
         require(blockStep > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         _teamIds = teamIds;
-        _blockInit = blockInit;
+        _blockInit = block.number + blockInitDelta;
         _blockStep = blockStep;
     }
 }
