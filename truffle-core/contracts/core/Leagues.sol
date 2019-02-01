@@ -28,4 +28,9 @@ contract Leagues {
         _blockInit = block.number + blockInitDelta;
         _blockStep = blockStep;
     }
+
+    function hasStarted() external view returns (bool) {
+        require(_blockInit != 0, "league not initialized");
+        return _blockInit <= block.number;
+    }
 }

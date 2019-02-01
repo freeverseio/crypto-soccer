@@ -46,4 +46,23 @@ contract('Leagues', (accounts) => {
         result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(2);
     });
+
+    it('check if not initialized league has started', async () => {
+        await leagues.hasStarted().should.be.rejected;
+    });
+
+    it('is future league started', async () => {
+        const teamIds = [1, 2];
+        await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
+        const isStarted = await leagues.hasStarted().should.be.fulfilled;
+        isStarted.should.be.equal(false);
+    });
+
+    it('is current league started', async () => {
+        const teamIds = [1, 2];
+        const blockInit = 1;
+        await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
+        const isStarted = await leagues.hasStarted().should.be.fulfilled;
+        isStarted.should.be.equal(true);
+    })
 });
