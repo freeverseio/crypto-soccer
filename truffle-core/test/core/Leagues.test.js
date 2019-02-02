@@ -8,24 +8,23 @@ contract('Leagues', (accounts) => {
     let leagues = null;
     const blockInit = 1000;
     const blockStep = 10;
+    const id = 1;
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
     });
 
-    it('default init block is 0', async () =>{
+    it('default values', async () =>{
         const block = await leagues.getBlockInit().should.be.fulfilled;
         block.toNumber().should.be.equal(0);
-    });
-
-    it('default block step is 0', async () =>{
         const step = await leagues.getBlockStep().should.be.fulfilled;
         step.toNumber().should.be.equal(0);
-    });
-
-    it('default team ids is empty', async () => {
         const teamIds = await leagues.getTeamIds().should.be.fulfilled;
         teamIds.length.should.be.equal(0);
+        const initStateHash = await leagues.getInitStateHash(id).should.be.fulfilled;
+        initStateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+        const stateHash = await leagues.getStateHash(id).should.be.fulfilled;
+        stateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
     })
 
     it('create league with no team', async () => {
@@ -64,5 +63,5 @@ contract('Leagues', (accounts) => {
         await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
         const isStarted = await leagues.hasStarted().should.be.fulfilled;
         isStarted.should.be.equal(true);
-    })
+    });
 });
