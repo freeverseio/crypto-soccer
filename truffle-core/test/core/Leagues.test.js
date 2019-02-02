@@ -15,11 +15,11 @@ contract('Leagues', (accounts) => {
     });
 
     it('default values', async () =>{
-        const block = await leagues.getBlockInit().should.be.fulfilled;
+        const block = await leagues.getBlockInit(id).should.be.fulfilled;
         block.toNumber().should.be.equal(0);
-        const step = await leagues.getBlockStep().should.be.fulfilled;
+        const step = await leagues.getBlockStep(id).should.be.fulfilled;
         step.toNumber().should.be.equal(0);
-        const teamIds = await leagues.getTeamIds().should.be.fulfilled;
+        const teamIds = await leagues.getTeamIds(id).should.be.fulfilled;
         teamIds.length.should.be.equal(0);
         const initStateHash = await leagues.getInitStateHash(id).should.be.fulfilled;
         initStateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
@@ -42,20 +42,20 @@ contract('Leagues', (accounts) => {
     it('create league with 2 teams', async () => {
         const teamIds = [1, 2];
         await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
-        const result = await leagues.getTeamIds().should.be.fulfilled;
+        const result = await leagues.getTeamIds(id).should.be.fulfilled;
         result.length.should.be.equal(2);
         result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(2);
     });
 
     it('check if not initialized league has started', async () => {
-        await leagues.hasStarted().should.be.rejected;
+        await leagues.hasStarted(id).should.be.rejected;
     });
 
     it('is future league started', async () => {
         const teamIds = [1, 2];
         await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
-        const isStarted = await leagues.hasStarted().should.be.fulfilled;
+        const isStarted = await leagues.hasStarted(id).should.be.fulfilled;
         isStarted.should.be.equal(false);
     });
 
@@ -63,7 +63,7 @@ contract('Leagues', (accounts) => {
         const teamIds = [1, 2];
         const blockInit = 1;
         await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
-        const isStarted = await leagues.hasStarted().should.be.fulfilled;
+        const isStarted = await leagues.hasStarted(id).should.be.fulfilled;
         isStarted.should.be.equal(true);
     });
 
@@ -73,7 +73,7 @@ contract('Leagues', (accounts) => {
         const blockStep = 2;
         const result = await leagues.create(blocksToInit, blockStep, teamIds).should.be.fulfilled;
         const blockNumber = result.receipt.blockNumber;
-        const initBlock = await leagues.getBlockInit().should.be.fulfilled;
+        const initBlock = await leagues.getBlockInit(id).should.be.fulfilled;
         initBlock.toNumber().should.be.equal(blockNumber + blocksToInit);
     });
 

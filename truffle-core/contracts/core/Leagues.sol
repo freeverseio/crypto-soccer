@@ -13,11 +13,11 @@ contract Leagues {
     bytes32 private _stateHash;
 
 
-    function getBlockInit() external view returns (uint256) {
+    function getBlockInit(uint256 id) external view returns (uint256) {
         return _blockInit;
     }
 
-    function getBlockStep() external view returns (uint256) {
+    function getBlockStep(uint256 id) external view returns (uint256) {
         return _blockStep;
     }
 
@@ -27,7 +27,7 @@ contract Leagues {
         return _blockInit * (nMatchDays - 1) * _blockStep;
     }
 
-    function getTeamIds() external view returns (uint256[] memory) {
+    function getTeamIds(uint256 id) external view returns (uint256[] memory) {
         return _teamIds;
     }
 
@@ -48,7 +48,7 @@ contract Leagues {
         _blockStep = blockStep;
     }
 
-    function hasStarted() external view returns (bool) {
+    function hasStarted(uint256 id) external view returns (bool) {
         require(_blockInit != 0, "league not initialized");
         return _blockInit <= block.number;
     }
