@@ -21,6 +21,12 @@ contract Leagues {
         return _blockStep;
     }
 
+    function getBlockEnd(uint256 id) external view returns (uint256) {
+        uint256 nTeams = _teamIds.length;
+        uint256 nMatchDays = 2 * (nTeams - 1);
+        return _blockInit * (nMatchDays - 1) * _blockStep;
+    }
+
     function getTeamIds() external view returns (uint256[] memory) {
         return _teamIds;
     }
