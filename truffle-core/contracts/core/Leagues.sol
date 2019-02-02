@@ -12,7 +12,6 @@ contract Leagues {
     // hash of the state of the league
     bytes32 private _stateHash;
 
-
     function getBlockInit(uint256 id) external view returns (uint256) {
         return _blockInit;
     }
@@ -39,12 +38,11 @@ contract Leagues {
         return _stateHash;
     }
 
-    function create(uint256 blockInitDelta, uint256 blockStep, uint256[] memory teamIds) public {
-        require(blockInitDelta > 0, "invalid init block");
+    function create(uint256 blocksToInit, uint256 blockStep, uint256[] memory teamIds) public {
         require(blockStep > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         _teamIds = teamIds;
-        _blockInit = block.number + blockInitDelta;
+        _blockInit = block.number + blocksToInit;
         _blockStep = blockStep;
     }
 }
