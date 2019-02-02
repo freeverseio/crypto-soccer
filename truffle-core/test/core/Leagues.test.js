@@ -48,25 +48,6 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(2);
     });
 
-    it('check if not initialized league has started', async () => {
-        await leagues.hasStarted(id).should.be.rejected;
-    });
-
-    it('is future league started', async () => {
-        const teamIds = [1, 2];
-        await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
-        const isStarted = await leagues.hasStarted(id).should.be.fulfilled;
-        isStarted.should.be.equal(false);
-    });
-
-    it('is current league started', async () => {
-        const teamIds = [1, 2];
-        const blockInit = 1;
-        await leagues.create(blockInit, blockStep, teamIds).should.be.fulfilled;
-        const isStarted = await leagues.hasStarted(id).should.be.fulfilled;
-        isStarted.should.be.equal(true);
-    });
-
     it('init block of a league', async () => {
         const teamIds = [1, 2];
         const blocksToInit = 1;
@@ -84,6 +65,6 @@ contract('Leagues', (accounts) => {
         const result = await leagues.create(blocksToInit, blockStep, teamIds).should.be.fulfilled;
         const blockNumber = result.receipt.blockNumber;
         const endBlock = await leagues.getBlockEnd(id).should.be.fulfilled;
-        // TODO endBlock.toNumber().should.be.equal(blockNumber + blocksToInit + 2 * blockStep);
+        endBlock.toNumber().should.be.equal(blockNumber + blocksToInit + blockStep);
     });
 });

@@ -24,7 +24,7 @@ contract Leagues {
     function getBlockEnd(uint256 id) external view returns (uint256) {
         uint256 nTeams = _teamIds.length;
         uint256 nMatchDays = 2 * (nTeams - 1);
-        return _blockInit * (nMatchDays - 1) * _blockStep;
+        return _blockInit + (nMatchDays - 1) * _blockStep;
     }
 
     function getTeamIds(uint256 id) external view returns (uint256[] memory) {
@@ -46,10 +46,5 @@ contract Leagues {
         _teamIds = teamIds;
         _blockInit = block.number + blockInitDelta;
         _blockStep = blockStep;
-    }
-
-    function hasStarted(uint256 id) external view returns (bool) {
-        require(_blockInit != 0, "league not initialized");
-        return _blockInit <= block.number;
     }
 }
