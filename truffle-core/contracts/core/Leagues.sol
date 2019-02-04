@@ -45,9 +45,14 @@ contract Leagues {
     function create(uint256 id, uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
+        require(!_exists(id), "league already created");
         uint256 initBlock = block.number + blocksToInit;
         bytes32 initHash = 0;
         bytes32 hash = 0;
         _leagues[id] = League(teamIds, initBlock, step, initHash, hash);
+    }
+
+    function _exists(uint256 id) private view returns (bool) {
+        return _leagues[id]._initBlock != 0;
     }
 }
