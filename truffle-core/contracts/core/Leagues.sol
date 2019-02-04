@@ -8,9 +8,9 @@ contract Leagues {
     // step blocks of the league
     uint256 private _step;
     // hash of the init status of the league
-    bytes32 private _initStateHash;
+    bytes32 private _initHash;
     // hash of the state of the league
-    bytes32 private _stateHash;
+    bytes32 private _hash;
 
     function getInitBlock(uint256 id) external view returns (uint256) {
         return _initBlock;
@@ -30,12 +30,12 @@ contract Leagues {
         return _teamIds;
     }
 
-    function getInitStateHash(uint256 id) external view returns (bytes32) {
-        return _initStateHash;
+    function getInitHash(uint256 id) external view returns (bytes32) {
+        return _initHash;
     }
 
-    function getStateHash(uint256 id) external view returns (bytes32) {
-        return _stateHash;
+    function getHash(uint256 id) external view returns (bytes32) {
+        return _hash;
     }
 
     function create(uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {

@@ -21,10 +21,10 @@ contract('Leagues', (accounts) => {
         step.toNumber().should.be.equal(0);
         const teamIds = await leagues.getTeamIds(id).should.be.fulfilled;
         teamIds.length.should.be.equal(0);
-        const initStateHash = await leagues.getInitStateHash(id).should.be.fulfilled;
-        initStateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const stateHash = await leagues.getStateHash(id).should.be.fulfilled;
-        stateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+        const initHash = await leagues.getInitHash(id).should.be.fulfilled;
+        initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+        const hash = await leagues.getHash(id).should.be.fulfilled;
+        hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
         const end = await leagues.getEndBlock(id).should.be.fulfilled;
         end.toNumber().should.be.equal(0);
     })
