@@ -15,19 +15,21 @@ contract('Leagues', (accounts) => {
         leagues = await Leagues.new().should.be.fulfilled;
     });
 
-    it('default values', async () =>{
-        const block = await leagues.getInitBlock(id).should.be.fulfilled;
-        block.toNumber().should.be.equal(0);
-        const step = await leagues.getStep(id).should.be.fulfilled;
-        step.toNumber().should.be.equal(0);
-        const teamIds = await leagues.getTeamIds(id).should.be.fulfilled;
-        teamIds.length.should.be.equal(0);
+    it('unexistent league', async () => {
+        await leagues.getInitBlock(id).should.be.rejected;
+        await leagues.getStep(id).should.be.rejected;
+        await leagues.getTeamIds(id).should.be.rejected;
+        await leagues.getInitHash(id).should.be.rejected;
+        await leagues.getHash(id).should.be.rejected;
+        await leagues.getEndBlock(id).should.be.rejected;
+    })
+
+    it('default hashes values on create league', async () =>{
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const initHash = await leagues.getInitHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
         const hash = await leagues.getHash(id).should.be.fulfilled;
         hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const end = await leagues.getEndBlock(id).should.be.fulfilled;
-        end.toNumber().should.be.equal(0);
     })
 
     it('create league with no team', async () => {
