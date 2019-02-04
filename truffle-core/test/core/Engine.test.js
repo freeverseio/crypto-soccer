@@ -8,6 +8,8 @@ const Engine = artifacts.require('Engine');
 contract('Engine', (accounts) => {
     let leagues = null;
     let engine = null;
+    const id = 0;
+    const initPlayerState = 0;
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
@@ -20,8 +22,15 @@ contract('Engine', (accounts) => {
     });
 
     it('compute unexistent league', async () => {
-        const leagueId = 0;
-        const initPlayerState = 0;
-        await engine.computeLeagueFinalState(leagueId, initPlayerState).should.be.rejected;
+        await engine.computeLeagueFinalState(id, initPlayerState).should.be.rejected;
+    });
+
+    it('compute league', async () => {
+        const blocksToInit = 1;
+        const step = 1;
+        const teamIds = [1, 2];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const scores = await engine.computeLeagueFinalState(id, initPlayerState).should.be.fulfilled;
+        console.log(scores);
     });
 });
