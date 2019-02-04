@@ -75,4 +75,11 @@ contract('Leagues', (accounts) => {
         await leagues.create(id, blocksToInit, blockStep, teamIds).should.be.fulfilled;
         await leagues.create(id, blocksToInit, blockStep, teamIds).should.be.rejected;
     });
+
+    it('step == 0 is invalid', async () => {
+        const teamIds = [1, 2];
+        const blocksToInit = 1;
+        const step = 0;
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+    })
 });
