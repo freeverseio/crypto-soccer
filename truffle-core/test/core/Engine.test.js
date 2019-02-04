@@ -18,4 +18,10 @@ contract('Engine', (accounts) => {
         const address = await engine.getLeaguesContract().should.be.fulfilled;
         address.should.be.equal(leagues.address);
     });
+
+    it('calculate league', async () => {
+        const leagueId = 0;
+        const initPlayerState = 0;
+        await engine.computeLeagueFinalState(leagueId, initPlayerState).should.be.fulfilled;
+    });
 });

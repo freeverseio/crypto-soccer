@@ -14,9 +14,11 @@ contract Engine {
     }
 
     function computeLeagueFinalState (
-        uint256 initBlock,
-        uint256 step,
+        uint256 leagueId,
         uint256 initPlayerState
         ) public view {
+            uint256 initBlock = _leagues.getInitBlock(leagueId);
+            uint256 step = _leagues.getStep(leagueId);
+            uint256[] memory teamIds = _leagues.getTeamIds(leagueId);
     }
 }
