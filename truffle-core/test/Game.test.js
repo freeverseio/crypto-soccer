@@ -7,7 +7,7 @@ const CryptoTeams = artifacts.require('CryptoTeams');
 const Horizon = artifacts.require('Horizon');
 const Leagues = artifacts.require('Leagues');
 
-contract('Horizon', (accounts) => {
+contract('Game', (accounts) => {
     let horizon = null;
     let cryptoPlayers = null;
     let cryptoTeams = null;
@@ -34,6 +34,7 @@ contract('Horizon', (accounts) => {
         const madridId = await cryptoTeams.getTeamId("Madrid").should.be.fulfilled;
         const blockInitDelta = 1;
         const step = 1;
-        await leagues.create(blockInitDelta, step, [barcelonaId, madridId]).should.be.fulfilled;
+        const id = 0;
+        await leagues.create(id, blockInitDelta, step, [barcelonaId, madridId]).should.be.fulfilled;
     });
 })
