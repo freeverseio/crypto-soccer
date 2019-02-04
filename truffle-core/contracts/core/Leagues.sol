@@ -4,26 +4,26 @@ contract Leagues {
     // teams ids in the league
     uint256[] private _teamIds;
     // init block of the league
-    uint256 private _blockInit;
+    uint256 private _initBlock;
     // step blocks of the league
-    uint256 private _blockStep;
+    uint256 private _step;
     // hash of the init status of the league
     bytes32 private _initStateHash;
     // hash of the state of the league
     bytes32 private _stateHash;
 
-    function getBlockInit(uint256 id) external view returns (uint256) {
-        return _blockInit;
+    function getInitBlock(uint256 id) external view returns (uint256) {
+        return _initBlock;
     }
 
-    function getBlockStep(uint256 id) external view returns (uint256) {
-        return _blockStep;
+    function getStep(uint256 id) external view returns (uint256) {
+        return _step;
     }
 
-    function getBlockEnd(uint256 id) external view returns (uint256) {
+    function getEndBlock(uint256 id) external view returns (uint256) {
         uint256 nTeams = _teamIds.length;
         uint256 nMatchDays = 2 * (nTeams - 1);
-        return _blockInit + (nMatchDays - 1) * _blockStep;
+        return _initBlock + (nMatchDays - 1) * _step;
     }
 
     function getTeamIds(uint256 id) external view returns (uint256[] memory) {
@@ -38,11 +38,11 @@ contract Leagues {
         return _stateHash;
     }
 
-    function create(uint256 blocksToInit, uint256 blockStep, uint256[] memory teamIds) public {
-        require(blockStep > 0, "invalid block step");
+    function create(uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
+        require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         _teamIds = teamIds;
-        _blockInit = block.number + blocksToInit;
-        _blockStep = blockStep;
+        _initBlock = block.number + blocksToInit;
+        _step = step;
     }
 }

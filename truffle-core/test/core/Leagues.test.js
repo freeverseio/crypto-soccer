@@ -15,9 +15,9 @@ contract('Leagues', (accounts) => {
     });
 
     it('default values', async () =>{
-        const block = await leagues.getBlockInit(id).should.be.fulfilled;
+        const block = await leagues.getInitBlock(id).should.be.fulfilled;
         block.toNumber().should.be.equal(0);
-        const step = await leagues.getBlockStep(id).should.be.fulfilled;
+        const step = await leagues.getStep(id).should.be.fulfilled;
         step.toNumber().should.be.equal(0);
         const teamIds = await leagues.getTeamIds(id).should.be.fulfilled;
         teamIds.length.should.be.equal(0);
@@ -25,7 +25,7 @@ contract('Leagues', (accounts) => {
         initStateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
         const stateHash = await leagues.getStateHash(id).should.be.fulfilled;
         stateHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const end = await leagues.getBlockEnd(id).should.be.fulfilled;
+        const end = await leagues.getEndBlock(id).should.be.fulfilled;
         end.toNumber().should.be.equal(0);
     })
 
@@ -54,7 +54,7 @@ contract('Leagues', (accounts) => {
         const blockStep = 2;
         const result = await leagues.create(blocksToInit, blockStep, teamIds).should.be.fulfilled;
         const blockNumber = result.receipt.blockNumber;
-        const initBlock = await leagues.getBlockInit(id).should.be.fulfilled;
+        const initBlock = await leagues.getInitBlock(id).should.be.fulfilled;
         initBlock.toNumber().should.be.equal(blockNumber + blocksToInit);
     });
 
@@ -64,7 +64,7 @@ contract('Leagues', (accounts) => {
         const blockStep = 2;
         const result = await leagues.create(blocksToInit, blockStep, teamIds).should.be.fulfilled;
         const blockNumber = result.receipt.blockNumber;
-        const endBlock = await leagues.getBlockEnd(id).should.be.fulfilled;
+        const endBlock = await leagues.getEndBlock(id).should.be.fulfilled;
         endBlock.toNumber().should.be.equal(blockNumber + blocksToInit + blockStep);
     });
 });
