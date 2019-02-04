@@ -20,5 +20,9 @@ contract Engine {
             uint256 initBlock = _leagues.getInitBlock(leagueId);
             uint256 step = _leagues.getStep(leagueId);
             uint256[] memory teamIds = _leagues.getTeamIds(leagueId);
+            uint256 nTeams = teamIds.length;
+            uint256 nMatchdays = 2*(nTeams-1);
+            uint256 nMatchesPerMatchday = nTeams/2;
+            //uint256[] memory scores = new uint256[](nMatchdays);
     }
 }

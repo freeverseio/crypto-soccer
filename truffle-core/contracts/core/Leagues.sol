@@ -1,48 +1,53 @@
 pragma solidity ^ 0.4.24;
 
 contract Leagues {
-    // teams ids in the league
-    uint256[] private _teamIds;
-    // init block of the league
-    uint256 private _initBlock;
-    // step blocks of the league
-    uint256 private _step;
-    // hash of the init status of the league
-    bytes32 private _initHash;
-    // hash of the state of the league
-    bytes32 private _hash;
+    struct League {
+        // teams ids in the league
+        uint256[] _teamIds;
+        // init block of the league
+        uint256 _initBlock;
+        // step blocks of the league
+        uint256 _step;
+        // hash of the init status of the league
+        bytes32 _initHash;
+        // hash of the state of the league
+        bytes32 _hash;
+    }
+
+    mapping(uint256 => League) private _leagues;
 
     function getInitBlock(uint256 id) external view returns (uint256) {
-        return _initBlock;
+        return _leagues[id]._initBlock;
     }
 
     function getStep(uint256 id) external view returns (uint256) {
-        return _step;
+        return _leagues[id]._step;
     }
 
     function getEndBlock(uint256 id) external view returns (uint256) {
-        uint256 nTeams = _teamIds.length;
+        uint256 nTeams = _leagues[id]._teamIds.length;
         uint256 nMatchDays = 2 * (nTeams - 1);
-        return _initBlock + (nMatchDays - 1) * _step;
+        return _leagues[id]._initBlock + (nMatchDays - 1) * _leagues[id]._step;
     }
 
     function getTeamIds(uint256 id) external view returns (uint256[] memory) {
-        return _teamIds;
+        return _leagues[id]._teamIds;
     }
 
     function getInitHash(uint256 id) external view returns (bytes32) {
-        return _initHash;
+        return _leagues[id]._initHash;
     }
 
     function getHash(uint256 id) external view returns (bytes32) {
-        return _hash;
+        return _leagues[id]._hash;
     }
 
-    function create(uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
+    function create(uint256 id, uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
-        _teamIds = teamIds;
-        _initBlock = block.number + blocksToInit;
-        _step = step;
+        uint256 initBlock = block.number + blocksToInit;
+        bytes32 initHash = 0;
+        bytes32 hash = 0;
+        _leagues[id] = League(teamIds, initBlock, step, initHash, hash);
     }
 }

@@ -19,9 +19,9 @@ contract('Engine', (accounts) => {
         address.should.be.equal(leagues.address);
     });
 
-    it('calculate league', async () => {
+    it('compute unexistent league', async () => {
         const leagueId = 0;
         const initPlayerState = 0;
-        await engine.computeLeagueFinalState(leagueId, initPlayerState).should.be.fulfilled;
+        await engine.computeLeagueFinalState(leagueId, initPlayerState).should.be.rejected;
     });
 });
