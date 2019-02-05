@@ -9,7 +9,10 @@ contract('Engine', (accounts) => {
     let leagues = null;
     let engine = null;
     const id = 0;
-    const initPlayerState = 0;
+    const initPlayerState = [
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    ];
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
@@ -25,12 +28,19 @@ contract('Engine', (accounts) => {
         await engine.computeLeagueFinalState(id, initPlayerState).should.be.rejected;
     });
 
-    it('compute league', async () => {
-        const blocksToInit = 1;
-        const step = 1;
-        const teamIds = [1, 2];
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const scores = await engine.computeLeagueFinalState(id, initPlayerState).should.be.fulfilled;
-        console.log(scores);
+    it('play a match', async () => {
+        const stateTeam0 = initPlayerState[0];
+        const stateTeam1 = initPlayerState[1];
+        const result = await engine.playMatch(stateTeam0, stateTeam1, 5).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(1);
+        result[1].toNumber().should.be.equal(1);
     });
+
+    // it('compute league', async () => {
+    //     const blocksToInit = 1;
+    //     const step = 1;
+    //     const teamIds = [1, 2];
+    //     await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+    //     const scores = await engine.computeLeagueFinalState(id, initPlayerState).should.be.fulfilled;
+    // });
 });
