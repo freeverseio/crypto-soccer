@@ -16,12 +16,12 @@ contract Leagues {
 
     mapping(uint256 => League) private _leagues;
 
-    function getInitBlock(uint256 id) external view returns (uint256) {
+    function getInitBlock(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id]._initBlock;
     }
 
-    function getStep(uint256 id) external view returns (uint256) {
+    function getStep(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id]._step;
     }
@@ -33,7 +33,7 @@ contract Leagues {
         return _leagues[id]._initBlock + (nMatchDays - 1) * _leagues[id]._step;
     }
 
-    function getTeamIds(uint256 id) external view returns (uint256[] memory) {
+    function getTeamIds(uint256 id) public view returns (uint256[] memory) {
         require(_exists(id), "unexistent league");
         return _leagues[id]._teamIds;
     }
