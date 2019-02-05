@@ -2,27 +2,27 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayers');
-const CryptoTeams = artifacts.require('CryptoTeams');
+const Players = artifacts.require('Players');
+const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
 const Leagues = artifacts.require('Leagues');
 
 contract('Game', (accounts) => {
     let horizon = null;
-    let cryptoPlayers = null;
-    let cryptoTeams = null;
+    let players = null;
+    let teams = null;
     let leagues = null;
 
     beforeEach(async () => {
-        cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-        cryptoTeams = await CryptoTeams.new(cryptoPlayers.address).should.be.fulfilled;
-        horizon = await Horizon.new(cryptoTeams.address).should.be.fulfilled;
-        await cryptoPlayers.addMinter(horizon.address).should.be.fulfilled;
-        await cryptoPlayers.renounceMinter().should.be.fulfilled;
-        await cryptoTeams.addMinter(horizon.address).should.be.fulfilled;
-        await cryptoTeams.renounceMinter().should.be.fulfilled;
-        await cryptoPlayers.addTeamsContract(cryptoTeams.address).should.be.fulfilled;
-        await cryptoPlayers.renounceTeamsContract().should.be.fulfilled;
+        players = await Players.new().should.be.fulfilled;
+        teams = await Teams.new(players.address).should.be.fulfilled;
+        horizon = await Horizon.new(teams.address).should.be.fulfilled;
+        await players.addMinter(horizon.address).should.be.fulfilled;
+        await players.renounceMinter().should.be.fulfilled;
+        await teams.addMinter(horizon.address).should.be.fulfilled;
+        await teams.renounceMinter().should.be.fulfilled;
+        await players.addTeamsContract(teams.address).should.be.fulfilled;
+        await players.renounceTeamsContract().should.be.fulfilled;
 
         leagues = await Leagues.new().should.be.fulfilled;
     });
@@ -30,8 +30,8 @@ contract('Game', (accounts) => {
     it('play a league of 2 teams', async () => {
         await horizon.createTeam("Barcelona").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
-        const barcelonaId = await cryptoTeams.getTeamId("Barcelona").should.be.fulfilled;
-        const madridId = await cryptoTeams.getTeamId("Madrid").should.be.fulfilled;
+        const barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
+        const madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
         const blockInitDelta = 1;
         const step = 1;
         const id = 0;
