@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersProps.sol";
+import "./PlayersProps.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 
 /**
- * @title CryptoPlayersMintable
- * @dev CryptoPlayers minting logic
+ * @title PlayersMintable
+ * @dev Players minting logic
  */
-contract CryptoPlayersMintable is CryptoPlayersProps, MinterRole {
+contract PlayersMintable is PlayersProps, MinterRole {
     /**
      * @dev Function to mint players
      * @param to The address that will receive the minted players.

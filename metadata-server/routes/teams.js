@@ -1,7 +1,7 @@
 var express = require('express');
 const Web3 = require('web3');
-const jsonInterface = require('../../truffle-core/build/contracts/CryptoPlayers.json').abi;
-const teamsJSONInterface = require('../../truffle-core/build/contracts/CryptoTeams.json').abi;
+const jsonInterface = require('../../truffle-core/build/contracts/Players.json').abi;
+const teamsJSONInterface = require('../../truffle-core/build/contracts/Teams.json').abi;
 const config = require('../config.json');
 
 var router = express.Router();

@@ -3,8 +3,8 @@ pragma solidity ^ 0.4.24;
 import "./players.sol";
 
 contract TeamFactory is PlayerFactory {
-    constructor(address cryptoTeams, address cryptoPlayers) public 
-    PlayerFactory(cryptoTeams, cryptoPlayers){
+    constructor(address Teams, address Players) public 
+    PlayerFactory(Teams, Players){
 
     }
 
@@ -20,10 +20,10 @@ contract TeamFactory is PlayerFactory {
 
         /// @dev At this stage, playerIdx = 0.
         /// @dev A team is considered as 'created' if the owner has a non-null address.
-        _cryptoTeams.addTeam(_teamName, msg.sender);
+        _Teams.addTeam(_teamName, msg.sender);
 
         // emit the team creation event
-        emit TeamCreation(_teamName, _cryptoTeams.totalSupply(), msg.sender);
+        emit TeamCreation(_teamName, _Teams.totalSupply(), msg.sender);
     }
 
     /// @dev Returns the entire state of the player (age, skills, etc.) given his idx in a given team
@@ -32,8 +32,8 @@ contract TeamFactory is PlayerFactory {
         view
         returns(uint)
     {
-        uint playerIdx = getNumAtIndex(_cryptoTeams.getPlayersIds(_teamIdx), _playerIdx, kBitsPerPlayerIdx);
-        return _cryptoPlayers.getState(playerIdx);
+        uint playerIdx = getNumAtIndex(_Teams.getPlayersIds(_teamIdx), _playerIdx, kBitsPerPlayerIdx);
+        return _Players.getState(playerIdx);
     }
 
 /* 

@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoPlayersMintable.sol";
+import "./PlayersMintable.sol";
 import "./TeamsContractRole.sol";
-import "./CryptoTeamsPlayers.sol";
+import "./TeamsPlayers.sol";
 
 /**
- * @title CryptoPlayersTeam
+ * @title PlayersTeam
  * @dev CryptPlayers team logic
  */
-contract CryptoPlayersTeam is CryptoPlayersMintable, TeamsContractRole {
+contract PlayersTeam is PlayersMintable, TeamsContractRole {
     // Mapping from player ID to team ID
     mapping(uint256 => uint256) _playerTeam;
     

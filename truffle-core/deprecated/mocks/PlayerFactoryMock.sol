@@ -69,14 +69,14 @@ contract PlayerFactoryMock is PlayerFactory {
     }
 
     function getNCreatedPlayers_() public view returns(uint) { 
-        return _cryptoPlayers.getNCreatedPlayers(); 
+        return _Players.getNCreatedPlayers(); 
     }
 
     function getPlayerState_(uint playerIdx) public view returns(uint) {
-        return _cryptoPlayers.getState(playerIdx);
+        return _Players.getState(playerIdx);
     }
 
     function getPlayerName_(uint playerIdx) public view returns(string) {
-        return _cryptoPlayers.getName(playerIdx);
+        return _Players.getName(playerIdx);
     }
 }

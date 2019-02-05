@@ -2,8 +2,8 @@
 //     .use(require('chai-as-promised'))
 //     .should();
 
-// const CryptoPlayers = artifacts.require('CryptoPlayers');
-// const CryptoTeams = artifacts.require('CryptoTeams');
+// const Players = artifacts.require('Players');
+// const Teams = artifacts.require('Teams');
 // const TeamFactoryMock = artifacts.require("TeamFactoryMock");
 // var k = require('../../jsCommons/constants.js');
 // var f = require('../../jsCommons/functions.js');
@@ -12,14 +12,14 @@
 
 // contract('Teams', function (accounts) {
 //   let instance;
-//   let cryptoPlayers;
-//   let cryptoTeams;
+//   let Players;
+//   let Teams;
 
 //   beforeEach(async () => {
-//     cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-//     cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-//     instance = await TeamFactoryMock.new(cryptoTeams.address, cryptoPlayers.address).should.be.fulfilled;
-//     cryptoTeams.addMinter(instance.address);
+//     Players = await Players.new().should.be.fulfilled;
+//     Teams = await Teams.new().should.be.fulfilled;
+//     instance = await TeamFactoryMock.new(Teams.address, Players.address).should.be.fulfilled;
+//     Teams.addMinter(instance.address);
 //   });
 
 //   it("creates a single contract and computes the gas cost of deploying GameEngine", async () => {
@@ -29,8 +29,8 @@
 //   });
 
 //   it('get unexistent team', async () => {
-//     await cryptoTeams.getName(0).should.be.rejected;
-//     await cryptoTeams.getName(1).should.be.rejected;
+//     await Teams.getName(0).should.be.rejected;
+//     await Teams.getName(1).should.be.rejected;
 //   })
 
 //   it("creates an entire team, an checks that we have 11 players at the end", async () => {
@@ -46,7 +46,7 @@
 //   it("create team", async () => {
 //     const name = "Los Cojos";
 //     await instance.createTeam(name).should.be.fulfilled;
-//     const result = await cryptoTeams.getName(1).should.be.fulfilled;
+//     const result = await Teams.getName(1).should.be.fulfilled;
 //     result.should.be.equal(name)
 //   });
 

@@ -6,13 +6,13 @@ require('chai')
     .use(require('chai-bignumber')(BigNumber))
     .should();
 
-const CryptoTeams = artifacts.require('CryptoTeamsMock');
+const Teams = artifacts.require('TeamsMock');
 
-contract('CryptoTeams', ([_, creator, ...accounts]) => {
-    const cryptoPlayersAddress = 0;
+contract('Teams', ([_, creator, ...accounts]) => {
+    const PlayersAddress = 0;
 
     beforeEach(async function () {
-        this.token = await CryptoTeams.new(cryptoPlayersAddress, { from: creator });
+        this.token = await Teams.new(PlayersAddress, { from: creator });
     });
 
     shouldBehaveLikeERC721(creator, creator, accounts);

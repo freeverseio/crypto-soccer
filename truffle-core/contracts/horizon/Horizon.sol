@@ -1,28 +1,28 @@
 pragma solidity ^0.4.24;
 
 import "../HelperFunctions.sol";
-import "../ERC721/CryptoPlayers.sol";
-import "../ERC721/CryptoTeams.sol";
+import "../ERC721/Players.sol";
+import "../ERC721/Teams.sol";
 
 contract Horizon is HelperFunctions {
-    CryptoPlayers private _cryptoPlayers;
-    CryptoTeams private _cryptoTeams;
+    Players private _players;
+    Teams private _teams;
 
-    constructor(address cryptoTeams) public {
-        _cryptoTeams = CryptoTeams(cryptoTeams);
-        _cryptoPlayers = CryptoPlayers(_cryptoTeams.getCryptoPlayers());
+    constructor(address teams) public {
+        _teams = Teams(teams);
+        _players = Players(_teams.getPlayersAddress());
     }
 
     function createTeam(string name) public {
-        _cryptoTeams.mint(msg.sender, name);
-        uint256 teamId = _cryptoTeams.getTeamId(name);
+        _teams.mint(msg.sender, name);
+        uint256 teamId = _teams.getTeamId(name);
 
         for (uint i = 0; i<11; i++) {
             string memory postFix = uint2str(i);
             string memory playerName = strConcat(name, "_", postFix);
-            _cryptoPlayers.mint(msg.sender, playerName);
-            uint256 playerId = _cryptoPlayers.getPlayerId(playerName);
-            _cryptoTeams.addPlayer(teamId, playerId);
+            _players.mint(msg.sender, playerName);
+            uint256 playerId = _players.getPlayerId(playerName);
+            _teams.addPlayer(teamId, playerId);
         }
     }
 }

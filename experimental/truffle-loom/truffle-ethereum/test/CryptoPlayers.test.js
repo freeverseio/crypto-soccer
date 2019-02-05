@@ -3,13 +3,13 @@ require('chai')
     .should();
 
 const Gateway = artifacts.require('Gateway');
-const CryptoPlayers = artifacts.require('CryptoPlayers');
+const Players = artifacts.require('Players');
 
-contract('CryptoPlayers', (accounts) => {
+contract('Players', (accounts) => {
     it('correct deployed', async () => {
         const gateway = await Gateway.deployed();
         gateway.should.not.equal(null);
-        const player = await CryptoPlayers.new(gateway.address);
+        const player = await Players.new(gateway.address);
         player.should.not.equal(null);
     });
 });

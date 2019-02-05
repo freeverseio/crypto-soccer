@@ -2,8 +2,8 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayers');
-const CryptoTeams = artifacts.require('CryptoTeams');
+const Players = artifacts.require('Players');
+const Teams = artifacts.require('Teams');
 const Testing = artifacts.require("TeamFactoryMock");
 
 var k = require('../jsCommons/constants.js');
@@ -14,9 +14,9 @@ contract('Testing', function(accounts) {
 
   // deploy the contract before each test
   beforeEach(async () => {
-    const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-    const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-    instance = await Testing.new(cryptoTeams.address, cryptoPlayers.address).should.be.fulfilled;
+    const Players = await Players.new().should.be.fulfilled;
+    const Teams = await Teams.new().should.be.fulfilled;
+    instance = await Testing.new(Teams.address, Players.address).should.be.fulfilled;
   });
 
   it("tests that we compute correctly the teams playing in a certain day", async () => {

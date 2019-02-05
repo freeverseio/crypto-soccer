@@ -2,8 +2,8 @@
 //   .use(require('chai-as-promised'))
 //   .should();
 
-// const CryptoPlayers = artifacts.require('CryptoPlayers');
-// const CryptoTeams = artifacts.require('CryptoTeams');
+// const Players = artifacts.require('Players');
+// const Teams = artifacts.require('Teams');
 // const cryptoSoccer = artifacts.require("TeamFactoryMock");
 // var k = require('../../jsCommons/constants.js');
 // var f = require('../../jsCommons/functions.js');
@@ -24,10 +24,10 @@
 //   console.log(web3.eth.getBalance(web3.eth.accounts[0]).toNumber()/web3.toWei(1, "ether"));
 
 //   it("tests if contract is deployed correctly", async () => {
-//     const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-//     const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-//     instance = await cryptoSoccer.new(cryptoTeams.address, cryptoPlayers.address);
-//     cryptoTeams.addMinter(instance.address);
+//     const Players = await Players.new().should.be.fulfilled;
+//     const Teams = await Teams.new().should.be.fulfilled;
+//     instance = await cryptoSoccer.new(Teams.address, Players.address);
+//     Teams.addMinter(instance.address);
 //   });
 
 //   it('team name of unexistent player', async () => {
@@ -35,15 +35,15 @@
 //   });
 
 //   it('team name by player', async () => {
-//     const cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-//     const cryptoTeams = await CryptoTeams.new().should.be.fulfilled;
-//     const contract = await cryptoSoccer.new(cryptoTeams.address, cryptoPlayers.address);
+//     const Players = await Players.new().should.be.fulfilled;
+//     const Teams = await Teams.new().should.be.fulfilled;
+//     const contract = await cryptoSoccer.new(Teams.address, Players.address);
 //     const team = "team";
 //     const player = "player";
 //     const playerState = 44535;
-//     await cryptoTeams.addTeam(team, accounts[0]);
-//     await cryptoPlayers.addPlayer(player, playerState, 1, accounts[0]);
-//     const index = await cryptoPlayers.getTeamIndexByPlayer(player).should.be.fulfilled;
+//     await Teams.addTeam(team, accounts[0]);
+//     await Players.addPlayer(player, playerState, 1, accounts[0]);
+//     const index = await Players.getTeamIndexByPlayer(player).should.be.fulfilled;
 //     index.toNumber().should.be.equal(1);
 //     const name = await contract.teamNameByPlayer(player).should.be.fulfilled;
 //     name.should.be.equal(team);
