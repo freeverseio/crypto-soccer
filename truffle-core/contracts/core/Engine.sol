@@ -14,6 +14,29 @@ contract Engine {
     function getLeaguesContract() external view returns (address) {
         return address(_leagues);
     }
+    
+    /**
+     * @dev playMatch returns the result of a match
+     * @param seed the pseudo-random number to use as a seed for the match
+     * @param stateTeam0 a vector with the state of the players of team 0
+     * @param stateTeam1 a vector with the state of the players of team 1
+     * @param tacticsTeam0 a vector[3] with the tactic (ex. [4,4,3]) of team 0 
+     * @param tacticsTeam0 a vector[3] with the tactic (ex. [4,4,3]) of team 1
+     * @return the score of the match
+     */
+    function playMatch(
+        bytes32 seed,
+        uint256[NPLAYERS_PER_TEAM] memory stateTeam0,
+        uint256[NPLAYERS_PER_TEAM] memory stateTeam1, 
+        uint256[3] memory tacticsTeam0, 
+        uint256[3] memory tacticsTeam1
+    ) 
+        public 
+        pure 
+        returns (uint256, uint256) 
+    {
+        return (stateTeam0[2] % 4, stateTeam1[0] % 4);
+    }
 
     /**
      * @dev compute the result of a league
@@ -52,19 +75,5 @@ contract Engine {
             return t;
 
         return t - (nTeams - 1);
-    }
-
-    function playMatch(
-        bytes32 seed,
-        uint256[NPLAYERS_PER_TEAM] memory stateTeam0,
-        uint256[NPLAYERS_PER_TEAM] memory stateTeam1, 
-        uint256[3] memory tacticsTeam0, 
-        uint256[3] memory tacticsTeam1
-    ) 
-        public 
-        pure 
-        returns (uint256, uint256) 
-    {
-        return (stateTeam0[2] % 4, stateTeam1[0] % 4);
     }
 }
