@@ -3,9 +3,9 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 
-/// @title CryptoTeamsProps represents a team of players.
+/// @title TeamsProps represents a team of players.
 /// @notice ERC721 compliant.
-contract CryptoTeamsProps is ERC721, ERC721Enumerable {
+contract TeamsProps is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint256[] players;

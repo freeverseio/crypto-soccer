@@ -3,21 +3,21 @@ pragma solidity ^ 0.4.24;
 // TODO: import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../CryptoSoccer.sol";
 import "../helpers.sol";
-import "../ERC721/CryptoTeams.sol";
-import "../ERC721/CryptoPlayers.sol";
+import "../ERC721/Teams.sol";
+import "../ERC721/Players.sol";
 
 /*
     Contract to manage player creation
 */
 
 contract PlayerFactory is CryptoSoccer, HelperFunctions {
-    CryptoPlayers internal _cryptoPlayers;
-    CryptoTeams internal _cryptoTeams;
+    Players internal _Players;
+    Teams internal _Teams;
 
-    constructor(address cryptoTeams, address cryptoPlayers) public 
+    constructor(address Teams, address Players) public 
     {
-        _cryptoPlayers = CryptoPlayers(cryptoPlayers);
-        _cryptoTeams = CryptoTeams(cryptoTeams);
+        _Players = Players(Players);
+        _Teams = Teams(Teams);
     }
 
     /// @dev Event fired whenever a new player is created
@@ -44,22 +44,22 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
     function createPlayerInternal(string _playerName, uint _teamIdx, uint8 _playerNumberInTeam, uint _playerState, address owner)
         internal
     {
-        require(!_cryptoPlayers.playerExists(_playerName), "Player already exists with this name");
+        require(!_Players.playerExists(_playerName), "Player already exists with this name");
 
         /// @dev Get newPlayerIdx 
-        uint newPlayerIdx = _cryptoPlayers.getNCreatedPlayers()+1;
+        uint newPlayerIdx = _Players.getNCreatedPlayers()+1;
         /// @dev Push playert
-        _cryptoPlayers.addPlayer(_playerName, _playerState, _teamIdx, owner);
+        _Players.addPlayer(_playerName, _playerState, _teamIdx, owner);
 
         /// @dev Update inverse relation (from teams to playerIdx)
         uint256 playerIdx = setNumAtIndex(
             newPlayerIdx,
-            _cryptoTeams.getPlayersIds(_teamIdx),
+            _Teams.getPlayersIds(_teamIdx),
             _playerNumberInTeam,
             kBitsPerPlayerIdx
         );
 
-        _cryptoTeams.setPlayersIds(_teamIdx, playerIdx );
+        _Teams.setPlayersIds(_teamIdx, playerIdx );
 
         /// @dev Emit the creation event
         emit PlayerCreation(_playerName, newPlayerIdx, _playerState);
@@ -129,7 +129,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         uint dna = uint(
             keccak256(
                 abi.encodePacked(
-            _cryptoTeams.getName(_teamIdx),
+            _Teams.getName(_teamIdx),
             _userChoice,
             _playerNumberInTeam
         )));
@@ -160,7 +160,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
         public 
     {
         /// @dev TODO: we should make sure all numbers are below 2^kBitsPerState-1
-        require (_teamIdx < _cryptoTeams.totalSupply(), "Trying to assign a player to a team not created yet");
+        require (_teamIdx < _Teams.totalSupply(), "Trying to assign a player to a team not created yet");
         uint bits = kBitsPerState;
         uint state = _monthOfBirthAfterUnixEpoch +
                      (_defense     << bits) +
@@ -178,7 +178,7 @@ contract PlayerFactory is CryptoSoccer, HelperFunctions {
     @dev Section with functions only for external/testing use.
 */
     function teamNameByPlayer(string name) public view returns(string){
-        uint256 teamIdx = _cryptoPlayers.getTeamIndexByPlayer(name);
-        return _cryptoTeams.getName(teamIdx);
+        uint256 teamIdx = _Players.getTeamIndexByPlayer(name);
+        return _Teams.getName(teamIdx);
     }
 }

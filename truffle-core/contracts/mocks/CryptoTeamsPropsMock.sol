@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
-import "../ERC721/CryptoTeamsProps.sol";
+import "../ERC721/TeamsProps.sol";
 
 /**
- * @title CryptoTeamsPropsMock
+ * @title TeamsPropsMock
  * This mock just provides a public mint and burn functions for testing purposes
  */
-contract CryptoTeamsPropsMock is CryptoTeamsProps {
+contract TeamsPropsMock is TeamsProps {
     function mint(address to, uint256 tokenId) public {
         _mint(to, tokenId);
     }

@@ -1,5 +1,5 @@
 const Web3 = require('web3');
-const contractJSON = require('../../truffle-core/build/contracts/CryptoTeams.json')
+const contractJSON = require('../../truffle-core/build/contracts/Teams.json')
 
 module.exports = async ({ provider, playersContract, sender }) => {
     const web3 = new Web3(provider);

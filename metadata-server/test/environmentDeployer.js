@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const ganache = require("ganache-cli");
-const cryptoPlayersDeployer = require('./cryptoPlayersDeployer');
-const cryptoTeamsDeployer = require('./cryptoTeamsDeployer');
+const PlayersDeployer = require('./PlayersDeployer');
+const TeamsDeployer = require('./TeamsDeployer');
 
 let provider = null;
 let playersContract = null;
@@ -33,8 +33,8 @@ module.exports.deployer = async (identity) => {
         }]
     });
 
-    playersContract = await cryptoPlayersDeployer({ provider, sender: identity.address });
-    teamsContract = await cryptoTeamsDeployer({ provider, playersContract, sender: identity.address });
+    playersContract = await PlayersDeployer({ provider, sender: identity.address });
+    teamsContract = await TeamsDeployer({ provider, playersContract, sender: identity.address });
     const playerId = await module.exports.mintPlayer(identity.address, "player").should.be.fulfilled;
 
     await teamsContract.methods.mint(identity.address, "team").send({

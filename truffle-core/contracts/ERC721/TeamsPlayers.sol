@@ -1,22 +1,22 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoTeamsMintable.sol";
-import "./CryptoPlayersTeam.sol";
+import "./TeamsMintable.sol";
+import "./PlayersTeam.sol";
 
-contract CryptoTeamsPlayers is CryptoTeamsMintable {
-    CryptoPlayersTeam private _cryptoPlayers;
+contract TeamsPlayers is TeamsMintable {
+    PlayersTeam private _Players;
 
-    constructor(address cryptoPlayers) public {
-        _cryptoPlayers = CryptoPlayersTeam(cryptoPlayers);
+    constructor(address Players) public {
+        _Players = PlayersTeam(Players);
     }
 
-    function getCryptoPlayers() external view returns (address) {
-        return address(_cryptoPlayers);
+    function getPlayersAddress() external view returns (address) {
+        return address(_Players);
     }
 
     function addPlayer(uint256 teamId, uint256 playerId) public {
         require(_playerExists(playerId), "unexistent player");
-        _cryptoPlayers.setTeam(playerId, teamId);
+        _Players.setTeam(playerId, teamId);
         _addPlayer(teamId, playerId);
     }
 
@@ -25,12 +25,12 @@ contract CryptoTeamsPlayers is CryptoTeamsMintable {
         uint256[] memory players = getPlayers(teamId);
         uint count = players.length;
         for (uint i = 0 ; i < count ; i++){
-            _cryptoPlayers.transferFrom(from, to, players[i]);
+            _Players.transferFrom(from, to, players[i]);
         }
     }
 
     function _playerExists(uint256 playerId) private view returns (bool) {
-        address owner = _cryptoPlayers.ownerOf(playerId);
+        address owner = _Players.ownerOf(playerId);
         return owner != address(0);
     }
 }

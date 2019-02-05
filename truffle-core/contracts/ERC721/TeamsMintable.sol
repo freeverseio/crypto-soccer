@@ -1,9 +1,9 @@
 pragma solidity ^0.4.24;
 
-import "./CryptoTeamsProps.sol";
+import "./TeamsProps.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 
-contract CryptoTeamsMintable is CryptoTeamsProps, MinterRole {
+contract TeamsMintable is TeamsProps, MinterRole {
     function mint(address to, string name) public onlyMinter {
         uint256 teamId = calculateId(name);
         require(!_exists(teamId));

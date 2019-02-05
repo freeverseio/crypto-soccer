@@ -2,13 +2,13 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersMintableMock');
+const Players = artifacts.require('PlayersMintableMock');
 
-contract('CryptoPlayersMintable', (accounts) => {
+contract('PlayersMintable', (accounts) => {
     let contract = null;
 
     beforeEach(async () => {
-        contract = await CryptoPlayers.new().should.be.fulfilled;
+        contract = await Players.new().should.be.fulfilled;
     });
 
     it('no initial players', async () => {

@@ -4,9 +4,9 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 
 /**
- * @title CryptoPlayersProps ERC721 Token Standard with its props
+ * @title PlayersProps ERC721 Token Standard with its props
  */
-contract CryptoPlayersProps is ERC721, ERC721Enumerable {
+contract PlayersProps is ERC721, ERC721Enumerable {
     struct Props {
         string name;
         uint88 genome;

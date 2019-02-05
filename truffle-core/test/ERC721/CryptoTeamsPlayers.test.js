@@ -2,22 +2,22 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const CryptoPlayers = artifacts.require('CryptoPlayersTeam');
-const CryptoTeams = artifacts.require('CryptoTeamsPlayers');
+const Players = artifacts.require('PlayersTeam');
+const Teams = artifacts.require('TeamsPlayers');
 
-contract('CryptoTeamsPlayers', (accounts) => {
+contract('TeamsPlayers', (accounts) => {
     let contract = null;
-    let cryptoPlayers = null;
+    let players = null;
 
     beforeEach(async () => {
-        cryptoPlayers = await CryptoPlayers.new().should.be.fulfilled;
-        contract = await CryptoTeams.new(cryptoPlayers.address).should.be.fulfilled;
-        await cryptoPlayers.addTeamsContract(contract.address).should.be.fulfilled;
+        players = await Players.new().should.be.fulfilled;
+        contract = await Teams.new(players.address).should.be.fulfilled;
+        await players.addTeamsContract(contract.address).should.be.fulfilled;
     });
 
-    it('check cryptoPlayers address', async () => {
-        const result = await contract.getCryptoPlayers().should.be.fulfilled;
-        result.should.be.equal(cryptoPlayers.address);
+    it('check players address', async () => {
+        const result = await contract.getPlayersAddress().should.be.fulfilled;
+        result.should.be.equal(players.address);
     });
 
     it('add unexistent player to team', async () => {
@@ -31,42 +31,42 @@ contract('CryptoTeamsPlayers', (accounts) => {
     it('add existent player to team', async () => {
         await contract.mint(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.getTeamId("team").should.be.fulfilled;
-        await cryptoPlayers.mint(accounts[0], "player").should.be.fulfilled;
-        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
+        await players.mint(accounts[0], "player").should.be.fulfilled;
+        const playerId = await players.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
     });
 
     it('add player to team', async () => {
         await contract.mint(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.getTeamId("team").should.be.fulfilled;
-        await cryptoPlayers.mint(accounts[0], "player").should.be.fulfilled;
-        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
+        await players.mint(accounts[0], "player").should.be.fulfilled;
+        const playerId = await players.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
-        const players = await contract.getPlayers(teamId).should.be.fulfilled;
-        players.length.should.be.equal(1);
-        players[0].toNumber().should.be.equal(playerId.toNumber());
+        const teamPlayers = await contract.getPlayers(teamId).should.be.fulfilled;
+        teamPlayers.length.should.be.equal(1);
+        teamPlayers[0].toNumber().should.be.equal(playerId.toNumber());
     });
 
     it('selling team changes players ownership', async () => {
         await contract.mint(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.getTeamId("team").should.be.fulfilled;
-        await cryptoPlayers.mint(accounts[0], "player").should.be.fulfilled;
-        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
+        await players.mint(accounts[0], "player").should.be.fulfilled;
+        const playerId = await players.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         await contract.safeTransferFrom(accounts[0], accounts[1], teamId).should.be.fulfilled;
         const teamOwner = await contract.ownerOf(teamId).should.be.fulfilled;
         teamOwner.should.be.equal(accounts[1]);
-        const playerOwner = await cryptoPlayers.ownerOf(playerId).should.be.fulfilled;
+        const playerOwner = await players.ownerOf(playerId).should.be.fulfilled;
         playerOwner.should.be.equal(accounts[1]);
     });
 
     it('if team adds a player, player knows his team', async () => {
         await contract.mint(accounts[0], "team").should.be.fulfilled;
         const teamId = await contract.getTeamId("team").should.be.fulfilled;
-        await cryptoPlayers.mint(accounts[0], "player").should.be.fulfilled;
-        const playerId = await cryptoPlayers.getPlayerId("player").should.be.fulfilled;
+        await players.mint(accounts[0], "player").should.be.fulfilled;
+        const playerId = await players.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
-        const team = await cryptoPlayers.getTeam(playerId).should.be.fulfilled;
+        const team = await players.getTeam(playerId).should.be.fulfilled;
         team.toNumber().should.be.equal(teamId.toNumber());
     });
 });
