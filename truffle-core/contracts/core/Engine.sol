@@ -35,7 +35,9 @@ contract Engine {
         pure 
         returns (uint256, uint256) 
     {
-        return (stateTeam0[2] % 4, stateTeam1[0] % 4);
+        uint256 hash0 = uint256(seed) + stateTeam0[0];
+        uint256 hash1 = uint256(seed) + stateTeam1[0];
+        return (hash0 % 4, hash1 % 4);
     }
 
     /**

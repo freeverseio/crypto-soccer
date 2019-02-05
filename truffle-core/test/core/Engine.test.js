@@ -30,14 +30,14 @@ contract('Engine', (accounts) => {
     });
 
     it('play a match', async () => {
-        const seed = keccak('keccak256').update('This is my first game!').digest('hex');
+        const seed = keccak('keccak256').update('Hello World!').digest('hex');
         const stateTeam0 = initPlayerState[0];
         const stateTeam1 = initPlayerState[1];
         const tacticTeam0 = [4, 4, 2];
         const tacticTeam1 = [4, 3, 3];
         const result = await engine.playMatch(seed, stateTeam0, stateTeam1, tacticTeam0, tacticTeam1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(3);
+        result[0].toNumber().should.be.equal(3);
+        result[1].toNumber().should.be.equal(2);
     });
 
     // it('compute league', async () => {
