@@ -48,6 +48,7 @@ contract Leagues {
         return _leagues[id]._hash;
     }
 
+    /// TODO: blockToInit -> initBlock: utilize an absolute reference 
     function create(uint256 id, uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
