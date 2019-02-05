@@ -49,16 +49,16 @@ contract Engine {
     }
 
     function playMatch(
-        uint256[] memory stateTeam0, 
-        uint256[] memory stateTeam1, 
-        bytes32 seed
+        bytes32 seed,
+        uint256[NPLAYERS_PER_TEAM] memory stateTeam0,
+        uint256[NPLAYERS_PER_TEAM] memory stateTeam1, 
+        uint256[3] memory tacticsTeam0, 
+        uint256[3] memory tacticsTeam1
     ) 
         public 
         pure 
         returns (uint256, uint256) 
     {
-        uint256 hash1 = uint256(keccak256(stateTeam0));
-        uint256 hash2 = uint256(keccak256(stateTeam1));
-        return (hash1 % 4, hash2 % 4);
+        return (stateTeam0[2] % 4, stateTeam1[0] % 4);
     }
 }
