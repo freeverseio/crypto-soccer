@@ -15,6 +15,12 @@ contract Engine {
         return address(_leagues);
     }
 
+    /**
+     * @dev compute the result of a league
+     * @param leagueId id of the league to compute
+     * @param initPlayerState initial state of the players of the league
+     * @return result of every match
+    */
     function computeLeagueFinalState (
         uint256 leagueId,
         uint256[NPLAYERS_PER_TEAM][] memory initPlayerState
