@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const ganache = require("ganache-cli");
-const PlayersDeployer = require('./PlayersDeployer');
-const TeamsDeployer = require('./TeamsDeployer');
+const PlayersDeployer = require('./playersDeployer');
+const TeamsDeployer = require('./teamsDeployer');
 
 let provider = null;
 let playersContract = null;
