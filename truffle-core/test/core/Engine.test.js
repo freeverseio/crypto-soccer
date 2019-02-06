@@ -24,7 +24,15 @@ contract('Engine', (accounts) => {
     });
 
     it('play match with less than 11 players', async () => {
-        await engine.playMatch(seed, [0,1,2,3,4,5,6,7,8,9], state1, tactic0, tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, [0,1,2,3,4,5,6,7,8,9], tactic0, tactic1).should.be.rejected;
+        const wrongTeam = [0,1,2,3,4,5,6,7,8,9];
+        await engine.playMatch(seed, wrongTeam, state1, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, wrongTeam, tactic0, tactic1).should.be.rejected;
+    });
+
+    it('play match with wrong tactic', async () => {
+        await engine.playMatch(seed, state0, state1, [4,4,2], tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, [4,4,4], tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, tactic0, [4,4,2]).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, tactic0, [4,4,4]).should.be.rejected;
     })
 });
