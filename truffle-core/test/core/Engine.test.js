@@ -22,4 +22,9 @@ contract('Engine', (accounts) => {
         result[0].toNumber().should.be.equal(0);
         result[1].toNumber().should.be.equal(3);
     });
+
+    it('play match with less than 11 players', async () => {
+        await engine.playMatch(seed, [0,1,2,3,4,5,6,7,8,9], state1, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, [0,1,2,3,4,5,6,7,8,9], tactic0, tactic1).should.be.rejected;
+    })
 });
