@@ -44,8 +44,9 @@ contract LeaguesComputer is Leagues {
 
         uint256 nMatches = nTeams * (nTeams - 1);
         uint256[2][] memory scores = new uint256[2][](nMatches); 
+        bytes32 seed = blockhash(block.number);
         for (i = 0; i < nMatches; i++)
-            (scores[i][0], scores[i][1]) = _engine.playMatch(4353, state[0], state[1], tactics[0], tactics[1]);
+            (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
 
         return scores;
     }
