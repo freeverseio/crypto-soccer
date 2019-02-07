@@ -20,25 +20,33 @@ contract LeaguesComputer is Leagues {
      * @return result of every match
     */
     function computeLeagueFinalState (
-        uint256 leagueId
+        uint256 leagueId,
+        uint256[] memory playersState,
+        uint256[] memory playersPerTeam
     )
         public 
         view 
         returns (uint256[2][] memory) 
     {
-            uint256 initBlock = getInitBlock(leagueId);
-            uint256 step = getStep(leagueId);
-            uint256 nTeams = countTeams(leagueId);
-            uint256 nMatchdays = 2*(nTeams-1);
-            uint256 nMatchesPerMatchday = nTeams/2;
-            uint256 nMatches = countMatches(leagueId);
-            uint256[2][] memory scores = new uint256[2][](nMatches); 
-            return scores;
-    }
+        uint256 nTeams = countTeams(leagueId);
+        require(nTeams == playersPerTeam.length, "nTeams and size of playersPerTeam mismatch");
 
-    function countMatches(uint256 id) public view returns (uint256) {
-        uint256 nTeams = countTeams(id);
-        return nTeams * (nTeams - 1);
+        // uint256 initBlock = getInitBlock(leagueId);
+        // uint256 step = getStep(leagueId);
+
+
+        // uint256 nMatchdays = 2*(nTeams-1);
+        // uint256 nMatchesPerMatchday = nTeams/2;
+        uint256 nMatches = nTeams * (nTeams - 1);
+        uint256[2][] memory scores = new uint256[2][](nMatches); 
+
+        uint256[] memory team0;
+        uint256[] memory team1;
+        uint256[3] memory tactic0;
+        uint256[3] memory tactic1;
+        _engine.playMatch(4353, team0, team1, tactic0, tactic1);
+
+        return scores;
     }
 
     function getTeamsInMatch(uint256 matchday, uint256 matchNumber, uint256 nTeams) private pure returns(uint256, uint256) {

@@ -28,20 +28,15 @@ contract('LeaguesComputer', (accounts) => {
         address.should.be.equal(engine.address);
     });
 
-    it('count matches', async () => {
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const count = await leagues.countMatches(id).should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
-    })
-
     it('compute unexistent league', async () => {
         const id = 532;
         await leagues.computeLeagueFinalState(id).should.be.rejected;
     });
 
     it('compute league', async () => {
+        const playersPerTeam = [11, 11];
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const scores = await leagues.computeLeagueFinalState(id).should.be.fulfilled;
+        const scores = await leagues.computeLeagueFinalState(id, [], playersPerTeam).should.be.fulfilled;
         scores.length.should.be.equal(2);
     });
 });
