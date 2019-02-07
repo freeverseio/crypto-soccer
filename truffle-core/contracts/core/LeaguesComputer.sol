@@ -33,8 +33,9 @@ contract LeaguesComputer is Leagues {
         require(playersPerTeam.length == nTeams, "nTeams and size of playersPerTeam mismatch");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
+        uint256 i;
         uint256 countPlayers = 0;
-        for (uint256 i = 0; i < nTeams; i++){
+        for (i = 0; i < nTeams; i++){
             countPlayers += playersPerTeam[i];
         }
         require(playersState.length == countPlayers, "wrong number of players state");
@@ -57,7 +58,8 @@ contract LeaguesComputer is Leagues {
             }
         }
 
-        (scores[0][0], scores[0][1]) = _engine.playMatch(4353, state[0], state[1], tactics[0], tactics[1]);
+        for (i = 0; i < nMatches; i++)
+            (scores[i][0], scores[i][1]) = _engine.playMatch(4353, state[0], state[1], tactics[0], tactics[1]);
 
         return scores;
     }

@@ -42,7 +42,10 @@ contract('LeaguesComputer', (accounts) => {
         }
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const scores = await leagues.computeLeagueFinalState(id, states, playersPerTeam, tactics).should.be.fulfilled;
-        scores.length.should.be.equal(2);
-        console.log(scores[0]);
+        scores.length.should.be.equal(teamIds.length * (teamIds.length - 1));
+        scores[0][0].toNumber().should.be.equal(1);
+        scores[0][1].toNumber().should.be.equal(2);
+        scores[1][0].toNumber().should.be.equal(1);
+        scores[1][1].toNumber().should.be.equal(2);
     });
 });
