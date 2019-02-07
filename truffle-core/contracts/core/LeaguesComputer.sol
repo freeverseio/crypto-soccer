@@ -4,6 +4,7 @@ import "./Leagues.sol";
 import "./Engine.sol";
 
 contract LeaguesComputer is Leagues {
+    uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
     constructor(address engine) public {
@@ -22,7 +23,6 @@ contract LeaguesComputer is Leagues {
     function computeLeagueFinalState (
         uint256 leagueId,
         uint256[] memory playersState,
-        uint256[] memory playersPerTeam,
         uint256[3][] memory tactics
     )
         public 
@@ -30,34 +30,20 @@ contract LeaguesComputer is Leagues {
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(playersPerTeam.length == nTeams, "nTeams and size of playersPerTeam mismatch");
+        require(playersState.length == nTeams * PLAYERS_PER_TEAM, "wrong number of players");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
         uint256 i;
-        uint256 countPlayers = 0;
-        for (i = 0; i < nTeams; i++){
-            countPlayers += playersPerTeam[i];
-        }
-        require(playersState.length == countPlayers, "wrong number of players state");
-
-        // uint256 initBlock = getInitBlock(leagueId);
-        // uint256 step = getStep(leagueId);
-
-
-        // uint256 nMatchdays = 2*(nTeams-1);
-        // uint256 nMatchesPerMatchday = nTeams/2;
-        uint256 nMatches = nTeams * (nTeams - 1);
-        uint256[2][] memory scores = new uint256[2][](nMatches); 
-
         uint256[][] memory state = new uint256[][](nTeams);
         for (i = 0; i < nTeams; i++){
-            uint256 nPlayers = playersPerTeam[i];
-            state[i] = new uint256[](nPlayers);
-            for (uint256 j = 0; j < nPlayers; j++){
-                state[i][j] = 0;
+            state[i] = new uint256[](PLAYERS_PER_TEAM);
+            for (uint256 j = 0; j < PLAYERS_PER_TEAM; j++){
+                state[i][j] = playersState[i*PLAYERS_PER_TEAM + j];
             }
         }
 
+        uint256 nMatches = nTeams * (nTeams - 1);
+        uint256[2][] memory scores = new uint256[2][](nMatches); 
         for (i = 0; i < nMatches; i++)
             (scores[i][0], scores[i][1]) = _engine.playMatch(4353, state[0], state[1], tactics[0], tactics[1]);
 
