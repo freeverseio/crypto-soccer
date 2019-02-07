@@ -20,10 +20,10 @@ contract('LeaguesComputer', (accounts) => {
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
     });
 
-    // it('Leagues contract', async () => {
-    //     const address = await engine.getLeaguesContract().should.be.fulfilled;
-    //     address.should.be.equal(leagues.address);
-    // });
+    it('Engine contract', async () => {
+        const address = await leagues.getEngineContract().should.be.fulfilled;
+        address.should.be.equal(engine.address);
+    });
 
     it('compute unexistent league', async () => {
         await leagues.computeLeagueFinalState(id, initPlayerState).should.be.rejected;

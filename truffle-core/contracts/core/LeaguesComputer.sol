@@ -11,7 +11,7 @@ contract LeaguesComputer is Leagues {
         _engine = Engine(engine);
     }
 
-    function getEngineAddress() public view returns (address) {
+    function getEngineContract() external view returns (address) {
         return address(_engine);
     }
 
