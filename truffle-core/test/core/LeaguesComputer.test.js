@@ -29,7 +29,9 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('count matches', async () => {
-        
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const count = await leagues.countMatches(id).should.be.fulfilled;
+        count.toNumber().should.be.equal(2);
     })
 
     it('compute unexistent league', async () => {
