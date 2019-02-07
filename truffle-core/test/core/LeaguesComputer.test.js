@@ -14,6 +14,9 @@ contract('LeaguesComputer', (accounts) => {
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     ];
+    const blocksToInit = 3;
+    const step = 1
+    const teamIds = [1, 2];
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
@@ -25,15 +28,16 @@ contract('LeaguesComputer', (accounts) => {
         address.should.be.equal(engine.address);
     });
 
+    it('count matches', async () => {
+        
+    })
+
     it('compute unexistent league', async () => {
         const id = 532;
         await leagues.computeLeagueFinalState(id).should.be.rejected;
     });
 
     it('compute league', async () => {
-        const blocksToInit = 1;
-        const step = 1;
-        const teamIds = [1, 2];
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const scores = await leagues.computeLeagueFinalState(id).should.be.fulfilled;
         scores.length.should.be.equal(2);
