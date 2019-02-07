@@ -35,8 +35,14 @@ contract('LeaguesComputer', (accounts) => {
 
     it('compute league', async () => {
         const playersPerTeam = [11, 11];
+        const tactics = [[4,4,3], [5,4,2]];
+        let states = [];
+        for (let i=0 ; i < 22; i++){
+            states.push(0);
+        }
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const scores = await leagues.computeLeagueFinalState(id, [], playersPerTeam).should.be.fulfilled;
+        const scores = await leagues.computeLeagueFinalState(id, states, playersPerTeam, tactics).should.be.fulfilled;
         scores.length.should.be.equal(2);
+        console.log(scores[0]);
     });
 });

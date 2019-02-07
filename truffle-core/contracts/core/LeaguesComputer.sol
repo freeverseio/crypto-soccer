@@ -22,14 +22,22 @@ contract LeaguesComputer is Leagues {
     function computeLeagueFinalState (
         uint256 leagueId,
         uint256[] memory playersState,
-        uint256[] memory playersPerTeam
+        uint256[] memory playersPerTeam,
+        uint256[3][] memory tactics
     )
         public 
         view 
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(nTeams == playersPerTeam.length, "nTeams and size of playersPerTeam mismatch");
+        require(playersPerTeam.length == nTeams, "nTeams and size of playersPerTeam mismatch");
+        require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
+
+        uint256 countPlayers = 0;
+        for (uint256 i = 0; i < nTeams; i++){
+            countPlayers += playersPerTeam[i];
+        }
+        require(playersState.length == countPlayers, "wrong number of players state");
 
         // uint256 initBlock = getInitBlock(leagueId);
         // uint256 step = getStep(leagueId);
@@ -40,11 +48,16 @@ contract LeaguesComputer is Leagues {
         uint256 nMatches = nTeams * (nTeams - 1);
         uint256[2][] memory scores = new uint256[2][](nMatches); 
 
-        uint256[] memory team0;
-        uint256[] memory team1;
-        uint256[3] memory tactic0;
-        uint256[3] memory tactic1;
-        _engine.playMatch(4353, team0, team1, tactic0, tactic1);
+        uint256[][] memory state = new uint256[][](nTeams);
+        for (i = 0; i < nTeams; i++){
+            uint256 nPlayers = playersPerTeam[i];
+            state[i] = new uint256[](nPlayers);
+            for (uint256 j = 0; j < nPlayers; j++){
+                state[i][j] = 0;
+            }
+        }
+
+        (scores[0][0], scores[0][1]) = _engine.playMatch(4353, state[0], state[1], tactics[0], tactics[1]);
 
         return scores;
     }
