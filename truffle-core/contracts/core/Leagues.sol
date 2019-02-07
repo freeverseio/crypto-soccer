@@ -48,6 +48,11 @@ contract Leagues {
         return _leagues[id]._hash;
     }
 
+    function countTeams(uint256 id) external view returns (uint256) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id]._teamIds.length;
+    }
+
     /// TODO: blockToInit -> initBlock: utilize an absolute reference 
     function create(uint256 id, uint256 blocksToInit, uint256 step, uint256[] memory teamIds) public {
         require(step > 0, "invalid block step");

@@ -22,6 +22,7 @@ contract('Leagues', (accounts) => {
         await leagues.getInitHash(id).should.be.rejected;
         await leagues.getHash(id).should.be.rejected;
         await leagues.getEndBlock(id).should.be.rejected;
+        await leagues.countTeams(id).should.be.rejected;
     })
 
     it('default hashes values on create league', async () =>{
@@ -72,5 +73,11 @@ contract('Leagues', (accounts) => {
     it('step == 0 is invalid', async () => {
         const step = 0;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+    });
+
+    it('count teams', async () => {
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const count = await leagues.countTeams(id).should.be.fulfilled;
+        count.toNumber().should.be.equal(2);
     })
 });
