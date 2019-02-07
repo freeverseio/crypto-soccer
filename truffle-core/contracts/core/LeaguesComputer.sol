@@ -28,8 +28,7 @@ contract LeaguesComputer is Leagues {
     {
             uint256 initBlock = getInitBlock(leagueId);
             uint256 step = getStep(leagueId);
-            uint256[] memory teamIds = getTeamIds(leagueId);
-            uint256 nTeams = teamIds.length;
+            uint256 nTeams = countTeams(leagueId);
             uint256 nMatchdays = 2*(nTeams-1);
             uint256 nMatchesPerMatchday = nTeams/2;
             uint256 nMatches = countMatches(leagueId);
