@@ -1,10 +1,9 @@
-pragma solidity ^ 0.4.24;
+pragma solidity ^0.4.25;
 
 import "./Leagues.sol";
 import "./Engine.sol";
 
 contract LeaguesComputer is Leagues {
-    uint8 constant NPLAYERS_PER_TEAM = 16;
     Engine private _engine;
 
     constructor(address engine) public {
@@ -18,12 +17,10 @@ contract LeaguesComputer is Leagues {
     /**
      * @dev compute the result of a league
      * @param leagueId id of the league to compute
-     * @param initPlayerState initial state of the players of the league
      * @return result of every match
     */
     function computeLeagueFinalState (
-        uint256 leagueId,
-        uint256[NPLAYERS_PER_TEAM][] memory initPlayerState
+        uint256 leagueId
     )
         public 
         view 
@@ -35,8 +32,14 @@ contract LeaguesComputer is Leagues {
             uint256 nTeams = teamIds.length;
             uint256 nMatchdays = 2*(nTeams-1);
             uint256 nMatchesPerMatchday = nTeams/2;
-            uint256[2][] memory scores; // TODO
+            uint256 nMatches = countMatches(leagueId);
+            uint256[2][] memory scores = new uint256[2][](nMatches); 
             return scores;
+    }
+
+    function countMatches(uint256 id) public view returns (uint256) {
+        uint256 nTeams = countTeams(id);
+        return nTeams * (nTeams - 1);
     }
 
     function getTeamsInMatch(uint256 matchday, uint256 matchNumber, uint256 nTeams) private pure returns(uint256, uint256) {

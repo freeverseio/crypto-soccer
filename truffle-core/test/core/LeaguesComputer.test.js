@@ -26,14 +26,16 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('compute unexistent league', async () => {
-        await leagues.computeLeagueFinalState(id, initPlayerState).should.be.rejected;
+        const id = 532;
+        await leagues.computeLeagueFinalState(id).should.be.rejected;
     });
 
-    // it('compute league', async () => {
-    //     const blocksToInit = 1;
-    //     const step = 1;
-    //     const teamIds = [1, 2];
-    //     await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-    //     const scores = await engine.computeLeagueFinalState(id, initPlayerState).should.be.fulfilled;
-    // });
+    it('compute league', async () => {
+        const blocksToInit = 1;
+        const step = 1;
+        const teamIds = [1, 2];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const scores = await leagues.computeLeagueFinalState(id).should.be.fulfilled;
+        scores.length.should.be.equal(2);
+    });
 });
