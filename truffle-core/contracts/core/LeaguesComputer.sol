@@ -65,6 +65,14 @@ contract LeaguesComputer is Leagues {
         return keccak256(origin);
     }
 
+    function hashTeamState(uint256[] memory state) public pure returns (bytes32) {
+        bytes memory origin;
+        for(uint256 i = 0; i < state.length ; i++){
+            origin = abi.encodePacked(origin, state[i]); 
+        }
+        return keccak256(origin);
+    }
+
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
         bytes memory origin;
         for(uint256 i = 0; i < tactics.length ; i++){

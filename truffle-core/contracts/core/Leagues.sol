@@ -64,8 +64,8 @@ contract Leagues {
         require(!_exists(id), "league already created");
         uint256 initBlock = block.number + blocksToInit;
         bytes32 initHash = 0;
-        bytes32[] memory finalHashes = new bytes32[](teamIds.length);
-        uint256[2][] memory scores = new uint256[2][](teamIds.length);
+        bytes32[] memory finalHashes;
+        uint256[2][] memory scores;
         bytes32 tacticsHash = 0;
         _leagues[id] = League(
             teamIds, 

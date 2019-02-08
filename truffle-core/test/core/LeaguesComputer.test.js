@@ -80,5 +80,15 @@ contract('LeaguesComputer', (accounts) => {
         hash4.should.be.not.equal(hash0);
         const hash5 = await leagues.hashTactics([[4,4,2],[4,4,2]]).should.be.fulfilled;
         hash5.should.be.not.equal(hash0);
+    });
+
+    it('hash team state', async () => {
+        const state = [324, 435, 5];
+        const hash0 = await leagues.hashTeamState(state).should.be.fulfilled;
+        const hash1 = await leagues.hashTeamState(state).should.be.fulfilled;
+        hash1.should.be.equal(hash0);
+        const hash2 = await leagues.hashTeamState([2,3]).should.be.fulfilled;
+        hash2.should.be.not.equal(hash0);
+
     })
 });
