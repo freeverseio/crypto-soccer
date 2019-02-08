@@ -48,6 +48,7 @@ contract LeaguesComputer is Leagues {
         uint256[2][] memory scores = new uint256[2][](nMatches); 
         uint256 leagueInitBlock = getInitBlock(leagueId);
         bytes32 seed = blockhash(leagueInitBlock);
+        require(seed != 0, "can't retrive league init block hash");
         for (i = 0; i < nMatches; i++)
             (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
 

@@ -21,7 +21,7 @@ contract('LeaguesComputer', (accounts) => {
     ];
     
     beforeEach(async () => {
-        const blocksToInit = 3;
+        const blocksToInit = 0;
         const step = 1
         const teamIds = [1, 2];
         engine = await Engine.new().should.be.fulfilled;
