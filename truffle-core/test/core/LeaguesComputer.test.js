@@ -53,21 +53,6 @@ contract('LeaguesComputer', (accounts) => {
         finalHash0.should.be.equal(finalHash1);
     });
 
-    it('compute league and update changed final hash of the league', async () => {
-        const before = await leagues.getFinalHash(id).should.be.fulfilled;
-        await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
-        const after = await leagues.getFinalHash(id).should.be.fulfilled;
-        after.should.not.be.equal(before);
-    });
-
-    it('external league final hash is equal to bc calculated one', async () => {
-        const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
-        const finalHash = await leagues.calculateFinalHash(scores).should.be.fulfilled;
-        await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
-        const bcFinalHash = await leagues.getFinalHash(id).should.be.fulfilled;
-        bcFinalHash.should.be.equal(finalHash);
-    });
-
     it('hash differents results => different hashes', async () => {
         const hash0 = await leagues.calculateFinalHash([[0,1]]).should.be.fulfilled;
         const hash1 = await leagues.calculateFinalHash([[0,1],[2,1]]).should.be.fulfilled;
