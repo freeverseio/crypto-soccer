@@ -65,7 +65,7 @@ contract LeaguesComputer is Leagues {
     {
         uint256[2][] memory scores = computeLeagueFinalState(leagueId, playersState, tactics);
         bytes32 finalHash = calculateFinalHash(scores);
-        _setHash(leagueId, finalHash);
+        _setFinalHash(leagueId, finalHash);
     }
 
     // TODO: function name => hashResult ?
@@ -80,6 +80,6 @@ contract LeaguesComputer is Leagues {
 
     // TODO: function name => setFinalHash ?
     function updateLeague(uint256 id, bytes32 finalHash) public {
-        _setHash(id, finalHash);
+        _setFinalHash(id, finalHash);
     }
 }

@@ -54,9 +54,9 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('compute league and update changed final hash of the league', async () => {
-        const before = await leagues.getHash(id).should.be.fulfilled;
+        const before = await leagues.getFinalHash(id).should.be.fulfilled;
         await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
-        const after = await leagues.getHash(id).should.be.fulfilled;
+        const after = await leagues.getFinalHash(id).should.be.fulfilled;
         after.should.not.be.equal(before);
     });
 
@@ -64,7 +64,7 @@ contract('LeaguesComputer', (accounts) => {
         const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
         const finalHash = await leagues.calculateFinalHash(scores).should.be.fulfilled;
         await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
-        const bcFinalHash = await leagues.getHash(id).should.be.fulfilled;
+        const bcFinalHash = await leagues.getFinalHash(id).should.be.fulfilled;
         bcFinalHash.should.be.equal(finalHash);
     });
 

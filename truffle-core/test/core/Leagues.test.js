@@ -20,7 +20,7 @@ contract('Leagues', (accounts) => {
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
         await leagues.getInitHash(id).should.be.rejected;
-        await leagues.getHash(id).should.be.rejected;
+        await leagues.getFinalHash(id).should.be.rejected;
         await leagues.getEndBlock(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
     })
@@ -29,7 +29,7 @@ contract('Leagues', (accounts) => {
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const initHash = await leagues.getInitHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const hash = await leagues.getHash(id).should.be.fulfilled;
+        const hash = await leagues.getFinalHash(id).should.be.fulfilled;
         hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
     })
 

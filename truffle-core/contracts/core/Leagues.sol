@@ -10,8 +10,8 @@ contract Leagues {
         uint256 step;
         // hash of the init status of the league
         bytes32 initHash;
-        // hash of the state of the league
-        bytes32 hash;
+        // hash of the final state of the league
+        bytes32 finalHash;
     }
 
     mapping(uint256 => League) private _leagues;
@@ -43,9 +43,9 @@ contract Leagues {
         return _leagues[id].initHash;
     }
 
-    function getHash(uint256 id) external view returns (bytes32) {
+    function getFinalHash(uint256 id) external view returns (bytes32) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].hash;
+        return _leagues[id].finalHash;
     }
 
     function countTeams(uint256 id) public view returns (uint256) {
@@ -64,8 +64,8 @@ contract Leagues {
         _leagues[id] = League(teamIds, initBlock, step, initHash, hash);
     }
 
-    function _setHash(uint256 id, bytes32 hash) internal {
-        _leagues[id].hash = hash;
+    function _setFinalHash(uint256 id, bytes32 hash) internal {
+        _leagues[id].finalHash = hash;
     }
 
     function _exists(uint256 id) private view returns (bool) {
