@@ -65,7 +65,15 @@ contract LeaguesComputer is Leagues {
         return keccak256(origin);
     }
 
+    function hashInitState(uint256[] memory state) public pure returns (bytes32) {
+        return _hashState(state);
+    }
+
     function hashTeamState(uint256[] memory state) public pure returns (bytes32) {
+        return _hashState(state);
+    }
+
+    function _hashState(uint256[] memory state) private pure returns (bytes32) {
         bytes memory origin;
         for(uint256 i = 0; i < state.length ; i++){
             origin = abi.encodePacked(origin, state[i]); 
@@ -85,11 +93,13 @@ contract LeaguesComputer is Leagues {
 
     function updateLeague(
         uint256 id, 
+        bytes32 initStateHash,
         bytes32[] memory finalHashes,
         uint256[2][] memory scores
     ) 
         public 
     {
+        _setInitStateHash(id, initStateHash);
         _setFinalHashes(id, finalHashes);
         _setScores(id, scores);
     }

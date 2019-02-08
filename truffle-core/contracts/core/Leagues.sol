@@ -8,9 +8,11 @@ contract Leagues {
         uint256 initBlock;
         // step blocks of the league
         uint256 step;
-        // hash of the init status of the league
+        // hash of the init status of the league 
+        // TODO: rename to initStateHash
         bytes32 initHash;
         // hash of the final hashes of the league
+        // TODO: rename finalTeamStateHashes
         bytes32[] finalHashes;
         // hash of tactics
         bytes32 tacticsHash;
@@ -76,6 +78,10 @@ contract Leagues {
             tacticsHash,
             scores
         );
+    }
+
+    function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
+        _leagues[id].initHash = stateHash;
     }
 
     function _setFinalHashes(uint256 id, bytes32[] memory hashes) internal {
