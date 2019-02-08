@@ -51,6 +51,27 @@ contract LeaguesComputer is Leagues {
         return scores;
     }
 
+    function computeLeagueAndUpdate (
+        uint256 leagueId,
+        uint256[] memory playersState,
+        uint256[3][] memory tactics
+    )
+        public 
+        view 
+        returns (uint256[2][] memory) 
+    {
+        uint256[2][] memory scores = computeLeagueFinalState(leagueId, playersState, tactics);
+        bytes memory origin;
+        for(uint256 i = 0; i < scores.length ; i++){
+            origin = abi.encodePacked(origin, scores[i][0]); 
+            origin = abi.encodePacked(origin, scores[i][1]); 
+        }
+        bytes32 hash = keccak256(origin);
+        _setHash(leagueId, hash);
+    }
+
+
+
     function getTeamsInMatch(uint256 matchday, uint256 matchNumber, uint256 nTeams) private pure returns(uint256, uint256) {
 
     }

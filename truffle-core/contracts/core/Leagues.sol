@@ -48,6 +48,10 @@ contract Leagues {
         return _leagues[id].hash;
     }
 
+    function _setHash(uint256 id, bytes32 hash) internal {
+        _leagues[id].hash = hash;
+    }
+
     function countTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id].teamIds.length;
