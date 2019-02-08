@@ -43,6 +43,13 @@ contract('LeaguesComputer', (accounts) => {
         scores.length.should.be.equal(teamIds.length * (teamIds.length - 1));
     });
 
+    it('check hashing of the result', async () => {
+        const score = [
+            [3,1]
+        ];
+        const finalHash = await leagues.calculateFinalHash(score).should.be.fulfilled;
+    });
+
     it('compute league 2 times gives the same result', async () => {
         const scores0 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
         const scores1 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;   
@@ -51,7 +58,7 @@ contract('LeaguesComputer', (accounts) => {
         finalHash0.should.be.equal(finalHash1);
     });
 
-    it('compute league and update', async () => {
+    it('compute league and update changed final hash of the league', async () => {
         const before = await leagues.getHash(id).should.be.fulfilled;
         await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
         const after = await leagues.getHash(id).should.be.fulfilled;
@@ -64,5 +71,5 @@ contract('LeaguesComputer', (accounts) => {
         await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
         const bcFinalHash = await leagues.getHash(id).should.be.fulfilled;
         bcFinalHash.should.be.equal(finalHash);
-    })
+    });
 });
