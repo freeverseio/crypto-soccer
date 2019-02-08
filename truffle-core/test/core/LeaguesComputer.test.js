@@ -66,5 +66,19 @@ contract('LeaguesComputer', (accounts) => {
         const teamIds = [1, 2];
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.rejected;       
+    });
+
+    it('hash tactics', async () => {
+        const hash0 = await leagues.hashTactics([[4,4,2]]).should.be.fulfilled;
+        const hash1 = await leagues.hashTactics([[4,4,2]]).should.be.fulfilled;
+        hash1.should.be.equal(hash0);
+        const hash2 = await leagues.hashTactics([[3,4,2]]).should.be.fulfilled;
+        hash2.should.be.not.equal(hash0);
+        const hash3 = await leagues.hashTactics([[4,5,2]]).should.be.fulfilled;
+        hash3.should.be.not.equal(hash0);
+        const hash4 = await leagues.hashTactics([[4,4,3]]).should.be.fulfilled;
+        hash4.should.be.not.equal(hash0);
+        const hash5 = await leagues.hashTactics([[4,4,2],[4,4,2]]).should.be.fulfilled;
+        hash5.should.be.not.equal(hash0);
     })
 });
