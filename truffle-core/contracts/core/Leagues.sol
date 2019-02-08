@@ -16,8 +16,6 @@ contract Leagues {
         bytes32 tacticsHash;
         // scores of the league
         uint256[2][] scores;
-
-        // TODO: usersInitDataHash ==> has of tactics
     }
 
     mapping(uint256 => League) private _leagues;
