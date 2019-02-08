@@ -55,19 +55,6 @@ contract LeaguesComputer is Leagues {
         return scores;
     }
 
-    function computeLeagueAndUpdate (
-        uint256 leagueId,
-        uint256[] memory playersState,
-        uint256[3][] memory tactics
-    )
-        public 
-        returns (uint256[2][] memory) 
-    {
-        uint256[2][] memory scores = computeLeagueFinalState(leagueId, playersState, tactics);
-        bytes32 finalHash = calculateFinalHash(scores);
-        _setFinalHash(leagueId, finalHash);
-    }
-
     // TODO: function name => hashResult ?
     function calculateFinalHash(uint256[2][] memory scores) public pure returns (bytes32) {
         bytes memory origin;
@@ -81,7 +68,7 @@ contract LeaguesComputer is Leagues {
     // function hashTactics() // TODO:
 
     // TODO: function name => setFinalHash ?
-    function updateLeague(uint256 id, bytes32 finalHash) public {
+    function updateLeague(uint256 id, bytes32[] memory finalHash) public {
         _setFinalHash(id, finalHash);
     }
 }
