@@ -43,13 +43,6 @@ contract('LeaguesComputer', (accounts) => {
         scores.length.should.be.equal(teamIds.length * (teamIds.length - 1));
     });
 
-    it('check hashing of the result', async () => {
-        const score = [
-            [3,1]
-        ];
-        const finalHash = await leagues.calculateFinalHash(score).should.be.fulfilled;
-    });
-
     it('compute league 2 times gives the same result', async () => {
         const scores0 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
         const scores1 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;   
