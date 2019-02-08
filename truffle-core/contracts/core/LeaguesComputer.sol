@@ -67,6 +67,7 @@ contract LeaguesComputer is Leagues {
         _setHash(leagueId, finalHash);
     }
 
+    // TODO: function name => hashResult ?
     function calculateFinalHash(uint256[2][] memory scores) public pure returns (bytes32) {
         bytes memory origin;
         for(uint256 i = 0; i < scores.length ; i++){
@@ -76,6 +77,7 @@ contract LeaguesComputer is Leagues {
         return keccak256(origin);
     }
 
+    // TODO: function name => setFinalHash ?
     function updateLeague(uint256 id, bytes32 finalHash) public {
         _setHash(id, finalHash);
     }
