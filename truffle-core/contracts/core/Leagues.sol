@@ -14,8 +14,8 @@ contract Leagues {
         bytes32[] finalHashes;
         // hash of tactics
         bytes32 tacticsHash;
-
-        // TODO: add scores
+        // scores of the league
+        uint256[2][] scores;
 
         // TODO: usersInitDataHash ==> has of tactics
     }
@@ -67,6 +67,7 @@ contract Leagues {
         uint256 initBlock = block.number + blocksToInit;
         bytes32 initHash = 0;
         bytes32[] memory finalHashes = new bytes32[](teamIds.length);
+        uint256[2][] memory scores = new uint256[2][](teamIds.length);
         bytes32 tacticsHash = 0;
         _leagues[id] = League(
             teamIds, 
@@ -74,7 +75,8 @@ contract Leagues {
             step, 
             initHash, 
             finalHashes, 
-            tacticsHash
+            tacticsHash,
+            scores
         );
     }
 
