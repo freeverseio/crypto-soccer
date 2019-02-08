@@ -75,7 +75,14 @@ contract LeaguesComputer is Leagues {
         return keccak256(origin);
     }
 
-    function updateLeague(uint256 id, bytes32[] memory finalHashes) public {
+    function updateLeague(
+        uint256 id, 
+        bytes32[] memory finalHashes,
+        uint256[2][] memory scores
+    ) 
+        public 
+    {
         _setFinalHashes(id, finalHashes);
+        _setScores(id, scores);
     }
 }

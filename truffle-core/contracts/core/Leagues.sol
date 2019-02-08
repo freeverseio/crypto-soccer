@@ -82,6 +82,10 @@ contract Leagues {
         _leagues[id].finalHashes = hashes;
     }
 
+    function _setScores(uint256 id, uint256[2][] memory scores) internal {
+        _leagues[id].scores = scores;
+    }
+
     function _exists(uint256 id) private view returns (bool) {
         return _leagues[id].initBlock != 0;
     }
