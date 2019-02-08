@@ -11,7 +11,12 @@ contract Leagues {
         // hash of the init status of the league
         bytes32 initHash;
         // hash of the final state of the league
-        bytes32 finalHash;
+        bytes32 finalHash; // TODO: remove
+        // bytes32[] finalHashes; // TODO: dimension is nTeams
+
+        // TODO: add scores
+
+        // TODO: usersInitDataHash ==> has of tactics
     }
 
     mapping(uint256 => League) private _leagues;

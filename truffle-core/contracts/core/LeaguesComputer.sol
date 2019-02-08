@@ -78,6 +78,8 @@ contract LeaguesComputer is Leagues {
         return keccak256(origin);
     }
 
+    // function hashTactics() // TODO:
+
     // TODO: function name => setFinalHash ?
     function updateLeague(uint256 id, bytes32 finalHash) public {
         _setFinalHash(id, finalHash);
