@@ -73,4 +73,13 @@ contract('LeaguesComputer', (accounts) => {
         const hash1 = await leagues.calculateFinalHash([[0,1],[2,1]]).should.be.fulfilled;
         hash0.should.be.not.equal(hash1);
     });
+
+    it('try calculare a uninitied league', async () => {
+        const id = 100;
+        const blocksToInit = 10000; // future block
+        const step = 1
+        const teamIds = [1, 2];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.rejected;       
+    })
 });
