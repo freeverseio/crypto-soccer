@@ -29,7 +29,7 @@ contract('Leagues', (accounts) => {
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const initHash = await leagues.getInitHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const finalHashes = await leagues.getFinalHashes(id).should.be.fulfilled;
+        const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
         finalHashes.length.should.be.equal(teamIds.length);
         finalHashes.forEach(hash => (hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000')));
     })

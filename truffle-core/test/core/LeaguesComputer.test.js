@@ -97,4 +97,26 @@ contract('LeaguesComputer', (accounts) => {
         const hash1 = await leagues.hashTeamState([2,3,3]).should.be.fulfilled;
         hash1.should.be.not.equal(hash0);
     });
+
+    it('update league state', async () => {
+        const initStateHash = '0x435a354320000000000000000000000000000000000000000000000000000000';
+        const finalTeamStateHashes = [
+            '0x245964674ab00000000000000000000000000000000000000000000000000000', 
+            '0xaaaaa00000000000000000000000000000000000000000000000000000000000'
+        ];
+        const scores = [[1,2], [2,2]];
+        await leagues.updateLeague(id, initStateHash, finalTeamStateHashes, scores).should.be.fulfilled;
+        let result = await leagues.getInitHash(id).should.be.fulfilled;
+        result.should.be.equal(initStateHash);
+        result = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
+        result.length.should.be.equal(finalTeamStateHashes.length);
+        result[0].should.be.equal(finalTeamStateHashes[0]);
+        result[1].should.be.equal(finalTeamStateHashes[1]);
+        result = await leagues.getScores(id).should.be.fulfilled;
+        result.length.should.be.equal(scores.length);
+        result[0][0].toNumber().should.be.equal(scores[0][0]);
+        result[0][1].toNumber().should.be.equal(scores[0][1]);
+        result[1][0].toNumber().should.be.equal(scores[1][0]);
+        result[1][1].toNumber().should.be.equal(scores[1][1]);
+    });
 });
