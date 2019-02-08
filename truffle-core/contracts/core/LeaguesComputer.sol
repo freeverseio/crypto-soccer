@@ -77,6 +77,6 @@ contract LeaguesComputer is Leagues {
 
     // TODO: function name => setFinalHash ?
     function updateLeague(uint256 id, bytes32[] memory finalHash) public {
-        _setFinalHash(id, finalHash);
+        _setFinalHashes(id, finalHash);
     }
 }

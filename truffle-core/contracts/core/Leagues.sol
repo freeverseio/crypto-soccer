@@ -13,6 +13,9 @@ contract Leagues {
         // hash of the final hashes of the league
         bytes32[] finalHashes;
 
+        // hash of tactics
+        bytes32 tacticsHash;
+
         // TODO: add scores
 
         // TODO: usersInitDataHash ==> has of tactics
@@ -65,10 +68,18 @@ contract Leagues {
         uint256 initBlock = block.number + blocksToInit;
         bytes32 initHash = 0;
         bytes32[] memory finalHashes = new bytes32[](teamIds.length);
-        _leagues[id] = League(teamIds, initBlock, step, initHash, finalHashes);
+        bytes32 tacticsHash = 0;
+        _leagues[id] = League(
+            teamIds, 
+            initBlock, 
+            step, 
+            initHash, 
+            finalHashes, 
+            tacticsHash
+        );
     }
 
-    function _setFinalHash(uint256 id, bytes32[] memory hashes) internal {
+    function _setFinalHashes(uint256 id, bytes32[] memory hashes) internal {
         _leagues[id].finalHashes = hashes;
     }
 
