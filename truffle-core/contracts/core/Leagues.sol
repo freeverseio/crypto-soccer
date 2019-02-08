@@ -12,7 +12,6 @@ contract Leagues {
         bytes32 initHash;
         // hash of the final hashes of the league
         bytes32[] finalHashes;
-
         // hash of tactics
         bytes32 tacticsHash;
 
