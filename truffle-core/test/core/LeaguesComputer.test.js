@@ -67,4 +67,10 @@ contract('LeaguesComputer', (accounts) => {
         const bcFinalHash = await leagues.getHash(id).should.be.fulfilled;
         bcFinalHash.should.be.equal(finalHash);
     });
+
+    it('hash differents results => different hashes', async () => {
+        const hash0 = await leagues.calculateFinalHash([[0,1]]).should.be.fulfilled;
+        const hash1 = await leagues.calculateFinalHash([[0,1],[2,1]]).should.be.fulfilled;
+        hash0.should.be.not.equal(hash1);
+    });
 });
