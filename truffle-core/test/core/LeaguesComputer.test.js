@@ -39,4 +39,33 @@ contract('LeaguesComputer', (accounts) => {
         const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
         scores.length.should.be.equal(teamIds.length * (teamIds.length - 1));
     });
+
+    it('compute league 2 times gives the same result', async () => {
+        const tactics = [[4,4,3], [5,4,2]];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const scores0 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
+        const scores1 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;   
+        const finalHash0 = await leagues.calculateFinalHash(scores0).should.be.fulfilled;
+        const finalHash1 = await leagues.calculateFinalHash(scores1).should.be.fulfilled;
+        finalHash0.should.be.equal(finalHash1);
+    });
+
+    it('compute league and update', async () => {
+        const tactics = [[4,4,3], [5,4,2]];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const before = await leagues.getHash(id).should.be.fulfilled;
+        await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
+        const after = await leagues.getHash(id).should.be.fulfilled;
+        after.should.not.be.equal(before);
+    });
+
+    it('external league final hash is equal to bc calculated one', async () => {
+        const tactics = [[4,4,3], [5,4,2]];
+        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;       
+        const finalHash = await leagues.calculateFinalHash(scores).should.be.fulfilled;
+        await leagues.computeLeagueAndUpdate(id, initPlayerState, tactics).should.be.fulfilled;
+        const bcFinalHash = await leagues.getHash(id).should.be.fulfilled;
+        bcFinalHash.should.be.equal(finalHash);
+    })
 });

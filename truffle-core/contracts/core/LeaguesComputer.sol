@@ -44,7 +44,8 @@ contract LeaguesComputer is Leagues {
 
         uint256 nMatches = nTeams * (nTeams - 1);
         uint256[2][] memory scores = new uint256[2][](nMatches); 
-        bytes32 seed = blockhash(block.number);
+        uint256 leagueInitBlock = getInitBlock(leagueId);
+        bytes32 seed = blockhash(leagueInitBlock);
         for (i = 0; i < nMatches; i++)
             (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
 
@@ -57,33 +58,23 @@ contract LeaguesComputer is Leagues {
         uint256[3][] memory tactics
     )
         public 
-        view 
         returns (uint256[2][] memory) 
     {
         uint256[2][] memory scores = computeLeagueFinalState(leagueId, playersState, tactics);
+        bytes32 finalHash = calculateFinalHash(scores);
+        _setHash(leagueId, finalHash);
+    }
+
+    function calculateFinalHash(uint256[2][] memory scores) public pure returns (bytes32) {
         bytes memory origin;
         for(uint256 i = 0; i < scores.length ; i++){
             origin = abi.encodePacked(origin, scores[i][0]); 
             origin = abi.encodePacked(origin, scores[i][1]); 
         }
-        bytes32 hash = keccak256(origin);
-        _setHash(leagueId, hash);
+        return keccak256(origin);
     }
 
-
-
-    function getTeamsInMatch(uint256 matchday, uint256 matchNumber, uint256 nTeams) private pure returns(uint256, uint256) {
-
-    }
-
-    function getTeamsInMatchFirstHalf(uint256 matchday, uint256 matchnumber, uint256 nTeams) private pure returns(uint256, uint256) {
-
-    }
-
-    function shiftBack(uint256 t, uint256 nTeams) private pure returns (uint256) {
-        if (t < nTeams)
-            return t;
-
-        return t - (nTeams - 1);
+    function updateLeague(uint256 id, bytes32 finalHash) public {
+        _setHash(id, finalHash);
     }
 }
