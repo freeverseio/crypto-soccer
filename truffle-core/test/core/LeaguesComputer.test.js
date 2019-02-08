@@ -9,6 +9,7 @@ const Leagues = artifacts.require('LeaguesComputer');
 contract('LeaguesComputer', (accounts) => {
     let leagues = null;
     let engine = null;
+
     const id = 0;
     const initPlayerState = [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, // Team 0
@@ -18,11 +19,11 @@ contract('LeaguesComputer', (accounts) => {
         [4,4,3],  // Team 0
         [5,4,2]   // Team 1
     ];
-    const blocksToInit = 3;
-    const step = 1
-    const teamIds = [1, 2];
-
+    
     beforeEach(async () => {
+        const blocksToInit = 3;
+        const step = 1
+        const teamIds = [1, 2];
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
@@ -40,7 +41,8 @@ contract('LeaguesComputer', (accounts) => {
 
     it('compute league', async () => {
         const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
-        scores.length.should.be.equal(teamIds.length * (teamIds.length - 1));
+        const nTeams = await leagues.countTeams(id).should.be.fulfilled;
+        scores.length.should.be.equal(nTeams * (nTeams - 1));
     });
 
     it('compute league 2 times gives the same result', async () => {
