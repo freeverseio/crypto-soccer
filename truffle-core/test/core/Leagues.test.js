@@ -20,7 +20,7 @@ contract('Leagues', (accounts) => {
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
         await leagues.getInitHash(id).should.be.rejected;
-        await leagues.getFinalHashes(id).should.be.rejected;
+        await leagues.getFinalTeamStateHashes(id).should.be.rejected;
         await leagues.getEndBlock(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
     })
@@ -30,8 +30,7 @@ contract('Leagues', (accounts) => {
         const initHash = await leagues.getInitHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
         const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
-        finalHashes.length.should.be.equal(teamIds.length);
-        finalHashes.forEach(hash => (hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000')));
+        finalHashes.length.should.be.equal(0);
     })
 
     it('create league with no team', async () => {
