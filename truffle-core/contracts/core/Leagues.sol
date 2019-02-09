@@ -9,8 +9,7 @@ contract Leagues {
         // step blocks of the league
         uint256 step;
         // hash of the init status of the league 
-        // TODO: rename to initStateHash
-        bytes32 initHash;
+        bytes32 initStateHash;
         // hash of the final hashes of the league
         // TODO: rename finalTeamStateHashes
         bytes32[] finalHashes;
@@ -46,7 +45,7 @@ contract Leagues {
 
     function getInitHash(uint256 id) public view returns (bytes32) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].initHash;
+        return _leagues[id].initStateHash;
     }
 
     function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
@@ -70,7 +69,7 @@ contract Leagues {
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(!_exists(id), "league already created");
         uint256 initBlock = block.number + blocksToInit;
-        bytes32 initHash = 0;
+        bytes32 initStateHash = 0;
         bytes32[] memory finalHashes;
         uint256[2][] memory scores;
         bytes32 tacticsHash = 0;
@@ -78,7 +77,7 @@ contract Leagues {
             teamIds, 
             initBlock, 
             step, 
-            initHash, 
+            initStateHash, 
             finalHashes, 
             tacticsHash,
             scores
@@ -87,7 +86,7 @@ contract Leagues {
 
     function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
         require(_exists(id), "unexistent league");
-        _leagues[id].initHash = stateHash;
+        _leagues[id].initStateHash = stateHash;
     }
 
     function _setFinalHashes(uint256 id, bytes32[] memory hashes) internal {
