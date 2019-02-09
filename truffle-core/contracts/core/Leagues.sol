@@ -11,8 +11,7 @@ contract Leagues {
         // hash of the init status of the league 
         bytes32 initStateHash;
         // hash of the final hashes of the league
-        // TODO: rename finalTeamStateHashes
-        bytes32[] finalHashes;
+        bytes32[] finalTeamStateHashes;
         // hash of tactics
         bytes32 tacticsHash;
         // scores of the league
@@ -50,7 +49,7 @@ contract Leagues {
 
     function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].finalHashes;
+        return _leagues[id].finalTeamStateHashes;
     }
 
     function getScores(uint256 id) external view returns (uint256[2][] memory) {
@@ -70,7 +69,7 @@ contract Leagues {
         require(!_exists(id), "league already created");
         uint256 initBlock = block.number + blocksToInit;
         bytes32 initStateHash = 0;
-        bytes32[] memory finalHashes;
+        bytes32[] memory finalTeamStateHashes;
         uint256[2][] memory scores;
         bytes32 tacticsHash = 0;
         _leagues[id] = League(
@@ -78,7 +77,7 @@ contract Leagues {
             initBlock, 
             step, 
             initStateHash, 
-            finalHashes, 
+            finalTeamStateHashes, 
             tacticsHash,
             scores
         );
@@ -91,7 +90,7 @@ contract Leagues {
 
     function _setFinalHashes(uint256 id, bytes32[] memory hashes) internal {
         require(_exists(id), "unexistent league");
-        _leagues[id].finalHashes = hashes;
+        _leagues[id].finalTeamStateHashes = hashes;
     }
 
     function _setScores(uint256 id, uint256[2][] memory scores) internal {
