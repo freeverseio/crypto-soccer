@@ -1,9 +1,9 @@
 pragma solidity ^0.4.25;
 
-import "./Leagues.sol";
+import "./LeaguesScheduler.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is Leagues {
+contract LeaguesComputer is LeaguesScheduler {
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
