@@ -29,9 +29,28 @@ contract('LeaguesScheduler', (accounts) => {
     })
 
     it('get teams for match in wrong league day', async () => {
-    })
+        const day = 2; // wrong
+        const matchIdx = 0; 
+        await leagues.getTeamsInMatch(id, day, matchIdx).should.be.rejected;
+    });
+
+    it('get teams for match in wrong team', async () => {
+        const day = 0;
+        const matchIdx = 2; // wrong
+        await leagues.getTeamsInMatch(id, day, matchIdx).should.be.rejected;
+    });
 
     it('get teams for match in league day', async () => {
-
+        let day = 0;
+        const matchIdx = 0;
+        let teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
+        teams.length.should.be.equal(2);
+        teams[0].toNumber().should.be.equal(0);
+        teams[1].toNumber().should.be.equal(1);
+        day = 1;
+        teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
+        teams.length.should.be.equal(2);
+        teams[0].toNumber().should.be.equal(1);
+        teams[1].toNumber().should.be.equal(0);
     })
 });

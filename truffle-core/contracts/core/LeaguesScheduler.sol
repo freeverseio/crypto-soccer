@@ -10,6 +10,12 @@ contract LeaguesScheduler is Leagues {
         return 2*(nTeams - 1);
     }
 
+    function getMatchPerDay(uint256 id) public view returns (uint256)
+    {
+        uint256 nTeams = countTeams(id);
+        return nTeams / 2;
+    }
+
     function shiftBack(uint256 t, uint256 nTeams) public pure returns (uint256)
     {
         if (t < nTeams)
@@ -41,6 +47,7 @@ contract LeaguesScheduler is Leagues {
         returns (uint256 team0Idx, uint256 team1Idx) 
     {
         require(matchday < countLeagueDays(id), "wrong match day");
+        require(matchIdx < getMatchPerDay(id), "wrong match");
         uint256 nTeams = countTeams(id);
         if (matchday < (nTeams - 1))
             (team0Idx, team1Idx) = getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
