@@ -24,7 +24,7 @@ contract LeaguesComputer is LeaguesScheduler {
     // TODO: does a team play always with 11 players ?
     function computeLeagueFinalState (
         uint256 leagueId,
-        uint256[] memory playersState, // TODO: if teams are fixed size it can be optimized
+        uint256[] memory playersState, 
         uint256[3][] memory tactics // TODO: optimize data type
     )
         public 
