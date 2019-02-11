@@ -88,7 +88,7 @@ contract Leagues {
         _leagues[id].initStateHash = stateHash;
     }
 
-    function _setFinalHashes(uint256 id, bytes32[] memory hashes) internal {
+    function _setFinalTeamStateHashes(uint256 id, bytes32[] memory hashes) internal {
         require(_exists(id), "unexistent league");
         _leagues[id].finalTeamStateHashes = hashes;
     }

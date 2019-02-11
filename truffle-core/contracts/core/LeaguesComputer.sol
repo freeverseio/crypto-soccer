@@ -100,7 +100,7 @@ contract LeaguesComputer is Leagues {
         public 
     {
         _setInitStateHash(id, initStateHash);
-        _setFinalHashes(id, finalHashes);
+        _setFinalTeamStateHashes(id, finalHashes);
         _setScores(id, scores);
     }
 }
