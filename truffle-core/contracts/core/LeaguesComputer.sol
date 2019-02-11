@@ -55,6 +55,18 @@ contract LeaguesComputer is Leagues {
         return scores;
     }
 
+    function countTeamsStatus(uint256[] memory teamsStatus) public pure returns (uint256) {
+        require(teamsStatus[0] != 0, "first state is invalid");
+        require(teamsStatus[teamsStatus.length - 1] != 0, "last state invalid");
+
+        uint256 count = 1;
+        for (uint256 i = 0 ; i < teamsStatus.length ; i++){
+            if (teamsStatus[i] == 0)
+                count++;
+        }
+        return count;
+    }
+
     // TODO: function name => hashResult ?
     function calculateFinalHash(uint256[2][] memory scores) public pure returns (bytes32) {
         bytes memory origin;

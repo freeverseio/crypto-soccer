@@ -119,4 +119,21 @@ contract('LeaguesComputer', (accounts) => {
         result[1][0].toNumber().should.be.equal(scores[1][0]);
         result[1][1].toNumber().should.be.equal(scores[1][1]);
     });
+
+    it('count empty teams status', async () => {
+        await leagues.countTeamsStatus([]).should.be.rejected;
+    });
+
+    it('teams status should not init with invalid status', async () => {
+        await leagues.countTeamsStatus([0,3,4]).should.be.rejected;
+    });
+
+    it('teams status should not end with invalid status', async () => {
+        await leagues.countTeamsStatus([3,4,0]).should.be.rejected;
+    });
+
+    it('count teams status', async () => {
+        const result = await leagues.countTeamsStatus([3,4,0,454,0,6]).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+    })
 });
