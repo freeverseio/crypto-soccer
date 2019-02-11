@@ -32,15 +32,18 @@ contract LeaguesComputer is Leagues {
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(playersState.length == nTeams * PLAYERS_PER_TEAM, "wrong number of players");
+        require(countTeamsStatus(playersState) == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
-        uint256 i;
-        uint256[][] memory state = new uint256[][](nTeams);
-        for (i = 0; i < nTeams; i++){
-            state[i] = new uint256[](PLAYERS_PER_TEAM);
-            for (uint256 j = 0; j < PLAYERS_PER_TEAM; j++){
-                state[i][j] = playersState[i*PLAYERS_PER_TEAM + j];
+        uint256[][] storage state; // TODO: do I have to use a memory array
+        state.push(new uint256[](0));
+        uint256 team;
+        for (uint256 i = 0; i < playersState.length; i++){
+            if(playersState[i] == 0){
+                team++;
+                state.push(new uint256[](0));
+            } else {
+                state[team].push(playersState[i]);
             }
         }
 
@@ -57,9 +60,9 @@ contract LeaguesComputer is Leagues {
 
     function countTeamsStatus(uint256[] memory teamsStatus) public pure returns (uint256) {
         require(teamsStatus[0] != 0, "first state is invalid");
-        require(teamsStatus[teamsStatus.length - 1] != 0, "last state invalid");
+        require(teamsStatus[teamsStatus.length - 1] == 0, "last state invalid");
 
-        uint256 count = 1;
+        uint256 count = 0;
         for (uint256 i = 0 ; i < teamsStatus.length ; i++){
             if (teamsStatus[i] == 0)
                 count++;
