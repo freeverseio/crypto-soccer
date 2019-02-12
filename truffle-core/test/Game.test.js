@@ -42,6 +42,23 @@ contract('Game', (accounts) => {
         const barcelonaPlayersIds = await teams.getPlayers(barcelonaId).should.be.fulfilled;
         const madridPlayersIds = await teams.getPlayers(madridId).should.be.fulfilled;
 
+        let barcelonaState = [];
+        for (let i = 0; i < barcelonaPlayersIds.length ; i++){
+            const playerId = barcelonaPlayersIds[i];
+            const genome = await players.getGenome(playerId).should.be.fulfilled;
+            barcelonaState.push(genome);
+        }
 
+        let madridState = [];
+        for (let i = 0; i < madridPlayersIds.length ; i++){
+            const playerId = madridPlayersIds[i];
+            const genome = await players.getGenome(playerId).should.be.fulfilled;
+            madridState.push(genome);
+        }
+
+        const leagueState = barcelonaState.concat(0).concat(madridState).concat(0);
+        const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
+        console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
+        console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());
     });
 })
