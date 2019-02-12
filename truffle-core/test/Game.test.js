@@ -39,6 +39,9 @@ contract('Game', (accounts) => {
         const step = 1;
         const leagueId = 0;
         await leagues.create(leagueId, blockInitDelta, step, [barcelonaId, madridId]).should.be.fulfilled;
+        const barcelonaPlayersIds = await teams.getPlayers(barcelonaId).should.be.fulfilled;
+        const madridPlayersIds = await teams.getPlayers(madridId).should.be.fulfilled;
+
 
     });
 })

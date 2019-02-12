@@ -23,6 +23,7 @@ contract TeamsProps is ERC721, ERC721Enumerable {
         _teamProps[teamId].name = name;
     }
 
+    // TODO: rename to getPlayersIds
     function getPlayers(uint256 teamId) public view returns (uint256[]) {
         require(_exists(teamId));
         return _teamProps[teamId].players;
