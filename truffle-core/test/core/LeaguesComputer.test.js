@@ -100,6 +100,14 @@ contract('LeaguesComputer', (accounts) => {
         hash1.should.be.not.equal(hash0);
     });
 
+    it('hash league state', async () => {
+        const state = [3,5,2,0,4,56,6,0];
+        const hashes = await leagues.hashLeagueState(state).should.be.fulfilled;
+        hashes.length.should.be.equal(2);
+        hashes[0].should.be.equal('0xc6951eb9cd3a570943a21ee0c2156cc75258037b093e3bb1690d6d92c9af8c29');
+        hashes[1].should.be.equal('0xa4efe975f12e6f4dce1ee13b2355a8b2057cbd37cad109f6fb027c0a645ee92a');
+    })
+
     it('update league state', async () => {
         const initStateHash = '0x435a354320000000000000000000000000000000000000000000000000000000';
         const finalTeamStateHashes = [

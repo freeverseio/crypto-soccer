@@ -60,5 +60,15 @@ contract('Game', (accounts) => {
         const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
         console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
         console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());
+
+        const initStateHash = await leagues.hashInitState(leagueState).should.be.fulfilled;
+        const finalTeamsStateHashes = await leagues.hashLeagueState(leagueState).should.be.fulfilled;
+
+        await leagues.updateLeague(
+            leagueId,
+            initStateHash,
+            finalTeamsStateHashes,
+            scores
+        ).should.be.fulfilled;
     });
 })
