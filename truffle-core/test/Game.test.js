@@ -56,7 +56,8 @@ contract('Game', (accounts) => {
             madridState.push(genome);
         }
 
-        const leagueState = barcelonaState.concat(0).concat(madridState).concat(0);
+        let leagueState = await leagues.appendTeamToLeagueState([], barcelonaState).should.be.fulfilled;
+        leagueState = await leagues.appendTeamToLeagueState(leagueState, madridState).should.be.fulfilled;
         const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
         console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
         console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());
