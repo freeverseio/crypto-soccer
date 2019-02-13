@@ -70,5 +70,12 @@ contract('Game', (accounts) => {
             finalTeamsStateHashes,
             scores
         ).should.be.fulfilled;
+
+        const recordedInitStateHash = await leagues.getInitStateHash(leagueId).should.be.fulfilled;
+        recordedInitStateHash.should.be.equal(initStateHash);
+        const recordedFinalTeamStateHashes = await leagues.getFinalTeamStateHashes(leagueId).should.be.fulfilled;
+        for (let i = 0; i < finalTeamsStateHashes.length; i++) {
+            recordedFinalTeamStateHashes[i].should.be.equal(finalTeamsStateHashes[i]);
+        }
     });
 })

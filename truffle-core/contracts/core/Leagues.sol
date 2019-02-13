@@ -83,6 +83,11 @@ contract Leagues {
         );
     }
 
+    function getInitStateHash(uint256 id) external view returns (bytes32) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].initStateHash;
+    }
+
     function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
         require(_exists(id), "unexistent league");
         _leagues[id].initStateHash = stateHash;
