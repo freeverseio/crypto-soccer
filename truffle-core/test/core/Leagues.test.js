@@ -23,6 +23,7 @@ contract('Leagues', (accounts) => {
         await leagues.getFinalTeamStateHashes(id).should.be.rejected;
         await leagues.getEndBlock(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
+        await leagues.getInitStateHash(id).should.be.rejected;
     })
 
     it('default hashes values on create league', async () =>{
