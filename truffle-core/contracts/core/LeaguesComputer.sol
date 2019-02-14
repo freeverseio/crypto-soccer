@@ -15,17 +15,17 @@ contract LeaguesComputer is LeaguesScheduler {
         return address(_engine);
     }
 
-    function appendTeamToLeagueState(uint256[] memory target, uint256[] memory teamState) public pure returns (uint256[] memory) {
-        require(teamState.length != 0, "wrong team state");
-        uint256[] memory state = new uint256[](target.length + teamState.length + 1);
-        uint256 i;
-        for (i = 0; i < target.length ; i++)
-            state[i] = target[i];
-
-        for (i = 0 ; i < teamState.length ; i++)
-            state[target.length + i] = teamState[i];
-
-        return state;        
+    function updateLeague(
+        uint256 id, 
+        bytes32 initStateHash,
+        bytes32[] memory finalHashes,
+        uint256[2][] memory scores
+    ) 
+        public 
+    {
+        _setInitStateHash(id, initStateHash);
+        _setFinalTeamStateHashes(id, finalHashes);
+        _setScores(id, scores);
     }
 
     /**
@@ -69,6 +69,19 @@ contract LeaguesComputer is LeaguesScheduler {
             (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
 
         return scores;
+    }
+
+    function appendTeamToLeagueState(uint256[] memory target, uint256[] memory teamState) public pure returns (uint256[] memory) {
+        require(teamState.length != 0, "wrong team state");
+        uint256[] memory state = new uint256[](target.length + teamState.length + 1);
+        uint256 i;
+        for (i = 0; i < target.length ; i++)
+            state[i] = target[i];
+
+        for (i = 0 ; i < teamState.length ; i++)
+            state[target.length + i] = teamState[i];
+
+        return state;        
     }
 
     function countTeamsStatus(uint256[] memory teamsStatus) public pure returns (uint256) {
@@ -118,14 +131,6 @@ contract LeaguesComputer is LeaguesScheduler {
         return _hashState(state);
     }
 
-    function _hashState(uint256[] memory state) private pure returns (bytes32) {
-        bytes memory origin;
-        for(uint256 i = 0; i < state.length ; i++){
-            origin = abi.encodePacked(origin, state[i]); 
-        }
-        return keccak256(origin);
-    }
-
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
         bytes memory origin;
         for(uint256 i = 0; i < tactics.length ; i++){
@@ -136,16 +141,11 @@ contract LeaguesComputer is LeaguesScheduler {
         return keccak256(origin);
     }
 
-    function updateLeague(
-        uint256 id, 
-        bytes32 initStateHash,
-        bytes32[] memory finalHashes,
-        uint256[2][] memory scores
-    ) 
-        public 
-    {
-        _setInitStateHash(id, initStateHash);
-        _setFinalTeamStateHashes(id, finalHashes);
-        _setScores(id, scores);
+    function _hashState(uint256[] memory state) private pure returns (bytes32) {
+        bytes memory origin;
+        for(uint256 i = 0; i < state.length ; i++){
+            origin = abi.encodePacked(origin, state[i]); 
+        }
+        return keccak256(origin);
     }
 }

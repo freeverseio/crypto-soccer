@@ -20,46 +20,21 @@ contract Leagues {
 
     mapping(uint256 => League) private _leagues;
 
-    function getInitBlock(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].initBlock;
-    }
-
-    function getStep(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].step;
-    }
-
     function getEndBlock(uint256 id) external view returns (uint256) {
         require(_exists(id), "unexistent league");
         uint256 nTeams = _leagues[id].teamIds.length;
         uint256 nMatchDays = 2 * (nTeams - 1);
         return _leagues[id].initBlock + (nMatchDays - 1) * _leagues[id].step;
     }
-
-    function getTeamIds(uint256 id) public view returns (uint256[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].teamIds;
-    }
-
-    function getInitHash(uint256 id) public view returns (bytes32) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].initStateHash;
-    }
-
-    function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].finalTeamStateHashes;
-    }
-
+ 
     function getScores(uint256 id) external view returns (uint256[2][] memory) {
         require(_exists(id), "unexistent league");
         return _leagues[id].scores;
     }
 
-    function countTeams(uint256 id) public view returns (uint256) {
+    function getInitStateHash(uint256 id) external view returns (bytes32) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].teamIds.length;
+        return _leagues[id].initStateHash;
     }
 
     /// TODO: blockToInit -> initBlock: utilize an absolute reference 
@@ -83,9 +58,33 @@ contract Leagues {
         );
     }
 
-    function getInitStateHash(uint256 id) external view returns (bytes32) {
+    function getInitBlock(uint256 id) public view returns (uint256) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].initBlock;
+    }
+
+    function getStep(uint256 id) public view returns (uint256) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].step;
+    }
+
+    function getTeamIds(uint256 id) public view returns (uint256[] memory) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].teamIds;
+    }
+
+    function getInitHash(uint256 id) public view returns (bytes32) {
         require(_exists(id), "unexistent league");
         return _leagues[id].initStateHash;
+    }
+
+    function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].finalTeamStateHashes;
+    }
+    function countTeams(uint256 id) public view returns (uint256) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].teamIds.length;
     }
 
     function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
