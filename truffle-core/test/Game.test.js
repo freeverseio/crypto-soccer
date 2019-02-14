@@ -5,7 +5,7 @@ require('chai')
 const Players = artifacts.require('Players');
 const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
-const Leagues = artifacts.require('LeaguesComputer');
+const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 
 contract('Game', (accounts) => {
