@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Leagues = artifacts.require('Leagues');
+const Leagues = artifacts.require('LeaguesStorage');
 
 contract('Leagues', (accounts) => {
     let leagues = null;
