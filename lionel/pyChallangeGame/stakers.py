@@ -66,7 +66,7 @@ class Stakers:
 
         assert self.stkrs[staker].state == StackerState.ENROLLED 
         self.stkrs[staker].keepalive=self.crtl.bc.get_blockno()
-        self.crtl.game.get_simulate_league(0) # consume gas
+        # self.crtl.game.get_simulate_league(0) -> TODO consume gas
 
     # check if exists
     def exists(self,staker):

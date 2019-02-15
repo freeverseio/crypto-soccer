@@ -66,7 +66,7 @@ class Updater(Actor):
             return "onionhash-revealed"
 
         # update
-        leagueIds = range(0,self.crtl.game.get_league_count())
+        leagueIds = range(0,self.crtl.game.get_games_count())
         random.shuffle(leagueIds)
         for leagueId in leagueIds:
             ok =  self.crtl.game.is_accepting_updater_update(self.address,leagueId)
@@ -91,12 +91,12 @@ class Challanger(Actor):
         if action != None:
             return action
 
-        leagueIds = range(0,self.crtl.game.get_league_count())
+        leagueIds = range(0,self.crtl.game.get_games_count())
         random.shuffle(leagueIds)
         for leagueId in leagueIds:
             if self.crtl.game.is_accepting_challanger_challange(self.address,leagueId):
                 expected = self.crtl.game.get_simulate_league(leagueId)
-                current = self.crtl.game.get_updater_result(self.address,leagueId)
+                current = self.crtl.game.get_updater_result(leagueId)
                 if expected != current:
                     self.crtl.game.challange(leagueId,self.address,expected)
                     return "challanged(league="+str(leagueId)+")"

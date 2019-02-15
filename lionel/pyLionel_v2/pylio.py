@@ -96,7 +96,7 @@ def getLastPlayedLeagueIdx(playerIdx, ST):
         return ST.playerIdxToPlayerState[playerIdx].prevLeagueIdx, ST.playerIdxToPlayerState[playerIdx].prevTeamPosInLeague
 
 def getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST):
-    selectedStates =[s for s in ST.leagues[prevLeagueIdx].finalStates[teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
+    selectedStates =[s for s in ST.leagues[prevLeagueIdx].statesAtMatchday[-1][teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
     assert len(selectedStates)==1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
     return selectedStates[0]
 
@@ -251,6 +251,7 @@ def signTeamsInLeague(teamIdxs, leagueIdx, ST):
 
 def createLeague(blocknumber, blockStep, usersInitData, ST):
     assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST), "League cannot create: some teams involved in prev leagues"
+    assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
     leagueIdx = len(ST.leagues)
     ST.leagues.append( League(blocknumber, blockStep, usersInitData) )
     signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST)
@@ -327,57 +328,86 @@ def addFixedPointsToAllPlayers(playerStates, points):
     for playerState in playerStates:
         playerState.setSkills(playerState.getSkills() + points)
 
-def updateFinalPlayerStates(playerStates1, playerStates2, goals1, goals2):
-    if goals1 == goals2: return
-    ratingDiff              = computeTeamRating(playerStates1) - computeTeamRating(playerStates2)
+def updatePlayerStatesAfterMatch(playerStates1, playerStates2, goals1, goals2):
+    ps1 = duplicate(playerStates1)
+    ps2 = duplicate(playerStates2)
+
+    if goals1 == goals2:
+        return ps1, ps2
+
+    pointsWon = computePointsWon(ps1, ps2, goals1, goals2)
+    if goals1 > goals2:
+        addFixedPointsToAllPlayers(ps1, pointsWon)
+    else:
+        addFixedPointsToAllPlayers(ps2, pointsWon)
+
+    return ps1, ps2
+
+
+def computePointsWon(playerState1, playerState2, goals1, goals2):
+    ratingDiff              = computeTeamRating(playerState1) - computeTeamRating(playerState2)
     winnerWasBetter         = (ratingDiff > 0 and goals1>goals2) or (ratingDiff < 0 and goals1<goals2)
-    playerStates2BeUpdated  = playerStates1 if goals1 > goals2 else playerStates2
 
     if ratingDiff == 0:
-        pointsWon = 5
+        return 5
     else:
-        pointsWon = 2 if winnerWasBetter else 10
-    addFixedPointsToAllPlayers(playerStates2BeUpdated, pointsWon)
+        return (2 if winnerWasBetter else 10)
 
 
-def computeLeagueFinalState(blockInit, blockStep, initPlayerStates, usersInitData, usersAlongData):
+def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
+    nTeams = len(prevStates)
+    nMatchesPerMatchday = nTeams/2
+    scores = np.zeros([nMatchesPerMatchday, 2], int)
+    statesAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
+    matchdaySeed = getBlockHash(matchdayBlock * 3)  # TODO: remove this *3
+
+    for match in range(nMatchesPerMatchday):
+        team1, team2 = getTeamsInMatch(matchday, match, nTeams)
+
+        goals1, goals2 = playMatch(
+            prevStates[team1],
+            prevStates[team2],
+            tactics[team1],
+            tactics[team2],
+            matchdaySeed
+        )
+        scores[match] = [goals1, goals2]
+        statesAtMatchday[team1], statesAtMatchday[team2] = \
+            updatePlayerStatesAfterMatch(
+                    prevStates[team1],
+                    prevStates[team2],
+                    goals1,
+                    goals2
+                )
+    return statesAtMatchday, scores
+
+
+
+def computeAllMatchdayStates(blockInit, blockStep, initPlayerStates, usersInitData, usersAlongData):
     # In this initial implementation, evolution happens at the end of the league only
-    # TODO: modify lionel so that it allow for within Matchs evolution to be taken into account in next-match result
-    finalPlayerStates = duplicate(initPlayerStates)
     tactics = duplicate(usersInitData["tactics"])
     nTeams = len(usersInitData["teamIdxs"])
     nMatchdays = 2*(nTeams-1)
     nMatchesPerMatchday = nTeams/2
     scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
     matchdayBlock = duplicate(blockInit)
-    # First play all Matchs without evolution
+
+    # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
+    statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
+
     for matchday in range(nMatchdays):
         updateTacticsToBlockNum(tactics, matchdayBlock, usersAlongData)
-        for match in range(nMatchesPerMatchday):
-            team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-            MatchSeed = getBlockHash(matchdayBlock)
-            goals1, goals2 = playMatch(
-                initPlayerStates[team1],
-                initPlayerStates[team2],
-                tactics[team1],
-                tactics[team2],
-                MatchSeed
-            )
-            scores[matchday][match] = [goals1, goals2]
+        prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
+        statesAtMatchday[matchday], scores[matchday] = computeStatesAtMatchday(
+            matchday,
+            prevStates,
+            tactics,
+            matchdayBlock
+        )
         matchdayBlock += blockStep
 
-    # Finally, use the computed scores to evolve players from start to end of league
-    for matchday in range(nMatchdays):
-        for match in range(nMatchesPerMatchday):
-            team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-            updateFinalPlayerStates(
-                finalPlayerStates[team1],
-                finalPlayerStates[team2],
-                scores[matchday][match][0],
-                scores[matchday][match][1]
-            )
 
-    return finalPlayerStates, scores
+    return statesAtMatchday, scores
 
 def computeUsersAlongDataHash(usersAlongData):
     usersAlongDataHash = 0
@@ -397,50 +427,6 @@ def getMatchsPlayerByTeam(selectedTeam, nTeams):
     return matchdayAndMatch
 
 
-
-def computeTeamFinalState(selectedTeam, blockInit, blockStep, initPlayerStates, usersInitData, usersAlongData):
-    # In this initial implementation, evolution happens at the end of the league only
-    # TODO: modify lionel so that it allow for within Matchs evolution to be taken into account in next-match result
-    finalPlayerStates = duplicate(initPlayerStates)
-    tactics = duplicate(usersInitData["tactics"])
-    nTeams = len(usersInitData["teamIdxs"])
-    nMatchdays = 2*(nTeams-1)  # matchday = "jornada"
-    nMatchesPerMatchday = nTeams/2
-    matchdayBlock = duplicate(blockInit)
-
-    selectedMatchInMatchday = np.zeros(nMatchdays, int)
-    selectedScores = np.zeros([nMatchdays, 2], int)
-    # First play all Matchs without evolution
-    for matchday in range(nMatchdays):
-        updateTacticsToBlockNum(tactics, matchdayBlock, usersAlongData)
-        for match in range(nMatchesPerMatchday):
-            team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-            if (team1 == selectedTeam) or (team2 == selectedTeam):
-                MatchSeed = getBlockHash(matchdayBlock)
-                goals1, goals2 = playMatch(
-                    initPlayerStates[team1],
-                    initPlayerStates[team2],
-                    tactics[team1],
-                    tactics[team2],
-                    MatchSeed
-                )
-                selectedMatchInMatchday[matchday] = match
-                selectedScores[matchday] = [goals1, goals2]
-        matchdayBlock += duplicate(blockStep)
-
-    # Finally, use the computed scores to evolve players from start to end of league
-    for matchday, match, score in zip(range(nMatchdays), selectedMatchInMatchday, selectedScores):
-        team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-        updateFinalPlayerStates(
-            finalPlayerStates[team1],
-            finalPlayerStates[team2],
-            score[0],
-            score[1]
-        )
-
-    return finalPlayerStates[selectedTeam], selectedMatchInMatchday, selectedScores
-
-
 def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScores):
     for matchday, match, score in zip(range(len(selectedMatchInMatchday)), selectedMatchInMatchday, selectedScores):
         if any(updaterScores[matchday][match] != score):
@@ -448,10 +434,11 @@ def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScor
     return True
 
 
-def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, finalStates, scores, ST_CLIENT):
+def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT):
     ST_CLIENT.leagues[leagueIdx].updateInitState(initPlayerStates)
-    ST_CLIENT.leagues[leagueIdx].updateFinalState(finalStates, scores)
-    for allPlayerStatesInTeam in finalStates:
+    ST_CLIENT.leagues[leagueIdx].updateStatesAtMatchday(statesAtMatchday, scores)
+    # the last matchday gives the final states used to update all players:
+    for allPlayerStatesInTeam in statesAtMatchday[-1]:
         for playerState in allPlayerStatesInTeam:
             ST_CLIENT.playerIdxToPlayerState[playerState.getPlayerIdx()] = playerState
 
@@ -473,10 +460,10 @@ def computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT):
     if prevLeagueIdx == 0:
         return getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
     else:
-        return getAllStatesAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, ST_CLIENT)
+        return getAllStatesAtEndOfLeague(prevLeagueIdx, ST_CLIENT)
 
-def getAllStatesAtEndOfLeague(leagueIdx, teamPosLeague, ST_CLIENT):
-    return ST_CLIENT.leagues[leagueIdx].finalStates[teamPosLeague]
+def getAllStatesAtEndOfLeague(leagueIdx, ST_CLIENT):
+    return ST_CLIENT.leagues[leagueIdx].statesAtMatchday[-1]
 
 
 def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
@@ -504,7 +491,12 @@ def isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState, ST):
             getPlayerStateBeforePlayingAnyLeague(playerIdx, ST)
         )
     else:
-        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].finalStatesHashes[teamPosInPrevLeague]
+        assert isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
+            "The playerState provided is not part of the challengeData"
+        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAtMatchdayHashes[-1]
+
+def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
+    return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
 
 
 def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
@@ -516,3 +508,7 @@ def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
     else:
         assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
         return dataToChallengePlayerState
+
+
+def createEmptyPlayerStatesForAllTeams(nTeams):
+    return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]

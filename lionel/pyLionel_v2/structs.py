@@ -123,7 +123,7 @@ class League():
         self.usersAlongDataHash = 0
         # provided in update/challenge game
         self.initStatesHash     = 0
-        self.finalStatesHashes  = 0
+        self.statesAtMatchdayHashes  = 0
         self.scores             = np.zeros(nMatches)
         self.updaterAddr        = 0
         self.blockLastUpdate    = 0
@@ -158,34 +158,47 @@ class League():
             serialize(usersAlongData)
         )
 
-    def updateLeague(self, initStatesHash, finalStatesHashes, scores, updaterAddr, blocknum):
+    def updateLeague(self, initStatesHash, statesAtMatchdayHashes, scores, updaterAddr, blocknum):
         assert self.hasLeagueFinished(blocknum), "League cannot be updated before the last matchday finishes"
         assert not self.hasLeagueBeenUpdated(), "League has already been updated"
-        self.initStatesHash     = initStatesHash
-        self.finalStatesHashes  = finalStatesHashes
-        self.scores             = scores
-        self.updaterAddr        = updaterAddr
-        self.blockLastUpdate    = blocknum
+        self.initStatesHash             = initStatesHash
+        self.statesAtMatchdayHashes     = statesAtMatchdayHashes
+        self.scores                     = scores
+        self.updaterAddr                = updaterAddr
+        self.blockLastUpdate            = blocknum
 
-    def challengeFinalStates(self, selectedTeam, initPlayerStates, usersInitData, usersAlongData, blocknum):
+    def challengeMatchdayStates(self, selectedMatchday, prevMatchdayStates, usersInitData, usersAlongData, blocknum):
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(blocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
         assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
-        assert pylio.serialHash(initPlayerStates) == self.initStatesHash, "Incorrect provided: initPlayerStates"
-        selectedTeamFinalState, selectedMatchInMatchday, selectedScores  = pylio.computeTeamFinalState(selectedTeam, self.blockInit, self.blockStep, initPlayerStates, usersInitData, usersAlongData)
+        if selectedMatchday == 0:
+            assert pylio.serialHash(prevMatchdayStates) == self.initStatesHash, "Incorrect provided: prevMatchdayStates"
+        else:
+            assert pylio.serialHash(prevMatchdayStates) == self.statesAtMatchdayHashes[selectedMatchday-1], "Incorrect provided: prevMatchdayStates"
 
-        if not pylio.serialHash(selectedTeamFinalState) == self.finalStatesHashes[selectedTeam]:
-            print "Challenger Wins: finalStates provided by updater are invalid"
+        matchdayBlock = self.blockInit + selectedMatchday * self.blockStep
+        tactics = pylio.duplicate(usersInitData["tactics"])
+        pylio.updateTacticsToBlockNum(tactics, matchdayBlock, usersAlongData)
+
+        statesAtMatchday, scores = pylio.computeStatesAtMatchday(
+            selectedMatchday,
+            prevMatchdayStates,
+            tactics,
+            matchdayBlock
+        )
+
+        if not pylio.serialHash(statesAtMatchday) == self.statesAtMatchdayHashes[selectedMatchday]:
+            print "Challenger Wins: statesAtMatchday provided by updater are invalid"
             self.resetUpdater()
             return
 
-        if not pylio.areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, self.scores):
+        if not (self.scores[selectedMatchday] == scores).all():
             print "Challenger Wins: scores provided by updater are invalid"
             self.resetUpdater()
             return
 
-        print "Challenger failed to prove that finalStates nor scores were wrong"
+        print "Challenger failed to prove that statesAtMatchday nor scores were wrong"
 
     def challengeInitStates(self, usersInitData, dataToChallengeInitStates, ST, blocknum):
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
@@ -227,21 +240,22 @@ class League():
 class LeagueClient(League):
     def __init__(self, blockInit, blockStep, usersInitData):
         League.__init__(self, blockInit, blockStep, usersInitData)
-        self.usersInitData = usersInitData
-        self.usersAlongData = []  # this list must be ordered!
-        self.initPlayerStates = None
-        self.finalStates = None
-        self.scores      = None
+        self.usersInitData      = usersInitData
+        self.usersAlongData     = []  # this list must be ordered!
+        self.initPlayerStates   = None
+        self.statesAtMatchday   = None
+        self.scores             = None
 
     def updateUsersAlongData(self, usersAlongData):
         self.updateUsersAlongDataHash(usersAlongData)
         self.usersAlongData.append(usersAlongData)
 
-    def updateFinalState(self, finalStates, scores):
-        self.finalStates = finalStates
-        self.scores      = scores
+    def updateStatesAtMatchday(self, statesAtMatchday, scores):
+        self.statesAtMatchday   = statesAtMatchday
+        self.scores             = scores
 
     def updateInitState(self, initPlayerStates):
         self.initPlayerStates = initPlayerStates
+
 
 

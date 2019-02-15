@@ -1,40 +1,33 @@
 import hashlib
 
-class League:
+class GameData:
     updater = None
     result  = None
 
-# TODO change name to `SimultaneousLeagues`
-class Game:
-    VALIDATION_RESTR  = 66
-    VALIDATION_OPEN   = 34
-    LEAGUE_BLOCKS     = 100
-
+class GamesController:
     crtl = None
     def __init__(self,crtl):
         self.crtl = crtl
 
     # leagues ------------------------------------------------
 
-    def get_league_count(self):
-        return len(self.leagues)
+    def get_games_count(self):
+        return len(self.games)
 
-    # game ---------------------------------------------------
-
-    def new_game(self,leagues):
+    def new_game(self,games):
         self.VALIDATION_BLOCKS = self.VALIDATION_RESTR + self.VALIDATION_OPEN
-        self.CYCLE_BLOCKS = self.LEAGUE_BLOCKS + self.VALIDATION_BLOCKS
+        self.CYCLE_BLOCKS = self.PLAY_BLOCKS + self.VALIDATION_BLOCKS
 
         self.rand = self.crtl.bc.get_last_blockhash()
         self.league_starting_block = self.crtl.bc.get_blockno()
-        self.leagues=[]
-        for _ in range(0,leagues):   
-            self.leagues.append(League())         
+        self.games=[]
+        for _ in range(0,games):   
+            self.games.append(GameData())         
 
-    def pending_leagues_to_resolve(self):
+    def pending_games_to_resolve(self):
         count = 0
-        for l in self.leagues:   
-            if l.result == None:
+        for l in self.games:   
+            if l.updater == None:
                 count = count + 1
         return count
 
@@ -50,16 +43,16 @@ class Game:
             else:
                 return diff
         return diff
-    # TODO change `sender` for `stacker`
-    def is_accepting_updater_update(self,staker,league_id):
+
+    def is_accepting_updater_update(self,staker,game_id):
         if self.crtl.stakers.can_participate(staker) != None:
             return "stacker-cannot-participate:"+self.crtl.stakers.can_participate(staker)
 
         # false if aleady updated
-        if self.leagues[league_id].result != None:
+        if self.games[game_id].updater != None:
             return "league-already-updated"
 
-        start_block = self.league_starting_block + self.LEAGUE_BLOCKS
+        start_block = self.league_starting_block + self.PLAY_BLOCKS
         end_block = start_block + self.VALIDATION_BLOCKS
 
         # check if it's in the current update window
@@ -80,33 +73,47 @@ class Game:
 
         return None
 
-    def get_simulate_league(self,league_id):
-        return hashlib.sha256("league"+str(league_id)).hexdigest()
-
-    def update(self,sender,league_id,result):
-        assert self.is_accepting_updater_update(sender,league_id)== None
-
-        self.leagues[league_id].updater = sender
-        self.leagues[league_id].result = result
+    def updated(self,sender,game_id):
+        assert self.is_accepting_updater_update(sender,game_id)== None
+        self.games[game_id].updater = sender
         # reveal time is the half of the validation open time
         self.crtl.stakers.init_challange(sender)
 
     # challanger functions --------------------------------------
-
-    # TODO add `staker`
-
-    def is_accepting_challanger_challange(self,staker,league_id):
+    def is_accepting_challanger_challange(self,staker,game_id):
         assert self.crtl.stakers.can_participate(staker) == None
-        return self.leagues[league_id].result != None
+        return self.games[game_id].updater != None
 
-    def get_updater_result(self,staker,league_id):
-        assert self.crtl.stakers.can_participate(staker) == None
-        return self.leagues[league_id].result
  
-    def challange(self,league_id,staker,result):
+    def challanged(self,game_id,staker):
         assert self.crtl.stakers.can_participate(staker) == None
-        simulation_ok = self.get_simulate_league(league_id) == result
-        if simulation_ok and self.leagues[league_id].result != result:
-            self.crtl.stakers.set_challange_lier(self.leagues[league_id].updater)
-            self.leagues[league_id].updater = None
-            self.leagues[league_id].result = None
+        self.crtl.stakers.set_challange_lier(self.games[game_id].updater)
+        self.games[game_id].updater = None
+
+
+class SimultaneousLeagues(GamesController):
+    
+    VALIDATION_RESTR  = 66
+    VALIDATION_OPEN   = 34
+    PLAY_BLOCKS       = 100
+
+    def __init__(self,crtl):
+        GamesController.__init__(self,crtl)
+
+    def get_simulate_league(self,game_id):
+        # returns compressed_game_state = initStatesHash, finalStatesHash, scores
+        return hashlib.sha256("league"+str(game_id)).hexdigest()
+
+    def update(self,sender,game_id,result):
+        self.games[game_id].result = result
+        self.updated(sender,game_id)
+
+    def get_updater_result(self,game_id):
+        return self.games[game_id].result
+
+    def challange(self,game_id,staker,result):
+        simulation_ok = self.get_simulate_league(game_id) == result
+        if simulation_ok and self.games[game_id].result != result:
+            self.challanged(game_id,staker)
+            self.games[game_id].result = None
+

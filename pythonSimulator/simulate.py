@@ -12,6 +12,8 @@ PA = 2
 SH = 3
 EN = 4
 
+skNames = ["Defense", "Speed", "Pass", "Shoot", "Stamina"]
+
 nPlayers = 11
 
 GOALIE = 0
@@ -23,8 +25,16 @@ roles433 = [0,1,1,1,1,2,2,2,3,3,3]
 roles442 = [0,1,1,1,1,2,2,2,2,3,3]
 roles541 = [0,1,1,1,1,1,2,2,2,2,3]
 roles631 = [0,1,1,1,1,1,1,2,2,2,3]
-roles640 = [0,1,1,1,1,1,1,2,2,2,2]
 roles451 = [0,1,1,1,1,2,2,2,2,2,3]
+
+roles = [
+    ['433', roles433],
+    ['442', roles442],
+    ['541', roles541],
+    ['631', roles631],
+    ['451', roles451],
+]
+
 
 ROUNDS = 18
 MAX_DICE_RAND = 16383 # = 2^kBitsPerRndNum-1, basically, discretization used to determine who wins the dice
@@ -60,6 +70,24 @@ def createRandomPlayer(role):
     newPlayer.skills += excess
     return newPlayer
 
+def createDeterminedlayer(skills, age, role):
+    newPlayer = Player()
+    newPlayer.role = role
+    newPlayer.age = age
+    finalSkills = copy.deepcopy(skills[0:5])
+    # is the goalie's skill is explicit, it comes in the last entry
+    if skills.size == 6 and role == GOALIE:
+        finalSkills[SH] = skills[5]
+    newPlayer.skills = finalSkills
+    return newPlayer
+
+def createAllPlayersEqualTeam(skills, age, roles):
+    newTeam = Team()
+    newTeam.players = []
+    for p in range(nPlayers):
+        newTeam.players.append(createDeterminedlayer(skills, age, roles[p]))
+    return newTeam
+
 
 def createRandomTeam(roles):
     newTeam = Team()
@@ -72,7 +100,7 @@ def showTeam(team):
     # for player in team.players:
     #     print str(player.role) + " - " + str(player.skills)
     computeTeamGlobalSkills(team)
-    print "defendShoot, createShoot, move2attack, blockShoot, endurance:  %s, %s, %s, %s, %s" % (team.defendShoot, team.createShoot, team.move2attack, team.blockShoot, team.endurance)
+    print "defendShoot, createShoot, move2attack, blockShoot, endurance:  %d, %d, %d, %d, %d" % (team.defendShoot, team.createShoot, team.move2attack, team.blockShoot, team.endurance)
 
 def getDefenders(team, skill):
     return [p.skills[skill] for p in team.players if p.role==DEFENDER]
@@ -89,13 +117,17 @@ def getGoalie(team, skill):
 def convertEndurance2Percentage(endurance):
     # endurance is converted to a percentage that will be maintained:
     # 100 is super - endurant(1500), 70 is bad. For an avg starting team (550).
-    if (endurance < 500):
-        endurance = 70
-    elif (endurance < 1400):
-        endurance = 100 - (1400-endurance) / 30
+    minPercent = 10
+    maxPercent = 100
+    maxEndurance = 1000
+    minEndurance = 100
+    if (endurance < minEndurance):
+        percent = minPercent
+    elif (endurance < maxEndurance):
+        percent = minPercent + (maxPercent-minPercent) * (endurance-minEndurance) / (maxEndurance-minEndurance)
     else:
-        endurance = 100
-    return endurance
+        percent = maxPercent
+    return percent
 
 def throwDice(w1, w2, rndNum, maxRndNum):
     if (((w1 + w2) * rndNum) < (w1 * (maxRndNum - 1))):

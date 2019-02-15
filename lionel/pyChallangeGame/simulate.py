@@ -3,6 +3,7 @@ import random
 import time
 from controller import Controller
 from actor import Updater,Challanger
+from game import SimultaneousLeagues
 
 def vector_diff(a,b):
     a,b = sorted(a),sorted(b)
@@ -48,7 +49,7 @@ def simulate(simulation_games, fn_actors, fn_leagues, debug):
 
         return actors
 
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers,game = crtl.bc,crtl.stakers,crtl.game 
 
     stakers.MINENROLL_BLOCKS   = 6170   # 24h
@@ -57,7 +58,7 @@ def simulate(simulation_games, fn_actors, fn_leagues, debug):
     stakers.MINREVEAL_BLOCKS   = 21     # 5m
     game.VALIDATION_RESTR      = 256    # 1hour
     game.VALIDATION_OPEN       = 256    # 1hour
-    game.LEAGUE_BLOCKS         = 256    # 1hour
+    game.PLAY_BLOCKS           = 256    # 1hour
 
     actors = {}
     init   = True
@@ -80,8 +81,8 @@ def simulate(simulation_games, fn_actors, fn_leagues, debug):
         # set up game leagues
         if init or block % game.CYCLE_BLOCKS == 0:
             if not init:
-                if game.pending_leagues_to_resolve() != 0:
-                    return "pending_leagues_to_resolve="+str(game.pending_leagues_to_resolve())
+                if game.pending_games_to_resolve() != 0:
+                    return "pending_games_to_resolve="+str(game.pending_games_to_resolve())
             else:
                 init = False
 
@@ -91,7 +92,7 @@ def simulate(simulation_games, fn_actors, fn_leagues, debug):
 
             game.new_game(fn_leagues(block))
             start = game.league_starting_block
-            challange_open = start + game.LEAGUE_BLOCKS
+            challange_open = start + game.PLAY_BLOCKS
             challange_all = challange_open + game.VALIDATION_RESTR
             if debug:
                 print "GAME ",gameno," starts:",block," open:",challange_open," all:",challange_all,"======"

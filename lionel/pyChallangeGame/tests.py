@@ -1,11 +1,12 @@
 from controller import Controller
 from actor import Updater,Challanger
+from game import SimultaneousLeagues
 
 import hashlib
 import random
 
 def test_staker_idle_and_slash():
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers = crtl.bc,crtl.stakers
 
     crtl.stakers.enroll("stk1","onionh")
@@ -30,7 +31,7 @@ def test_staker_idle_and_slash():
     assert not stakers.can_participate("stk1") == None
 
 def test_staker_enroll_unenroll():
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers = crtl.bc,crtl.stakers 
 
     stakers.enroll("stk1","onionh")
@@ -44,7 +45,7 @@ def test_staker_enroll_unenroll():
     assert not stakers.can_participate("stk1") == None
 
 def test_staker_challange():
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers = crtl.bc,crtl.stakers 
 
     # generate a sequence of ok,ok,lier,ok
@@ -90,7 +91,7 @@ def test_staker_challange():
     assert stakers.can_participate("stk1") == None
 
 def test_updater_window():
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers,game = crtl.bc,crtl.stakers,crtl.game 
 
     u1 = Updater(
@@ -104,7 +105,7 @@ def test_updater_window():
 
     # start game
     game.new_game(1)
-    bc.jump(game.LEAGUE_BLOCKS + 1)
+    bc.jump(game.PLAY_BLOCKS + 1)
 
     # check incremental window
     assert game.is_accepting_updater_update(u1.address,0) == "not-in-incremental-window(current=16,requiered=0)"
@@ -123,7 +124,7 @@ def test_updater_window():
     assert u1.process() == None
     
 def test_challanging_game():
-    crtl = Controller()
+    crtl = Controller(SimultaneousLeagues)
     bc,stakers,game = crtl.bc,crtl.stakers,crtl.game 
 
     u1 = Updater(
@@ -139,17 +140,17 @@ def test_challanging_game():
     game.new_game(1)
 
     # start game #1, jump all_updaters window, update
-    bc.jump(game.LEAGUE_BLOCKS + 1)
+    bc.jump(game.PLAY_BLOCKS + 1)
     bc.jump(game.VALIDATION_RESTR)
-    assert game.pending_leagues_to_resolve() == 1
+    assert game.pending_games_to_resolve() == 1
     assert u1.process() == "updated(league=0,lying=False)"
-    assert game.pending_leagues_to_resolve() == 0
-    bc.jump(game.CYCLE_BLOCKS - game.VALIDATION_RESTR - game.LEAGUE_BLOCKS)
+    assert game.pending_games_to_resolve() == 0
+    bc.jump(game.CYCLE_BLOCKS - game.VALIDATION_RESTR - game.PLAY_BLOCKS)
     assert u1.process() == "onionhash-revealed"
 
     # start game #2
     game.new_game(1)
-    bc.jump(game.LEAGUE_BLOCKS + 1)
+    bc.jump(game.PLAY_BLOCKS + 1)
     bc.jump(game.VALIDATION_RESTR)
     assert u1.process() == "updated(league=0,lying=True)"
 
@@ -157,7 +158,7 @@ def test_challanging_game():
     assert c1.process() == "challanged(league=0)"
 
     # u1 reveals lier hash 
-    bc.jump(game.CYCLE_BLOCKS - game.VALIDATION_RESTR - game.LEAGUE_BLOCKS)
+    bc.jump(game.CYCLE_BLOCKS - game.VALIDATION_RESTR - game.PLAY_BLOCKS)
     assert u1.process() == "onionhash-revealed"
 
 test_staker_enroll_unenroll()

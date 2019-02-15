@@ -132,10 +132,10 @@ def test2():
     ST_CLIENT.advanceNBlocks(blockStep)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as already finished"
 
-    # The CLIENT computes the data needed to submit as an UPDATER: initStates, finalStates, scores.
+    # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
     initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
 
-    finalStates, scores = computeLeagueFinalState(
+    statesAtMatchday, scores = computeAllMatchdayStates(
         ST_CLIENT.leagues[leagueIdx].blockInit,
         ST_CLIENT.leagues[leagueIdx].blockStep,
         initPlayerStates,
@@ -143,17 +143,17 @@ def test2():
         ST_CLIENT.leagues[leagueIdx].usersAlongData,
     )
 
-    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the finalStates!:
+    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
-    initStatesHash      = serialHash(initPlayerStates)
-    finalStatesHashes   = [serialHash(state) for state in finalStates]
+    initStatesHash          = serialHash(initPlayerStates)
+    statesAtMatchdayHashes  = [serialHash(s) for s in statesAtMatchday]
 
-    finalStatesHashesLie     = duplicate(finalStatesHashes)
-    finalStatesHashesLie[0] += 1  # he lies about team 0 only
+    statesAtMatchdayHashesLie     = duplicate(statesAtMatchdayHashes)
+    statesAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
 
     ST.leagues[leagueIdx].updateLeague(
         initStatesHash,
-        finalStatesHashesLie,
+        statesAtMatchdayHashesLie,
         scores,
         ADDR2,
         ST.currentBlock
@@ -164,22 +164,26 @@ def test2():
     # and additionally, stores the league pre-hash data, and updates every player involved
     ST_CLIENT.leagues[leagueIdx].updateLeague(
         initStatesHash,
-        finalStatesHashes,
+        statesAtMatchdayHashes,
         scores,
         ADDR2,
         ST_CLIENT.currentBlock
     )
-    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, finalStates, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
-    # A CHALLENGER tries to prove that the UPDATER lied with finalStateHash for team 0
+    # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock)
-    selectedTeam = 0
-    ST.leagues[leagueIdx].challengeFinalStates(
-        selectedTeam,
-        initPlayerStates,
+    selectedMatchday    = 0
+    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
+                                            else ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
+
+    assert( serialHash(serialHash(ST) + serialHash(ST_CLIENT)) % 1000 == 118 )
+    ST.leagues[leagueIdx].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
         ST.currentBlock
@@ -194,7 +198,7 @@ def test2():
 
     ST.leagues[leagueIdx].updateLeague(
         initStatesHashLie,
-        finalStatesHashes,
+        statesAtMatchdayHashes,
         scores,
         ADDR2,
         ST.currentBlock
@@ -223,7 +227,7 @@ def test2():
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     ST.leagues[leagueIdx].updateLeague(
         initStatesHash,
-        finalStatesHashes,
+        statesAtMatchdayHashes,
         scores,
         ADDR2,
         ST.currentBlock
@@ -234,7 +238,7 @@ def test2():
     ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     selectedTeam = 0
-    ST.leagues[leagueIdx].challengeFinalStates(
+    ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedTeam,
         initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
@@ -250,10 +254,9 @@ def test2():
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
     blockInit = ST.currentBlock + 30
     usersInitData = {
-        # "teamIdxs": [teamIdx3, teamIdx1, teamIdx2],
-        "teamIdxs": [teamIdx1, teamIdx3, teamIdx2],
-        "teamOrders": [DEFAULT_ORDER, DEFAULT_ORDER, REVERSE_ORDER],
-        "tactics": [TACTICS["433"], TACTICS["442"], TACTICS["433"]]
+        "teamIdxs": [teamIdx1, teamIdx3, teamIdx2, teamIdx4],
+        "teamOrders": [DEFAULT_ORDER, DEFAULT_ORDER, REVERSE_ORDER, REVERSE_ORDER],
+        "tactics": [TACTICS["433"], TACTICS["442"], TACTICS["433"], TACTICS["442"]]
     }
     try:
         leagueIdx2 = createLeague(ST.currentBlock, blockInit, blockStep, usersInitData, ST)
@@ -315,7 +318,7 @@ def test2():
 
     initPlayerStates = getInitPlayerStates(leagueIdx2, ST_CLIENT)
 
-    finalStates, scores = computeLeagueFinalState(
+    statesAtMatchday, scores = computeAllMatchdayStates(
         ST.leagues[leagueIdx2].blockInit,
         ST.leagues[leagueIdx2].blockStep,
         initPlayerStates,
@@ -324,17 +327,17 @@ def test2():
     )
 
     # Having finished the league, the CLIENT can already update the CLIENT state
-    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, finalStates, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
 
     assert not ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as not yet updated"
     initStatesHash = serialHash(initPlayerStates)
-    finalStatesHashes = [serialHash(state) for state in finalStates]
+    statesAtMatchdayHashes = [serialHash(state) for state in statesAtMatchday]
 
     # compressedLeagueState encapsulates these hashes (in v2 maybe 1 single hash)
     #
     ST.leagues[leagueIdx2].updateLeague(
         initStatesHash,
-        finalStatesHashes,
+        statesAtMatchdayHashes,
         scores,
         ADDR2,
         ST.currentBlock
@@ -345,12 +348,12 @@ def test2():
     # and additionally, stores the league pre-hash data, and updates every player involved
     ST_CLIENT.leagues[leagueIdx2].updateLeague(
         initStatesHash,
-        finalStatesHashes,
+        statesAtMatchdayHashes,
         scores,
         ADDR2,
         ST_CLIENT.currentBlock
     )
-    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, finalStates, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
@@ -379,7 +382,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10222)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 757)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 150)
 if success:
     print "ALL TESTS:  -- PASSED --"
 else:
