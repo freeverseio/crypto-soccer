@@ -52,6 +52,12 @@ contract('Leagues', (accounts) => {
         result[1].toNumber().should.be.equal(2);
     });
 
+    it('create leagues with odd teams', async () => {
+        await leagues.create(id, blocksToInit, step, [1, 2, 3]).should.be.rejected;
+        await leagues.create(id, blocksToInit, step, [1, 2, 3, 4, 5]).should.be.rejected;
+        await leagues.create(id, blocksToInit, step, [1, 2, 3, 4, 5, 6, 7]).should.be.rejected;
+    });
+
     it('init block of a league', async () => {
         const result = await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         const blockNumber = result.receipt.blockNumber;
