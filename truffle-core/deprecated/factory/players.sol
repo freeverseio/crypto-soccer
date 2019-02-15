@@ -1,4 +1,4 @@
-pragma solidity ^ 0.4.24;
+pragma solidity ^ 0.5.0;
 
 // TODO: import "../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../CryptoSoccer.sol";

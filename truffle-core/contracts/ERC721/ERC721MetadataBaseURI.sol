@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Metadata.sol";
 import "./URIerRole.sol";
@@ -6,17 +6,17 @@ import "./URIerRole.sol";
 contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
     string private _URI;
 
-    constructor (string name, string symbol) ERC721Metadata(name, symbol) public {}
+    constructor (string memory name, string memory symbol) ERC721Metadata(name, symbol) public {}
 
-    function getBaseTokenURI() external view returns (string) {
+    function getBaseTokenURI() external view returns (string memory) {
         return _URI;
     }
 
-    function setBaseTokenURI(string uri) public onlyURIer { 
+    function setBaseTokenURI(string memory uri) public onlyURIer { 
         _URI = uri;
     }
 
-    function tokenURI(uint256 tokenId) external view returns (string) {
+    function tokenURI(uint256 tokenId) external view returns (string memory) {
         require(_exists(tokenId), "unexistent token");
         return strConcat(
             _URI, 
@@ -25,7 +25,7 @@ contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
             );
     }
 
-    function uint2str(uint i) internal pure returns (string){
+    function uint2str(uint i) internal pure returns (string memory){
         if (i == 0) return "0";
         uint j = i;
         uint length;
@@ -43,7 +43,7 @@ contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
         return string(bstr);
     }
 
-    function strConcat(string _a, string _b, string _c) internal pure returns (string){
+    function strConcat(string memory _a, string memory _b, string memory _c) internal pure returns (string memory){
         bytes memory _ba = bytes(_a);
         bytes memory _bb = bytes(_b);
         bytes memory _bc = bytes(_c);
@@ -51,8 +51,8 @@ contract ERC721MetadataBaseURI is ERC721Metadata, URIerRole {
         bytes memory babcde = bytes(abcde);
         uint k = 0;
         for (uint i = 0; i < _ba.length; i++) babcde[k++] = _ba[i];
-        for (i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
-        for (i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
+        for (uint i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
+        for (uint i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
         return string(babcde);
     }
 }

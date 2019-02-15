@@ -398,9 +398,9 @@ Lockfile:
     version "2.0.0"
     resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
   
-  solc@0.4.24:
-    version "0.4.24"
-    resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.24.tgz#354f14b269b38cbaa82a47d1ff151723502b954e"
+  solc@0.5.0:
+    version "0.5.0"
+    resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.0.tgz#354f14b269b38cbaa82a47d1ff151723502b954e"
     dependencies:
       fs-extra "^0.30.0"
       memorystream "^0.3.1"
@@ -473,7 +473,7 @@ Lockfile:
     dependencies:
       mocha "^4.1.0"
       original-require "1.0.1"
-      solc "0.4.24"
+      solc "0.5.0"
   
   validate-npm-package-license@^3.0.1:
     version "3.0.3"

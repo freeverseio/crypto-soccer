@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
@@ -18,7 +18,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
     /**
      * @return name of existing player
      */
-    function getName(uint256 playerId) external view returns(string) {
+    function getName(uint256 playerId) external view returns(string memory) {
         require(_exists(playerId));
         return _playerProps[playerId].name;
     }
@@ -82,7 +82,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
     /**
      * @dev sets name of existing player
      */
-    function _setName(uint256 playerId, string name) internal {
+    function _setName(uint256 playerId, string memory name) internal {
         require(_exists(playerId));
         _playerProps[playerId].name = name;
     }

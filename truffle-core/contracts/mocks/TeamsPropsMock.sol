@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../ERC721/TeamsProps.sol";
 
@@ -11,7 +11,7 @@ contract TeamsPropsMock is TeamsProps {
         _mint(to, tokenId);
     }
     
-    function setName(uint256 teamId, string name) public {
+    function setName(uint256 teamId, string memory name) public {
         _setName(teamId, name);
     }
 

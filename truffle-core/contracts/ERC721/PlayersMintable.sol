@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "./PlayersProps.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
@@ -34,13 +34,13 @@ contract PlayersMintable is PlayersProps, MinterRole {
     /**
      * @return player ID from player name
      */
-    function getPlayerId(string name) public view returns(uint256) {
+    function getPlayerId(string memory name) public view returns(uint256) {
         uint256 id = _computeId(name);
         require(_exists(id));
         return id;
     }
 
-    function _computeId(string name) internal pure returns (uint256) {
+    function _computeId(string memory name) internal pure returns (uint256) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
         uint256 id = uint256(playerNameHash);
         return id;
@@ -51,7 +51,7 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @param seed to generate the skills
      * @return 5 skills
      */
-    function _computeSkills(uint256 seed) internal view returns (uint16[5]) {
+    function _computeSkills(uint256 seed) internal view returns (uint16[5] memory) {
         uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number-1))));
         uint256 rna = rand + seed;
 
@@ -63,18 +63,18 @@ contract PlayersMintable is PlayersProps, MinterRole {
 
         /// @dev The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (i = 0; i < 5; i++) {
+        for (uint8 i = 0; i < 5; i++) {
             skills[i] = skills[i] % 50;
             excess += skills[i];
         }
 
         /// @dev At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
         uint16 delta = (250 - excess) / 5;
-        for (i = 0; i < 5; i++) 
+        for (uint8 i = 0; i < 5; i++) 
             skills[i] = skills[i] + delta;
 
         uint16 remainder = (250 - excess) % 5;
-        for (i = 0 ; i < remainder ; i++)
+        for (uint8 i = 0 ; i < remainder ; i++)
             skills[i]++;
 
         return skills;

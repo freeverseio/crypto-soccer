@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../HelperFunctions.sol";
 import "../ERC721/Players.sol";
@@ -13,7 +13,7 @@ contract Horizon is HelperFunctions {
         _players = Players(_teams.getPlayersAddress());
     }
 
-    function createTeam(string name) public {
+    function createTeam(string memory name) public {
         _teams.mint(msg.sender, name);
         uint256 teamId = _teams.getTeamId(name);
 

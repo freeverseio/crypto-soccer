@@ -1,10 +1,10 @@
-pragma solidity ^ 0.4.24;
+pragma solidity ^ 0.5.0;
 
 // Contract containing reusable generic functions
 contract HelperFunctions {
 
     /// @dev Serializes an array of nElem numbers into a single uint with specific bits used for each num.
-    function serialize(uint8 nElem, uint16[] nums, uint bits) internal pure returns(uint256 result) {
+    function serialize(uint8 nElem, uint16[] memory nums, uint bits) internal pure returns(uint256 result) {
         require(bits*nElem <= 256, "Not enough space in a uint256 to serialize");
         require(bits <= 16, "Not enough bits to encode each number, since they are read as uint16");
         result = 0;
@@ -17,7 +17,7 @@ contract HelperFunctions {
     }
 
     /// @dev Decodes a serialized uint256 into an array of nums with specific bits used for each num
-    function decode(uint8 nElem, uint serialized, uint bits) internal pure returns(uint16[] decoded) {
+    function decode(uint8 nElem, uint serialized, uint bits) internal pure returns(uint16[] memory decoded) {
         require (bits <= 16, "Not enough bits to encode each number, since they are read as uint16");
         uint mask = (1 << bits)-1; // (2**bits)-1
         decoded = new uint16[](nElem);
@@ -58,7 +58,7 @@ contract HelperFunctions {
 
     /// @dev Returns the hash of concat(string,uint,uint) using the hash function used in this game.
     /// @dev Only used for testing since web3.eth.solidityUtils not yet available
-    function computeKeccak256(string s, uint n1, uint n2)
+    function computeKeccak256(string memory s, uint n1, uint n2)
         internal
         pure
         returns(uint)
@@ -104,7 +104,8 @@ contract HelperFunctions {
         returns(uint8)
     {
         uint uniformRndInSumOfWeights;
-        for (uint8 w = 0; w<weights.length; w++) {
+        uint8 w = 0;
+        for (w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
         }
         uniformRndInSumOfWeights *= rndNum;
@@ -164,12 +165,12 @@ contract HelperFunctions {
     function getRndNumArrays(uint seed, uint8 roundsPerGame, uint8 bitsPerRndNum) 
         internal
         pure
-        returns (uint16[] rndNumArray) 
+        returns (uint16[] memory rndNumArray) 
     {
         return decode(roundsPerGame, computeKeccak256ForNumber(seed), bitsPerRndNum);
     }
 
-    function uint2str(uint i) internal pure returns (string){
+    function uint2str(uint i) internal pure returns (string memory){
         if (i == 0) return "0";
         uint j = i;
         uint length;
@@ -187,7 +188,7 @@ contract HelperFunctions {
         return string(bstr);
     }
 
-    function strConcat(string _a, string _b, string _c) internal pure returns (string){
+    function strConcat(string memory _a, string memory _b, string memory _c) internal pure returns (string memory){
         bytes memory _ba = bytes(_a);
         bytes memory _bb = bytes(_b);
         bytes memory _bc = bytes(_c);
@@ -195,8 +196,8 @@ contract HelperFunctions {
         bytes memory babcde = bytes(abcde);
         uint k = 0;
         for (uint i = 0; i < _ba.length; i++) babcde[k++] = _ba[i];
-        for (i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
-        for (i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
+        for (uint i = 0; i < _bb.length; i++) babcde[k++] = _bb[i];
+        for (uint i = 0; i < _bc.length; i++) babcde[k++] = _bc[i];
         return string(babcde);
     }
 }

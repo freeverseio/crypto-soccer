@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../ERC721/PlayersProps.sol";
 
@@ -11,7 +11,7 @@ contract PlayersPropsMock is PlayersProps {
         _mint(to, tokenId);
     }
 
-    function setName(uint256 playerId, string name) public {
+    function setName(uint256 playerId, string memory name) public {
         _setName(playerId, name);
     }
 
