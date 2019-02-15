@@ -13,8 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "ethjs-abi": "^0.2.1",
-    "openzeppelin-solidity": "2.0.0",
-    "web3-utils": "^1.0.0-beta.46"
+    "openzeppelin-solidity": "^2.1.2",
+    "web3-utils": "^1.0.0-beta.36"
   },
   "devDependencies": {
     "chai": "^4.2.0",
