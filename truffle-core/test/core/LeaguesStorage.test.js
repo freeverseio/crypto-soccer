@@ -90,5 +90,6 @@ contract('LeaguesStorage', (accounts) => {
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         await leagues.setScores(id, [[0, 1], [2, 2]]).should.be.fulfilled;
         const scores = await leagues.getScores(id).should.be.fulfilled;
+        // TODO: finish it
     })
 });
