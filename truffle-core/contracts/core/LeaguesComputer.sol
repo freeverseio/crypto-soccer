@@ -48,15 +48,15 @@ contract LeaguesComputer is LeaguesScheduler {
         require(countTeamsStatus(playersState) == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
-        uint256[][] storage state; // TODO: do I have to use a memory array
-        state.push(new uint256[](0));
+        uint256[][] memory state = new uint256[][](nTeams);
+        state[0] = new uint256[](11);
         uint256 team;
-        for (uint256 i = 0; i < playersState.length; i++){
+        for (uint256 i = 0; i < playersState.length - 1; i++){
             if(playersState[i] == 0){
                 team++;
-                state.push(new uint256[](0));
+                state[team] = new uint256[](11);
             } else {
-                state[team].push(playersState[i]);
+                // state[team].push(playersState[i]);
             }
         }
 
