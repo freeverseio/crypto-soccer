@@ -152,7 +152,7 @@ contract('LeaguesComputer', (accounts) => {
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(0);
-        state = await leagues.appendTeamToLeagueState(state, [3,4]).should.be.fulfilled;
+        state = await leagues.appendTeamToLeagueState(state, [3, 4]).should.be.fulfilled;
         state.length.should.be.equal(5);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(0);

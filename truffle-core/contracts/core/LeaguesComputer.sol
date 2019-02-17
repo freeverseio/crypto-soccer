@@ -1,9 +1,10 @@
 pragma solidity ^0.4.25;
 
 import "./LeaguesScheduler.sol";
+import "./LeagueState.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesScheduler {
+contract LeaguesComputer is LeagueState, LeaguesScheduler {
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
@@ -69,19 +70,6 @@ contract LeaguesComputer is LeaguesScheduler {
             (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
 
         return scores;
-    }
-
-    function appendTeamToLeagueState(uint256[] memory target, uint256[] memory teamState) public pure returns (uint256[] memory) {
-        require(teamState.length != 0, "wrong team state");
-        uint256[] memory state = new uint256[](target.length + teamState.length + 1);
-        uint256 i;
-        for (i = 0; i < target.length ; i++)
-            state[i] = target[i];
-
-        for (i = 0 ; i < teamState.length ; i++)
-            state[target.length + i] = teamState[i];
-
-        return state;        
     }
 
     function countTeamsStatus(uint256[] memory teamsStatus) public pure returns (uint256) {
