@@ -31,10 +31,12 @@ contract LeaguesScheduler is LeaguesStorage {
     ) 
         public 
         view 
-        returns (uint256 team0Idx, uint256 team1Idx) 
+        returns (uint256, uint256 ) 
     {
         require(matchday < countLeagueDays(id), "wrong match day");
         require(matchIdx < getMatchPerDay(id), "wrong match");
+        uint256 team0Idx;
+        uint256 team1Idx;
         uint256 nTeams = countTeams(id);
         if (matchday < (nTeams - 1))
             (team0Idx, team1Idx) = _getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);

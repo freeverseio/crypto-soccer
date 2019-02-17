@@ -43,9 +43,8 @@ contract('LeaguesScheduler', (accounts) => {
         let day = 0;
         const matchIdx = 0;
         let teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
-        teams.length.should.be.equal(2);
-        teams[0].toNumber().should.be.equal(0);
-        teams[1].toNumber().should.be.equal(1);
+        teams['0'].toString().should.be.equal('0');
+        teams['1'].toString().should.be.equal('1');
         day = 1;
         teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
         teams.length.should.be.equal(2);
