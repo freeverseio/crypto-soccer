@@ -30,7 +30,7 @@ contract('PlayersMintable', (accounts) => {
 
     it('compute id from name', async () => {
         const id = await contract.computeId("player").should.be.fulfilled;
-        id.toNumber().should.be.equal(2.28092867984879e+76);
+        id.toString().should.be.equal('22809286798487902832201615439579618037268015162185435671200675544629215329481');
     });
 
     it('get player id of existing player', async () => {
@@ -56,7 +56,7 @@ contract('PlayersMintable', (accounts) => {
 
     it('sum of computed skills is 250', async () => {
         for (let i = 0; i < 10; i++) {
-            const skills = await contract.computeSkills(Math.random()).should.be.fulfilled;
+            const skills = await contract.computeSkills(Math.floor(Math.random()*1000)).should.be.fulfilled;
             const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
             sum.should.be.equal(250);
         }
