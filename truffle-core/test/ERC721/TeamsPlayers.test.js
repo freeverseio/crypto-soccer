@@ -44,7 +44,7 @@ contract('TeamsPlayers', (accounts) => {
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         const teamPlayers = await contract.getPlayers(teamId).should.be.fulfilled;
         teamPlayers.length.should.be.equal(1);
-        teamPlayers[0].toNumber().should.be.equal(playerId.toNumber());
+        teamPlayers[0].toString().should.be.equal(playerId.toString());
     });
 
     it('selling team changes players ownership', async () => {
@@ -67,6 +67,6 @@ contract('TeamsPlayers', (accounts) => {
         const playerId = await players.getPlayerId("player").should.be.fulfilled;
         await contract.addPlayer(teamId, playerId).should.be.fulfilled;
         const team = await players.getTeam(playerId).should.be.fulfilled;
-        team.toNumber().should.be.equal(teamId.toNumber());
+        team.toString().should.be.equal(teamId.toString());
     });
 });
