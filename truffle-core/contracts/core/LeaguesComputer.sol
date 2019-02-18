@@ -46,33 +46,27 @@ contract LeaguesComputer is LeaguesScheduler {
     )
         public 
         view 
-        returns (uint256[2][] memory) 
+        returns (uint256[2][] memory scores) 
     {
         uint256 nTeams = countTeams(leagueId);
         require(leagueState.countTeams() == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
         uint256[][] memory state = new uint256[][](nTeams);
-        state[0] = new uint256[](11);
-        uint256 team;
-        for (uint256 i = 0; i < leagueState.length - 1; i++){
-            if(leagueState[i] == 0){
-                team++;
-                state[team] = new uint256[](11);
-            } else {
-                // state[team].push(leagueState[i]);
-            }
+        for (uint256 i = 0; i < nTeams; i++){
+            state[i] = new uint256[](leagueState.countTeamPlayers(i));
+            uint256[] memory teamState = leagueState.getTeamState(i);
+            for (uint256 j = 0; j < teamState.length ; j++)
+                state[i][j] = teamState[j];
         }
 
         uint256 nMatches = nTeams * (nTeams - 1);
-        uint256[2][] memory scores = new uint256[2][](nMatches); 
+        scores = new uint256[2][](nMatches); 
         uint256 leagueInitBlock = getInitBlock(leagueId);
         bytes32 seed = blockhash(leagueInitBlock);
         require(seed != 0, "can't retrive league init block hash");
         for (i = 0; i < nMatches; i++)
             (scores[i][0], scores[i][1]) = _engine.playMatch(seed, state[0], state[1], tactics[0], tactics[1]);
-
-        return scores;
     }
 
     function hashLeagueState(uint256[] memory leagueState) public pure returns (bytes32[] memory) {
