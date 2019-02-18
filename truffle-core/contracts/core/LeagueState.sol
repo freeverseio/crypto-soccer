@@ -1,6 +1,6 @@
 pragma solidity ^0.4.25;
 
-contract LeagueState {
+library LeagueState {
     uint256 constant public DIVIDER = 0;
 
     function appendTeamToLeagueState(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {

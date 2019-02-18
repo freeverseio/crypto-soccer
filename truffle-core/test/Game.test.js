@@ -5,6 +5,7 @@ require('chai')
 const Players = artifacts.require('Players');
 const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
+const LeagueState = artifacts.require('LeagueState');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 
@@ -13,6 +14,7 @@ contract('Game', (accounts) => {
     let players = null;
     let teams = null;
     let engine = null;
+    let stateLib = null;
     let leagues = null;
 
     beforeEach(async () => {
@@ -26,6 +28,8 @@ contract('Game', (accounts) => {
         await players.addTeamsContract(teams.address).should.be.fulfilled;
         await players.renounceTeamsContract().should.be.fulfilled;
 
+        stateLib = await LeagueState.new().should.be.fulfilled;
+        Leagues.link("LeagueState", stateLib.address);
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
     });
@@ -56,8 +60,7 @@ contract('Game', (accounts) => {
             madridState.push(genome);
         }
 
-        let leagueState = await leagues.appendTeamToLeagueState([], barcelonaState).should.be.fulfilled;
-        leagueState = await leagues.appendTeamToLeagueState(leagueState, madridState).should.be.fulfilled;
+        const leagueState = await stateLib.appendTeamToLeagueState(barcelonaState, madridState).should.be.fulfilled;
         const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
         console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
         console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());

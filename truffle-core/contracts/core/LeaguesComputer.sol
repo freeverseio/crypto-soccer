@@ -4,7 +4,9 @@ import "./LeaguesScheduler.sol";
 import "./LeagueState.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeagueState, LeaguesScheduler {
+contract LeaguesComputer is LeaguesScheduler {
+    using LeagueState for uint256[];
+
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
@@ -47,7 +49,7 @@ contract LeaguesComputer is LeagueState, LeaguesScheduler {
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(countLeagueStateTeams(playersState) == nTeams, "wrong number of teams");
+        require(playersState.countLeagueStateTeams() == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
         uint256[][] memory state = new uint256[][](nTeams);
@@ -74,10 +76,10 @@ contract LeaguesComputer is LeagueState, LeaguesScheduler {
     }
 
     function hashLeagueState(uint256[] memory state) public pure returns (bytes32[] memory) {
-        uint256 nTeams = countLeagueStateTeams(state);
+        uint256 nTeams = state.countLeagueStateTeams();
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = getTeamState(state, i);
+            uint256[] memory teamState = state.getTeamState(i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;
