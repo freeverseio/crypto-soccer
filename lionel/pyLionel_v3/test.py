@@ -369,6 +369,40 @@ def test2():
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
     return testResult
 
+def test3():
+    ST          = Storage()
+    ST_CLIENT   = Storage()
+
+    ST.advanceToBlock(10)
+    ST_CLIENT.advanceToBlock(10)
+
+    ACT = ActionsAccumulator()
+
+    action0 = {
+        "teamIdx": 3,
+        "tactics": TACTICS["433"]
+    }
+    action1 = {
+        "teamIdx": 2,
+        "tactics": TACTICS["442"]
+    }
+    lastWorldMathBlockNum = 0
+    lastWorldMathBlockHash = serialize2str(lastWorldMathBlockNum)
+
+    ACT.accumulateAction(action0, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
+    ST.advanceNBlocks(3)
+    ST_CLIENT.advanceNBlocks(3)
+    ACT.accumulateAction(action1, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
+    ST.advanceNBlocks(300)
+    ST_CLIENT.advanceNBlocks(300)
+
+    lastWorldMathBlockNum = 50
+    lastWorldMathBlockHash = serialize2str(lastWorldMathBlockNum)
+    ACT.accumulateAction(action1, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
+
+
+    testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
+    return testResult
 
 def runTest(name, result, expected):
     success = (result == expected)
@@ -380,8 +414,9 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 850)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 850)
+success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 850)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

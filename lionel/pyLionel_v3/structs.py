@@ -5,6 +5,33 @@ from constants import *
 import pylio
 from pickle import dumps as serialize
 
+
+class ActionsAccumulator():
+    def __init__(self):
+        self.buffer                     = {}
+        self.worldMatchCommits          = [0]
+        self.worldMatchCommitsHashes    = [0]
+        self.worldMatchBlockNums        = [0]
+        self.worldMatchBlockHashes      = [0]
+
+    def isTimeToCommit(self, lastWorldMathBlockNum):
+        return lastWorldMathBlockNum > self.worldMatchBlockNums[-1]
+
+    def commit(self, lastWorldMathBlockNum, lastWorldMathBlockHash):
+        vals2commit = [value for (key, value) in sorted(self.buffer.items()) if key < lastWorldMathBlockNum]
+        self.worldMatchCommits.append(vals2commit)
+        self.worldMatchCommitsHashes.append(pylio.serialize2str(vals2commit))
+        self.worldMatchBlockNums.append(lastWorldMathBlockNum)
+        self.worldMatchBlockHashes.append(lastWorldMathBlockHash)
+
+    def accumulateAction(self, action, blocknum, lastWorldMathBlockNum, lastWorldMathBlockHash):
+        assert blocknum >= self.worldMatchBlockNums[-1]
+        self.buffer[blocknum] = action
+        if self.isTimeToCommit(lastWorldMathBlockNum):
+            self.commit(lastWorldMathBlockNum, lastWorldMathBlockHash)
+
+
+
 # simple block counter simulator, where the blockhash is just the hash of the blocknumber
 class BlockCounter():
     def __init__(self):
@@ -18,10 +45,26 @@ class BlockCounter():
         self.currentBlock = n
 
 
-class Storage(BlockCounter):
+class WorldMatchCounter(BlockCounter):
+    def __init__(self):
+        BlockCounter.__init__(self)
+        self.currentWorldMatch      = 0
+        # set a time diff of 1 hours between worldMatches
+        self.blocks2nextWorldMatch  = 360
+
+    def advanceNWorldMatches(self, n):
+        self.currentWorldMatch += n
+
+    def advanceToWorldMatch(self, n):
+        assert n >= self.currentWorldMatch, "Cannot advance... to a worldmatch in the past!"
+        self.currentWorldMatch = n
+
+
+class Storage(WorldMatchCounter):
     def __init__(self):
 
-        BlockCounter.__init__(self)
+        # WorldMatchCounter.__init__(self)
+        WorldMatchCounter.__init__(self)
 
         # an array of Team structs, the first entry being the null team
         self.teams = [Team("")]
