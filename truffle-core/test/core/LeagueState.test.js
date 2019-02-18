@@ -5,24 +5,44 @@ require('chai')
 const LeagueState = artifacts.require('LeagueState');
 
 contract('LeagueState', (accounts) => {
-    let leagueState = null;
+    let instance = null;
+    let divider = null;
 
     beforeEach(async () => {
-        leagueState = await LeagueState.new().should.be.fulfilled;
+        instance = await LeagueState.new().should.be.fulfilled;
+        divider = await instance.DIVIDER().should.be.fulfilled;
+    });
+
+    it('valid state', async () => {
+        let result = await instance.isValid([]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValid([2]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValid([2, 3, divider, 4, divider, 4]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValid([2, divider, divider, 1]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValid([divider]).should.be.fulfilled;
+        result.should.be.equal(false);
+    });
+
+    it('append an empty team', async () => {
+        let result = await instance.appendTeamToLeagueState([], []).should.be.fulfilled;
+        result.length.should.be.equal(0);
+        result = await instance.appendTeamToLeagueState([2], []).should.be.fulfilled;
+        result.length.should.be.equal(1);
+        result[0].toNumber().should.be.equal(2);
     });
 
     it('append team to league state', async () => {
-        await leagueState.appendTeamToLeagueState([], []).should.be.rejected;
-        let state = await leagueState.appendTeamToLeagueState([], [2]).should.be.fulfilled;
-        state.length.should.be.equal(2);
+        let state = await instance.appendTeamToLeagueState([], [2]).should.be.fulfilled;
+        state.length.should.be.equal(1);
         state[0].toNumber().should.be.equal(2);
-        state[1].toNumber().should.be.equal(0);
-        state = await leagueState.appendTeamToLeagueState(state, [3, 4]).should.be.fulfilled;
-        state.length.should.be.equal(5);
+        state = await instance.appendTeamToLeagueState(state, [3, 4]).should.be.fulfilled;
+        state.length.should.be.equal(4);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(0);
         state[2].toNumber().should.be.equal(3);
         state[3].toNumber().should.be.equal(4);
-        state[4].toNumber().should.be.equal(0);
     });
 });
