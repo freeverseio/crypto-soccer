@@ -60,7 +60,7 @@ contract('Game', (accounts) => {
             madridState.push(genome);
         }
 
-        const leagueState = await stateLib.appendTeamToLeagueState(barcelonaState, madridState).should.be.fulfilled;
+        const leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
         const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
         console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
         console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());

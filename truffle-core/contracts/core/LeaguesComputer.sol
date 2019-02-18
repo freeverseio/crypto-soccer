@@ -41,7 +41,7 @@ contract LeaguesComputer is LeaguesScheduler {
     // TODO: does a team play always with 11 players ?
     function computeLeagueFinalState (
         uint256 leagueId,
-        uint256[] memory playersState, 
+        uint256[] memory leagueState, 
         uint256[3][] memory tactics // TODO: optimize data type
     )
         public 
@@ -49,18 +49,18 @@ contract LeaguesComputer is LeaguesScheduler {
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(playersState.countLeagueStateTeams() == nTeams, "wrong number of teams");
+        require(leagueState.countTeams() == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
         uint256[][] memory state = new uint256[][](nTeams);
         state[0] = new uint256[](11);
         uint256 team;
-        for (uint256 i = 0; i < playersState.length - 1; i++){
-            if(playersState[i] == 0){
+        for (uint256 i = 0; i < leagueState.length - 1; i++){
+            if(leagueState[i] == 0){
                 team++;
                 state[team] = new uint256[](11);
             } else {
-                // state[team].push(playersState[i]);
+                // state[team].push(leagueState[i]);
             }
         }
 
@@ -75,11 +75,11 @@ contract LeaguesComputer is LeaguesScheduler {
         return scores;
     }
 
-    function hashLeagueState(uint256[] memory state) public pure returns (bytes32[] memory) {
-        uint256 nTeams = state.countLeagueStateTeams();
+    function hashLeagueState(uint256[] memory leagueState) public pure returns (bytes32[] memory) {
+        uint256 nTeams = leagueState.countTeams();
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = state.getTeamState(i);
+            uint256[] memory teamState = leagueState.getTeamState(i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;

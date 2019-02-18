@@ -3,7 +3,7 @@ pragma solidity ^0.4.25;
 library LeagueState {
     uint256 constant public DIVIDER = 0;
 
-    function appendTeamToLeagueState(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
+    function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league result");
         require(isValid(state), "invalid team result");
 
@@ -23,7 +23,7 @@ library LeagueState {
         return result;        
     }
 
-    function countLeagueStateTeams(uint256[] memory leagueState) public pure returns (uint256) {
+    function countTeams(uint256[] memory leagueState) public pure returns (uint256) {
         require(isValid(leagueState), "invalid league state");
         if (leagueState.length == 0)
             return 0;
@@ -36,9 +36,9 @@ library LeagueState {
         return count;
     }
 
-    function countPlayersInTeam(uint256[] memory leagueState, uint256 idx) public pure returns (uint256) {
+    function countTeamPlayers(uint256[] memory leagueState, uint256 idx) public pure returns (uint256) {
         require(isValid(leagueState), "invalid league state");
-        require(idx < countLeagueStateTeams(leagueState), "out of range");
+        require(idx < countTeams(leagueState), "out of range");
         uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         uint256 counter;
         while (first+counter < leagueState.length && leagueState[first+counter] != DIVIDER)
@@ -48,8 +48,8 @@ library LeagueState {
 
     function getTeamState(uint256[] memory leagueState, uint256 idx) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league state");
-        require(idx < countLeagueStateTeams(leagueState), "out of range");
-        uint256 nPlayers = countPlayersInTeam(leagueState, idx);
+        require(idx < countTeams(leagueState), "out of range");
+        uint256 nPlayers = countTeamPlayers(leagueState, idx);
         uint256[] memory state = new uint256[](nPlayers);
         uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         for (uint256 i = 0 ; i < nPlayers ; i++)
