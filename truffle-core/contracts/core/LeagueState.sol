@@ -36,6 +36,40 @@ contract LeagueState {
         return count;
     }
 
+    function countPlayersInTeam(uint256[] memory leagueState, uint256 idx) public pure returns (uint256) {
+        require(isValid(leagueState), "invalid league state");
+        require(idx < countTeams(leagueState), "out of range");
+        uint256 teamCounter;
+        uint256 i;
+        for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
+            if (leagueState[i] == DIVIDER)
+                teamCounter++;
+        }
+        uint256 counter;
+        while (i+counter < leagueState.length && leagueState[i+counter] != DIVIDER)
+            counter++;
+        return counter;
+    }
+
+    function getTeamState(uint256[] memory leagueState, uint256 idx) public pure returns (uint256[] memory) {
+        require(isValid(leagueState), "invalid league state");
+        require(idx < countTeams(leagueState), "out of range");
+        uint256 nPlayers = countPlayersInTeam(leagueState, idx);
+        uint256[] memory state = new uint256[](nPlayers);
+
+        uint256 teamCounter;
+        uint256 i;
+        for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
+            if (leagueState[i] == DIVIDER)
+                teamCounter++;
+        }
+
+        for (uint256 j = 0 ; j < nPlayers ; j++)
+            state[j] = leagueState[i+j];
+
+        return state;
+    } 
+   
     function isValid(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
@@ -45,4 +79,6 @@ contract LeagueState {
             return false;
         return true;
     }
+
+
 }

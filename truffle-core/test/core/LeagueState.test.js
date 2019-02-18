@@ -60,4 +60,39 @@ contract('LeagueState', (accounts) => {
         await instance.countTeams([0,3]).should.be.rejected;
         await instance.countTeams([3,0]).should.be.rejected;
     });
+
+    it('count players in team', async () => {
+        await instance.countPlayersInTeam([], 0).should.be.rejected;
+        await instance.countPlayersInTeam([2], 1).should.be.rejected;
+        await instance.countPlayersInTeam([divider, 2], 0).should.be.rejected;
+        const leagueState = [2,3,0,4,2,1,0,4,5,0,2]
+        let count = await instance.countPlayersInTeam(leagueState, 0).should.be.fulfilled;
+        count.toNumber().should.be.equal(2);
+        count = await instance.countPlayersInTeam(leagueState, 1).should.be.fulfilled;
+        count.toNumber().should.be.equal(3);
+        count = await instance.countPlayersInTeam(leagueState, 2).should.be.fulfilled;
+        count.toNumber().should.be.equal(2);
+        count = await instance.countPlayersInTeam(leagueState, 3).should.be.fulfilled;
+        count.toNumber().should.be.equal(1);
+    });
+
+    it('get team state from league state', async () => {
+        const leagueState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2]
+        let state = await instance.getTeamState(leagueState, 0).should.be.fulfilled;
+        state.length.should.be.equal(2);
+        state[0].toNumber().should.be.equal(2);
+        state[1].toNumber().should.be.equal(3);
+        state = await instance.getTeamState(leagueState, 1).should.be.fulfilled;
+        state.length.should.be.equal(3);
+        state[0].toNumber().should.be.equal(4);
+        state[1].toNumber().should.be.equal(2);
+        state[2].toNumber().should.be.equal(1);
+        state = await instance.getTeamState(leagueState, 2).should.be.fulfilled;
+        state.length.should.be.equal(2);
+        state[0].toNumber().should.be.equal(4);
+        state[1].toNumber().should.be.equal(5);
+        state = await instance.getTeamState(leagueState, 3).should.be.fulfilled;
+        state.length.should.be.equal(1);
+        state[0].toNumber().should.be.equal(2);
+    });
 });
