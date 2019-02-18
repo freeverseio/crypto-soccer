@@ -16,6 +16,7 @@ contract LeaguesComputer is LeagueState, LeaguesScheduler {
         return address(_engine);
     }
 
+    // TODO: add minimum checks
     function updateLeague(
         uint256 id, 
         bytes32 initStateHash,
