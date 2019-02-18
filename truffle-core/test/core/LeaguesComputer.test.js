@@ -13,8 +13,7 @@ contract('LeaguesComputer', (accounts) => {
     const initPlayerState = [
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, // Team 0
         0, // divider
-        10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 12, // Team 1
-        0
+        10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 12 // Team 1
     ];
     const tactics = [
         [4, 4, 3],  // Team 0
@@ -100,12 +99,12 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('hash league state', async () => {
-        const state = [3,5,2,0,4,56,6,0];
+        const state = [3,5,2,0,4,56,6];
         const hashes = await leagues.hashLeagueState(state).should.be.fulfilled;
         hashes.length.should.be.equal(2);
-        hashes[0].should.be.equal('0xc6951eb9cd3a570943a21ee0c2156cc75258037b093e3bb1690d6d92c9af8c29');
-        hashes[1].should.be.equal('0xa4efe975f12e6f4dce1ee13b2355a8b2057cbd37cad109f6fb027c0a645ee92a');
-    })
+        hashes[0].should.be.equal('0x7c1a4da9ae4219e9f58d1c3b3efacea1c4e962cf3330297d46eceb26a8500221');
+        hashes[1].should.be.equal('0x29b5c96991b3957cb253e235c95e56369e43542d3d1273bc916229afb773b205');
+    });
 
     it('update league state', async () => {
         const initStateHash = '0x435a354320000000000000000000000000000000000000000000000000000000';
@@ -127,22 +126,5 @@ contract('LeaguesComputer', (accounts) => {
         result[0][1].toNumber().should.be.equal(scores[0][1]);
         result[1][0].toNumber().should.be.equal(scores[1][0]);
         result[1][1].toNumber().should.be.equal(scores[1][1]);
-    });
-
-    it('count empty teams status', async () => {
-        await leagues.countTeamsStatus([]).should.be.rejected;
-    });
-
-    it('teams status should not init with invalid status', async () => {
-        await leagues.countTeamsStatus([0, 3, 4, 0]).should.be.rejected;
-    });
-
-    it('teams status should not end with invalid status', async () => {
-        await leagues.countTeamsStatus([3, 4]).should.be.rejected;
-    });
-
-    it('count teams status', async () => {
-        const result = await leagues.countTeamsStatus([3, 4, 0, 454, 0, 6, 0]).should.be.fulfilled;
-        result.toNumber().should.be.equal(3);
     });
 });

@@ -46,7 +46,7 @@ contract LeaguesComputer is LeagueState, LeaguesScheduler {
         returns (uint256[2][] memory) 
     {
         uint256 nTeams = countTeams(leagueId);
-        require(countTeamsStatus(playersState) == nTeams, "wrong number of teams");
+        require(countLeagueStateTeams(playersState) == nTeams, "wrong number of teams");
         require(tactics.length == nTeams, "nTeams and size of tactics mismatch");
 
         uint256[][] memory state = new uint256[][](nTeams);
@@ -72,31 +72,12 @@ contract LeaguesComputer is LeagueState, LeaguesScheduler {
         return scores;
     }
 
-    function countTeamsStatus(uint256[] memory teamsStatus) public pure returns (uint256) {
-        require(teamsStatus[0] != 0, "first state is invalid");
-        require(teamsStatus[teamsStatus.length - 1] == 0, "last state invalid");
-
-        uint256 count = 0;
-        for (uint256 i = 0 ; i < teamsStatus.length ; i++){
-            if (teamsStatus[i] == 0)
-                count++;
-        }
-        return count;
-    }
-
     function hashLeagueState(uint256[] memory state) public pure returns (bytes32[] memory) {
-        uint256 nTeams = countTeamsStatus(state);
+        uint256 nTeams = countLeagueStateTeams(state);
         bytes32[] memory hashes = new bytes32[](nTeams);
-        uint256 team = 0;
-        bytes memory origin;
-        for (uint256 i = 0; i < state.length ; i++){
-            if (state[i] == 0){
-                hashes[team] = keccak256(origin);
-                origin = "";
-                team++;
-            }
-            else
-                origin = abi.encodePacked(origin, state[i]);
+        for (uint256 i = 0; i < nTeams ; i++){
+            uint256[] memory teamState = getTeamState(state, i);
+            hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;
     }
