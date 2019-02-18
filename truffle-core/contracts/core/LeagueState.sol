@@ -39,14 +39,9 @@ contract LeagueState {
     function countPlayersInTeam(uint256[] memory leagueState, uint256 idx) public pure returns (uint256) {
         require(isValid(leagueState), "invalid league state");
         require(idx < countTeams(leagueState), "out of range");
-        uint256 teamCounter;
-        uint256 i;
-        for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
-            if (leagueState[i] == DIVIDER)
-                teamCounter++;
-        }
+        uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         uint256 counter;
-        while (i+counter < leagueState.length && leagueState[i+counter] != DIVIDER)
+        while (first+counter < leagueState.length && leagueState[first+counter] != DIVIDER)
             counter++;
         return counter;
     }
@@ -56,17 +51,9 @@ contract LeagueState {
         require(idx < countTeams(leagueState), "out of range");
         uint256 nPlayers = countPlayersInTeam(leagueState, idx);
         uint256[] memory state = new uint256[](nPlayers);
-
-        uint256 teamCounter;
-        uint256 i;
-        for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
-            if (leagueState[i] == DIVIDER)
-                teamCounter++;
-        }
-
-        for (uint256 j = 0 ; j < nPlayers ; j++)
-            state[j] = leagueState[i+j];
-
+        uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
+        for (uint256 i = 0 ; i < nPlayers ; i++)
+            state[i] = leagueState[first+i];
         return state;
     } 
    
@@ -80,5 +67,13 @@ contract LeagueState {
         return true;
     }
 
-
+    function _getFirstPlayerOfTeam(uint256[] memory leagueState, uint256 idx) private pure returns (uint256) {
+        uint256 teamCounter;
+        uint256 i;
+        for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
+            if (leagueState[i] == DIVIDER)
+                teamCounter++;
+        }
+        return i;
+    }
 }
