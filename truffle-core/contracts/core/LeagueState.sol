@@ -16,11 +16,24 @@ contract LeagueState {
         uint256 i;
         for (i = 0; i < leagueState.length ; i++)
             state[i] = leagueState[i];
-
+        state[leagueState.length] = DIVIDER;
         for (i = 0 ; i < teamState.length ; i++)
             state[leagueState.length + 1 + i] = teamState[i];
 
         return state;        
+    }
+
+    function countTeams(uint256[] memory leagueState) public pure returns (uint256) {
+        require(isValid(leagueState), "invalid league state");
+        if (leagueState.length == 0)
+            return 0;
+
+        uint256 count = 1;
+        for (uint256 i = 0 ; i < leagueState.length ; i++) {
+            if (leagueState[i] == DIVIDER)
+                count++; 
+        }
+        return count;
     }
 
     function isValid(uint256[] memory state) public pure returns (bool) {
