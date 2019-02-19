@@ -55,7 +55,7 @@ contract LeaguesComputer is LeaguesScheduler {
         uint256[][] memory state = new uint256[][](nTeams);
         for (uint256 i = 0; i < nTeams; i++){
             state[i] = new uint256[](leagueState.countTeamPlayers(i));
-            uint256[] memory teamState = leagueState.getTeamState(i);
+            uint256[] memory teamState = leagueState.getTeam(i);
             for (uint256 j = 0; j < teamState.length ; j++)
                 state[i][j] = teamState[j];
         }
@@ -73,7 +73,7 @@ contract LeaguesComputer is LeaguesScheduler {
         uint256 nTeams = leagueState.countTeams();
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = leagueState.getTeamState(i);
+            uint256[] memory teamState = leagueState.getTeam(i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;

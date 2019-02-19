@@ -46,7 +46,7 @@ contract('LeagueState', (accounts) => {
         state[3].toNumber().should.be.equal(4);
     });
 
-    it('count team states into league state', async () => {
+    it('count teams into league state', async () => {
         let count = await instance.countTeams([]).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
         count = await instance.countTeams([2]).should.be.fulfilled;
@@ -55,7 +55,7 @@ contract('LeagueState', (accounts) => {
         count.toNumber().should.be.equal(3);
     });
 
-    it('count team states into invalid league state', async () => {
+    it('count teams into invalid league state', async () => {
         await instance.countTeams([0]).should.be.rejected;
         await instance.countTeams([0,3]).should.be.rejected;
         await instance.countTeams([3,0]).should.be.rejected;
@@ -76,22 +76,22 @@ contract('LeagueState', (accounts) => {
         count.toNumber().should.be.equal(1);
     });
 
-    it('get team state from league state', async () => {
+    it('get team from league state', async () => {
         const leagueState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2]
-        let state = await instance.getTeamState(leagueState, 0).should.be.fulfilled;
+        let state = await instance.getTeam(leagueState, 0).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(3);
-        state = await instance.getTeamState(leagueState, 1).should.be.fulfilled;
+        state = await instance.getTeam(leagueState, 1).should.be.fulfilled;
         state.length.should.be.equal(3);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(2);
         state[2].toNumber().should.be.equal(1);
-        state = await instance.getTeamState(leagueState, 2).should.be.fulfilled;
+        state = await instance.getTeam(leagueState, 2).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(5);
-        state = await instance.getTeamState(leagueState, 3).should.be.fulfilled;
+        state = await instance.getTeam(leagueState, 3).should.be.fulfilled;
         state.length.should.be.equal(1);
         state[0].toNumber().should.be.equal(2);
     });

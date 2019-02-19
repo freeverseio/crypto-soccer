@@ -46,7 +46,7 @@ library LeagueState {
         return counter;
     }
 
-    function getTeamState(uint256[] memory leagueState, uint256 idx) public pure returns (uint256[] memory) {
+    function getTeam(uint256[] memory leagueState, uint256 idx) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league state");
         require(idx < countTeams(leagueState), "out of range");
         uint256 nPlayers = countTeamPlayers(leagueState, idx);
