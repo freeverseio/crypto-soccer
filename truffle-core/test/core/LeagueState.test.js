@@ -21,7 +21,7 @@ contract('LeagueState', (accounts) => {
         result = await instance.isValid([2, 3, divider, 4, divider, 4]).should.be.fulfilled;
         result.should.be.equal(true);
         result = await instance.isValid([2, divider, divider, 1]).should.be.fulfilled;
-        result.should.be.equal(true);
+        result.should.be.equal(false);
         result = await instance.isValid([divider]).should.be.fulfilled;
         result.should.be.equal(false);
     });
@@ -59,6 +59,7 @@ contract('LeagueState', (accounts) => {
         await instance.countTeams([0]).should.be.rejected;
         await instance.countTeams([0,3]).should.be.rejected;
         await instance.countTeams([3,0]).should.be.rejected;
+        await instance.countTeams([3,0,0,2]).should.be.rejected;
     });
 
     it('count players in team', async () => {
