@@ -386,6 +386,7 @@ def test3():
         "teamIdx": 2,
         "tactics": TACTICS["442"]
     }
+
     lastWorldMathBlockNum = 0
     lastWorldMathBlockHash = serialize2str(lastWorldMathBlockNum)
 
@@ -415,8 +416,8 @@ def runTest(name, result, expected):
 
 success = True
 # success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 850)
-success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 850)
+# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 534)
+success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 122)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

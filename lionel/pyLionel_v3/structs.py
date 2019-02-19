@@ -33,24 +33,18 @@ class ActionsAccumulator():
 
 
 # simple block counter simulator, where the blockhash is just the hash of the blocknumber
-class BlockCounter():
+class Counter():
     def __init__(self):
         self.currentBlock = 0
+        self.currentWorldMatch = 0
+        self.blocks2nextWorldMatch  = 360
 
     def advanceNBlocks(self, n):
-        self.currentBlock += n
+        self.advanceToBlock(self.currentBlock + n)
 
     def advanceToBlock(self, n):
         assert n >= self.currentBlock, "Cannot advance... to a block in the past!"
         self.currentBlock = n
-
-
-class WorldMatchCounter(BlockCounter):
-    def __init__(self):
-        BlockCounter.__init__(self)
-        self.currentWorldMatch      = 0
-        # set a time diff of 1 hours between worldMatches
-        self.blocks2nextWorldMatch  = 360
 
     def advanceNWorldMatches(self, n):
         self.currentWorldMatch += n
@@ -60,11 +54,11 @@ class WorldMatchCounter(BlockCounter):
         self.currentWorldMatch = n
 
 
-class Storage(WorldMatchCounter):
+
+class Storage(Counter):
     def __init__(self):
 
-        # WorldMatchCounter.__init__(self)
-        WorldMatchCounter.__init__(self)
+        Counter.__init__(self)
 
         # an array of Team structs, the first entry being the null team
         self.teams = [Team("")]
