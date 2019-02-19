@@ -90,28 +90,14 @@ contract LeaguesComputer is LeaguesScheduler {
     }
 
     function hashInitState(uint256[] memory state) public pure returns (bytes32) {
-        return _hashState(state);
+        return keccak256(abi.encode(state));
     }
 
     function hashTeamState(uint256[] memory state) public pure returns (bytes32) {
-        return _hashState(state);
+        return keccak256(abi.encode(state));
     }
 
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
-        bytes memory origin;
-        for(uint256 i = 0; i < tactics.length ; i++){
-            origin = abi.encodePacked(origin, tactics[i][0]); 
-            origin = abi.encodePacked(origin, tactics[i][1]); 
-            origin = abi.encodePacked(origin, tactics[i][2]); 
-        }
-        return keccak256(origin);
-    }
-
-    function _hashState(uint256[] memory state) private pure returns (bytes32) {
-        bytes memory origin;
-        for(uint256 i = 0; i < state.length ; i++){
-            origin = abi.encodePacked(origin, state[i]); 
-        }
-        return keccak256(origin);
+        return keccak256(abi.encode(tactics));
     }
 }

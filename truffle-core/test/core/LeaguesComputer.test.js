@@ -88,7 +88,7 @@ contract('LeaguesComputer', (accounts) => {
     it('hash team state', async () => {
         const state = [324, 435, 5];
         const hash0 = await leagues.hashTeamState(state).should.be.fulfilled;
-        hash0.should.be.equal('0x2dcd8f033162e070f623608ce1f1a913bc979d6d070221b812a25fa27b78f86b');
+        hash0.should.be.equal('0xd2bd5ff7bf1c27008d66d436546cb0454443b772b9cb33429b3d1f9ee9848a10');
         const hash1 = await leagues.hashTeamState([2, 3]).should.be.fulfilled;
         hash1.should.be.not.equal(hash0);
     });
@@ -96,7 +96,7 @@ contract('LeaguesComputer', (accounts) => {
     it('hash init state', async () => {
         const state = [3, 435, 5];
         const hash0 = await leagues.hashTeamState(state).should.be.fulfilled;
-        hash0.should.be.equal('0x8c95de1a9b22dd1419122bfe86a58534751f629fd72d98bb03da9c4f1b24d420');
+        hash0.should.be.equal('0xed292958eade9f3b6aab7fe70037eb3115b8472dfceec6031c86cb1c4198dcf9');
         const hash1 = await leagues.hashTeamState([2, 3, 3]).should.be.fulfilled;
         hash1.should.be.not.equal(hash0);
     });
