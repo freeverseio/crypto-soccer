@@ -36,14 +36,15 @@ class ActionsAccumulator():
 class Counter():
     def __init__(self):
         self.currentBlock = 0
-        self.currentWorldMatch = 0
+        self.lastWorldMatch = 0
         self.blocks2nextWorldMatch  = 360
 
-    def advanceNBlocks(self, n):
-        self.advanceToBlock(self.currentBlock + n)
+    def advanceNBlocks(self, deltaN):
+        self.advanceToBlock(self.currentBlock + deltaN)
 
     def advanceToBlock(self, n):
         assert n >= self.currentBlock, "Cannot advance... to a block in the past!"
+        # if n >= self.lastWorldMatch + self.blocks2nextWorldMatch:
         self.currentBlock = n
 
     def advanceNWorldMatches(self, n):

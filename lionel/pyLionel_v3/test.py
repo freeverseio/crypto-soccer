@@ -44,8 +44,7 @@ def test1():
     print("\n")
     hash2 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
 
-    ST.advanceNBlocks(10)
-    ST_CLIENT.advanceNBlocks(10)
+    advanceNBlocks(10, ST, ST_CLIENT)
 
     exchangePlayers(
         2, ADDR1,
@@ -74,8 +73,7 @@ def test2():
     ST          = Storage()
     ST_CLIENT   = Storage()
 
-    ST.advanceToBlock(10)
-    ST_CLIENT.advanceToBlock(10)
+    advanceToBlock(10, ST, ST_CLIENT)
 
     # Create teams in BC and client
     teamIdx1 = createTeam("Barca", ADDR1, ST)
@@ -91,8 +89,7 @@ def test2():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Cook init data for the 1st league
-    ST.advanceToBlock(100)
-    ST_CLIENT.advanceToBlock(100)
+    advanceToBlock(100, ST, ST_CLIENT)
 
     blockInit = 190
     blockStep = 10
@@ -110,8 +107,7 @@ def test2():
     assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentBlock), "League not detected as created"
 
     # Advance to matchday 2
-    ST.advanceToBlock(blockInit + blockStep - 5)
-    ST_CLIENT.advanceToBlock(blockInit + blockStep - 5)
+    advanceToBlock(blockInit + blockStep - 5, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentBlock), "League not detected as already being played"
     assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as not finished yet"
 
@@ -128,8 +124,7 @@ def test2():
     ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData)
 
     # Move beyond league end
-    ST.advanceNBlocks(blockStep)
-    ST_CLIENT.advanceNBlocks(blockStep)
+    advanceNBlocks(blockStep, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as already finished"
 
     # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
@@ -173,8 +168,7 @@ def test2():
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock)
     selectedMatchday    = 0
     prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
@@ -190,8 +184,7 @@ def test2():
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not updated"
     initStatesHashLie = duplicate(initStatesHash)+1
 
@@ -206,8 +199,7 @@ def test2():
 
 
     # A CHALLENGER tries to prove that the UPDATER lied with the initHash
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
 
     dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT)
@@ -222,8 +214,7 @@ def test2():
 
 
     # A nicer UPDATER now tells the truth:
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     ST.leagues[leagueIdx].updateLeague(
         initStatesHash,
         statesAtMatchdayHashes,
@@ -234,8 +225,7 @@ def test2():
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
     # ...and the CHALLENGER fails to prove anything
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     selectedTeam = 0
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedTeam,
@@ -248,8 +238,7 @@ def test2():
 
     # We do not wait enough and try to:
     #   create another league. It fails to do so because teams are still busy
-    ST.advanceNBlocks(2)
-    ST_CLIENT.advanceNBlocks(2)
+    advanceNBlocks(2, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
     blockInit = ST.currentBlock + 30
     usersInitData = {
@@ -284,8 +273,7 @@ def test2():
 
     # after waiting enough, the league gets fully verified and the new league can be created
     # ...with a player exchange just before the creation
-    ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as already fully verified"
 
     playerIdx1 = getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1, ST)
@@ -311,8 +299,7 @@ def test2():
     assert leagueIdx2 == leagueIdx2_client, "Leagues in client not in sync with BC"
 
     # An UPDATER updates:
-    ST.advanceNBlocks(1000)
-    ST_CLIENT.advanceNBlocks(1000)
+    advanceNBlocks(1000, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League should be finished by now"
 
     initPlayerStates = getInitPlayerStates(leagueIdx2, ST_CLIENT)
@@ -373,6 +360,8 @@ def test3():
     ST          = Storage()
     ST_CLIENT   = Storage()
 
+
+
     ST.advanceToBlock(10)
     ST_CLIENT.advanceToBlock(10)
 
@@ -415,9 +404,9 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 534)
-success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 122)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 39)
+# success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 122)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

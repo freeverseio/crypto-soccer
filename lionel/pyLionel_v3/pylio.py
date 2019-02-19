@@ -516,3 +516,14 @@ def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+
+def advanceToBlock(n, ST, ST_CLIENT):
+    ST.advanceToBlock(n)
+    ST_CLIENT.advanceToBlock(n)
+
+def advanceNBlocks(deltaN, ST, ST_CLIENT):
+    advanceToBlock(
+        ST.currentBlock + deltaN,
+        ST,
+        ST_CLIENT
+    )
