@@ -28,12 +28,12 @@ contract LeaguesScheduler is LeaguesStorage {
         require(matchIdx < getMatchPerDay(id), "wrong match");
         uint256 nTeams = countTeams(id);
         if (matchday < (nTeams - 1))
-            (team0Idx, team1Idx) = getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
+            (team0Idx, team1Idx) = _getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
         else
-            (team1Idx, team0Idx) = getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdx, nTeams);
+            (team1Idx, team0Idx) = _getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdx, nTeams);
     }
 
-    function shiftBack(uint256 t, uint256 nTeams) public pure returns (uint256)
+    function _shiftBack(uint256 t, uint256 nTeams) private pure returns (uint256)
     {
         if (t < nTeams)
             return t;
@@ -41,13 +41,13 @@ contract LeaguesScheduler is LeaguesStorage {
             return t-(nTeams-1);
     }
 
-    function getTeamsInMatchFirstHalf(uint256 matchday, uint256 matchIdx, uint256 nTeams) public pure returns (uint256, uint256) 
+    function _getTeamsInMatchFirstHalf(uint256 matchday, uint256 matchIdx, uint256 nTeams) private pure returns (uint256, uint256) 
     {
         uint256 team1 = 0;
         if (matchIdx > 0)
-            team1 = shiftBack(nTeams-matchIdx+matchday, nTeams);
+            team1 = _shiftBack(nTeams-matchIdx+matchday, nTeams);
 
-        uint256 team2 = shiftBack(matchIdx+1+matchday, nTeams);
+        uint256 team2 = _shiftBack(matchIdx+1+matchday, nTeams);
         if ( (matchday % 2) == 0)
             return (team1, team2);
         else
