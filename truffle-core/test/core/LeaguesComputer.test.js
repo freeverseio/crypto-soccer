@@ -51,15 +51,12 @@ contract('LeaguesComputer', (accounts) => {
     it('compute league 2 times gives the same result', async () => {
         const scores0 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
         const scores1 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
-        const finalHash0 = await leagues.calculateFinalHash(scores0).should.be.fulfilled;
-        const finalHash1 = await leagues.calculateFinalHash(scores1).should.be.fulfilled;
-        finalHash0.should.be.equal(finalHash1);
-    });
-
-    it('hash differents results => different hashes', async () => {
-        const hash0 = await leagues.calculateFinalHash([[0, 1]]).should.be.fulfilled;
-        const hash1 = await leagues.calculateFinalHash([[0, 1], [2, 1]]).should.be.fulfilled;
-        hash0.should.be.not.equal(hash1);
+        scores0.length.should.be.equal(2);
+        scores1.length.should.be.equal(2);
+        scores0[0][0].toNumber().should.be.equal(scores1[0][0].toNumber());
+        scores0[0][1].toNumber().should.be.equal(scores1[0][1].toNumber());
+        scores0[1][0].toNumber().should.be.equal(scores1[1][0].toNumber());
+        scores0[1][1].toNumber().should.be.equal(scores1[1][1].toNumber());
     });
 
     it('try calculare a uninitied league', async () => {

@@ -79,16 +79,6 @@ contract LeaguesComputer is LeaguesScheduler {
         return hashes;
     }
 
-    // TODO: function name => hashResult ?
-    function calculateFinalHash(uint256[2][] memory scores) public pure returns (bytes32) {
-        bytes memory origin;
-        for(uint256 i = 0; i < scores.length ; i++){
-            origin = abi.encodePacked(origin, scores[i][0]); 
-            origin = abi.encodePacked(origin, scores[i][1]); 
-        }
-        return keccak256(origin);
-    }
-
     function hashInitState(uint256[] memory state) public pure returns (bytes32) {
         return keccak256(abi.encode(state));
     }
