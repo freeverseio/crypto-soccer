@@ -11,15 +11,13 @@ contract('LeaguesComputer', (accounts) => {
     let engine = null;
 
     const id = 0;
-    const initPlayerState = [
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, // Team 0
-        0, // divider
-        10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 11, 12 // Team 1
-    ];
+    const team0State = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const team1State = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
     const tactics = [
         [4, 4, 3],  // Team 0
         [5, 4, 2]   // Team 1
     ];
+    let initPlayerState = null;
 
     beforeEach(async () => {
         const blocksToInit = 0;
@@ -27,6 +25,7 @@ contract('LeaguesComputer', (accounts) => {
         const teamIds = [1, 2];
         engine = await Engine.new().should.be.fulfilled;
         const leagueState = await LeagueState.new().should.be.fulfilled;
+        initPlayerState = await leagueState.append(team0State, team1State).should.be.fulfilled;
         Leagues.link("LeagueState", leagueState.address);
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
@@ -126,5 +125,42 @@ contract('LeaguesComputer', (accounts) => {
         result[0][1].toNumber().should.be.equal(scores[0][1]);
         result[1][0].toNumber().should.be.equal(scores[1][0]);
         result[1][1].toNumber().should.be.equal(scores[1][1]);
+    });
+
+    it('calculate a day in a league', async () => {
+        let day = 0;
+        let result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0').should.be.fulfilled;
+        result.length.should.be.equal(1);
+        result[0][0].toNumber().should.be.equal(0);
+        result[0][1].toNumber().should.be.equal(2);
+        day = 1;
+        result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, 'seed').should.be.fulfilled;
+        result.length.should.be.equal(1);
+        result[0][0].toNumber().should.be.equal(1);
+        result[0][1].toNumber().should.be.equal(0);
+    });
+
+    it('result of a day in league is deterministic', async () => {
+        const day = 1;
+        const result0 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, 'seed').should.be.fulfilled;
+        const result1 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, 'seed').should.be.fulfilled;
+        result0.length.should.be.equal(1);
+        result1.length.should.be.equal(1);
+        result0[0][0].toNumber().should.be.equal(1);
+        result0[0][1].toNumber().should.be.equal(0);
+        result1[0][0].toNumber().should.be.equal(1);
+        result1[0][1].toNumber().should.be.equal(0);
+    });
+
+    it('different seed => different results', async () => {
+        const day = 1;
+        const result0 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, 'seed').should.be.fulfilled;
+        const result1 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, 'different seed').should.be.fulfilled;
+        result0.length.should.be.equal(1);
+        result1.length.should.be.equal(1);
+        result0[0][0].toNumber().should.be.equal(1);
+        result0[0][1].toNumber().should.be.equal(0);
+        result1[0][0].toNumber().should.be.equal(0);
+        result1[0][1].toNumber().should.be.equal(3);
     });
 });
