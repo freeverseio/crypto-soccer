@@ -27,8 +27,8 @@ contract Engine {
         require(state1.length >= 11, "Team 1 needs at least 11 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 11, "wrong tactic for team 0");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 11, "wrong tactic for team 1");
-        uint256 hash0 = uint256(seed) + state0[0] + tactic0[0];
-        uint256 hash1 = uint256(seed) + state1[0] + tactic1[0];
-        return (hash0 % 4, hash1 % 4);
+        bytes32 hash0 = keccak256(abi.encode(uint256(seed) + state0[0] + tactic0[0]));
+        bytes32 hash1 = keccak256(abi.encode(uint256(seed) + state1[0] + tactic1[0]));
+        return (uint256(hash0) % 4, uint256(hash1) % 4);
     }
 }
