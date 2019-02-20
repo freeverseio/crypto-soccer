@@ -11,7 +11,7 @@ contract('LeaguesScheduler', (accounts) => {
 
     beforeEach(async () => {
         const blocksToInit = 0;
-        const step = 1
+        const step = 1;
         const teamIds = [1, 2];
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new().should.be.fulfilled;
@@ -51,5 +51,14 @@ contract('LeaguesScheduler', (accounts) => {
         teams.length.should.be.equal(2);
         teams[0].toNumber().should.be.equal(1);
         teams[1].toNumber().should.be.equal(0);
-    })
+    });
+
+    it('get match day', async () => {
+        const initBlock = await leagues.getInitBlock(id).should.be.fulfilled;
+        const step = await leagues.getStep(id).should.be.fulfilled;
+        let hash = await leagues.getMatchDayBlockHash(id, 0).should.be.fulfilled;
+        let block = web3.eth.getBlock(initBlock);
+        hash.should.be.equal(block.hash);
+        await leagues.getMatchDayBlockHash(id, 1).should.be.rejected;
+    });
 });

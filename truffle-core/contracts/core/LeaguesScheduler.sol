@@ -15,6 +15,15 @@ contract LeaguesScheduler is LeaguesStorage {
         return nTeams / 2;
     }
 
+    function getMatchDayBlockHash(uint256 id, uint256 day) public view returns (bytes32)
+    {
+        uint256 initBlock = getInitBlock(id);
+        uint256 step = getStep(id);
+        bytes32 blockHash = blockhash(initBlock + step * day);
+        require(blockHash != 0, "unable to retrive block hash");
+        return blockHash;
+    }
+
     function getTeamsInMatch(
         uint256 id,
         uint256 matchday, 
