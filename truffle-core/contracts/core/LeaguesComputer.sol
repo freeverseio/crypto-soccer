@@ -36,7 +36,8 @@ contract LeaguesComputer is LeaguesScheduler {
         uint256 id,
         uint256 matchday, 
         uint256[] memory prevStates, 
-        uint256[3][] memory tactics
+        uint256[3][] memory tactics,
+        bytes32 seed
     )
         public
         view
@@ -44,9 +45,6 @@ contract LeaguesComputer is LeaguesScheduler {
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
         scores = new uint256[2][](nMatchesPerMatchday);
-    // statesAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
-    // matchdaySeed = getBlockHash(matchdayBlock * 3)  # TODO: remove this *3
-        bytes32 seed = getMatchDayBlockHash(id, matchday);
         uint256 team0Idx;
         uint256 team1Idx;
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
@@ -60,26 +58,6 @@ contract LeaguesComputer is LeaguesScheduler {
                 tactics[1]
             );
         }
-
-    // for match in range(nMatchesPerMatchday):
-    //     team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-
-    //     goals1, goals2 = playMatch(
-    //         prevStates[team1],
-    //         prevStates[team2],
-    //         tactics[team1],
-    //         tactics[team2],
-    //         matchdaySeed
-    //     )
-    //     scores[match] = [goals1, goals2]
-    //     statesAtMatchday[team1], statesAtMatchday[team2] = \
-    //         updatePlayerStatesAfterMatch(
-    //                 prevStates[team1],
-    //                 prevStates[team2],
-    //                 goals1,
-    //                 goals2
-    //             )
-    // return statesAtMatchday, scores
     }
 
 
