@@ -52,9 +52,13 @@ contract LeaguesComputer is LeaguesScheduler {
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
             (team0Idx, team1Idx) = getTeamsInMatch(id, matchday, i);
-            uint256[] memory team0State = prevStates.getTeam(team0Idx);
-            uint256[] memory team1State = prevStates.getTeam(team1Idx);
-            (scores[i][0], scores[i][1]) = _engine.playMatch(seed, team0State, team1State, tactics[0], tactics[1]);
+            (scores[i][0], scores[i][1]) = _engine.playMatch(
+                seed, 
+                prevStates.getTeam(team0Idx), 
+                prevStates.getTeam(team1Idx), 
+                tactics[0], 
+                tactics[1]
+            );
         }
 
     // for match in range(nMatchesPerMatchday):
