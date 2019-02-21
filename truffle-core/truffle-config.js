@@ -28,5 +28,10 @@ module.exports = {
       currency: 'EUR',
       gasPrice: 21
     }
+  },
+  compilers: {
+    solc: {
+      version: "0.5.4"
+    }
   }
 }
