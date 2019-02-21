@@ -6,7 +6,7 @@ const Engine = artifacts.require('Engine');
 
 contract('Engine', (accounts) => {
     let engine = null;
-    const seed = '0x400342352351';
+    const seed = '0x610106';
     const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     const state1 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
     const tactic0 = [4, 4, 3];
