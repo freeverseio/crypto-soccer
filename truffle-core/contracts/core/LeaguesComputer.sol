@@ -2,10 +2,12 @@ pragma solidity ^0.4.25;
 
 import "./LeaguesScheduler.sol";
 import "./LeagueState.sol";
+import "./Vector2D.sol";
 import "./Engine.sol";
 
 contract LeaguesComputer is LeaguesScheduler {
     using LeagueState for uint256[];
+    using Vector2D for uint256[];
 
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
