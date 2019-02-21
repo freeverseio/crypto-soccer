@@ -5,9 +5,8 @@ import "./LeagueState.sol";
 import "./Vector2D.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesScheduler {
+contract LeaguesComputer is LeaguesScheduler, Vector2D {
     using LeagueState for uint256[];
-    using Vector2D for uint256[];
 
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
@@ -75,7 +74,8 @@ contract LeaguesComputer is LeaguesScheduler {
         for(uint256 day = 0 ; day < nLeagueDays ; day++)
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
-            computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
+            uint256[2][] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
+            scoresConcat(scores, dayScores);
         }
     }
 
