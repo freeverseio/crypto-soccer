@@ -60,6 +60,22 @@ contract LeaguesComputer is LeaguesScheduler {
         }
     }
 
+    function computeAllMatchdayStates(
+        uint256 id, 
+        uint256[] memory initLeagueState, 
+        uint256[3][] memory tactics // TODO: optimize data type
+    )
+        public 
+        view 
+        returns (uint256[2][] memory scores) 
+    {
+        uint256 nLeagueDays = countLeagueDays(id);
+        for(uint256 day = 0 ; day < nLeagueDays ; day++)
+        {
+            bytes32 seed = getMatchDayBlockHash(id, day);
+            computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
+        }
+    }
 
     /**
      * @dev compute the result of a league
