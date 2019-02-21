@@ -4,9 +4,9 @@ require('chai')
 
 const Leagues = artifacts.require('LeaguesStorage');
 
-contract('Leagues', (accounts) => {
+contract('LeaguesStorage', (accounts) => {
     let leagues = null;
-    const blocksToInit = 1;
+    const initBlock = 1;
     const step = 1;
     const id = 0;
     const teamIds = [1, 2];
@@ -27,7 +27,7 @@ contract('Leagues', (accounts) => {
     })
 
     it('default hashes values on create league', async () =>{
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const initHash = await leagues.getInitHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
         const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
@@ -36,16 +36,16 @@ contract('Leagues', (accounts) => {
 
     it('create league with no team', async () => {
         const teamIds = [];
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
     });
 
     it('create league with 1 team', async () => {
         const teamIds = [1];
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
     });
 
     it('create league with 2 teams', async () => {
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const result = await leagues.getTeamIds(id).should.be.fulfilled;
         result.length.should.be.equal(2);
         result[0].toNumber().should.be.equal(1);
@@ -53,37 +53,35 @@ contract('Leagues', (accounts) => {
     });
 
     it('create leagues with odd teams', async () => {
-        await leagues.create(id, blocksToInit, step, [1, 2, 3]).should.be.rejected;
-        await leagues.create(id, blocksToInit, step, [1, 2, 3, 4, 5]).should.be.rejected;
-        await leagues.create(id, blocksToInit, step, [1, 2, 3, 4, 5, 6, 7]).should.be.rejected;
+        await leagues.create(id, initBlock, step, [1, 2, 3]).should.be.rejected;
+        await leagues.create(id, initBlock, step, [1, 2, 3, 4, 5]).should.be.rejected;
+        await leagues.create(id, initBlock, step, [1, 2, 3, 4, 5, 6, 7]).should.be.rejected;
     });
 
     it('init block of a league', async () => {
-        const result = await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const blockNumber = result.receipt.blockNumber;
-        const initBlock = await leagues.getInitBlock(id).should.be.fulfilled;
-        initBlock.toNumber().should.be.equal(blockNumber + blocksToInit);
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        const result = await leagues.getInitBlock(id).should.be.fulfilled;
+        result.toNumber().should.be.equal(initBlock);
     });
 
     it('end block of a league', async () => {
-        const result = await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        const blockNumber = result.receipt.blockNumber;
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const endBlock = await leagues.getEndBlock(id).should.be.fulfilled;
-        endBlock.toNumber().should.be.equal(blockNumber + blocksToInit + step);
+        endBlock.toNumber().should.be.equal(initBlock + step);
     });
 
     it('create 2 leagues with the same id', async () => {
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
     });
 
     it('step == 0 is invalid', async () => {
         const step = 0;
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
     });
 
     it('count teams', async () => {
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const count = await leagues.countTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     })
