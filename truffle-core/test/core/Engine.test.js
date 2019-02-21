@@ -18,8 +18,8 @@ contract('Engine', (accounts) => {
 
     it('play a match', async () => {
         const result = await engine.playMatch(seed, state0, state1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(2);
-        result[1].toNumber().should.be.equal(0);
+        result[0].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(3);
     });
 
     it('play match with less than 11 players', async () => {
@@ -36,11 +36,11 @@ contract('Engine', (accounts) => {
     });
 
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch('seed', state0, state1, tactic0, tactic1).should.be.fulfilled;
+        let result = await engine.playMatch('0x123456', state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch('different seed', state0, state1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(2);
+        result = await engine.playMatch('0x654321', state0, state1, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(1);
+        result[1].toNumber().should.be.equal(3);
     })
 });
