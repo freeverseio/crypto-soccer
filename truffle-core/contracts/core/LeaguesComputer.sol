@@ -75,7 +75,7 @@ contract LeaguesComputer is LeaguesScheduler, Vector2D {
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
             uint256[2][] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
-            scoresConcat(scores, dayScores);
+            scores = scoresConcat(scores, dayScores);
         }
     }
 

@@ -166,4 +166,12 @@ contract('LeaguesComputer', (accounts) => {
         result1[0][0].toNumber().should.be.equal(0);
         result1[0][1].toNumber().should.be.equal(3);
     });
+
+    it('calculate all a league', async () => {
+        const divider = await leagues.DIVIDER().should.be.fulfilled;
+        const result = await leagues.computeAllMatchdayStates(id, initPlayerState, tactics).should.be.fulfilled;
+        result.length.should.be.equal(3);
+        result[1][1].toNumber().should.be.equal(divider.toNumber());
+        result[1][1].toNumber().should.be.equal(divider.toNumber());
+    });
 });
