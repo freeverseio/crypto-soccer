@@ -39,37 +39,6 @@ contract('LeaguesComputer', (accounts) => {
         address.should.be.equal(engine.address);
     });
 
-    it('compute unexistent league', async () => {
-        const id = 532;
-        await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.rejected;
-    });
-
-    it('compute league', async () => {
-        const scores = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
-        const nTeams = await leagues.countTeams(id).should.be.fulfilled;
-        scores.length.should.be.equal(nTeams * (nTeams - 1));
-    });
-
-    it('compute league 2 times gives the same result', async () => {
-        const scores0 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
-        const scores1 = await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.fulfilled;
-        scores0.length.should.be.equal(2);
-        scores1.length.should.be.equal(2);
-        scores0[0][0].toNumber().should.be.equal(scores1[0][0].toNumber());
-        scores0[0][1].toNumber().should.be.equal(scores1[0][1].toNumber());
-        scores0[1][0].toNumber().should.be.equal(scores1[1][0].toNumber());
-        scores0[1][1].toNumber().should.be.equal(scores1[1][1].toNumber());
-    });
-
-    it('try calculare a uninitied league', async () => {
-        const id = 100;
-        const blocksToInit = 10000; // future block
-        const step = 1
-        const teamIds = [1, 2];
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        await leagues.computeLeagueFinalState(id, initPlayerState, tactics).should.be.rejected;
-    });
-
     it('hash tactics', async () => {
         const hash0 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
         const hash1 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;

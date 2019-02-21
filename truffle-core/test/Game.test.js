@@ -39,10 +39,10 @@ contract('Game', (accounts) => {
         await horizon.createTeam("Madrid").should.be.fulfilled;
         const barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
         const madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
-        const blockInitDelta = 0;
+        const initBlock = 1;
         const step = 1;
         const leagueId = 0;
-        await leagues.create(leagueId, blockInitDelta, step, [barcelonaId, madridId]).should.be.fulfilled;
+        await leagues.create(leagueId, initBlock, step, [barcelonaId, madridId]).should.be.fulfilled;
         const barcelonaPlayersIds = await teams.getPlayers(barcelonaId).should.be.fulfilled;
         const madridPlayersIds = await teams.getPlayers(madridId).should.be.fulfilled;
 
@@ -61,9 +61,9 @@ contract('Game', (accounts) => {
         }
 
         const leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
-        const scores = await leagues.computeLeagueFinalState(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
+        const scores = await leagues.computeAllMatchdayStates(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
         console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
-        console.log("Madrid - Barcelona: " + scores[1][0].toNumber() + " - " + scores[1][1].toNumber());
+        console.log("Madrid - Barcelona: " + scores[2][0].toNumber() + " - " + scores[2][1].toNumber());
 
         const initStateHash = await leagues.hashInitState(leagueState).should.be.fulfilled;
         const finalTeamsStateHashes = await leagues.hashLeagueState(leagueState).should.be.fulfilled;

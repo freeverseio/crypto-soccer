@@ -38,6 +38,7 @@ contract LeaguesStorage {
     }
 
     function create(uint256 id, uint256 initBlock, uint256 step, uint256[] memory teamIds) public {
+        require(initBlock > 0, "invalid init block");
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(teamIds.length % 2 == 0, "odd teams count");
