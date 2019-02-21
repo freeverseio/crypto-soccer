@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 library LeagueState {
     uint256 constant public DIVIDER = 0;

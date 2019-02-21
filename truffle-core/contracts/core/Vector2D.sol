@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.0;
 
 contract Vector2D {
     uint256 constant public DIVIDER = uint(-1);
