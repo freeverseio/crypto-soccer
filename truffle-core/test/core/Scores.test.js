@@ -27,6 +27,8 @@ contract('Scores', (accounts) => {
     });
 
     it('fill a day match', async () => {
+        await instance.addScore([0xffff], 0x0101).should.be.rejected;
+        await instance.addScore([], 0xffff).should.be.rejected;
         let scores = [];
         let score = await instance.encodeScore(3, 0).should.be.fulfilled;
         scores = await instance.addScore(scores, score).should.be.fulfilled;
