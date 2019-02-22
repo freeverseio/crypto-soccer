@@ -65,7 +65,7 @@ library LeagueState {
         if (state[state.length-1] == DIVIDER)
             return false;
         for (uint256 i = 0 ; i < state.length - 1 ; i++)
-            if (state[i] == 0 && state[i+1] == 0)
+            if (state[i] == DIVIDER && state[i+1] == DIVIDER)
                 return false;
         return true;
     }
