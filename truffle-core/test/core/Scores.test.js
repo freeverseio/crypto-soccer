@@ -26,7 +26,7 @@ contract('Scores', (accounts) => {
         score.visitor.toNumber().should.be.equal(0x02);
     });
 
-    it('add result to a day', async () => {
+    it('fill a day match', async () => {
         let scores = [];
         let score = await instance.encodeScore(3, 0).should.be.fulfilled;
         scores = await instance.addScore(scores, score).should.be.fulfilled;
@@ -45,6 +45,15 @@ contract('Scores', (accounts) => {
         score.home.toNumber().should.be.equal(0);
         score.visitor.toNumber().should.be.equal(0);
     });
+
+    it('check day match validity', async () => {
+        let result = await instance.isValidDayScores([]);
+        result.should.be.equal(true);
+        result = await instance.isValidDayScores([0x0201, 0x0101, 0x0000]);
+        result.should.be.equal(true);
+        result = await instance.isValidDayScores([0x0201, 0xffff]);
+        result.should.be.equal(false);
+    })
 
     // it('is valid', async () => {
     //     let result = await scores.isValid([5]).should.be.fulfilled;

@@ -15,12 +15,20 @@ contract Scores {
         visitor = uint8(score & 0x00ff);
     }
 
+    /// TODO: maybe addScoreToDay ?
     function addScore(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
         uint16[] memory result = new uint16[](scores.length + 1);
         for (uint256 i = 0; i < scores.length ; i++)
             result[i] = scores[i];
         result[result.length-1] = score;
         return result;
+    }
+
+    function isValidDayScores(uint16[] memory dayScores) public pure returns (bool) {
+        for (uint256 i = 0 ; i < dayScores.length ; i++) 
+            if (dayScores[i] == DIVIDER)
+                return false;
+        return true;
     }
 
     function scoresConcat(uint256[2][] memory left, uint256[2][] memory right) public pure returns (uint256[2][] memory) {
