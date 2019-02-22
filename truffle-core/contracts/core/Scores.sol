@@ -27,7 +27,17 @@ contract Scores {
 
     function isValid(uint256[] memory scores) public pure returns (bool)
     {
+        if (scores.length == 0)
+            return true;
         if (scores.length % 2 != 0)
             return false;
+        if (scores[0] == DIVIDER)
+            return false;
+        if (scores[scores.length - 1] == DIVIDER)
+            return false;
+        for (uint256 i = 0 ; i < scores.length - 1 ; i++)
+            if (scores[i] == DIVIDER && scores[i+1] == DIVIDER)
+                return false;
+        return true;
     }
 }
