@@ -55,6 +55,25 @@ contract('Scores', (accounts) => {
         result.should.be.equal(true);
         result = await instance.isValidDayScores([0x0201, 0xffff]);
         result.should.be.equal(false);
+    });
+
+    it('fill tournament scores', async () => {
+        let scores = [];
+        scores = await instance.addToTournamentScores(scores, [0x0201, 0x0101]).should.be.fulfilled;
+        scores = await instance.addToTournamentScores(scores, [0x0101, 0x0001]).should.be.fulfilled;
+        scores = await instance.addToTournamentScores(scores, [0x0001, 0x0004]).should.be.fulfilled;
+        await instance.addToTournamentScores(scores, [0xffff, 0x0101]).should.be.rejected;
+        scores = await instance.addToTournamentScores(scores, []).should.be.fulfilled;
+        scores.length.should.be.equal(9);
+        scores[0].toNumber().should.be.equal(0x0201);
+        scores[1].toNumber().should.be.equal(0x0101);
+        scores[2].toNumber().should.be.equal(0xffff);
+        scores[3].toNumber().should.be.equal(0x0101);
+        scores[4].toNumber().should.be.equal(0x0001);
+        scores[5].toNumber().should.be.equal(0xffff);
+        scores[6].toNumber().should.be.equal(0x0001);
+        scores[7].toNumber().should.be.equal(0x0004);
+        scores[8].toNumber().should.be.equal(0xffff);
     })
 
     // it('is valid', async () => {

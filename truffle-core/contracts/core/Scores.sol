@@ -42,6 +42,20 @@ contract Scores {
         return true;
     }
 
+    function addToTournamentScores(uint16[] memory tournamentScores, uint16[] memory dayScores) public pure returns (uint16[] memory) {
+        require(isValidDayScores(dayScores), "invalid day scores");
+        if (tournamentScores.length == 0)
+            return dayScores;
+
+        uint16[] memory result = new uint16[](tournamentScores.length + 1 + dayScores.length);
+        for (uint256 i = 0 ; i < tournamentScores.length ; i++)
+            result[i] = tournamentScores[i];
+        result[tournamentScores.length] = DIVIDER;
+        for (uint256 i = 0 ; i < dayScores.length ; i++)
+            result[tournamentScores.length + 1 + i] = dayScores[i];
+        return result;
+    }
+
     function scoresConcat(uint256[2][] memory left, uint256[2][] memory right) public pure returns (uint256[2][] memory) {
         if(left.length == 0)
             return right;
