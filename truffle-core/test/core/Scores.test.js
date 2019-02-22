@@ -21,10 +21,30 @@ contract('Scores', (accounts) => {
 
     it('decode', async () => {
         await instance.decodeScore(0xffff).should.be.rejected;
-        const result = await instance.decodeScore(0x0102).should.be.fulfilled;
-        result.home.toNumber().should.be.equal(0x01);
-        result.visitor.toNumber().should.be.equal(0x02);
-    })
+        const score = await instance.decodeScore(0x0102).should.be.fulfilled;
+        score.home.toNumber().should.be.equal(0x01);
+        score.visitor.toNumber().should.be.equal(0x02);
+    });
+
+    it('add result to a day', async () => {
+        let scores = [];
+        let score = await instance.encodeScore(3, 0).should.be.fulfilled;
+        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        score = await instance.encodeScore(1, 2).should.be.fulfilled;
+        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        score = await instance.encodeScore(0, 0).should.be.fulfilled;
+        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        scores.length.should.be.equal(3);
+        score = await instance.decodeScore(scores[0]).should.be.fulfilled;
+        score.home.toNumber().should.be.equal(3);
+        score.visitor.toNumber().should.be.equal(0);
+        score = await instance.decodeScore(scores[1]).should.be.fulfilled;
+        score.home.toNumber().should.be.equal(1);
+        score.visitor.toNumber().should.be.equal(2);
+        score = await instance.decodeScore(scores[2]).should.be.fulfilled;
+        score.home.toNumber().should.be.equal(0);
+        score.visitor.toNumber().should.be.equal(0);
+    });
 
     // it('is valid', async () => {
     //     let result = await scores.isValid([5]).should.be.fulfilled;
