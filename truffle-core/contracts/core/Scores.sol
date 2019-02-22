@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract Vector2D {
+contract Scores {
     uint256 constant public DIVIDER = uint(-1);
 
     function scoresConcat(uint256[2][] memory left, uint256[2][] memory right) public pure returns (uint256[2][] memory) {
