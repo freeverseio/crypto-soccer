@@ -24,4 +24,10 @@ contract Scores {
 
         return result;        
     }
+
+    function isValid(uint256[] memory scores) public pure returns (bool)
+    {
+        if (scores.length % 2 != 0)
+            return false;
+    }
 }
