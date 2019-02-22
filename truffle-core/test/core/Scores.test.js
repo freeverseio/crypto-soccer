@@ -26,16 +26,16 @@ contract('Scores', (accounts) => {
         score.visitor.toNumber().should.be.equal(0x02);
     });
 
-    it('fill a day match', async () => {
-        await instance.addScore([0xffff], 0x0101).should.be.rejected;
-        await instance.addScore([], 0xffff).should.be.rejected;
+    it('fill a day scores', async () => {
+        await instance.addToDayScores([0xffff], 0x0101).should.be.rejected;
+        await instance.addToDayScores([], 0xffff).should.be.rejected;
         let scores = [];
         let score = await instance.encodeScore(3, 0).should.be.fulfilled;
-        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
         score = await instance.encodeScore(1, 2).should.be.fulfilled;
-        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
         score = await instance.encodeScore(0, 0).should.be.fulfilled;
-        scores = await instance.addScore(scores, score).should.be.fulfilled;
+        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
         scores.length.should.be.equal(3);
         score = await instance.decodeScore(scores[0]).should.be.fulfilled;
         score.home.toNumber().should.be.equal(3);

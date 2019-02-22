@@ -4,19 +4,28 @@ contract Scores {
     uint16 constant public DIVIDER = 0xffff;
 
     function encodeScore(uint8 home, uint8 visitor) public pure returns (uint16 score) {
-        require(home != 0xff && visitor != 0xff, "score can't be 0xff");
+        require(isValidGoals(home), "invalid home goals");
+        require(isValidGoals(visitor), "invalid visitor goals");
         score |= home * 2 ** 8;
         score |= visitor;
     }
 
+    function isValidGoals(uint8 goals) public pure returns (bool) {
+        return goals != 0xff;
+    }
+
     function decodeScore(uint16 score) public pure returns (uint8 home, uint8 visitor) {
-        require(score != 0xffff, "invalid score");
+        require(isValidScore(score), "invalid score");
         home = uint8(score / 2 ** 8);
         visitor = uint8(score & 0x00ff);
     }
 
+    function isValidScore(uint16 score) public pure returns (bool) {
+        return score != DIVIDER;
+    }
+
     /// TODO: maybe addScoreToDay ?
-    function addScore(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
+    function addToDayScores(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
         require(score != DIVIDER, "invalid score");
         require(isValidDayScores(scores), "invalid day scores");
         uint16[] memory result = new uint16[](scores.length + 1);
