@@ -17,6 +17,7 @@ contract Scores {
 
     /// TODO: maybe addScoreToDay ?
     function addScore(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
+        require(isValidDayScores(scores), "invalid day scores");
         uint16[] memory result = new uint16[](scores.length + 1);
         for (uint256 i = 0; i < scores.length ; i++)
             result[i] = scores[i];
