@@ -36,7 +36,7 @@ contract('Horizon', (accounts) => {
         for(var i=0 ; i < teamPlayers.length ; i++){
             const playerId = teamPlayers[i];
             const result = await players.getTeam(playerId).should.be.fulfilled;
-            result.toNumber().should.be.equal(teamId.toNumber());
+            result.toString().should.be.equal(teamId.toString());
         }
     })
 });
