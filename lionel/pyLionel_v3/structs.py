@@ -301,14 +301,9 @@ class Storage(Counter):
         # an array of leagues, first entry is dummy
         self.leagues = [League(0,0,0)]
 
-        # self.Accumulator        = None
 
         self.blocksBetweenVerses = 360
         self.VerseCommits = [VerseCommit()]
-        # self.nextVerse = self.setNextVerse()
-    #
-    # def setNextVerse(self):
-    #     self.nextVerse = self.blocksBetweenVerses + self.VerseCommits
 
     def lastVerseBlock(self):
         return self.VerseCommits[-1].blockNum
