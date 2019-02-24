@@ -88,4 +88,25 @@ contract('Scores', (accounts) => {
         result = await instance.countDaysInTournamentScores(leagueState).should.be.fulfilled;
         result.toNumber().should.be.equal(3);
     });
+
+    it('get day score of emply league scores', async () => {
+        await instance.getDayScores([], 0).should.be.rejected;
+    });
+
+    it('get day scores in league scores', async () => {
+        let scores = await instance.encodeScore(2, 1).should.be.fulfilled;
+        let dayScores = await instance.addToDayScores([], scores).should.be.fulfilled;
+        // add day 0
+        let leagueScores = await instance.addToTournamentScores([], dayScores).should.be.fulfilled;
+        // add day 1
+        leagueScores = await instance.addToTournamentScores(leagueScores, dayScores).should.be.fulfilled;
+        let result = await instance.getDayScores(leagueScores, 0).should.be.fulfilled;
+        result.length.should.be.equal(1);
+        scores = await instance.encodeScore(1, 2).should.be.fulfilled;
+        dayScores = await instance.addToDayScores(dayScores, scores).should.be.fulfilled;
+        // add day 2
+        leagueScores = await instance.addToTournamentScores(leagueScores, dayScores).should.be.fulfilled;
+        result = await instance.getDayScores(leagueScores, 2).should.be.fulfilled;
+        result.length.should.be.equal(2);
+    })
 })

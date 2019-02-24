@@ -41,6 +41,17 @@ contract Scores {
         return true;
     }
 
+    function getDayScores(uint16[] memory leagueScores, uint256 day) public pure returns (uint16[] memory dayScores) {
+        require(day < countDaysInTournamentScores(leagueScores), "out of range");
+        uint256 current;
+        uint256 i;
+        for(i = 0 ; current < day; i++)
+            if (leagueScores[i] == DIVIDER)
+                current++;
+        for(; i < leagueScores.length && leagueScores[i] != DIVIDER ; i++)
+            dayScores = addToDayScores(dayScores, leagueScores[i]);
+    }
+
     function addToTournamentScores(uint16[] memory tournamentScores, uint16[] memory dayScores) public pure returns (uint16[] memory) {
         require(isValidDayScores(dayScores), "invalid day scores");
         if (tournamentScores.length == 0)
@@ -56,7 +67,7 @@ contract Scores {
     }
 
     /// @return number of scores days    
-    function countDaysInTournamentScores(uint256[] memory scores) public pure returns (uint256) {
+    function countDaysInTournamentScores(uint16[] memory scores) public pure returns (uint256) {
         if (scores.length == 0)
             return 0;
 
