@@ -6,38 +6,11 @@ import pylio
 from pickle import dumps as serialize
 
 
-class ActionsAccumulator():
-    def __init__(self):
-        self.buffer                     = {}
-        self.worldMatchCommits          = [0]
-        self.worldMatchCommitsHashes    = [0]
-        self.worldMatchBlockNums        = [0]
-        self.worldMatchBlockHashes      = [0]
-
-    def isTimeToCommit(self, lastWorldMathBlockNum):
-        return lastWorldMathBlockNum > self.worldMatchBlockNums[-1]
-
-    def commit(self, lastWorldMathBlockNum, lastWorldMathBlockHash):
-        vals2commit = [value for (key, value) in sorted(self.buffer.items()) if key < lastWorldMathBlockNum]
-        self.worldMatchCommits.append(vals2commit)
-        self.worldMatchCommitsHashes.append(pylio.serialize2str(vals2commit))
-        self.worldMatchBlockNums.append(lastWorldMathBlockNum)
-        self.worldMatchBlockHashes.append(lastWorldMathBlockHash)
-
-    def accumulateAction(self, action, blocknum, lastWorldMathBlockNum, lastWorldMathBlockHash):
-        assert blocknum >= self.worldMatchBlockNums[-1]
-        self.buffer[blocknum] = action
-        if self.isTimeToCommit(lastWorldMathBlockNum):
-            self.commit(lastWorldMathBlockNum, lastWorldMathBlockHash)
-
-
 
 # simple block counter simulator, where the blockhash is just the hash of the blocknumber
 class Counter():
     def __init__(self):
         self.currentBlock = 0
-        self.lastWorldMatch = 0
-        self.blocks2nextWorldMatch  = 360
 
     def advanceNBlocks(self, deltaN):
         self.advanceToBlock(self.currentBlock + deltaN)
@@ -53,27 +26,6 @@ class Counter():
     def advanceToWorldMatch(self, n):
         assert n >= self.currentWorldMatch, "Cannot advance... to a worldmatch in the past!"
         self.currentWorldMatch = n
-
-
-
-class Storage(Counter):
-    def __init__(self):
-
-        Counter.__init__(self)
-
-        # an array of Team structs, the first entry being the null team
-        self.teams = [Team("")]
-
-        # a map from playerIdx to playerState, only available for players already sold once,
-        # or for 'promo players' not created directly from team creation.
-        # In Python, maps are closer to 'dictionaries'
-        self.playerIdxToPlayerState = {}
-
-        # the obvious ownership map:
-        self.teamNameHashToOwnerAddr = {}
-
-        # an array of leagues, first entry is dummy
-        self.leagues = [League(0,0,0)]
 
 
 
@@ -295,5 +247,105 @@ class LeagueClient(League):
     def updateInitState(self, initPlayerStates):
         self.initPlayerStates = initPlayerStates
 
+class WorldMatchCommit:
+    def __init__(self, actionsHashes = 0, blockNum = 0, blockHash = 0):
+        self.actionsHashes = actionsHashes
+        self.blockNum = blockNum
+        self.blockHash = blockHash
 
 
+class WorldMatchCommitClient(WorldMatchCommit):
+    def __init__(self):
+        WorldMatchCommit.__init__(self)
+        self.actions = 0
+
+
+class ActionsAccumulator():
+    def __init__(self):
+        self.buffer                     = {}
+        self.commitedActions            = [0]
+
+    def isTimeToCommit(self, lastWorldMatchBlockNum):
+        return lastWorldMatchBlockNum > self.worldMatchBlockNums[-1]
+
+    def accumulateAction(self, action, blocknum):
+        if blocknum in self.buffer:
+            self.buffer[blocknum].append(action)
+        else:
+            self.buffer[blocknum] = [action]
+
+    def removeActionsBeforeBlockNumFromBuffer(self, blockNum):
+        allActions = pylio.duplicate(self.buffer)
+        for (block, actions) in self.buffer.items():
+            if block < blockNum:
+                del allActions[block]
+        self.buffer = allActions
+
+
+
+class Storage(Counter):
+    def __init__(self):
+
+        Counter.__init__(self)
+
+        # an array of Team structs, the first entry being the null team
+        self.teams = [Team("")]
+
+        # a map from playerIdx to playerState, only available for players already sold once,
+        # or for 'promo players' not created directly from team creation.
+        # In Python, maps are closer to 'dictionaries'
+        self.playerIdxToPlayerState = {}
+
+        # the obvious ownership map:
+        self.teamNameHashToOwnerAddr = {}
+
+        # an array of leagues, first entry is dummy
+        self.leagues = [League(0,0,0)]
+
+        # self.Accumulator        = None
+
+        self.blocksBetweenWorldMatches = 360
+        self.WorldMatchCommits = [WorldMatchCommit()]
+        # self.nextWorldMatch = self.setNextWorldMatch()
+    #
+    # def setNextWorldMatch(self):
+    #     self.nextWorldMatch = self.blocksBetweenWorldMatches + self.WorldMatchCommits
+
+    def commit(self, actionsHash, commitBlockNum, commitBlockHash, actionsPrehash = None):
+        self.WorldMatchCommits.append(WorldMatchCommit(actionsHash, commitBlockNum, commitBlockHash))
+
+
+
+    def addAccumulator(self):
+        self.Accumulator = ActionsAccumulator()
+
+
+    def accumulateAction(self, action):
+        assert self.currentBlock >= self.WorldMatchCommits[-1].blockNum, "Weird, blocknum for action received that belonged to past commit"
+        self.Accumulator.accumulateAction(action, self.currentBlock)
+
+    def getAllActionsBeforeBlock(self, blockNum):
+        actions2commit = []
+        for (block, actions) in self.Accumulator.buffer.items():
+            if block < blockNum:
+                for a in actions:
+                    actions2commit.append(a)
+        return actions2commit
+
+    def syncActions(self, ST):
+        assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
+        nextWorldMatchBlock = ST.WorldMatchCommits[-1].blockNum + ST.blocksBetweenWorldMatches
+        if self.currentBlock >= nextWorldMatchBlock:
+            actions2commit = self.getAllActionsBeforeBlock(nextWorldMatchBlock)
+            ST.commit(
+                pylio.serialize2str(actions2commit),
+                nextWorldMatchBlock,
+                pylio.getBlockhashForBlock(nextWorldMatchBlock)
+            )
+            self.commit(
+                pylio.serialize2str(actions2commit),
+                nextWorldMatchBlock,
+                pylio.getBlockhashForBlock(nextWorldMatchBlock),
+            )
+            self.Accumulator.commitedActions.append(actions2commit)
+            self.Accumulator.removeActionsBeforeBlockNumFromBuffer(nextWorldMatchBlock)

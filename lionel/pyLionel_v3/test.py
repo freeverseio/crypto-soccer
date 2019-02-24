@@ -72,6 +72,7 @@ def test2():
     # We need to keep both in sync. The CLIENT stores, besides what is in the BC, the pre-hash stuff.
     ST          = Storage()
     ST_CLIENT   = Storage()
+    ST_CLIENT.addAccumulator()
 
     advanceToBlock(10, ST, ST_CLIENT)
 
@@ -359,36 +360,23 @@ def test2():
 def test3():
     ST          = Storage()
     ST_CLIENT   = Storage()
+    ST_CLIENT.addAccumulator()
+
+    advanceToBlock(10, ST, ST_CLIENT)
+
+    action0 = {"teamIdx": 3, "tactics": TACTICS["433"]}
+    action1 = {"teamIdx": 2, "tactics": TACTICS["442"]}
+    action3 = {"teamIdx": 22, "tactics": TACTICS["433pressing"]}
+    action4 = {"teamIdx": 33, "tactics": TACTICS["442pressing"]}
 
 
+    ST_CLIENT.accumulateAction(action0)
+    ST_CLIENT.accumulateAction(action1)
+    advanceNBlocks(3, ST, ST_CLIENT)
+    ST_CLIENT.accumulateAction(action3)
+    advanceNBlocks(360, ST, ST_CLIENT)
 
-    ST.advanceToBlock(10)
-    ST_CLIENT.advanceToBlock(10)
-
-    ACT = ActionsAccumulator()
-
-    action0 = {
-        "teamIdx": 3,
-        "tactics": TACTICS["433"]
-    }
-    action1 = {
-        "teamIdx": 2,
-        "tactics": TACTICS["442"]
-    }
-
-    lastWorldMathBlockNum = 0
-    lastWorldMathBlockHash = serialize2str(lastWorldMathBlockNum)
-
-    ACT.accumulateAction(action0, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
-    ST.advanceNBlocks(3)
-    ST_CLIENT.advanceNBlocks(3)
-    ACT.accumulateAction(action1, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
-    ST.advanceNBlocks(300)
-    ST_CLIENT.advanceNBlocks(300)
-
-    lastWorldMathBlockNum = 50
-    lastWorldMathBlockHash = serialize2str(lastWorldMathBlockNum)
-    ACT.accumulateAction(action1, ST.currentBlock, lastWorldMathBlockNum, lastWorldMathBlockHash)
+    ST_CLIENT.accumulateAction(action4)
 
 
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
@@ -405,8 +393,8 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 39)
-# success = success and runTest(name = "Test Entire Workflow",      result = test3(), expected = 122)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 885)
+success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 287)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

@@ -520,6 +520,7 @@ def createEmptyPlayerStatesForAllTeams(nTeams):
 def advanceToBlock(n, ST, ST_CLIENT):
     ST.advanceToBlock(n)
     ST_CLIENT.advanceToBlock(n)
+    ST_CLIENT.syncActions(ST)
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -527,3 +528,7 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
         ST,
         ST_CLIENT
     )
+
+# A mockup of how to obtain the block hash for a given blocknum "n"
+def getBlockhashForBlock(n):
+    return serialize2str(n)
