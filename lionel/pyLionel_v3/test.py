@@ -372,9 +372,24 @@ def test3():
 
     ST_CLIENT.accumulateAction(action0)
     ST_CLIENT.accumulateAction(action1)
+
+    assert len(ST_CLIENT.VerseCommits)==1, "Error: CLIENT should start with a single dummy commit."
+    assert len(ST.VerseCommits)==1, "Error: BC should start with a single dummy commit."
+    assert len(ST_CLIENT.Accumulator.buffer)==1, "Error: CLIENT should have accumulated actions from 1 block"
+    assert len(ST_CLIENT.Accumulator.buffer[10])==2, "Error: CLIENT should have accumulated 2 actions for 1st block"
+
     advanceNBlocks(3, ST, ST_CLIENT)
+
     ST_CLIENT.accumulateAction(action3)
+    assert len(ST_CLIENT.Accumulator.buffer[13])==1, "Error: CLIENT should have accumulated another action"
+
     advanceNBlocks(360, ST, ST_CLIENT)
+
+    assert len(ST_CLIENT.VerseCommits)==2, "Error: CLIENT should have made the first non-dummy commit already."
+    assert len(ST.VerseCommits)==2, "Error: BC should have made the first non-dummy commit already."
+    assert len(ST_CLIENT.Accumulator.buffer)==0, "Error: CLIENT should have emptied the actions buffer"
+    assert len(ST_CLIENT.Accumulator.commitedActions)==2, "Error: CLIENT should have updated the commited actions"
+
 
     ST_CLIENT.accumulateAction(action4)
 
@@ -392,8 +407,8 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 915)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 915)
 success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 178)
 if success:
     print("ALL TESTS:  -- PASSED --")
