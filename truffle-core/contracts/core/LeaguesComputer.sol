@@ -24,7 +24,7 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
         uint256 id, 
         bytes32 initStateHash,
         bytes32[] memory finalHashes,
-        uint256[] memory scores
+        uint16[] memory scores
     ) 
         public 
     {
@@ -42,22 +42,25 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
     )
         public
         view
-        returns (uint256[2][] memory scores)
+        returns (uint16[] memory scores)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
-        scores = new uint256[2][](nMatchesPerMatchday);
         uint256 team0Idx;
         uint256 team1Idx;
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
+            uint8 home;
+            uint8 visitor;
             (team0Idx, team1Idx) = getTeamsInMatch(id, matchday, i);
-            (scores[i][0], scores[i][1]) = _engine.playMatch(
+            (home, visitor) = _engine.playMatch(
                 seed, 
                 prevStates.getTeam(team0Idx), 
                 prevStates.getTeam(team1Idx), 
                 tactics[0], 
                 tactics[1]
             );
+            uint16 score = encodeScore(home, visitor);
+            scores = addToDayScores(scores, score);
         }
     }
 
@@ -68,13 +71,13 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
     )
         public 
         view 
-        returns (uint256[2][] memory scores) 
+        returns (uint16[] memory scores) 
     {
         uint256 nLeagueDays = countLeagueDays(id);
         for(uint256 day = 0 ; day < nLeagueDays ; day++)
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
-            uint256[2][] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
+            uint16[] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
             // scores = scoresConcat(scores, dayScores);
         }
     }

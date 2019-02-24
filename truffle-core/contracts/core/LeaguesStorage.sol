@@ -15,7 +15,7 @@ contract LeaguesStorage {
         // hash of tactics
         bytes32 tacticsHash;
         // scores of the league
-        uint256[] scores;
+        uint16[] scores;
     }
 
     mapping(uint256 => League) private _leagues;
@@ -27,7 +27,7 @@ contract LeaguesStorage {
         return _leagues[id].initBlock + (nMatchDays - 1) * _leagues[id].step;
     }
  
-    function getScores(uint256 id) external view returns (uint256[] memory) {
+    function getScores(uint256 id) external view returns (uint16[] memory) {
         require(_exists(id), "unexistent league");
         return _leagues[id].scores;
     }
@@ -45,7 +45,7 @@ contract LeaguesStorage {
         require(!_exists(id), "league already created");
         bytes32 initStateHash = 0;
         bytes32[] memory finalTeamStateHashes;
-        uint256[] memory scores;
+        uint16[] memory scores;
         bytes32 tacticsHash = 0;
         _leagues[id] = League(
             teamIds, 
@@ -97,7 +97,7 @@ contract LeaguesStorage {
         _leagues[id].finalTeamStateHashes = hashes;
     }
 
-    function _setScores(uint256 id, uint256[] memory scores) internal {
+    function _setScores(uint256 id, uint16[] memory scores) internal {
         require(_exists(id), "unexistent league");
         _leagues[id].scores = scores;
     }
