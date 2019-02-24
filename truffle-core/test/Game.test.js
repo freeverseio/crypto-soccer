@@ -9,6 +9,8 @@ const LeagueState = artifacts.require('LeagueState');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 
+
+
 contract('Game', (accounts) => {
     let horizon = null;
     let players = null;
@@ -16,6 +18,9 @@ contract('Game', (accounts) => {
     let engine = null;
     let stateLib = null;
     let leagues = null;
+    let barcelonaId = null;
+    let madridId = null;
+    let sevillaId = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -32,38 +37,59 @@ contract('Game', (accounts) => {
         Leagues.link("LeagueState", stateLib.address);
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
-    });
 
-    it('play a league of 2 teams', async () => {
         await horizon.createTeam("Barcelona").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
-        const barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
-        const madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
+        await horizon.createTeam("Sevilla").should.be.fulfilled;
+        await horizon.createTeam("Bilbao").should.be.fulfilled;
+        barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
+        madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
+        sevillaId = await teams.getTeamId("Sevilla").should.be.fulfilled;
+        bilbaoId = await teams.getTeamId("Bilbao").should.be.fulfilled;
+    });
+
+    const generateTeamState = async (id) => {
+        let state = [];
+        const playersIds = await teams.getPlayers(id).should.be.fulfilled;
+        for (let i = 0; i < playersIds.length; i++) {
+            const playerId = playersIds[i];
+            const genome = await players.getGenome(playerId).should.be.fulfilled;
+            state.push(genome);
+        }
+        return state;
+    }
+
+    it('play a league of 2 teams', async () => {
         const initBlock = 1;
         const step = 1;
         const leagueId = 0;
-        await leagues.create(leagueId, initBlock, step, [barcelonaId, madridId]).should.be.fulfilled;
-        const barcelonaPlayersIds = await teams.getPlayers(barcelonaId).should.be.fulfilled;
-        const madridPlayersIds = await teams.getPlayers(madridId).should.be.fulfilled;
+        const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId];
+        await leagues.create(leagueId, initBlock, step, teamIds).should.be.fulfilled;
 
-        let barcelonaState = [];
-        for (let i = 0; i < barcelonaPlayersIds.length ; i++){
-            const playerId = barcelonaPlayersIds[i];
-            const genome = await players.getGenome(playerId).should.be.fulfilled;
-            barcelonaState.push(genome);
+        const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
+        const madridState = await generateTeamState(madridId).should.be.fulfilled;
+        const sevillaState = await generateTeamState(sevillaId).should.be.fulfilled;
+        const bilbaoState = await generateTeamState(bilbaoId).should.be.fulfilled;
+
+        let leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
+        leagueState = await stateLib.append(leagueState, sevillaState).should.be.fulfilled;
+        leagueState = await stateLib.append(leagueState, bilbaoState).should.be.fulfilled;
+        const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, [[4,4,3], [4,4,3], [4,4,3], [4,4,3]]).should.be.fulfilled;
+        const nDayScores = await leagues.countDaysInTournamentScores(leagueScores).should.be.fulfilled;
+        nDayScores.toNumber().should.be.equal(6);
+        for (i = 0; i < nDayScores.toNumber(); i++) {
+            const dayScores = await leagues.getDayScores(leagueScores, i).should.be.fulfilled;
+            // 2 matches per day
+            dayScores.length.should.be.equal(2);
+            for (j = 0; j < 2; j++) {
+                // get the indexes of the teams of match j
+                const teamsInMatch = await leagues.getTeamsInMatch(leagueId, i, j).should.be.fulfilled;
+                const goals = await leagues.decodeScore(dayScores[0]).should.be.fulfilled;
+                const homeTeam = await teams.getName(teamIds[teamsInMatch.homeIdx.toNumber()]).should.be.fulfilled;
+                const visitorTeam = await teams.getName(teamIds[teamsInMatch.visitorIdx.toNumber()]).should.be.fulfilled;
+                console.log("DAY " + i + ": " + homeTeam + " " + goals.home.toNumber() + " - " + goals.visitor.toNumber() + " " + visitorTeam)
+            }
         }
-
-        let madridState = [];
-        for (let i = 0; i < madridPlayersIds.length ; i++){
-            const playerId = madridPlayersIds[i];
-            const genome = await players.getGenome(playerId).should.be.fulfilled;
-            madridState.push(genome);
-        }
-
-        const leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
-        const scores = await leagues.computeAllMatchdayStates(leagueId, leagueState, [[4,4,3], [4,4,3]]).should.be.fulfilled;
-        console.log("Barcelona - Madrid: " + scores[0][0].toNumber() + " - " + scores[0][1].toNumber());
-        console.log("Madrid - Barcelona: " + scores[2][0].toNumber() + " - " + scores[2][1].toNumber());
 
         const initStateHash = await leagues.hashInitState(leagueState).should.be.fulfilled;
         const finalTeamsStateHashes = await leagues.hashLeagueState(leagueState).should.be.fulfilled;
@@ -72,14 +98,7 @@ contract('Game', (accounts) => {
             leagueId,
             initStateHash,
             finalTeamsStateHashes,
-            scores
+            leagueScores
         ).should.be.fulfilled;
-
-        const recordedInitStateHash = await leagues.getInitStateHash(leagueId).should.be.fulfilled;
-        recordedInitStateHash.should.be.equal(initStateHash);
-        const recordedFinalTeamStateHashes = await leagues.getFinalTeamStateHashes(leagueId).should.be.fulfilled;
-        for (let i = 0; i < finalTeamsStateHashes.length; i++) {
-            recordedFinalTeamStateHashes[i].should.be.equal(finalTeamsStateHashes[i]);
-        }
     });
 })
