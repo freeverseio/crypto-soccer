@@ -42,5 +42,16 @@ contract('Engine', (accounts) => {
         result = await engine.playMatch('0x654321', state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(3);
-    })
+    });
+
+    it('different team state => different result', async () => {
+        const state = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        let result = await engine.playMatch('0x123456', state, state, tactic0, tactic1).should.be.fulfilled;
+        result.home.toNumber().should.be.equal(2);
+        result.visitor.toNumber().should.be.equal(2);
+        const state0 = [44, 12, 13, 44, 3, 66, 5, 5, 3, 2, 1];
+        result = await engine.playMatch('0x123456', state, state0, tactic0, tactic1).should.be.fulfilled;
+        result.home.toNumber().should.be.equal(2);
+        result.visitor.toNumber().should.be.equal(2);
+    });
 });

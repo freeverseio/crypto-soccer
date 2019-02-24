@@ -21,7 +21,7 @@ contract Engine {
     ) 
         public 
         pure 
-        returns (uint8, uint8) 
+        returns (uint8 home, uint8 visitor) 
     {
         require(state0.length >= 11, "Team 0 needs at least 11 players");
         require(state1.length >= 11, "Team 1 needs at least 11 players");
