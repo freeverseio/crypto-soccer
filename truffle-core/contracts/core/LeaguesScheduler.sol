@@ -31,17 +31,15 @@ contract LeaguesScheduler is LeaguesStorage {
     ) 
         public 
         view 
-        returns (uint256, uint256 ) 
+        returns (uint256 homeIdx, uint256 visitorIdx) 
     {
         require(matchday < countLeagueDays(id), "wrong match day");
         require(matchIdx < getMatchPerDay(id), "wrong match");
-        uint256 team0Idx;
-        uint256 team1Idx;
         uint256 nTeams = countTeams(id);
         if (matchday < (nTeams - 1))
-            (team0Idx, team1Idx) = _getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
+            (homeIdx, visitorIdx) = _getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
         else
-            (team1Idx, team0Idx) = _getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdx, nTeams);
+            (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (nTeams - 1), matchIdx, nTeams);
     }
 
     function _shiftBack(uint256 t, uint256 nTeams) private pure returns (uint256)

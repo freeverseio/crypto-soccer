@@ -43,11 +43,10 @@ contract('LeaguesScheduler', (accounts) => {
         let day = 0;
         const matchIdx = 0;
         let teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
-        teams['0'].toString().should.be.equal('0');
-        teams['1'].toString().should.be.equal('1');
+        teams[0].toNumber().should.be.equal(0);
+        teams[1].toNumber().should.be.equal(1);
         day = 1;
         teams = await leagues.getTeamsInMatch(id, day, matchIdx).should.be.fulfilled;
-        teams.length.should.be.equal(2);
         teams[0].toNumber().should.be.equal(1);
         teams[1].toNumber().should.be.equal(0);
     });
@@ -55,7 +54,7 @@ contract('LeaguesScheduler', (accounts) => {
     it('get match day', async () => {
         const initBlock = await leagues.getInitBlock(id).should.be.fulfilled;
         let hash = await leagues.getMatchDayBlockHash(id, 0).should.be.fulfilled;
-        let block = web3.eth.getBlock(initBlock);
+        let block = await web3.eth.getBlock(initBlock);
         hash.should.be.equal(block.hash);
     });
 });
