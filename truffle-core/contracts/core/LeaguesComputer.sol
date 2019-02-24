@@ -78,7 +78,7 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
             uint16[] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
-            // scores = scoresConcat(scores, dayScores);
+            scores = addToTournamentScores(scores, dayScores);
         }
     }
 

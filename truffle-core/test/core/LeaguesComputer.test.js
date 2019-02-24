@@ -101,25 +101,29 @@ contract('LeaguesComputer', (accounts) => {
         let day = 0;
         let result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x0').should.be.fulfilled;
         result.length.should.be.equal(1);
-        result[0][0].toNumber().should.be.equal(0);
-        result[0][1].toNumber().should.be.equal(2);
+        let scores = await leagues.decodeScore(result[0]).should.be.fulfilled;
+        scores.home.toNumber().should.be.equal(0);
+        scores.visitor.toNumber().should.be.equal(2);
         day = 1;
-        result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x4353').should.be.fulfilled;
+        result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x4354646451').should.be.fulfilled;
         result.length.should.be.equal(1);
-        result[0][0].toNumber().should.be.equal(1);
-        result[0][1].toNumber().should.be.equal(0);
+        scores = await leagues.decodeScore(result[0]).should.be.fulfilled;
+        scores.home.toNumber().should.be.equal(1);
+        scores.visitor.toNumber().should.be.equal(3);
     });
 
     it('result of a day in league is deterministic', async () => {
         const day = 1;
-        const result0 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x1234').should.be.fulfilled;
-        const result1 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x1234').should.be.fulfilled;
-        result0.length.should.be.equal(1);
-        result1.length.should.be.equal(1);
-        result0[0][0].toNumber().should.be.equal(1);
-        result0[0][1].toNumber().should.be.equal(0);
-        result1[0][0].toNumber().should.be.equal(1);
-        result1[0][1].toNumber().should.be.equal(0);
+        let result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x123456').should.be.fulfilled;
+        result.length.should.be.equal(1);
+        let scores = await leagues.decodeScore(result[0]).should.be.fulfilled;
+        scores.home.toNumber().should.be.equal(2);
+        scores.visitor.toNumber().should.be.equal(1);
+        result = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x123456').should.be.fulfilled;
+        result.length.should.be.equal(1);
+        scores = await leagues.decodeScore(result[0]).should.be.fulfilled;
+        scores.home.toNumber().should.be.equal(2);
+        scores.visitor.toNumber().should.be.equal(1);
     });
 
     it('different seed => different results', async () => {
@@ -128,17 +132,16 @@ contract('LeaguesComputer', (accounts) => {
         const result1 = await leagues.computeStatesAtMatchday(id, day, initPlayerState, tactics, '0x4321').should.be.fulfilled;
         result0.length.should.be.equal(1);
         result1.length.should.be.equal(1);
-        result0[0][0].toNumber().should.be.equal(1);
-        result0[0][1].toNumber().should.be.equal(0);
-        result1[0][0].toNumber().should.be.equal(0);
-        result1[0][1].toNumber().should.be.equal(3);
+        result0[0].toNumber().should.not.be.equal(result1[0].toNumber());
     });
 
     it('calculate all a league', async () => {
-        const divider = await leagues.DIVIDER().should.be.fulfilled;
-        const result = await leagues.computeAllMatchdayStates(id, initPlayerState, tactics).should.be.fulfilled;
-        result.length.should.be.equal(3);
-        result[1][1].toNumber().should.be.equal(divider.toNumber());
-        result[1][1].toNumber().should.be.equal(divider.toNumber());
+        const leagueScores = await leagues.computeAllMatchdayStates(id, initPlayerState, tactics).should.be.fulfilled;
+        const nDayScores = await leagues.countDaysInTournamentScores(leagueScores).should.be.fulfilled;
+        nDayScores.toNumber().should.be.equal(2);
+        let dayScores = await leagues.getDayScores(leagueScores, 0).should.be.fulfilled;
+        dayScores.length.should.be.equal(1);
+        dayScores = await leagues.getDayScores(leagueScores, 1).should.be.fulfilled;
+        dayScores.length.should.be.equal(1);
     });
 });
