@@ -253,18 +253,18 @@ def signTeamsInLeague(teamIdxs, leagueIdx, ST):
         ST.teams[teamIdx].teamPosInCurrentLeague    = teamPosInLeague
 
 
-def createLeague(blocknumber, blockStep, usersInitData, ST):
+def createLeague(verseInit, verseStep, usersInitData, ST):
     assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST), "League cannot create: some teams involved in prev leagues"
     assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
     leagueIdx = len(ST.leagues)
-    ST.leagues.append( League(blocknumber, blockStep, usersInitData) )
+    ST.leagues.append( League(verseInit, verseStep, usersInitData) )
     signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST)
     return leagueIdx
 
-def createLeagueClient(blocknumber, blockStep, usersInitData, ST_CLIENT):
+def createLeagueClient(verseInit, verseStep, usersInitData, ST_CLIENT):
     assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST_CLIENT), "League cannot create: some teams involved in prev leagues"
     leagueIdx = len(ST_CLIENT.leagues)
-    ST_CLIENT.leagues.append( LeagueClient(blocknumber, blockStep, usersInitData) )
+    ST_CLIENT.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
     signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST_CLIENT)
     return leagueIdx
 
@@ -528,6 +528,7 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
         ST,
         ST_CLIENT
     )
+
 
 # A mockup of how to obtain the block hash for a given blocknum "n"
 def getBlockhashForBlock(n):

@@ -18,8 +18,8 @@ class Counter():
         self.advanceToBlock(self.currentBlock + deltaN)
 
     def advanceToBlock(self, n):
-        assert n >= self.currentBlock, "Cannot advance... to a block in the past!"
-        if self.currentBlock < self.nextVerseBlock() <= self.currentBlock + n:
+        assert n > self.currentBlock, "Cannot advance... to a block in the past!"
+        if self.currentBlock < self.nextVerseBlock() <= n:
             self.advanceNVerses(1)
         self.currentBlock = n
 
@@ -107,14 +107,13 @@ class Team():
 
 
 class League():
-    def __init__(self, blockInit, blockStep, usersInitData):
-        nTeams = len(usersInitData["teamIdxs"]) if blockInit != 0 else 0
+    def __init__(self, verseInit, verseStep, usersInitData):
+        nTeams = len(usersInitData["teamIdxs"]) if verseInit != 0 else 0
         nMatches = nTeams*(nTeams-1)
         self.nTeams             = nTeams
-        self.blockInit          = blockInit
-        self.blockStep          = blockStep
+        self.verseInit          = verseInit
+        self.verseStep          = verseStep
         self.usersInitDataHash  = pylio.serialHash(usersInitData)
-        self.usersAlongDataHash = 0
         # provided in update/challenge game
         self.initStatesHash     = 0
         self.statesAtMatchdayHashes  = 0
@@ -123,17 +122,17 @@ class League():
         self.blockLastUpdate    = 0
 
     def isGenesisLeague(self):
-        return self.blockInit == 0
+        return self.verseInit == 0
 
-    def isLeagueIsAboutToStart(self, blocknum):
-        return blocknum < self.blockInit
+    def isLeagueIsAboutToStart(self, verse):
+        return verse < self.verseInit
 
-    def hasLeagueStarted(self, blocknum):
-        return blocknum >= self.blockInit
+    def hasLeagueStarted(self, verse):
+        return verse >= self.verseInit
 
-    def hasLeagueFinished(self, blocknum):
+    def hasLeagueFinished(self, verse):
         nMatchdays = 2 * (self.nTeams-1)
-        return blocknum >= self.blockInit + (nMatchdays-1) * self.blockStep
+        return verse >= self.verseInit + (nMatchdays-1)
 
     def hasLeagueBeenUpdated(self):
         return self.blockLastUpdate != 0
@@ -232,17 +231,12 @@ class League():
 
 # client leagues inherit from leagues, and extend to include the data pre-hash
 class LeagueClient(League):
-    def __init__(self, blockInit, blockStep, usersInitData):
-        League.__init__(self, blockInit, blockStep, usersInitData)
+    def __init__(self, verseInit, verseStep, usersInitData):
+        League.__init__(self, verseInit, verseStep, usersInitData)
         self.usersInitData      = usersInitData
-        self.usersAlongData     = []  # this list must be ordered!
         self.initPlayerStates   = None
         self.statesAtMatchday   = None
         self.scores             = None
-
-    def updateUsersAlongData(self, usersAlongData):
-        self.updateUsersAlongDataHash(usersAlongData)
-        self.usersAlongData.append(usersAlongData)
 
     def updateStatesAtMatchday(self, statesAtMatchday, scores):
         self.statesAtMatchday   = statesAtMatchday

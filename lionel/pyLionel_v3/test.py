@@ -92,8 +92,9 @@ def test2():
     # Cook init data for the 1st league
     advanceToBlock(100, ST, ST_CLIENT)
 
-    blockInit = 190
-    blockStep = 10
+    # One verse is about 1 hour, so a day is about 24 verseSteps
+    verseInit = 3
+    verseStep = 24
 
     usersInitData = {
         "teamIdxs": [teamIdx1, teamIdx2],
@@ -101,32 +102,36 @@ def test2():
         "tactics": [TACTICS["442"], TACTICS["433"]]
     }
 
+
     # Create league in BC and CLIENT. The latter stores things pre-hash too
-    leagueIdx          = createLeague(blockInit, blockStep, usersInitData, ST)
-    leagueIdx_client   = createLeagueClient(blockInit, blockStep, usersInitData, ST_CLIENT)
+    leagueIdx          = createLeague(verseInit, verseStep, usersInitData, ST)
+    leagueIdx_client   = createLeagueClient(verseInit, verseStep, usersInitData, ST_CLIENT)
 
-    assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentBlock), "League not detected as created"
+    assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentVerse), "League not detected as created"
 
-    # Advance to matchday 2
-    advanceToBlock(blockInit + blockStep - 5, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentBlock), "League not detected as already being played"
-    assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as not finished yet"
+    # Advance to just before matchday 2
+    # From verse 1 to 2:
+    assert ST.currentVerse == 1, "We should start with verse 1"
+    advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+    # From verse 2 to 3:
+    advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+    # From verse 3 to a bit before 4:
+    advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
+
+    assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentVerse), "League not detected as already being played"
+    assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as not finished yet"
 
     # Cook data to change tactics before games in matchday 2 begin.
-    # Note that we could specify only for 1 of the teams if we wanted.
-    usersAlongData = {
-        "teamIdxsWithinLeague": [0, 1],
-        "tactics": [TACTICS["433"], TACTICS["442"]],
-        "block": ST.currentBlock
-    }
+    action0 = {"teamIdx": teamIdx1, "tactics": TACTICS["433"]}
+    action1 = {"teamIdx": teamIdx2, "tactics": TACTICS["442"]}
 
-    # Submit data to change tactics
-    ST.leagues[leagueIdx].updateUsersAlongDataHash(usersAlongData)
-    ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData)
+    ST_CLIENT.accumulateAction(action0)
+    ST_CLIENT.accumulateAction(action1)
+
 
     # Move beyond league end
-    advanceNBlocks(blockStep, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as already finished"
+    advanceToBlock(ST.nextVerseBlock()+5, ST, ST_CLIENT)
+    assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as already finished"
 
     # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
     initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
@@ -369,7 +374,6 @@ def test3():
     action3 = {"teamIdx": 22, "tactics": TACTICS["433pressing"]}
     action4 = {"teamIdx": 33, "tactics": TACTICS["442pressing"]}
 
-
     ST_CLIENT.accumulateAction(action0)
     ST_CLIENT.accumulateAction(action1)
 
@@ -409,9 +413,9 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
-success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
+# success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
