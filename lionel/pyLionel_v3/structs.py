@@ -11,22 +11,24 @@ from pickle import dumps as serialize
 class Counter():
     def __init__(self):
         self.currentBlock = 0
+        # We start with one commit, a dummy one, so we start with currentVerse = 1.
+        self.currentVerse = 1
 
     def advanceNBlocks(self, deltaN):
         self.advanceToBlock(self.currentBlock + deltaN)
 
     def advanceToBlock(self, n):
         assert n >= self.currentBlock, "Cannot advance... to a block in the past!"
-        # if n >= self.lastVerse + self.blocks2nextVerse:
-        # if self.currentBlock
+        if self.currentBlock < self.nextVerseBlock() <= self.currentBlock + n:
+            self.advanceNVerses(1)
         self.currentBlock = n
 
 
-    def advanceNVersees(self, n):
+    def advanceNVerses(self, n):
         self.currentVerse += n
 
     def advanceToVerse(self, n):
-        assert n >= self.currentVerse, "Cannot advance... to a worldmatch in the past!"
+        assert n >= self.currentVerse, "Cannot advance... to a verse in the past!"
         self.currentVerse = n
 
 

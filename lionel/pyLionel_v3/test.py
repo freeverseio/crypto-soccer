@@ -373,6 +373,7 @@ def test3():
     ST_CLIENT.accumulateAction(action0)
     ST_CLIENT.accumulateAction(action1)
 
+    assert ST.currentVerse == ST_CLIENT.currentVerse == 1, "Error: Starting verse should be 1 (dummy verse)."
     assert len(ST_CLIENT.VerseCommits)==1, "Error: CLIENT should start with a single dummy commit."
     assert len(ST.VerseCommits)==1, "Error: BC should start with a single dummy commit."
     assert len(ST_CLIENT.Accumulator.buffer)==1, "Error: CLIENT should have accumulated actions from 1 block"
@@ -385,6 +386,7 @@ def test3():
 
     advanceNBlocks(360, ST, ST_CLIENT)
 
+    assert ST.currentVerse == ST_CLIENT.currentVerse == 2, "Error: Current verse is outdated"
     assert len(ST_CLIENT.VerseCommits)==2, "Error: CLIENT should have made the first non-dummy commit already."
     assert len(ST.VerseCommits)==2, "Error: BC should have made the first non-dummy commit already."
     assert len(ST_CLIENT.Accumulator.buffer)==0, "Error: CLIENT should have emptied the actions buffer"
@@ -407,9 +409,9 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 915)
-success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 178)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
+success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
