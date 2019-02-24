@@ -24,7 +24,7 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
         uint256 id, 
         bytes32 initStateHash,
         bytes32[] memory finalHashes,
-        uint256[2][] memory scores
+        uint256[] memory scores
     ) 
         public 
     {
@@ -75,7 +75,7 @@ contract LeaguesComputer is LeaguesScheduler, Scores {
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
             uint256[2][] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
-            scores = scoresConcat(scores, dayScores);
+            // scores = scoresConcat(scores, dayScores);
         }
     }
 

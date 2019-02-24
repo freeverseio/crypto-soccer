@@ -76,31 +76,16 @@ contract('Scores', (accounts) => {
         scores[8].toNumber().should.be.equal(0xffff);
     });
 
-    // it('is valid', async () => {
-    //     let result = await scores.isValid([5]).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await scores.isValid([]).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await scores.isValid([divider, 4]).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await scores.isValid([4, divider]).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await scores.isValid([4, 2, divider, divider, 3, 4]).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await scores.isValid([4, 2, divider, 4, 3, 3, 2, 3, 4]).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await scores.isValid([4, 2, divider, 4, 3, 3, 2, divider, 3, 4]).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
-
-    // it('count days', async () => {
-    //     let result = await scores.scoresCountDays([]).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await scores.scoresCountDays([2, 3]).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    //     result = await scores.scoresCountDays([2, 3, divider, 4 ,5]).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    //     result = await scores.scoresCountDays([2, 3]).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    // })
+    it('count days', async () => {
+        let result = await instance.countDaysInTournamentScores([]).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await instance.countDaysInTournamentScores([2, 3]).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        let leagueState = await instance.addToTournamentScores([2, 3], [4]).should.be.fulfilled;
+        result = await instance.countDaysInTournamentScores(leagueState).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        leagueState = await instance.addToTournamentScores(leagueState, [4, 5, 6, 6]).should.be.fulfilled;
+        result = await instance.countDaysInTournamentScores(leagueState).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+    });
 })
