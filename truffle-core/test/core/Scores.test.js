@@ -12,8 +12,8 @@ contract('Scores', (accounts) => {
     });
 
     it('encode scores', async () => {
-        await instance.encodeScore(0xff, 2).should.be.rejected;
-        await instance.encodeScore(2, 0xff).should.be.rejected;
+        await instance.encodeScore(0xff, 2).should.be.fulfilled;
+        await instance.encodeScore(2, 0xff).should.be.fulfilled;
         await instance.encodeScore(0xff, 0xff).should.be.rejected;
         const score = await instance.encodeScore(0x01,0x02).should.be.fulfilled;
         score.toNumber().should.be.equal(0x0102);
@@ -74,7 +74,7 @@ contract('Scores', (accounts) => {
         scores[6].toNumber().should.be.equal(0x0001);
         scores[7].toNumber().should.be.equal(0x0004);
         scores[8].toNumber().should.be.equal(0xffff);
-    })
+    });
 
     // it('is valid', async () => {
     //     let result = await scores.isValid([5]).should.be.fulfilled;
