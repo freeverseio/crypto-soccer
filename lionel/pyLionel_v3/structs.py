@@ -17,15 +17,17 @@ class Counter():
 
     def advanceToBlock(self, n):
         assert n >= self.currentBlock, "Cannot advance... to a block in the past!"
-        # if n >= self.lastWorldMatch + self.blocks2nextWorldMatch:
+        # if n >= self.lastVerse + self.blocks2nextVerse:
+        # if self.currentBlock
         self.currentBlock = n
 
-    def advanceNWorldMatches(self, n):
-        self.currentWorldMatch += n
 
-    def advanceToWorldMatch(self, n):
-        assert n >= self.currentWorldMatch, "Cannot advance... to a worldmatch in the past!"
-        self.currentWorldMatch = n
+    def advanceNVersees(self, n):
+        self.currentVerse += n
+
+    def advanceToVerse(self, n):
+        assert n >= self.currentVerse, "Cannot advance... to a worldmatch in the past!"
+        self.currentVerse = n
 
 
 
@@ -247,16 +249,16 @@ class LeagueClient(League):
     def updateInitState(self, initPlayerStates):
         self.initPlayerStates = initPlayerStates
 
-class WorldMatchCommit:
+class VerseCommit:
     def __init__(self, actionsHashes = 0, blockNum = 0, blockHash = 0):
         self.actionsHashes = actionsHashes
         self.blockNum = blockNum
         self.blockHash = blockHash
 
 
-class WorldMatchCommitClient(WorldMatchCommit):
+class VerseCommitClient(VerseCommit):
     def __init__(self):
-        WorldMatchCommit.__init__(self)
+        VerseCommit.__init__(self)
         self.actions = 0
 
 
@@ -264,9 +266,6 @@ class ActionsAccumulator():
     def __init__(self):
         self.buffer                     = {}
         self.commitedActions            = [0]
-
-    def isTimeToCommit(self, lastWorldMatchBlockNum):
-        return lastWorldMatchBlockNum > self.worldMatchBlockNums[-1]
 
     def accumulateAction(self, action, blocknum):
         if blocknum in self.buffer:
@@ -304,15 +303,21 @@ class Storage(Counter):
 
         # self.Accumulator        = None
 
-        self.blocksBetweenWorldMatches = 360
-        self.WorldMatchCommits = [WorldMatchCommit()]
-        # self.nextWorldMatch = self.setNextWorldMatch()
+        self.blocksBetweenVerses = 360
+        self.VerseCommits = [VerseCommit()]
+        # self.nextVerse = self.setNextVerse()
     #
-    # def setNextWorldMatch(self):
-    #     self.nextWorldMatch = self.blocksBetweenWorldMatches + self.WorldMatchCommits
+    # def setNextVerse(self):
+    #     self.nextVerse = self.blocksBetweenVerses + self.VerseCommits
+
+    def lastVerseBlock(self):
+        return self.VerseCommits[-1].blockNum
+
+    def nextVerseBlock(self):
+        return self.lastVerseBlock() + self.blocksBetweenVerses
 
     def commit(self, actionsHash, commitBlockNum, commitBlockHash, actionsPrehash = None):
-        self.WorldMatchCommits.append(WorldMatchCommit(actionsHash, commitBlockNum, commitBlockHash))
+        self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum, commitBlockHash))
 
 
 
@@ -321,7 +326,7 @@ class Storage(Counter):
 
 
     def accumulateAction(self, action):
-        assert self.currentBlock >= self.WorldMatchCommits[-1].blockNum, "Weird, blocknum for action received that belonged to past commit"
+        assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
         self.Accumulator.accumulateAction(action, self.currentBlock)
 
     def getAllActionsBeforeBlock(self, blockNum):
@@ -334,18 +339,18 @@ class Storage(Counter):
 
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
-        nextWorldMatchBlock = ST.WorldMatchCommits[-1].blockNum + ST.blocksBetweenWorldMatches
-        if self.currentBlock >= nextWorldMatchBlock:
-            actions2commit = self.getAllActionsBeforeBlock(nextWorldMatchBlock)
+        if self.currentBlock >= self.nextVerseBlock():
+            actions2commit = self.getAllActionsBeforeBlock(self.nextVerseBlock())
+            # leaguesPlayingInThisVerse
             ST.commit(
                 pylio.serialize2str(actions2commit),
-                nextWorldMatchBlock,
-                pylio.getBlockhashForBlock(nextWorldMatchBlock)
+                self.nextVerseBlock(),
+                pylio.getBlockhashForBlock(self.nextVerseBlock())
             )
             self.commit(
                 pylio.serialize2str(actions2commit),
-                nextWorldMatchBlock,
-                pylio.getBlockhashForBlock(nextWorldMatchBlock),
+                self.nextVerseBlock(),
+                pylio.getBlockhashForBlock(self.nextVerseBlock()),
             )
             self.Accumulator.commitedActions.append(actions2commit)
-            self.Accumulator.removeActionsBeforeBlockNumFromBuffer(nextWorldMatchBlock)
+            self.Accumulator.removeActionsBeforeBlockNumFromBuffer(self.nextVerseBlock())
