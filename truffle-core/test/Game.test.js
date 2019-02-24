@@ -59,7 +59,7 @@ contract('Game', (accounts) => {
         return state;
     }
 
-    it('play a league of 2 teams', async () => {
+    it('play a league of 4 teams', async () => {
         const initBlock = 1;
         const step = 1;
         const leagueId = 0;
