@@ -4,7 +4,6 @@ require('chai')
 
 const Engine = artifacts.require('Engine');
 const LeagueState = artifacts.require('LeagueState');
-const Vector2D = artifacts.require('Vector2D');
 const Leagues = artifacts.require('LeaguesComputer');
 
 contract('LeaguesComputer', (accounts) => {
@@ -28,8 +27,6 @@ contract('LeaguesComputer', (accounts) => {
         const leagueState = await LeagueState.new().should.be.fulfilled;
         initPlayerState = await leagueState.append(team0State, team1State).should.be.fulfilled;
         Leagues.link("LeagueState", leagueState.address);
-        const vector2D = await Vector2D.new().should.be.fulfilled;
-        Leagues.link("Vector2D", vector2D.address);
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
     });
