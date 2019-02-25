@@ -102,7 +102,7 @@ contract('Game', (accounts) => {
                 // getting the goal of match j
                 const goals = await leagues.decodeScore(dayScores[j]).should.be.fulfilled;
 
-                console.log("DAY " + i + ": " + homeTeam + " " + goals.home.toNumber() + " - " + goals.visitor.toNumber() + " " + visitorTeam)
+                console.log("DAY " + i + ": " + homeTeam + " " + goals.home.toNumber() + " - " + goals.visitor.toNumber() + " " + visitorTeam);
             }
         }
 
