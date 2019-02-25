@@ -156,8 +156,8 @@ class League():
             pylio.serialize2str(usersAlongData)
         )
 
-    def updateLeague(self, initStatesHash, statesAtMatchdayHashes, scores, updaterAddr, blocknum):
-        assert self.hasLeagueFinished(blocknum), "League cannot be updated before the last matchday finishes"
+    def updateLeague(self, initStatesHash, statesAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
+        assert self.hasLeagueFinished(verse), "League cannot be updated before the last matchday finishes"
         assert not self.hasLeagueBeenUpdated(), "League has already been updated"
         self.initStatesHash             = initStatesHash
         self.statesAtMatchdayHashes     = statesAtMatchdayHashes
@@ -165,11 +165,20 @@ class League():
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
 
-    def challengeMatchdayStates(self, selectedMatchday, prevMatchdayStates, usersInitData, usersAlongData, blocknum):
+    def challengeMatchdayStates(self, selectedMatchday, prevMatchdayStates, seed, usersInitData, allActionsInThisLeague, blocknum, currentVerse):
+
+        # selectedMatchday,
+        # prevMatchdayStates,
+        # ST_CLIENT.getAllSeedsForLeague(leagueIdx)[selectedMatchday]
+        # duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        # duplicate(allActionsInThisLeague[selectedMatchday]),
+        # ST.currentBlock,
+        # ST.currentVerse
+
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(blocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-        assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
+        # assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
         if selectedMatchday == 0:
             assert pylio.serialHash(prevMatchdayStates) == self.initStatesHash, "Incorrect provided: prevMatchdayStates"
         else:

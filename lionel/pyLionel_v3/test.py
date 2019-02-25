@@ -155,9 +155,10 @@ def test2():
         statesAtMatchdayHashesLie,
         scores,
         ADDR2,
-        ST.currentBlock
+        ST.currentBlock,
+        ST.currentVerse
     )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # The CLIENT updates the league WITHOUT lying,
     # and additionally, stores the league pre-hash data, and updates every player involved
@@ -166,7 +167,8 @@ def test2():
         statesAtMatchdayHashes,
         scores,
         ADDR2,
-        ST_CLIENT.currentBlock
+        ST_CLIENT.currentBlock,
+        ST_CLIENT.currentVerse
     )
     updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
@@ -178,12 +180,20 @@ def test2():
     prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
                                             else ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
 
+    # ST_CLIENT.getAllSeedsForLeague(leagueIdx),
+    # initPlayerStates,
+    # duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+    # allActionsInThisLeague,
+
+
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedMatchday,
         prevMatchdayStates,
+        ST_CLIENT.getAllSeedsForLeague(leagueIdx)[selectedMatchday],
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
-        ST.currentBlock
+        duplicate(allActionsInThisLeague),
+        ST.currentBlock,
+        ST.currentVerse
     )
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
