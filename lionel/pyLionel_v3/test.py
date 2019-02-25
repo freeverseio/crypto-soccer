@@ -112,10 +112,8 @@ def test2():
     # Advance to just before matchday 2
     # From verse 1 to 2:
     assert ST.currentVerse == 1, "We should start with verse 1"
-    advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
-    # From verse 2 to 3:
-    advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
-    # From verse 3 to a bit before 4:
+    advanceNVerses(verseStep+1, ST, ST_CLIENT)
+    assert ST.currentVerse == 26, "We should be at verse 26, league finishes at 27"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
     assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentVerse), "League not detected as already being played"
@@ -130,15 +128,16 @@ def test2():
 
 
     # Move beyond league end
-    advanceToBlock(ST.nextVerseBlock()+5, ST, ST_CLIENT)
+    advanceNVerses(1, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as already finished"
 
     # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
     initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
+    usersAlongData = ST_CLIENT.getAllActionsForLeague(leagueIdx)
 
     statesAtMatchday, scores = computeAllMatchdayStates(
-        ST_CLIENT.leagues[leagueIdx].blockInit,
-        ST_CLIENT.leagues[leagueIdx].blockStep,
+        ST_CLIENT.leagues[leagueIdx].verseInit,
+        ST_CLIENT.leagues[leagueIdx].verseStep,
         initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         ST_CLIENT.leagues[leagueIdx].usersAlongData,

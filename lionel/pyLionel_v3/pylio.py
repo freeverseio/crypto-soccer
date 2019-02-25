@@ -387,14 +387,14 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
 
 
 
-def computeAllMatchdayStates(blockInit, blockStep, initPlayerStates, usersInitData, usersAlongData):
+def computeAllMatchdayStates(verseInit, verseStep, initPlayerStates, usersInitData, usersAlongData):
     # In this initial implementation, evolution happens at the end of the league only
     tactics = duplicate(usersInitData["tactics"])
     nTeams = len(usersInitData["teamIdxs"])
     nMatchdays = 2*(nTeams-1)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
-    matchdayBlock = duplicate(blockInit)
+    matchdayVerseInit = duplicate(verseInit)
 
     # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
     statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
@@ -529,7 +529,14 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
         ST_CLIENT
     )
 
+def advanceNVerses(nVerses, ST, ST_CLIENT):
+    for verse in range(nVerses):
+        advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+
 
 # A mockup of how to obtain the block hash for a given blocknum "n"
 def getBlockhashForBlock(n):
     return serialize2str(n)
+
+
+

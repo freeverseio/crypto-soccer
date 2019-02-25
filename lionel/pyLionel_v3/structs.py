@@ -130,9 +130,12 @@ class League():
     def hasLeagueStarted(self, verse):
         return verse >= self.verseInit
 
+    def verseFinal(self):
+        nMatchdays = 2 * (self.nTeams - 1)
+        return self.verseInit + (nMatchdays-1)*self.verseStep
+
     def hasLeagueFinished(self, verse):
-        nMatchdays = 2 * (self.nTeams-1)
-        return verse >= self.verseInit + (nMatchdays-1)
+        return verse >= self.verseFinal()
 
     def hasLeagueBeenUpdated(self):
         return self.blockLastUpdate != 0
@@ -310,8 +313,6 @@ class Storage(Counter):
     def commit(self, actionsHash, commitBlockNum, commitBlockHash, actionsPrehash = None):
         self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum, commitBlockHash))
 
-
-
     def addAccumulator(self):
         self.Accumulator = ActionsAccumulator()
 
@@ -327,6 +328,17 @@ class Storage(Counter):
                 for a in actions:
                     actions2commit.append(a)
         return actions2commit
+
+    def getAllActionsForLeague(self, leagueIdx):
+        nMatchdays = 2*(self.leagues[leagueIdx].nTeams-1)
+        verseInit = self.leagues[leagueIdx].verseInit
+        verseEnd = self.leagues[leagueIdx].verseFinal()
+        verseStep = self.leagues[leagueIdx].verseStep
+        versesThisLeague = range(verseInit, verseEnd, self.leagues[leagueIdx])
+
+        for matchday in range(nMatchdays):
+            verse = self.leagues[leagueIdx].verseInit
+            self.Accumulator.commitedActions
 
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
