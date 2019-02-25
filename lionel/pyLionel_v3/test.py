@@ -109,10 +109,10 @@ def test2():
 
     assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentVerse), "League not detected as created"
 
-    # Advance to just before matchday 2
-    # From verse 1 to 2:
-    assert ST.currentVerse == 1, "We should start with verse 1"
-    advanceNVerses(verseStep+1, ST, ST_CLIENT)
+    # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
+    # From verse 0 to 26:
+    assert ST.currentVerse == 0, "We should start with verse 0"
+    advanceNVerses(26, ST, ST_CLIENT)
     assert ST.currentVerse == 26, "We should be at verse 26, league finishes at 27"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
@@ -133,14 +133,13 @@ def test2():
 
     # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
     initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
-    usersAlongData = ST_CLIENT.getAllActionsForLeague(leagueIdx)
+    allActionsInThisLeague = ST_CLIENT.getAllActionsForLeague(leagueIdx)
 
     statesAtMatchday, scores = computeAllMatchdayStates(
-        ST_CLIENT.leagues[leagueIdx].verseInit,
-        ST_CLIENT.leagues[leagueIdx].verseStep,
+        ST_CLIENT.getAllSeedsForLeague(leagueIdx),
         initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        ST_CLIENT.leagues[leagueIdx].usersAlongData,
+        allActionsInThisLeague,
     )
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
@@ -376,7 +375,7 @@ def test3():
     ST_CLIENT.accumulateAction(action0)
     ST_CLIENT.accumulateAction(action1)
 
-    assert ST.currentVerse == ST_CLIENT.currentVerse == 1, "Error: Starting verse should be 1 (dummy verse)."
+    assert ST.currentVerse == ST_CLIENT.currentVerse == 0, "Error: Starting verse should be 0 (dummy verse)."
     assert len(ST_CLIENT.VerseCommits)==1, "Error: CLIENT should start with a single dummy commit."
     assert len(ST.VerseCommits)==1, "Error: BC should start with a single dummy commit."
     assert len(ST_CLIENT.Accumulator.buffer)==1, "Error: CLIENT should have accumulated actions from 1 block"
@@ -389,7 +388,7 @@ def test3():
 
     advanceNBlocks(360, ST, ST_CLIENT)
 
-    assert ST.currentVerse == ST_CLIENT.currentVerse == 2, "Error: Current verse is outdated"
+    assert ST.currentVerse == ST_CLIENT.currentVerse == 1, "Error: Current verse is outdated"
     assert len(ST_CLIENT.VerseCommits)==2, "Error: CLIENT should have made the first non-dummy commit already."
     assert len(ST.VerseCommits)==2, "Error: BC should have made the first non-dummy commit already."
     assert len(ST_CLIENT.Accumulator.buffer)==0, "Error: CLIENT should have emptied the actions buffer"
@@ -419,3 +418,8 @@ if success:
     print("ALL TESTS:  -- PASSED --")
 else:
     print("At least one test FAILED")
+
+
+
+# TODO:
+# - change teamIdx for teamPos inside usersAlongData

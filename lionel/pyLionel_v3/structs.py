@@ -11,17 +11,19 @@ from pickle import dumps as serialize
 class Counter():
     def __init__(self):
         self.currentBlock = 0
-        # We start with one commit, a dummy one, so we start with currentVerse = 1.
-        self.currentVerse = 1
+        self.currentVerse = 0
 
     def advanceNBlocks(self, deltaN):
         self.advanceToBlock(self.currentBlock + deltaN)
 
     def advanceToBlock(self, n):
         assert n > self.currentBlock, "Cannot advance... to a block in the past!"
+        verseWasCrossed = False
         if self.currentBlock < self.nextVerseBlock() <= n:
             self.advanceNVerses(1)
+            verseWasCrossed = True
         self.currentBlock = n
+        return verseWasCrossed
 
 
     def advanceNVerses(self, n):
@@ -300,7 +302,6 @@ class Storage(Counter):
         # an array of leagues, first entry is dummy
         self.leagues = [League(0,0,0)]
 
-
         self.blocksBetweenVerses = 360
         self.VerseCommits = [VerseCommit()]
 
@@ -329,31 +330,52 @@ class Storage(Counter):
                     actions2commit.append(a)
         return actions2commit
 
-    def getAllActionsForLeague(self, leagueIdx):
+    def getVersesForLeague(self, leagueIdx):
         nMatchdays = 2*(self.leagues[leagueIdx].nTeams-1)
-        verseInit = self.leagues[leagueIdx].verseInit
-        verseEnd = self.leagues[leagueIdx].verseFinal()
-        verseStep = self.leagues[leagueIdx].verseStep
-        versesThisLeague = range(verseInit, verseEnd, self.leagues[leagueIdx])
-
+        verses = []
         for matchday in range(nMatchdays):
-            verse = self.leagues[leagueIdx].verseInit
-            self.Accumulator.commitedActions
+            verses.append(self.leagues[leagueIdx].verseInit + matchday * self.leagues[leagueIdx].verseStep)
+        return verses
+
+    def getSeedForVerse(self, verse):
+        return self.VerseCommits[verse].blockHash
+
+    def getAllSeedsForLeague(self, leagueIdx):
+        assert self.leagues[leagueIdx].hasLeagueFinished(self.currentVerse), "All seeds only available at end of league"
+        seedsPerVerse = []
+        for verse in self.getVersesForLeague(leagueIdx):
+            seedsPerVerse.append(self.getSeedForVerse(verse))
+        return seedsPerVerse
+
+    def getAllActionsForLeague(self, leagueIdx):
+        assert self.leagues[leagueIdx].hasLeagueFinished(self.currentVerse), "All actions only available at end of league"
+        actionsPerVerse = []
+        for verse in self.getVersesForLeague(leagueIdx):
+            actionsInThisVerse = pylio.duplicate(self.Accumulator.commitedActions[verse])
+            actionsInThisVerse = [a for a in actionsInThisVerse if leagueIdx == self.teams[a["teamIdx"]].currentLeagueIdx]
+            # Convert teamIdx -> teamPos
+            for a in actionsInThisVerse:
+                teamPosInLeague = pylio.getTeamPosInLeague(a["teamIdx"], self.leagues[leagueIdx] )
+                a["teamIdx"] = teamPosInLeague
+            actionsPerVerse.append(actionsInThisVerse)
+        return actionsPerVerse
+
+
+
 
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
-        if self.currentBlock >= self.nextVerseBlock():
-            actions2commit = self.getAllActionsBeforeBlock(self.nextVerseBlock())
-            # leaguesPlayingInThisVerse
-            ST.commit(
-                pylio.serialize2str(actions2commit),
-                self.nextVerseBlock(),
-                pylio.getBlockhashForBlock(self.nextVerseBlock())
-            )
-            self.commit(
-                pylio.serialize2str(actions2commit),
-                self.nextVerseBlock(),
-                pylio.getBlockhashForBlock(self.nextVerseBlock()),
-            )
-            self.Accumulator.commitedActions.append(actions2commit)
-            self.Accumulator.removeActionsBeforeBlockNumFromBuffer(self.nextVerseBlock())
+        actions2commit = self.getAllActionsBeforeBlock(self.nextVerseBlock())
+        # leaguesPlayingInThisVerse
+        ST.commit(
+            pylio.serialize2str(actions2commit),
+            self.nextVerseBlock(),
+            pylio.getBlockhashForBlock(self.nextVerseBlock())
+        )
+        self.commit(
+            pylio.serialize2str(actions2commit),
+            self.nextVerseBlock(),
+            pylio.getBlockhashForBlock(self.nextVerseBlock()),
+        )
+        self.Accumulator.commitedActions.append(actions2commit)
+        self.Accumulator.removeActionsBeforeBlockNumFromBuffer(self.nextVerseBlock())

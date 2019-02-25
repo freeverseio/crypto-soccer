@@ -283,10 +283,9 @@ def getInitPlayerStates(leagueIdx, ST_CLIENT):
         teamPosInLeague += 1
     return initPlayerStates
 
-def updateTacticsToBlockNum(tactics, blockNum, usersAlongData):
-    for userData in [data for data in usersAlongData if data["block"] < blockNum]:
-        for teamIdx, tact in zip(userData["teamIdxsWithinLeague"], userData["tactics"]):
-            tactics[teamIdx] = tact
+def updateTacticsToVerseNum(tactics, matchday, allActionsInThisLeague):
+    for action in allActionsInThisLeague[matchday]:
+        tactics[action["teamIdx"]] = action["tactics"]
 
 def getBlockHash(blockNum):
     return intHash('salt' + str(blockNum))
@@ -358,12 +357,11 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
         return (2 if winnerWasBetter else 10)
 
 
-def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
+def computeStatesAtMatchday(matchday, prevStates, tactics, matchdaySeed):
     nTeams = len(prevStates)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
     statesAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
-    matchdaySeed = getBlockHash(matchdayBlock * 3)  # TODO: remove this *3
 
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
@@ -387,28 +385,27 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
 
 
 
-def computeAllMatchdayStates(verseInit, verseStep, initPlayerStates, usersInitData, usersAlongData):
+def computeAllMatchdayStates(seedsPerVerse, initPlayerStates, usersInitData, allActionsInThisLeague):
     # In this initial implementation, evolution happens at the end of the league only
     tactics = duplicate(usersInitData["tactics"])
     nTeams = len(usersInitData["teamIdxs"])
     nMatchdays = 2*(nTeams-1)
+    assert nMatchdays == len(seedsPerVerse), "We should have as many matchdays as verses"
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
-    matchdayVerseInit = duplicate(verseInit)
 
     # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
     statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
 
     for matchday in range(nMatchdays):
-        updateTacticsToBlockNum(tactics, matchdayBlock, usersAlongData)
+        updateTacticsToVerseNum(tactics, matchday, allActionsInThisLeague)
         prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
         statesAtMatchday[matchday], scores[matchday] = computeStatesAtMatchday(
             matchday,
             prevStates,
             tactics,
-            matchdayBlock
+            seedsPerVerse[matchday]
         )
-        matchdayBlock += blockStep
 
 
     return statesAtMatchday, scores
@@ -518,9 +515,11 @@ def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
 
 def advanceToBlock(n, ST, ST_CLIENT):
-    ST.advanceToBlock(n)
-    ST_CLIENT.advanceToBlock(n)
-    ST_CLIENT.syncActions(ST)
+    verseWasCrossedBC       = ST.advanceToBlock(n)
+    verseWasCrossedCLIENT   = ST_CLIENT.advanceToBlock(n)
+    assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
+    if verseWasCrossedBC:
+        ST_CLIENT.syncActions(ST)
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -539,4 +538,8 @@ def getBlockhashForBlock(n):
     return serialize2str(n)
 
 
-
+def getTeamPosInLeague(teamIdx, league):
+    for tPos, tIdx in enumerate(league.usersInitData["teamIdxs"]):
+        if teamIdx == tIdx:
+            return tPos
+    assert False, "Team not found in league"
