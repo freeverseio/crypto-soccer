@@ -1,12 +1,19 @@
 package config
 
+import (
+	"github.com/spf13/viper"
+	"github.com/urfave/cli"
+)
+
 // C is the package config
 var C Config
 
 // Config is the server configurtion
 type Config struct {
-	LionelAddress   string
-	StackersAddress string
+	Contracts struct {
+		LionelAddress   string
+		StackersAddress string
+	}
 
 	Keystore struct {
 		Account string
@@ -26,4 +33,18 @@ type Config struct {
 	API struct {
 		Port int
 	}
+}
+
+func MustRead(c *cli.Context) error {
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		return err
+	}
+	err := viper.Unmarshal(&C)
+	if err != nil {
+		return err
+	}
+	return nil
 }

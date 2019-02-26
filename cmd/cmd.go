@@ -36,6 +36,13 @@ var serveCmd = &cobra.Command{
 	Run:   cmd.CmdServe,
 }
 
+var ksCreate = &cobra.Command{
+	Use:   "ks-create",
+	Short: "Create a keystore",
+	Long:  "Create a keystore",
+	Run:   cmd.KsCreate,
+}
+
 var dbDumpCmd = &cobra.Command{
 	Use:   "db-dump",
 	Short: "Dumps the database",

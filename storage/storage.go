@@ -1,20 +1,13 @@
 package storage
 
 import (
-	"errors"
 	"sync"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
 const (
-	prefixGlobals   = "G"
-	prefixSavepoint = "S"
-)
-
-var (
-	ErrKeyNotExists     = errors.New("key does not exists in db")
-	ErrInconsistentSize = errors.New("inconsistent db and IPFS datasize")
+	prefixGlobals = "G"
 )
 
 // Storage manages the application state

@@ -1,48 +1,7 @@
 package service
 
-const lionelAbiJson = `[
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "next",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_leagueNo",
-				"type": "uint256"
-			}
-		],
-		"name": "canLeagueBeUpdated",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "legueCount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "pure",
-		"type": "function"
-	},
+const lionelAbiJson = `
+[
 	{
 		"constant": false,
 		"inputs": [
@@ -56,6 +15,15 @@ const lionelAbiJson = `[
 			}
 		],
 		"name": "challange",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "next",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -77,25 +45,6 @@ const lionelAbiJson = `[
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_leagueNo",
-				"type": "uint256"
-			}
-		],
-		"name": "canLeagueBeChallanged",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -132,6 +81,58 @@ const lionelAbiJson = `[
 		],
 		"name": "LeagueChallangeSucessfull",
 		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_leagueNo",
+				"type": "uint256"
+			}
+		],
+		"name": "canLeagueBeChallanged",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [
+			{
+				"name": "_leagueNo",
+				"type": "uint256"
+			}
+		],
+		"name": "canLeagueBeUpdated",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "legueCount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "pure",
+		"type": "function"
 	}
 ]
 `

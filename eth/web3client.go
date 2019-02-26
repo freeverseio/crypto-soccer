@@ -106,7 +106,6 @@ func (w *Web3Client) SendTransactionSync(to *common.Address, value *big.Int, gas
 	}
 
 	if gasPrice.Uint64() > w.MaxGasPrice {
-		log.Error("WEB3 Failed EstimateGas from=%v to=%v value=%v data=%v")
 		return nil, nil, fmt.Errorf("Max gas price reached %v > %v", gasPrice, w.MaxGasPrice)
 	}
 
@@ -159,7 +158,7 @@ func (w *Web3Client) SendTransactionSync(to *common.Address, value *big.Int, gas
 	log.WithFields(log.Fields{
 		"tx":       tx.Hash().Hex(),
 		"gasprice": fmt.Sprintf("%.2f Gwei", float64(tx.GasPrice().Uint64())/1000000000.0),
-	}).Info("WEB3 Sending transaction")
+	}).Debug("WEB3 Sending transaction")
 	if err = w.Client.SendTransaction(ctx, tx); err != nil {
 		return nil, nil, err
 	}

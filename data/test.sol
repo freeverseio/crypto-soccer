@@ -2,23 +2,25 @@ pragma solidity ^0.5.0;
 
 contract SoccerSim {
     
-    uint256 constant LEAGUE_COUNT = 10;
+    uint256 constant UPDATABLE = 1;
+    uint256 constant UPDATED = 2;
+    uint256 constant CHALLANGABLE = 3;
+    uint256 constant CHALLANGED = 4;
+
+    uint256 constant LEAGUE_COUNT = 5;
 
     event LeagueChallangeAvailable(uint256 leagueNo, bytes32 value);
     event LeagueChallangeSucessfull(uint256 leagueNo);
     
     mapping(uint256=>uint256) leagues;
 
-    uint256 starts;
-
     constructor() public {
         next();
     }
     
     function next() public {
-        starts = block.number;
         for (uint256 i = 0;i < legueCount();i++) {
-            leagues[i]==0;
+            leagues[i]=UPDATABLE;
         }
     }
 
@@ -27,17 +29,31 @@ contract SoccerSim {
     }
 
     function canLeagueBeUpdated(uint256 _leagueNo) public view returns(bool) {
-        return leagues[_leagueNo]==0 && starts > block.number && starts <  block.number + 10;
+        return leagues[_leagueNo]==UPDATABLE || leagues[_leagueNo]==CHALLANGED;
     }
 
     function update(uint256 _leagueNo, bytes32 _value) external {
-        leagues[_leagueNo] = 1;
+        require(canLeagueBeUpdated(_leagueNo));
+        if (leagues[_leagueNo]==UPDATABLE) {
+            if (_leagueNo == 2) {
+                leagues[_leagueNo]=CHALLANGABLE;
+            } else {
+                leagues[_leagueNo]=UPDATED;
+            }
+        } else if (leagues[_leagueNo]==CHALLANGED) {
+            leagues[_leagueNo]=UPDATED;
+        }
         emit LeagueChallangeAvailable(_leagueNo,_value);
     }
     
+    
+    function canLeagueBeChallanged(uint256 _leagueNo) public view returns(bool) {
+        return leagues[_leagueNo]==CHALLANGABLE;
+    }
+    
     function challange(uint256 _leagueNo, bytes32 _value) external {
-        _value;
-        leagues[_leagueNo] = 0;
+        require(canLeagueBeChallanged(_leagueNo));
+        leagues[_leagueNo] = CHALLANGED;
         emit LeagueChallangeSucessfull(_leagueNo);
     }
     

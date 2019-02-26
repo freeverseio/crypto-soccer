@@ -32,13 +32,6 @@ func (s *Storage) Dump(w io.Writer) {
 				w.Write([]byte("| *READ ERROR"))
 				break
 			}
-			/*
-				w.Write([]byte(fmt.Sprintf(
-					"\n| CurrentQuota=%v\n",
-					entry.CurrentQuota,
-				)))
-			*/
-
 		}
 	}
 

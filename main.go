@@ -1,12 +1,27 @@
 package main
 
 import (
-	banner "github.com/CrowdSurge/banner"
-	cmd "github.com/freeverseio/go-soccer/cmd"
+	"os"
+
+	"github.com/fatih/color"
+	"github.com/freeverseio/go-soccer/commands"
+	"github.com/urfave/cli"
 )
 
 func main() {
+	app := cli.NewApp()
+	app.Name = "gosoccer"
+	app.Version = "0.0.1-alpha"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{Name: "config"},
+	}
 
-	banner.Print("go-soccer")
-	cmd.ExecuteCmd()
+	app.Commands = []cli.Command{}
+	app.Commands = append(app.Commands, commands.WalletCommands...)
+	app.Commands = append(app.Commands, commands.DbCommands...)
+	app.Commands = append(app.Commands, commands.ServiceCommands...)
+	err := app.Run(os.Args)
+	if err != nil {
+		color.Red(err.Error())
+	}
 }

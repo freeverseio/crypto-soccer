@@ -8,12 +8,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/log"
 
 	cfg "github.com/freeverseio/go-soccer/config"
 	"github.com/freeverseio/go-soccer/eth"
 
 	sto "github.com/freeverseio/go-soccer/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -40,7 +40,7 @@ func NewService(web3 *eth.Web3Client, storage *sto.Storage) (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	lionelAddress := common.HexToAddress(cfg.C.LionelAddress)
+	lionelAddress := common.HexToAddress(cfg.C.Contracts.LionelAddress)
 
 	lionel, err := eth.NewContract(web3, &lionelAbi, nil, &lionelAddress)
 	if err != nil {
@@ -65,15 +65,38 @@ func (s *Service) Stop() {
 
 // Join waits all background jobs finished
 func (s *Service) Join() {
+	log.Info("Waiting terminate channel")
 	<-s.terminatedch
 }
 
 func (s *Service) updateLeague(leagueNo int64) error {
-	return nil
+
+	var hash common.Hash
+	tx, _, err := s.lionel.SendTransactionSync(nil, 0,
+		"update",
+		big.NewInt(leagueNo), &hash)
+
+	if err == nil {
+		log.WithField("tx", tx.Hash().Hex()).Info("  League ", leagueNo, " : updating")
+	} else {
+		log.Error("  League ", leagueNo, " : update failed")
+	}
+	return err
 }
 
 func (s *Service) challangeLeague(leagueNo int64) error {
-	return nil
+
+	var hash common.Hash
+	tx, _, err := s.lionel.SendTransactionSync(nil, 0,
+		"challange",
+		big.NewInt(leagueNo), hash)
+
+	if err == nil {
+		log.WithField("tx", tx.Hash().Hex()).Info("  League ", leagueNo, " : challanging")
+	} else {
+		log.Error("  League ", leagueNo, " : challange failed")
+	}
+	return err
 }
 
 func (s *Service) process() (bool, error) {
@@ -82,6 +105,7 @@ func (s *Service) process() (bool, error) {
 	if err := s.lionel.Call(&legueCount, "legueCount"); err != nil {
 		return false, err
 	}
+	log.Info("Scanning ", legueCount.Uint64(), " leagues...")
 
 	for i := int64(0); i < int64(legueCount.Uint64()); i++ {
 
@@ -116,6 +140,7 @@ func (s *Service) process() (bool, error) {
 func (s *Service) Start() {
 
 	go func() {
+		log.Info("Starting service...")
 		loop := true
 		for loop {
 			select {

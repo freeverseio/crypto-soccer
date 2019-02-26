@@ -1,0 +1,20 @@
+contracts:
+  lioneladdress: 0xaff31504ecfc34a1031bfcee35d7028e97e0e70e
+  stackersaddress: 
+
+keystore:
+  account: 0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd
+  path: data/keystore
+  passwd: 111111   
+
+db:
+  path: /tmp/soccerdb
+
+api:
+  port: 3000
+
+web3:
+  rpcurl: https://testnet.busyverse.com/web3
+  maxgasprice: 14000000000
+
+# block explorer is in http://testnet.busyverse.com:8000/

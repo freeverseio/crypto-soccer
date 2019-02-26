@@ -4,7 +4,9 @@ import (
 	"context"
 	"sync"
 
-	cfg "github.com/freeverseio/go-soccer/config"
+	"github.com/urfave/cli"
+
+	"github.com/freeverseio/go-soccer/config"
 	eth "github.com/freeverseio/go-soccer/eth"
 	sto "github.com/freeverseio/go-soccer/storage"
 	log "github.com/sirupsen/logrus"
@@ -20,53 +22,67 @@ var (
 	storage *sto.Storage
 )
 
-func load() error {
+func must(err error) {
+	if err != nil {
+		log.Panicln(err)
+	}
+}
+
+func load(c *cli.Context) error {
 
 	var err error
 
-	if err = loadStorage(); err != nil {
+	if err = loadStorage(c); err != nil {
 		return err
 	}
 
-	return loadWeb3()
+	return loadWeb3(c)
 }
 
-func loadStorage() error {
+func loadConfig(c *cli.Context) {
+	var err error
+	if err = config.MustRead(c); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadStorage(c *cli.Context) error {
+
+	loadConfig(c)
 
 	var err error
-
-	storage, err = sto.New(cfg.C.DB.Path)
+	storage, err = sto.New(config.C.DB.Path)
 
 	return err
 
 }
 
-func loadWeb3() (err error) {
+func loadWeb3(c *cli.Context) (err error) {
 
-	// load keystore
+	loadConfig(c)
 
+	// open wallet
 	var ks *keystore.KeyStore
 	var account accounts.Account
 
-	ks = keystore.NewKeyStore(cfg.C.Keystore.Path, keystore.StandardScryptN, keystore.StandardScryptP)
+	ks = keystore.NewKeyStore(config.C.Keystore.Path, keystore.StandardScryptN, keystore.StandardScryptP)
 	account, err = ks.Find(accounts.Account{
-		Address: common.HexToAddress(cfg.C.Keystore.Account),
+		Address: common.HexToAddress(config.C.Keystore.Account),
 	})
 	if err != nil {
 		return err
 	}
 
-	err = ks.Unlock(account, cfg.C.Keystore.Passwd)
+	err = ks.Unlock(account, config.C.Keystore.Passwd)
 	if err != nil {
 		return err
 	}
 
-	log.WithField("acc", cfg.C.Keystore.Account).Info("Account unlocked")
-
 	// load web3
-	log.WithField("url", cfg.C.Web3.RPCURL).Info("Checking WEB3.")
 
-	client, err := ethclient.Dial(cfg.C.Web3.RPCURL)
+	log.WithField("url", config.C.Web3.RPCURL).Info("Checking WEB3.")
+
+	client, err := ethclient.Dial(config.C.Web3.RPCURL)
 	if err != nil {
 		return err
 	}
@@ -79,6 +95,16 @@ func loadWeb3() (err error) {
 
 	web3 = eth.NewWeb3Client(client, ks, &account)
 	web3.ClientMutex = &sync.Mutex{}
+	web3.MaxGasPrice = config.C.Web3.MaxGasPrice
+
+	balance, err := client.BalanceAt(context.TODO(), account.Address, nil)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"balance": balance.String(),
+	}).Info(" Using account ", config.C.Keystore.Account)
 
 	return nil
 }
