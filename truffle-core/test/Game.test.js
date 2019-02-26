@@ -21,6 +21,9 @@ contract('Game', (accounts) => {
     let barcelonaId = null;
     let madridId = null;
     let sevillaId = null;
+    let bilbaoId = null;
+    let veniceId = null;
+    let juventusId = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -42,10 +45,14 @@ contract('Game', (accounts) => {
         await horizon.createTeam("Madrid").should.be.fulfilled;
         await horizon.createTeam("Sevilla").should.be.fulfilled;
         await horizon.createTeam("Bilbao").should.be.fulfilled;
+        await horizon.createTeam("Venice").should.be.fulfilled;
+        await horizon.createTeam("Juventus").should.be.fulfilled;
         barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
         madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
         sevillaId = await teams.getTeamId("Sevilla").should.be.fulfilled;
         bilbaoId = await teams.getTeamId("Bilbao").should.be.fulfilled;
+        veniceId = await teams.getTeamId("Venice").should.be.fulfilled;
+        juventusId = await teams.getTeamId("Juventus").should.be.fulfilled;
     });
 
     // we use the values in the blockchain to generate the team status
@@ -61,37 +68,41 @@ contract('Game', (accounts) => {
         return state;
     }
 
-    it('play a league of 4 teams', async () => {
+    it('play a league of 6 teams', async () => {
         const initBlock = 1;
         const step = 1;
         const leagueId = 0;
-        const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId];
-        const tactics = [[4,4,3], [4,4,3], [4,4,3], [4,4,3]];
+        const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
+        const tactics = [[4,4,3], [4,4,3], [4,4,3], [4,4,3], [4,4,3], [4,4,3]];
         await leagues.create(leagueId, initBlock, step, teamIds).should.be.fulfilled;
 
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
         const madridState = await generateTeamState(madridId).should.be.fulfilled;
         const sevillaState = await generateTeamState(sevillaId).should.be.fulfilled;
         const bilbaoState = await generateTeamState(bilbaoId).should.be.fulfilled;
+        const veniceState = await generateTeamState(veniceId).should.be.fulfilled;
+        const juventusState = await generateTeamState(juventusId).should.be.fulfilled;
 
         // we build the league state
         let leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
         leagueState = await stateLib.append(leagueState, sevillaState).should.be.fulfilled;
         leagueState = await stateLib.append(leagueState, bilbaoState).should.be.fulfilled;
+        leagueState = await stateLib.append(leagueState, veniceState).should.be.fulfilled;
+        leagueState = await stateLib.append(leagueState, juventusState).should.be.fulfilled;
 
         // calculate the league
         const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, tactics).should.be.fulfilled;
 
         // get the number of days in the league
         const nDayScores = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
-        nDayScores.toNumber().should.be.equal(6);
+        nDayScores.toNumber().should.be.equal(10);
 
         // for each day we get the scores
         for (i = 0; i < nDayScores.toNumber(); i++) {
             const dayScores = await leagues.getDayScores(leagueScores, i).should.be.fulfilled;
             // 2 matches per day
-            dayScores.length.should.be.equal(2);
-            for (j = 0; j < 2; j++) {
+            dayScores.length.should.be.equal(3);
+            for (j = 0; j < dayScores.length; j++) {
                 // get the indexes of the teams of match j
                 const teamsInMatch = await leagues.getTeamsInMatch(leagueId, i, j).should.be.fulfilled;
 
