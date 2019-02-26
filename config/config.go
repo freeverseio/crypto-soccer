@@ -11,8 +11,8 @@ var C Config
 // Config is the server configurtion
 type Config struct {
 	Contracts struct {
-		LionelAddress   string
-		StackersAddress string
+		LionelAddress  string
+		StakersAddress string
 	}
 
 	Keystore struct {

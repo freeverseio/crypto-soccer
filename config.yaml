@@ -1,6 +1,6 @@
 contracts:
   lioneladdress: 0xaff31504ecfc34a1031bfcee35d7028e97e0e70e
-  stackersaddress: 
+  stakersaddress: 0x0431890335d718fdf8329bf7a88bd536366bcf0a
 
 keystore:
   account: 0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd
