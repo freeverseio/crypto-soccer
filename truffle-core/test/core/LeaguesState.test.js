@@ -13,6 +13,19 @@ contract('LeaguesState', (accounts) => {
         divider = await instance.DIVIDER().should.be.fulfilled;
     });
 
+    it('unexistent league', async () => {
+        await leagues.getFinalTeamStateHashes(id).should.be.rejected;
+        await leagues.getInitStateHash(id).should.be.rejected;
+    });
+
+    it('default hashes values on create league', async () =>{
+        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        const initHash = await leagues.getInitHash(id).should.be.fulfilled;
+        initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+        const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
+        finalHashes.length.should.be.equal(0);
+    });
+
     it('valid state', async () => {
         let result = await instance.isValid([]).should.be.fulfilled;
         result.should.be.equal(true);

@@ -19,20 +19,9 @@ contract('LeaguesStorage', (accounts) => {
         await leagues.getInitBlock(id).should.be.rejected;
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
-        await leagues.getInitHash(id).should.be.rejected;
-        await leagues.getFinalTeamStateHashes(id).should.be.rejected;
         await leagues.getEndBlock(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
-        await leagues.getInitStateHash(id).should.be.rejected;
-    })
-
-    it('default hashes values on create league', async () =>{
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        const initHash = await leagues.getInitHash(id).should.be.fulfilled;
-        initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
-        finalHashes.length.should.be.equal(0);
-    })
+    });
 
     it('create league with no team', async () => {
         const teamIds = [];

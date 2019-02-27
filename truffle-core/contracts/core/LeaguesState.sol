@@ -5,6 +5,35 @@ import "./LeaguesStorage.sol";
 contract LeaguesState is LeaguesStorage {
     uint256 constant public DIVIDER = 0;
 
+    struct State {
+        // hash of the init status of the league 
+        bytes32 initStateHash;
+        // hash of the final hashes of the league
+        bytes32[] finalTeamStateHashes;
+    }
+
+    mapping(uint256 => State) private _states;
+
+    function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
+        require(_exists(id), "unexistent league");
+        return _states[id].finalTeamStateHashes;
+    }
+
+    function _setFinalTeamStateHashes(uint256 id, bytes32[] memory hashes) internal {
+        require(_exists(id), "unexistent league");
+        _states[id].finalTeamStateHashes = hashes;
+    }
+
+    function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
+        require(_exists(id), "unexistent league");
+        _states[id].initStateHash = stateHash;
+    }
+
+    function getInitStateHash(uint256 id) external view returns (bytes32) {
+        require(_exists(id), "unexistent league");
+        return _states[id].initStateHash;
+    }
+
     function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league result");
         require(isValid(state), "invalid team result");
