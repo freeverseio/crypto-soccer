@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-contract Scores {
+import "./LeaguesScheduler.sol";
+
+contract Scores is LeaguesScheduler {
     uint16 constant public DIVIDER = 0xffff;
 
     function encodeScore(uint8 home, uint8 visitor) public pure returns (uint16 score) {

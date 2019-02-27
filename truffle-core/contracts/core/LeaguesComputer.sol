@@ -1,11 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesScheduler.sol";
 import "./LeagueState.sol";
 import "./Scores.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesScheduler, Scores {
+contract LeaguesComputer is Scores {
     using LeagueState for uint256[];
 
     uint8 constant PLAYERS_PER_TEAM = 11;
