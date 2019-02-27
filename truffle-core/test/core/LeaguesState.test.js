@@ -7,6 +7,10 @@ const LeaguesState = artifacts.require('LeaguesState');
 contract('LeaguesState', (accounts) => {
     let instance = null;
     let divider = null;
+    const initBlock = 1;
+    const step = 1;
+    const id = 0;
+    const teamIds = [1, 2];
 
     beforeEach(async () => {
         instance = await LeaguesState.new().should.be.fulfilled;
@@ -14,15 +18,15 @@ contract('LeaguesState', (accounts) => {
     });
 
     it('unexistent league', async () => {
-        await leagues.getFinalTeamStateHashes(id).should.be.rejected;
-        await leagues.getInitStateHash(id).should.be.rejected;
+        await instance.getFinalTeamStateHashes(id).should.be.rejected;
+        await instance.getInitStateHash(id).should.be.rejected;
     });
 
     it('default hashes values on create league', async () =>{
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        const initHash = await leagues.getInitHash(id).should.be.fulfilled;
+        await instance.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        const initHash = await instance.getInitStateHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
+        const finalHashes = await instance.getFinalTeamStateHashes(id).should.be.fulfilled;
         finalHashes.length.should.be.equal(0);
     });
 

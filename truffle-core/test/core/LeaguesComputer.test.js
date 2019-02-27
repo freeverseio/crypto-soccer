@@ -79,7 +79,7 @@ contract('LeaguesComputer', (accounts) => {
         ];
         const scores = [1, 2, 2, 2];
         await leagues.updateLeague(id, initStateHash, finalTeamStateHashes, scores).should.be.fulfilled;
-        let result = await leagues.getInitHash(id).should.be.fulfilled;
+        let result = await leagues.getInitStateHash(id).should.be.fulfilled;
         result.should.be.equal(initStateHash);
         result = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
         result.length.should.be.equal(finalTeamStateHashes.length);
