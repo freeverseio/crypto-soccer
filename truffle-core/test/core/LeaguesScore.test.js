@@ -2,9 +2,9 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Scores = artifacts.require('Scores');
+const Scores = artifacts.require('LeaguesScore');
 
-contract('Scores', (accounts) => {
+contract('LeaguesScore', (accounts) => {
     let instance = null;
 
     beforeEach(async () => {
