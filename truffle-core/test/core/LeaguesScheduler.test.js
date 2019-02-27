@@ -18,6 +18,16 @@ contract('LeaguesScheduler', (accounts) => {
         await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
     });
 
+    it('end block of unexistend league', async () => {
+        const id = 1;
+        await leagues.getEndBlock(id).should.be.rejected;
+    })
+
+    it('end block of a league', async () => {
+        const endBlock = await leagues.getEndBlock(id).should.be.fulfilled;
+        endBlock.toNumber().should.be.equal(2);
+    });
+
     it('get days of a league', async () => {
         const days = await leagues.countLeagueDays(id).should.be.fulfilled;
         days.toNumber().should.be.equal(2);

@@ -12,12 +12,6 @@ contract LeaguesStorage {
 
     mapping(uint256 => League) private _leagues;
 
-    function getEndBlock(uint256 id) external view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        uint256 nTeams = _leagues[id].teamIds.length;
-        uint256 nMatchDays = 2 * (nTeams - 1);
-        return _leagues[id].initBlock + (nMatchDays - 1) * _leagues[id].step;
-    }
 
     function create(uint256 id, uint256 initBlock, uint256 step, uint256[] memory teamIds) public {
         require(initBlock > 0, "invalid init block");

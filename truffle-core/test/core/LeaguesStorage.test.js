@@ -19,7 +19,6 @@ contract('LeaguesStorage', (accounts) => {
         await leagues.getInitBlock(id).should.be.rejected;
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
-        await leagues.getEndBlock(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
     });
 
@@ -53,11 +52,7 @@ contract('LeaguesStorage', (accounts) => {
         result.toNumber().should.be.equal(initBlock);
     });
 
-    it('end block of a league', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        const endBlock = await leagues.getEndBlock(id).should.be.fulfilled;
-        endBlock.toNumber().should.be.equal(initBlock + step);
-    });
+
 
     it('create 2 leagues with the same id', async () => {
         await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
