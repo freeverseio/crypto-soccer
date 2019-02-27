@@ -85,11 +85,4 @@ contract('LeaguesStorage', (accounts) => {
         const count = await leagues.countTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
-
-    it('set scores', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        await leagues.setScores(id, [[0, 1], [2, 2]]).should.be.fulfilled;
-        const scores = await leagues.getScores(id).should.be.fulfilled;
-        // TODO: finish it
-    })
 });
