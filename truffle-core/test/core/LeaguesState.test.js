@@ -47,19 +47,19 @@ contract('LeaguesState', (accounts) => {
     });
 
     it('count teams into league state', async () => {
-        let count = await instance.countTeams([]).should.be.fulfilled;
+        let count = await instance.countTeamsInState([]).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
-        count = await instance.countTeams([2]).should.be.fulfilled;
+        count = await instance.countTeamsInState([2]).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        count = await instance.countTeams([2, 3, 4, 5, 0, 5, 4, 0, 2]).should.be.fulfilled;
+        count = await instance.countTeamsInState([2, 3, 4, 5, 0, 5, 4, 0, 2]).should.be.fulfilled;
         count.toNumber().should.be.equal(3);
     });
 
     it('count teams into invalid league state', async () => {
-        await instance.countTeams([0]).should.be.rejected;
-        await instance.countTeams([0,3]).should.be.rejected;
-        await instance.countTeams([3,0]).should.be.rejected;
-        await instance.countTeams([3,0,0,2]).should.be.rejected;
+        await instance.countTeamsInState([0]).should.be.rejected;
+        await instance.countTeamsInState([0,3]).should.be.rejected;
+        await instance.countTeamsInState([3,0]).should.be.rejected;
+        await instance.countTeamsInState([3,0,0,2]).should.be.rejected;
     });
 
     it('count players in team', async () => {

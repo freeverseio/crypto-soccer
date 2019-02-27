@@ -80,7 +80,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore {
     }
 
     function hashLeagueState(uint256[] memory leagueState) public pure returns (bytes32[] memory) {
-        uint256 nTeams = countTeams(leagueState);
+        uint256 nTeams = countTeamsInState(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
             uint256[] memory teamState = getTeam(leagueState, i);
