@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
-contract LeaguesState {
+import "./LeaguesStorage.sol";
+
+contract LeaguesState is LeaguesStorage {
     uint256 constant public DIVIDER = 0;
 
     function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
