@@ -1,12 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "./LeagueState.sol";
+import "./LeaguesState.sol";
 import "./LeaguesScore.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesScore {
-    using LeagueState for uint256[];
-
+contract LeaguesComputer is LeaguesState, LeaguesScore {
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
@@ -53,8 +51,8 @@ contract LeaguesComputer is LeaguesScore {
             (team0Idx, team1Idx) = getTeamsInMatch(id, matchday, i);
             (home, visitor) = _engine.playMatch(
                 seed, 
-                prevStates.getTeam(team0Idx), 
-                prevStates.getTeam(team1Idx), 
+                getTeam(prevStates, team0Idx), 
+                getTeam(prevStates, team1Idx), 
                 tactics[0], 
                 tactics[1]
             );
@@ -82,10 +80,10 @@ contract LeaguesComputer is LeaguesScore {
     }
 
     function hashLeagueState(uint256[] memory leagueState) public pure returns (bytes32[] memory) {
-        uint256 nTeams = leagueState.countTeams();
+        uint256 nTeams = countTeams(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = leagueState.getTeam(i);
+            uint256[] memory teamState = getTeam(leagueState, i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;

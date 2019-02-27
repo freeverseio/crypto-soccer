@@ -5,7 +5,6 @@ require('chai')
 const Players = artifacts.require('Players');
 const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
-const LeagueState = artifacts.require('LeagueState');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 
@@ -16,7 +15,6 @@ contract('Game', (accounts) => {
     let players = null;
     let teams = null;
     let engine = null;
-    let stateLib = null;
     let leagues = null;
     let barcelonaId = null;
     let madridId = null;
@@ -36,8 +34,6 @@ contract('Game', (accounts) => {
         await players.addTeamsContract(teams.address).should.be.fulfilled;
         await players.renounceTeamsContract().should.be.fulfilled;
 
-        stateLib = await LeagueState.new().should.be.fulfilled;
-        Leagues.link("LeagueState", stateLib.address);
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
 
@@ -84,11 +80,11 @@ contract('Game', (accounts) => {
         const juventusState = await generateTeamState(juventusId).should.be.fulfilled;
 
         // we build the league state
-        let leagueState = await stateLib.append(barcelonaState, madridState).should.be.fulfilled;
-        leagueState = await stateLib.append(leagueState, sevillaState).should.be.fulfilled;
-        leagueState = await stateLib.append(leagueState, bilbaoState).should.be.fulfilled;
-        leagueState = await stateLib.append(leagueState, veniceState).should.be.fulfilled;
-        leagueState = await stateLib.append(leagueState, juventusState).should.be.fulfilled;
+        let leagueState = await leagues.append(barcelonaState, madridState).should.be.fulfilled;
+        leagueState = await leagues.append(leagueState, sevillaState).should.be.fulfilled;
+        leagueState = await leagues.append(leagueState, bilbaoState).should.be.fulfilled;
+        leagueState = await leagues.append(leagueState, veniceState).should.be.fulfilled;
+        leagueState = await leagues.append(leagueState, juventusState).should.be.fulfilled;
 
         // calculate the league
         const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, tactics).should.be.fulfilled;
