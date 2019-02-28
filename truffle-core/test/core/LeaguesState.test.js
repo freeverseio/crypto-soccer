@@ -154,4 +154,15 @@ contract('LeaguesState', (accounts) => {
         leagueState[4].toNumber().should.be.equal(0);
         leagueState[5].toNumber().should.be.equal(2);
     });
+
+    it('team rating', async () => {
+        const nPlayers = 100;
+        let teamState = await instance.teamStateCreate().should.be.fulfilled;
+        for (var i = 1; i < nPlayers; i += 5) {
+            const playerState = await instance.playerStateCreate(i, i + 1, i + 2, i + 3, i + 4).should.be.fulfilled;
+            teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        }
+        const rating = await instance.computeTeamRating(teamState).should.be.fulfilled;
+        rating.toNumber().should.be.equal(nPlayers * (nPlayers + 1) / 2);
+    })
 });
