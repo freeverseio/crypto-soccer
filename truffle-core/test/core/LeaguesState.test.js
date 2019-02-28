@@ -143,5 +143,5 @@ contract('LeaguesState', (accounts) => {
         teamState.length.should.be.equal(2);
         teamState[0].toNumber().should.be.equal(playerState0);
         teamState[1].toNumber().should.be.equal(playerState1);
-    })
+    });
 });
