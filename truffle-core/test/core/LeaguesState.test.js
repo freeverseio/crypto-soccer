@@ -43,26 +43,6 @@ contract('LeaguesState', (accounts) => {
         result.should.be.equal(false);
     });
 
-    it('append an empty team', async () => {
-        let result = await instance.append([], []).should.be.fulfilled;
-        result.length.should.be.equal(0);
-        result = await instance.append([2], []).should.be.fulfilled;
-        result.length.should.be.equal(1);
-        result[0].toNumber().should.be.equal(2);
-    });
-
-    it('append team to league state', async () => {
-        let state = await instance.append([], [2]).should.be.fulfilled;
-        state.length.should.be.equal(1);
-        state[0].toNumber().should.be.equal(2);
-        state = await instance.append(state, [3, 4]).should.be.fulfilled;
-        state.length.should.be.equal(4);
-        state[0].toNumber().should.be.equal(2);
-        state[1].toNumber().should.be.equal(0);
-        state[2].toNumber().should.be.equal(3);
-        state[3].toNumber().should.be.equal(4);
-    });
-
     it('count teams into league state', async () => {
         let count = await instance.countTeamsInState([]).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
@@ -133,7 +113,7 @@ contract('LeaguesState', (accounts) => {
         teamState.length.should.be.equal(0);
     });
 
-    it('append player state to team state', async () => {
+    it('leagueStateAppend player state to team state', async () => {
         const playerState0 = 0x546ab;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
@@ -160,7 +140,7 @@ contract('LeaguesState', (accounts) => {
         result.should.be.equal(true);
     });
 
-    it('append team state to league state', async () => {
+    it('leagueStateAppend team state to league state', async () => {
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
         leagueState = await instance.leagueStateAppend(leagueState, [4,5,6,7]).should.be.fulfilled;
         leagueState.length.should.be.equal(4);

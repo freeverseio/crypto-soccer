@@ -54,14 +54,25 @@ contract('Game', (accounts) => {
     // we use the values in the blockchain to generate the team status
     // it will use a local DBMS in the final version
     const generateTeamState = async (id) => {
-        let state = [];
+        let teamState = await leagues.teamStateCreate().should.be.fulfilled;
         const playersIds = await teams.getPlayers(id).should.be.fulfilled;
         for (let i = 0; i < playersIds.length; i++) {
             const playerId = playersIds[i];
-            const genome = await players.getGenome(playerId).should.be.fulfilled;
-            state.push(genome);
+            const defence = await players.getDefence(playerId).should.be.fulfilled;
+            const speed = await players.getSpeed(playerId).should.be.fulfilled;
+            const pass = await players.getPass(playerId).should.be.fulfilled;
+            const shoot = await players.getShoot(playerId).should.be.fulfilled;
+            const endurance = await players.getEndurance(playerId).should.be.fulfilled;
+            const playerState = await leagues.playerStateCreate(
+                defence,
+                speed,
+                pass,
+                shoot,
+                endurance
+            );
+            teamState = await leagues.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
-        return state;
+        return teamState;
     }
 
     it('play a league of 6 teams', async () => {
@@ -80,11 +91,13 @@ contract('Game', (accounts) => {
         const juventusState = await generateTeamState(juventusId).should.be.fulfilled;
 
         // we build the league state
-        let leagueState = await leagues.append(barcelonaState, madridState).should.be.fulfilled;
-        leagueState = await leagues.append(leagueState, sevillaState).should.be.fulfilled;
-        leagueState = await leagues.append(leagueState, bilbaoState).should.be.fulfilled;
-        leagueState = await leagues.append(leagueState, veniceState).should.be.fulfilled;
-        leagueState = await leagues.append(leagueState, juventusState).should.be.fulfilled;
+        let leagueState = await leagues.leagueStateCreate().should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, barcelonaState).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, madridState).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, sevillaState).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, bilbaoState).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, veniceState).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
 
         // calculate the league
         const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, tactics).should.be.fulfilled;
