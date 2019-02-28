@@ -127,4 +127,16 @@ contract('LeaguesState', (accounts) => {
         (state.toNumber() >> 8*3 & 0xff).should.be.equal(speed);
         (state.toNumber() >> 8*4 & 0xff).should.be.equal(endurance);
     });
+
+    it('append player state to team state', async () => {
+        const playerState0 = 0x546ab;
+        let teamState = [];
+        teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
+        teamState.length.should.be.equal(1);
+        const playerState1 = 0x435;
+        teamState = await instance.teamStateAppend(teamState, playerState1).should.be.fulfilled;
+        teamState.length.should.be.equal(2);
+        teamState[0].toNumber().should.be.equal(playerState0);
+        teamState[1].toNumber().should.be.equal(playerState1);
+    })
 });

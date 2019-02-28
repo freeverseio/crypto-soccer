@@ -60,6 +60,14 @@ contract LeaguesState is LeaguesBase {
         state |= endurance;
     }
 
+    /// @dev append a player state to team state
+    function teamStateAppend(uint256[] memory teamState, uint256 playerState) public pure returns (uint256[] memory state) {
+        state = new uint256[](teamState.length + 1);
+        for (uint256 i = 0 ; i < teamState.length ; i++)
+            state[i] = teamState[i];
+        state[state.length-1] = playerState;
+    }
+
     function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league result");
         require(isValid(state), "invalid team result");
