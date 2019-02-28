@@ -63,7 +63,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         if (ratingDiff == 0)
             return 5;
         int256 goalsDiff = homeGoals - visitorGoals;
-        bool winnerWasBetter = (ratingDiff > 0 && goalsDiff < 0) || (ratingDiff < 0 && goalsDiff < 0);
+        bool winnerWasBetter = (ratingDiff > 0 && goalsDiff > 0) || (ratingDiff < 0 && goalsDiff < 0);
         if (winnerWasBetter)
             return 2;
         return 10;
