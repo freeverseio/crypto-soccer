@@ -10,8 +10,8 @@ contract('LeaguesComputer', (accounts) => {
     let engine = null;
 
     const id = 0;
-    const team0State = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const team1State = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    const teamState0 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const teamState1 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
     const tactics = [
         [4, 4, 3],  // Team 0
         [5, 4, 2]   // Team 1
@@ -26,8 +26,8 @@ contract('LeaguesComputer', (accounts) => {
         leagues = await Leagues.new(engine.address).should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
         leagueState = await leagues.leagueStateCreate().should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, team0State).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, team1State).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
+        leagueState = await leagues.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;
     });
 
     it('Engine contract', async () => {
@@ -139,5 +139,14 @@ contract('LeaguesComputer', (accounts) => {
         dayScores.length.should.be.equal(1);
         dayScores = await leagues.getDayScores(leagueScores, 1).should.be.fulfilled;
         dayScores.length.should.be.equal(1);
+    });
+
+    it('compute points for winner', async () => {
+        let points = await leagues.computePointsWon(teamState0, teamState0, 2, 2).should.be.fulfilled;
+        points.toNumber().should.be.equal(5);
+        points = await leagues.computePointsWon(teamState0, teamState0, 2, 1).should.be.fulfilled;
+        points.toNumber().should.be.equal(5);
+        points = await leagues.computePointsWon(teamState0, teamState0, 1, 2).should.be.fulfilled;
+        points.toNumber().should.be.equal(5);
     });
 });

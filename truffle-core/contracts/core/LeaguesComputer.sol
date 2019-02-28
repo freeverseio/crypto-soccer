@@ -31,6 +31,44 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         _setScores(id, scores);
     }
 
+    function updatePlayerStatesAfterMatch(
+        uint256[] memory homeTeamState,
+        uint256[] memory visitorTeamState,
+        uint8 homeGoals,
+        uint8 visitorGoals
+    )
+        public 
+        view
+        returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
+    {
+        if (homeGoals == visitorGoals)
+            return (homeTeamState, visitorTeamState);
+    }
+
+    function computePointsWon(
+        uint256[] memory homeTeamState, 
+        uint256[] memory visitorTeamState,
+        uint8 homeGoals,
+        uint8 visitorGoals
+    )
+        public 
+        view
+        returns (uint8 points)
+    {
+        require(isValidTeamState(homeTeamState), "home team state invalid");
+        require(isValidTeamState(visitorTeamState), "visitor team state invalid");
+        uint128 homeTeamRating = computeTeamRating(homeTeamState);
+        uint128 visitorTeamRating = computeTeamRating(visitorTeamState);
+        int256 ratingDiff = homeTeamRating - visitorTeamRating;
+        if (ratingDiff == 0)
+            return 5;
+        int256 goalsDiff = homeGoals - visitorGoals;
+        bool winnerWasBetter = (ratingDiff > 0 && goalsDiff < 0) || (ratingDiff < 0 && goalsDiff < 0);
+        if (winnerWasBetter)
+            return 2;
+        return 10;
+    }
+
     function computeStatesAtMatchday(
         uint256 id,
         uint256 matchday, 

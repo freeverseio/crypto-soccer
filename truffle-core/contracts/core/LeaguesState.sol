@@ -89,14 +89,14 @@ contract LeaguesState is LeaguesBase {
             state[leagueState.length + 1 + i] = teamState[i];
     }
 
-    function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
+    function computeTeamRating(uint256[] memory teamState) public pure returns (uint128 rating) {
         require(isValidTeamState(teamState), "invalid team state");
         for(uint256 i = 0 ; i < teamState.length ; i++){
-            rating += teamState[i] >> 8 * 4 & 0xff;
-            rating += teamState[i] >> 8 * 3 & 0xff;
-            rating += teamState[i] >> 8 * 2 & 0xff;
-            rating += teamState[i] >> 8 & 0xff;
-            rating += teamState[i] & 0xff;
+            rating += uint8(teamState[i] >> 8 * 4 & 0xff);
+            rating += uint8(teamState[i] >> 8 * 3 & 0xff);
+            rating += uint8(teamState[i] >> 8 * 2 & 0xff);
+            rating += uint8(teamState[i] >> 8 & 0xff);
+            rating += uint8(teamState[i] & 0xff);
         }
     }
 
