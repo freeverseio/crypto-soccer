@@ -42,7 +42,7 @@ contract LeaguesState is LeaguesBase {
      *        shoot:     0x000000ff00
      *        endurance: 0x00000000ff
      */
-    function createPlayerState(
+    function playerStateCreate(
         uint8 defence,
         uint8 speed,
         uint8 pass,
@@ -69,6 +69,31 @@ contract LeaguesState is LeaguesBase {
         for (uint256 i = 0 ; i < teamState.length ; i++)
             state[i] = teamState[i];
         state[state.length-1] = playerState;
+    }
+
+    function leagueStateCreate() public pure returns (uint256[] memory state) {
+    }
+
+    function leagueStateAppend(uint256[] memory leagueState, uint256[] memory teamState) public pure returns (uint256[] memory state) {
+        require(isValidTeamState(teamState), "invalid team state");
+        require(teamState.length != 0, "empty team not allowed");
+
+        if (leagueState.length == 0)
+            return teamState;
+
+        state = new uint256[](leagueState.length + teamState.length + 1);
+        for (uint256 i = 0 ; i < leagueState.length ; i++)
+            state[i] = leagueState[i];
+        state[leagueState.length] = DIVIDER;
+        for (uint256 i = 0 ; i < teamState.length ; i++) 
+            state[leagueState.length + 1 + i] = teamState[i];
+    }
+
+    function isValidTeamState(uint256[] memory state) public pure returns (bool) {
+        for (uint256 i = 0 ; i < state.length ; i++)
+            if (state[i] == DIVIDER)
+                return false;
+        return true;
     }
 
     function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {

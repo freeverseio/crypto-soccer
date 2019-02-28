@@ -120,7 +120,7 @@ contract('LeaguesState', (accounts) => {
         const pass = 2;
         const shoot = 21;
         const endurance = 10;
-        const state = await instance.createPlayerState(defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const state = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
         (state.toNumber() & 0xff).should.be.equal(endurance);
         (state.toNumber() >> 8 & 0xff).should.be.equal(shoot);
         (state.toNumber() >> 8*2 & 0xff).should.be.equal(pass);
@@ -143,5 +143,35 @@ contract('LeaguesState', (accounts) => {
         teamState.length.should.be.equal(2);
         teamState[0].toNumber().should.be.equal(playerState0);
         teamState[1].toNumber().should.be.equal(playerState1);
+    });
+
+    it('valid team state', async () => {
+        let result = await instance.isValidTeamState([]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValidTeamState([0]).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.isValidTeamState([0, 4,3,2,1]).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.isValidTeamState([8,0,34]).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.isValidTeamState([4,0]).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.isValidTeamState([3,4,5,76]).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
+
+    it('append team state to league state', async () => {
+        let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, [4,5,6,7]).should.be.fulfilled;
+        leagueState.length.should.be.equal(4);
+        await instance.leagueStateAppend(leagueState, []).should.be.rejected;
+        leagueState = await instance.leagueStateAppend(leagueState, [2]).should.be.fulfilled;
+        leagueState.length.should.be.equal(6);
+        leagueState[0].toNumber().should.be.equal(4);
+        leagueState[1].toNumber().should.be.equal(5);
+        leagueState[2].toNumber().should.be.equal(6);
+        leagueState[3].toNumber().should.be.equal(7);
+        leagueState[4].toNumber().should.be.equal(0);
+        leagueState[5].toNumber().should.be.equal(2);
     });
 });
