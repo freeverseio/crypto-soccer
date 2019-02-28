@@ -2,9 +2,10 @@ pragma solidity ^0.5.0;
 
 import "./LeaguesState.sol";
 import "./LeaguesScore.sol";
+import "./LeaguesTactics.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesState, LeaguesScore {
+contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
     uint8 constant PLAYERS_PER_TEAM = 11;
     Engine private _engine;
 
