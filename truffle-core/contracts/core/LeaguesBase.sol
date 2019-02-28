@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract LeaguesStorage {
+contract LeaguesBase {
     struct League {
         // teams ids in the league
         uint256[] teamIds;

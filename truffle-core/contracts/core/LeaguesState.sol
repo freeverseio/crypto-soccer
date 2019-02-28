@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesStorage.sol";
+import "./LeaguesBase.sol";
 
-contract LeaguesState is LeaguesStorage {
+contract LeaguesState is LeaguesBase {
     uint256 constant public DIVIDER = 0;
 
     struct State {

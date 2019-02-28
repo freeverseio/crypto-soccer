@@ -2,9 +2,9 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Leagues = artifacts.require('LeaguesStorageMock');
+const Leagues = artifacts.require('LeaguesBaseMock');
 
-contract('LeaguesStorage', (accounts) => {
+contract('LeaguesBase', (accounts) => {
     let leagues = null;
     const initBlock = 1;
     const step = 1;

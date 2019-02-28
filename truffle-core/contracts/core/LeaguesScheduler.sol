@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesStorage.sol";
+import "./LeaguesBase.sol";
 
-contract LeaguesScheduler is LeaguesStorage {
+contract LeaguesScheduler is LeaguesBase {
     function countLeagueDays(uint256 id) public view returns (uint256) 
     {
         uint256 nTeams = countTeams(id);
