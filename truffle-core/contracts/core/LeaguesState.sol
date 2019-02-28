@@ -34,6 +34,32 @@ contract LeaguesState is LeaguesBase {
         return _states[id].initStateHash;
     }
 
+    /**
+     * @dev encoding:
+     *        defence:   0xff00000000
+     *        speed:     0x00ff000000
+     *        pass:      0x0000ff0000
+     *        shoot:     0x000000ff00
+     *        endurance: 0x00000000ff
+     */
+    function createPlayerState(
+        uint8 defence,
+        uint8 speed,
+        uint8 pass,
+        uint8 shoot,
+        uint8 endurance 
+    )
+        public 
+        pure
+        returns (uint256 state)
+    {
+        state |= uint256(defence) << 8 * 4;
+        state |= uint256(speed) << 8 * 3;
+        state |= uint256(pass) << 8 * 2;
+        state |= uint256(shoot) << 8;
+        state |= endurance;
+    }
+
     function append(uint256[] memory leagueState, uint256[] memory state) public pure returns (uint256[] memory) {
         require(isValid(leagueState), "invalid league result");
         require(isValid(state), "invalid team result");

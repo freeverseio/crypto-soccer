@@ -113,4 +113,18 @@ contract('LeaguesState', (accounts) => {
         state.length.should.be.equal(1);
         state[0].toNumber().should.be.equal(2);
     });
+
+    it('create player state', async () => {
+        const defence = 3;
+        const speed = 23;
+        const pass = 2;
+        const shoot = 21;
+        const endurance = 10;
+        const state = await instance.createPlayerState(defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        (state.toNumber() & 0xff).should.be.equal(endurance);
+        (state.toNumber() >> 8 & 0xff).should.be.equal(shoot);
+        (state.toNumber() >> 8*2 & 0xff).should.be.equal(pass);
+        (state.toNumber() >> 8*3 & 0xff).should.be.equal(speed);
+        (state.toNumber() >> 8*4 & 0xff).should.be.equal(endurance);
+    });
 });
