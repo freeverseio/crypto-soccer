@@ -9,17 +9,18 @@ import (
 
 	cfg "github.com/freeverseio/go-soccer/config"
 	"github.com/freeverseio/go-soccer/eth"
+	"github.com/freeverseio/go-soccer/stakers"
 	sto "github.com/freeverseio/go-soccer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type Lionel struct {
-	web3     *eth.Web3Client
 	storage  *sto.Storage
 	contract *eth.Contract
+	stakers  *stakers.Stakers
 }
 
-func New(web3 *eth.Web3Client, storage *sto.Storage) (*Lionel, error) {
+func New(web3 *eth.Web3Client, storage *sto.Storage, stakers *stakers.Stakers) (*Lionel, error) {
 
 	// load lionel
 
@@ -35,31 +36,46 @@ func New(web3 *eth.Web3Client, storage *sto.Storage) (*Lionel, error) {
 	}
 
 	return &Lionel{
-		web3:     web3,
+		stakers:  stakers,
 		storage:  storage,
 		contract: contract,
 	}, nil
 }
 
-func (l *Lionel) Update(leagueNo uint64) error {
+func (l *Lionel) Update(staker common.Address, leagueNo uint64) error {
+
+	var err error
 
 	var hash common.Hash
-	tx, _, err := l.contract.SendTransactionSync(nil, 0,
+	isTrueTeller, err := l.stakers.IsTrueTeller(staker)
+	if err != nil {
+		return err
+	}
+
+	if isTrueTeller {
+		hash[0] = 1
+	}
+
+	stk := l.stakers.Get(staker)
+
+	tx, _, err := l.contract.SendTransactionSyncWithClient(stk.Client, nil, 0,
 		"update",
 		big.NewInt(int64(leagueNo)), &hash)
 
 	if err == nil {
-		log.WithField("tx", tx.Hash().Hex()).Info("  League ", leagueNo, " : updating")
+		log.WithField("tx", tx.Hash().Hex()).Info("  League ", leagueNo, " : updating tt=", isTrueTeller)
 	} else {
 		log.Error("  League ", leagueNo, " : update failed")
 	}
 	return err
 }
 
-func (l *Lionel) Challange(leagueNo uint64) error {
+func (l *Lionel) Challange(staker common.Address, leagueNo uint64) error {
+
+	stk := l.stakers.Get(staker)
 
 	var hash common.Hash
-	tx, _, err := l.contract.SendTransactionSync(nil, 0,
+	tx, _, err := l.contract.SendTransactionSyncWithClient(stk.Client, nil, 0,
 		"challange",
 		big.NewInt(int64(leagueNo)), hash)
 

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"github.com/ethereum/go-ethereum/rlp"
-	dberr "github.com/syndtr/goleveldb/leveldb/errors"
 )
 
 // Globals gets the globals from the db.
@@ -32,18 +31,4 @@ func (s *Storage) SetGlobals(globals GlobalsEntry) error {
 	}
 
 	return s.db.Put(gkey, gvalue, nil)
-}
-
-// Globals gets the globals from the db.
-func (s *Storage) globalsGet() ([]byte, *GlobalsEntry, error) {
-	gkey := []byte(prefixGlobals)
-	gvalue, err := s.db.Get(gkey, nil)
-	if err == dberr.ErrNotFound {
-		return gkey, nil, nil
-	} else if err != nil {
-		return nil, nil, nil
-	}
-	var gentry GlobalsEntry
-	err = rlp.DecodeBytes(gvalue, &gentry)
-	return gkey, &gentry, err
 }

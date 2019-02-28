@@ -68,15 +68,15 @@ func NewWeb3Client(client *ethclient.Client, ks *keystore.KeyStore, account *acc
 }
 
 // BalanceInfo retieves information about the default account
-func (w *Web3Client) BalanceInfo() (string, error) {
+func (w *Web3Client) BalanceInfo() (*big.Int, error) {
 
 	ctx := context.TODO()
 	balance, err := w.Client.BalanceAt(ctx, w.Account.Address, nil)
 	if err != nil {
 
-		return "", err
+		return nil, err
 	}
-	return balance.String(), nil
+	return balance, nil
 }
 
 // SendTransactionSync executes a contract method and wait it finalizes
@@ -119,7 +119,7 @@ func (w *Web3Client) SendTransactionSync(to *common.Address, value *big.Int, gas
 	if gasLimit == 0 {
 		gasLimit, err = w.Client.EstimateGas(ctx, callmsg)
 		if err != nil {
-			log.Error("WEB3 Failed EstimateGas from=%v to=%v value=%v data=%v",
+			log.Errorf("WEB3 Failed EstimateGas from=%v to=%v value=%v data=%v",
 				callmsg.From.Hex(), callmsg.To.Hex(),
 				callmsg.Value, hex.EncodeToString(callmsg.Data),
 			)

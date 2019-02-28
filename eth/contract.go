@@ -101,15 +101,25 @@ func (c *Contract) VerifyBytecode() error {
 	return nil
 }
 
-// SendTransactionSync executes a contract method and wait it finalizes
 func (c *Contract) SendTransactionSync(value *big.Int, gasLimit uint64, funcname string, params ...interface{}) (*types.Transaction, *types.Receipt, error) {
+	return c.SendTransactionSyncWithClient(c.client, value, gasLimit, funcname, params...)
+}
+func (c *Contract) DeploySync(params ...interface{}) (*types.Transaction, *types.Receipt, error) {
+	return c.DeploySyncWithClient(c.client, params...)
+}
+func (c *Contract) Call(ret interface{}, funcname string, params ...interface{}) error {
+	return c.CallWithClient(c.client, ret, funcname, params...)
+}
+
+// SendTransactionSync executes a contract method and wait it finalizes
+func (c *Contract) SendTransactionSyncWithClient(client *Web3Client, value *big.Int, gasLimit uint64, funcname string, params ...interface{}) (*types.Transaction, *types.Receipt, error) {
 
 	msg, err := c.abi.Pack(funcname, params...)
 	if err != nil {
 		log.Println("Failed packing ", funcname)
 		return nil, nil, err
 	}
-	tx, receipt, err := c.client.SendTransactionSync(c.address, value, gasLimit, msg)
+	tx, receipt, err := client.SendTransactionSync(c.address, value, gasLimit, msg)
 	if err != nil {
 		log.Println("Failed calling ", funcname)
 	}
@@ -118,7 +128,7 @@ func (c *Contract) SendTransactionSync(value *big.Int, gasLimit uint64, funcname
 }
 
 // Deploy the contract
-func (c *Contract) DeploySync(params ...interface{}) (*types.Transaction, *types.Receipt, error) {
+func (c *Contract) DeploySyncWithClient(client *Web3Client, params ...interface{}) (*types.Transaction, *types.Receipt, error) {
 
 	init, err := c.abi.Pack("", params...)
 	if err != nil {
@@ -128,7 +138,7 @@ func (c *Contract) DeploySync(params ...interface{}) (*types.Transaction, *types
 	code := append([]byte(nil), c.byteCode...)
 	code = append(code, init...)
 
-	tx, receipt, err := c.client.SendTransactionSync(nil, big.NewInt(0), 0, code)
+	tx, receipt, err := client.SendTransactionSync(nil, big.NewInt(0), 0, code)
 
 	if err == nil {
 		c.address = &receipt.ContractAddress
@@ -138,13 +148,13 @@ func (c *Contract) DeploySync(params ...interface{}) (*types.Transaction, *types
 }
 
 // Call an constant method
-func (c *Contract) Call(ret interface{}, funcname string, params ...interface{}) error {
+func (c *Contract) CallWithClient(client *Web3Client, ret interface{}, funcname string, params ...interface{}) error {
 
 	input, err := c.abi.Pack(funcname, params...)
 	if err != nil {
 		return err
 	}
-	output, err := c.client.Call(c.address, big.NewInt(0), input)
+	output, err := client.Call(c.address, big.NewInt(0), input)
 	if err != nil {
 		return err
 	}

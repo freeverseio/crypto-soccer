@@ -8,6 +8,7 @@ import (
 
 const (
 	prefixGlobals = "G"
+	prefixStakers = "S"
 )
 
 // Storage manages the application state

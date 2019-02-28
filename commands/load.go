@@ -7,7 +7,8 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/freeverseio/go-soccer/config"
-	eth "github.com/freeverseio/go-soccer/eth"
+	"github.com/freeverseio/go-soccer/eth"
+	"github.com/freeverseio/go-soccer/stakers"
 	sto "github.com/freeverseio/go-soccer/storage"
 	log "github.com/sirupsen/logrus"
 
@@ -18,8 +19,8 @@ import (
 )
 
 var (
-	web3    *eth.Web3Client
 	storage *sto.Storage
+	stkrs   *stakers.Stakers
 )
 
 func must(err error) {
@@ -36,7 +37,7 @@ func load(c *cli.Context) error {
 		return err
 	}
 
-	return loadWeb3(c)
+	return loadWeb3AndStakers(c)
 }
 
 func loadConfig(c *cli.Context) {
@@ -57,28 +58,11 @@ func loadStorage(c *cli.Context) error {
 
 }
 
-func loadWeb3(c *cli.Context) (err error) {
+func loadWeb3AndStakers(c *cli.Context) (err error) {
 
 	loadConfig(c)
 
-	// open wallet
-	var ks *keystore.KeyStore
-	var account accounts.Account
-
-	ks = keystore.NewKeyStore(config.C.Keystore.Path, keystore.StandardScryptN, keystore.StandardScryptP)
-	account, err = ks.Find(accounts.Account{
-		Address: common.HexToAddress(config.C.Keystore.Account),
-	})
-	if err != nil {
-		return err
-	}
-
-	err = ks.Unlock(account, config.C.Keystore.Passwd)
-	if err != nil {
-		return err
-	}
-
-	// load web3
+	// open rpc
 
 	log.WithField("url", config.C.Web3.RPCURL).Info("Checking WEB3.")
 
@@ -93,18 +77,45 @@ func loadWeb3(c *cli.Context) (err error) {
 	}
 	log.WithField("networkid", clientnetworkid).Info("Checking WEB3.")
 
-	web3 = eth.NewWeb3Client(client, ks, &account)
-	web3.ClientMutex = &sync.Mutex{}
-	web3.MaxGasPrice = config.C.Web3.MaxGasPrice
+	// open web3s
+	var ks *keystore.KeyStore
+	stks := make([]*stakers.Staker, 0, len(config.C.Stakers.Accounts))
 
-	balance, err := client.BalanceAt(context.TODO(), account.Address, nil)
-	if err != nil {
-		return err
+	ks = keystore.NewKeyStore(config.C.Stakers.Keystore, keystore.StandardScryptN, keystore.StandardScryptP)
+	for _, acc := range config.C.Stakers.Accounts {
+
+		account, err := ks.Find(accounts.Account{
+			Address: common.HexToAddress(acc.Address),
+		})
+		if err != nil {
+			return err
+		}
+
+		err = ks.Unlock(account, config.C.Stakers.Keypasswd)
+		if err != nil {
+			return err
+		}
+
+		web3 := eth.NewWeb3Client(client, ks, &account)
+		web3.ClientMutex = &sync.Mutex{}
+		web3.MaxGasPrice = config.C.Web3.MaxGasPrice
+
+		balance, err := client.BalanceAt(context.TODO(), account.Address, nil)
+		if err != nil {
+			return err
+		}
+
+		log.WithFields(log.Fields{
+			"balance": balance.String(),
+		}).Info(" Using account ", config.C.Stakers.Accounts[0])
+
+		stks = append(stks, &stakers.Staker{
+			Address: account.Address,
+			Client:  web3,
+		})
+
 	}
+	stkrs, err = stakers.New(stks, storage)
 
-	log.WithFields(log.Fields{
-		"balance": balance.String(),
-	}).Info(" Using account ", config.C.Keystore.Account)
-
-	return nil
+	return err
 }

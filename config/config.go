@@ -15,10 +15,13 @@ type Config struct {
 		StakersAddress string
 	}
 
-	Keystore struct {
-		Account string
-		Path    string
-		Passwd  string
+	Stakers struct {
+		Accounts []struct {
+			Address   string
+			OnionHash string
+		}
+		Keystore  string
+		Keypasswd string
 	}
 
 	DB struct {

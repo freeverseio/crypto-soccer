@@ -6,6 +6,7 @@ import (
 
 	"github.com/freeverseio/go-soccer/eth"
 	"github.com/freeverseio/go-soccer/lionel"
+	"github.com/freeverseio/go-soccer/stakers"
 
 	sto "github.com/freeverseio/go-soccer/storage"
 	log "github.com/sirupsen/logrus"
@@ -15,7 +16,7 @@ type Service struct {
 	storage *sto.Storage
 	web3    *eth.Web3Client
 	lionel  *lionel.Lionel
-	stakers *eth.Contract
+	stakers *stakers.Stakers
 
 	stats     ServiceStats
 	laststats ServiceStats
@@ -30,18 +31,17 @@ var (
 	errReachedPersistLimit = errors.New("persistlimit reached")
 )
 
-func NewService(web3 *eth.Web3Client, storage *sto.Storage) (*Service, error) {
+func NewService(stkrs *stakers.Stakers, storage *sto.Storage) (*Service, error) {
 
-	// load lionel
-	lionel, err := lionel.New(web3, storage)
+	lionel, err := lionel.New(stkrs.Members()[0].Client, storage, stkrs)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Service{
-		web3:         web3,
 		storage:      storage,
 		lionel:       lionel,
+		stakers:      stkrs,
 		terminatech:  make(chan interface{}),
 		terminatedch: make(chan interface{}),
 	}, nil
@@ -75,15 +75,11 @@ func (s *Service) Start() {
 				break
 
 			default:
-				lionelFinished, err := s.processLionel()
+				finished, err := s.process()
 				if err != nil {
-					log.Error("Lionel failed ", err)
+					log.Error("failed ", err)
 				}
-				stakersFinished, err := s.processStakers()
-				if err != nil {
-					log.Error("Stakers failed ", err)
-				}
-				if lionelFinished && stakersFinished {
+				if finished {
 					log.Info("All finished, taking a litte nap ")
 					time.Sleep(4 * time.Second)
 				}

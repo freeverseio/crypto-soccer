@@ -25,7 +25,7 @@ var ServiceCommands = []cli.Command{
 func serviceStart(c *cli.Context) {
 
 	must(load(c))
-	serv, err := service.NewService(web3, storage)
+	serv, err := service.NewService(stkrs, storage)
 	must(err)
 
 	// catch ^C to send the stop signal

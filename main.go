@@ -17,7 +17,7 @@ func main() {
 	}
 
 	app.Commands = []cli.Command{}
-	app.Commands = append(app.Commands, commands.WalletCommands...)
+	app.Commands = append(app.Commands, commands.StakerCommands...)
 	app.Commands = append(app.Commands, commands.DbCommands...)
 	app.Commands = append(app.Commands, commands.ServiceCommands...)
 	err := app.Run(os.Args)
