@@ -60,6 +60,9 @@ contract LeaguesState is LeaguesBase {
         state |= endurance;
     }
 
+    function teamStateCreate() public pure returns (uint256[] memory state){
+    }
+
     /// @dev append a player state to team state
     function teamStateAppend(uint256[] memory teamState, uint256 playerState) public pure returns (uint256[] memory state) {
         state = new uint256[](teamState.length + 1);

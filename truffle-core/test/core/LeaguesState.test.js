@@ -128,9 +128,14 @@ contract('LeaguesState', (accounts) => {
         (state.toNumber() >> 8*4 & 0xff).should.be.equal(endurance);
     });
 
+    it('create team state', async () => {
+        const teamState = await instance.teamStateCreate().should.be.fulfilled;
+        teamState.length.should.be.equal(0);
+    });
+
     it('append player state to team state', async () => {
         const playerState0 = 0x546ab;
-        let teamState = [];
+        let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
         teamState.length.should.be.equal(1);
         const playerState1 = 0x435;
