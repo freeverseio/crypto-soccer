@@ -38,18 +38,27 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         uint8 visitorGoals
     )
         public 
-        view
+        pure
         returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
     {
         if (homeGoals == visitorGoals)
             return (homeTeamState, visitorTeamState);
 
-        uint8 pointsWon = computePointsWon(
+        int8 pointsWon = computePointsWon(
             homeTeamState,
             visitorTeamState,
             homeGoals,
             visitorGoals
         );
+
+        if (homeGoals > visitorGoals){
+            updatedHomeTeamState = teamStateEvolve(homeTeamState, pointsWon);             
+            updatedVisitorTeamState = visitorTeamState;
+        }
+        else {
+            updatedHomeTeamState = homeTeamState;
+            updatedVisitorTeamState = teamStateEvolve(visitorTeamState, pointsWon);
+        }
     }
 
     function computePointsWon(
@@ -60,7 +69,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
     )
         public 
         pure
-        returns (uint8 points)
+        returns (int8 points)
     {
         require(isValidTeamState(homeTeamState), "home team state invalid");
         require(isValidTeamState(visitorTeamState), "visitor team state invalid");
