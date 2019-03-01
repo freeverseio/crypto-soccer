@@ -52,7 +52,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         uint8 visitorGoals
     )
         public 
-        view
+        pure
         returns (uint8 points)
     {
         require(isValidTeamState(homeTeamState), "home team state invalid");
