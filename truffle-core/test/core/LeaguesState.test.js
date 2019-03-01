@@ -164,5 +164,12 @@ contract('LeaguesState', (accounts) => {
         }
         const rating = await instance.computeTeamRating(teamState).should.be.fulfilled;
         rating.toNumber().should.be.equal(nPlayers * (nPlayers + 1) / 2);
-    })
+    });
+
+    it('is valid player state', async () => {
+        let result = await instance.isValidPlayerState(-1).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.isValidPlayerState(0).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
 });
