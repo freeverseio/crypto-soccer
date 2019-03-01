@@ -28,6 +28,7 @@ class Counter():
 
     def advanceNVerses(self, n):
         self.currentVerse += n
+        # TONI self.lastBlock
 
     def advanceToVerse(self, n):
         assert n >= self.currentVerse, "Cannot advance... to a verse in the past!"
@@ -277,18 +278,15 @@ class ActionsAccumulator():
         self.buffer                     = {}
         self.commitedActions            = [0]
 
-    def accumulateAction(self, action, blocknum):
-        if blocknum in self.buffer:
-            self.buffer[blocknum].append(action)
+    def accumulateAction(self, action, leagueIdx):
+        if leagueIdx in self.buffer:
+            self.buffer[leagueIdx].append(action)
         else:
-            self.buffer[blocknum] = [action]
+            self.buffer[leagueIdx] = [action]
 
-    def removeActionsBeforeBlockNumFromBuffer(self, blockNum):
-        allActions = pylio.duplicate(self.buffer)
-        for (block, actions) in self.buffer.items():
-            if block < blockNum:
-                del allActions[block]
-        self.buffer = allActions
+    def clearBuffer(self, actions2remove):
+        for leagueIdx in actions2remove:
+            del self.buffer[leagueIdx]
 
 
 
@@ -329,7 +327,7 @@ class Storage(Counter):
 
     def accumulateAction(self, action):
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        self.Accumulator.accumulateAction(action, self.currentBlock)
+        self.Accumulator.accumulateAction(action, self.getLeagueForAction(action))
 
     def getAllActionsBeforeBlock(self, blockNum):
         actions2commit = []
@@ -361,7 +359,10 @@ class Storage(Counter):
         actionsPerVerse = []
         for verse in self.getVersesForLeague(leagueIdx):
             actionsInThisVerse = pylio.duplicate(self.Accumulator.commitedActions[verse])
-            actionsInThisVerse = [a for a in actionsInThisVerse if leagueIdx == self.teams[a["teamIdx"]].currentLeagueIdx]
+            if leagueIdx in actionsInThisVerse:
+                actionsInThisVerse = actionsInThisVerse[leagueIdx]
+            else:
+                actionsInThisVerse = []
             # Convert teamIdx -> teamPos
             for a in actionsInThisVerse:
                 teamPosInLeague = pylio.getTeamPosInLeague(a["teamIdx"], self.leagues[leagueIdx] )
@@ -369,22 +370,55 @@ class Storage(Counter):
             actionsPerVerse.append(actionsInThisVerse)
         return actionsPerVerse
 
+    def getLeagueForAction(self, action):
+        return self.teams[action["teamIdx"]].currentLeagueIdx
 
+
+    def assignLeagues2actions(self, actions):
+        leagueIdxVsActionsMatrix = {}
+        for a in actions:
+            thisLeague = self.getLeagueForAction(a)
+            if thisLeague in leagueIdxVsActionsMatrix:
+                leagueIdxVsActionsMatrix[thisLeague].append(a)
+            else:
+                leagueIdxVsActionsMatrix[thisLeague] = [a]
+        return leagueIdxVsActionsMatrix
+
+    def getLeaguesPlayingInThisVerse(self, verse):
+        # TODO: make this less terribly slow
+        leagueIdxs = []
+        nLeagues = len(self.leagues)
+        for leagueIdx  in range(1,nLeagues): # bypass the first (dummy) league
+            if verse in self.getVersesForLeague(leagueIdx):
+                leagueIdxs.append(leagueIdx)
+        return leagueIdxs
+
+
+    def selectLeaguesPlayingInThisVerse(self, leagueIdxVsActionsMatrix, verse):
+        leagueIdxVsActionsMatrixFiltered = pylio.duplicate(leagueIdxVsActionsMatrix)
+        for leagueIdx, actions in leagueIdxVsActionsMatrix.items():
+            if verse not in self.getVersesForLeague(leagueIdx):
+                del leagueIdxVsActionsMatrixFiltered[leagueIdx]
+        return leagueIdxVsActionsMatrixFiltered
 
 
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
-        actions2commit = self.getAllActionsBeforeBlock(self.nextVerseBlock())
-        # leaguesPlayingInThisVerse
+        leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
+        leagueIdxVsActionsMatrix = {}
+        for leagueIdx in leaguesPlayingInThisVerse:
+            if leagueIdx in self.Accumulator.buffer:
+                leagueIdxVsActionsMatrix[leagueIdx] = self.Accumulator.buffer[leagueIdx]
+
         ST.commit(
-            pylio.serialize2str(actions2commit),
+            pylio.serialize2str(leagueIdxVsActionsMatrix),
             self.nextVerseBlock(),
             pylio.getBlockhashForBlock(self.nextVerseBlock())
         )
         self.commit(
-            pylio.serialize2str(actions2commit),
+            pylio.serialize2str(leagueIdxVsActionsMatrix),
             self.nextVerseBlock(),
             pylio.getBlockhashForBlock(self.nextVerseBlock()),
         )
-        self.Accumulator.commitedActions.append(actions2commit)
-        self.Accumulator.removeActionsBeforeBlockNumFromBuffer(self.nextVerseBlock())
+        self.Accumulator.commitedActions.append(leagueIdxVsActionsMatrix)
+        self.Accumulator.clearBuffer(leagueIdxVsActionsMatrix)

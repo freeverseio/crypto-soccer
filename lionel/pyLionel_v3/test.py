@@ -112,8 +112,8 @@ def test2():
     # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
     # From verse 0 to 26:
     assert ST.currentVerse == 0, "We should start with verse 0"
-    advanceNVerses(26, ST, ST_CLIENT)
-    assert ST.currentVerse == 26, "We should be at verse 26, league finishes at 27"
+    advanceNVerses(24, ST, ST_CLIENT)
+    assert ST.currentVerse == 24, "We should be at verse 24, league finishes at 27"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
     assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentVerse), "League not detected as already being played"
@@ -124,7 +124,12 @@ def test2():
     action1 = {"teamIdx": teamIdx2, "tactics": TACTICS["442"]}
 
     ST_CLIENT.accumulateAction(action0)
+
+    advanceNVerses(2, ST, ST_CLIENT)
+    assert ST.currentVerse == 26, "We should be at verse 26, league finishes at 27"
+    advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
     ST_CLIENT.accumulateAction(action1)
+
 
 
     # Move beyond league end
@@ -184,7 +189,7 @@ def test2():
     # initPlayerStates,
     # duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
     # allActionsInThisLeague,
-
+    # TONI
 
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedMatchday,
