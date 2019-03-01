@@ -34,11 +34,17 @@ contract LeaguesState is LeaguesBase {
         return _states[id].initStateHash;
     }
 
-    function playerStateEvolve(uint256 state, int8 delta) public pure returns (uint256 newState) {
+    function playerStateEvolve(uint256 state, uint8 delta) public pure returns (uint256 newState) {
         require(isValidPlayerState(state), "invalid player state");
+        uint8 defence = getDefence(state) + delta;
+        uint8 speed = getSpeed(state) + delta;
+        uint8 pass = getPass(state) + delta;
+        uint8 shoot = getShoot(state) + delta;
+        uint8 endurance = getEndurance(state) + delta;
+        return playerStateCreate(defence, speed, pass, shoot, endurance);
     }
 
-    function teamStateEvolve(uint256[] memory teamState, int8 delta) public pure returns (uint256[] memory newState) {
+    function teamStateEvolve(uint256[] memory teamState, uint8 delta) public pure returns (uint256[] memory newState) {
         require(isValidTeamState(teamState), "invalid team state");
     }
 

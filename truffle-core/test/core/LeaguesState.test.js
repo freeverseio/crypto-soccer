@@ -191,4 +191,26 @@ contract('LeaguesState', (accounts) => {
         result = await instance.getEndurance(playerState).should.be.fulfilled;
         result.toNumber().should.be.equal(endurance);
     });
+
+    it('player state evolve', async () => {
+        const defence = 3;
+        const speed = 4;
+        const pass = 6;
+        const shoot = 11;
+        const endurance = 9;
+        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const delta = 3;
+        const updatedState = await instance.playerStateEvolve(playerState, delta).should.be.fulfilled;
+        updatedState.toNumber().should.not.be.equal(playerState.toNumber());
+        let skill = await instance.getDefence(updatedState).should.be.fulfilled;
+        skill.toNumber().should.be.equal(defence + delta);
+        skill = await instance.getSpeed(updatedState).should.be.fulfilled;
+        skill.toNumber().should.be.equal(speed + delta);
+        skill = await instance.getPass(updatedState).should.be.fulfilled;
+        skill.toNumber().should.be.equal(pass + delta);
+        skill = await instance.getShoot(updatedState).should.be.fulfilled;
+        skill.toNumber().should.be.equal(shoot + delta);
+        skill = await instance.getEndurance(updatedState).should.be.fulfilled;
+        skill.toNumber().should.be.equal(endurance + delta);
+    });
 });

@@ -44,7 +44,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         if (homeGoals == visitorGoals)
             return (homeTeamState, visitorTeamState);
 
-        int8 pointsWon = computePointsWon(
+        uint8 pointsWon = computePointsWon(
             homeTeamState,
             visitorTeamState,
             homeGoals,
@@ -69,7 +69,7 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
     )
         public 
         pure
-        returns (int8 points)
+        returns (uint8 points)
     {
         require(isValidTeamState(homeTeamState), "home team state invalid");
         require(isValidTeamState(visitorTeamState), "visitor team state invalid");
