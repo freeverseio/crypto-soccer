@@ -68,6 +68,31 @@ contract LeaguesState is LeaguesBase {
         state |= endurance;
     }
 
+    function getDefence(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 4 & 0xff);
+    }
+    
+    function getSpeed(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 3 & 0xff);
+    }
+
+    function getPass(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 2 & 0xff);
+    }
+
+    function getShoot(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 & 0xff);
+    }
+
+    function getEndurance(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState & 0xff);
+    }
+
     function teamStateCreate() public pure returns (uint256[] memory state){
     }
 
