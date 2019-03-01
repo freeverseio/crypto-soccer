@@ -34,6 +34,14 @@ contract LeaguesState is LeaguesBase {
         return _states[id].initStateHash;
     }
 
+    function playerStateEvolve(uint256 state, int8 delta) public pure returns (uint256 newState) {
+        require(isValidPlayerState(state), "invalid player state");
+    }
+
+    function teamStateEvolve(uint256[] memory teamState, int8 delta) public pure returns (uint256[] memory newState) {
+        require(isValidTeamState(teamState), "invalid team state");
+    }
+
     /**
      * @dev encoding:
      *        defence:   0xff00000000
@@ -105,6 +113,10 @@ contract LeaguesState is LeaguesBase {
             if (state[i] == DIVIDER)
                 return false;
         return true;
+    }
+
+    function isValidPlayerState(uint256 state) public pure returns (bool) {
+        return state != uint256(-1);
     }
 
     function countTeamsInState(uint256[] memory leagueState) public pure returns (uint256) {

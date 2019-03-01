@@ -43,6 +43,13 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
     {
         if (homeGoals == visitorGoals)
             return (homeTeamState, visitorTeamState);
+
+        uint8 pointsWon = computePointsWon(
+            homeTeamState,
+            visitorTeamState,
+            homeGoals,
+            visitorGoals
+        );
     }
 
     function computePointsWon(
