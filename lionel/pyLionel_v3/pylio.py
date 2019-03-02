@@ -5,6 +5,7 @@ import sha3
 from copy import deepcopy as duplicate
 from constants import *
 from structs import *
+from merkle_tree import *
 
 # serializes and converts to str in a complicated way
 def serialize2str(object):
@@ -555,11 +556,11 @@ def getTeamPosInLeague(teamIdx, league):
 
 
 #TODO: move the hashing of this to the BC to avoid inconsistencies (view mode)
-def computesDataAtMatchDayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
-    dataAtMatchDayHashes = []
+def computesdataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+    dataAtMatchdayHashes = []
     for state, tactic, teamOrders in zip(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
-        dataAtMatchDayHashes.append( serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders))
-    return dataAtMatchDayHashes
+        dataAtMatchdayHashes.append( serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders))
+    return dataAtMatchdayHashes
 
 
 def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
@@ -573,3 +574,12 @@ def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
         prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].prevMatchdayTeamOrders[selectedMatchday - 1]
 
     return duplicate(prevMatchdayStates), duplicate(prevMatchdayTactics), duplicate(prevMatchdayTeamOrders)
+
+
+def prepareProofForIdxs(idxsToProve, tree, leafs):
+    # neededHashes
+    neededHashes = proof(tree, idxsToProve)
+    values = {}
+    for idx in idxsToProve:
+        values[idx] = leafs[idx]
+    return neededHashes, values

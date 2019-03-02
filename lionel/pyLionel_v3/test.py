@@ -7,6 +7,12 @@ from os.path import isfile, join, exists
 import sha3
 from pickle import dumps as serialize
 
+# import hashlib
+# import math
+# from sha3 import keccak_256
+from merkle_tree import *
+
+
 from constants import *
 from pylio import *
 from structs import *
@@ -160,15 +166,15 @@ def test2():
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
     initStatesHash          = serialHash(initPlayerStates)
-    dataAtMatchDayHashes = computesDataAtMatchDayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
+    dataAtMatchdayHashes = computesdataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
 
-    dataAtMatchDayHashesLie     = duplicate(dataAtMatchDayHashes)
-    dataAtMatchDayHashesLie[0] += 1  # he lies about matchday 0 only
+    dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
+    dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
 
     ST.updateLeague(
         leagueIdx,
         initStatesHash,
-        dataAtMatchDayHashesLie,
+        dataAtMatchdayHashesLie,
         scores,
         ADDR2,
     )
@@ -179,7 +185,7 @@ def test2():
     ST_CLIENT.updateLeague(
         leagueIdx,
         initStatesHash,
-        dataAtMatchDayHashes,
+        dataAtMatchdayHashes,
         scores,
         ADDR2,
     )
@@ -421,6 +427,19 @@ def test3():
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
     return testResult
 
+
+def test4():
+    leafs = range(16)
+    tree, depth = make_tree(leafs, serialHash)
+    # idxsToProve = [0, 1, 2, 3]
+    idxsToProve = [1]
+    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
+    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
+          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
+          )
+    return verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+
+
 def runTest(name, result, expected):
     success = (result == expected)
     if success:
@@ -432,8 +451,9 @@ def runTest(name, result, expected):
 
 success = True
 # success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
+# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
+success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

@@ -119,7 +119,7 @@ class League():
         self.usersInitDataHash  = pylio.serialHash(usersInitData)
         # provided in update/challenge game
         self.initStatesHash     = 0
-        self.dataAtMatchDayHashes = 0
+        self.dataAtMatchdayHashes = 0
         self.scores             = np.zeros(nMatches)
         self.updaterAddr        = 0
         self.blockLastUpdate    = 0
@@ -157,11 +157,11 @@ class League():
             pylio.serialize2str(usersAlongData)
         )
 
-    def updateLeague(self, initStatesHash, dataAtMatchDayHashes, scores, updaterAddr, blocknum, verse):
+    def updateLeague(self, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
         assert self.hasLeagueFinished(verse), "League cannot be updated before the last matchday finishes"
         assert not self.hasLeagueBeenUpdated(), "League has already been updated"
         self.initStatesHash             = initStatesHash
-        self.dataAtMatchDayHashes     = dataAtMatchDayHashes
+        self.dataAtMatchdayHashes     = dataAtMatchdayHashes
         self.scores                     = scores
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
@@ -179,12 +179,20 @@ class League():
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(currentBlocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-        # assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
         if selectedMatchday == 0:
             assert pylio.serialHash(prevMatchdayStates) == self.initStatesHash, "Incorrect provided: prevMatchdayStates"
+            # TODO: the next two are a bit useless, rethink
+            assert pylio.serialHash(prevMatchdayTactics) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
+            assert pylio.serialHash(prevMatchdayTeamOrders) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
-            assert pylio.serialHash(prevMatchdayStates) == self.statesAtMatchdayHashes[selectedMatchday-1], "Incorrect provided: prevMatchdayStates"
+            # TODO: sum of hashes is not secure, hash the result!
+            assert self.dataAtMatchdayHashes[selectedMatchday-1] == \
+                pylio.serialHash(prevMatchdayStates) + \
+                pylio.serialHash(prevMatchdayTactics) +\
+                pylio.serialHash(prevMatchdayTeamOrders), \
+                "Incorrect provided: prevMatchdayStates"
 
+        # assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
 
         matchdayBlock = self.blockInit + selectedMatchday * self.blockStep
         tactics = pylio.duplicate(usersInitData["tactics"])
@@ -377,16 +385,6 @@ class Storage(Counter):
         return self.teams[action["teamIdx"]].currentLeagueIdx
 
 
-    def assignLeagues2actions(self, actions):
-        leagueIdxVsActionsMatrix = {}
-        for a in actions:
-            thisLeague = self.getLeagueForAction(a)
-            if thisLeague in leagueIdxVsActionsMatrix:
-                leagueIdxVsActionsMatrix[thisLeague].append(a)
-            else:
-                leagueIdxVsActionsMatrix[thisLeague] = [a]
-        return leagueIdxVsActionsMatrix
-
     def getLeaguesPlayingInThisVerse(self, verse):
         # TODO: make this less terribly slow
         leagueIdxs = []
@@ -396,15 +394,6 @@ class Storage(Counter):
                 leagueIdxs.append(leagueIdx)
         return leagueIdxs
 
-
-    def selectLeaguesPlayingInThisVerse(self, leagueIdxVsActionsMatrix, verse):
-        leagueIdxVsActionsMatrixFiltered = pylio.duplicate(leagueIdxVsActionsMatrix)
-        for leagueIdx, actions in leagueIdxVsActionsMatrix.items():
-            if verse not in self.getVersesForLeague(leagueIdx):
-                del leagueIdxVsActionsMatrixFiltered[leagueIdx]
-        return leagueIdxVsActionsMatrixFiltered
-
-
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
         leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
@@ -412,6 +401,7 @@ class Storage(Counter):
         for leagueIdx in leaguesPlayingInThisVerse:
             if leagueIdx in self.Accumulator.buffer:
                 leagueIdxVsActionsMatrix[leagueIdx] = self.Accumulator.buffer[leagueIdx]
+        # TODO: create Merkle Tree!!!!
 
         ST.commit(
             pylio.serialize2str(leagueIdxVsActionsMatrix),
@@ -426,15 +416,22 @@ class Storage(Counter):
         self.Accumulator.commitedActions.append(leagueIdxVsActionsMatrix)
         self.Accumulator.clearBuffer(leagueIdxVsActionsMatrix)
 
-    def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchDayHashes, scores, updaterAddr):
+    def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr):
         self.leagues[leagueIdx].updateLeague(
             initStatesHash,
-            dataAtMatchDayHashes,
+            dataAtMatchdayHashes,
             scores,
             updaterAddr,
             self.currentBlock,
             self.currentVerse
         )
+
+    def actionsArePartOfCommit(leagueIdx, actionsAtSelectedMatchday, verse, merkleProof):
+        return 2
+        # TODO: verify that actionsAtSelectedMatchday are such that hash is correct
+        # leaf = 2
+        # self.VerseCommits[verse].actionsHashes == pylio.serialize2str(Toni)
+        # pylio.serialize2str(leagueIdxVsActionsMatrix),
 
     def challengeMatchdayStates(self,
             leagueIdx,
@@ -446,6 +443,12 @@ class Storage(Counter):
             actionsAtSelectedMatchday):
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
+
+        # TODO: verify that actionsAtSelectedMatchday are such that hash is correct
+        assert self.actionsArePartOfCommit(leagueIdx, actionsAtSelectedMatchday, verse, merkleProof), "Actions are not part of a Verse Commit"
+
+
+
         self.leagues[leagueIdx].challengeMatchdayStates(
             selectedMatchday,
             prevMatchdayStates,
