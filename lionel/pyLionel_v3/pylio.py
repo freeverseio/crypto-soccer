@@ -283,9 +283,10 @@ def getInitPlayerStates(leagueIdx, ST_CLIENT):
         teamPosInLeague += 1
     return initPlayerStates
 
-def updateTacticsToVerseNum(tactics, matchday, allActionsInThisLeague):
+def updateTacticsToVerseNum(tactics, teamOrders, matchday, allActionsInThisLeague):
     for action in allActionsInThisLeague[matchday]:
-        tactics[action["teamIdx"]] = action["tactics"]
+        tactics[action["teamIdx"]]      = action["tactics"]
+        teamOrders[action["teamIdx"]]   = action["teamOrder"]
 
 def getBlockHash(blockNum):
     return intHash('salt' + str(blockNum))
@@ -319,9 +320,9 @@ def getTeamsInMatch(matchday, match, nTeams):
     return team1, team2
 
 
-def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, MatchSeed):
-    hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerStates1)+serialize2str(tactics1))
-    hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerStates2)+serialize2str(tactics2))
+def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, teamOrders1, teamOrders2, MatchSeed):
+    hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerStates1)+serialize2str(tactics1)+serialize2str(teamOrders1))
+    hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerStates2)+serialize2str(tactics2)+serialize2str(teamOrders2))
     return hash1 % 4, hash2 % 4
 
 def computeTeamRating(playerStates):
@@ -357,7 +358,7 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
         return (2 if winnerWasBetter else 10)
 
 
-def computeStatesAtMatchday(matchday, prevStates, tactics, matchdaySeed):
+def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevStates)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
@@ -371,6 +372,8 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdaySeed):
             prevStates[team2],
             tactics[team1],
             tactics[team2],
+            teamOrders[team1],
+            teamOrders[team2],
             matchdaySeed
         )
         scores[match] = [goals1, goals2]
@@ -387,7 +390,9 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdaySeed):
 
 def computeAllMatchdayStates(seedsPerVerse, initPlayerStates, usersInitData, allActionsInThisLeague):
     # In this initial implementation, evolution happens at the end of the league only
-    tactics = duplicate(usersInitData["tactics"])
+    tactics     = duplicate(usersInitData["tactics"])
+    teamOrders  = duplicate(usersInitData["teamOrders"])
+
     nTeams = len(usersInitData["teamIdxs"])
     nMatchdays = 2*(nTeams-1)
     assert nMatchdays == len(seedsPerVerse), "We should have as many matchdays as verses"
@@ -396,19 +401,23 @@ def computeAllMatchdayStates(seedsPerVerse, initPlayerStates, usersInitData, all
 
     # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
     statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
+    tacticsAtMatchDay = []
+    teamOrdersAtMatchDay = []
 
     for matchday in range(nMatchdays):
-        updateTacticsToVerseNum(tactics, matchday, allActionsInThisLeague)
+        updateTacticsToVerseNum(tactics, teamOrders, matchday, allActionsInThisLeague)
         prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
         statesAtMatchday[matchday], scores[matchday] = computeStatesAtMatchday(
             matchday,
             prevStates,
             tactics,
+            teamOrders,
             seedsPerVerse[matchday]
         )
+        tacticsAtMatchDay.append(duplicate(tactics))
+        teamOrdersAtMatchDay.append(duplicate(teamOrders))
 
-
-    return statesAtMatchday, scores
+    return statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores
 
 def computeUsersAlongDataHash(usersAlongData):
     usersAlongDataHash = 0
@@ -435,9 +444,9 @@ def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScor
     return True
 
 
-def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT):
+def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores, ST_CLIENT):
     ST_CLIENT.leagues[leagueIdx].updateInitState(initPlayerStates)
-    ST_CLIENT.leagues[leagueIdx].updateStatesAtMatchday(statesAtMatchday, scores)
+    ST_CLIENT.leagues[leagueIdx].updateDataAtMatchday(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores)
     # the last matchday gives the final states used to update all players:
     for allPlayerStatesInTeam in statesAtMatchday[-1]:
         for playerState in allPlayerStatesInTeam:
@@ -494,7 +503,7 @@ def isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState, ST):
     else:
         assert isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
             "The playerState provided is not part of the challengeData"
-        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAtMatchdayHashes[-1]
+        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1]
 
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
     return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
@@ -543,3 +552,24 @@ def getTeamPosInLeague(teamIdx, league):
         if teamIdx == tIdx:
             return tPos
     assert False, "Team not found in league"
+
+
+#TODO: move the hashing of this to the BC to avoid inconsistencies (view mode)
+def computesDataAtMatchDayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+    dataAtMatchDayHashes = []
+    for state, tactic, teamOrders in zip(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+        dataAtMatchDayHashes.append( serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders))
+    return dataAtMatchDayHashes
+
+
+def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
+    if selectedMatchday == 0:
+        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].initPlayerStates
+        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].usersInitData["tactics"]
+        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].usersInitData["teamOrders"]
+    else:
+        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
+        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].tacticsAtMatchday[selectedMatchday - 1]
+        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].prevMatchdayTeamOrders[selectedMatchday - 1]
+
+    return duplicate(prevMatchdayStates), duplicate(prevMatchdayTactics), duplicate(prevMatchdayTeamOrders)

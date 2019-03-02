@@ -61,4 +61,10 @@ TACTICS = {
 DEFAULT_ORDER = np.arange(NPLAYERS_PER_TEAM)
 REVERSE_ORDER = np.arange(NPLAYERS_PER_TEAM, 0, -1) - 1
 
+ORDER1 = np.array([0,5,4,3,2,1])
+ORDER2 = np.array([3,2,1,4,5,0])
+
+ORDER1 = np.append(ORDER1, range(6,NPLAYERS_PER_TEAM))
+ORDER2 = np.append(ORDER2, range(6,NPLAYERS_PER_TEAM))
+
 

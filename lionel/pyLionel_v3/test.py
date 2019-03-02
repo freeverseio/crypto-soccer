@@ -109,6 +109,14 @@ def test2():
 
     assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentVerse), "League not detected as created"
 
+    # advance a bit before first match to change tactics
+    assert ST.currentVerse == 0, "We should start with verse 0"
+    advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
+
+    action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    ST_CLIENT.accumulateAction(action00)
+
+
     # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
     # From verse 0 to 26:
     assert ST.currentVerse == 0, "We should start with verse 0"
@@ -120,8 +128,8 @@ def test2():
     assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as not finished yet"
 
     # Cook data to change tactics before games in matchday 2 begin.
-    action0 = {"teamIdx": teamIdx1, "tactics": TACTICS["433"]}
-    action1 = {"teamIdx": teamIdx2, "tactics": TACTICS["442"]}
+    action0 = {"teamIdx": teamIdx1, "teamOrder": ORDER2, "tactics": TACTICS["433"]}
+    action1 = {"teamIdx": teamIdx2, "teamOrder": DEFAULT_ORDER, "tactics": TACTICS["442"]}
 
     ST_CLIENT.accumulateAction(action0)
 
@@ -140,66 +148,63 @@ def test2():
     initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
     allActionsInThisLeague = ST_CLIENT.getAllActionsForLeague(leagueIdx)
 
-    statesAtMatchday, scores = computeAllMatchdayStates(
+    statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores = computeAllMatchdayStates(
         ST_CLIENT.getAllSeedsForLeague(leagueIdx),
         initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         allActionsInThisLeague,
     )
 
+    # TODO: treat initStates the same way as states and avoid initPlayerHash being different
+
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
     initStatesHash          = serialHash(initPlayerStates)
-    statesAtMatchdayHashes  = [serialHash(s) for s in statesAtMatchday]
+    dataAtMatchDayHashes = computesDataAtMatchDayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
 
-    statesAtMatchdayHashesLie     = duplicate(statesAtMatchdayHashes)
-    statesAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
+    dataAtMatchDayHashesLie     = duplicate(dataAtMatchDayHashes)
+    dataAtMatchDayHashesLie[0] += 1  # he lies about matchday 0 only
 
-    ST.leagues[leagueIdx].updateLeague(
+    ST.updateLeague(
+        leagueIdx,
         initStatesHash,
-        statesAtMatchdayHashesLie,
+        dataAtMatchDayHashesLie,
         scores,
         ADDR2,
-        ST.currentBlock,
-        ST.currentVerse
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # The CLIENT updates the league WITHOUT lying,
     # and additionally, stores the league pre-hash data, and updates every player involved
-    ST_CLIENT.leagues[leagueIdx].updateLeague(
+    ST_CLIENT.updateLeague(
+        leagueIdx,
         initStatesHash,
-        statesAtMatchdayHashes,
+        dataAtMatchDayHashes,
         scores,
         ADDR2,
-        ST_CLIENT.currentBlock,
-        ST_CLIENT.currentVerse
     )
-    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock)
     selectedMatchday    = 0
-    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
-                                            else ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
+    prevMatchdayStates, prevMatchdayTactics, prevMatchdayTeamOrders = \
+        getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
-    # ST_CLIENT.getAllSeedsForLeague(leagueIdx),
-    # initPlayerStates,
-    # duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-    # allActionsInThisLeague,
-    # TONI
 
-    ST.leagues[leagueIdx].challengeMatchdayStates(
+    ST.challengeMatchdayStates(
+        leagueIdx,
         selectedMatchday,
         prevMatchdayStates,
-        ST_CLIENT.getAllSeedsForLeague(leagueIdx)[selectedMatchday],
+        prevMatchdayTactics,
+        prevMatchdayTeamOrders,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(allActionsInThisLeague),
-        ST.currentBlock,
-        ST.currentVerse
+        duplicate(allActionsInThisLeague[selectedMatchday]),
     )
+
+
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
@@ -438,3 +443,5 @@ else:
 
 # TODO:
 # - change teamIdx for teamPos inside usersAlongData
+# - gather dataAtMAtch day as a struct
+#   - likeweise, put initStates as states at 0 (not sure)

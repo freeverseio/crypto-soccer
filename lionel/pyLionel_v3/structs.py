@@ -119,7 +119,7 @@ class League():
         self.usersInitDataHash  = pylio.serialHash(usersInitData)
         # provided in update/challenge game
         self.initStatesHash     = 0
-        self.statesAtMatchdayHashes  = 0
+        self.dataAtMatchDayHashes = 0
         self.scores             = np.zeros(nMatches)
         self.updaterAddr        = 0
         self.blockLastUpdate    = 0
@@ -157,33 +157,34 @@ class League():
             pylio.serialize2str(usersAlongData)
         )
 
-    def updateLeague(self, initStatesHash, statesAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
+    def updateLeague(self, initStatesHash, dataAtMatchDayHashes, scores, updaterAddr, blocknum, verse):
         assert self.hasLeagueFinished(verse), "League cannot be updated before the last matchday finishes"
         assert not self.hasLeagueBeenUpdated(), "League has already been updated"
         self.initStatesHash             = initStatesHash
-        self.statesAtMatchdayHashes     = statesAtMatchdayHashes
+        self.dataAtMatchDayHashes     = dataAtMatchDayHashes
         self.scores                     = scores
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
 
-    def challengeMatchdayStates(self, selectedMatchday, prevMatchdayStates, seed, usersInitData, allActionsInThisLeague, blocknum, currentVerse):
-
-        # selectedMatchday,
-        # prevMatchdayStates,
-        # ST_CLIENT.getAllSeedsForLeague(leagueIdx)[selectedMatchday]
-        # duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        # duplicate(allActionsInThisLeague[selectedMatchday]),
-        # ST.currentBlock,
-        # ST.currentVerse
+    def challengeMatchdayStates(self,
+                                selectedMatchday,
+                                prevMatchdayStates,
+                                prevMatchdayTactics,
+                                prevMatchdayTeamOrders,
+                                usersInitData,
+                                actionsAtSelectedMatchday,
+                                seed,
+                                currentBlocknum):
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
-        assert not self.isFullyVerified(blocknum), "You cannot challenge after the challenging period"
+        assert not self.isFullyVerified(currentBlocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
         # assert pylio.computeUsersAlongDataHash(usersAlongData) == self.usersAlongDataHash, "Incorrect provided: usersAlongData"
         if selectedMatchday == 0:
             assert pylio.serialHash(prevMatchdayStates) == self.initStatesHash, "Incorrect provided: prevMatchdayStates"
         else:
             assert pylio.serialHash(prevMatchdayStates) == self.statesAtMatchdayHashes[selectedMatchday-1], "Incorrect provided: prevMatchdayStates"
+
 
         matchdayBlock = self.blockInit + selectedMatchday * self.blockStep
         tactics = pylio.duplicate(usersInitData["tactics"])
@@ -251,10 +252,13 @@ class LeagueClient(League):
         self.usersInitData      = usersInitData
         self.initPlayerStates   = None
         self.statesAtMatchday   = None
+        self.tacticsAtMatchDay  = None
         self.scores             = None
 
-    def updateStatesAtMatchday(self, statesAtMatchday, scores):
+    def updateDataAtMatchday(self, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores):
         self.statesAtMatchday   = statesAtMatchday
+        self.tacticsAtMatchDay  = tacticsAtMatchDay
+        self.teamOrdersAtMatchDay  = teamOrdersAtMatchDay
         self.scores             = scores
 
     def updateInitState(self, initPlayerStates):
@@ -264,7 +268,6 @@ class VerseCommit:
     def __init__(self, actionsHashes = 0, blockNum = 0, blockHash = 0):
         self.actionsHashes = actionsHashes
         self.blockNum = blockNum
-        self.blockHash = blockHash
 
 
 class VerseCommitClient(VerseCommit):
@@ -345,7 +348,7 @@ class Storage(Counter):
         return verses
 
     def getSeedForVerse(self, verse):
-        return self.VerseCommits[verse].blockHash
+        return pylio.getBlockHash(self.VerseCommits[verse].blockNum)
 
     def getAllSeedsForLeague(self, leagueIdx):
         assert self.leagues[leagueIdx].hasLeagueFinished(self.currentVerse), "All seeds only available at end of league"
@@ -422,3 +425,37 @@ class Storage(Counter):
         )
         self.Accumulator.commitedActions.append(leagueIdxVsActionsMatrix)
         self.Accumulator.clearBuffer(leagueIdxVsActionsMatrix)
+
+    def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchDayHashes, scores, updaterAddr):
+        self.leagues[leagueIdx].updateLeague(
+            initStatesHash,
+            dataAtMatchDayHashes,
+            scores,
+            updaterAddr,
+            self.currentBlock,
+            self.currentVerse
+        )
+
+    def challengeMatchdayStates(self,
+            leagueIdx,
+            selectedMatchday,
+            prevMatchdayStates,
+            prevMatchdayTactics,
+            prevMatchdayTeamOrders,
+            usersInitData,
+            actionsAtSelectedMatchday):
+        verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
+        seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
+        self.leagues[leagueIdx].challengeMatchdayStates(
+            selectedMatchday,
+            prevMatchdayStates,
+            prevMatchdayTactics,
+            prevMatchdayTeamOrders,
+            usersInitData,
+            actionsAtSelectedMatchday,
+            seed,
+            self.currentBlock
+        )
+
+
+
