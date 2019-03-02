@@ -4,7 +4,7 @@ import datetime
 from constants import *
 import pylio
 from pickle import dumps as serialize
-
+from merkle_tree import *
 
 
 # simple block counter simulator, where the blockhash is just the hash of the blocknumber
@@ -273,8 +273,8 @@ class LeagueClient(League):
         self.initPlayerStates = initPlayerStates
 
 class VerseCommit:
-    def __init__(self, actionsHashes = 0, blockNum = 0, blockHash = 0):
-        self.actionsHashes = actionsHashes
+    def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
+        self.actionsMerkleRoots = actionsMerkleRoots
         self.blockNum = blockNum
 
 
@@ -288,6 +288,7 @@ class ActionsAccumulator():
     def __init__(self):
         self.buffer                     = {}
         self.commitedActions            = [0]
+        self.commitedTrees              = [0]
 
     def accumulateAction(self, action, leagueIdx):
         if leagueIdx in self.buffer:
@@ -296,7 +297,8 @@ class ActionsAccumulator():
             self.buffer[leagueIdx] = [action]
 
     def clearBuffer(self, actions2remove):
-        for leagueIdx in actions2remove:
+        for action in actions2remove:
+            leagueIdx = action[0]
             del self.buffer[leagueIdx]
 
 
@@ -329,8 +331,8 @@ class Storage(Counter):
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
 
-    def commit(self, actionsHash, commitBlockNum, commitBlockHash, actionsPrehash = None):
-        self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum, commitBlockHash))
+    def commit(self, actionsHash, commitBlockNum, actionsPrehash = None):
+        self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum))
 
     def addAccumulator(self):
         self.Accumulator = ActionsAccumulator()
@@ -397,23 +399,28 @@ class Storage(Counter):
     def syncActions(self, ST):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
         leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
-        leagueIdxVsActionsMatrix = {}
+        leagueIdxVsActionsMatrix = []
         for leagueIdx in leaguesPlayingInThisVerse:
             if leagueIdx in self.Accumulator.buffer:
-                leagueIdxVsActionsMatrix[leagueIdx] = self.Accumulator.buffer[leagueIdx]
-        # TODO: create Merkle Tree!!!!
+                leagueIdxVsActionsMatrix.append([leagueIdx, self.Accumulator.buffer[leagueIdx]])
+
+        if leagueIdxVsActionsMatrix:
+            tree, depth = make_tree(leagueIdxVsActionsMatrix, pylio.serialHash)
+            rootTree    = root(tree)
+        else:
+            tree        = 0
+            rootTree    = 0
 
         ST.commit(
-            pylio.serialize2str(leagueIdxVsActionsMatrix),
+            rootTree,
             self.nextVerseBlock(),
-            pylio.getBlockhashForBlock(self.nextVerseBlock())
         )
         self.commit(
-            pylio.serialize2str(leagueIdxVsActionsMatrix),
+            rootTree,
             self.nextVerseBlock(),
-            pylio.getBlockhashForBlock(self.nextVerseBlock()),
         )
         self.Accumulator.commitedActions.append(leagueIdxVsActionsMatrix)
+        self.Accumulator.commitedTrees.append(tree)
         self.Accumulator.clearBuffer(leagueIdxVsActionsMatrix)
 
     def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr):
@@ -426,12 +433,6 @@ class Storage(Counter):
             self.currentVerse
         )
 
-    def actionsArePartOfCommit(leagueIdx, actionsAtSelectedMatchday, verse, merkleProof):
-        return 2
-        # TODO: verify that actionsAtSelectedMatchday are such that hash is correct
-        # leaf = 2
-        # self.VerseCommits[verse].actionsHashes == pylio.serialize2str(Toni)
-        # pylio.serialize2str(leagueIdxVsActionsMatrix),
 
     def challengeMatchdayStates(self,
             leagueIdx,
@@ -440,13 +441,26 @@ class Storage(Counter):
             prevMatchdayTactics,
             prevMatchdayTeamOrders,
             usersInitData,
-            actionsAtSelectedMatchday):
+            actionsAtSelectedMatchday,
+            merkleProof,
+            depth
+                                ):
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
 
+        # TODO: looks like if actions is empty, it does not know how to compare merkle
+        assert verify(
+            self.VerseCommits[verse].actionsMerkleRoots,
+            depth,
+            actionsAtSelectedMatchday,
+            merkleProof,
+            pylio.serialHash,
+            debug_print=False
+        ), "Actions are not part of the corresponding commit"
+
+
         # TODO: verify that actionsAtSelectedMatchday are such that hash is correct
         assert self.actionsArePartOfCommit(leagueIdx, actionsAtSelectedMatchday, verse, merkleProof), "Actions are not part of a Verse Commit"
-
 
 
         self.leagues[leagueIdx].challengeMatchdayStates(
@@ -460,5 +474,13 @@ class Storage(Counter):
             self.currentBlock
         )
 
+
+    def getMerkleProof(self, leagueIdx, selectedMatchday):
+        verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
+        for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
+            if action[0] == leagueIdx:
+                break
+        tree = self.Accumulator.commitedTrees[verse]
+        return proof(tree, [idx]), get_depth(tree)
 
 

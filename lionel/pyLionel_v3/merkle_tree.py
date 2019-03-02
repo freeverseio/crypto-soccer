@@ -19,6 +19,7 @@ def hash_node(left_hash, right_hash):
 
 def paddToPowerTwo(leafs):
     num_leafs = len(leafs)
+    assert num_leafs > 0, "Merkle Tree undefined for zero leafs"
     depth = int(math.log2(num_leafs))
     if num_leafs > 2**depth:
         for new_leaf in range(num_leafs, 2**(depth+1)):

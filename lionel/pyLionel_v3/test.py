@@ -195,6 +195,8 @@ def test2():
     prevMatchdayStates, prevMatchdayTactics, prevMatchdayTeamOrders = \
         getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
+    merkleProof, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+
 
     ST.challengeMatchdayStates(
         leagueIdx,
@@ -204,6 +206,8 @@ def test2():
         prevMatchdayTeamOrders,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(allActionsInThisLeague[selectedMatchday]),
+        merkleProof,
+        depth
     )
 
 
@@ -458,9 +462,9 @@ def runTest(name, result, expected):
 
 success = True
 # success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-# success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
-success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
+# success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
