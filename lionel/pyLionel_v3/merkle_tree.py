@@ -17,6 +17,15 @@ def hash_node(left_hash, right_hash):
     '''Convert two digests to their Merkle node's digest'''
     return keccak_256(left_hash + right_hash).digest()
 
+def paddToPowerTwo(leafs):
+    num_leafs = len(leafs)
+    depth = int(math.log2(num_leafs))
+    if num_leafs > 2**depth:
+        for new_leaf in range(num_leafs, 2**(depth+1)):
+            leafs.append(0)
+
+
+
 def make_tree(leafs, hashFunction):
     '''Compute the Merkle tree of a list of values.
     The result is returned as a list where each value represents one hash in the
@@ -29,6 +38,7 @@ def make_tree(leafs, hashFunction):
     # note that hash(01,23) = MerkleRoot
     #
     # the hash function "hash_leaf" is here just dummy (converts to bytes)
+    paddToPowerTwo(leafs)
     num_leafs = len(leafs)
     depth = int(math.log2(num_leafs))
     assert(num_leafs == 2**depth)
@@ -117,3 +127,8 @@ def verify(root, depth, values, decommitment, hashFunction, debug_print=False):
             # Merge with a decommitment hash on the left
             queue += [(index // 2, hashFunction(decommitment[0] + hash))]
             decommitment = decommitment[1:]
+
+
+def get_depth(tree):
+    # the tree is twice larger than the number of leafs, hence our /2 below
+    return int(math.log2(len(tree)/2))

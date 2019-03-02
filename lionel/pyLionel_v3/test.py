@@ -6,10 +6,6 @@ from os import listdir, makedirs
 from os.path import isfile, join, exists
 import sha3
 from pickle import dumps as serialize
-
-# import hashlib
-# import math
-# from sha3 import keccak_256
 from merkle_tree import *
 
 
@@ -429,15 +425,26 @@ def test3():
 
 
 def test4():
-    leafs = range(16)
+    leafs = [1,2,3,4,5,6,"rew"]
     tree, depth = make_tree(leafs, serialHash)
-    # idxsToProve = [0, 1, 2, 3]
+    assert depth == get_depth(tree), "Depth not computed correctly"
+
+    # We show that this library can prove 1 leaf at a time, or (below), many
     idxsToProve = [1]
     neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
     print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
           % (len(idxsToProve), len(neededHashes), len(leafs), depth)
           )
-    return verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+    success1 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+
+    idxsToProve = [1,2,3]
+    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
+    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
+          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
+          )
+    success2 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+
+    return success1 and success2
 
 
 def runTest(name, result, expected):
