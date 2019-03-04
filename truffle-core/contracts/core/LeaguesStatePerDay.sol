@@ -10,6 +10,12 @@ contract LeaguesStatePerDay is LeaguesState {
     function leagueStatePerDayCreate() public pure returns (uint256[] memory state) {
     }
 
+    /// @return number of days in leagueStatePerDay
+    function leagueStatePerDayCount(uint256[] memory leagueStatePerDay) public pure returns (uint256 count) {
+        for (uint256 i = 0 ; i < leagueStatePerDay.length ; i++)
+            count++;
+    }
+
     function leagueStatePerDayAppend(
         uint256[] memory leagueStatePerDay, 
         uint256[] memory leagueState
@@ -21,9 +27,6 @@ contract LeaguesStatePerDay is LeaguesState {
         require(isValidLeagueStatePerDay(leagueStatePerDay), "invalid league state per day");
         require(isValidLeagueState(leagueState), "invalid league state");
 
-        if (leagueStatePerDay.length == 0)   
-            return leagueState;
-        
         state = new uint256[](leagueStatePerDay.length + 1 + leagueState.length);
         for (uint256 i = 0 ; i < leagueStatePerDay.length ; i++)
             state[i] = leagueStatePerDay[i];
