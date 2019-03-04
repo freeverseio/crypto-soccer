@@ -484,8 +484,8 @@ class Storage(Counter):
         else:
             # if player has been sold before playing any league, it'll conserve skills at birth,
             # but have different metadata in the other fields
-            playerState = duplicate(self.playerIdxToPlayerState[playerIdx])
-            copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
+            playerState = pylio.duplicate(self.playerIdxToPlayerState[playerIdx])
+            pylio.copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
             return playerState
 
 
@@ -523,6 +523,9 @@ class Storage(Counter):
             selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
         return selectedStates[0]
 
+    def verse2blockNum(self, verse):
+        return self.VerseCommits[verse].blockNum
+
     def getLastPlayedLeagueIdx(self, playerIdx):
         # if player state has never been written, it played all leagues with current team (obtained from formula)
         # otherwise, we check if it was sold to current team before start of team's previous league
@@ -532,8 +535,9 @@ class Storage(Counter):
 
         currentTeamIdx = self.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx()
         prevLeagueIdxForCurrentTeam = self.teams[currentTeamIdx].prevLeagueIdx
-        didHePlayLastLeagueWithCurrentTeam = self.playerIdxToPlayerState[playerIdx].getLastSaleBlocknum() < \
-                                             self.leagues[prevLeagueIdxForCurrentTeam].blockInit
+        didHePlayLastLeagueWithCurrentTeam = \
+            self.playerIdxToPlayerState[playerIdx].getLastSaleBlocknum() < \
+                                             self.verse2blockNum(self.leagues[prevLeagueIdxForCurrentTeam].verseInit)
         if didHePlayLastLeagueWithCurrentTeam:
             return prevLeagueIdxForCurrentTeam, self.teams[currentTeamIdx].teamPosInPrevLeague
         else:
@@ -613,8 +617,11 @@ class Storage(Counter):
         #   if that a given player is virtual, then it contains just its state
         #   if not, it contains all states of prev league's team
         for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
-            for playerShirt, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
-                dataToChallengeInitStates[teamPos][playerShirt] = self.computeDataToChallengePlayerIdx(playerIdx)
+            for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
+                correctPlayerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                if playerIdx != 0:
+                    assert playerIdx == correctPlayerIdx, "The function getPlayerIdxFromTeamIdxAndShirt is not working correctly"
+                dataToChallengeInitStates[teamPos][shirtNum] = self.computeDataToChallengePlayerIdx(correctPlayerIdx)
         return dataToChallengeInitStates
 
 
@@ -658,15 +665,16 @@ class Storage(Counter):
         #   if not, it contains all states of prev league's team
         initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
         for teamPos, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for playerShirt, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
+            for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
+                correctPlayerIdx = playerIdx if playerIdx != 0 else self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 isOK = self.isCorrectStateForPlayerIdx(
-                    pylio.getPlayerStateFromChallengeData(playerIdx, dataToChallengeInitStates[teamPos][playerShirt]),
-                    dataToChallengeInitStates[teamPos][playerShirt],
+                    pylio.getPlayerStateFromChallengeData(correctPlayerIdx, dataToChallengeInitStates[teamPos][shirtNum]),
+                    dataToChallengeInitStates[teamPos][shirtNum],
                 )
                 if isOK:
-                    initPlayerStates[teamPos][playerShirt] = pylio.getPlayerStateFromChallengeData(
-                        playerIdx,
-                        dataToChallengeInitStates[teamPos][playerShirt]
+                    initPlayerStates[teamPos][shirtNum] = pylio.getPlayerStateFromChallengeData(
+                        correctPlayerIdx,
+                        dataToChallengeInitStates[teamPos][shirtNum]
                     )
                 else:
                     print("Challenger Wins: initStates provided by updater are invalid")
