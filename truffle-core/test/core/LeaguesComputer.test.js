@@ -96,6 +96,12 @@ contract('LeaguesComputer', (accounts) => {
             result[i].toNumber().should.be.equal(scores[i])
     });
 
+    it('estimate gas cost in calculate a day', async () => {
+        const day = 0;
+        let cost = await leagues.computeStatesAtMatchday.estimateGas(id, day, dayState, tactics, '0x0').should.be.fulfilled;
+        cost.should.be.equal(72971);
+    })
+
     it('calculate a day in a league', async () => {
         let day = 0;
         let result = await leagues.computeStatesAtMatchday(id, day, dayState, tactics, '0x0').should.be.fulfilled;
