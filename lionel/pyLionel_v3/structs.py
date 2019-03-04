@@ -479,15 +479,16 @@ class Storage(Counter):
         )
 
 
-    def getMerkleProof(self, leagueIdx, selectedMatchday, actionsAtSelectedMatchday):
+    def getMerkleProof(self, leagueIdx, selectedMatchday):
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
             if action[0] == leagueIdx:
                 break
         tree = self.Accumulator.commitedTrees[verse]
+
         # get the needed hashes and the "values". The latter are simply the corresponding
-        # leaf (=actionsAtSelectedMatchday) formated so that is has the form {idx: actionsAtSelectedMatchday}.
-        neededHashes, values = pylio.prepareProofForIdxs([idx], tree, actionsAtSelectedMatchday)
+        # leaf (=actionsThisLeagueAtSelectedMatchday) formated so that is has the form {idx: actionsAtSelectedMatchday}.
+        neededHashes, values = pylio.prepareProofForIdxs([idx], tree, self.Accumulator.commitedActions[verse])
 
         # verify(self.VerseCommits[verse].actionsMerkleRoots, depth, values, merkleProof, pylio.serialHash)
         assert verify(root(tree), get_depth(tree), values, neededHashes, pylio.serialHash), "Generated Merkle proof will not work"

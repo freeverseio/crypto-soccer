@@ -146,6 +146,7 @@ def test2():
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as already finished"
 
+    initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
     statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
 
 
@@ -187,7 +188,7 @@ def test2():
     prevMatchdayStates, prevMatchdayTactics, prevMatchdayTeamOrders = \
         getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
-    merkleProof, values, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday, allActionsInThisLeague[selectedMatchday])
+    merkleProof, values, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
 
 
     ST.challengeMatchdayStates(
