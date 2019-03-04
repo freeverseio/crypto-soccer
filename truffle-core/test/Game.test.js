@@ -103,7 +103,7 @@ contract('Game', (accounts) => {
         leagueState = await state.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
 
         // calculate the league
-        const leagueScores = await leagues.computeAllMatchdayStates.call(leagueId, leagueState, tactics, {gas: 600000000}).should.be.fulfilled;
+        const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, tactics).should.be.fulfilled;
 
         // get the number of days in the league
         const nDayScores = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
