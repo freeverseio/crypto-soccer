@@ -60,7 +60,7 @@ contract('DayState', (accounts) => {
         await instance.countTeamPlayers([], 0).should.be.rejected;
         await instance.countTeamPlayers([2], 1).should.be.rejected;
         await instance.countTeamPlayers([TEAMSTATEEND, 2], 0).should.be.rejected;
-        const dayState = [2,3,0,4,2,1,0,4,5,0,2,0]
+        const dayState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
         let count = await instance.countTeamPlayers(dayState, 0).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
         count = await instance.countTeamPlayers(dayState, 1).should.be.fulfilled;
@@ -73,20 +73,20 @@ contract('DayState', (accounts) => {
 
     it('get team from league state', async () => {
         const dayState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
-        let state = await instance.getTeam(dayState, 0).should.be.fulfilled;
+        let state = await instance.dayStateAt(dayState, 0).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(3);
-        state = await instance.getTeam(dayState, 1).should.be.fulfilled;
+        state = await instance.dayStateAt(dayState, 1).should.be.fulfilled;
         state.length.should.be.equal(3);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(2);
         state[2].toNumber().should.be.equal(1);
-        state = await instance.getTeam(dayState, 2).should.be.fulfilled;
+        state = await instance.dayStateAt(dayState, 2).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(5);
-        state = await instance.getTeam(dayState, 3).should.be.fulfilled;
+        state = await instance.dayStateAt(dayState, 3).should.be.fulfilled;
         state.length.should.be.equal(1);
         state[0].toNumber().should.be.equal(2);
     });

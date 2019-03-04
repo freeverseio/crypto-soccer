@@ -23,17 +23,7 @@ contract DayState is TeamState {
                 count++;
     }
 
-    function countTeamPlayers(uint256[] memory dayState, uint256 idx) public pure returns (uint256) {
-        require(isValidDayState(dayState), "invalid league state");
-        require(idx < dayStateSize(dayState), "out of range");
-        uint256 first = _getFirstPlayerOfTeam(dayState, idx);
-        uint256 counter;
-        while (first+counter < dayState.length && dayState[first+counter] != TEAMSTATEEND)
-            counter++;
-        return counter;
-    }
-
-    function getTeam(uint256[] memory dayState, uint256 idx) public pure returns (uint256[] memory) {
+    function dayStateAt(uint256[] memory dayState, uint256 idx) public pure returns (uint256[] memory) {
         require(isValidDayState(dayState), "invalid league state");
         require(idx < dayStateSize(dayState), "out of range");
         uint256 nPlayers = countTeamPlayers(dayState, idx);
@@ -43,6 +33,16 @@ contract DayState is TeamState {
             state[i] = dayState[first+i];
         return state;
     } 
+
+    function countTeamPlayers(uint256[] memory dayState, uint256 idx) public pure returns (uint256) {
+        require(isValidDayState(dayState), "invalid league state");
+        require(idx < dayStateSize(dayState), "out of range");
+        uint256 first = _getFirstPlayerOfTeam(dayState, idx);
+        uint256 counter;
+        while (first+counter < dayState.length && dayState[first+counter] != TEAMSTATEEND)
+            counter++;
+        return counter;
+    }
    
     function isValidDayState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)

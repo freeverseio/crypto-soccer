@@ -127,8 +127,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
         (homeGoals, visitorGoals) = _engine.playMatch(
             seed, 
-            _leagueState.getTeam(initLeagueState, homeTeamIdx), 
-            _leagueState.getTeam(initLeagueState, visitorTeamIdx), 
+            _leagueState.dayStateAt(initLeagueState, homeTeamIdx), 
+            _leagueState.dayStateAt(initLeagueState, visitorTeamIdx), 
             tactics[0], 
             tactics[1]
         );
@@ -157,7 +157,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         uint256 nTeams = _leagueState.dayStateSize(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = _leagueState.getTeam(leagueState, i);
+            uint256[] memory teamState = _leagueState.dayStateAt(leagueState, i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;
