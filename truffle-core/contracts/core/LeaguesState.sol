@@ -198,9 +198,11 @@ contract LeaguesState is LeaguesBase {
     function isValidLeagueState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
-        if (state[0] == TEAMSTATEDIVIDER)
+        // first element has to be a valid player state
+        if (!isValidPlayerState(state[0]))
             return false;
-        if (state[state.length-1] == TEAMSTATEDIVIDER)
+        // last element has to be a valid player state
+        if (!isValidPlayerState(state[state.length-1]))
             return false;
         for (uint256 i = 0 ; i < state.length - 1 ; i++)
             if (state[i] == TEAMSTATEDIVIDER && state[i+1] == TEAMSTATEDIVIDER)
