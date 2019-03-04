@@ -7,6 +7,7 @@ const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
+const State = artifacts.require('LeagueState');
 
 
 
@@ -15,6 +16,7 @@ contract('Game', (accounts) => {
     let players = null;
     let teams = null;
     let engine = null;
+    let state = null;
     let leagues = null;
     let barcelonaId = null;
     let madridId = null;
@@ -35,7 +37,8 @@ contract('Game', (accounts) => {
         await players.renounceTeamsContract().should.be.fulfilled;
 
         engine = await Engine.new().should.be.fulfilled;
-        leagues = await Leagues.new(engine.address).should.be.fulfilled;
+        state = await State.new().should.be.fulfilled;
+        leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
 
         await horizon.createTeam("Barcelona").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
@@ -54,7 +57,7 @@ contract('Game', (accounts) => {
     // we use the values in the blockchain to generate the team status
     // it will use a local DBMS in the final version
     const generateTeamState = async (id) => {
-        let teamState = await leagues.teamStateCreate().should.be.fulfilled;
+        let teamState = await state.teamStateCreate().should.be.fulfilled;
         const playersIds = await teams.getPlayers(id).should.be.fulfilled;
         for (let i = 0; i < playersIds.length; i++) {
             const playerId = playersIds[i];
@@ -63,14 +66,14 @@ contract('Game', (accounts) => {
             const pass = await players.getPass(playerId).should.be.fulfilled;
             const shoot = await players.getShoot(playerId).should.be.fulfilled;
             const endurance = await players.getEndurance(playerId).should.be.fulfilled;
-            const playerState = await leagues.playerStateCreate(
+            const playerState = await state.playerStateCreate(
                 defence,
                 speed,
                 pass,
                 shoot,
                 endurance
             );
-            teamState = await leagues.teamStateAppend(teamState, playerState).should.be.fulfilled;
+            teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
         return teamState;
     }
@@ -91,16 +94,16 @@ contract('Game', (accounts) => {
         const juventusState = await generateTeamState(juventusId).should.be.fulfilled;
 
         // we build the league state
-        let leagueState = await leagues.leagueStateCreate().should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, barcelonaState).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, madridState).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, sevillaState).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, bilbaoState).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, veniceState).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
+        let leagueState = await state.leagueStateCreate().should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, barcelonaState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, madridState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, sevillaState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, bilbaoState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, veniceState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
 
         // calculate the league
-        const leagueScores = await leagues.computeAllMatchdayStates(leagueId, leagueState, tactics).should.be.fulfilled;
+        const leagueScores = await leagues.computeAllMatchdayStates.call(leagueId, leagueState, tactics, {gas: 600000000}).should.be.fulfilled;
 
         // get the number of days in the league
         const nDayScores = await leagues.countLeagueDays(leagueId).should.be.fulfilled;

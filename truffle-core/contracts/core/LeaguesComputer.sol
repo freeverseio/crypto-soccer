@@ -6,12 +6,15 @@ import "./LeaguesTactics.sol";
 import "./LeaguesProof.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueState{
-    uint8 constant PLAYERS_PER_TEAM = 11;
+contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
+    LeagueState private _leagueState;
     Engine private _engine;
 
-    constructor(address engine) public {
+    uint8 constant PLAYERS_PER_TEAM = 11;
+
+    constructor(address engine, address leagueState) public {
         _engine = Engine(engine);
+        _leagueState = LeagueState(leagueState);
     }
 
     function getEngineContract() external view returns (address) {
@@ -39,7 +42,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueSt
         uint8 visitorGoals
     )
         public 
-        pure
+        view
         returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
     {
         if (homeGoals == visitorGoals)
@@ -53,12 +56,12 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueSt
         );
 
         if (homeGoals > visitorGoals){
-            updatedHomeTeamState = teamStateEvolve(homeTeamState, pointsWon);             
+            updatedHomeTeamState = _leagueState.teamStateEvolve(homeTeamState, pointsWon);             
             updatedVisitorTeamState = visitorTeamState;
         }
         else {
             updatedHomeTeamState = homeTeamState;
-            updatedVisitorTeamState = teamStateEvolve(visitorTeamState, pointsWon);
+            updatedVisitorTeamState = _leagueState.teamStateEvolve(visitorTeamState, pointsWon);
         }
     }
 
@@ -69,13 +72,13 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueSt
         uint8 visitorGoals
     )
         public 
-        pure
+        view
         returns (uint8 points)
     {
-        require(isValidTeamState(homeTeamState), "home team state invalid");
-        require(isValidTeamState(visitorTeamState), "visitor team state invalid");
-        uint128 homeTeamRating = computeTeamRating(homeTeamState);
-        uint128 visitorTeamRating = computeTeamRating(visitorTeamState);
+        require(_leagueState.isValidTeamState(homeTeamState), "home team state invalid");
+        require(_leagueState.isValidTeamState(visitorTeamState), "visitor team state invalid");
+        uint128 homeTeamRating = _leagueState.computeTeamRating(homeTeamState);
+        uint128 visitorTeamRating = _leagueState.computeTeamRating(visitorTeamState);
         int256 ratingDiff = homeTeamRating - visitorTeamRating;
         if (ratingDiff == 0)
             return 5;
@@ -124,8 +127,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueSt
         (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
         (homeGoals, visitorGoals) = _engine.playMatch(
             seed, 
-            getTeam(initLeagueState, homeTeamIdx), 
-            getTeam(initLeagueState, visitorTeamIdx), 
+            _leagueState.getTeam(initLeagueState, homeTeamIdx), 
+            _leagueState.getTeam(initLeagueState, visitorTeamIdx), 
             tactics[0], 
             tactics[1]
         );
@@ -150,11 +153,11 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics, LeagueSt
         }
     }
 
-    function hashLeagueState(uint256[] memory leagueState) public pure returns (bytes32[] memory) {
-        uint256 nTeams = countTeamsInState(leagueState);
+    function hashLeagueState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
+        uint256 nTeams = _leagueState.countTeamsInState(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = getTeam(leagueState, i);
+            uint256[] memory teamState = _leagueState.getTeam(leagueState, i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;
