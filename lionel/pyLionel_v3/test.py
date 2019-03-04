@@ -227,13 +227,6 @@ def test2():
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
 
     dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
-
-    # ST.leagues[leagueIdx].challengeInitStates(
-    #     duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-    #     duplicate(dataToChallengeInitStates),
-    #     ST,
-    #     ST.currentBlock
-    # )
     ST.challengeInitStates(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
@@ -244,24 +237,21 @@ def test2():
 
     # A nicer UPDATER now tells the truth:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    ST.leagues[leagueIdx].updateLeague(
+    ST.updateLeague(
+        leagueIdx,
         initStatesHash,
-        statesAtMatchdayHashes,
+        dataAtMatchdayHashes,
         scores,
         ADDR2,
-        ST.currentBlock
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
     # ...and the CHALLENGER fails to prove anything
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    selectedTeam = 0
-    ST.leagues[leagueIdx].challengeMatchdayStates(
-        selectedTeam,
-        initPlayerStates,
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
-        ST.currentBlock
+    ST.challengeInitStates(
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate(dataToChallengeInitStates),
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
