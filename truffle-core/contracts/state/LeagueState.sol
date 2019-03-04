@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./DayState.sol";
 
+/// TODO: rename to States
 contract LeagueState is DayState {
     // function isValidDayStatePerDay(uint256[] memory state) public pure returns (bool) {
     //     return true;
