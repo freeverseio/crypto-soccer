@@ -2,19 +2,15 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const LeaguesState = artifacts.require('LeaguesState');
+const DayLeagueState = artifacts.require('DayLeagueState');
 
-contract('LeaguesState', (accounts) => {
+contract('DayLeagueState', (accounts) => {
     let instance = null;
     let TEAMSTATEDIVIDER = null;
     let LEAGUESTATEDIVIDER = null;
-    const initBlock = 1;
-    const step = 1;
-    const id = 0;
-    const teamIds = [1, 2];
 
     beforeEach(async () => {
-        instance = await LeaguesState.new().should.be.fulfilled;
+        instance = await DayLeagueState.new().should.be.fulfilled;
         TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
         LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
     });
