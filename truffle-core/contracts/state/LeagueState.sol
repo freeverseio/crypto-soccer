@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import "./DayState.sol";
 
 contract LeagueState is DayState {
-    // function isValidLeagueStatePerDay(uint256[] memory state) public pure returns (bool) {
+    // function isValidDayStatePerDay(uint256[] memory state) public pure returns (bool) {
     //     return true;
     // }
 
@@ -24,8 +24,8 @@ contract LeagueState is DayState {
     //     pure 
     //     returns (uint256[] memory state) 
     // {
-    //     require(isValidLeagueStatePerDay(leagueStatePerDay), "invalid league state per day");
-    //     require(isValidLeagueState(leagueState), "invalid league state");
+    //     require(isValidDayStatePerDay(leagueStatePerDay), "invalid league state per day");
+    //     require(isValidDayState(leagueState), "invalid league state");
 
     //     state = new uint256[](leagueStatePerDay.length + 1 + leagueState.length);
     //     for (uint256 i = 0 ; i < leagueStatePerDay.length ; i++)

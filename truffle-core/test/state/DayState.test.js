@@ -44,15 +44,15 @@ contract('DayState', (accounts) => {
     });
 
     it('valid league state', async () => {
-        let result = await instance.isValidLeagueState([]).should.be.fulfilled;
+        let result = await instance.isValidDayState([]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidLeagueState([2]).should.be.fulfilled;
+        result = await instance.isValidDayState([2]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
+        result = await instance.isValidDayState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidDayState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidLeagueState([TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidDayState([TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
