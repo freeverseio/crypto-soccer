@@ -3,11 +3,13 @@ require('chai')
     .should();
 
 const Engine = artifacts.require('Engine');
+const States = artifacts.require('LeagueState');
 const Leagues = artifacts.require('LeaguesComputer');
 
 contract('LeaguesComputer', (accounts) => {
-    let leagues = null;
     let engine = null;
+    let states = null;
+    let leagues = null;
 
     const id = 0;
     const teamState0 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
@@ -23,11 +25,12 @@ contract('LeaguesComputer', (accounts) => {
         const step = 1
         const teamIds = [1, 2];
         engine = await Engine.new().should.be.fulfilled;
-        leagues = await Leagues.new(engine.address).should.be.fulfilled;
+        states = await States.new().should.be.fulfilled;
+        leagues = await Leagues.new(engine.address, states.address).should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
-        leagueState = await leagues.leagueStateCreate().should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
-        leagueState = await leagues.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;
+        leagueState = await states.leagueStateCreate().should.be.fulfilled;
+        leagueState = await states.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
+        leagueState = await states.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;
     });
 
     it('Engine contract', async () => {
