@@ -97,21 +97,21 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         returns (uint16[] memory scores)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
-        uint256 team0Idx;
-        uint256 team1Idx;
+        uint256 homeTeamIdx;
+        uint256 visitorTeamIdx;
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
-            uint8 home;
-            uint8 visitor;
-            (team0Idx, team1Idx) = getTeamsInMatch(id, matchday, i);
-            (home, visitor) = _engine.playMatch(
+            uint8 homeGoals;
+            uint8 visitorGoals;
+            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, matchday, i);
+            (homeGoals, visitorGoals) = _engine.playMatch(
                 seed, 
-                getTeam(prevStates, team0Idx), 
-                getTeam(prevStates, team1Idx), 
+                getTeam(prevStates, homeTeamIdx), 
+                getTeam(prevStates, visitorTeamIdx), 
                 tactics[0], 
                 tactics[1]
             );
-            uint16 score = encodeScore(home, visitor);
+            uint16 score = encodeScore(homeGoals, visitorGoals);
             scores = addToDayScores(scores, score);
         }
     }
