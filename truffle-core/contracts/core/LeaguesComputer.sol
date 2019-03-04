@@ -1,20 +1,20 @@
 pragma solidity ^0.5.0;
 
-import "../state/LeagueState.sol";
+import "../state/DayState.sol";
 import "./LeaguesScore.sol";
 import "./LeaguesTactics.sol";
 import "./LeaguesProof.sol";
 import "./Engine.sol";
 
 contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
-    LeagueState private _leagueState;
+    DayState private _leagueState;
     Engine private _engine;
 
     uint8 constant PLAYERS_PER_TEAM = 11;
 
     constructor(address engine, address leagueState) public {
         _engine = Engine(engine);
-        _leagueState = LeagueState(leagueState);
+        _leagueState = DayState(leagueState);
     }
 
     function getEngineContract() external view returns (address) {
@@ -92,7 +92,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
     function computeStatesAtMatchday(
         uint256 id,
         uint256 leagueDay, 
-        uint256[] memory initLeagueState, 
+        uint256[] memory initDayState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
@@ -103,7 +103,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
-            uint16 score = computeScoreMatchInLeague(id, leagueDay, i, initLeagueState, tactics, seed);
+            uint16 score = computeScoreMatchInLeague(id, leagueDay, i, initDayState, tactics, seed);
             scores = addToDayScores(scores, score);
         }
     }
@@ -112,7 +112,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         uint256 id,
         uint256 leagueDay, 
         uint256 matchInLeagueDay,
-        uint256[] memory initLeagueState, 
+        uint256[] memory initDayState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
@@ -127,8 +127,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
         (homeGoals, visitorGoals) = _engine.playMatch(
             seed, 
-            _leagueState.dayStateAt(initLeagueState, homeTeamIdx), 
-            _leagueState.dayStateAt(initLeagueState, visitorTeamIdx), 
+            _leagueState.dayStateAt(initDayState, homeTeamIdx), 
+            _leagueState.dayStateAt(initDayState, visitorTeamIdx), 
             tactics[0], 
             tactics[1]
         );
@@ -137,7 +137,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
 
     function computeAllMatchdayStates(
         uint256 id, 
-        uint256[] memory initLeagueState, 
+        uint256[] memory initDayState, 
         uint256[3][] memory tactics // TODO: optimize data type
     )
         public 
@@ -148,12 +148,12 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         for(uint256 day = 0 ; day < nLeagueDays ; day++)
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
-            uint16[] memory dayScores = computeStatesAtMatchday(id, day, initLeagueState, tactics, seed);
+            uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
             scores = addToTournamentScores(scores, dayScores);
         }
     }
 
-    function hashLeagueState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
+    function hashDayState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
         uint256 nTeams = _leagueState.dayStateSize(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
