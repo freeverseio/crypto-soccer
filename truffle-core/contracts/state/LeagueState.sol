@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./DayLeagueState.sol";
+import "./DayState.sol";
 
-contract LeagueState is DayLeagueState {
+contract LeagueState is DayState {
     function isValidLeagueStatePerDay(uint256[] memory state) public pure returns (bool) {
         return true;
     }

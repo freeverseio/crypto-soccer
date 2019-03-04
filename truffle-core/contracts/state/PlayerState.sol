@@ -1,0 +1,70 @@
+pragma solidity ^0.5.0;
+
+import "./StateBase.sol";
+
+contract PlayerState is StateBase {
+    function isValidPlayerState(uint256 state) public pure returns (bool) {
+        return state != TEAMSTATEDIVIDER && state != LEAGUESTATEDIVIDER;
+    }
+
+    /**
+     * @dev encoding:
+     *        defence:   0xff00000000
+     *        speed:     0x00ff000000
+     *        pass:      0x0000ff0000
+     *        shoot:     0x000000ff00
+     *        endurance: 0x00000000ff
+     */
+    function playerStateCreate(
+        uint8 defence,
+        uint8 speed,
+        uint8 pass,
+        uint8 shoot,
+        uint8 endurance 
+    )
+        public 
+        pure
+        returns (uint256 state)
+    {
+        state |= uint256(defence) << 8 * 4;
+        state |= uint256(speed) << 8 * 3;
+        state |= uint256(pass) << 8 * 2;
+        state |= uint256(shoot) << 8;
+        state |= endurance;
+    }
+
+    function getDefence(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 4);
+    }
+    
+    function getSpeed(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 3);
+    }
+
+    function getPass(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8 * 2);
+    }
+
+    function getShoot(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState >> 8);
+    }
+
+    function getEndurance(uint256 playerState) public pure returns (uint8) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint8(playerState);
+    }
+
+    function playerStateEvolve(uint256 state, uint8 delta) public pure returns (uint256) {
+        require(isValidPlayerState(state), "invalid player state");
+        uint8 defence = getDefence(state) + delta;
+        uint8 speed = getSpeed(state) + delta;
+        uint8 pass = getPass(state) + delta;
+        uint8 shoot = getShoot(state) + delta;
+        uint8 endurance = getEndurance(state) + delta;
+        return playerStateCreate(defence, speed, pass, shoot, endurance);
+    }
+}
