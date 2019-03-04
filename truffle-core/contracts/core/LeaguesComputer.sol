@@ -97,23 +97,38 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         returns (uint16[] memory scores)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
-        uint256 homeTeamIdx;
-        uint256 visitorTeamIdx;
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
-            uint8 homeGoals;
-            uint8 visitorGoals;
-            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
-            (homeGoals, visitorGoals) = _engine.playMatch(
-                seed, 
-                getTeam(initLeagueState, homeTeamIdx), 
-                getTeam(initLeagueState, visitorTeamIdx), 
-                tactics[0], 
-                tactics[1]
-            );
-            uint16 score = encodeScore(homeGoals, visitorGoals);
+            uint16 score = computeScoreMatchInLeague(id, leagueDay, i, initLeagueState, tactics, seed);
             scores = addToDayScores(scores, score);
         }
+    }
+
+    function computeScoreMatchInLeague(
+        uint256 id,
+        uint256 leagueDay, 
+        uint256 matchInLeagueDay,
+        uint256[] memory initLeagueState, 
+        uint256[3][] memory tactics,
+        bytes32 seed
+    )
+        public
+        view
+        returns (uint16 score)
+    {
+        uint256 homeTeamIdx;
+        uint256 visitorTeamIdx;
+        uint8 homeGoals;
+        uint8 visitorGoals;
+        (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
+        (homeGoals, visitorGoals) = _engine.playMatch(
+            seed, 
+            getTeam(initLeagueState, homeTeamIdx), 
+            getTeam(initLeagueState, visitorTeamIdx), 
+            tactics[0], 
+            tactics[1]
+        );
+        score = encodeScore(homeGoals, visitorGoals);
     }
 
     function computeAllMatchdayStates(
