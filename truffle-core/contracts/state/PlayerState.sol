@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./StateBase.sol";
+contract PlayerState {
+    uint256 constant public TEAMSTATEEND = 0;
 
-contract PlayerState is StateBase {
     function isValidPlayerState(uint256 state) public pure returns (bool) {
         return state != TEAMSTATEEND;
     }
