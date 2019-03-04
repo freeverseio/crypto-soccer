@@ -474,8 +474,14 @@ def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
     #   if that a given player is virtual, then it contains just its state
     #   if not, it contains all states of prev league's team
     for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
-        for playerShirt, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
-            dataToChallengeInitStates[teamPos][playerShirt] = computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT)
+        for shirtNum, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
+            if playerIdx == 0:
+                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerIdx(
+                    getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT),
+                    ST_CLIENT
+                )
+            else:
+                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT)
     return dataToChallengeInitStates
 
 

@@ -211,16 +211,17 @@ class League():
         #   if not, it contains all states of prev league's team
         initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
         for teamPos, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for playerShirt, playerIdx in enumerate(ST.teams[teamIdx].playerIdxs):
+            for shirtNum, playerIdx in enumerate(ST.teams[teamIdx].playerIdxs):
+                correctPlayerIdx = playerIdx if playerIdx != 0 else pylio.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
                 isOK = pylio.isCorrectStateForPlayerIdx(
-                    pylio.getPlayerStateFromChallengeData(playerIdx, dataToChallengeInitStates[teamPos][playerShirt]),
-                    dataToChallengeInitStates[teamPos][playerShirt],
+                    pylio.getPlayerStateFromChallengeData(correctPlayerIdx, dataToChallengeInitStates[teamPos][shirtNum]),
+                    dataToChallengeInitStates[teamPos][shirtNum],
                     ST
                 )
                 if isOK:
-                    initPlayerStates[teamPos][playerShirt] = pylio.getPlayerStateFromChallengeData(
-                        playerIdx,
-                        dataToChallengeInitStates[teamPos][playerShirt]
+                    initPlayerStates[teamPos][shirtNum] = pylio.getPlayerStateFromChallengeData(
+                        correctPlayerIdx,
+                        dataToChallengeInitStates[teamPos][shirtNum]
                     )
                 else:
                     print "Challenger Wins: initStates provided by updater are invalid"
