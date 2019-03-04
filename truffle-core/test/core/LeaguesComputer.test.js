@@ -69,7 +69,7 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('hash league state', async () => {
-        const state = [3,5,2,0,4,56,6];
+        const state = [3,5,2,0,4,56,6,0];
         const hashes = await leagues.hashLeagueState(state).should.be.fulfilled;
         hashes.length.should.be.equal(2);
         hashes[0].should.be.equal('0x7c1a4da9ae4219e9f58d1c3b3efacea1c4e962cf3330297d46eceb26a8500221');

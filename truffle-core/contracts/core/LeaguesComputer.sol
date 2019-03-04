@@ -154,7 +154,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
     }
 
     function hashLeagueState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
-        uint256 nTeams = _leagueState.countTeamsInState(leagueState);
+        uint256 nTeams = _leagueState.dayStateSize(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
             uint256[] memory teamState = _leagueState.getTeam(leagueState, i);
