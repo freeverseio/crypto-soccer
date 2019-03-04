@@ -31,15 +31,15 @@ contract('LeaguesState', (accounts) => {
     });
 
     it('valid state', async () => {
-        let result = await instance.isValid([]).should.be.fulfilled;
+        let result = await instance.isValidLeagueState([]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValid([2]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValid([2, 3, TEAMSTATEDIVIDER, 4, TEAMSTATEDIVIDER, 4]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, 3, TEAMSTATEDIVIDER, 4, TEAMSTATEDIVIDER, 4]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValid([2, TEAMSTATEDIVIDER, TEAMSTATEDIVIDER, 1]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, TEAMSTATEDIVIDER, TEAMSTATEDIVIDER, 1]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValid([TEAMSTATEDIVIDER]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([TEAMSTATEDIVIDER]).should.be.fulfilled;
         result.should.be.equal(false);
     });
 

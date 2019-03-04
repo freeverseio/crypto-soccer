@@ -161,7 +161,7 @@ contract LeaguesState is LeaguesBase {
     }
 
     function countTeamsInState(uint256[] memory leagueState) public pure returns (uint256) {
-        require(isValid(leagueState), "invalid league state");
+        require(isValidLeagueState(leagueState), "invalid league state");
         if (leagueState.length == 0)
             return 0;
 
@@ -174,7 +174,7 @@ contract LeaguesState is LeaguesBase {
     }
 
     function countTeamPlayers(uint256[] memory leagueState, uint256 idx) public pure returns (uint256) {
-        require(isValid(leagueState), "invalid league state");
+        require(isValidLeagueState(leagueState), "invalid league state");
         require(idx < countTeamsInState(leagueState), "out of range");
         uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         uint256 counter;
@@ -184,7 +184,7 @@ contract LeaguesState is LeaguesBase {
     }
 
     function getTeam(uint256[] memory leagueState, uint256 idx) public pure returns (uint256[] memory) {
-        require(isValid(leagueState), "invalid league state");
+        require(isValidLeagueState(leagueState), "invalid league state");
         require(idx < countTeamsInState(leagueState), "out of range");
         uint256 nPlayers = countTeamPlayers(leagueState, idx);
         uint256[] memory state = new uint256[](nPlayers);
@@ -194,7 +194,7 @@ contract LeaguesState is LeaguesBase {
         return state;
     } 
    
-    function isValid(uint256[] memory state) public pure returns (bool) {
+    function isValidLeagueState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
         if (state[0] == TEAMSTATEDIVIDER)
