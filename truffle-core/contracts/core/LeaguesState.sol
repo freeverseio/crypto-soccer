@@ -4,6 +4,7 @@ import "./LeaguesBase.sol";
 
 contract LeaguesState is LeaguesBase {
     uint256 constant public TEAMSTATEDIVIDER = 0;
+    uint256 constant public LEAGUESTATEDIVIDER = uint256(-1);
 
     struct State {
         // hash of the init status of the league 
@@ -157,7 +158,7 @@ contract LeaguesState is LeaguesBase {
     }
 
     function isValidPlayerState(uint256 state) public pure returns (bool) {
-        return state != uint256(-1);
+        return state != TEAMSTATEDIVIDER && state != LEAGUESTATEDIVIDER;
     }
 
     function countTeamsInState(uint256[] memory leagueState) public pure returns (uint256) {

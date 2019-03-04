@@ -7,6 +7,7 @@ const LeaguesState = artifacts.require('LeaguesState');
 contract('LeaguesState', (accounts) => {
     let instance = null;
     let TEAMSTATEDIVIDER = null;
+    let LEAGUESTATEDIVIDER = null;
     const initBlock = 1;
     const step = 1;
     const id = 0;
@@ -15,6 +16,7 @@ contract('LeaguesState', (accounts) => {
     beforeEach(async () => {
         instance = await LeaguesState.new().should.be.fulfilled;
         TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
+        LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
     });
 
     it('unexistent league', async () => {
@@ -167,10 +169,10 @@ contract('LeaguesState', (accounts) => {
     });
 
     it('is valid player state', async () => {
-        let result = await instance.isValidPlayerState(-1).should.be.fulfilled;
+        let result = await instance.isValidPlayerState(TEAMSTATEDIVIDER).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidPlayerState(0).should.be.fulfilled;
-        result.should.be.equal(true);
+        result = await instance.isValidPlayerState(LEAGUESTATEDIVIDER).should.be.fulfilled;
+        result.should.be.equal(false);
     });
 
     it('skills getters from state player', async () => {
