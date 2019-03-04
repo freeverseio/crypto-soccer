@@ -87,8 +87,8 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
 
     function computeStatesAtMatchday(
         uint256 id,
-        uint256 matchday, 
-        uint256[] memory prevStates, 
+        uint256 leagueDay, 
+        uint256[] memory initLeagueState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
@@ -103,11 +103,11 @@ contract LeaguesComputer is LeaguesState, LeaguesScore, LeaguesTactics {
         {
             uint8 homeGoals;
             uint8 visitorGoals;
-            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, matchday, i);
+            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
             (homeGoals, visitorGoals) = _engine.playMatch(
                 seed, 
-                getTeam(prevStates, homeTeamIdx), 
-                getTeam(prevStates, visitorTeamIdx), 
+                getTeam(initLeagueState, homeTeamIdx), 
+                getTeam(initLeagueState, visitorTeamIdx), 
                 tactics[0], 
                 tactics[1]
             );
