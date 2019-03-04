@@ -6,7 +6,7 @@ const LeaguesState = artifacts.require('LeaguesState');
 
 contract('LeaguesState', (accounts) => {
     let instance = null;
-    let divider = null;
+    let TEAMSTATEDIVIDER = null;
     const initBlock = 1;
     const step = 1;
     const id = 0;
@@ -14,7 +14,7 @@ contract('LeaguesState', (accounts) => {
 
     beforeEach(async () => {
         instance = await LeaguesState.new().should.be.fulfilled;
-        divider = await instance.DIVIDER().should.be.fulfilled;
+        TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
     });
 
     it('unexistent league', async () => {
@@ -35,11 +35,11 @@ contract('LeaguesState', (accounts) => {
         result.should.be.equal(true);
         result = await instance.isValid([2]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValid([2, 3, divider, 4, divider, 4]).should.be.fulfilled;
+        result = await instance.isValid([2, 3, TEAMSTATEDIVIDER, 4, TEAMSTATEDIVIDER, 4]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValid([2, divider, divider, 1]).should.be.fulfilled;
+        result = await instance.isValid([2, TEAMSTATEDIVIDER, TEAMSTATEDIVIDER, 1]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValid([divider]).should.be.fulfilled;
+        result = await instance.isValid([TEAMSTATEDIVIDER]).should.be.fulfilled;
         result.should.be.equal(false);
     });
 
@@ -62,7 +62,7 @@ contract('LeaguesState', (accounts) => {
     it('count players in team', async () => {
         await instance.countTeamPlayers([], 0).should.be.rejected;
         await instance.countTeamPlayers([2], 1).should.be.rejected;
-        await instance.countTeamPlayers([divider, 2], 0).should.be.rejected;
+        await instance.countTeamPlayers([TEAMSTATEDIVIDER, 2], 0).should.be.rejected;
         const leagueState = [2,3,0,4,2,1,0,4,5,0,2]
         let count = await instance.countTeamPlayers(leagueState, 0).should.be.fulfilled;
         count.toNumber().should.be.equal(2);

@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import "./LeaguesBase.sol";
 
 contract LeaguesState is LeaguesBase {
-    uint256 constant public DIVIDER = 0;
+    uint256 constant public TEAMSTATEDIVIDER = 0;
 
     struct State {
         // hash of the init status of the league 
@@ -133,7 +133,7 @@ contract LeaguesState is LeaguesBase {
         state = new uint256[](leagueState.length + teamState.length + 1);
         for (uint256 i = 0 ; i < leagueState.length ; i++)
             state[i] = leagueState[i];
-        state[leagueState.length] = DIVIDER;
+        state[leagueState.length] = TEAMSTATEDIVIDER;
         for (uint256 i = 0 ; i < teamState.length ; i++) 
             state[leagueState.length + 1 + i] = teamState[i];
     }
@@ -151,7 +151,7 @@ contract LeaguesState is LeaguesBase {
 
     function isValidTeamState(uint256[] memory state) public pure returns (bool) {
         for (uint256 i = 0 ; i < state.length ; i++)
-            if (state[i] == DIVIDER)
+            if (state[i] == TEAMSTATEDIVIDER)
                 return false;
         return true;
     }
@@ -167,7 +167,7 @@ contract LeaguesState is LeaguesBase {
 
         uint256 count = 1;
         for (uint256 i = 0 ; i < leagueState.length ; i++) {
-            if (leagueState[i] == DIVIDER)
+            if (leagueState[i] == TEAMSTATEDIVIDER)
                 count++; 
         }
         return count;
@@ -178,7 +178,7 @@ contract LeaguesState is LeaguesBase {
         require(idx < countTeamsInState(leagueState), "out of range");
         uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         uint256 counter;
-        while (first+counter < leagueState.length && leagueState[first+counter] != DIVIDER)
+        while (first+counter < leagueState.length && leagueState[first+counter] != TEAMSTATEDIVIDER)
             counter++;
         return counter;
     }
@@ -197,12 +197,12 @@ contract LeaguesState is LeaguesBase {
     function isValid(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
-        if (state[0] == DIVIDER)
+        if (state[0] == TEAMSTATEDIVIDER)
             return false;
-        if (state[state.length-1] == DIVIDER)
+        if (state[state.length-1] == TEAMSTATEDIVIDER)
             return false;
         for (uint256 i = 0 ; i < state.length - 1 ; i++)
-            if (state[i] == DIVIDER && state[i+1] == DIVIDER)
+            if (state[i] == TEAMSTATEDIVIDER && state[i+1] == TEAMSTATEDIVIDER)
                 return false;
         return true;
     }
@@ -211,7 +211,7 @@ contract LeaguesState is LeaguesBase {
         uint256 teamCounter;
         uint256 i;
         for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
-            if (leagueState[i] == DIVIDER)
+            if (leagueState[i] == TEAMSTATEDIVIDER)
                 teamCounter++;
         }
         return i;
