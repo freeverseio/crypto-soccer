@@ -204,8 +204,9 @@ contract LeaguesState is LeaguesBase {
         // last element has to be a valid player state
         if (!isValidPlayerState(state[state.length-1]))
             return false;
+        // consecutive element can't be invalid player state
         for (uint256 i = 0 ; i < state.length - 1 ; i++)
-            if (state[i] == TEAMSTATEDIVIDER && state[i+1] == TEAMSTATEDIVIDER)
+            if (!isValidPlayerState(state[i]) && !isValidPlayerState(state[i+1]))
                 return false;
         return true;
     }
