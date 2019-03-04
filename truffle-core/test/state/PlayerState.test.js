@@ -6,13 +6,11 @@ const PlayerState = artifacts.require('PlayerState');
 
 contract('PlayerState', (accounts) => {
     let instance = null;
-    let TEAMSTATEDIVIDER = null;
-    let LEAGUESTATEDIVIDER = null;
+    let TEAMSTATEEND = null;
 
     beforeEach(async () => {
         instance = await PlayerState.new().should.be.fulfilled;
-        TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
-        LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
+        TEAMSTATEEND = await instance.TEAMSTATEEND().should.be.fulfilled;
     });
 
     it('create player state', async () => {
@@ -30,9 +28,7 @@ contract('PlayerState', (accounts) => {
     });
 
     it('is valid player state', async () => {
-        let result = await instance.isValidPlayerState(TEAMSTATEDIVIDER).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidPlayerState(LEAGUESTATEDIVIDER).should.be.fulfilled;
+        let result = await instance.isValidPlayerState(TEAMSTATEEND).should.be.fulfilled;
         result.should.be.equal(false);
     });
 

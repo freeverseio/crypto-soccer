@@ -4,7 +4,7 @@ import "./StateBase.sol";
 
 contract PlayerState is StateBase {
     function isValidPlayerState(uint256 state) public pure returns (bool) {
-        return state != TEAMSTATEDIVIDER && state != LEAGUESTATEDIVIDER;
+        return state != TEAMSTATEEND;
     }
 
     /**

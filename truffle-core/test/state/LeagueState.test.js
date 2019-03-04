@@ -9,7 +9,7 @@ contract('LeagueState', (accounts) => {
 
     // beforeEach(async () => {
     //     instance = await LeagueState.new().should.be.fulfilled;
-    //     TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
+    //     TEAMSTATEEND = await instance.TEAMSTATEEND().should.be.fulfilled;
     //     LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
     // });
 

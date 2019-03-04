@@ -6,11 +6,11 @@ const DayState = artifacts.require('DayState');
 
 contract('DayState', (accounts) => {
     let instance = null;
-    let TEAMSTATEDIVIDER = null;
+    let TEAMSTATEEND = null;
 
     beforeEach(async () => {
         instance = await DayState.new().should.be.fulfilled;
-        TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
+        TEAMSTATEEND = await instance.TEAMSTATEEND().should.be.fulfilled;
     });
 
     it('create day state has 0 size', async () => {
@@ -48,18 +48,18 @@ contract('DayState', (accounts) => {
         result.should.be.equal(true);
         result = await instance.isValidLeagueState([2]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, 3, TEAMSTATEDIVIDER, 4, TEAMSTATEDIVIDER, 4]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, TEAMSTATEDIVIDER, TEAMSTATEDIVIDER, 1, TEAMSTATEDIVIDER]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidLeagueState([TEAMSTATEDIVIDER]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
     it('count players in team', async () => {
         await instance.countTeamPlayers([], 0).should.be.rejected;
         await instance.countTeamPlayers([2], 1).should.be.rejected;
-        await instance.countTeamPlayers([TEAMSTATEDIVIDER, 2], 0).should.be.rejected;
+        await instance.countTeamPlayers([TEAMSTATEEND, 2], 0).should.be.rejected;
         const dayState = [2,3,0,4,2,1,0,4,5,0,2,0]
         let count = await instance.countTeamPlayers(dayState, 0).should.be.fulfilled;
         count.toNumber().should.be.equal(2);

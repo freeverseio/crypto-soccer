@@ -13,13 +13,13 @@ contract DayState is TeamState {
             state[i] = dayState[i];
         for (uint256 i = 0 ; i < teamState.length ; i++) 
             state[dayState.length + i] = teamState[i];
-        state[dayState.length + teamState.length] = TEAMSTATEDIVIDER;
+        state[dayState.length + teamState.length] = TEAMSTATEEND;
     }
 
     function dayStateSize(uint256[] memory dayState) public pure returns (uint256 count) {
         require(isValidLeagueState(dayState), "invalid league state");
         for (uint256 i = 0 ; i < dayState.length ; i++)
-            if (dayState[i] == TEAMSTATEDIVIDER)
+            if (dayState[i] == TEAMSTATEEND)
                 count++;
     }
 
@@ -28,7 +28,7 @@ contract DayState is TeamState {
         require(idx < dayStateSize(dayState), "out of range");
         uint256 first = _getFirstPlayerOfTeam(dayState, idx);
         uint256 counter;
-        while (first+counter < dayState.length && dayState[first+counter] != TEAMSTATEDIVIDER)
+        while (first+counter < dayState.length && dayState[first+counter] != TEAMSTATEEND)
             counter++;
         return counter;
     }
@@ -47,7 +47,7 @@ contract DayState is TeamState {
     function isValidLeagueState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
-        if (state[state.length - 1] != TEAMSTATEDIVIDER)
+        if (state[state.length - 1] != TEAMSTATEEND)
             return false;
         return true;
     }
@@ -56,7 +56,7 @@ contract DayState is TeamState {
         uint256 teamCounter;
         uint256 i;
         for (i = 0 ; i < dayState.length && teamCounter < idx; i++){
-            if (dayState[i] == TEAMSTATEDIVIDER)
+            if (dayState[i] == TEAMSTATEEND)
                 teamCounter++;
         }
         return i;
