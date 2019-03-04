@@ -7,12 +7,10 @@ const DayState = artifacts.require('DayState');
 contract('DayState', (accounts) => {
     let instance = null;
     let TEAMSTATEDIVIDER = null;
-    let LEAGUESTATEDIVIDER = null;
 
     beforeEach(async () => {
         instance = await DayState.new().should.be.fulfilled;
         TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
-        LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
     });
 
     it('valid league state', async () => {
