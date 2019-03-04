@@ -146,16 +146,8 @@ def test2():
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as already finished"
 
-    # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
-    initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
-    allActionsInThisLeague = ST_CLIENT.getAllActionsForLeague(leagueIdx)
+    statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
 
-    statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores = computeAllMatchdayStates(
-        ST_CLIENT.getAllSeedsForLeague(leagueIdx),
-        initPlayerStates,
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        allActionsInThisLeague,
-    )
 
     # TODO: treat initStates the same way as states and avoid initPlayerHash being different
 
@@ -195,7 +187,7 @@ def test2():
     prevMatchdayStates, prevMatchdayTactics, prevMatchdayTeamOrders = \
         getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
-    merkleProof, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+    merkleProof, values, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday, allActionsInThisLeague[selectedMatchday])
 
 
     ST.challengeMatchdayStates(
@@ -207,6 +199,7 @@ def test2():
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(allActionsInThisLeague[selectedMatchday]),
         merkleProof,
+        values,
         depth
     )
 
@@ -448,7 +441,20 @@ def test4():
           )
     success2 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
 
-    return success1 and success2
+    # it is also valid in the case of a single element, where the 'neededHashes' is empty,
+    # as we just need the root(tree), which is passed too
+    leafs = ["prew"]
+    tree, depth = make_tree(leafs, serialHash)
+    idxsToProve = [0]
+    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
+    assert not neededHashes, "No Hash should be needed, but you have a non empty array"
+    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
+          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
+          )
+    success3 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+
+
+    return success1 and success2 and success3
 
 
 def runTest(name, result, expected):
@@ -476,3 +482,4 @@ else:
 # - change teamIdx for teamPos inside usersAlongData
 # - gather dataAtMAtch day as a struct
 #   - likeweise, put initStates as states at 0 (not sure)
+# gather all merkle proof data (vals, hashes, depth) in a struct
