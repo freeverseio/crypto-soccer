@@ -6,34 +6,25 @@ const TeamState = artifacts.require('TeamState');
 
 contract('TeamState', (accounts) => {
     let instance = null;
-    let TEAMSTATEDIVIDER = null;
-    let LEAGUESTATEDIVIDER = null;
 
     beforeEach(async () => {
         instance = await TeamState.new().should.be.fulfilled;
-        TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
-        LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
-    });
-
-    it('count players in team', async () => {
-        await instance.countTeamPlayers([], 0).should.be.rejected;
-        await instance.countTeamPlayers([2], 1).should.be.rejected;
-        await instance.countTeamPlayers([TEAMSTATEDIVIDER, 2], 0).should.be.rejected;
-        const leagueState = [2,3,0,4,2,1,0,4,5,0,2]
-        let count = await instance.countTeamPlayers(leagueState, 0).should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
-        count = await instance.countTeamPlayers(leagueState, 1).should.be.fulfilled;
-        count.toNumber().should.be.equal(3);
-        count = await instance.countTeamPlayers(leagueState, 2).should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
-        count = await instance.countTeamPlayers(leagueState, 3).should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
     });
 
     it('create team state', async () => {
         const teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState.length.should.be.equal(0);
     });
+    
+    it('count players in team state', async () => {
+        let teamState = await instance.teamStateCreate().should.be.fulfilled;
+        let count = await instance.teamStateCountPlayers(teamState).should.be.fulfilled;
+        count.toNumber().should.be.equal(0);
+        const playerState = await instance.playerStateCreate(1,2,3,4,5).should.be.fulfilled;
+        teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        count = await instance.teamStateCountPlayers(teamState).should.be.fulfilled;
+        count.toNumber().should.be.equal(1);
+    })
 
     it('append player state to team state', async () => {
         const playerState0 = 0x546ab;
