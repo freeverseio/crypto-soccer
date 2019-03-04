@@ -18,11 +18,11 @@ contract('TeamState', (accounts) => {
     
     it('count players in team state', async () => {
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
-        let count = await instance.teamStateCountPlayers(teamState).should.be.fulfilled;
+        let count = await instance.teamStateSize(teamState).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
         const playerState = await instance.playerStateCreate(1,2,3,4,5).should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
-        count = await instance.teamStateCountPlayers(teamState).should.be.fulfilled;
+        count = await instance.teamStateSize(teamState).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
     })
 
@@ -77,7 +77,7 @@ contract('TeamState', (accounts) => {
         teamState = await instance.teamStateAppend(teamState, playerState1).should.be.fulfilled;
         const delta = 3;
         teamState = await instance.teamStateEvolve(teamState, delta).should.be.fulfilled;
-        playerState0 = await instance.getPlayerState(teamState, 0).should.be.fulfilled;
+        playerState0 = await instance.teamStateAt(teamState, 0).should.be.fulfilled;
         let skill = await instance.getDefence(playerState0).should.be.fulfilled;
         skill.toNumber().should.be.equal(defence + delta);
         skill = await instance.getSpeed(playerState0).should.be.fulfilled;
@@ -88,7 +88,7 @@ contract('TeamState', (accounts) => {
         skill.toNumber().should.be.equal(shoot + delta);
         skill = await instance.getEndurance(playerState0).should.be.fulfilled;
         skill.toNumber().should.be.equal(endurance + delta);
-        playerState1 = await instance.getPlayerState(teamState, 1).should.be.fulfilled;
+        playerState1 = await instance.teamStateAt(teamState, 1).should.be.fulfilled;
         skill = await instance.getDefence(playerState1).should.be.fulfilled;
         skill.toNumber().should.be.equal(defence + 1 + delta);
         skill = await instance.getSpeed(playerState1).should.be.fulfilled;

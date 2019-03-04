@@ -56,21 +56,6 @@ contract('DayState', (accounts) => {
         result.should.be.equal(true);
     });
 
-    it('count players in team', async () => {
-        await instance.countTeamPlayers([], 0).should.be.rejected;
-        await instance.countTeamPlayers([2], 1).should.be.rejected;
-        await instance.countTeamPlayers([TEAMSTATEEND, 2], 0).should.be.rejected;
-        const dayState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
-        let count = await instance.countTeamPlayers(dayState, 0).should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
-        count = await instance.countTeamPlayers(dayState, 1).should.be.fulfilled;
-        count.toNumber().should.be.equal(3);
-        count = await instance.countTeamPlayers(dayState, 2).should.be.fulfilled;
-        count.toNumber().should.be.equal(2);
-        count = await instance.countTeamPlayers(dayState, 3).should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
-    });
-
     it('get team from league state', async () => {
         const dayState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
         let state = await instance.dayStateAt(dayState, 0).should.be.fulfilled;
