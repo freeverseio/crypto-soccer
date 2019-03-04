@@ -282,49 +282,6 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
                 )
     return statesAtMatchday, scores
 
-def convertActionsTeamIdxToTeamPos(actionsPerVerse, usersInitData):
-    # actions have indices: verse x [ [leagueIdx1, actions], [leagueIdx2, actions], ... ]
-    # this function changes the action["teamIdx"] to make it relative-to-the-league (teamPosInLeague)
-    for actionsInVerse in actionsPerVerse:
-        for actions in actionsInVerse:
-            for teamAction in actions[:][1]:
-                teamPosInLeague = pylio.getTeamPosInLeague(teamAction["teamIdx"], usersInitData)
-                teamAction["teamIdx"] = teamPosInLeague
-
-
-
-# def computeAllMatchdayStates(seedsPerVerse, initPlayerStates, usersInitData, allActionsInThisLeague):
-#     # In this initial implementation, evolution happens at the end of the league only
-#     tactics     = duplicate(usersInitData["tactics"])
-#     teamOrders  = duplicate(usersInitData["teamOrders"])
-#
-#     nTeams = len(usersInitData["teamIdxs"])
-#     nMatchdays = 2*(nTeams-1)
-#     assert nMatchdays == len(seedsPerVerse), "We should have as many matchdays as verses"
-#     nMatchesPerMatchday = nTeams//2
-#     scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
-#
-#     # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
-#     statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
-#     tacticsAtMatchDay = []
-#     teamOrdersAtMatchDay = []
-#
-#     convertActionsTeamIdxToTeamPos(allActionsInThisLeague, usersInitData)
-#
-#     for matchday in range(nMatchdays):
-#         updateTacticsToVerseNum(tactics, teamOrders, matchday, allActionsInThisLeague)
-#         prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
-#         statesAtMatchday[matchday], scores[matchday] = computeStatesAtMatchday(
-#             matchday,
-#             prevStates,
-#             tactics,
-#             teamOrders,
-#             seedsPerVerse[matchday]
-#         )
-#         tacticsAtMatchDay.append(duplicate(tactics))
-#         teamOrdersAtMatchDay.append(duplicate(teamOrders))
-#
-#     return statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores
 
 def computeUsersAlongDataHash(usersAlongData):
     usersAlongDataHash = 0
@@ -372,45 +329,9 @@ def getTeamIdxInLeague(currentTeamIdx, lastLeagueIdx, ST_CLIENT):
 def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
 
-def computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT):
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST_CLIENT)
-    if prevLeagueIdx == 0:
-        return getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
-    else:
-        return getAllStatesAtEndOfLeague(prevLeagueIdx, ST_CLIENT)
-
-def getAllStatesAtEndOfLeague(leagueIdx, ST_CLIENT):
-    return ST_CLIENT.leagues[leagueIdx].statesAtMatchday[-1]
 
 
-def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
-    thisLeague = duplicate(ST_CLIENT.leagues[leagueIdx])
-    nTeams = len(thisLeague.usersInitData["teamIdxs"])
-    dataToChallengeInitStates = [[None for player in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-    # dimensions: [team, nPlayersInTeam]
-    #   if that a given player is virtual, then it contains just its state
-    #   if not, it contains all states of prev league's team
-    for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
-        for playerShirt, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
-            dataToChallengeInitStates[teamPos][playerShirt] = computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT)
-    return dataToChallengeInitStates
 
-
-def isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState, ST):
-    # If player has never played a league, we can compute the playerState directly in the BC
-    # It basically is equal to the birth skills, with ,potentially, a few team changes via sales.
-    # If not, we can just compare the hash of the dataToChallengePlayerState with the stored hash in the prev league
-    playerIdx = playerState.getPlayerIdx()
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST)
-    if prevLeagueIdx == 0:
-        return areEqualStructs(
-            playerState,
-            getPlayerStateBeforePlayingAnyLeague(playerIdx, ST)
-        )
-    else:
-        assert isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
-            "The playerState provided is not part of the challengeData"
-        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1]
 
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
     return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
@@ -456,11 +377,14 @@ def getBlockhashForBlock(n):
 
 
 #TODO: move the hashing of this to the BC to avoid inconsistencies (view mode)
-def computesdataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+def computeDataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
     dataAtMatchdayHashes = []
     for state, tactic, teamOrders in zip(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
-        dataAtMatchdayHashes.append( serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders))
+        dataAtMatchdayHashes.append(computeDataAtMatchdayHash(state, tactic, teamOrders))
     return dataAtMatchdayHashes
+
+def computeDataAtMatchdayHash(state, tactic, teamOrders):
+    return serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders)
 
 
 def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):

@@ -150,12 +150,10 @@ def test2():
     statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
 
 
-    # TODO: treat initStates the same way as states and avoid initPlayerHash being different
-
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
     initStatesHash          = serialHash(initPlayerStates)
-    dataAtMatchdayHashes = computesdataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
+    dataAtMatchdayHashes = computeDataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
 
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
     dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
@@ -198,7 +196,7 @@ def test2():
         prevMatchdayTactics,
         prevMatchdayTeamOrders,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(allActionsInThisLeague[selectedMatchday]),
+        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
         merkleProof,
         values,
         depth
@@ -207,18 +205,20 @@ def test2():
 
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
+
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not updated"
     initStatesHashLie = duplicate(initStatesHash)+1
 
-    ST.leagues[leagueIdx].updateLeague(
+    ST.updateLeague(
+        leagueIdx,
         initStatesHashLie,
-        statesAtMatchdayHashes,
+        dataAtMatchdayHashes,
         scores,
         ADDR2,
-        ST.currentBlock
     )
+
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
 
@@ -226,13 +226,18 @@ def test2():
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
 
-    dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT)
+    dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
 
-    ST.leagues[leagueIdx].challengeInitStates(
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+    # ST.leagues[leagueIdx].challengeInitStates(
+    #     duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+    #     duplicate(dataToChallengeInitStates),
+    #     ST,
+    #     ST.currentBlock
+    # )
+    ST.challengeInitStates(
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(dataToChallengeInitStates),
-        ST,
-        ST.currentBlock
     )
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
 
@@ -484,3 +489,6 @@ else:
 # - gather dataAtMAtch day as a struct
 #   - likeweise, put initStates as states at 0 (not sure)
 # gather all merkle proof data (vals, hashes, depth) in a struct
+# treat initStates the same way as states and avoid initPlayerHash being different
+# do not store scores but the hash or merkle root
+#         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
