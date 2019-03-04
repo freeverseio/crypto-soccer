@@ -481,6 +481,7 @@ def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
                     ST_CLIENT
                 )
             else:
+                assert playerIdx == getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT), "PlayerIdx should always coincide"
                 dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT)
     return dataToChallengeInitStates
 

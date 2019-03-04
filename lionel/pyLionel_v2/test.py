@@ -237,10 +237,10 @@ def test2():
     # ...and the CHALLENGER fails to prove anything
     ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
-    selectedTeam = 0
+    selectedMatchday = 0
     ST.leagues[leagueIdx].challengeMatchdayStates(
-        selectedTeam,
-        initPlayerStates,
+        selectedMatchday,
+        prevMatchdayStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
         ST.currentBlock
