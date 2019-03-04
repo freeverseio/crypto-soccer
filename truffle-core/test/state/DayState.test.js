@@ -2,20 +2,20 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const DayLeagueState = artifacts.require('DayLeagueState');
+const DayState = artifacts.require('DayState');
 
-contract('DayLeagueState', (accounts) => {
+contract('DayState', (accounts) => {
     let instance = null;
     let TEAMSTATEDIVIDER = null;
     let LEAGUESTATEDIVIDER = null;
 
     beforeEach(async () => {
-        instance = await DayLeagueState.new().should.be.fulfilled;
+        instance = await DayState.new().should.be.fulfilled;
         TEAMSTATEDIVIDER = await instance.TEAMSTATEDIVIDER().should.be.fulfilled;
         LEAGUESTATEDIVIDER = await instance.LEAGUESTATEDIVIDER().should.be.fulfilled;
     });
 
-    it('valid state', async () => {
+    it('valid league state', async () => {
         let result = await instance.isValidLeagueState([]).should.be.fulfilled;
         result.should.be.equal(true);
         result = await instance.isValidLeagueState([2]).should.be.fulfilled;
@@ -79,53 +79,7 @@ contract('DayLeagueState', (accounts) => {
         state[0].toNumber().should.be.equal(2);
     });
 
-    it('create player state', async () => {
-        const defence = 3;
-        const speed = 23;
-        const pass = 2;
-        const shoot = 21;
-        const endurance = 10;
-        const state = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        (state.toNumber() & 0xff).should.be.equal(endurance);
-        (state.toNumber() >> 8 & 0xff).should.be.equal(shoot);
-        (state.toNumber() >> 8*2 & 0xff).should.be.equal(pass);
-        (state.toNumber() >> 8*3 & 0xff).should.be.equal(speed);
-        (state.toNumber() >> 8*4 & 0xff).should.be.equal(endurance);
-    });
-
-    it('create team state', async () => {
-        const teamState = await instance.teamStateCreate().should.be.fulfilled;
-        teamState.length.should.be.equal(0);
-    });
-
-    it('leagueStateAppend player state to team state', async () => {
-        const playerState0 = 0x546ab;
-        let teamState = await instance.teamStateCreate().should.be.fulfilled;
-        teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
-        teamState.length.should.be.equal(1);
-        const playerState1 = 0x435;
-        teamState = await instance.teamStateAppend(teamState, playerState1).should.be.fulfilled;
-        teamState.length.should.be.equal(2);
-        teamState[0].toNumber().should.be.equal(playerState0);
-        teamState[1].toNumber().should.be.equal(playerState1);
-    });
-
-    it('valid team state', async () => {
-        let result = await instance.isValidTeamState([]).should.be.fulfilled;
-        result.should.be.equal(true);
-        result = await instance.isValidTeamState([0]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidTeamState([0, 4,3,2,1]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidTeamState([8,0,34]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidTeamState([4,0]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidTeamState([3,4,5,76]).should.be.fulfilled;
-        result.should.be.equal(true);
-    });
-
-    it('leagueStateAppend team state to league state', async () => {
+    it('append team state to league state', async () => {
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
         leagueState = await instance.leagueStateAppend(leagueState, [4,5,6,7]).should.be.fulfilled;
         leagueState.length.should.be.equal(4);
@@ -138,101 +92,5 @@ contract('DayLeagueState', (accounts) => {
         leagueState[3].toNumber().should.be.equal(7);
         leagueState[4].toNumber().should.be.equal(0);
         leagueState[5].toNumber().should.be.equal(2);
-    });
-
-    it('team rating', async () => {
-        const nPlayers = 100;
-        let teamState = await instance.teamStateCreate().should.be.fulfilled;
-        for (var i = 1; i < nPlayers; i += 5) {
-            const playerState = await instance.playerStateCreate(i, i + 1, i + 2, i + 3, i + 4).should.be.fulfilled;
-            teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
-        }
-        const rating = await instance.computeTeamRating(teamState).should.be.fulfilled;
-        rating.toNumber().should.be.equal(nPlayers * (nPlayers + 1) / 2);
-    });
-
-    it('is valid player state', async () => {
-        let result = await instance.isValidPlayerState(TEAMSTATEDIVIDER).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidPlayerState(LEAGUESTATEDIVIDER).should.be.fulfilled;
-        result.should.be.equal(false);
-    });
-
-    it('skills getters from state player', async () => {
-        const defence = 3;
-        const speed = 4;
-        const pass = 6;
-        const shoot = 11;
-        const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        let result = await instance.getDefence(playerState).should.be.fulfilled;
-        result.toNumber().should.be.equal(defence);
-        result = await instance.getSpeed(playerState).should.be.fulfilled;
-        result.toNumber().should.be.equal(speed);
-        result = await instance.getPass(playerState).should.be.fulfilled;
-        result.toNumber().should.be.equal(pass);
-        result = await instance.getShoot(playerState).should.be.fulfilled;
-        result.toNumber().should.be.equal(shoot);
-        result = await instance.getEndurance(playerState).should.be.fulfilled;
-        result.toNumber().should.be.equal(endurance);
-    });
-
-    it('player state evolve', async () => {
-        const defence = 3;
-        const speed = 4;
-        const pass = 6;
-        const shoot = 11;
-        const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        const delta = 3;
-        const updatedState = await instance.playerStateEvolve(playerState, delta).should.be.fulfilled;
-        updatedState.toNumber().should.not.be.equal(playerState.toNumber());
-        let skill = await instance.getDefence(updatedState).should.be.fulfilled;
-        skill.toNumber().should.be.equal(defence + delta);
-        skill = await instance.getSpeed(updatedState).should.be.fulfilled;
-        skill.toNumber().should.be.equal(speed + delta);
-        skill = await instance.getPass(updatedState).should.be.fulfilled;
-        skill.toNumber().should.be.equal(pass + delta);
-        skill = await instance.getShoot(updatedState).should.be.fulfilled;
-        skill.toNumber().should.be.equal(shoot + delta);
-        skill = await instance.getEndurance(updatedState).should.be.fulfilled;
-        skill.toNumber().should.be.equal(endurance + delta);
-    });
-
-    it('team state evolve', async () => {
-        const defence = 3;
-        const speed = 4;
-        const pass = 6;
-        const shoot = 11;
-        const endurance = 9;
-        let playerState0 = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        let playerState1 = await instance.playerStateCreate(defence+1, speed+1, pass+1, shoot+1, endurance+1).should.be.fulfilled;
-        let teamState = await instance.teamStateCreate().should.be.fulfilled;
-        teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
-        teamState = await instance.teamStateAppend(teamState, playerState1).should.be.fulfilled;
-        const delta = 3;
-        teamState = await instance.teamStateEvolve(teamState, delta).should.be.fulfilled;
-        playerState0 = await instance.getPlayerState(teamState, 0).should.be.fulfilled;
-        let skill = await instance.getDefence(playerState0).should.be.fulfilled;
-        skill.toNumber().should.be.equal(defence + delta);
-        skill = await instance.getSpeed(playerState0).should.be.fulfilled;
-        skill.toNumber().should.be.equal(speed + delta);
-        skill = await instance.getPass(playerState0).should.be.fulfilled;
-        skill.toNumber().should.be.equal(pass + delta);
-        skill = await instance.getShoot(playerState0).should.be.fulfilled;
-        skill.toNumber().should.be.equal(shoot + delta);
-        skill = await instance.getEndurance(playerState0).should.be.fulfilled;
-        skill.toNumber().should.be.equal(endurance + delta);
-        playerState1 = await instance.getPlayerState(teamState, 1).should.be.fulfilled;
-        skill = await instance.getDefence(playerState1).should.be.fulfilled;
-        skill.toNumber().should.be.equal(defence + 1 + delta);
-        skill = await instance.getSpeed(playerState1).should.be.fulfilled;
-        skill.toNumber().should.be.equal(speed + 1 + delta);
-        skill = await instance.getPass(playerState1).should.be.fulfilled;
-        skill.toNumber().should.be.equal(pass + 1 + delta);
-        skill = await instance.getShoot(playerState1).should.be.fulfilled;
-        skill.toNumber().should.be.equal(shoot + 1 + delta);
-        skill = await instance.getEndurance(playerState1).should.be.fulfilled;
-        skill.toNumber().should.be.equal(endurance + 1 + delta);
     });
 });
