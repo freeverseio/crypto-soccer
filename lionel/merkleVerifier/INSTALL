@@ -1,0 +1,1 @@
+To install properly, you need to use python3, and use pysha3. So you may want to do:   pip uninstall sha3; pip install pysha3

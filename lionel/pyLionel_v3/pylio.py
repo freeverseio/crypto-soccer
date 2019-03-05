@@ -5,21 +5,26 @@ import sha3
 from copy import deepcopy as duplicate
 from constants import *
 from structs import *
+from merkle_tree import *
+
+# serializes and converts to str in a complicated way
+def serialize2str(object):
+    return str(serialize(object).hex())
 
 # Numpy accepts a max possible seed
 def limitSeed(seed):
     return seed % MAX_RND_SEED_ALLOWED_BY_NUMPY
 
-# Returns kekkack of string in hex format
+# Returns keccak of string in hex format
 def hexHash(str):
-    return sha3.keccak_256(str).hexdigest()
+    return sha3.keccak_256(str.encode('utf-8')).hexdigest()
 
 # Returns kekkack of string in decimal format
 def intHash(str):
     return int(hexHash(str), 16)
 
 def serialHash(obj):
-    return intHash(serialize(obj))
+    return intHash(serialize2str(obj))
 
 # Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
 # e.g. teamName = "Barcelona5443"
@@ -44,102 +49,16 @@ def getPlayerStateFromSeed(seed):
     return newPlayerState
 
 
-def assertTeamIdx(teamIdx, ST):
-    assert teamIdx < len(ST.teams), "Team for this playerIdx not created yet!"
-    assert teamIdx != 0, "Team 0 is reserved for null team!"
-
-
-# If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
-# Otherwise, read what's written in the playerState
-# playerIdx = 0 andt teamdIdx = 0 are the null player and teams
-def getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST):
-    assertTeamIdx(teamIdx, ST)
-    isPlayerIdxAssigned = ST.teams[teamIdx].playerIdxs[shirtNum] != 0
-    if isPlayerIdxAssigned:
-        return ST.teams[teamIdx].playerIdxs[shirtNum]
-    else:
-        return 1 + (teamIdx-1)*NPLAYERS_PER_TEAM + shirtNum
-
-# The inverse of the previous relation
-def getTeamIdxAndShirtForPlayerIdx(playerIdx, ST, forceAtBirth = False):
-    if forceAtBirth or isPlayerVirtual(playerIdx, ST):
-        teamIdx     = 1 + (playerIdx-1)/NPLAYERS_PER_TEAM
-        shirtNum    = (playerIdx-1) % NPLAYERS_PER_TEAM
-        return teamIdx, shirtNum
-    else:
-        return ST.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx(), \
-               ST.playerIdxToPlayerState[playerIdx].getCurrentShirtNum()
 
 # the skills of a player are determined by concat of teamName and shirtNum
 def getPlayerSeedFromTeamAndShirtNum(teamName, shirtNum):
     return limitSeed(intHash(teamName + str(shirtNum)))
-
-# if player has never been sold, it will not be in the map playerIdxToPlayerState
-# and his team is derived from a formula
-def isPlayerVirtual(playerIdx, ST):
-    return not playerIdx in ST.playerIdxToPlayerState
-
-def getLastPlayedLeagueIdx(playerIdx, ST):
-    # if player state has never been written, it played all leagues with current team (obtained from formula)
-    # otherwise, we check if it was sold to current team before start of team's previous league
-    if isPlayerVirtual(playerIdx, ST):
-        teamIdx, shirtNum = getTeamIdxAndShirtForPlayerIdx(playerIdx, ST)
-        return ST.teams[teamIdx].prevLeagueIdx, ST.teams[teamIdx].teamPosInPrevLeague
-
-    currentTeamIdx  = ST.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx()
-    prevLeagueIdxForCurrentTeam = ST.teams[currentTeamIdx].prevLeagueIdx
-    didHePlayLastLeagueWithCurrentTeam = ST.playerIdxToPlayerState[playerIdx].getLastSaleBlocknum() < \
-                                         ST.leagues[prevLeagueIdxForCurrentTeam].blockInit
-    if didHePlayLastLeagueWithCurrentTeam:
-        return prevLeagueIdxForCurrentTeam, ST.teams[currentTeamIdx].teamPosInPrevLeague
-    else:
-        return ST.playerIdxToPlayerState[playerIdx].prevLeagueIdx, ST.playerIdxToPlayerState[playerIdx].prevTeamPosInLeague
-
-def getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST):
-    selectedStates =[s for s in ST.leagues[prevLeagueIdx].statesAtMatchday[-1][teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
-    assert len(selectedStates)==1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
-    return selectedStates[0]
-
-def getPlayerStateAtBirth(playerIdx, ST):
-    # Disregard his current team, just look at the team at moment of birth to build skills
-    teamIdx, shirtNum = getTeamIdxAndShirtForPlayerIdx(playerIdx, ST, forceAtBirth=True)
-    seed = getPlayerSeedFromTeamAndShirtNum(ST.teams[teamIdx].name, shirtNum)
-    playerState = duplicate(getPlayerStateFromSeed(seed))
-    # Once the skills have been added, complete the rest of the player data
-    playerState.setPlayerIdx(playerIdx)
-    playerState.setCurrentTeamIdx(teamIdx)
-    playerState.setCurrentShirtNum(shirtNum)
-    return playerState
 
 
 def copySkillsAndAgeFromTo(playerStateOrig, playerStateDest):
     playerStateDest.setSkills(duplicate(playerStateOrig.getSkills()))
     playerStateDest.setMonth(duplicate(playerStateOrig.getMonth()))
 
-
-def getPlayerStateBeforePlayingAnyLeague(playerIdx, ST):
-    # this can be called by BC or CLIENT, as both have enough data
-    playerStateAtBirth = getPlayerStateAtBirth(playerIdx, ST)
-
-    if isPlayerVirtual(playerIdx, ST):
-        return playerStateAtBirth
-    else:
-        # if player has been sold before playing any league, it'll conserve skills at birth,
-        # but have different metadata in the other fields
-        playerState = duplicate(ST.playerIdxToPlayerState[playerIdx])
-        copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
-        return playerState
-
-
-def getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT):
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST_CLIENT)
-
-    if prevLeagueIdx == 0:
-        # this can be known both by CLIENT and BC
-        return getPlayerStateBeforePlayingAnyLeague(playerIdx, ST_CLIENT)
-    else:
-        # this can only be accessed by the CLIENT
-        return getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST_CLIENT)
 
 
 # Simple player print
@@ -150,13 +69,13 @@ def printPlayer(playerState):
     toPrint += "TeamIdx  : %s\n" % str(playerState.getCurrentTeamIdx())
     toPrint += "ShirtNum : %s\n" % str(playerState.getCurrentShirtNum())
     toPrint += "SaleBlock: %s\n" % str(playerState.getLastSaleBlocknum())
-    print "%s" % toPrint
+    print("%s" % toPrint)
     return intHash(toPrint) % 1000
 
 # Simple team print
 def printTeam(teamIdx, ST_CLIENT):
     hash = 0
-    print "Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name)
+    print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT)
         playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx,ST_CLIENT)
@@ -249,49 +168,21 @@ def signTeamsInLeague(teamIdxs, leagueIdx, ST):
         ST.teams[teamIdx].teamPosInCurrentLeague    = teamPosInLeague
 
 
-def createLeague(blocknumber, blockStep, usersInitData, ST):
+def createLeague(verseInit, verseStep, usersInitData, ST):
     assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST), "League cannot create: some teams involved in prev leagues"
     assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
     leagueIdx = len(ST.leagues)
-    ST.leagues.append( League(blocknumber, blockStep, usersInitData) )
+    ST.leagues.append( League(verseInit, verseStep, usersInitData) )
     signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST)
     return leagueIdx
 
-def createLeagueClient(blocknumber, blockStep, usersInitData, ST_CLIENT):
+def createLeagueClient(verseInit, verseStep, usersInitData, ST_CLIENT):
     assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST_CLIENT), "League cannot create: some teams involved in prev leagues"
     leagueIdx = len(ST_CLIENT.leagues)
-    ST_CLIENT.leagues.append( LeagueClient(blocknumber, blockStep, usersInitData) )
+    ST_CLIENT.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
     signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST_CLIENT)
     return leagueIdx
 
-
-def getInitPlayerStates(leagueIdx, ST, usersInitData = None, dataToChallengeInitStates = None):
-    if not usersInitData:
-        usersInitData = duplicate(ST.leagues[leagueIdx].usersInitData)
-    nTeams = len(usersInitData["teamIdxs"])
-    # an array of size [nTeams][NPLAYERS_PER_TEAM]
-    initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-    teamPosInLeague = 0
-    for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
-        for shirtNum, playerPosInLeague in enumerate(teamOrder):
-            playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
-            if dataToChallengeInitStates:
-                if not isCorrectStateForPlayerIdx(
-                        pylio.getPlayerStateFromChallengeData(playerIdx,
-                                                              dataToChallengeInitStates[teamPosInLeague][shirtNum]),
-                        dataToChallengeInitStates[teamPosInLeague][shirtNum],
-                        ST
-                ):
-                    return None
-            playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST)
-            initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
-        teamPosInLeague += 1
-    return initPlayerStates
-
-def updateTacticsToBlockNum(tactics, blockNum, usersAlongData):
-    for userData in [data for data in usersAlongData if data["block"] < blockNum]:
-        for teamIdx, tact in zip(userData["teamIdxsWithinLeague"], userData["tactics"]):
-            tactics[teamIdx] = tact
 
 def getBlockHash(blockNum):
     return intHash('salt' + str(blockNum))
@@ -325,9 +216,9 @@ def getTeamsInMatch(matchday, match, nTeams):
     return team1, team2
 
 
-def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, MatchSeed):
-    hash1 = intHash(str(MatchSeed)+serialize(initPlayerStates1)+serialize(tactics1))
-    hash2 = intHash(str(MatchSeed)+serialize(initPlayerStates2)+serialize(tactics2))
+def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, teamOrders1, teamOrders2, MatchSeed):
+    hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerStates1)+serialize2str(tactics1)+serialize2str(teamOrders1))
+    hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerStates2)+serialize2str(tactics2)+serialize2str(teamOrders2))
     return hash1 % 4, hash2 % 4
 
 def computeTeamRating(playerStates):
@@ -363,12 +254,11 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
         return (2 if winnerWasBetter else 10)
 
 
-def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
+def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevStates)
-    nMatchesPerMatchday = nTeams/2
+    nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
     statesAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
-    matchdaySeed = getBlockHash(matchdayBlock * 3)  # TODO: remove this *3
 
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
@@ -378,6 +268,8 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
             prevStates[team2],
             tactics[team1],
             tactics[team2],
+            teamOrders[team1],
+            teamOrders[team2],
             matchdaySeed
         )
         scores[match] = [goals1, goals2]
@@ -391,37 +283,10 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, matchdayBlock):
     return statesAtMatchday, scores
 
 
-
-def computeAllMatchdayStates(blockInit, blockStep, initPlayerStates, usersInitData, usersAlongData):
-    # In this initial implementation, evolution happens at the end of the league only
-    tactics = duplicate(usersInitData["tactics"])
-    nTeams = len(usersInitData["teamIdxs"])
-    nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams/2
-    scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
-    matchdayBlock = duplicate(blockInit)
-
-    # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
-    statesAtMatchday = [createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
-
-    for matchday in range(nMatchdays):
-        updateTacticsToBlockNum(tactics, matchdayBlock, usersAlongData)
-        prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
-        statesAtMatchday[matchday], scores[matchday] = computeStatesAtMatchday(
-            matchday,
-            prevStates,
-            tactics,
-            matchdayBlock
-        )
-        matchdayBlock += blockStep
-
-
-    return statesAtMatchday, scores
-
 def computeUsersAlongDataHash(usersAlongData):
     usersAlongDataHash = 0
     for entry in usersAlongData:
-        usersAlongDataHash = intHash(str(usersAlongDataHash) + serialize(entry))
+        usersAlongDataHash = intHash(str(usersAlongDataHash) + serialize2str(entry))
     return usersAlongDataHash
 
 def getMatchsPlayerByTeam(selectedTeam, nTeams):
@@ -443,9 +308,9 @@ def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScor
     return True
 
 
-def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT):
+def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores, ST_CLIENT):
     ST_CLIENT.leagues[leagueIdx].updateInitState(initPlayerStates)
-    ST_CLIENT.leagues[leagueIdx].updateStatesAtMatchday(statesAtMatchday, scores)
+    ST_CLIENT.leagues[leagueIdx].updateDataAtMatchday(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores)
     # the last matchday gives the final states used to update all players:
     for allPlayerStatesInTeam in statesAtMatchday[-1]:
         for playerState in allPlayerStatesInTeam:
@@ -464,52 +329,9 @@ def getTeamIdxInLeague(currentTeamIdx, lastLeagueIdx, ST_CLIENT):
 def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
 
-def computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT):
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST_CLIENT)
-    if prevLeagueIdx == 0:
-        return getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
-    else:
-        return getAllStatesAtEndOfLeague(prevLeagueIdx, ST_CLIENT)
-
-def getAllStatesAtEndOfLeague(leagueIdx, ST_CLIENT):
-    return ST_CLIENT.leagues[leagueIdx].statesAtMatchday[-1]
 
 
-def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
-    thisLeague = duplicate(ST_CLIENT.leagues[leagueIdx])
-    nTeams = len(thisLeague.usersInitData["teamIdxs"])
-    dataToChallengeInitStates = [[None for player in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-    # dimensions: [team, nPlayersInTeam]
-    #   if that a given player is virtual, then it contains just its state
-    #   if not, it contains all states of prev league's team
-    for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
-        for shirtNum, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
-            if playerIdx == 0:
-                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerIdx(
-                    getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT),
-                    ST_CLIENT
-                )
-            else:
-                assert playerIdx == getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT), "PlayerIdx should always coincide"
-                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT)
-    return dataToChallengeInitStates
 
-
-def isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState, ST):
-    # If player has never played a league, we can compute the playerState directly in the BC
-    # It basically is equal to the birth skills, with ,potentially, a few team changes via sales.
-    # If not, we can just compare the hash of the dataToChallengePlayerState with the stored hash in the prev league
-    playerIdx = playerState.getPlayerIdx()
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST)
-    if prevLeagueIdx == 0:
-        return areEqualStructs(
-            playerState,
-            getPlayerStateBeforePlayingAnyLeague(playerIdx, ST)
-        )
-    else:
-        assert isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
-            "The playerState provided is not part of the challengeData"
-        return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAtMatchdayHashes[-1]
 
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
     return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
@@ -528,3 +350,60 @@ def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+
+def advanceToBlock(n, ST, ST_CLIENT):
+    verseWasCrossedBC       = ST.advanceToBlock(n)
+    verseWasCrossedCLIENT   = ST_CLIENT.advanceToBlock(n)
+    assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
+    if verseWasCrossedBC:
+        ST_CLIENT.syncActions(ST)
+
+def advanceNBlocks(deltaN, ST, ST_CLIENT):
+    advanceToBlock(
+        ST.currentBlock + deltaN,
+        ST,
+        ST_CLIENT
+    )
+
+def advanceNVerses(nVerses, ST, ST_CLIENT):
+    for verse in range(nVerses):
+        advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+
+
+# A mockup of how to obtain the block hash for a given blocknum "n"
+def getBlockhashForBlock(n):
+    return serialize2str(n)
+
+
+
+#TODO: move the hashing of this to the BC to avoid inconsistencies (view mode)
+def computeDataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+    dataAtMatchdayHashes = []
+    for state, tactic, teamOrders in zip(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
+        dataAtMatchdayHashes.append(computeDataAtMatchdayHash(state, tactic, teamOrders))
+    return dataAtMatchdayHashes
+
+def computeDataAtMatchdayHash(state, tactic, teamOrders):
+    return serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders)
+
+
+def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
+    if selectedMatchday == 0:
+        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].initPlayerStates
+        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].usersInitData["tactics"]
+        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].usersInitData["teamOrders"]
+    else:
+        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
+        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].tacticsAtMatchday[selectedMatchday - 1]
+        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].prevMatchdayTeamOrders[selectedMatchday - 1]
+
+    return duplicate(prevMatchdayStates), duplicate(prevMatchdayTactics), duplicate(prevMatchdayTeamOrders)
+
+
+def prepareProofForIdxs(idxsToProve, tree, leafs):
+    # neededHashes
+    neededHashes = proof(tree, idxsToProve)
+    values = {}
+    for idx in idxsToProve:
+        values[idx] = leafs[idx]
+    return neededHashes, values
