@@ -84,6 +84,12 @@ contract('DayState', (accounts) => {
         dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
         dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
         let newTeamState = await instance.teamStateCreate().should.be.fulfilled; 
-        const updatedDayState = await instance.dayStateUpdate(dayState, 1, newTeamState).should.be.rejected;
+        await instance.dayStateUpdate(dayState, 1, newTeamState).should.be.rejected;
+        const newPlayerState = await instance.playerStateCreate(5,4,3,2,1).should.be.fulfilled;
+        newTeamState = await instance.teamStateAppend(newTeamState, newPlayerState).should.be.fulfilled;
+        const updatedDayState = await instance.dayStateUpdate(dayState, 1, newTeamState).should.be.fulfilled;
+        const resultTeamState = await instance.dayStateAt(updatedDayState, 1).should.be.fulfilled;
+        const resultPlayerState = await instance.teamStateAt(resultTeamState, 0).should.be.fulfilled;
+        resultPlayerState.toString().should.be.equal(newPlayerState.toString());
     });
 });
