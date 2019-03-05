@@ -106,7 +106,9 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
             (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
             uint256[] memory homeTeamState = _leagueState.dayStateAt(initDayState, homeTeamIdx);
             uint256[] memory visitorTeamState = _leagueState.dayStateAt(initDayState, visitorTeamIdx);
-            uint16 score = computeScoreMatchInLeague(
+            (uint16 score,
+            uint256[] memory updatedHomeState,
+            uint256[] memory updatedVisitorState) = computeScoreMatchInLeague(
                 homeTeamState,
                 visitorTeamState, 
                 tactics, 
@@ -124,7 +126,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
     )
         public
         view
-        returns (uint16 score)
+        returns (uint16 score, uint256[] memory newHomeState, uint256[] memory newVisitorState)
     {
         (uint8 homeGoals, uint8 visitorGoals) = _engine.playMatch(
             seed, 
@@ -134,7 +136,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
             tactics[1]
         );
         score = encodeScore(homeGoals, visitorGoals);
-        updatePlayerStatesAfterMatch(
+        (newHomeState, newVisitorState) = updatePlayerStatesAfterMatch(
             homeTeamState,
             visitorTeamState,
             homeGoals,
