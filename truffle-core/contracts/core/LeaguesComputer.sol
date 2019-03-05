@@ -120,12 +120,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         view
         returns (uint16 score)
     {
-        uint256 homeTeamIdx;
-        uint256 visitorTeamIdx;
-        uint8 homeGoals;
-        uint8 visitorGoals;
-        (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
-        (homeGoals, visitorGoals) = _engine.playMatch(
+        (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
+        (uint8 homeGoals, uint8 visitorGoals) = _engine.playMatch(
             seed, 
             _leagueState.dayStateAt(initDayState, homeTeamIdx), 
             _leagueState.dayStateAt(initDayState, visitorTeamIdx), 
