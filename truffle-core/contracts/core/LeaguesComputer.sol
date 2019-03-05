@@ -98,7 +98,7 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
     )
         public
         view
-        returns (uint16[] memory scores)
+        returns (uint16[] memory scores, uint256[] memory finalDayState)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
@@ -115,6 +115,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
                 seed
             );
             scores = addToDayScores(scores, score);
+            finalDayState = _leagueState.dayStateUpdate(initDayState, homeTeamIdx, updatedHomeState);
+            finalDayState = _leagueState.dayStateUpdate(initDayState, visitorTeamIdx, updatedVisitorState);
         }
     }
 
@@ -157,8 +159,8 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         for(uint256 day = 0 ; day < nLeagueDays ; day++)
         {
             bytes32 seed = getMatchDayBlockHash(id, day);
-            uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
-            scores = addToTournamentScores(scores, dayScores);
+            // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
+            // scores = addToTournamentScores(scores, dayScores);
         }
     }
 

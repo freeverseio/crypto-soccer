@@ -35,6 +35,21 @@ contract DayState is TeamState {
             state[i] = dayState[first+i];
         return state;
     } 
+
+    function dayStateUpdate(
+        uint256[] memory dayState, 
+        uint256 teamIdx, 
+        uint256[] memory teamState
+    ) 
+        public 
+        pure 
+        returns (uint256[] memory) 
+    {
+        uint256 firstPlayerIdx = _getFirstPlayerOfTeam(dayState, teamIdx);
+        for (uint256 i = 0; i < teamState.length ; i++)
+            dayState[firstPlayerIdx + i] = teamState[i];
+        return dayState;
+    }
    
     function isValidDayState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
