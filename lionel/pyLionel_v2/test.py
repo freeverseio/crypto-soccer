@@ -217,7 +217,8 @@ def test2():
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(dataToChallengeInitStates),
         ST,
-        ST.currentBlock
+        ST.currentBlock,
+        leagueIdx
     )
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
 
@@ -246,6 +247,16 @@ def test2():
         ST.currentBlock
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
+
+    ST.leagues[leagueIdx].challengeInitStates(
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(dataToChallengeInitStates),
+        ST,
+        ST.currentBlock,
+        leagueIdx
+    )
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
+
 
     # We do not wait enough and try to:
     #   create another league. It fails to do so because teams are still busy

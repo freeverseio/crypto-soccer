@@ -265,16 +265,25 @@ def createLeagueClient(blocknumber, blockStep, usersInitData, ST_CLIENT):
     return leagueIdx
 
 
-def getInitPlayerStates(leagueIdx, ST_CLIENT):
-    usersInitData = duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData)
+def getInitPlayerStates(leagueIdx, ST, usersInitData = None, dataToChallengeInitStates = None):
+    if not usersInitData:
+        usersInitData = duplicate(ST.leagues[leagueIdx].usersInitData)
     nTeams = len(usersInitData["teamIdxs"])
     # an array of size [nTeams][NPLAYERS_PER_TEAM]
     initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
     teamPosInLeague = 0
     for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
         for shirtNum, playerPosInLeague in enumerate(teamOrder):
-            playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT)
-            playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
+            playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
+            if dataToChallengeInitStates:
+                if not isCorrectStateForPlayerIdx(
+                        pylio.getPlayerStateFromChallengeData(playerIdx,
+                                                              dataToChallengeInitStates[teamPosInLeague][shirtNum]),
+                        dataToChallengeInitStates[teamPosInLeague][shirtNum],
+                        ST
+                ):
+                    return None
+            playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST)
             initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
         teamPosInLeague += 1
     return initPlayerStates
