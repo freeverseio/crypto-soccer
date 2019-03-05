@@ -45,6 +45,8 @@ contract DayState is TeamState {
         pure 
         returns (uint256[] memory) 
     {
+        uint256 nPlayers = teamStateSize(dayStateAt(dayState, teamIdx));
+        require(nPlayers == teamStateSize(teamState), "mismatch in teams size");
         uint256 firstPlayerIdx = _getFirstPlayerOfTeam(dayState, teamIdx);
         for (uint256 i = 0; i < teamState.length ; i++)
             dayState[firstPlayerIdx + i] = teamState[i];
