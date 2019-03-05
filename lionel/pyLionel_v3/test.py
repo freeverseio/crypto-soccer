@@ -106,8 +106,8 @@ def test2():
 
 
     # Create league in BC and CLIENT. The latter stores things pre-hash too
-    leagueIdx          = createLeague(verseInit, verseStep, usersInitData, ST)
-    leagueIdx_client   = createLeagueClient(verseInit, verseStep, usersInitData, ST_CLIENT)
+    leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
+    leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
     assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentVerse), "League not detected as created"
 
@@ -263,14 +263,14 @@ def test2():
     #   create another league. It fails to do so because teams are still busy
     advanceNBlocks(2, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
-    blockInit = ST.currentBlock + 30
+    verseInit = ST.currentVerse + 30
     usersInitData = {
         "teamIdxs": [teamIdx1, teamIdx3, teamIdx2, teamIdx4],
         "teamOrders": [DEFAULT_ORDER, DEFAULT_ORDER, REVERSE_ORDER, REVERSE_ORDER],
         "tactics": [TACTICS["433"], TACTICS["442"], TACTICS["433"], TACTICS["442"]]
     }
     try:
-        leagueIdx2 = createLeague(ST.currentBlock, blockInit, blockStep, usersInitData, ST)
+        leagueIdx2 = ST.createLeague(verseInit, verseStep, usersInitData)
         itFailed = False
     except:
         itFailed = True
@@ -281,11 +281,9 @@ def test2():
     # We do not wait enough and try to:
     #   sell/buy action is attempted, but fails because league is not full verified
     try:
-        exchangePlayers(
-            getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1, ST), ADDR1,
-            getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6, ST), ADDR3,
-            blockCounter.currentBlock,
-            ST
+        ST.exchangePlayers(
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1), ADDR1,
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6), ADDR3
         )
         itFailed = False
     except:
@@ -299,25 +297,23 @@ def test2():
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as already fully verified"
 
-    playerIdx1 = getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1, ST)
-    playerIdx2  = getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6, ST)
+    playerIdx1 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1)
+    playerIdx2 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6)
 
-    exchangePlayers(
+    ST.exchangePlayers(
         playerIdx1, ADDR1,
-        playerIdx2, ADDR3,
-        ST
+        playerIdx2, ADDR3
     )
-    exchangePlayers(
+    ST_CLIENT.exchangePlayers(
         playerIdx1, ADDR1,
-        playerIdx2, ADDR3,
-        ST_CLIENT
+        playerIdx2, ADDR3
     )
-    assert getTeamIdxAndShirtForPlayerIdx(playerIdx1, ST) == (teamIdx4,6), "Exchange did not register properly in BC"
-    assert getTeamIdxAndShirtForPlayerIdx(playerIdx2, ST) == (teamIdx1,1), "Exchange did not register properly in BC"
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4,6), "Exchange did not register properly in BC"
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1,1), "Exchange did not register properly in BC"
 
     # After the player exchange...
-    leagueIdx2          = createLeague(blockInit, blockStep, usersInitData, ST)
-    leagueIdx2_client   = createLeagueClient(blockInit, blockStep, usersInitData, ST_CLIENT)
+    leagueIdx2          = ST.createLeague(verseInit, verseStep, usersInitData)
+    leagueIdx2_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
     assert leagueIdx2 == leagueIdx2_client, "Leagues in client not in sync with BC"
 
@@ -325,7 +321,7 @@ def test2():
     advanceNBlocks(1000, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League should be finished by now"
 
-    initPlayerStates = getInitPlayerStates(leagueIdx2, ST_CLIENT)
+    initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx2)
 
     statesAtMatchday, scores = computeAllMatchdayStates(
         ST.leagues[leagueIdx2].blockInit,
@@ -486,3 +482,5 @@ else:
 # treat initStates the same way as states and avoid initPlayerHash being different
 # do not store scores but the hash or merkle root
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
+# unify all iniHash, serialHAsh, etc
+# check all block num etc, not needed anymore, since we use ST.

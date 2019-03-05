@@ -681,3 +681,86 @@ class Storage(Counter):
             print("Challenger Wins: initStates provided by updater are invalid")
             self.leagues[leagueIdx].resetUpdater()
 
+
+    # quick solution to simulate changing teams.
+    # for the purpose of Lionel, we'll start with a simple exchange, instead
+    # of the more convoluted sell, assign, etc.
+    def exchangePlayers(self, playerIdx1, address1, playerIdx2, address2):
+        assert not self.isPlayerBusy(playerIdx1), "Player sale failed: player is busy playing a league, wait until it finishes"
+        assert not self.isPlayerBusy(playerIdx2), "Player sale failed: player is busy playing a league, wait until it finishes"
+
+        teamIdx1, shirtNum1 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
+        teamIdx2, shirtNum2 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+
+        # check ownership!
+        assert self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx1].name)] == address1, "Exchange Failed, owner not correct"
+        assert self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx2].name)] == address2, "Exchange Failed, owner not correct"
+
+        # get states from BC in memory to do changes, and only write back once at the end
+        state1 = pylio.duplicate(self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx1))
+        state2 = pylio.duplicate(self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx2))
+
+
+
+        state1.prevLeagueIdx        = self.teams[teamIdx1].currentLeagueIdx
+        state1.prevTeamPosInLeague  = self.teams[teamIdx1].teamPosInCurrentLeague
+
+        state2.prevLeagueIdx        = self.teams[teamIdx2].currentLeagueIdx
+        state2.prevTeamPosInLeague  = self.teams[teamIdx2].teamPosInCurrentLeague
+
+
+        state1.setCurrentTeamIdx(teamIdx2)
+        state2.setCurrentTeamIdx(teamIdx1)
+
+
+        state1.setCurrentShirtNum(shirtNum2)
+        state2.setCurrentShirtNum(shirtNum1)
+
+        state1.setLastSaleBlocknum(self.currentBlock)
+        state2.setLastSaleBlocknum(self.currentBlock)
+
+        self.teams[teamIdx1].playerIdxs[shirtNum1] = playerIdx2
+        self.teams[teamIdx2].playerIdxs[shirtNum2] = playerIdx1
+
+        self.playerIdxToPlayerState[playerIdx1] = pylio.duplicate(state1)
+        self.playerIdxToPlayerState[playerIdx2] = pylio.duplicate(state2)
+
+    def isPlayerBusy(self, playerIdx1):
+        return self.areTeamsBusyInPrevLeagues(
+            [self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)[0]])
+
+
+
+    def areTeamsBusyInPrevLeagues(self, teamIdxs):
+        for teamIdx in teamIdxs:
+            if not self.leagues[self.teams[teamIdx].currentLeagueIdx].isFullyVerified(self.currentBlock):
+                return True
+        return False
+
+
+    def createLeague(self, verseInit, verseStep, usersInitData):
+        assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
+        assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
+        leagueIdx = len(self.leagues)
+        self.leagues.append(League(verseInit, verseStep, usersInitData))
+        self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        return leagueIdx
+
+
+
+    def signTeamsInLeague(self, teamIdxs, leagueIdx):
+        for teamPosInLeague, teamIdx in enumerate(teamIdxs):
+            self.teams[teamIdx].prevLeagueIdx             = pylio.duplicate(self.teams[teamIdx].currentLeagueIdx)
+            self.teams[teamIdx].teamPosInPrevLeague       = pylio.duplicate(self.teams[teamIdx].teamPosInCurrentLeague)
+
+            self.teams[teamIdx].currentLeagueIdx          = leagueIdx
+            self.teams[teamIdx].teamPosInCurrentLeague    = teamPosInLeague
+
+
+
+    def createLeagueClient(self, verseInit, verseStep, usersInitData):
+        assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
+        leagueIdx = len(self.leagues)
+        self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
+        self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        return leagueIdx

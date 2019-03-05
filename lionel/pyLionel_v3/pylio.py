@@ -85,49 +85,6 @@ def printTeam(teamIdx, ST_CLIENT):
     return hash
 
 
-# quick solution to simulate changing teams.
-# for the purpose of Lionel, we'll start with a simple exchange, instead
-# of the more convoluted sell, assign, etc.
-def exchangePlayers(playerIdx1, address1, playerIdx2, address2, ST):
-    assert not isPlayerBusy(playerIdx1, ST), "Player sale failed: player is busy playing a league, wait until it finishes"
-    assert not isPlayerBusy(playerIdx2, ST), "Player sale failed: player is busy playing a league, wait until it finishes"
-
-    teamIdx1, shirtNum1 = getTeamIdxAndShirtForPlayerIdx(playerIdx1, ST)
-    teamIdx2, shirtNum2 = getTeamIdxAndShirtForPlayerIdx(playerIdx2, ST)
-
-    # check ownership!
-    assert ST.teamNameHashToOwnerAddr[intHash(ST.teams[teamIdx1].name)] == address1, "Exchange Failed, owner not correct"
-    assert ST.teamNameHashToOwnerAddr[intHash(ST.teams[teamIdx2].name)] == address2, "Exchange Failed, owner not correct"
-
-    # get states from BC in memory to do changes, and only write back once at the end
-    state1 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx1, ST))
-    state2 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx2, ST))
-
-
-
-    state1.prevLeagueIdx        = ST.teams[teamIdx1].currentLeagueIdx
-    state1.prevTeamPosInLeague  = ST.teams[teamIdx1].teamPosInCurrentLeague
-
-    state2.prevLeagueIdx        = ST.teams[teamIdx2].currentLeagueIdx
-    state2.prevTeamPosInLeague  = ST.teams[teamIdx2].teamPosInCurrentLeague
-
-
-    state1.setCurrentTeamIdx(teamIdx2)
-    state2.setCurrentTeamIdx(teamIdx1)
-
-
-    state1.setCurrentShirtNum(shirtNum2)
-    state2.setCurrentShirtNum(shirtNum1)
-
-    state1.setLastSaleBlocknum(ST.currentBlock)
-    state2.setLastSaleBlocknum(ST.currentBlock)
-
-    ST.teams[teamIdx1].playerIdxs[shirtNum1] = playerIdx2
-    ST.teams[teamIdx2].playerIdxs[shirtNum2] = playerIdx1
-
-    ST.playerIdxToPlayerState[playerIdx1] = duplicate(state1)
-    ST.playerIdxToPlayerState[playerIdx2] = duplicate(state2)
-
 
 def isValidOrdering(playerOrders):
     # TODO: check all nums are different and in [0, NPLAYERS_PER_TEAM]
@@ -146,42 +103,7 @@ def computeUsersInitDataHash(teamIdxs, playerOrders, tactics):
             serialization += str(order) + "-"
     return intHash(serialization)
 
-def isPlayerBusy(playerIdx1, ST):
-    return areTeamsBusyInPrevLeagues(
-        [getTeamIdxAndShirtForPlayerIdx(playerIdx1, ST)[0]],
-        ST)
 
-
-
-def areTeamsBusyInPrevLeagues(teamIdxs, ST):
-    for teamIdx in teamIdxs:
-        if not ST.leagues[ST.teams[teamIdx].currentLeagueIdx].isFullyVerified(ST.currentBlock):
-            return True
-    return False
-
-def signTeamsInLeague(teamIdxs, leagueIdx, ST):
-    for teamPosInLeague, teamIdx in enumerate(teamIdxs):
-        ST.teams[teamIdx].prevLeagueIdx             = duplicate(ST.teams[teamIdx].currentLeagueIdx)
-        ST.teams[teamIdx].teamPosInPrevLeague       = duplicate(ST.teams[teamIdx].teamPosInCurrentLeague)
-
-        ST.teams[teamIdx].currentLeagueIdx          = leagueIdx
-        ST.teams[teamIdx].teamPosInCurrentLeague    = teamPosInLeague
-
-
-def createLeague(verseInit, verseStep, usersInitData, ST):
-    assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST), "League cannot create: some teams involved in prev leagues"
-    assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
-    leagueIdx = len(ST.leagues)
-    ST.leagues.append( League(verseInit, verseStep, usersInitData) )
-    signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST)
-    return leagueIdx
-
-def createLeagueClient(verseInit, verseStep, usersInitData, ST_CLIENT):
-    assert not areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"], ST_CLIENT), "League cannot create: some teams involved in prev leagues"
-    leagueIdx = len(ST_CLIENT.leagues)
-    ST_CLIENT.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
-    signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx, ST_CLIENT)
-    return leagueIdx
 
 
 def getBlockHash(blockNum):
