@@ -103,16 +103,22 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
-            uint16 score = computeScoreMatchInLeague(id, leagueDay, i, initDayState, tactics, seed);
+            (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
+            uint256[] memory homeTeamState = _leagueState.dayStateAt(initDayState, homeTeamIdx);
+            uint256[] memory visitorTeamState = _leagueState.dayStateAt(initDayState, visitorTeamIdx);
+            uint16 score = computeScoreMatchInLeague(
+                homeTeamState,
+                visitorTeamState, 
+                tactics, 
+                seed
+            );
             scores = addToDayScores(scores, score);
         }
     }
 
     function computeScoreMatchInLeague(
-        uint256 id,
-        uint256 leagueDay, 
-        uint256 matchInLeagueDay,
-        uint256[] memory initDayState, 
+        uint256[] memory homeTeamState,
+        uint256[] memory visitorTeamState,
         uint256[3][] memory tactics,
         bytes32 seed
     )
@@ -120,15 +126,20 @@ contract LeaguesComputer is LeaguesProof, LeaguesScore, LeaguesTactics {
         view
         returns (uint16 score)
     {
-        (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, matchInLeagueDay);
         (uint8 homeGoals, uint8 visitorGoals) = _engine.playMatch(
             seed, 
-            _leagueState.dayStateAt(initDayState, homeTeamIdx), 
-            _leagueState.dayStateAt(initDayState, visitorTeamIdx), 
+            homeTeamState, 
+            visitorTeamState, 
             tactics[0], 
             tactics[1]
         );
         score = encodeScore(homeGoals, visitorGoals);
+        updatePlayerStatesAfterMatch(
+            homeTeamState,
+            visitorTeamState,
+            homeGoals,
+            visitorGoals
+        );
     }
 
     function computeAllMatchdayStates(
