@@ -152,6 +152,9 @@ def test2():
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
+
+    initPlayerStates0 = duplicate(initPlayerStates)
+
     initStatesHash          = serialHash(initPlayerStates)
     dataAtMatchdayHashes = computeDataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay)
 
@@ -252,6 +255,7 @@ def test2():
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(dataToChallengeInitStates),
+        initPlayerStates0
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
