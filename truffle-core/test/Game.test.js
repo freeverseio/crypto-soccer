@@ -113,20 +113,30 @@ contract('Game', (accounts) => {
             // compute result for league day
             const result = await leagues.computeDay(leagueId, leagueDay, leagueState, tactics).should.be.fulfilled;
             const dayScores = result.scores;
-            leagueState = result.finalleagueState;
+            leagueState = result.finalLeagueState;
+
+            // for each match of the day
             for (match = 0; match < matchesPerDay; match++) {
                  // get the indexes of the teams of match 
                  const teamsInMatch = await leagues.getTeamsInMatch(leagueId, leagueDay, match).should.be.fulfilled;
 
+                 // get ids of teams in match
+                 const homeTeamId = teamIds[teamsInMatch.homeIdx.toNumber()];
+                 const visitorTeamId = teamIds[teamsInMatch.visitorIdx.toNumber()];
+
                  // get the names of the teams in the match
-                 const homeTeam = await teams.getName(teamIds[teamsInMatch.homeIdx.toNumber()]).should.be.fulfilled;
-                 const visitorTeam = await teams.getName(teamIds[teamsInMatch.visitorIdx.toNumber()]).should.be.fulfilled;
+                 const homeTeam = await teams.getName(homeTeamId).should.be.fulfilled;
+                 const visitorTeam = await teams.getName(visitorTeamId).should.be.fulfilled;
 
                  // getting the goal of match 
                  const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
+
+                 // get the state of teams 
                  const homeTeamState = await state.leagueStateAt(leagueState, teamsInMatch.homeIdx).should.be.fulfilled;
-                 const homeTeamRating = await state.computeTeamRating(homeTeamState).should.be.fulfilled;
                  const visitorTeamState = await state.leagueStateAt(leagueState, teamsInMatch.visitorIdx).should.be.fulfilled;
+
+                 // calculate rating of teams
+                 const homeTeamRating = await state.computeTeamRating(homeTeamState).should.be.fulfilled;
                  const visitorTeamRating = await state.computeTeamRating(visitorTeamState).should.be.fulfilled;
 
                  console.log(
