@@ -22,7 +22,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         return _evolveTeams(homeTeamState, visitorTeamState, homeGoals, visitorGoals);
     }
 
-    function computePointsWon(
+    function computePoints(
         uint256[] memory homeTeamState, 
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
@@ -30,9 +30,9 @@ contract LeaguesComputerMock is LeaguesComputer {
     )
         public 
         view
-        returns (uint8 points)
+        returns (uint8 homePoints, uint8 visitorPoints)
     {
-        return _computePointsWon(homeTeamState, visitorTeamState, homeGoals, visitorGoals);
+        return _computePoints(homeTeamState, visitorTeamState, homeGoals, visitorGoals);
     }
 
     function computeStatesAtMatchday(

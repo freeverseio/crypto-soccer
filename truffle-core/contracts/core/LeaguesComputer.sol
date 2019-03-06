@@ -55,27 +55,18 @@ contract LeaguesComputer is LeaguesScore {
         view
         returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
     {
-        if (homeGoals == visitorGoals)
-            return (homeTeamState, visitorTeamState);
-
-        uint8 pointsWon = _computePointsWon(
+        (uint8 homeTeamPoints, uint8 visitorTeamPoints) = _computePoints(
             homeTeamState,
             visitorTeamState,
             homeGoals,
             visitorGoals
         );
 
-        if (homeGoals > visitorGoals){
-            updatedHomeTeamState = _leagueState.teamStateEvolve(homeTeamState, pointsWon);             
-            updatedVisitorTeamState = visitorTeamState;
-        }
-        else {
-            updatedHomeTeamState = homeTeamState;
-            updatedVisitorTeamState = _leagueState.teamStateEvolve(visitorTeamState, pointsWon);
-        }
+        updatedHomeTeamState = _leagueState.teamStateEvolve(homeTeamState, homeTeamPoints);             
+        updatedVisitorTeamState = _leagueState.teamStateEvolve(visitorTeamState, visitorTeamPoints);
     }
 
-    function _computePointsWon(
+    function _computePoints(
         uint256[] memory homeTeamState, 
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
@@ -83,20 +74,20 @@ contract LeaguesComputer is LeaguesScore {
     )
         internal
         view
-        returns (uint8 points)
+        returns (uint8 homePoints, uint8 visitorPoints)
     {
-        require(_leagueState.isValidTeamState(homeTeamState), "home team state invalid");
-        require(_leagueState.isValidTeamState(visitorTeamState), "visitor team state invalid");
+        if (homeGoals == visitorGoals)
+            return (0, 0);
+
         uint128 homeTeamRating = _leagueState.computeTeamRating(homeTeamState);
         uint128 visitorTeamRating = _leagueState.computeTeamRating(visitorTeamState);
-        int256 ratingDiff = homeTeamRating - visitorTeamRating;
+        int256 ratingDiff = int256(homeTeamRating) - int256(visitorTeamRating);
         if (ratingDiff == 0)
-            return 5;
-        int256 goalsDiff = homeGoals - visitorGoals;
-        bool winnerWasBetter = (ratingDiff > 0 && goalsDiff > 0) || (ratingDiff < 0 && goalsDiff < 0);
-        if (winnerWasBetter)
-            return 2;
-        return 10;
+            return homeGoals > visitorGoals ? (5, 0) : (0, 5);
+        if (ratingDiff > 0)
+            return homeGoals > visitorGoals ? (2, 0) : (0, 8);
+        if (ratingDiff < 0)
+            return homeGoals > visitorGoals ? (8, 0) : (0, 2);
     }
 
     function _computeStatesAtMatchday(
