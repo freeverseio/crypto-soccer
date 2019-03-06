@@ -102,6 +102,10 @@ contract('Game', (accounts) => {
         leagueState = await state.leagueStateAppend(leagueState, veniceState).should.be.fulfilled;
         leagueState = await state.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
 
+        // generate init league state hash
+        const initStateHash = await leagues.hashState(leagueState).should.be.fulfilled;
+        let dayStateHashes = [];
+
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
         leagueDays.toNumber().should.be.equal(10);
@@ -145,12 +149,15 @@ contract('Game', (accounts) => {
                      + " - " 
                      + goals.visitor.toNumber() + " " + visitorTeam + "(" + visitorTeamRating + ")");
             }
-        }
-        return;
-        // generate init league state hash
-        const initStateHash = await leagues.hashInitState(leagueState).should.be.fulfilled;
 
-        // generate the final state for each team
+            const dayHash = await leagues.hashState(leagueState).should.be.fulfilled;
+            dayStateHashes.push(dayHash);
+        }
+
+        dayStateHashes.length.should.be.equal(leagueDays.toNumber());
+
+        return;
+                // generate the final state for each team
         // n.b. we use init league state cause the game doesn't evolve the teams yet
         const finalTeamsStateHashes = await leagues.hashLeagueState(leagueState).should.be.fulfilled;
 
