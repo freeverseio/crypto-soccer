@@ -10,13 +10,13 @@ contract LeagueUpdater is LeaguesBase {
     function updateLeague(
         uint256 id, 
         bytes32 initStateHash,
-        bytes32[] memory finalHashes,
+        bytes32[] memory dayStateHashes,
         uint16[] memory scores
     ) 
         public 
     {
         _setInitStateHash(id, initStateHash);
-        _setFinalTeamStateHashes(id, finalHashes);
+        _setDayStateHashes(id, dayStateHashes);
         _setScores(id, scores);
     }
 

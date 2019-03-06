@@ -20,7 +20,7 @@ contract('LeaguesBase', (accounts) => {
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
-        await leagues.getFinalTeamStateHashes(id).should.be.rejected;
+        await leagues.getDayStateHashes(id).should.be.rejected;
         await leagues.getInitStateHash(id).should.be.rejected;
 
     });

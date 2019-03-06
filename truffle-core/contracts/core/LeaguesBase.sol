@@ -10,8 +10,8 @@ contract LeaguesBase {
         uint256 step;
         // hash of the init status of the league 
         bytes32 initStateHash;
-        // hash of the final hashes of the league
-        bytes32[] finalTeamStateHashes;
+        // hash of the day hashes of the league
+        bytes32[] dayStateHashes;
         // hash of tactics
         bytes32 tacticsHash;
         // scores of the league 
@@ -27,7 +27,7 @@ contract LeaguesBase {
         require(teamIds.length % 2 == 0, "odd teams count");
         require(!_exists(id), "league already created");
         bytes32 initStateHash;
-        bytes32[] memory finalTeamStateHashes;
+        bytes32[] memory dayStateHashes;
         bytes32 tacticsHash;
         uint16[] memory scores;
         _leagues[id] = League(
@@ -35,7 +35,7 @@ contract LeaguesBase {
             initBlock, 
             step,
             initStateHash,
-            finalTeamStateHashes,
+            dayStateHashes,
             tacticsHash,
             scores
         );
@@ -70,9 +70,9 @@ contract LeaguesBase {
         return _leagues[id].initStateHash;
     }
 
-    function getFinalTeamStateHashes(uint256 id) public view returns (bytes32[] memory) {
+    function getDayStateHashes(uint256 id) public view returns (bytes32[] memory) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].finalTeamStateHashes;
+        return _leagues[id].dayStateHashes;
     }
 
     function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
@@ -80,9 +80,9 @@ contract LeaguesBase {
         _leagues[id].initStateHash = stateHash;
     }
 
-    function _setFinalTeamStateHashes(uint256 id, bytes32[] memory hashes) internal {
+    function _setDayStateHashes(uint256 id, bytes32[] memory hashes) internal {
         require(_exists(id), "unexistent league");
-        _leagues[id].finalTeamStateHashes = hashes;
+        _leagues[id].dayStateHashes = hashes;
     }
 
     function _setScores(uint256 id, uint16[] memory leagues) internal {
