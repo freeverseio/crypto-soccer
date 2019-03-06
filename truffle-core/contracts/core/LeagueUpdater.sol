@@ -26,11 +26,11 @@ contract LeagueUpdater is LeaguesBase {
         _setScores(id, scores);
     }
 
-    function hashDayState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
-        uint256 nTeams = _state.dayStateSize(leagueState);
+    function hashleagueState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
+        uint256 nTeams = _state.leagueStateSize(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
         for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = _state.dayStateAt(leagueState, i);
+            uint256[] memory teamState = _state.leagueStateAt(leagueState, i);
             hashes[i] = keccak256(abi.encode(teamState));
         }
         return hashes;

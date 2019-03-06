@@ -94,13 +94,13 @@ contract('Game', (accounts) => {
         const juventusState = await generateTeamState(juventusId).should.be.fulfilled;
 
         // we build the league state
-        let dayState = await state.dayStateCreate().should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, barcelonaState).should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, madridState).should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, sevillaState).should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, bilbaoState).should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, veniceState).should.be.fulfilled;
-        dayState = await state.dayStateAppend(dayState, juventusState).should.be.fulfilled;
+        let leagueState = await state.leagueStateCreate().should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, barcelonaState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, madridState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, sevillaState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, bilbaoState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, veniceState).should.be.fulfilled;
+        leagueState = await state.leagueStateAppend(leagueState, juventusState).should.be.fulfilled;
 
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
@@ -111,10 +111,10 @@ contract('Game', (accounts) => {
         // compute result for each league day
         for (leagueDay = 0; leagueDay < leagueDays.toNumber(); leagueDay++) {
             // compute result for league day
-            const result = await leagues.computeDay(leagueId, leagueDay, dayState, tactics).should.be.fulfilled;
+            const result = await leagues.computeDay(leagueId, leagueDay, leagueState, tactics).should.be.fulfilled;
             const dayScores = result.scores;
             for (match = 0; match < matchesPerDay; match++) {
-                 // get the indexes of the teams of match j
+                 // get the indexes of the teams of match 
                  const teamsInMatch = await leagues.getTeamsInMatch(leagueId, leagueDay, match).should.be.fulfilled;
 
                  // get the names of the teams in the match
@@ -123,9 +123,9 @@ contract('Game', (accounts) => {
 
                  // getting the goal of match 
                  const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
-                 const homeTeamState = await state.dayStateAt(dayState, teamsInMatch.homeIdx).should.be.fulfilled;
+                 const homeTeamState = await state.leagueStateAt(leagueState, teamsInMatch.homeIdx).should.be.fulfilled;
                  const homeTeamRating = await state.computeTeamRating(homeTeamState).should.be.fulfilled;
-                 const visitorTeamState = await state.dayStateAt(dayState, teamsInMatch.visitorIdx).should.be.fulfilled;
+                 const visitorTeamState = await state.leagueStateAt(leagueState, teamsInMatch.visitorIdx).should.be.fulfilled;
                  const visitorTeamRating = await state.computeTeamRating(visitorTeamState).should.be.fulfilled;
 
                  console.log(
@@ -134,7 +134,7 @@ contract('Game', (accounts) => {
                      + " - " 
                      + goals.visitor.toNumber() + " " + visitorTeam + "(" + visitorTeamRating + ")");
             }
-            dayState = result.finalDayState;
+            leagueState = result.finalleagueState;
         }
         return;
         // generate init league state hash

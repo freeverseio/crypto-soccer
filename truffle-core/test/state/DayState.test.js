@@ -14,19 +14,19 @@ contract('LeagueState', (accounts) => {
     });
 
     it('create day state has 0 size', async () => {
-        const dayState = await instance.dayStateCreate().should.be.fulfilled;
-        let count = await instance.dayStateSize(dayState).should.be.fulfilled;
+        const leagueState = await instance.leagueStateCreate().should.be.fulfilled;
+        let count = await instance.leagueStateSize(leagueState).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
     });
 
     it('append an empty team is valid', async () => {
         const teamState = await instance.teamStateCreate().should.be.fulfilled;
-        let dayState = await instance.dayStateCreate().should.be.fulfilled;
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
-        let count = await instance.dayStateSize(dayState).should.be.fulfilled;
+        let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
+        let count = await instance.leagueStateSize(leagueState).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
-        count = await instance.dayStateSize(dayState).should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
+        count = await instance.leagueStateSize(leagueState).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
 
@@ -34,44 +34,44 @@ contract('LeagueState', (accounts) => {
         const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
-        let dayState = await instance.dayStateCreate().should.be.fulfilled;
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
-        let count = await instance.dayStateSize(dayState).should.be.fulfilled;
+        let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
+        let count = await instance.leagueStateSize(leagueState).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
-        count = await instance.dayStateSize(dayState).should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
+        count = await instance.leagueStateSize(leagueState).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
 
     it('valid league state', async () => {
-        let result = await instance.isValidDayState([]).should.be.fulfilled;
+        let result = await instance.isValidLeagueState([]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidDayState([2]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidDayState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidDayState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidDayState([TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([TEAMSTATEEND]).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
     it('get team from league state', async () => {
-        const dayState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
-        let state = await instance.dayStateAt(dayState, 0).should.be.fulfilled;
+        const leagueState = [2, 3, 0, 4, 2, 1, 0, 4, 5, 0, 2, 0]
+        let state = await instance.leagueStateAt(leagueState, 0).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(2);
         state[1].toNumber().should.be.equal(3);
-        state = await instance.dayStateAt(dayState, 1).should.be.fulfilled;
+        state = await instance.leagueStateAt(leagueState, 1).should.be.fulfilled;
         state.length.should.be.equal(3);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(2);
         state[2].toNumber().should.be.equal(1);
-        state = await instance.dayStateAt(dayState, 2).should.be.fulfilled;
+        state = await instance.leagueStateAt(leagueState, 2).should.be.fulfilled;
         state.length.should.be.equal(2);
         state[0].toNumber().should.be.equal(4);
         state[1].toNumber().should.be.equal(5);
-        state = await instance.dayStateAt(dayState, 3).should.be.fulfilled;
+        state = await instance.leagueStateAt(leagueState, 3).should.be.fulfilled;
         state.length.should.be.equal(1);
         state[0].toNumber().should.be.equal(2);
     });
@@ -80,15 +80,15 @@ contract('LeagueState', (accounts) => {
         const playerState = await instance.playerStateCreate(1,2,3,4,5).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
-        let dayState = await instance.dayStateCreate().should.be.fulfilled;
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
-        dayState = await instance.dayStateAppend(dayState, teamState).should.be.fulfilled;
+        let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
+        leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
         let newTeamState = await instance.teamStateCreate().should.be.fulfilled; 
-        await instance.dayStateUpdate(dayState, 1, newTeamState).should.be.rejected;
+        await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.rejected;
         const newPlayerState = await instance.playerStateCreate(5,4,3,2,1).should.be.fulfilled;
         newTeamState = await instance.teamStateAppend(newTeamState, newPlayerState).should.be.fulfilled;
-        const updatedDayState = await instance.dayStateUpdate(dayState, 1, newTeamState).should.be.fulfilled;
-        const resultTeamState = await instance.dayStateAt(updatedDayState, 1).should.be.fulfilled;
+        const updatedleagueState = await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.fulfilled;
+        const resultTeamState = await instance.leagueStateAt(updatedleagueState, 1).should.be.fulfilled;
         const resultPlayerState = await instance.teamStateAt(resultTeamState, 0).should.be.fulfilled;
         resultPlayerState.toString().should.be.equal(newPlayerState.toString());
     });

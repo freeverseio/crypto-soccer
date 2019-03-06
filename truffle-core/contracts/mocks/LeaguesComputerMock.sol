@@ -9,7 +9,7 @@ contract LeaguesComputerMock is LeaguesComputer {
     {
     }    
 
-    function updatePlayerStatesAfterMatch(
+    function evolveTeam(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
@@ -19,7 +19,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         view
         returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
     {
-        return _updatePlayerStatesAfterMatch(homeTeamState, visitorTeamState, homeGoals, visitorGoals);
+        return _evolveTeams(homeTeamState, visitorTeamState, homeGoals, visitorGoals);
     }
 
     function computePointsWon(
@@ -38,15 +38,15 @@ contract LeaguesComputerMock is LeaguesComputer {
     function computeStatesAtMatchday(
         uint256 id,
         uint256 leagueDay, 
-        uint256[] memory initDayState, 
+        uint256[] memory initleagueState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
         public
         view
-        returns (uint16[] memory scores, uint256[] memory finalDayState)
+        returns (uint16[] memory scores, uint256[] memory finalleagueState)
     {
-        return _computeStatesAtMatchday(id, leagueDay, initDayState, tactics, seed);
+        return _computeStatesAtMatchday(id, leagueDay, initleagueState, tactics, seed);
     }
 
     function computeScoreMatchInLeague(

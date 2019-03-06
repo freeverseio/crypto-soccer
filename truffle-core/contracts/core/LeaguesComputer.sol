@@ -22,18 +22,18 @@ contract LeaguesComputer is LeaguesScore {
     function computeDay(
         uint256 leagueId,
         uint256 leagueDay, 
-        uint256[] memory initDayState, 
+        uint256[] memory initleagueState, 
         uint256[3][] memory tactics
     )
         public
         view
-        returns (uint16[] memory scores, uint256[] memory finalDayState)
+        returns (uint16[] memory scores, uint256[] memory finalleagueState)
     {
         bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
         return _computeStatesAtMatchday(
             leagueId,
             leagueDay,
-            initDayState,
+            initleagueState,
             tactics,
             seed
         );
@@ -102,20 +102,20 @@ contract LeaguesComputer is LeaguesScore {
     function _computeStatesAtMatchday(
         uint256 id,
         uint256 leagueDay, 
-        uint256[] memory initDayState, 
+        uint256[] memory initleagueState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
         internal
         view
-        returns (uint16[] memory scores, uint256[] memory finalDayState)
+        returns (uint16[] memory scores, uint256[] memory finalleagueState)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
             (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
-            uint256[] memory homeTeamState = _leagueState.dayStateAt(initDayState, homeTeamIdx);
-            uint256[] memory visitorTeamState = _leagueState.dayStateAt(initDayState, visitorTeamIdx);
+            uint256[] memory homeTeamState = _leagueState.leagueStateAt(initleagueState, homeTeamIdx);
+            uint256[] memory visitorTeamState = _leagueState.leagueStateAt(initleagueState, visitorTeamIdx);
             (uint16 score,
             uint256[] memory updatedHomeState,
             uint256[] memory updatedVisitorState) = _computeScoreMatchInLeague(
@@ -125,8 +125,8 @@ contract LeaguesComputer is LeaguesScore {
                 seed
             );
             scores = addToDayScores(scores, score);
-            finalDayState = _leagueState.dayStateUpdate(initDayState, homeTeamIdx, updatedHomeState);
-            finalDayState = _leagueState.dayStateUpdate(initDayState, visitorTeamIdx, updatedVisitorState);
+            finalleagueState = _leagueState.leagueStateUpdate(initleagueState, homeTeamIdx, updatedHomeState);
+            finalleagueState = _leagueState.leagueStateUpdate(initleagueState, visitorTeamIdx, updatedVisitorState);
         }
     }
 
@@ -148,7 +148,7 @@ contract LeaguesComputer is LeaguesScore {
             tactics[1]
         );
         score = encodeScore(homeGoals, visitorGoals);
-        (newHomeState, newVisitorState) = _updatePlayerStatesAfterMatch(
+        (newHomeState, newVisitorState) = _evolveTeams(
             homeTeamState,
             visitorTeamState,
             homeGoals,
@@ -156,9 +156,9 @@ contract LeaguesComputer is LeaguesScore {
         );
     }
         
-    // function computeAllMatchdayStates(
+    // function computeAllMatchleagueStates(
     //     uint256 id, 
-    //     uint256[] memory initDayState, 
+    //     uint256[] memory initleagueState, 
     //     uint256[3][] memory tactics // TODO: optimize data type
     // )
     //     public 
@@ -169,7 +169,7 @@ contract LeaguesComputer is LeaguesScore {
     //     for(uint256 day = 0 ; day < nLeagueDays ; day++)
     //     {
     //         bytes32 seed = getMatchDayBlockHash(id, day);
-    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
+    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initleagueState, tactics, seed);
     //         // scores = addToTournamentScores(scores, dayScores);
     //     }
     // }
