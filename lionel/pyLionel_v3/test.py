@@ -186,7 +186,7 @@ def test2():
     selectedMatchday    = 0
     dataAtPrevMatchday = getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
-    merkleProof, values, depth = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
 
 
     ST.challengeMatchdayStates(
@@ -195,9 +195,7 @@ def test2():
         dataAtPrevMatchday,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-        merkleProof,
-        values,
-        depth
+        merkleProofDataForMatchday
     )
 
 
@@ -458,7 +456,6 @@ else:
 
 # TODO:
 #   - likeweise, put initStates as states at 0 (not sure)
-# gather all merkle proof data (vals, hashes, depth) in a struct
 # treat initStates the same way as states and avoid initPlayerHash being different
 # do not store scores but the hash or merkle root
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash

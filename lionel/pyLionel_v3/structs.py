@@ -247,6 +247,12 @@ class DataAtMatchday():
         self.tacticsAtMatchday      = pylio.duplicate(tacticsAtMatchday)
         self.teamOrdersAtMatchday   = pylio.duplicate(teamOrdersAtMatchday)
 
+class MerkleProofDataForMatchday():
+    def __init__(self, merkleProof, values, depth):
+        self.merkleProof    = pylio.duplicate(merkleProof)
+        self.values         = pylio.duplicate(values)
+        self.depth          = pylio.duplicate(depth)
+
 class Storage(Counter):
     def __init__(self):
 
@@ -387,18 +393,16 @@ class Storage(Counter):
             dataAtPrevMatchday,
             usersInitData,
             actionsAtSelectedMatchday,
-            merkleProof,
-            values,
-            depth
-                                ):
+            merkleProofDataForMatchday
+        ):
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
 
         assert verify(
             self.VerseCommits[verse].actionsMerkleRoots,
-            depth,
-            values,
-            merkleProof,
+            merkleProofDataForMatchday.depth,
+            merkleProofDataForMatchday.values,
+            merkleProofDataForMatchday.merkleProof,
             pylio.serialHash,
             debug_print=False
         ), "Actions are not part of the corresponding commit"
@@ -437,7 +441,7 @@ class Storage(Counter):
         # leaf (=actionsThisLeagueAtSelectedMatchday) formated so that is has the form {idx: actionsAtSelectedMatchday}.
         neededHashes, values = pylio.prepareProofForIdxs([idx], tree, self.Accumulator.commitedActions[verse])
         assert verify(self.VerseCommits[verse].actionsMerkleRoots, get_depth(tree), values, neededHashes, pylio.serialHash), "Generated Merkle proof will not work"
-        return neededHashes, values, get_depth(tree)
+        return MerkleProofDataForMatchday(neededHashes, values, get_depth(tree))
 
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
