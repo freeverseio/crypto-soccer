@@ -1,18 +1,18 @@
 pragma solidity ^0.5.0;
 
-import "../state/DayState.sol";
+import "../state/LeagueState.sol";
 import "./LeaguesScore.sol";
 import "./Engine.sol";
 
 contract LeaguesComputer is LeaguesScore {
-    DayState private _leagueState;
+    LeagueState private _leagueState;
     Engine private _engine;
 
     uint8 constant PLAYERS_PER_TEAM = 11;
 
     constructor(address engine, address leagueState) public {
         _engine = Engine(engine);
-        _leagueState = DayState(leagueState);
+        _leagueState = LeagueState(leagueState);
     }
 
     function getEngineContract() external view returns (address) {

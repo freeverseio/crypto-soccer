@@ -3,7 +3,7 @@ require('chai')
     .should();
 
 const Engine = artifacts.require('Engine');
-const States = artifacts.require('DayState');
+const States = artifacts.require('LeagueState');
 const Leagues = artifacts.require('LeaguesComputerMock');
 
 contract('LeaguesComputer', (accounts) => {

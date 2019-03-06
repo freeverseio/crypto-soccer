@@ -1,15 +1,15 @@
 pragma solidity ^0.5.0;
 
 import "./LeaguesBase.sol";
-import "../state/DayState.sol";
+import "../state/LeagueState.sol";
 
 /// @title an updatable league
 /// TODO: change name to LeagueUpdatable
 contract LeagueUpdater is LeaguesBase {
-    DayState private _state;
+    LeagueState private _state;
 
     constructor(address state) public {
-        _state = DayState(state);
+        _state = LeagueState(state);
     } 
 
     // TODO: add minimum checks

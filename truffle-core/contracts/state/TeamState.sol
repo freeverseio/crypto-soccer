@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./PlayerState.sol";
 
+/// @title the state of a team
 contract TeamState is PlayerState {
     function teamStateCreate() public pure returns (uint256[] memory state){
     }

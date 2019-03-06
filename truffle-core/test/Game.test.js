@@ -7,7 +7,7 @@ const Teams = artifacts.require('Teams');
 const Horizon = artifacts.require('Horizon');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
-const State = artifacts.require('DayState');
+const State = artifacts.require('LeagueState');
 
 
 

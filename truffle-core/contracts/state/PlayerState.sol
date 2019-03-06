@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 
+/// @title the state of a player
 contract PlayerState {
     uint256 constant public TEAMSTATEEND = 0;
 
@@ -58,13 +59,14 @@ contract PlayerState {
         return uint8(playerState);
     }
 
-    function playerStateEvolve(uint256 state, uint8 delta) public pure returns (uint256) {
-        require(isValidPlayerState(state), "invalid player state");
-        uint8 defence = getDefence(state) + delta;
-        uint8 speed = getSpeed(state) + delta;
-        uint8 pass = getPass(state) + delta;
-        uint8 shoot = getShoot(state) + delta;
-        uint8 endurance = getEndurance(state) + delta;
+    /// increase the skills of delta
+    function playerStateEvolve(uint256 playerState, uint8 delta) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player playerState");
+        uint8 defence = getDefence(playerState) + delta;
+        uint8 speed = getSpeed(playerState) + delta;
+        uint8 pass = getPass(playerState) + delta;
+        uint8 shoot = getShoot(playerState) + delta;
+        uint8 endurance = getEndurance(playerState) + delta;
         return playerStateCreate(defence, speed, pass, shoot, endurance);
     }
 }
