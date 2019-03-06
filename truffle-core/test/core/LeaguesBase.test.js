@@ -75,7 +75,7 @@ contract('LeaguesBase', (accounts) => {
         await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const initHash = await leagues.getInitStateHash(id).should.be.fulfilled;
         initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const finalHashes = await leagues.getFinalTeamStateHashes(id).should.be.fulfilled;
+        const finalHashes = await leagues.getDayStateHashes(id).should.be.fulfilled;
         finalHashes.length.should.be.equal(0);
     });
 });
