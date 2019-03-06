@@ -292,7 +292,7 @@ class Storage(Counter):
         return verses
 
     def getSeedForVerse(self, verse):
-        return pylio.getBlockHash(self.VerseCommits[verse].blockNum)
+        return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
     def getAllSeedsForLeague(self, leagueIdx):
         assert self.hasLeagueFinished(leagueIdx), "All seeds only available at end of league"
@@ -384,7 +384,7 @@ class Storage(Counter):
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
 
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
-        seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
+        seed  = self.getBlockHash(self.VerseCommits[verse].blockNum)
 
         assert verify(
             self.VerseCommits[verse].actionsMerkleRoots,
@@ -773,3 +773,8 @@ class Storage(Counter):
             return True
         return self.leagues[leagueIdx].hasLeagueBeenUpdated() and \
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
+
+    # A mockup of how to obtain the block hash for a given blocknum.
+    # This is a function that is available in Ethereum after Constatinople
+    def getBlockHash(self, blockNum):
+        return pylio.intHash('salt' + str(blockNum))

@@ -89,13 +89,14 @@ def test2():
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
-    # Cook init data for the 1st league
+    # advances both BC and CLIENT, and syncs if it goes through a verse
     advanceToBlock(100, ST, ST_CLIENT)
 
     # One verse is about 1 hour, so a day is about 24 verseSteps
     verseInit = 3
     verseStep = 24
 
+    # Cook init data for the 1st league
     usersInitData = {
         "teamIdxs": [teamIdx1, teamIdx2],
         "teamOrders": [DEFAULT_ORDER, REVERSE_ORDER],

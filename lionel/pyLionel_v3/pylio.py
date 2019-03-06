@@ -98,9 +98,6 @@ def computeUsersInitDataHash(teamIdxs, playerOrders, tactics):
 
 
 
-def getBlockHash(blockNum):
-    return intHash('salt' + str(blockNum))
-
 
 def shiftBack(t, nTeams):
     if (t < nTeams):
@@ -259,6 +256,11 @@ def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
 def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
 
+
+
+
+# ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
+# advances both BC and CLIENT, and commits the userActions if it goes through a verse
 def advanceToBlock(n, ST, ST_CLIENT):
     verseWasCrossedBC       = ST.advanceToBlock(n)
     verseWasCrossedCLIENT   = ST_CLIENT.advanceToBlock(n)
@@ -276,11 +278,9 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
 def advanceNVerses(nVerses, ST, ST_CLIENT):
     for verse in range(nVerses):
         advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+# ------------------------------------------------
 
 
-# A mockup of how to obtain the block hash for a given blocknum "n"
-def getBlockhashForBlock(n):
-    return serialize2str(n)
 
 
 def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
