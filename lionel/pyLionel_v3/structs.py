@@ -375,15 +375,36 @@ class Storage(Counter):
             # if player has been sold before playing any league, it'll conserve skills at birth,
             # but have different metadata in the other fields
             playerState = pylio.duplicate(self.playerIdxToPlayerState[playerIdx])
-            pylio.copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
+            self.copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
             return playerState
+
+    def copySkillsAndAgeFromTo(self, playerStateOrig, playerStateDest):
+        playerStateDest.setSkills(pylio.duplicate(playerStateOrig.getSkills()))
+        playerStateDest.setMonth(pylio.duplicate(playerStateOrig.getMonth()))
+
+    # the skills of a player are determined by concat of teamName and shirtNum
+    def getPlayerSeedFromTeamAndShirtNum(self, teamName, shirtNum):
+        return pylio.limitSeed(pylio.intHash(teamName + str(shirtNum)))
+
+    # Given a seed, returns a balanced player.
+    # It only deals with skills & age, not playerIdx.
+    def getPlayerStateFromSeed(self, seed):
+        newPlayerState = PlayerState()
+        np.random.seed(seed)
+        years = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE)
+        newPlayerState.setMonth(years * 12)
+        skills = np.random.randint(0, AVG_SKILL - 1, N_SKILLS)
+        excess = int((AVG_SKILL * N_SKILLS - skills.sum()) / N_SKILLS)
+        skills += excess
+        newPlayerState.setSkills(skills)
+        return newPlayerState
 
 
     def getPlayerStateAtBirth(self, playerIdx):
         # Disregard his current team, just look at the team at moment of birth to build skills
         teamIdx, shirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx, forceAtBirth=True)
-        seed = pylio.getPlayerSeedFromTeamAndShirtNum(self.teams[teamIdx].name, shirtNum)
-        playerState = pylio.duplicate(pylio.getPlayerStateFromSeed(seed))
+        seed = self.getPlayerSeedFromTeamAndShirtNum(self.teams[teamIdx].name, shirtNum)
+        playerState = pylio.duplicate(self.getPlayerStateFromSeed(seed))
         # Once the skills have been added, complete the rest of the player data
         playerState.setPlayerIdx(playerIdx)
         playerState.setCurrentTeamIdx(teamIdx)

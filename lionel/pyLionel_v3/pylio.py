@@ -9,6 +9,7 @@ from merkle_tree import *
 
 
 # ------------ Functions to take hashes, serialize structs ------------
+
 #  serializes and converts to str in a complicated way
 def serialize2str(object):
     return str(serialize(object).hex())
@@ -30,31 +31,7 @@ def serialHash(obj):
     return intHash(serialize2str(obj))
 
 
-# Given a seed, returns a balanced player.
-# It only deals with skills & age, not playerIdx.
-def getPlayerStateFromSeed(seed):
-    newPlayerState = PlayerState()
-    np.random.seed(seed)
-    years = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE)
-    newPlayerState.setMonth(years*12)
-    skills = np.random.randint(0,AVG_SKILL-1,N_SKILLS)
-    excess = int( (AVG_SKILL*N_SKILLS-skills.sum())/N_SKILLS )
-    skills += excess
-    newPlayerState.setSkills(skills)
-    return newPlayerState
-
-
-
-# the skills of a player are determined by concat of teamName and shirtNum
-def getPlayerSeedFromTeamAndShirtNum(teamName, shirtNum):
-    return limitSeed(intHash(teamName + str(shirtNum)))
-
-
-def copySkillsAndAgeFromTo(playerStateOrig, playerStateDest):
-    playerStateDest.setSkills(duplicate(playerStateOrig.getSkills()))
-    playerStateDest.setMonth(duplicate(playerStateOrig.getMonth()))
-
-
+# ------------ Functions to print structs ------------
 
 # Simple player print
 def printPlayer(playerState):
@@ -79,28 +56,9 @@ def printTeam(teamIdx, ST_CLIENT):
         hash += printPlayer(playerState)
     return hash
 
-
-
 def isValidOrdering(playerOrders):
-    # TODO: check all nums are different and in [0, NPLAYERS_PER_TEAM]
+    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM]
     return True
-
-def computeUsersInitDataHash(teamIdxs, playerOrders, tactics):
-    # Consider changing an ordering map by a set of permutations
-    # The reason is that it is a correct ordering by construction, no need to check
-    #
-    # inputs:  teamIdxs[nTeams], playerOrders[nTeams][NPLAYERS_PER_TEAM], tactics[nTeams]
-    assert isValidOrdering(playerOrders), "The provided ordering of players is not valid"
-    serialization = ""
-    for (t, teamIdx) in enumerate(teamIdxs):
-        serialization += str(teamIdx) + "-" + str(tactics[t]) + "-"
-        for order in playerOrders[t]:
-            serialization += str(order) + "-"
-    return intHash(serialization)
-
-
-
-
 
 def shiftBack(t, nTeams):
     if (t < nTeams):
@@ -208,30 +166,8 @@ def getMatchsPlayerByTeam(selectedTeam, nTeams):
                 matchdayMatch.append([matchday,match])
     return matchdayAndMatch
 
-
-def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScores):
-    for matchday, match, score in zip(range(len(selectedMatchInMatchday)), selectedMatchInMatchday, selectedScores):
-        if any(updaterScores[matchday][match] != score):
-            return False
-    return True
-
-
-
-
-
-def getTeamIdxInLeague(currentTeamIdx, lastLeagueIdx, ST_CLIENT):
-    for idxInLeague, teamIdx in enumerate(ST_CLIENT.leagues[lastLeagueIdx].usersInitData["teamIdxs"]):
-        if teamIdx == currentTeamIdx:
-            return idxInLeague
-    assert False, "The team is not in this league"
-
-
-
 def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
-
-
-
 
 
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
