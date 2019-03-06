@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
@@ -39,8 +41,13 @@ type Config struct {
 }
 
 func MustRead(c *cli.Context) error {
+	configfile := strings.TrimSuffix(c.GlobalString("config"), ".yaml")
+	if len(configfile) == 0 {
+		configfile = "config"
+	}
+
 	viper.SetConfigType("yaml")
-	viper.SetConfigName("config")
+	viper.SetConfigName(configfile)
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
 		return err
