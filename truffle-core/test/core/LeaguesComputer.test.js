@@ -41,7 +41,7 @@ contract('LeaguesComputer', (accounts) => {
     it('estimate gas cost in calculate a day', async () => {
         const day = 0;
         let cost = await leagues.computeStatesAtMatchday.estimateGas(id, day, dayState, tactics, '0x0').should.be.fulfilled;
-        cost.should.be.equal(196895);
+        cost.should.be.equal(196687);
     })
 
     it('calculate a day in a league', async () => {
