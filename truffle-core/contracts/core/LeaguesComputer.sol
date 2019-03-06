@@ -30,7 +30,7 @@ contract LeaguesComputer is LeaguesScore {
         returns (uint16[] memory scores, uint256[] memory finalDayState)
     {
         bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
-        return computeStatesAtMatchday(
+        return _computeStatesAtMatchday(
             leagueId,
             leagueDay,
             initDayState,
@@ -39,20 +39,20 @@ contract LeaguesComputer is LeaguesScore {
         );
     } 
 
-    function updatePlayerStatesAfterMatch(
+    function _updatePlayerStatesAfterMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
         uint8 visitorGoals
     )
-        public 
+        internal
         view
         returns (uint256[] memory updatedHomeTeamState, uint256[] memory updatedVisitorTeamState) 
     {
         if (homeGoals == visitorGoals)
             return (homeTeamState, visitorTeamState);
 
-        uint8 pointsWon = computePointsWon(
+        uint8 pointsWon = _computePointsWon(
             homeTeamState,
             visitorTeamState,
             homeGoals,
@@ -69,13 +69,13 @@ contract LeaguesComputer is LeaguesScore {
         }
     }
 
-    function computePointsWon(
+    function _computePointsWon(
         uint256[] memory homeTeamState, 
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
         uint8 visitorGoals
     )
-        public 
+        internal
         view
         returns (uint8 points)
     {
@@ -93,14 +93,14 @@ contract LeaguesComputer is LeaguesScore {
         return 10;
     }
 
-    function computeStatesAtMatchday(
+    function _computeStatesAtMatchday(
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initDayState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
-        public
+        internal
         view
         returns (uint16[] memory scores, uint256[] memory finalDayState)
     {
@@ -112,7 +112,7 @@ contract LeaguesComputer is LeaguesScore {
             uint256[] memory visitorTeamState = _leagueState.dayStateAt(initDayState, visitorTeamIdx);
             (uint16 score,
             uint256[] memory updatedHomeState,
-            uint256[] memory updatedVisitorState) = computeScoreMatchInLeague(
+            uint256[] memory updatedVisitorState) = _computeScoreMatchInLeague(
                 homeTeamState,
                 visitorTeamState, 
                 tactics, 
@@ -124,13 +124,13 @@ contract LeaguesComputer is LeaguesScore {
         }
     }
 
-    function computeScoreMatchInLeague(
+    function _computeScoreMatchInLeague(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint256[3][] memory tactics,
         bytes32 seed
     )
-        public
+        internal
         view
         returns (uint16 score, uint256[] memory newHomeState, uint256[] memory newVisitorState)
     {
@@ -142,7 +142,7 @@ contract LeaguesComputer is LeaguesScore {
             tactics[1]
         );
         score = encodeScore(homeGoals, visitorGoals);
-        (newHomeState, newVisitorState) = updatePlayerStatesAfterMatch(
+        (newHomeState, newVisitorState) = _updatePlayerStatesAfterMatch(
             homeTeamState,
             visitorTeamState,
             homeGoals,

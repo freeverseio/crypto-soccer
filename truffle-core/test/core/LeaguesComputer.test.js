@@ -4,7 +4,7 @@ require('chai')
 
 const Engine = artifacts.require('Engine');
 const States = artifacts.require('DayState');
-const Leagues = artifacts.require('LeaguesComputer');
+const Leagues = artifacts.require('LeaguesComputerMock');
 
 contract('LeaguesComputer', (accounts) => {
     let engine = null;
@@ -41,7 +41,7 @@ contract('LeaguesComputer', (accounts) => {
     it('estimate gas cost in calculate a day', async () => {
         const day = 0;
         let cost = await leagues.computeStatesAtMatchday.estimateGas(id, day, dayState, tactics, '0x0').should.be.fulfilled;
-        cost.should.be.equal(196821);
+        cost.should.be.equal(196895);
     })
 
     it('calculate a day in a league', async () => {
