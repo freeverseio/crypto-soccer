@@ -118,7 +118,7 @@ contract LeaguesComputer is LeaguesScore {
                 tactics, 
                 seed
             );
-            scores = addToDayScores(scores, score);
+            scores = scoresAppend(scores, score);
             finalLeagueState = _leagueState.leagueStateUpdate(finalLeagueState, homeTeamIdx, updatedHomeState);
             finalLeagueState = _leagueState.leagueStateUpdate(finalLeagueState, visitorTeamIdx, updatedVisitorState);
         }

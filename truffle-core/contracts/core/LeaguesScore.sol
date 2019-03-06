@@ -17,6 +17,10 @@ contract LeaguesScore is LeaguesScheduler {
         visitor = uint8(score & 0x00ff);
     }
 
+    function scoresCreate() public pure returns (uint16[] memory) {
+
+    }
+
     function isValidScore(uint16 score) public pure returns (bool) {
         return score != DIVIDER;
     }
@@ -26,7 +30,7 @@ contract LeaguesScore is LeaguesScheduler {
     }
 
     /// TODO: maybe addScoreToDay ?
-    function addToDayScores(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
+    function scoresAppend(uint16[] memory scores, uint16 score) public pure returns (uint16[] memory) {
         require(score != DIVIDER, "invalid score");
         require(isValidDayScores(scores), "invalid day scores");
         uint16[] memory result = new uint16[](scores.length + 1);
@@ -51,7 +55,7 @@ contract LeaguesScore is LeaguesScheduler {
             if (leagueScores[i] == DIVIDER)
                 current++;
         for(; i < leagueScores.length && leagueScores[i] != DIVIDER ; i++)
-            dayScores = addToDayScores(dayScores, leagueScores[i]);
+            dayScores = scoresAppend(dayScores, leagueScores[i]);
     }
 
     function addToTournamentScores(uint16[] memory tournamentScores, uint16[] memory dayScores) public pure returns (uint16[] memory) {

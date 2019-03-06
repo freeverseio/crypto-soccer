@@ -27,15 +27,15 @@ contract('LeaguesScore', (accounts) => {
     });
 
     it('fill a day scores', async () => {
-        await instance.addToDayScores([0xffff], 0x0101).should.be.rejected;
-        await instance.addToDayScores([], 0xffff).should.be.rejected;
-        let scores = [];
+        await instance.scoresAppend([0xffff], 0x0101).should.be.rejected;
+        await instance.scoresAppend([], 0xffff).should.be.rejected;
+        let scores = await instance.scoresCreate().should.be.fulfilled;
         let score = await instance.encodeScore(3, 0).should.be.fulfilled;
-        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
+        scores = await instance.scoresAppend(scores, score).should.be.fulfilled;
         score = await instance.encodeScore(1, 2).should.be.fulfilled;
-        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
+        scores = await instance.scoresAppend(scores, score).should.be.fulfilled;
         score = await instance.encodeScore(0, 0).should.be.fulfilled;
-        scores = await instance.addToDayScores(scores, score).should.be.fulfilled;
+        scores = await instance.scoresAppend(scores, score).should.be.fulfilled;
         scores.length.should.be.equal(3);
         score = await instance.decodeScore(scores[0]).should.be.fulfilled;
         score.home.toNumber().should.be.equal(3);
@@ -95,7 +95,7 @@ contract('LeaguesScore', (accounts) => {
 
     it('get day scores in league scores', async () => {
         let scores = await instance.encodeScore(2, 1).should.be.fulfilled;
-        let dayScores = await instance.addToDayScores([], scores).should.be.fulfilled;
+        let dayScores = await instance.scoresAppend([], scores).should.be.fulfilled;
         // add day 0
         let leagueScores = await instance.addToTournamentScores([], dayScores).should.be.fulfilled;
         // add day 1
@@ -103,7 +103,7 @@ contract('LeaguesScore', (accounts) => {
         let result = await instance.getDayScores(leagueScores, 0).should.be.fulfilled;
         result.length.should.be.equal(1);
         scores = await instance.encodeScore(1, 2).should.be.fulfilled;
-        dayScores = await instance.addToDayScores(dayScores, scores).should.be.fulfilled;
+        dayScores = await instance.scoresAppend(dayScores, scores).should.be.fulfilled;
         // add day 2
         leagueScores = await instance.addToTournamentScores(leagueScores, dayScores).should.be.fulfilled;
         result = await instance.getDayScores(leagueScores, 2).should.be.fulfilled;
