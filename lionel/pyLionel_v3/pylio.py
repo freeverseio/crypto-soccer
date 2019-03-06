@@ -230,11 +230,11 @@ def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScor
     return True
 
 
-def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores, ST_CLIENT):
+def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores, ST_CLIENT):
     ST_CLIENT.leagues[leagueIdx].updateInitState(initPlayerStates)
-    ST_CLIENT.leagues[leagueIdx].updateDataAtMatchday(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores)
+    ST_CLIENT.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
     # the last matchday gives the final states used to update all players:
-    for allPlayerStatesInTeam in statesAtMatchday[-1]:
+    for allPlayerStatesInTeam in dataAtMatchdays[-1].statesAtMatchday:
         for playerState in allPlayerStatesInTeam:
             ST_CLIENT.playerIdxToPlayerState[playerState.getPlayerIdx()] = playerState
 
@@ -297,29 +297,16 @@ def getBlockhashForBlock(n):
     return serialize2str(n)
 
 
-
-#TODO: move the hashing of this to the BC to avoid inconsistencies (view mode)
-def computeDataAtMatchdayHashes(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
-    dataAtMatchdayHashes = []
-    for state, tactic, teamOrders in zip(statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay):
-        dataAtMatchdayHashes.append(computeDataAtMatchdayHash(state, tactic, teamOrders))
-    return dataAtMatchdayHashes
-
-def computeDataAtMatchdayHash(state, tactic, teamOrders):
-    return serialHash(serialHash(state)+serialHash(tactic))+serialHash(teamOrders)
-
-
 def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
     if selectedMatchday == 0:
-        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].initPlayerStates
-        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].usersInitData["tactics"]
-        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].usersInitData["teamOrders"]
+        return DataAtMatchday(
+            ST_CLIENT.leagues[leagueIdx].initPlayerStates,
+            ST_CLIENT.leagues[leagueIdx].usersInitData["tactics"],
+            ST_CLIENT.leagues[leagueIdx].usersInitData["teamOrders"]
+        )
     else:
-        prevMatchdayStates      = ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
-        prevMatchdayTactics     = ST_CLIENT.leagues[leagueIdx].tacticsAtMatchday[selectedMatchday - 1]
-        prevMatchdayTeamOrders  = ST_CLIENT.leagues[leagueIdx].prevMatchdayTeamOrders[selectedMatchday - 1]
+        return pylio.duplicate(ST_CLIENT.leagues[leagueIdx].dataAtMatchdays[-1])
 
-    return duplicate(prevMatchdayStates), duplicate(prevMatchdayTactics), duplicate(prevMatchdayTeamOrders)
 
 
 def prepareProofForIdxs(idxsToProve, tree, leafs):

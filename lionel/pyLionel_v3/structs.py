@@ -167,9 +167,7 @@ class League():
 
     def challengeMatchdayStates(self,
                                 selectedMatchday,
-                                prevMatchdayStates,
-                                tactics,
-                                teamOrders,
+                                dataAtPrevMatchday,
                                 usersInitData,
                                 seed,
                                 currentBlocknum):
@@ -178,15 +176,15 @@ class League():
         assert not self.isFullyVerified(currentBlocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
 
-        statesAtMatchday, scores = pylio.computeStatesAtMatchday(
+        dataAtPrevMatchday.statesAtPrevMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
-            prevMatchdayStates,
-            tactics,
-            teamOrders,
+            pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.teamOrdersAtMatchday),
             seed
         )
 
-        dataAtMatchdayHash = pylio.computeDataAtMatchdayHash(statesAtMatchday, tactics, teamOrders)
+        dataAtMatchdayHash = pylio.serialHash(dataAtPrevMatchday)
 
         if not dataAtMatchdayHash == self.dataAtMatchdayHashes[selectedMatchday]:
             print("Challenger Wins: statesAtMatchday provided by updater are invalid")
@@ -208,14 +206,12 @@ class LeagueClient(League):
         self.usersInitData      = usersInitData
         self.initPlayerStates   = None
         self.statesAtMatchday   = None
-        self.tacticsAtMatchDay  = None
+        self.tacticsAtMatchday  = None
         self.scores             = None
         self.actionsPerMatchday = []
 
-    def updateDataAtMatchday(self, statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores):
-        self.statesAtMatchday   = statesAtMatchday
-        self.tacticsAtMatchDay  = tacticsAtMatchDay
-        self.teamOrdersAtMatchDay  = teamOrdersAtMatchDay
+    def updateDataAtMatchday(self, dataAtMatchdays, scores):
+        self.dataAtMatchdays   = dataAtMatchdays
         self.scores             = scores
 
     def updateInitState(self, initPlayerStates):
@@ -251,6 +247,11 @@ class ActionsAccumulator():
             del self.buffer[leagueIdx]
 
 
+class DataAtMatchday():
+    def __init__(self, statesAtMatchday, tacticsAtMatchday, teamOrdersAtMatchday):
+        self.statesAtMatchday       = pylio.duplicate(statesAtMatchday)
+        self.tacticsAtMatchday      = pylio.duplicate(tacticsAtMatchday)
+        self.teamOrdersAtMatchday   = pylio.duplicate(teamOrdersAtMatchday)
 
 class Storage(Counter):
     def __init__(self):
@@ -389,9 +390,7 @@ class Storage(Counter):
     def challengeMatchdayStates(self,
             leagueIdx,
             selectedMatchday,
-            prevMatchdayStates,
-            prevMatchdayTactics,
-            prevMatchdayTeamOrders,
+            dataAtPrevMatchday,
             usersInitData,
             actionsAtSelectedMatchday,
             merkleProof,
@@ -411,27 +410,22 @@ class Storage(Counter):
         ), "Actions are not part of the corresponding commit"
 
         if selectedMatchday == 0:
-            assert pylio.serialHash(prevMatchdayStates) == self.leagues[leagueIdx].initStatesHash, "Incorrect provided: prevMatchdayStates"
-            assert pylio.serialHash(prevMatchdayTactics) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
-            assert pylio.serialHash(prevMatchdayTeamOrders) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
+            assert pylio.serialHash(dataAtPrevMatchday.statesAtMatchday) == self.leagues[leagueIdx].initStatesHash, "Incorrect provided: prevMatchdayStates"
+            assert pylio.serialHash(dataAtPrevMatchday.tacticsAtMatchday) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
+            assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
             # TODO: sum of hashes is not secure, hash the result!
-            assert self.dataAtMatchdayHashes[selectedMatchday-1] == \
-                pylio.serialHash(prevMatchdayStates) + \
-                pylio.serialHash(prevMatchdayTactics) +\
-                pylio.serialHash(prevMatchdayTeamOrders), \
-                "Incorrect provided: prevMatchdayStates"
+            assert self.dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
+                "Incorrect provided: dataAtPrevMatchday"
 
         for action in actionsAtSelectedMatchday:
             teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
-            prevMatchdayTactics[teamPosInLeague] = action["tactics"]
-            prevMatchdayTeamOrders[teamPosInLeague] = action["teamOrder"]
+            dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
+            dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
 
         self.leagues[leagueIdx].challengeMatchdayStates(
             selectedMatchday,
-            prevMatchdayStates,
-            pylio.duplicate(prevMatchdayTactics),
-            pylio.duplicate(prevMatchdayTeamOrders),
+            pylio.duplicate(dataAtPrevMatchday),
             usersInitData,
             seed,
             self.currentBlock
@@ -517,7 +511,7 @@ class Storage(Counter):
 
 
     def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
-        selectedStates = [s for s in self.leagues[prevLeagueIdx].statesAtMatchday[-1][teamPosInPrevLeague] if
+        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
                           s.getPlayerIdx() == playerIdx]
         assert len(
             selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
@@ -558,12 +552,20 @@ class Storage(Counter):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 if dataToChallengeInitStates:
                     if not self.isCorrectStateForPlayerIdx(
-                        pylio.getPlayerStateFromChallengeData(playerIdx,
-                                                              dataToChallengeInitStates[teamPosInLeague][shirtNum]),
-                        dataToChallengeInitStates[teamPosInLeague][shirtNum],
+                        pylio.getPlayerStateFromChallengeData(
+                            playerIdx,
+                            dataToChallengeInitStates[teamPosInLeague][shirtNum]
+                        ),
+                        dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     ):
                         return None
                 playerState = self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+                # #TODO: do we need the next assert?
+                # assert pylio.isPlayerStateInsideDataToChallenge(
+                #     playerState,
+                #     dataToChallengePlayerState,
+                #     teamPosInPrevLeague
+                # ), '...'
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
@@ -584,27 +586,25 @@ class Storage(Counter):
         nMatchesPerMatchday = nTeams//2
         scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
 
-        # the following beast has dimension nMatchdays x nTeams x nPlayersPerTeam
-        statesAtMatchday = [pylio.createEmptyPlayerStatesForAllTeams(nTeams) for matchday in range(nMatchdays)]
-        tacticsAtMatchDay = []
-        teamOrdersAtMatchDay = []
+        dataAtMatchdays = []
 
+        statesAtMatchday = initPlayerStates
         for matchday in range(nMatchdays):
             self.updateTacticsToMatchday(leagueIdx, tactics, teamOrders, matchday)
-            prevStates = initPlayerStates if matchday == 0 else statesAtMatchday[matchday - 1]
-            statesAtMatchday[matchday], scores[matchday] = pylio.computeStatesAtMatchday(
+            statesAtMatchday, scores[matchday] = pylio.computeStatesAtMatchday(
                 matchday,
-                prevStates,
-                tactics,
-                teamOrders,
+                pylio.duplicate(statesAtMatchday),
+                pylio.duplicate(tactics),
+                pylio.duplicate(teamOrders),
                 seedsPerVerse[matchday]
             )
-            tacticsAtMatchDay.append(pylio.duplicate(tactics))
-            teamOrdersAtMatchDay.append(pylio.duplicate(teamOrders))
+            dataAtMatchdays.append(DataAtMatchday(statesAtMatchday, tactics, teamOrders))
 
-        return statesAtMatchday, tacticsAtMatchDay, teamOrdersAtMatchDay, scores
+        return dataAtMatchdays, scores
 
     def updateTacticsToMatchday(self, leagueIdx, tactics, teamOrders, matchday):
+        if not matchday in self.leagues[leagueIdx].actionsPerMatchday:
+            return
         actionsInThisMatchday = pylio.duplicate(self.leagues[leagueIdx].actionsPerMatchday[matchday])
         for action in actionsInThisMatchday:
             teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], self.leagues[leagueIdx].usersInitData)
@@ -639,7 +639,9 @@ class Storage(Counter):
         if prevLeagueIdx == 0:
             return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
         else:
-            return self.getAllStatesAtEndOfLeague(prevLeagueIdx)
+            return self.leagues[prevLeagueIdx].statesAtMatchday[-1],\
+                   self.leagues[prevLeagueIdx].tacticsAtMatchday[-1],\
+                   self.leagues[prevLeagueIdx].teamOrdersAtMatchday[-1]
 
 
     def getAllStatesAtEndOfLeague(self, leagueIdx):
@@ -658,12 +660,17 @@ class Storage(Counter):
                 self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
             )
         else:
-            assert isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
+            assert pylio.isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
                 "The playerState provided is not part of the challengeData"
-            return serialHash(dataToChallengePlayerState) == ST.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1]
+            # return self.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1] == pylio.computeDataAtMatchdayHash(
+            #     states,
+            #     tactics,
+            #     teamOrders
+            # )
+            return pylio.serialHash(dataToChallengePlayerState) == self.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1]
 
 
-    def challengeInitStates(self, leagueIdx, usersInitData, dataToChallengeInitStates, initPlayerStatesO = None):
+    def challengeInitStates(self, leagueIdx, usersInitData, dataToChallengeInitStates):
         assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.leagues[leagueIdx].isFullyVerified(self.currentBlock), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
