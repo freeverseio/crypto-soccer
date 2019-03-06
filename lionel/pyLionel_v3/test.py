@@ -345,8 +345,8 @@ def test2():
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(1)
-    states, tactics, teamOrders = ST_CLIENT.computeDataToChallengePlayerIdx(1)
-    assert ST.isCorrectStateForPlayerIdx(player1State, states, tactics, teamOrders), "Computed player state by CLIENT is not recognized by BC.."
+    dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(1)
+    assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
@@ -446,7 +446,7 @@ def runTest(name, result, expected):
 
 success = True
 # success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 935)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 326)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:

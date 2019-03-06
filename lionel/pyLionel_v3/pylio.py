@@ -77,10 +77,10 @@ def printTeam(teamIdx, ST_CLIENT):
     hash = 0
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
-        playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT)
-        playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx,ST_CLIENT)
-        playerChallengeData = computeDataToChallengePlayerIdx(playerState.getPlayerIdx(), ST_CLIENT)
-        assert isCorrectStateForPlayerIdx(playerState, playerChallengeData, ST_CLIENT), "Player state not correctly in sync"
+        playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+        playerState = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+        playerChallengeData = ST_CLIENT.computeDataToChallengePlayerIdx(playerState.getPlayerIdx())
+        assert ST_CLIENT.isCorrectStateForPlayerIdx(playerState, playerChallengeData), "Player state not correctly in sync"
         hash += printPlayer(playerState)
     return hash
 
@@ -256,7 +256,7 @@ def areEqualStructs(st1, st2):
 
 
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
-    return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
+    return playerState in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague]
 
 
 def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):

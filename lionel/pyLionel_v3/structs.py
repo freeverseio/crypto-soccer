@@ -639,10 +639,7 @@ class Storage(Counter):
         if prevLeagueIdx == 0:
             return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
         else:
-            return self.leagues[prevLeagueIdx].statesAtMatchday[-1],\
-                   self.leagues[prevLeagueIdx].tacticsAtMatchday[-1],\
-                   self.leagues[prevLeagueIdx].teamOrdersAtMatchday[-1]
-
+            return self.leagues[prevLeagueIdx].dataAtMatchdays[-1]
 
     def getAllStatesAtEndOfLeague(self, leagueIdx):
         return self.leagues[leagueIdx].statesAtMatchday[-1]
@@ -662,12 +659,7 @@ class Storage(Counter):
         else:
             assert pylio.isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
                 "The playerState provided is not part of the challengeData"
-            # return self.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1] == pylio.computeDataAtMatchdayHash(
-            #     states,
-            #     tactics,
-            #     teamOrders
-            # )
-            return pylio.serialHash(dataToChallengePlayerState) == self.leagues[prevLeagueIdx].statesAndTacticsAtMatchDayHashes[-1]
+            return self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1] == pylio.serialHash(dataToChallengePlayerState)
 
 
     def challengeInitStates(self, leagueIdx, usersInitData, dataToChallengeInitStates):
