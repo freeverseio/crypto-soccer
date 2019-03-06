@@ -213,13 +213,6 @@ def areUpdaterScoresCorrect(selectedMatchInMatchday, selectedScores, updaterScor
     return True
 
 
-def updateClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores, ST_CLIENT):
-    ST_CLIENT.leagues[leagueIdx].updateInitState(initPlayerStates)
-    ST_CLIENT.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
-    # the last matchday gives the final states used to update all players:
-    for allPlayerStatesInTeam in dataAtMatchdays[-1].statesAtMatchday:
-        for playerState in allPlayerStatesInTeam:
-            ST_CLIENT.playerIdxToPlayerState[playerState.getPlayerIdx()] = playerState
 
 
 
@@ -280,18 +273,6 @@ def advanceNVerses(nVerses, ST, ST_CLIENT):
         advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
 # ------------------------------------------------
 
-
-
-
-def getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday):
-    if selectedMatchday == 0:
-        return DataAtMatchday(
-            ST_CLIENT.leagues[leagueIdx].initPlayerStates,
-            ST_CLIENT.leagues[leagueIdx].usersInitData["tactics"],
-            ST_CLIENT.leagues[leagueIdx].usersInitData["teamOrders"]
-        )
-    else:
-        return pylio.duplicate(ST_CLIENT.leagues[leagueIdx].dataAtMatchdays[-1])
 
 
 

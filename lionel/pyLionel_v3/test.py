@@ -19,8 +19,8 @@ from structs import *
 # Exchange 2 players in different teams, check that all is updated OK
 # the test is passed if the hash mod 1000 of all that is printed is as expected
 def test1():
-    ST          = Storage()
-    ST_CLIENT   = Storage()
+    ST          = Storage(isClient = False)
+    ST_CLIENT   = Storage(isClient = True)
 
     teamIdx1 = ST.createTeam("Barca", ADDR1)
     teamIdx2 = ST.createTeam("Madrid", ADDR2)
@@ -70,10 +70,13 @@ def test1():
 def test2():
     # Create contract storage in BC, and its extended version for the CLIENT
     # We need to keep both in sync. The CLIENT stores, besides what is in the BC, the pre-hash stuff.
-    ST          = Storage()
-    ST_CLIENT   = Storage()
+    ST          = Storage(isClient = False)
+    ST_CLIENT   = Storage(isClient = True)
+
+    # The accumulator is responsible for receving user actions and committing them in the correct verse.
     ST_CLIENT.addAccumulator()
 
+    # Note that every 'advance' we do will check if some user actions need to be commited
     advanceToBlock(10, ST, ST_CLIENT)
 
     # Create teams in BC and client
@@ -103,7 +106,6 @@ def test2():
         "tactics": [TACTICS["442"], TACTICS["433"]]
     }
 
-
     # Create league in BC and CLIENT. The latter stores things pre-hash too
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
@@ -115,6 +117,7 @@ def test2():
     assert ST.currentVerse == 0, "We should start with verse 0"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
+    # receive the first action! Every time it arrives to the Client, it acumulates it
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
     ST_CLIENT.accumulateAction(action00)
 
@@ -134,26 +137,23 @@ def test2():
     action1 = {"teamIdx": teamIdx2, "teamOrder": DEFAULT_ORDER, "tactics": TACTICS["442"]}
 
     ST_CLIENT.accumulateAction(action0)
-
     advanceNVerses(2, ST, ST_CLIENT)
     assert ST.currentVerse == 26, "We should be at verse 26, league finishes at 27"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
     ST_CLIENT.accumulateAction(action1)
 
-
-
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
 
-    initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
+    # CLIENT computes the data needed to update league
+    initPlayerStates        = ST_CLIENT.getInitPlayerStates(leagueIdx)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
 
-    initStatesHash          = serialHash(initPlayerStates)
+    initStatesHash       = serialHash(initPlayerStates)
     dataAtMatchdayHashes = [serialHash(d) for d in dataAtMatchdays]
 
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
@@ -168,8 +168,7 @@ def test2():
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
-    # The CLIENT updates the league WITHOUT lying,
-    # and additionally, stores the league pre-hash data, and updates every player involved
+    # The CLIENT updates the league WITHOUT lying...
     ST_CLIENT.updateLeague(
         leagueIdx,
         initStatesHash,
@@ -177,14 +176,17 @@ def test2():
         scores,
         ADDR2,
     )
-    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores, ST_CLIENT)
+    # ...and additionally, stores the league pre-hash data, and updates every player involved
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.isFullyVerified(leagueIdx)
+
+    # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     selectedMatchday    = 0
-    dataAtPrevMatchday = getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
 
     merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
 
@@ -338,7 +340,7 @@ def test2():
         ADDR2,
     )
 
-    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores, ST_CLIENT)
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
@@ -444,7 +446,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 326)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 792)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
@@ -461,4 +463,5 @@ else:
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
 # unify all iniHash, serialHAsh, etc
 # check all block num etc, not needed anymore, since we use ST.
-# updateClientAtEndOfLeague - still not as self.
+# storePreHashDataInClientAtEndOfLeague - still not as self.
+# add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc

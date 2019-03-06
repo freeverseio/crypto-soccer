@@ -207,10 +207,11 @@ class VerseCommitClient(VerseCommit):
         self.actions = 0
 
 
+# The Accumulator is responsible for receving user actions and committing them in the correct verse.
 class ActionsAccumulator():
     def __init__(self):
         self.buffer                     = {}
-        self.commitedActions            = [0]
+        self.commitedActions            = [0] # The genesis commit is a dummy one, as always
         self.commitedTrees              = [0]
 
     def accumulateAction(self, action, leagueIdx):
@@ -224,23 +225,30 @@ class ActionsAccumulator():
             leagueIdx = action[0]
             del self.buffer[leagueIdx]
 
-
+# Simple struct that stores the data that is computed/updated every matchday
 class DataAtMatchday():
     def __init__(self, statesAtMatchday, tacticsAtMatchday, teamOrdersAtMatchday):
         self.statesAtMatchday       = pylio.duplicate(statesAtMatchday)
         self.tacticsAtMatchday      = pylio.duplicate(tacticsAtMatchday)
         self.teamOrdersAtMatchday   = pylio.duplicate(teamOrdersAtMatchday)
 
+# Simple struct that stores the data needed to proof that a certain leaf belongs to a Merkle tree
+# "Values" is just the pair [ leafIdx, leafValue ]
 class MerkleProofDataForMatchday():
     def __init__(self, merkleProof, values, depth):
         self.merkleProof    = pylio.duplicate(merkleProof)
         self.values         = pylio.duplicate(values)
         self.depth          = pylio.duplicate(depth)
 
+# The MAIN CLASS that manages all BC & CLIENT storage
 class Storage(Counter):
-    def __init__(self):
+    def __init__(self, isClient):
 
         Counter.__init__(self)
+
+        # this bool is just to understand if the created BC is actually a client
+        # it allows to assert that some funcions should only be run by the client
+        self.isClient = isClient
 
         # an array of Team structs, the first entry being the null team
         self.teams = [Team("")]
@@ -258,6 +266,9 @@ class Storage(Counter):
 
         self.blocksBetweenVerses = 360
         self.VerseCommits = [VerseCommit()]
+
+    def assertIsClient(self):
+        assert self.isClient, "This code should only be run by CLIENTS, not the BC"
 
     def lastVerseBlock(self):
         return self.VerseCommits[-1].blockNum
@@ -759,6 +770,8 @@ class Storage(Counter):
         self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
         return teamIdx
 
+
+    # ------------ LEAGUE STATUS --------------
     def isLeagueIsAboutToStart(self, leagueIdx):
         return self.currentVerse < self.leagues[leagueIdx].verseInit
 
@@ -774,7 +787,29 @@ class Storage(Counter):
         return self.leagues[leagueIdx].hasLeagueBeenUpdated() and \
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
+
     # A mockup of how to obtain the block hash for a given blocknum.
     # This is a function that is available in Ethereum after Constatinople
     def getBlockHash(self, blockNum):
         return pylio.intHash('salt' + str(blockNum))
+
+    # Stores the data, pre-hash, in the CLIENT
+    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, scores):
+        self.leagues[leagueIdx].updateInitState(initPlayerStates)
+        self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
+        # the last matchday gives the final states used to update all players:
+        for allPlayerStatesInTeam in dataAtMatchdays[-1].statesAtMatchday:
+            for playerState in allPlayerStatesInTeam:
+                self.playerIdxToPlayerState[playerState.getPlayerIdx()] = playerState
+
+    # Returns the data at that given matchday matchday: (states, tactics, teamOrders)
+    def getPrevMatchdayData(self, leagueIdx, selectedMatchday):
+        if selectedMatchday == 0:
+            return DataAtMatchday(
+                self.leagues[leagueIdx].initPlayerStates,
+                self.leagues[leagueIdx].usersInitData["tactics"],
+                self.leagues[leagueIdx].usersInitData["teamOrders"]
+            )
+        else:
+            return pylio.duplicate(ST_CLIENT.leagues[leagueIdx].dataAtMatchdays[-1])
+
