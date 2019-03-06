@@ -145,24 +145,6 @@ contract LeaguesComputer is LeaguesScore, LeaguesTactics {
         );
     }
 
-    function computeAllMatchdayStates(
-        uint256 id, 
-        uint256[] memory initDayState, 
-        uint256[3][] memory tactics // TODO: optimize data type
-    )
-        public 
-        view 
-        returns (uint16[] memory scores) 
-    {
-        uint256 nLeagueDays = countLeagueDays(id);
-        for(uint256 day = 0 ; day < nLeagueDays ; day++)
-        {
-            bytes32 seed = getMatchDayBlockHash(id, day);
-            // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
-            // scores = addToTournamentScores(scores, dayScores);
-        }
-    }
-
     function hashDayState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
         uint256 nTeams = _leagueState.dayStateSize(leagueState);
         bytes32[] memory hashes = new bytes32[](nTeams);
@@ -184,4 +166,22 @@ contract LeaguesComputer is LeaguesScore, LeaguesTactics {
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
         return keccak256(abi.encode(tactics));
     }
+    
+    // function computeAllMatchdayStates(
+    //     uint256 id, 
+    //     uint256[] memory initDayState, 
+    //     uint256[3][] memory tactics // TODO: optimize data type
+    // )
+    //     public 
+    //     view 
+    //     returns (uint16[] memory scores) 
+    // {
+    //     uint256 nLeagueDays = countLeagueDays(id);
+    //     for(uint256 day = 0 ; day < nLeagueDays ; day++)
+    //     {
+    //         bytes32 seed = getMatchDayBlockHash(id, day);
+    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initDayState, tactics, seed);
+    //         // scores = addToTournamentScores(scores, dayScores);
+    //     }
+    // }
 }
