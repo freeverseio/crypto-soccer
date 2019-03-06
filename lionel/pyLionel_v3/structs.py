@@ -610,6 +610,8 @@ class Storage(Counter):
         assert False, "Team not found in league"
 
 
+    # Data needed to challenge the init states of a league. If the player has never played before,
+    # it's easy, otherwise, it needs to prove that his state is in the final states of a previous league...
     def prepareDataToChallengeInitStates(self, leagueIdx):
         self.assertIsClient()
         thisLeague = pylio.duplicate(self.leagues[leagueIdx])

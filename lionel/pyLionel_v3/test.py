@@ -188,9 +188,10 @@ def test2():
     selectedMatchday    = 0
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
 
+    # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
     merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
 
-
+    # ...finally, it does the challenge
     ST.challengeMatchdayStates(
         leagueIdx,
         selectedMatchday,
@@ -199,12 +200,11 @@ def test2():
         duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
         merkleProofDataForMatchday
     )
-
-
+    # Since it must succeed, the league is 'reset', without any update
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
 
-    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
+    # More lies: the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not updated"
     initStatesHashLie = duplicate(initStatesHash)+1
@@ -216,14 +216,13 @@ def test2():
         scores,
         ADDR2,
     )
-
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
-
-    # A CHALLENGER tries to prove that the UPDATER lied with the initHash
+    # A CHALLENGER proves that the UPDATER lied with the initHash
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
 
+    # ...first it gathers the data needed to challenge the init states
     dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
     ST.challengeInitStates(
         leagueIdx,
@@ -233,7 +232,7 @@ def test2():
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
 
 
-    # A nicer UPDATER now tells the truth:
+    # Finally, some truth: a nicer UPDATER now tells the truth:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     ST.updateLeague(
         leagueIdx,
@@ -253,8 +252,8 @@ def test2():
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
-    # We do not wait enough and try to:
-    #   create another league. It fails to do so because teams are still busy
+    # We do not wait enough and try to create another league with these teams.
+    # It fails to do so because teams are still busy
     advanceNBlocks(2, ST, ST_CLIENT)
     assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
     verseInit = ST.currentVerse + 30
@@ -465,3 +464,4 @@ else:
 # check all block num etc, not needed anymore, since we use ST.
 # storePreHashDataInClientAtEndOfLeague - still not as self.
 # add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc
+# use merkle proof for playerStates at previous league?
