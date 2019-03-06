@@ -7,7 +7,6 @@ contract Leagues is LeagueUpdater, LeaguesComputer {
     constructor(address engine, address state) 
     public 
     LeaguesComputer(engine, state)
-    LeagueUpdater(state) 
     {
     }    
 }
