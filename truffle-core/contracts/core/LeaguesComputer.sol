@@ -19,20 +19,6 @@ contract LeaguesComputer is LeaguesScore {
         return address(_engine);
     }
 
-    // TODO: add minimum checks
-    function updateLeague(
-        uint256 id, 
-        bytes32 initStateHash,
-        bytes32[] memory finalHashes,
-        uint16[] memory scores
-    ) 
-        public 
-    {
-        _setInitStateHash(id, initStateHash);
-        _setFinalTeamStateHashes(id, finalHashes);
-        _setScores(id, scores);
-    }
-
     function updatePlayerStatesAfterMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
@@ -143,29 +129,7 @@ contract LeaguesComputer is LeaguesScore {
             visitorGoals
         );
     }
-
-    function hashDayState(uint256[] memory leagueState) public view returns (bytes32[] memory) {
-        uint256 nTeams = _leagueState.dayStateSize(leagueState);
-        bytes32[] memory hashes = new bytes32[](nTeams);
-        for (uint256 i = 0; i < nTeams ; i++){
-            uint256[] memory teamState = _leagueState.dayStateAt(leagueState, i);
-            hashes[i] = keccak256(abi.encode(teamState));
-        }
-        return hashes;
-    }
-
-    function hashInitState(uint256[] memory state) public pure returns (bytes32) {
-        return keccak256(abi.encode(state));
-    }
-
-    function hashTeamState(uint256[] memory state) public pure returns (bytes32) {
-        return keccak256(abi.encode(state));
-    }
-
-    function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
-        return keccak256(abi.encode(tactics));
-    }
-    
+        
     // function computeAllMatchdayStates(
     //     uint256 id, 
     //     uint256[] memory initDayState, 
