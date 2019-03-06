@@ -93,35 +93,37 @@ contract LeaguesComputer is LeaguesScore {
     function _computeStatesAtMatchday(
         uint256 id,
         uint256 leagueDay, 
-        uint256[] memory initleagueState, 
+        uint256[] memory initLeagueState, 
         uint256[3][] memory tactics,
         bytes32 seed
     )
         internal
         view
-        returns (uint16[] memory scores, uint256[] memory finalleagueState)
+        returns (uint16[] memory scores, uint256[] memory finalLeagueState)
     {
         uint256 nMatchesPerMatchday = getMatchPerDay(id);
+        finalLeagueState = initLeagueState; 
         for (uint256 i = 0; i < nMatchesPerMatchday ; i++)
         {
             (uint256 homeTeamIdx, uint256 visitorTeamIdx) = getTeamsInMatch(id, leagueDay, i);
-            uint256[] memory homeTeamState = _leagueState.leagueStateAt(initleagueState, homeTeamIdx);
-            uint256[] memory visitorTeamState = _leagueState.leagueStateAt(initleagueState, visitorTeamIdx);
+            uint256[] memory homeTeamState = _leagueState.leagueStateAt(initLeagueState, homeTeamIdx);
+            uint256[] memory visitorTeamState = _leagueState.leagueStateAt(initLeagueState, visitorTeamIdx);
             (uint16 score,
             uint256[] memory updatedHomeState,
-            uint256[] memory updatedVisitorState) = _computeScoreMatchInLeague(
+            uint256[] memory updatedVisitorState) = _computeMatch(
                 homeTeamState,
                 visitorTeamState, 
                 tactics, 
                 seed
             );
             scores = addToDayScores(scores, score);
-            finalleagueState = _leagueState.leagueStateUpdate(initleagueState, homeTeamIdx, updatedHomeState);
-            finalleagueState = _leagueState.leagueStateUpdate(initleagueState, visitorTeamIdx, updatedVisitorState);
+            finalLeagueState = _leagueState.leagueStateUpdate(finalLeagueState, homeTeamIdx, updatedHomeState);
+            finalLeagueState = _leagueState.leagueStateUpdate(finalLeagueState, visitorTeamIdx, updatedVisitorState);
         }
     }
 
-    function _computeScoreMatchInLeague(
+    /// compute score of a match and evolve home and visitor team states
+    function _computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint256[3][] memory tactics,

@@ -49,7 +49,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         return _computeStatesAtMatchday(id, leagueDay, initleagueState, tactics, seed);
     }
 
-    function computeScoreMatchInLeague(
+    function computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint256[3][] memory tactics,
@@ -59,7 +59,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         view
         returns (uint16 score, uint256[] memory newHomeState, uint256[] memory newVisitorState)
     {
-        return _computeScoreMatchInLeague(homeTeamState, visitorTeamState, tactics, seed);
+        return _computeMatch(homeTeamState, visitorTeamState, tactics, seed);
     }
 
 }

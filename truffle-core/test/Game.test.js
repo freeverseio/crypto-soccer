@@ -113,6 +113,7 @@ contract('Game', (accounts) => {
             // compute result for league day
             const result = await leagues.computeDay(leagueId, leagueDay, leagueState, tactics).should.be.fulfilled;
             const dayScores = result.scores;
+            leagueState = result.finalleagueState;
             for (match = 0; match < matchesPerDay; match++) {
                  // get the indexes of the teams of match 
                  const teamsInMatch = await leagues.getTeamsInMatch(leagueId, leagueDay, match).should.be.fulfilled;
@@ -134,7 +135,6 @@ contract('Game', (accounts) => {
                      + " - " 
                      + goals.visitor.toNumber() + " " + visitorTeam + "(" + visitorTeamRating + ")");
             }
-            leagueState = result.finalleagueState;
         }
         return;
         // generate init league state hash
