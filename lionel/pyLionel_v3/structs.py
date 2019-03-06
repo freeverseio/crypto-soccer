@@ -130,25 +130,16 @@ class League():
         nMatchdays = 2 * (self.nTeams - 1)
         return self.verseInit + (nMatchdays-1)*self.verseStep
 
-    def hasLeagueFinished(self, verse):
-        return verse >= self.verseFinal()
-
     def hasLeagueBeenUpdated(self):
         return self.blockLastUpdate != 0
 
     def resetUpdater(self):
         self.blockLastUpdate = 0
 
-    def isFullyVerified(self, blocknum):
-        if self.isGenesisLeague():
-            return True
-        return self.hasLeagueBeenUpdated() and (blocknum > self.blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
     def updateLeague(self, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
-        assert self.hasLeagueFinished(verse), "League cannot be updated before the last matchday finishes"
-        assert not self.hasLeagueBeenUpdated(), "League has already been updated"
         self.initStatesHash             = initStatesHash
-        self.dataAtMatchdayHashes     = dataAtMatchdayHashes
+        self.dataAtMatchdayHashes       = dataAtMatchdayHashes
         self.scores                     = scores
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
@@ -161,7 +152,6 @@ class League():
                                 currentBlocknum):
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
-        assert not self.isFullyVerified(currentBlocknum), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
 
         dataAtPrevMatchday.statesAtPrevMatchday, scores = pylio.computeStatesAtMatchday(
@@ -305,7 +295,7 @@ class Storage(Counter):
         return pylio.getBlockHash(self.VerseCommits[verse].blockNum)
 
     def getAllSeedsForLeague(self, leagueIdx):
-        assert self.leagues[leagueIdx].hasLeagueFinished(self.currentVerse), "All seeds only available at end of league"
+        assert self.hasLeagueFinished(leagueIdx), "All seeds only available at end of league"
         seedsPerVerse = []
         for verse in self.getVersesForLeague(leagueIdx):
             seedsPerVerse.append(self.getSeedForVerse(verse))
@@ -371,6 +361,8 @@ class Storage(Counter):
         self.Accumulator.clearBuffer(leagueIdxAndActionsArray)
 
     def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr):
+        assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
+        assert not self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has already been updated"
         self.leagues[leagueIdx].updateLeague(
             initStatesHash,
             dataAtMatchdayHashes,
@@ -389,6 +381,8 @@ class Storage(Counter):
             actionsAtSelectedMatchday,
             merkleProofDataForMatchday
         ):
+        assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
+
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         seed  = pylio.getBlockHash(self.VerseCommits[verse].blockNum)
 
@@ -656,7 +650,7 @@ class Storage(Counter):
 
     def challengeInitStates(self, leagueIdx, usersInitData, dataToChallengeInitStates):
         assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
-        assert not self.leagues[leagueIdx].isFullyVerified(self.currentBlock), "You cannot challenge after the challenging period"
+        assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         initPlayerStates = self.getInitPlayerStates(leagueIdx, usersInitData, dataToChallengeInitStates)
@@ -724,7 +718,7 @@ class Storage(Counter):
 
     def areTeamsBusyInPrevLeagues(self, teamIdxs):
         for teamIdx in teamIdxs:
-            if not self.leagues[self.teams[teamIdx].currentLeagueIdx].isFullyVerified(self.currentBlock):
+            if not self.isFullyVerified(self.teams[teamIdx].currentLeagueIdx):
                 return True
         return False
 
@@ -770,3 +764,12 @@ class Storage(Counter):
 
     def hasLeagueStarted(self, leagueIdx):
         return self.currentVerse >= self.leagues[leagueIdx].verseInit
+
+    def hasLeagueFinished(self, leagueIdx):
+        return self.currentVerse >= self.leagues[leagueIdx].verseFinal()
+
+    def isFullyVerified(self, leagueIdx):
+        if self.leagues[leagueIdx].isGenesisLeague():
+            return True
+        return self.leagues[leagueIdx].hasLeagueBeenUpdated() and \
+               (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)

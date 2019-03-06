@@ -126,7 +126,7 @@ def test2():
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
     assert ST.hasLeagueStarted(leagueIdx), "League not detected as already being played"
-    assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as not finished yet"
+    assert not ST.hasLeagueFinished(leagueIdx), "League not detected as not finished yet"
 
     # Cook data to change tactics before games in matchday 2 begin.
     action0 = {"teamIdx": teamIdx1, "teamOrder": ORDER2, "tactics": TACTICS["433"]}
@@ -143,7 +143,7 @@ def test2():
 
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as already finished"
+    assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
 
     initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
@@ -181,7 +181,7 @@ def test2():
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock)
+    assert not ST.isFullyVerified(leagueIdx)
     selectedMatchday    = 0
     dataAtPrevMatchday = getPrevMatchdayData(ST_CLIENT, leagueIdx, selectedMatchday)
 
@@ -219,7 +219,7 @@ def test2():
 
     # A CHALLENGER tries to prove that the UPDATER lied with the initHash
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
+    assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
 
     dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
     ST.challengeInitStates(
@@ -253,7 +253,7 @@ def test2():
     # We do not wait enough and try to:
     #   create another league. It fails to do so because teams are still busy
     advanceNBlocks(2, ST, ST_CLIENT)
-    assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
+    assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
     verseInit = ST.currentVerse + 30
     usersInitData = {
         "teamIdxs": [teamIdx1, teamIdx3, teamIdx2, teamIdx4],
@@ -286,7 +286,7 @@ def test2():
     # after waiting enough, the league gets fully verified and the new league can be created
     # ...with a player exchange just before the creation
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as already fully verified"
+    assert ST.isFullyVerified(leagueIdx), "League not detected as already fully verified"
 
     playerIdx1 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1)
     playerIdx2 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6)
@@ -310,7 +310,7 @@ def test2():
 
     # An UPDATER updates:
     advanceNVerses(1000, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx2].hasLeagueFinished(ST.currentVerse), "League should be finished by now"
+    assert ST.hasLeagueFinished(leagueIdx2), "League should be finished by now"
 
     initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx2)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx2)
