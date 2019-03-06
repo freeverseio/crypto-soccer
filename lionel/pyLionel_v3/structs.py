@@ -126,12 +126,6 @@ class League():
     def isGenesisLeague(self):
         return self.verseInit == 0
 
-    def isLeagueIsAboutToStart(self, verse):
-        return verse < self.verseInit
-
-    def hasLeagueStarted(self, verse):
-        return verse >= self.verseInit
-
     def verseFinal(self):
         nMatchdays = 2 * (self.nTeams - 1)
         return self.verseInit + (nMatchdays-1)*self.verseStep
@@ -770,3 +764,9 @@ class Storage(Counter):
         self.teams.append(Team(teamName))
         self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
         return teamIdx
+
+    def isLeagueIsAboutToStart(self, leagueIdx):
+        return self.currentVerse < self.leagues[leagueIdx].verseInit
+
+    def hasLeagueStarted(self, leagueIdx):
+        return self.currentVerse >= self.leagues[leagueIdx].verseInit

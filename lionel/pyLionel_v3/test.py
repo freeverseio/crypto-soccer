@@ -107,7 +107,8 @@ def test2():
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
-    assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentVerse), "League not detected as created"
+    assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
+    assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
     # advance a bit before first match to change tactics
     assert ST.currentVerse == 0, "We should start with verse 0"
@@ -124,7 +125,7 @@ def test2():
     assert ST.currentVerse == 24, "We should be at verse 24, league finishes at 27"
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
 
-    assert ST.leagues[leagueIdx].hasLeagueStarted(ST.currentVerse), "League not detected as already being played"
+    assert ST.hasLeagueStarted(leagueIdx), "League not detected as already being played"
     assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentVerse), "League not detected as not finished yet"
 
     # Cook data to change tactics before games in matchday 2 begin.
