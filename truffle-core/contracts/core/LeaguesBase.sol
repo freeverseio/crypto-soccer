@@ -12,7 +12,10 @@ contract LeaguesBase {
         bytes32 initStateHash;
         // hash of the final hashes of the league
         bytes32[] finalTeamStateHashes;
-
+        // hash of tactics
+        bytes32 tacticsHash;
+        // scores of the league 
+        uint16[] scores;
     }
 
     mapping(uint256 => League) private _leagues;
@@ -25,12 +28,16 @@ contract LeaguesBase {
         require(!_exists(id), "league already created");
         bytes32 initStateHash;
         bytes32[] memory finalTeamStateHashes;
+        bytes32 tacticsHash;
+        uint16[] memory scores;
         _leagues[id] = League(
             teamIds, 
             initBlock, 
             step,
             initStateHash,
-            finalTeamStateHashes
+            finalTeamStateHashes,
+            tacticsHash,
+            scores
         );
     }
 
@@ -76,5 +83,15 @@ contract LeaguesBase {
     function _setFinalTeamStateHashes(uint256 id, bytes32[] memory hashes) internal {
         require(_exists(id), "unexistent league");
         _leagues[id].finalTeamStateHashes = hashes;
+    }
+
+    function _setScores(uint256 id, uint16[] memory leagues) internal {
+        require(_exists(id), "unexistent league");
+        _leagues[id].scores = leagues;
+    }
+
+    function getScores(uint256 id) external view returns (uint16[] memory) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].scores;
     }
 }

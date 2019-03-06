@@ -2,10 +2,9 @@ pragma solidity ^0.5.0;
 
 import "../state/DayState.sol";
 import "./LeaguesScore.sol";
-import "./LeaguesTactics.sol";
 import "./Engine.sol";
 
-contract LeaguesComputer is LeaguesScore, LeaguesTactics {
+contract LeaguesComputer is LeaguesScore {
     DayState private _leagueState;
     Engine private _engine;
 

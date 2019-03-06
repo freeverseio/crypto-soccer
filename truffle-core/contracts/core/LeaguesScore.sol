@@ -5,18 +5,6 @@ import "./LeaguesScheduler.sol";
 contract LeaguesScore is LeaguesScheduler {
     uint16 constant public DIVIDER = 0xffff;
 
-    mapping(uint256 => uint16[]) private _scores;
-
-    function _setScores(uint256 id, uint16[] memory scores) internal {
-        require(_exists(id), "unexistent league");
-        _scores[id] = scores;
-    }
-
-    function getScores(uint256 id) external view returns (uint16[] memory) {
-        require(_exists(id), "unexistent league");
-        return _scores[id];
-    }
-
     function encodeScore(uint8 home, uint8 visitor) public pure returns (uint16 score) {
         require(isValidScore(home, visitor), "invalid score");
         score |= home * 2 ** 8;
