@@ -276,18 +276,20 @@ class Storage(Counter):
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
 
-    def commit(self, actionsHash, commitBlockNum, actionsPrehash = None):
+    def commit(self, actionsHash, commitBlockNum):
         self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum))
 
     def addAccumulator(self):
+        self.assertIsClient()
         self.Accumulator = ActionsAccumulator()
 
-
     def accumulateAction(self, action):
+        self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
         self.Accumulator.accumulateAction(action, self.getLeagueForAction(action))
 
     def getAllActionsBeforeBlock(self, blockNum):
+        self.assertIsClient()
         actions2commit = []
         for (block, actions) in self.Accumulator.buffer.items():
             if block < blockNum:
@@ -296,6 +298,7 @@ class Storage(Counter):
         return actions2commit
 
     def getVersesForLeague(self, leagueIdx):
+        self.assertIsClient()
         nMatchdays = 2*(self.leagues[leagueIdx].nTeams-1)
         verses = []
         for matchday in range(nMatchdays):
@@ -303,38 +306,23 @@ class Storage(Counter):
         return verses
 
     def getSeedForVerse(self, verse):
+        self.assertIsClient()
         return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
     def getAllSeedsForLeague(self, leagueIdx):
+        self.assertIsClient()
         assert self.hasLeagueFinished(leagueIdx), "All seeds only available at end of league"
         seedsPerVerse = []
         for verse in self.getVersesForLeague(leagueIdx):
             seedsPerVerse.append(self.getSeedForVerse(verse))
         return seedsPerVerse
 
-    def getActionsForLeagueAndVerse(self, leagueIdx, verse):
-        # each action has the form [leagueIdx, actions]
-        # this function assumes that all actions for a given leagueIdx are in one single leagueIdx entry
-        actionsInThisVerse = pylio.duplicate(self.Accumulator.commitedActions[verse])
-        actions = [a for a in actionsInThisVerse if a[0] == leagueIdx]
-        assert len(actions)<=1, "Actions for a league should be packed in one single entry"
-        return actions
-
-
-    def getAllActionsForLeague(self, leagueIdx):
-        assert self.leagues[leagueIdx].hasLeagueFinished(self.currentVerse), "All actions only available at end of league"
-        # actionsPerVerse will have form: verse x nLeagues, the latter in form: [ [ leagueIdx, actions], ...]
-        actionsPerVerse = []
-        for verse in self.getVersesForLeague(leagueIdx):
-            actions = self.getActionsForLeagueAndVerse(leagueIdx, verse)
-            actionsPerVerse.append(actions)
-        return actionsPerVerse
-
     def getLeagueForAction(self, action):
+        self.assertIsClient()
         return self.teams[action["teamIdx"]].currentLeagueIdx
 
-
     def getLeaguesPlayingInThisVerse(self, verse):
+        self.assertIsClient()
         # TODO: make this less terribly slow
         leagueIdxs = []
         nLeagues = len(self.leagues)
@@ -343,7 +331,9 @@ class Storage(Counter):
                 leagueIdxs.append(leagueIdx)
         return leagueIdxs
 
+    # Sends the actions acummulated in the buffer to the BC, by doing a hash first
     def syncActions(self, ST):
+        self.assertIsClient()
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
         leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
         leagueIdxAndActionsArray = []
@@ -430,6 +420,7 @@ class Storage(Counter):
 
 
     def getMerkleProof(self, leagueIdx, selectedMatchday):
+        self.assertIsClient()
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
             if action[0] == leagueIdx:
@@ -508,6 +499,7 @@ class Storage(Counter):
 
 
     def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
+        self.assertIsClient()
         selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
                           s.getPlayerIdx() == playerIdx]
         assert len(
@@ -569,6 +561,7 @@ class Storage(Counter):
 
 
     def computeAllMatchdayStates(self, leagueIdx):
+        self.assertIsClient()
         initPlayerStates = self.getInitPlayerStates(leagueIdx)
         usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
         seedsPerVerse = self.getAllSeedsForLeague(leagueIdx)
@@ -600,6 +593,8 @@ class Storage(Counter):
         return dataAtMatchdays, scores
 
     def updateTacticsToMatchday(self, leagueIdx, tactics, teamOrders, matchday):
+        # TODO: check if this is reapeated in the update tested in a challenge
+        self.assertIsClient()
         if not matchday in self.leagues[leagueIdx].actionsPerMatchday:
             return
         actionsInThisMatchday = pylio.duplicate(self.leagues[leagueIdx].actionsPerMatchday[matchday])
@@ -616,6 +611,7 @@ class Storage(Counter):
 
 
     def prepareDataToChallengeInitStates(self, leagueIdx):
+        self.assertIsClient()
         thisLeague = pylio.duplicate(self.leagues[leagueIdx])
         nTeams = len(thisLeague.usersInitData["teamIdxs"])
         dataToChallengeInitStates = [[None for player in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
@@ -632,15 +628,12 @@ class Storage(Counter):
 
 
     def computeDataToChallengePlayerIdx(self, playerIdx):
+        self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
             return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
         else:
             return self.leagues[prevLeagueIdx].dataAtMatchdays[-1]
-
-    def getAllStatesAtEndOfLeague(self, leagueIdx):
-        return self.leagues[leagueIdx].statesAtMatchday[-1]
-
 
     def isCorrectStateForPlayerIdx(self, playerState, dataToChallengePlayerState):
         # If player has never played a league, we can compute the playerState directly in the BC
@@ -755,6 +748,7 @@ class Storage(Counter):
 
 
     def createLeagueClient(self, verseInit, verseStep, usersInitData):
+        self.assertIsClient()
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
         leagueIdx = len(self.leagues)
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
@@ -795,6 +789,7 @@ class Storage(Counter):
 
     # Stores the data, pre-hash, in the CLIENT
     def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, scores):
+        self.assertIsClient()
         self.leagues[leagueIdx].updateInitState(initPlayerStates)
         self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
         # the last matchday gives the final states used to update all players:
@@ -804,6 +799,7 @@ class Storage(Counter):
 
     # Returns the data at that given matchday matchday: (states, tactics, teamOrders)
     def getPrevMatchdayData(self, leagueIdx, selectedMatchday):
+        self.assertIsClient()
         if selectedMatchday == 0:
             return DataAtMatchday(
                 self.leagues[leagueIdx].initPlayerStates,
