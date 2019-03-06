@@ -275,11 +275,12 @@ def advanceNVerses(nVerses, ST, ST_CLIENT):
 
 
 
-
+# Merkle proof: given a tree, and its leafs,
+# it creates the hashes required to prove that a given idx in the leave belongs to the tree.
+# "values" is just the pair [ leafIdx, leafValue ]
 def prepareProofForIdxs(idxsToProve, tree, leafs):
-    # neededHashes
     neededHashes = proof(tree, idxsToProve)
     values = {}
-    for idx in idxsToProve:
-        values[idx] = leafs[idx]
+    for leafIdx in idxsToProve:
+        values[leafIdx] = leafs[leafIdx]
     return neededHashes, values

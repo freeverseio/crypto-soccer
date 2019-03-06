@@ -304,13 +304,13 @@ def test2():
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4,6), "Exchange did not register properly in BC"
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1,1), "Exchange did not register properly in BC"
 
-    # After the player exchange...
+    # After the player exchange... we create another league
     leagueIdx2          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx2_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
     assert leagueIdx2 == leagueIdx2_client, "Leagues in client not in sync with BC"
 
-    # An UPDATER updates:
+    # At the end of league, an UPDATER updates telling the truth:
     advanceNVerses(1000, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx2), "League should be finished by now"
 
@@ -338,7 +338,6 @@ def test2():
         scores,
         ADDR2,
     )
-
     ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
