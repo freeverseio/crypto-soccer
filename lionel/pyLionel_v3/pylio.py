@@ -205,12 +205,6 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
     return statesAtMatchday, scores
 
 
-def computeUsersAlongDataHash(usersAlongData):
-    usersAlongDataHash = 0
-    for entry in usersAlongData:
-        usersAlongDataHash = intHash(str(usersAlongDataHash) + serialize2str(entry))
-    return usersAlongDataHash
-
 def getMatchsPlayerByTeam(selectedTeam, nTeams):
     matchdayMatch = []
     nMatchdays = 2*(nTeams-1)

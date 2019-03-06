@@ -150,12 +150,6 @@ class League():
             return True
         return self.hasLeagueBeenUpdated() and (blocknum > self.blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
-    def updateUsersAlongDataHash(self, usersAlongData):
-        self.usersAlongDataHash = pylio.intHash(
-            str(self.usersAlongDataHash) +
-            pylio.serialize2str(usersAlongData)
-        )
-
     def updateLeague(self, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
         assert self.hasLeagueFinished(verse), "League cannot be updated before the last matchday finishes"
         assert not self.hasLeagueBeenUpdated(), "League has already been updated"

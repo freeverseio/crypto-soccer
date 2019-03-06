@@ -457,8 +457,6 @@ else:
 
 
 # TODO:
-# - change teamIdx for teamPos inside usersAlongData
-# - gather dataAtMAtch day as a struct
 #   - likeweise, put initStates as states at 0 (not sure)
 # gather all merkle proof data (vals, hashes, depth) in a struct
 # treat initStates the same way as states and avoid initPlayerHash being different
