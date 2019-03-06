@@ -7,7 +7,9 @@ from constants import *
 from structs import *
 from merkle_tree import *
 
-# serializes and converts to str in a complicated way
+
+# ------------ Functions to take hashes, serialize structs ------------
+#  serializes and converts to str in a complicated way
 def serialize2str(object):
     return str(serialize(object).hex())
 
@@ -23,6 +25,7 @@ def hexHash(str):
 def intHash(str):
     return int(hexHash(str), 16)
 
+# serializes object and then taken intHash
 def serialHash(obj):
     return intHash(serialize2str(obj))
 

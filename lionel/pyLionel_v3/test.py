@@ -457,10 +457,13 @@ else:
 # TODO:
 #   - likeweise, put initStates as states at 0 (not sure)
 # treat initStates the same way as states and avoid initPlayerHash being different
-# do not store scores but the hash or merkle root
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
-# unify all iniHash, serialHAsh, etc
+# unify all iniHash, serialHash, etc
 # check all block num etc, not needed anymore, since we use ST.
 # storePreHashDataInClientAtEndOfLeague - still not as self.
 # add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc
 # use merkle proof for playerStates at previous league?
+
+
+# TODO: - less important -
+# do not store scores but the hash or merkle root
