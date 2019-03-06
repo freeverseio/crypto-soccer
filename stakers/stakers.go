@@ -270,7 +270,7 @@ func (s *Stakers) QueryUnenroll(staker common.Address) error {
 	log.Info("QueryUnenroll ", staker.Hex())
 	stk := s.stks[staker]
 	_, _, err := s.contract.SendTransactionSyncWithClient(stk.Client, nil, 0,
-		"touch")
+		"queryUnenroll")
 	return err
 }
 

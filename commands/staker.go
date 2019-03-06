@@ -36,6 +36,11 @@ var StakerCommands = []cli.Command{
 				Usage:  "query to unenroll a staker",
 				Action: stakerQueryUnenroll,
 			},
+			{
+				Name:   "unenroll",
+				Usage:  "unenroll a staker",
+				Action: stakerUnenroll,
+			},
 		},
 	},
 }
@@ -86,5 +91,35 @@ func stakerEnroll(c *cli.Context) error {
 
 func stakerQueryUnenroll(c *cli.Context) error {
 	loadConfig(c)
+	if err := loadWeb3AndStakers(c); err != nil {
+		return err
+	}
+	if err := load(c); err != nil {
+		return err
+	}
+	if len(c.Args().Get(0)) == 0 {
+		return fmt.Errorf("Needs staker address to query un-enroll")
+	}
+	address := common.HexToAddress(c.Args().Get(0))
+	if err := stkrs.QueryUnenroll(address); err != nil {
+		return err
+	}
+	return nil
+}
+func stakerUnenroll(c *cli.Context) error {
+	loadConfig(c)
+	if err := loadWeb3AndStakers(c); err != nil {
+		return err
+	}
+	if err := load(c); err != nil {
+		return err
+	}
+	if len(c.Args().Get(0)) == 0 {
+		return fmt.Errorf("Needs staker address to un-enroll")
+	}
+	address := common.HexToAddress(c.Args().Get(0))
+	if err := stkrs.Unenroll(address); err != nil {
+		return err
+	}
 	return nil
 }
