@@ -30,7 +30,7 @@ contract LeaguesComputer is LeaguesScore {
         returns (uint16[] memory scores, uint256[] memory finalLeagueState)
     {
         bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
-        return _computeStatesAtMatchday(
+        return _computeDayWithSeed(
             leagueId,
             leagueDay,
             initLeagueState,
@@ -66,6 +66,8 @@ contract LeaguesComputer is LeaguesScore {
         updatedVisitorTeamState = _leagueState.teamStateEvolve(visitorTeamState, visitorTeamPoints);
     }
 
+    /// compute points per team in front of goals
+    /// @return home and visitor points
     function _computePoints(
         uint256[] memory homeTeamState, 
         uint256[] memory visitorTeamState,
@@ -90,7 +92,7 @@ contract LeaguesComputer is LeaguesScore {
             return homeGoals > visitorGoals ? (8, 0) : (0, 2);
     }
 
-    function _computeStatesAtMatchday(
+    function _computeDayWithSeed(
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
