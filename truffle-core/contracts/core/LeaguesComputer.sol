@@ -39,7 +39,13 @@ contract LeaguesComputer is LeaguesScore {
         );
     } 
 
-    function _updatePlayerStatesAfterMatch(
+    /// @dev evolves the teams of a match in front of the scores
+    /// @param homeTeamState initial state of the home team
+    /// @param visitorTeamState initial state of the visitor team
+    /// @param homeGoals goals scored by home team
+    /// @param visitorTeamState goals scored by visitor team
+    /// @return updated home team state and updated visitor team state
+    function _evolveTeams(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
