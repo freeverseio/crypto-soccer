@@ -106,7 +106,7 @@ contract('Game', (accounts) => {
         const initStateHash = await leagues.hashState(leagueState).should.be.fulfilled;
         let dayStateHashes = [];
 
-        let leagueScores = [];
+        let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
 
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
@@ -121,7 +121,7 @@ contract('Game', (accounts) => {
             const dayScores = result.scores;
 
             // concat day scores to league scores
-            leagueScores = leagueScores.concat(dayScores);
+            leagueScores = await leagues.scoresConcat(leagueScores, dayScores).should.be.fulfilled;
 
             // update the league state with the updated league state
             leagueState = result.finalLeagueState;

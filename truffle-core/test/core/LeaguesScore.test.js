@@ -12,23 +12,19 @@ contract('LeaguesScore', (accounts) => {
     });
 
     it('encode scores', async () => {
-        await instance.encodeScore(0xff, 2).should.be.fulfilled;
-        await instance.encodeScore(2, 0xff).should.be.fulfilled;
-        await instance.encodeScore(0xff, 0xff).should.be.rejected;
-        const score = await instance.encodeScore(0x01,0x02).should.be.fulfilled;
+        let score = await instance.encodeScore(0xff, 2).should.be.fulfilled;
+        score.toNumber().should.be.equal(0xff02);
+        score = await instance.encodeScore(0x01,0x02).should.be.fulfilled;
         score.toNumber().should.be.equal(0x0102);
     });
 
     it('decode', async () => {
-        await instance.decodeScore(0xffff).should.be.rejected;
         const score = await instance.decodeScore(0x0102).should.be.fulfilled;
         score.home.toNumber().should.be.equal(0x01);
         score.visitor.toNumber().should.be.equal(0x02);
     });
 
     it('fill a day scores', async () => {
-        await instance.scoresAppend([0xffff], 0x0101).should.be.rejected;
-        await instance.scoresAppend([], 0xffff).should.be.rejected;
         let scores = await instance.scoresCreate().should.be.fulfilled;
         let score = await instance.encodeScore(3, 0).should.be.fulfilled;
         scores = await instance.scoresAppend(scores, score).should.be.fulfilled;
@@ -47,66 +43,4 @@ contract('LeaguesScore', (accounts) => {
         score.home.toNumber().should.be.equal(0);
         score.visitor.toNumber().should.be.equal(0);
     });
-
-    it('check day match validity', async () => {
-        let result = await instance.isValidDayScores([]);
-        result.should.be.equal(true);
-        result = await instance.isValidDayScores([0x0201, 0x0101, 0x0000]);
-        result.should.be.equal(true);
-        result = await instance.isValidDayScores([0x0201, 0xffff]);
-        result.should.be.equal(false);
-    });
-
-    it('fill tournament scores', async () => {
-        let scores = [];
-        scores = await instance.addToTournamentScores(scores, [0x0201, 0x0101]).should.be.fulfilled;
-        scores = await instance.addToTournamentScores(scores, [0x0101, 0x0001]).should.be.fulfilled;
-        scores = await instance.addToTournamentScores(scores, [0x0001, 0x0004]).should.be.fulfilled;
-        await instance.addToTournamentScores(scores, [0xffff, 0x0101]).should.be.rejected;
-        scores = await instance.addToTournamentScores(scores, []).should.be.fulfilled;
-        scores.length.should.be.equal(9);
-        scores[0].toNumber().should.be.equal(0x0201);
-        scores[1].toNumber().should.be.equal(0x0101);
-        scores[2].toNumber().should.be.equal(0xffff);
-        scores[3].toNumber().should.be.equal(0x0101);
-        scores[4].toNumber().should.be.equal(0x0001);
-        scores[5].toNumber().should.be.equal(0xffff);
-        scores[6].toNumber().should.be.equal(0x0001);
-        scores[7].toNumber().should.be.equal(0x0004);
-        scores[8].toNumber().should.be.equal(0xffff);
-    });
-
-    it('count days', async () => {
-        let result = await instance.countDaysInTournamentScores([]).should.be.fulfilled;
-        result.toNumber().should.be.equal(0);
-        result = await instance.countDaysInTournamentScores([2, 3]).should.be.fulfilled;
-        result.toNumber().should.be.equal(1);
-        let leagueState = await instance.addToTournamentScores([2, 3], [4]).should.be.fulfilled;
-        result = await instance.countDaysInTournamentScores(leagueState).should.be.fulfilled;
-        result.toNumber().should.be.equal(2);
-        leagueState = await instance.addToTournamentScores(leagueState, [4, 5, 6, 6]).should.be.fulfilled;
-        result = await instance.countDaysInTournamentScores(leagueState).should.be.fulfilled;
-        result.toNumber().should.be.equal(3);
-    });
-
-    it('get day score of emply league scores', async () => {
-        await instance.getDayScores([], 0).should.be.rejected;
-    });
-
-    it('get day scores in league scores', async () => {
-        let scores = await instance.encodeScore(2, 1).should.be.fulfilled;
-        let dayScores = await instance.scoresAppend([], scores).should.be.fulfilled;
-        // add day 0
-        let leagueScores = await instance.addToTournamentScores([], dayScores).should.be.fulfilled;
-        // add day 1
-        leagueScores = await instance.addToTournamentScores(leagueScores, dayScores).should.be.fulfilled;
-        let result = await instance.getDayScores(leagueScores, 0).should.be.fulfilled;
-        result.length.should.be.equal(1);
-        scores = await instance.encodeScore(1, 2).should.be.fulfilled;
-        dayScores = await instance.scoresAppend(dayScores, scores).should.be.fulfilled;
-        // add day 2
-        leagueScores = await instance.addToTournamentScores(leagueScores, dayScores).should.be.fulfilled;
-        result = await instance.getDayScores(leagueScores, 2).should.be.fulfilled;
-        result.length.should.be.equal(2);
-    })
 })
