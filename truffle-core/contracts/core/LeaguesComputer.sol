@@ -19,6 +19,26 @@ contract LeaguesComputer is LeaguesScore {
         return address(_engine);
     }
 
+    function computeDay(
+        uint256 leagueId,
+        uint256 leagueDay, 
+        uint256[] memory initDayState, 
+        uint256[3][] memory tactics
+    )
+        public
+        view
+        returns (uint16[] memory scores, uint256[] memory finalDayState)
+    {
+        bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
+        return computeStatesAtMatchday(
+            leagueId,
+            leagueDay,
+            initDayState,
+            tactics,
+            seed
+        );
+    } 
+
     function updatePlayerStatesAfterMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
