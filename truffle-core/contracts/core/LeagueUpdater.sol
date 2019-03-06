@@ -4,7 +4,7 @@ import "./LeaguesBase.sol";
 import "../state/DayState.sol";
 
 /// @title an updatable league
-/// @TODO: change name to LeagueUpdatable
+/// TODO: change name to LeagueUpdatable
 contract LeagueUpdater is LeaguesBase {
     DayState private _state;
 
