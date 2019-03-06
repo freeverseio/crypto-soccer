@@ -22,18 +22,18 @@ contract LeaguesComputer is LeaguesScore {
     function computeDay(
         uint256 leagueId,
         uint256 leagueDay, 
-        uint256[] memory initleagueState, 
+        uint256[] memory initLeagueState, 
         uint256[3][] memory tactics
     )
         public
         view
-        returns (uint16[] memory scores, uint256[] memory finalleagueState)
+        returns (uint16[] memory scores, uint256[] memory finalLeagueState)
     {
         bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
         return _computeStatesAtMatchday(
             leagueId,
             leagueDay,
-            initleagueState,
+            initLeagueState,
             tactics,
             seed
         );
