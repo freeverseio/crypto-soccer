@@ -761,3 +761,12 @@ class Storage(Counter):
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
         return leagueIdx
+
+    # Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
+    # e.g. teamName = "Barcelona5443"
+    def createTeam(self, teamName, ownerAddr):
+        assert pylio.intHash(teamName) not in self.teamNameHashToOwnerAddr, "You cannot create to teams with equal name!"
+        teamIdx = len(self.teams)
+        self.teams.append(Team(teamName))
+        self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
+        return teamIdx

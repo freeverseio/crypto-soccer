@@ -22,47 +22,45 @@ def test1():
     ST          = Storage()
     ST_CLIENT   = Storage()
 
-    teamIdx1 = createTeam("Barca", ADDR1, ST)
-    teamIdx2 = createTeam("Madrid", ADDR2, ST)
+    teamIdx1 = ST.createTeam("Barca", ADDR1)
+    teamIdx2 = ST.createTeam("Madrid", ADDR2)
 
-    teamIdx1_client = createTeam("Barca", ADDR1, ST_CLIENT)
-    teamIdx2_client = createTeam("Madrid", ADDR2, ST_CLIENT)
+    teamIdx1_client = ST_CLIENT.createTeam("Barca", ADDR1)
+    teamIdx2_client = ST_CLIENT.createTeam("Madrid", ADDR2)
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State            = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
-    states, tactics, teamOrders    = computeDataToChallengePlayerIdx(1, ST_CLIENT)
-    assert isCorrectStateForPlayerIdx(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
+    player1State                = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(1)
+    dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerIdx(1)
+    assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print("\n\nplayers 2 and 24 before sale:\n")
-    hash1 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST_CLIENT))
+    hash1 = printPlayer(ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(2))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print("\n")
-    hash2 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash2 = printPlayer(ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(24))
 
     advanceNBlocks(10, ST, ST_CLIENT)
 
-    exchangePlayers(
+    ST.exchangePlayers(
         2, ADDR1,
-        24, ADDR2,
-        ST
+        24, ADDR2
     )
-    exchangePlayers(
+    ST_CLIENT.exchangePlayers(
         2, ADDR1,
-        24, ADDR2,
-        ST_CLIENT
+        24, ADDR2
     )
 
     print("\n\nplayers 2 and 24 after sale:\n")
-    hash3 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST))
+    hash3 = printPlayer(ST.getLastWrittenPlayerStateFromPlayerIdx(2))
     print("\n")
-    hash4 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash4 = printPlayer(ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(24))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -79,15 +77,15 @@ def test2():
     advanceToBlock(10, ST, ST_CLIENT)
 
     # Create teams in BC and client
-    teamIdx1 = createTeam("Barca", ADDR1, ST)
-    teamIdx2 = createTeam("Madrid", ADDR2, ST)
-    teamIdx3 = createTeam("Milan", ADDR3, ST)
-    teamIdx4 = createTeam("PSG", ADDR3, ST)
+    teamIdx1 = ST.createTeam("Barca", ADDR1)
+    teamIdx2 = ST.createTeam("Madrid", ADDR2)
+    teamIdx3 = ST.createTeam("Milan", ADDR3)
+    teamIdx4 = ST.createTeam("PSG", ADDR3)
 
-    teamIdx1_client = createTeam("Barca", ADDR1, ST_CLIENT)
-    teamIdx2_client = createTeam("Madrid", ADDR2, ST_CLIENT)
-    teamIdx3_client = createTeam("Milan", ADDR3, ST_CLIENT)
-    teamIdx4_client = createTeam("PSG", ADDR3, ST_CLIENT)
+    teamIdx1_client = ST_CLIENT.createTeam("Barca", ADDR1)
+    teamIdx2_client = ST_CLIENT.createTeam("Madrid", ADDR2)
+    teamIdx3_client = ST_CLIENT.createTeam("Milan", ADDR3)
+    teamIdx4_client = ST_CLIENT.createTeam("PSG", ADDR3)
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
@@ -443,7 +441,7 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 326)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)

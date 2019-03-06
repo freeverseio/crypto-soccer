@@ -26,14 +26,6 @@ def intHash(str):
 def serialHash(obj):
     return intHash(serialize2str(obj))
 
-# Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
-# e.g. teamName = "Barcelona5443"
-def createTeam(teamName, ownerAddr, ST):
-    assert intHash(teamName) not in ST.teamNameHashToOwnerAddr, "You cannot create to teams with equal name!"
-    teamIdx = len(ST.teams)
-    ST.teams.append(Team(teamName))
-    ST.teamNameHashToOwnerAddr[intHash(teamName)] = ownerAddr
-    return teamIdx
 
 # Given a seed, returns a balanced player.
 # It only deals with skills & age, not playerIdx.
