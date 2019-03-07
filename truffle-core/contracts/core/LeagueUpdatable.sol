@@ -13,6 +13,10 @@ contract LeagueUpdatable is LeaguesBase {
         bytes32[] tacticHashes;
         // scores of the league 
         uint16[] scores;
+        //  updater address
+        address updater;
+        // update block
+        uint256 updateBlock;
     }
 
     mapping(uint256 => Result) private _result;
@@ -32,6 +36,18 @@ contract LeagueUpdatable is LeaguesBase {
         _result[id].dayStateHashes = dayStateHashes;
         _result[id].tacticHashes = tacticHashes;
         _result[id].scores = scores;
+        _result[id].updater = msg.sender;
+        _result[id].updateBlock = block.number;
+    }
+
+    function getUpdater(uint256 id) external view returns (address) {
+        require(_exists(id), "unexistent league");
+        return _result[id].updater;
+    }
+
+    function getUpdateBlock(uint256 id) external view returns (uint256) {
+        require(_exists(id), "unexistent league");
+        return _result[id].updateBlock;
     }
 
     function hashState(uint256[] memory state) public pure returns (bytes32) {
