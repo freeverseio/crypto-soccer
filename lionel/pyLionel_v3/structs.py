@@ -137,7 +137,7 @@ class League():
         self.blockLastUpdate = 0
 
 
-    def updateLeague(self, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr, blocknum, verse):
+    def updateLeague(self, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr, blocknum):
         self.initStatesHash             = initStatesHash
         self.dataAtMatchdayHashes       = dataAtMatchdayHashes
         self.scores                     = scores
@@ -148,8 +148,8 @@ class League():
                                 selectedMatchday,
                                 dataAtPrevMatchday,
                                 usersInitData,
-                                seed,
-                                currentBlocknum):
+                                seed
+                                ):
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
@@ -280,8 +280,8 @@ class Storage(Counter):
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
 
-    def commit(self, actionsHash, commitBlockNum):
-        self.VerseCommits.append(VerseCommit(actionsHash, commitBlockNum))
+    def commit(self, actionsHash):
+        self.VerseCommits.append(VerseCommit(actionsHash, self.currentBlock))
 
     def updateLeague(self, leagueIdx, initStatesHash, dataAtMatchdayHashes, scores, updaterAddr):
         assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
@@ -292,7 +292,6 @@ class Storage(Counter):
             scores,
             updaterAddr,
             self.currentBlock,
-            self.currentVerse
         )
 
 
@@ -336,8 +335,7 @@ class Storage(Counter):
             selectedMatchday,
             pylio.duplicate(dataAtPrevMatchday),
             usersInitData,
-            seed,
-            self.currentBlock
+            seed
         )
 
 
@@ -742,14 +740,9 @@ class Storage(Counter):
             tree        = 0
             rootTree    = 0
 
-        ST.commit(
-            rootTree,
-            self.nextVerseBlock(),
-        )
-        self.commit(
-            rootTree,
-            self.nextVerseBlock(),
-        )
+        ST.commit(rootTree)
+        self.commit(rootTree)
+
         self.Accumulator.commitedActions.append(leagueIdxAndActionsArray)
         self.Accumulator.commitedTrees.append(tree)
         self.Accumulator.clearBuffer(leagueIdxAndActionsArray)
