@@ -13,7 +13,7 @@ contract LeaguesBase {
         // hash of the day hashes of the league
         bytes32[] dayStateHashes;
         // hash of tactics
-        bytes32 tacticsHash;
+        bytes32[] tacticHashes;
         // scores of the league 
         uint16[] scores;
     }
@@ -28,7 +28,7 @@ contract LeaguesBase {
         require(!_exists(id), "league already created");
         bytes32 initStateHash;
         bytes32[] memory dayStateHashes;
-        bytes32 tacticsHash;
+        bytes32[] memory tacticHashes;
         uint16[] memory scores;
         _leagues[id] = League(
             teamIds, 
@@ -36,7 +36,7 @@ contract LeaguesBase {
             step,
             initStateHash,
             dayStateHashes,
-            tacticsHash,
+            tacticHashes,
             scores
         );
     }
@@ -83,6 +83,16 @@ contract LeaguesBase {
     function _setDayStateHashes(uint256 id, bytes32[] memory hashes) internal {
         require(_exists(id), "unexistent league");
         _leagues[id].dayStateHashes = hashes;
+    }
+
+    function getTacticHeshes(uint256 id) public view returns (bytes32[] memory) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].tacticHashes;
+    }
+
+    function _setTacticHashes(uint256 id, bytes32[] memory hashes) internal {
+        require(_exists(id), "unexistent league");
+        _leagues[id].tacticHashes = hashes;
     }
 
     function _setScores(uint256 id, uint16[] memory leagues) internal {
