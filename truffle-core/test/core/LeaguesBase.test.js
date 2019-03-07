@@ -20,9 +20,6 @@ contract('LeaguesBase', (accounts) => {
         await leagues.getStep(id).should.be.rejected;
         await leagues.getTeamIds(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
-        await leagues.getDayStateHashes(id).should.be.rejected;
-        await leagues.getInitStateHash(id).should.be.rejected;
-
     });
 
     it('create league with no team', async () => {
@@ -69,13 +66,5 @@ contract('LeaguesBase', (accounts) => {
         await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
         const count = await leagues.countTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
-    });
-
-    it('default hashes values on create league', async () =>{
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        const initHash = await leagues.getInitStateHash(id).should.be.fulfilled;
-        initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
-        const finalHashes = await leagues.getDayStateHashes(id).should.be.fulfilled;
-        finalHashes.length.should.be.equal(0);
     });
 });

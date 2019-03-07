@@ -8,14 +8,6 @@ contract LeaguesBase {
         uint256 initBlock;
         // step blocks of the league
         uint256 step;
-        // hash of the init status of the league 
-        bytes32 initStateHash;
-        // hash of the day hashes of the league
-        bytes32[] dayStateHashes;
-        // hash of tactics
-        bytes32[] tacticHashes;
-        // scores of the league 
-        uint16[] scores;
     }
 
     mapping(uint256 => League) private _leagues;
@@ -26,18 +18,10 @@ contract LeaguesBase {
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(teamIds.length % 2 == 0, "odd teams count");
         require(!_exists(id), "league already created");
-        bytes32 initStateHash;
-        bytes32[] memory dayStateHashes;
-        bytes32[] memory tacticHashes;
-        uint16[] memory scores;
         _leagues[id] = League(
             teamIds, 
             initBlock, 
-            step,
-            initStateHash,
-            dayStateHashes,
-            tacticHashes,
-            scores
+            step
         );
     }
 
@@ -63,45 +47,5 @@ contract LeaguesBase {
 
     function _exists(uint256 id) internal view returns (bool) {
         return _leagues[id].initBlock != 0;
-    }
-    
-    function getInitStateHash(uint256 id) external view returns (bytes32) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].initStateHash;
-    }
-
-    function getDayStateHashes(uint256 id) public view returns (bytes32[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].dayStateHashes;
-    }
-
-    function _setInitStateHash(uint256 id, bytes32 stateHash) internal {
-        require(_exists(id), "unexistent league");
-        _leagues[id].initStateHash = stateHash;
-    }
-
-    function _setDayStateHashes(uint256 id, bytes32[] memory hashes) internal {
-        require(_exists(id), "unexistent league");
-        _leagues[id].dayStateHashes = hashes;
-    }
-
-    function getTacticHeshes(uint256 id) public view returns (bytes32[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].tacticHashes;
-    }
-
-    function _setTacticHashes(uint256 id, bytes32[] memory hashes) internal {
-        require(_exists(id), "unexistent league");
-        _leagues[id].tacticHashes = hashes;
-    }
-
-    function _setScores(uint256 id, uint16[] memory leagues) internal {
-        require(_exists(id), "unexistent league");
-        _leagues[id].scores = leagues;
-    }
-
-    function getScores(uint256 id) external view returns (uint16[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].scores;
     }
 }

@@ -6,16 +6,21 @@ const Leagues = artifacts.require('LeagueUpdatable');
 
 contract('LeaguesUpdater', (accounts) => {
     let leagues = null;
-    let states = null;
     const id = 0;
+    const step = 1;
+    const teamIds = [1, 2]
 
     beforeEach(async () => {
         const blocksToInit = 1;
-        const step = 1
-        const teamIds = [1, 2];
         leagues = await Leagues.new().should.be.fulfilled;
         await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
     });
+    
+    it('unexistent league', async () => {
+        const id = 3;
+        await leagues.getDayStateHashes(id).should.be.rejected;
+        await leagues.getInitStateHash(id).should.be.rejected;
+    })
     
     it('hash tactics', async () => {
         const hash0 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
@@ -37,5 +42,12 @@ contract('LeaguesUpdater', (accounts) => {
         hash0.should.be.equal('0xd2bd5ff7bf1c27008d66d436546cb0454443b772b9cb33429b3d1f9ee9848a10');
         const hash1 = await leagues.hashState([2, 3]).should.be.fulfilled;
         hash1.should.be.not.equal(hash0);
+    });
+    
+    it('default hashes values on create league', async () => {
+        const initHash = await leagues.getInitStateHash(id).should.be.fulfilled;
+        initHash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
+        const finalHashes = await leagues.getDayStateHashes(id).should.be.fulfilled;
+        finalHashes.length.should.be.equal(0);
     });
 })

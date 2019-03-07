@@ -4,6 +4,19 @@ import "./LeaguesBase.sol";
 
 /// @title an updatable league
 contract LeagueUpdatable is LeaguesBase {
+    struct Result {
+        // hash of the init status of the league 
+        bytes32 initStateHash;
+        // hash of the day hashes of the league
+        bytes32[] dayStateHashes;
+        // hash of tactics
+        bytes32[] tacticHashes;
+        // scores of the league 
+        uint16[] scores;
+    }
+
+    mapping(uint256 => Result) private _result;
+
     // TODO: add minimum checks
     function updateLeague(
         uint256 id, 
@@ -14,10 +27,11 @@ contract LeagueUpdatable is LeaguesBase {
     ) 
         public 
     {
-        _setInitStateHash(id, initStateHash);
-        _setDayStateHashes(id, dayStateHashes);
-        _setTacticHashes(id, tacticHashes);
-        _setScores(id, scores);
+        require(_exists(id), "invalid league id");
+        _result[id].initStateHash = initStateHash;
+        _result[id].dayStateHashes = dayStateHashes;
+        _result[id].tacticHashes = tacticHashes;
+        _result[id].scores = scores;
     }
 
     function hashState(uint256[] memory state) public pure returns (bytes32) {
@@ -26,5 +40,26 @@ contract LeagueUpdatable is LeaguesBase {
 
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
         return keccak256(abi.encode(tactics));
+    }
+
+    function getInitStateHash(uint256 id) external view returns (bytes32) {
+        require(_exists(id), "unexistent league");
+        return _result[id].initStateHash;
+    }
+
+    function getDayStateHashes(uint256 id) public view returns (bytes32[] memory) {
+        require(_exists(id), "unexistent league");
+        return _result[id].dayStateHashes;
+    }
+
+
+    function getTacticHeshes(uint256 id) public view returns (bytes32[] memory) {
+        require(_exists(id), "unexistent league");
+        return _result[id].tacticHashes;
+    }
+
+    function getScores(uint256 id) external view returns (uint16[] memory) {
+        require(_exists(id), "unexistent league");
+        return _result[id].scores;
     }
 }
