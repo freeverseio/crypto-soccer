@@ -341,6 +341,16 @@ def test2():
     ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
+    # A challenger fails to prove anything is wrong
+    dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx2)
+    ST.challengeInitStates(
+        leagueIdx2,
+        ST_CLIENT.leagues[leagueIdx2].usersInitData,
+        duplicate(dataToChallengeInitStates),
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+
+
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(1)
     dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(1)
@@ -458,8 +468,6 @@ else:
 #   - likeweise, put initStates as states at 0 (not sure)
 # treat initStates the same way as states and avoid initPlayerHash being different
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
-# check all block num etc, not needed anymore, since we use ST.
-# storePreHashDataInClientAtEndOfLeague - still not as self.
 # add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc
 # use merkle proof for playerStates at previous league?
 

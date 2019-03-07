@@ -443,7 +443,9 @@ class Storage(Counter):
             return self.playerIdxToPlayerState[playerIdx].prevLeagueIdx, self.playerIdxToPlayerState[
                 playerIdx].prevTeamPosInLeague
 
-
+    # returns states of all teams at start of a league.
+    # if dataToChallengeInitStates is provided, it does an extra check, as it
+    # understands that this is being called as part of a challenge
     def getInitPlayerStates(self, leagueIdx, usersInitData = None, dataToChallengeInitStates = None):
         if not usersInitData:
             usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
@@ -456,34 +458,30 @@ class Storage(Counter):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 if dataToChallengeInitStates:
-                    if not self.isCorrectStateForPlayerIdx(
-                        pylio.getPlayerStateFromChallengeData(
+                    # gets the playerState from the challengeData
+                    playerState = self.getPlayerStateFromChallengeData(
                             playerIdx,
                             dataToChallengeInitStates[teamPosInLeague][shirtNum]
-                        ),
+                    )
+                    # it makes sure that the state matches what the BC says about that player
+                    assert self.isCorrectStateForPlayerIdx(
+                        playerState,
                         dataToChallengeInitStates[teamPosInLeague][shirtNum]
-                    ):
-                        return None
-                playerState = self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
-                # #TODO: do we need the next assert?
-                # assert pylio.isPlayerStateInsideDataToChallenge(
-                #     playerState,
-                #     dataToChallengePlayerState,
-                #     teamPosInPrevLeague
-                # ), '...'
+                    ), "One of the states in dataToChallengeInitStates does not match what the BC says"
+                else:
+                    # if no dataToChallenge is provided, it means this is a request
+                    # from a Client, so just read whatever pre-hash data you have
+                    self.assertIsClient()
+                    playerState = self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
-
-
 
     def getTeamPosInLeague(self, teamIdx, leagueUsersInitData):
         for tPos, tIdx in enumerate(leagueUsersInitData["teamIdxs"]):
             if teamIdx == tIdx:
                 return tPos
         assert False, "Team not found in league"
-
-
 
     def isCorrectStateForPlayerIdx(self, playerState, dataToChallengePlayerState):
         # If player has never played a league, we can compute the playerState directly in the BC
@@ -622,7 +620,24 @@ class Storage(Counter):
         return self.leagues[leagueIdx].hasLeagueBeenUpdated() and \
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
+    def getPlayerStateFromChallengeData(self, playerIdx, dataToChallengePlayerState):
+        # TODO: very ugly if!!!
+        if type(dataToChallengePlayerState) == type(DataAtMatchday(0, 0, 0)):
+            prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
+            thisPlayerState = [s for s in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
+            assert len(thisPlayerState) < 2, "This data contains more than once the required playerIdx"
+            assert len(thisPlayerState) > 0, "This data does not contain the required playerIdx"
+            return thisPlayerState[0]
+        else:
+            assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
+            return dataToChallengePlayerState
 
+    def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
+        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
+                          s.getPlayerIdx() == playerIdx]
+        assert len(
+            selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
+        return selectedStates[0]
     # A mockup of how to obtain the block hash for a given blocknum.
     # This is a function that is available in Ethereum after Constatinople
     def getBlockHash(self, blockNum):
@@ -755,13 +770,6 @@ class Storage(Counter):
         assert verify(self.VerseCommits[verse].actionsMerkleRoots, get_depth(tree), values, neededHashes, pylio.serialHash), "Generated Merkle proof will not work"
         return MerkleProofDataForMatchday(neededHashes, values, get_depth(tree))
 
-    def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
-        self.assertIsClient()
-        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
-                          s.getPlayerIdx() == playerIdx]
-        assert len(
-            selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
-        return selectedStates[0]
 
     def computeAllMatchdayStates(self, leagueIdx):
         self.assertIsClient()

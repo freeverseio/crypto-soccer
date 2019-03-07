@@ -174,15 +174,6 @@ def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, 
     return playerState in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague]
 
 
-def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
-    if type(dataToChallengePlayerState) == type([]):
-        thisPlayerState = [s for s in dataToChallengePlayerState if s.getPlayerIdx() == playerIdx]
-        assert len(thisPlayerState) < 2, "This data contains more than once the required playerIdx"
-        assert len(thisPlayerState) > 0, "This data does not contain the required playerIdx"
-        return thisPlayerState[0]
-    else:
-        assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
-        return dataToChallengePlayerState
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
