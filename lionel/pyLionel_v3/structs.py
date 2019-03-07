@@ -153,7 +153,6 @@ class League():
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-
         dataAtPrevMatchday.statesAtPrevMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
             pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
@@ -306,7 +305,6 @@ class Storage(Counter):
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
 
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
-        seed  = self.getBlockHash(self.VerseCommits[verse].blockNum)
 
         assert verify(
             self.VerseCommits[verse].actionsMerkleRoots,
@@ -335,7 +333,7 @@ class Storage(Counter):
             selectedMatchday,
             pylio.duplicate(dataAtPrevMatchday),
             usersInitData,
-            seed
+            self.getSeedForVerse(verse)
         )
 
 
@@ -423,8 +421,6 @@ class Storage(Counter):
     # and his team is derived from a formula
     def isPlayerVirtual(self, playerIdx):
         return not playerIdx in self.playerIdxToPlayerState
-
-
 
     def verse2blockNum(self, verse):
         return self.VerseCommits[verse].blockNum
@@ -632,6 +628,8 @@ class Storage(Counter):
     def getBlockHash(self, blockNum):
         return pylio.intHash('salt' + str(blockNum))
 
+    def getSeedForVerse(self, verse):
+        return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -695,10 +693,6 @@ class Storage(Counter):
         for matchday in range(nMatchdays):
             verses.append(self.leagues[leagueIdx].verseInit + matchday * self.leagues[leagueIdx].verseStep)
         return verses
-
-    def getSeedForVerse(self, verse):
-        self.assertIsClient()
-        return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
     def getAllSeedsForLeague(self, leagueIdx):
         self.assertIsClient()
