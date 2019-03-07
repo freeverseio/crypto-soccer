@@ -1,10 +1,8 @@
 pragma solidity ^0.5.0;
 
 import "./LeaguesBase.sol";
-import "../state/LeagueState.sol";
 
 /// @title an updatable league
-/// TODO: change name to LeagueUpdatable
 contract LeagueUpdatable is LeaguesBase {
     // TODO: add minimum checks
     function updateLeague(
