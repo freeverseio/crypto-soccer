@@ -13,7 +13,7 @@ contract LeagueUpdatable is LeaguesBase {
         bytes32[] tacticHashes;
         // scores of the league 
         uint16[] scores;
-        //  updater address
+        // updater address
         address updater;
         // update block
         uint256 updateBlock;
