@@ -68,7 +68,6 @@ contract LeagueUpdatable is LeaguesBase {
         return _result[id].dayStateHashes;
     }
 
-
     function getTacticHashes(uint256 id) public view returns (bytes32[] memory) {
         require(_exists(id), "unexistent league");
         return _result[id].tacticHashes;
@@ -77,5 +76,9 @@ contract LeagueUpdatable is LeaguesBase {
     function getScores(uint256 id) external view returns (uint16[] memory) {
         require(_exists(id), "unexistent league");
         return _result[id].scores;
+    }
+
+    function _isUpdated(uint256 id) internal view returns (bool) {
+        return _result[id].updateBlock != 0;
     }
 }
