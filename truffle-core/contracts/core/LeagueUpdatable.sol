@@ -69,7 +69,7 @@ contract LeagueUpdatable is LeaguesBase {
     }
 
 
-    function getTacticHeshes(uint256 id) public view returns (bytes32[] memory) {
+    function getTacticHashes(uint256 id) public view returns (bytes32[] memory) {
         require(_exists(id), "unexistent league");
         return _result[id].tacticHashes;
     }
