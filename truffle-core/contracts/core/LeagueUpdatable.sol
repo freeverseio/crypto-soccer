@@ -5,7 +5,7 @@ import "../state/LeagueState.sol";
 
 /// @title an updatable league
 /// TODO: change name to LeagueUpdatable
-contract LeagueUpdater is LeaguesBase {
+contract LeagueUpdatable is LeaguesBase {
     // TODO: add minimum checks
     function updateLeague(
         uint256 id, 

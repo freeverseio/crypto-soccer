@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Leagues = artifacts.require('LeagueUpdater');
+const Leagues = artifacts.require('LeagueUpdatable');
 
 contract('LeaguesUpdater', (accounts) => {
     let leagues = null;
