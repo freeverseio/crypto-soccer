@@ -11,12 +11,14 @@ contract LeagueUpdater is LeaguesBase {
         uint256 id, 
         bytes32 initStateHash,
         bytes32[] memory dayStateHashes,
+        bytes32[] memory tacticHashes,
         uint16[] memory scores
     ) 
         public 
     {
         _setInitStateHash(id, initStateHash);
         _setDayStateHashes(id, dayStateHashes);
+        _setTacticHashes(id, tacticHashes);
         _setScores(id, scores);
     }
 
@@ -27,5 +29,4 @@ contract LeagueUpdater is LeaguesBase {
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
         return keccak256(abi.encode(tactics));
     }
-
 }
