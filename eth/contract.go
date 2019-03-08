@@ -116,12 +116,12 @@ func (c *Contract) SendTransactionSyncWithClient(client *Web3Client, value *big.
 
 	msg, err := c.abi.Pack(funcname, params...)
 	if err != nil {
-		log.Println("Failed packing ", funcname)
+		log.Println("Failed packing", funcname)
 		return nil, nil, err
 	}
 	tx, receipt, err := client.SendTransactionSync(c.address, value, gasLimit, msg)
 	if err != nil {
-		log.Println("Failed calling ", funcname)
+		log.Println("Failed calling", funcname, "Error:", err)
 	}
 
 	return tx, receipt, err
