@@ -17,6 +17,10 @@ contract LeaguesScheduler is LeaguesBase {
         return initBlock + (nMatchDays - 1) * step;
     }
 
+    function hasFinished(uint256 id) public view returns (bool) {
+        return block.number >= getEndBlock(id);
+    }
+
     function getMatchPerDay(uint256 id) public view returns (uint256)
     {
         uint256 nTeams = countTeams(id);

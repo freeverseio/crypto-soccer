@@ -1,9 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesBase.sol";
+import "./LeaguesScheduler.sol";
 
 /// @title an updatable league
-contract LeagueUpdatable is LeaguesBase {
+contract LeagueUpdatable is LeaguesScheduler {
     struct Result {
         // hash of the init status of the league 
         bytes32 initStateHash;
@@ -31,8 +31,9 @@ contract LeagueUpdatable is LeaguesBase {
     ) 
         public 
     {
-        require(!_isUpdated(id), "already updated");
         require(_exists(id), "invalid league id");
+        require(hasFinished(id), "league not finished");
+        require(!_isUpdated(id), "already updated");
         _result[id].initStateHash = initStateHash;
         _result[id].dayStateHashes = dayStateHashes;
         _result[id].tacticHashes = tacticHashes;
