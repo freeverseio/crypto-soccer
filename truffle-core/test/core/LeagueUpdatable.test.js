@@ -52,7 +52,7 @@ contract('LeaguesUpdater', (accounts) => {
     });
 
 
-    it('updateBlock and updater', async () => {
+    it('is updated', async () => {
         let result = await leagues.isUpdated(id).should.be.fulfilled;
         result.should.be.equal(false);
         const initStateHash = '0x54564';
