@@ -77,8 +77,7 @@ func importAccounts(client *ethclient.Client, accounts []string) {
 		account, err := ks.ImportECDSA(pKey, walletPwd)
 		AssertNoErr(err)
 		header, err := client.HeaderByNumber(context.Background(), nil)
-		lastBlock := new(big.Int)
-		lastBlock.SetInt64(header.Number.Int64())
+		lastBlock := big.NewInt(header.Number.Int64())
 		balance, err := client.BalanceAt(context.Background(), account.Address, lastBlock)
 		log.Printf("account imported: %v balance: %v Wei\n", account.Address.Hex(), balance)
 	}
