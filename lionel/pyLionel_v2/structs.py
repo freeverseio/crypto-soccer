@@ -152,7 +152,9 @@ class League():
             return True
         return self.hasLeagueBeenUpdated() and (blocknum > self.blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
-    def updateUsersAlongDataHash(self, usersAlongData):
+    def updateUsersAlongDataHash(self, usersAlongData, currentBlock):
+        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is not finished"
+        # TODO: assert that league is not finished!!!!!!!!!
         self.usersAlongDataHash = pylio.intHash(
             str(self.usersAlongDataHash) +
             serialize(usersAlongData)
@@ -254,8 +256,9 @@ class LeagueClient(League):
         self.statesAtMatchday   = None
         self.scores             = None
 
-    def updateUsersAlongData(self, usersAlongData):
-        self.updateUsersAlongDataHash(usersAlongData)
+    def updateUsersAlongData(self, usersAlongData, currentBlock):
+        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is not finished"
+        self.updateUsersAlongDataHash(usersAlongData, currentBlock)
         self.usersAlongData.append(usersAlongData)
 
     def updateStatesAtMatchday(self, statesAtMatchday, scores):
