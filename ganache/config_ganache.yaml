@@ -34,5 +34,3 @@ api:
 web3:
   rpcurl: http://localhost:8545
   maxgasprice: 14000000000
-
-# block explorer is in http://testnet.busyverse.com:8000/

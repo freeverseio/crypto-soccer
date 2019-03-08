@@ -85,15 +85,9 @@ func importAccounts(client *ethclient.Client, accounts []string) {
 }
 
 func main() {
-	client, err := ethclient.Dial("http://localhost:8545")
-	AssertNoErr(err)
+	ownerPrivateKey := "f1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5"
 
-	privateKey, err := crypto.HexToECDSA("f1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5")
-	AssertNoErr(err)
-
-	DeployLionel(client, privateKey)
-
-	accounts := []string{
+	stakersPrivateKeys := []string{
 		"91821f9af458d612362136648fc8552a47d8289c0f25a8a1bf0860510332cef9",
 		"bb32062807c162a5243dc9bcf21d8114cb636c376596e1cf2895ec9e5e3e0a68",
 		"95ce6122165d94aa51b0fcf51021895b39b0ff291aa640c803d5401bd87894d5",
@@ -104,5 +98,11 @@ func main() {
 		"487efb6249a8a4d45a19c8e5d1e5c7d3f6610a7e69f8f81ddcf368f9a0c0d6d5",
 		"bb4cce73db59f456ea427e5862fdb0d5bc038a7d0b930cbb45e1c4f6d122289e",
 	}
-	importAccounts(client, accounts)
+
+	client, err := ethclient.Dial("http://localhost:8545")
+	AssertNoErr(err)
+	privateKey, err := crypto.HexToECDSA(ownerPrivateKey)
+	AssertNoErr(err)
+	DeployLionel(client, privateKey)
+	importAccounts(client, stakersPrivateKeys)
 }
