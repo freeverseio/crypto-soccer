@@ -9,7 +9,7 @@ contract LeaguesScheduler is LeaguesBase {
         return 2*(nTeams - 1);
     }
 
-    function getEndBlock(uint256 id) external view returns (uint256) {
+    function getEndBlock(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         uint256 nMatchDays = countLeagueDays(id);
         uint256 initBlock = getInitBlock(id);
