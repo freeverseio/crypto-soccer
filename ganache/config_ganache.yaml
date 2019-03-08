@@ -1,0 +1,38 @@
+contracts:
+  lioneladdress: 0xf3585FCD969502624c6A8ACf73721d1fce214E83
+  stakersaddress: 0x474cc583a95F11ebE8c7f5863D228d47FAb6B267
+
+stakers:
+  accounts:
+    - address: 0x68dB32D26d9529B2a142927c6f1af248fc6Ba7e9
+      onion:   0x148b0aeaf8c96515ac19f5dcd2c1c42beead584aa658f51f574abc8c66e46551
+    - address: 0x35bb6eF95c72bf4804334BB9d6A3c77Bef18d81B
+      onion:   0xf50d184a431b01bb7cadec47b686fc73aa85a0283ef0bedd264372e8d5c7b42a
+    - address: 0x26d8094A90AD1A4440600fa18073730Ef17F5eCE
+      onion:   0x42158b950bce8fc4a1767283707ffe803eb50e85bf7f5e3046cb43b2d91fa551
+    - address: 0xb53cC19aD713e00cB71542d064215784c908D387
+      onion:   0x148b0aeaf8c96515ac19f5dcd2c1c42beead584aa658f51f574abc8c66e46551
+    - address: 0xcb98ce2619f90f54052524Fb79b03E0261b01BEE
+      onion:   0xf50d184a431b01bb7cadec47b686fc73aa85a0283ef0bedd264372e8d5c7b42a
+    - address: 0x4C4Cb54BdBad6c96805b92b8063F3c75B24F65eB
+      onion:   0x42158b950bce8fc4a1767283707ffe803eb50e85bf7f5e3046cb43b2d91fa551
+    - address: 0x67B27Df78bb0f199EDBd568e655BD9b2B202866d
+      onion:   0x148b0aeaf8c96515ac19f5dcd2c1c42beead584aa658f51f574abc8c66e46551
+    - address: 0xE93E2b43fC45CCEcc056A6Ea400972298A304b4B
+      onion:   0xf50d184a431b01bb7cadec47b686fc73aa85a0283ef0bedd264372e8d5c7b42a
+    - address: 0x288Ab710f8DEc0b13753Fec71161E50Ee0cDA7e6
+      onion:   0x42158b950bce8fc4a1767283707ffe803eb50e85bf7f5e3046cb43b2d91fa551
+  keystore: /tmp/freeverse/test_wallets
+  keypasswd: 111111
+
+db:
+  path: /tmp/freeverse/test_soccerdb
+
+api:
+  port: 3000
+
+web3:
+  rpcurl: http://localhost:8545
+  maxgasprice: 14000000000
+
+# block explorer is in http://testnet.busyverse.com:8000/
