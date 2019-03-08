@@ -105,7 +105,6 @@ contract('Game', (accounts) => {
         // generate init league state hash
         const initStateHash = await leagues.hashState(initLeagueState).should.be.fulfilled;
         let dayStateHashes = [];
-        let tacticHashes = [];
 
         let leagueScores = await leagues.scoresCreate().should.be.fulfilled; 
 
@@ -161,14 +160,10 @@ contract('Game', (accounts) => {
             // append the day state hash
             dayStateHashes.push(dayHash);
 
-            const tacticHash = await leagues.hashTactics(tactics).should.be.fulfilled;
-            tacticHashes.push(tacticHash);
-
             initDayState = finalDayState;
         }
 
         dayStateHashes.length.should.be.equal(leagueDays.toNumber());
-        tacticHashes.length.should.be.equal(leagueDays.toNumber());
 
         // updating the league
         await leagues.updateLeague(
