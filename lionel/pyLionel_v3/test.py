@@ -178,7 +178,7 @@ def test2():
     )
     # ...and additionally, stores the league pre-hash data, and updates every player involved
     ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores)
-    assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
+    assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
@@ -339,7 +339,7 @@ def test2():
         ADDR2,
     )
     ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
-    assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
+    assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong
     dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx2)
@@ -347,6 +347,19 @@ def test2():
         leagueIdx2,
         ST_CLIENT.leagues[leagueIdx2].usersInitData,
         duplicate(dataToChallengeInitStates),
+    )
+    selectedMatchday = 0
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
+
+    # ...finally, it does the challenge
+    ST.challengeMatchdayStates(
+        leagueIdx2,
+        selectedMatchday,
+        dataAtPrevMatchday,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].actionsPerMatchday[selectedMatchday]),
+        merkleProofDataForMatchday
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
@@ -454,7 +467,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 792)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 826)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
@@ -470,6 +483,9 @@ else:
 #         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
 # add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc
 # use merkle proof for playerStates at previous league?
+# how can we store the hash of the teamIdx???? can we not sign a team in another league?
+#     I think that the answer is that we store the league in the team property!
+# gather together code to update actions, e.g., find all  not actionsAtSelectedMatchday == 0
 
 
 # TODO: - less important -

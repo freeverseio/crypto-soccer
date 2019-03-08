@@ -153,7 +153,7 @@ class League():
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-        dataAtPrevMatchday.statesAtPrevMatchday, scores = pylio.computeStatesAtMatchday(
+        dataAtPrevMatchday.statesAtMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
             pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
             pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
@@ -222,7 +222,10 @@ class ActionsAccumulator():
     def clearBuffer(self, actions2remove):
         for action in actions2remove:
             leagueIdx = action[0]
-            del self.buffer[leagueIdx]
+            if leagueIdx in self.buffer:
+                del self.buffer[leagueIdx]
+            else:
+                assert action[1] == 0, "Tried to remove from buffer the actions in a league that was not present"
 
 # Simple struct that stores the data that is computed/updated every matchday
 class DataAtMatchday():
@@ -324,16 +327,18 @@ class Storage(Counter):
             assert self.dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
-        for action in actionsAtSelectedMatchday:
-            teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
-            dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
-            dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
+        if not actionsAtSelectedMatchday == 0:
+            for action in actionsAtSelectedMatchday:
+                teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
+                dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
+                dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
 
         self.leagues[leagueIdx].challengeMatchdayStates(
             selectedMatchday,
             pylio.duplicate(dataAtPrevMatchday),
             usersInitData,
             self.getSeedForVerse(verse)
+
         )
 
 
@@ -741,6 +746,10 @@ class Storage(Counter):
             if leagueIdx in self.Accumulator.buffer:
                 leagueIdxAndActionsArray.append([leagueIdx, self.Accumulator.buffer[leagueIdx]])
                 self.leagues[leagueIdx].actionsPerMatchday.append(self.Accumulator.buffer[leagueIdx])
+            else:
+                leagueIdxAndActionsArray.append([leagueIdx, 0])
+                self.leagues[leagueIdx].actionsPerMatchday.append(0)
+
 
         if leagueIdxAndActionsArray:
             tree, depth = make_tree(leagueIdxAndActionsArray, pylio.serialHash)
@@ -759,6 +768,9 @@ class Storage(Counter):
     def getMerkleProof(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
+        if not self.Accumulator.commitedActions[verse]:
+            return MerkleProofDataForMatchday(0,0,0)
+
         for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
             if action[0] == leagueIdx:
                 break
@@ -806,9 +818,9 @@ class Storage(Counter):
     def updateTacticsToMatchday(self, leagueIdx, tactics, teamOrders, matchday):
         # TODO: check if this is reapeated in the update tested in a challenge
         self.assertIsClient()
-        if not matchday in self.leagues[leagueIdx].actionsPerMatchday:
-            return
         actionsInThisMatchday = pylio.duplicate(self.leagues[leagueIdx].actionsPerMatchday[matchday])
+        if actionsInThisMatchday == 0:
+            return
         for action in actionsInThisMatchday:
             teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], self.leagues[leagueIdx].usersInitData)
             tactics[teamPosInLeague] = action["tactics"]
