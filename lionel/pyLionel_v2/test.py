@@ -211,6 +211,7 @@ def test2():
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock), "League not detected as not-yet fully verified"
 
+    // create all the state of the environment (player team, owner, previous team ... league state)
     dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT)
 
     ST.leagues[leagueIdx].challengeInitStates(
