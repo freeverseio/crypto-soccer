@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesScheduler.sol";
+import "./LeaguesChallengeable.sol";
 
-contract LeaguesScore is LeaguesScheduler {
+contract LeaguesScore is LeaguesChallengeable {
     function scoresCreate() public pure returns (uint16[] memory) {
     }
 
