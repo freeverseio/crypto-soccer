@@ -33,4 +33,4 @@ api:
 
 web3:
   rpcurl: http://localhost:8545
-  maxgasprice: 14000000000
+  maxgasprice: 40000000000
