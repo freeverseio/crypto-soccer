@@ -31,6 +31,7 @@ contract LeagueUpdatable is LeaguesBase {
     ) 
         public 
     {
+        require(!_isUpdated(id), "already updated");
         require(_exists(id), "invalid league id");
         _result[id].initStateHash = initStateHash;
         _result[id].dayStateHashes = dayStateHashes;
