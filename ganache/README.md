@@ -19,3 +19,6 @@ go run main.go --config ganache/config_ganache.yaml staker enroll 0xE93E2b43fC45
 go run main.go --config ganache/config_ganache.yaml staker enroll 0x288Ab710f8DEc0b13753Fec71161E50Ee0cDA7e6
 go run main.go service start
 ```
+
+# start afresh
+to start afresh just remove /tmp/freeverse directory
