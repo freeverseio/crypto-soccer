@@ -175,7 +175,6 @@ contract('Game', (accounts) => {
             leagueId,
             initStateHash,
             dayStateHashes,
-            tacticHashes, // TODO: remove 
             leagueScores
         ).should.be.fulfilled;
     });

@@ -26,7 +26,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         uint256 id, 
         bytes32 initStateHash,
         bytes32[] memory dayStateHashes,
-        bytes32[] memory tacticHashes,
         uint16[] memory scores
     ) 
         public 
@@ -36,7 +35,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         require(!_isUpdated(id), "already updated");
         _result[id].initStateHash = initStateHash;
         _result[id].dayStateHashes = dayStateHashes;
-        _result[id].tacticHashes = tacticHashes;
         _result[id].scores = scores;
         _result[id].updater = msg.sender;
         _result[id].updateBlock = block.number;
@@ -68,11 +66,6 @@ contract LeagueUpdatable is LeaguesScheduler {
     function getDayStateHashes(uint256 id) public view returns (bytes32[] memory) {
         require(_exists(id), "unexistent league");
         return _result[id].dayStateHashes;
-    }
-
-    function getTacticHashes(uint256 id) public view returns (bytes32[] memory) {
-        require(_exists(id), "unexistent league");
-        return _result[id].tacticHashes;
     }
 
     function getScores(uint256 id) external view returns (uint16[] memory) {
