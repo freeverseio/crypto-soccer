@@ -486,7 +486,7 @@ else:
 # how can we store the hash of the teamIdx???? can we not sign a team in another league?
 #     I think that the answer is that we store the league in the team property!
 # gather together code to update actions, e.g., find all  not actionsAtSelectedMatchday == 0
-
+# add test for selectedmathcday != 0!!!
 
 # TODO: - less important -
 # do not store scores but the hash or merkle root

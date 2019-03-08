@@ -368,6 +368,23 @@ def test2():
     updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
+    # a challenger fails to prove that anything was wrong...
+    selectedMatchday    = 0
+    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
+                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
+
+    ST.leagues[leagueIdx2].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersAlongData),
+        ST.currentBlock
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+
+
+
+
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
     player1ChallengeData = computeDataToChallengePlayerIdx(1, ST_CLIENT)
