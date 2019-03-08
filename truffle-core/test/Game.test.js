@@ -107,7 +107,7 @@ contract('Game', (accounts) => {
         let dayStateHashes = [];
         let tacticHashes = [];
 
-        let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
+        let leagueScores = await leagues.scoresCreate().should.be.fulfilled; // TODO: finelLeague -> finalDay
 
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
@@ -174,7 +174,7 @@ contract('Game', (accounts) => {
             leagueId,
             initStateHash,
             dayStateHashes,
-            tacticHashes,
+            tacticHashes, // TODO: remove 
             leagueScores
         ).should.be.fulfilled;
     });
