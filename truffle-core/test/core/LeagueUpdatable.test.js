@@ -51,7 +51,6 @@ contract('LeaguesUpdater', (accounts) => {
         finalHashes.length.should.be.equal(0);
     });
 
-
     it('is updated', async () => {
         let result = await leagues.isUpdated(id).should.be.fulfilled;
         result.should.be.equal(false);
