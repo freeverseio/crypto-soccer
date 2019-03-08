@@ -10,9 +10,18 @@ contract LeagueChallengeable is LeagueUpdatable, LeaguesScheduler {
         return CHALLENGING_PERIOD_BLKS;
     }
 
-    function challengeMatchdayStates(uint256 id) public {
+    function challengeMatchdayStates(
+        uint256 id,
+        uint256 leagueDay,
+        uint256[] memory prevLeagueState
+        // userInitData
+        // userAlongData
+    ) 
+        public 
+    {
         require(_isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
+
     }
 
     function isVerified(uint256 id) public view returns (bool) {
