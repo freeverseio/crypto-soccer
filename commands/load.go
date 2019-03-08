@@ -107,7 +107,7 @@ func loadWeb3AndStakers(c *cli.Context) (err error) {
 
 		log.WithFields(log.Fields{
 			"balance": balance.String(),
-		}).Info(" Using account ", config.C.Stakers.Accounts[0])
+		}).Info(" Using account ", acc)
 
 		stks = append(stks, &stakers.Staker{
 			Address: account.Address,
