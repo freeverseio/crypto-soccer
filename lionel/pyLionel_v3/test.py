@@ -365,7 +365,7 @@ def test2():
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
-    # ...or with matchday 3...
+    # ...or with matchday 4...
     selectedMatchday = 5
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
     merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
@@ -483,7 +483,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 826)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 755)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
@@ -509,6 +509,8 @@ else:
 # leafIdx = list(dataToChallengePlayerState.values.keys())[0]
 # isPlayerStateInsideDataToChallenge => not need anymore, right? it's inside getPlayerStateFromChallengeData already
 
+
 # TODO: - less important -
 # do not store scores but the hash or merkle root
 # unify all iniHash, serialHash, etc
+# remove need for the last matchdayHash, as we just need to test the states.
