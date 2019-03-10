@@ -324,7 +324,7 @@ class Storage(Counter):
             assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
             # TODO: sum of hashes is not secure, hash the result!
-            assert self.dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
+            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
         if not actionsAtSelectedMatchday == 0:
@@ -677,7 +677,7 @@ class Storage(Counter):
                 self.leagues[leagueIdx].usersInitData["teamOrders"]
             )
         else:
-            return pylio.duplicate(ST_CLIENT.leagues[leagueIdx].dataAtMatchdays[-1])
+            return pylio.duplicate(self.leagues[leagueIdx].dataAtMatchdays[selectedMatchday-1])
 
 
 
@@ -852,4 +852,5 @@ class Storage(Counter):
         if prevLeagueIdx == 0:
             return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
         else:
+            # statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday
             return self.leagues[prevLeagueIdx].dataAtMatchdays[-1]

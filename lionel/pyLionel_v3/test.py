@@ -341,18 +341,33 @@ def test2():
     ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
 
-    # A challenger fails to prove anything is wrong
+    # A challenger fails to prove anything is wrong with init states...
     dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx2)
     ST.challengeInitStates(
         leagueIdx2,
         ST_CLIENT.leagues[leagueIdx2].usersInitData,
         duplicate(dataToChallengeInitStates),
     )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+
+    # ...or with matchday 0...
     selectedMatchday = 0
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
     merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
+    ST.challengeMatchdayStates(
+        leagueIdx2,
+        selectedMatchday,
+        dataAtPrevMatchday,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].actionsPerMatchday[selectedMatchday]),
+        merkleProofDataForMatchday
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
-    # ...finally, it does the challenge
+    # ...or with matchday 3...
+    selectedMatchday = 1
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
     ST.challengeMatchdayStates(
         leagueIdx2,
         selectedMatchday,
