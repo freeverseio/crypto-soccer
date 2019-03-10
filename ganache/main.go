@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	lionel "github.com/freeverseio/go-soccer/ganache/lionel"
+	stakers "github.com/freeverseio/go-soccer/ganache/stakers"
 )
 
 // CreateDir - dirs and subdirs if they don't exist
@@ -61,7 +62,15 @@ func DeployLionel(client *ethclient.Client, privateKey *ecdsa.PrivateKey) {
 	log.Printf("Stakers address: %v\n", stakersAddress.Hex())
 	log.Printf("Transaction hash: %v\n", tx.Hash().Hex())
 
-	_ = instance
+	// verify lionel address is the same when queried from Stakers contract
+	stakersInstance, err := stakers.NewStakers(stakersAddress, client)
+	AssertNoErr(err)
+
+	gameAddress, err := stakersInstance.Game(&bind.CallOpts{})
+	if gameAddress != address {
+		log.Fatal("Lionel adresses differ. Expected: ", address.Hex(), " but goy ", gameAddress.Hex())
+		panic(-1)
+	}
 }
 
 func importAccounts(client *ethclient.Client, accounts []string) {
@@ -103,5 +112,6 @@ func main() {
 	privateKey, err := crypto.HexToECDSA(ownerPrivateKey)
 	AssertNoErr(err)
 	DeployLionel(client, privateKey)
+	log.Println("Importing accounts:")
 	importAccounts(client, stakersPrivateKeys)
 }
