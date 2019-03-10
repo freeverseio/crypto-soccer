@@ -469,10 +469,11 @@ class Storage(Counter):
                             dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     )
                     # it makes sure that the state matches what the BC says about that player
-                    assert self.isCorrectStateForPlayerIdx(
+                    if not self.isCorrectStateForPlayerIdx(
                         playerState,
                         dataToChallengeInitStates[teamPosInLeague][shirtNum]
-                    ), "One of the states in dataToChallengeInitStates does not match what the BC says"
+                    ):
+                        return None
                 else:
                     # if no dataToChallenge is provided, it means this is a request
                     # from a Client, so just read whatever pre-hash data you have
