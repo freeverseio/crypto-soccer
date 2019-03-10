@@ -35,11 +35,11 @@ func (s *Service) process() (bool, error) {
 		if err == nil {
 			if canBeUpdated {
 				if err := s.lionel.Update(*staker, i); err != nil {
-					log.Error("Failed Update", err)
+					log.Error("Failed Update: ", err)
 				}
 			}
 		} else {
-			log.Error("Failed CanLeagueBeUpdated", err)
+			log.Error("Failed CanLeagueBeUpdated: ", err)
 		}
 
 		// process challange events ---------------------------------------
@@ -47,11 +47,11 @@ func (s *Service) process() (bool, error) {
 		if err == nil {
 			if canLeagueBeChallanged {
 				if err := s.lionel.Challange(*staker, i); err != nil {
-					log.Error("Failed Challange", err)
+					log.Error("Failed Challange: ", err)
 				}
 			}
 		} else {
-			log.Error("Failed CanLeagueBeChallanged", err)
+			log.Error("Failed CanLeagueBeChallanged: ", err)
 		}
 	}
 
@@ -59,19 +59,19 @@ func (s *Service) process() (bool, error) {
 	for _, staker := range s.stakers.Members() {
 		needsTouch, err := s.stakers.NeedsTouch(staker.Address)
 		if err != nil {
-			log.Error("Failed NeedsTouch", err)
+			log.Error("Failed NeedsTouch: ", err)
 		} else if needsTouch {
 			if err = s.stakers.Touch(staker.Address); err != nil {
-				log.Error("Failed Touch", err)
+				log.Error("Failed Touch: ", err)
 			}
 			continue
 		}
 		needsResolve, err := s.stakers.NeedsResolve(staker.Address)
 		if err != nil {
-			log.Error("Failed NeedsResolve", err)
+			log.Error("Failed NeedsResolve: ", err)
 		} else if needsResolve {
 			if err = s.stakers.Resolve(staker.Address); err != nil {
-				log.Error("Failed Resolve", err)
+				log.Error("Failed Resolve: ", err)
 			}
 			continue
 		}
