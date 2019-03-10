@@ -369,6 +369,7 @@ def test2():
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # a challenger fails to prove that anything was wrong...
+    # ... not for matchady = 0
     selectedMatchday    = 0
     prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
                                             else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
@@ -382,8 +383,31 @@ def test2():
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
+    # ... not for matchdat = 2
+    selectedMatchday    = 2
+    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
+                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
 
+    ST.leagues[leagueIdx2].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersAlongData),
+        ST.currentBlock
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
+    # ... not for initStates
+    dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx2, ST_CLIENT)
+
+    ST.leagues[leagueIdx2].challengeInitStates(
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(dataToChallengeInitStates),
+        ST,
+        ST.currentBlock,
+        leagueIdx2
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)

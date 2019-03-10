@@ -216,28 +216,6 @@ class League():
             print "Challenger Wins: initStates provided by updater are invalid"
             self.resetUpdater()
             return
-        #
-        #
-        # initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-        # for teamPos, teamIdx in enumerate(usersInitData["teamIdxs"]):
-        #     for shirtNum, playerIdx in enumerate(ST.teams[teamIdx].playerIdxs):
-        #         correctPlayerIdx = playerIdx if playerIdx != 0 else pylio.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
-        #         isOK = pylio.isCorrectStateForPlayerIdx(
-        #             pylio.getPlayerStateFromChallengeData(correctPlayerIdx, dataToChallengeInitStates[teamPos][shirtNum]),
-        #             dataToChallengeInitStates[teamPos][shirtNum],
-        #             ST
-        #         )
-        #         if isOK:
-        #             initPlayerStates[teamPos][shirtNum] = pylio.getPlayerStateFromChallengeData(
-        #                 correctPlayerIdx,
-        #                 dataToChallengeInitStates[teamPos][shirtNum]
-        #             )
-        #         else:
-        #             print "Challenger Wins: initStates provided by updater are invalid"
-        #             self.resetUpdater()
-        #             return
-
-        # TODO: check that the provided state proofs contain the actual player idx!!!!!
 
         if pylio.serialHash(initPlayerStates) == self.initStatesHash:
             print "Challenger failed to prove that initStates were wrong"
