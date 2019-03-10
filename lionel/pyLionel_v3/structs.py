@@ -357,14 +357,12 @@ class Storage(Counter):
         assert teamIdx < len(self.teams), "Team for this playerIdx not created yet!"
         assert teamIdx != 0, "Team 0 is reserved for null team!"
 
-    def getLastWrittenPlayerStateFromPlayerIdx(self, playerIdx):
-        prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-        if prevLeagueIdx == 0:
-            # this can be known both by CLIENT and BC
+    def getLastWrittenInBCPlayerStateFromPlayerIdx(self, playerIdx):
+        if self.isPlayerVirtual(playerIdx):
             return self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
         else:
-            # this can only be accessed by the CLIENT
-            return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
+            return self.playerIdxToPlayerState[playerIdx]
+
 
     def getPlayerStateBeforePlayingAnyLeague(self, playerIdx):
         # this can be called by BC or CLIENT, as both have enough data
@@ -478,7 +476,7 @@ class Storage(Counter):
                     # if no dataToChallenge is provided, it means this is a request
                     # from a Client, so just read whatever pre-hash data you have
                     self.assertIsClient()
-                    playerState = self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+                    playerState = self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
@@ -546,17 +544,14 @@ class Storage(Counter):
         assert self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx2].name)] == address2, "Exchange Failed, owner not correct"
 
         # get states from BC in memory to do changes, and only write back once at the end
-        state1 = pylio.duplicate(self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx1))
-        state2 = pylio.duplicate(self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx2))
-
-
+        state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
+        state2 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2))
 
         state1.prevLeagueIdx        = self.teams[teamIdx1].currentLeagueIdx
         state1.prevTeamPosInLeague  = self.teams[teamIdx1].teamPosInCurrentLeague
 
         state2.prevLeagueIdx        = self.teams[teamIdx2].currentLeagueIdx
         state2.prevTeamPosInLeague  = self.teams[teamIdx2].teamPosInCurrentLeague
-
 
         state1.setCurrentTeamIdx(teamIdx2)
         state2.setCurrentTeamIdx(teamIdx1)
@@ -667,6 +662,15 @@ class Storage(Counter):
     # ------------      Functions only for CLIENT                 ------------
     # ------------------------------------------------------------------------
 
+    def getLastWrittenInClientPlayerStateFromPlayerIdx(self, playerIdx):
+        self.assertIsClient()
+        prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
+        if prevLeagueIdx == 0:
+            # this can be known both by CLIENT and BC
+            return self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
+        else:
+            # this can only be accessed by the CLIENT
+            return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
 
     # Stores the data, pre-hash, in the CLIENT
     def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores):
@@ -862,7 +866,7 @@ class Storage(Counter):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
-            return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+            return self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
         else:
             statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday
             playerState, playerPosInPrevLeague   = self.getPlayerFromTeamStates(playerIdx, statesAtEndOfPrevLeague[teamPosInPrevLeague])

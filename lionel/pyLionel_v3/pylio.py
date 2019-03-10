@@ -50,7 +50,7 @@ def printTeam(teamIdx, ST_CLIENT):
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-        playerState = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+        playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerIdx(playerState.getPlayerIdx())
         assert ST_CLIENT.isCorrectStateForPlayerIdx(playerState, playerChallengeData), "Player state not correctly in sync"
         hash += printPlayer(playerState)
