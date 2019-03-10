@@ -540,8 +540,8 @@ class Storage(Counter):
         teamIdx2, shirtNum2 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
         # check ownership!
-        assert self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx1].name)] == address1, "Exchange Failed, owner not correct"
-        assert self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx2].name)] == address2, "Exchange Failed, owner not correct"
+        assert self.getOwnerAddrFromTeamIdx(teamIdx1) == address1, "Exchange Failed, owner not correct"
+        assert self.getOwnerAddrFromTeamIdx(teamIdx2) == address2, "Exchange Failed, owner not correct"
 
         # get states from BC in memory to do changes, and only write back once at the end
         state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
@@ -643,13 +643,14 @@ class Storage(Counter):
             assert playerState.getPlayerIdx() == playerIdx, "This data does not contain the required player"
             return playerState
 
+    def getOwnerAddrFromTeamIdx(self, teamIdx):
+        return self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx].name)]
 
-    def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
-        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
-                          s.getPlayerIdx() == playerIdx]
-        assert len(
-            selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
-        return selectedStates[0]
+    def getOwnerAddrFromPlayerIdx(self, playerIdx):
+        currentTeamIdx = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx).currentTeamIdx
+        return self.getOwnerAddrFromTeamIdx(currentTeamIdx)
+
+
     # A mockup of how to obtain the block hash for a given blocknum.
     # This is a function that is available in Ethereum after Constatinople
     def getBlockHash(self, blockNum):
@@ -658,9 +659,19 @@ class Storage(Counter):
     def getSeedForVerse(self, verse):
         return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
+
+
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
     # ------------------------------------------------------------------------
+
+    def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
+        self.assertIsClient()
+        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
+                          s.getPlayerIdx() == playerIdx]
+        assert len(
+            selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
+        return selectedStates[0]
 
     def getLastWrittenInClientPlayerStateFromPlayerIdx(self, playerIdx):
         self.assertIsClient()

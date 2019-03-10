@@ -395,28 +395,19 @@ def test2():
     teamIdxs = []
     for t in range(100):
         teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
-        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR1)
+        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
 
     for p in range(200):
-        playerIdx1 = intHash(str(p)) % 100*NPLAYERS_PER_TEAM
-        playerIdx2 = intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
-        print(str(p))
+        playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
+        playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
         ST.exchangePlayers(
-            playerIdx1, ADDR1,
-            playerIdx2, ADDR1
+            playerIdx1, ST.getOwnerAddrFromPlayerIdx(playerIdx1),
+            playerIdx2, ST.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
         ST_CLIENT.exchangePlayers(
-            playerIdx1, ADDR1,
-            playerIdx2, ADDR1
+            playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
+            playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
-
-
-    for l in range(5):
-        teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
-        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR1)
-
-
-
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
@@ -511,7 +502,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 755)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 196)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
