@@ -276,14 +276,23 @@ def getInitPlayerStates(leagueIdx, ST, usersInitData = None, dataToChallengeInit
         for shirtNum, playerPosInLeague in enumerate(teamOrder):
             playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
             if dataToChallengeInitStates:
+                # gets the playerState from the challengeData
+                # TODO TONI: there could be an error with player exhcnage...
+                playerState = pylio.getPlayerStateFromChallengeData(
+                    playerIdx,
+                    dataToChallengeInitStates[teamPosInLeague][shirtNum],
+                    ST
+                )
                 if not isCorrectStateForPlayerIdx(
-                        pylio.getPlayerStateFromChallengeData(playerIdx,
-                                                              dataToChallengeInitStates[teamPosInLeague][shirtNum]),
-                        dataToChallengeInitStates[teamPosInLeague][shirtNum],
-                        ST
+                    playerState,
+                    dataToChallengeInitStates[teamPosInLeague][shirtNum],
+                    ST
                 ):
                     return None
-            playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST)
+            else:
+                # if no dataToChallenge is provided, it means this is a request
+                # from a Client, so just read whatever pre-hash data you have
+                playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST)
             initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
         teamPosInLeague += 1
     return initPlayerStates
@@ -515,9 +524,10 @@ def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, 
     return playerState in dataToChallengePlayerState[teamPosInPrevLeague]
 
 
-def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState):
+def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState, ST):
     if type(dataToChallengePlayerState) == type([]):
-        thisPlayerState = [s for s in dataToChallengePlayerState if s.getPlayerIdx() == playerIdx]
+        prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST)
+        thisPlayerState = [s for s in dataToChallengePlayerState[teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
         assert len(thisPlayerState) < 2, "This data contains more than once the required playerIdx"
         assert len(thisPlayerState) > 0, "This data does not contain the required playerIdx"
         return thisPlayerState[0]

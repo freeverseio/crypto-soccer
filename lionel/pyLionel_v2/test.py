@@ -117,15 +117,17 @@ def test2():
 
     # Cook data to change tactics before games in matchday 2 begin.
     # Note that we could specify only for 1 of the teams if we wanted.
+    # TODO: force that this happens atomically, 1 team at each transaction
     usersAlongData = {
-        "teamIdxsWithinLeague": [0, 1],
+        "teamIdxsWithinLeague": [1],
         "tactics": [TACTICS["433"], TACTICS["442"]],
         "block": ST.currentBlock
     }
 
+
     # Submit data to change tactics
-    ST.leagues[leagueIdx].updateUsersAlongDataHash(usersAlongData)
-    ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData)
+    ST.leagues[leagueIdx].updateUsersAlongDataHash(usersAlongData, ST.currentBlock)
+    ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData, ST.currentBlock)
 
     # Move beyond league end
     ST.advanceNBlocks(blockStep)
@@ -180,7 +182,6 @@ def test2():
     prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
                                             else ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
 
-    assert( serialHash(serialHash(ST) + serialHash(ST_CLIENT)) % 1000 == 118 )
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedMatchday,
         prevMatchdayStates,
@@ -368,6 +369,47 @@ def test2():
     updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
+    # a challenger fails to prove that anything was wrong...
+    # ... not for matchady = 0
+    selectedMatchday    = 0
+    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
+                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
+
+    ST.leagues[leagueIdx2].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersAlongData),
+        ST.currentBlock
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+
+    # ... not for matchdat = 2
+    selectedMatchday    = 2
+    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
+                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
+
+    ST.leagues[leagueIdx2].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersAlongData),
+        ST.currentBlock
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+
+    # ... not for initStates
+    dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx2, ST_CLIENT)
+
+    ST.leagues[leagueIdx2].challengeInitStates(
+        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
+        duplicate(dataToChallengeInitStates),
+        ST,
+        ST.currentBlock,
+        leagueIdx2
+    )
+    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
     player1ChallengeData = computeDataToChallengePlayerIdx(1, ST_CLIENT)
@@ -394,7 +436,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10222)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 150)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 145)
 if success:
     print "ALL TESTS:  -- PASSED --"
 else:

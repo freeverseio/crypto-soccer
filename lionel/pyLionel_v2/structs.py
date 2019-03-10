@@ -152,7 +152,9 @@ class League():
             return True
         return self.hasLeagueBeenUpdated() and (blocknum > self.blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
-    def updateUsersAlongDataHash(self, usersAlongData):
+    def updateUsersAlongDataHash(self, usersAlongData, currentBlock):
+        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is not finished"
+        # TODO: assert that league is not finished!!!!!!!!!
         self.usersAlongDataHash = pylio.intHash(
             str(self.usersAlongDataHash) +
             serialize(usersAlongData)
@@ -214,28 +216,6 @@ class League():
             print "Challenger Wins: initStates provided by updater are invalid"
             self.resetUpdater()
             return
-        #
-        #
-        # initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-        # for teamPos, teamIdx in enumerate(usersInitData["teamIdxs"]):
-        #     for shirtNum, playerIdx in enumerate(ST.teams[teamIdx].playerIdxs):
-        #         correctPlayerIdx = playerIdx if playerIdx != 0 else pylio.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST)
-        #         isOK = pylio.isCorrectStateForPlayerIdx(
-        #             pylio.getPlayerStateFromChallengeData(correctPlayerIdx, dataToChallengeInitStates[teamPos][shirtNum]),
-        #             dataToChallengeInitStates[teamPos][shirtNum],
-        #             ST
-        #         )
-        #         if isOK:
-        #             initPlayerStates[teamPos][shirtNum] = pylio.getPlayerStateFromChallengeData(
-        #                 correctPlayerIdx,
-        #                 dataToChallengeInitStates[teamPos][shirtNum]
-        #             )
-        #         else:
-        #             print "Challenger Wins: initStates provided by updater are invalid"
-        #             self.resetUpdater()
-        #             return
-
-        # TODO: check that the provided state proofs contain the actual player idx!!!!!
 
         if pylio.serialHash(initPlayerStates) == self.initStatesHash:
             print "Challenger failed to prove that initStates were wrong"
@@ -254,8 +234,9 @@ class LeagueClient(League):
         self.statesAtMatchday   = None
         self.scores             = None
 
-    def updateUsersAlongData(self, usersAlongData):
-        self.updateUsersAlongDataHash(usersAlongData)
+    def updateUsersAlongData(self, usersAlongData, currentBlock):
+        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is not finished"
+        self.updateUsersAlongDataHash(usersAlongData, currentBlock)
         self.usersAlongData.append(usersAlongData)
 
     def updateStatesAtMatchday(self, statesAtMatchday, scores):
