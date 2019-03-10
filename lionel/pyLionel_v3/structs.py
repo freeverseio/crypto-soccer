@@ -323,7 +323,6 @@ class Storage(Counter):
             assert pylio.serialHash(dataAtPrevMatchday.tacticsAtMatchday) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
             assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
-            # TODO: sum of hashes is not secure, hash the result!
             assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 

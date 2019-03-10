@@ -365,7 +365,7 @@ def test2():
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
     # ...or with matchday 3...
-    selectedMatchday = 1
+    selectedMatchday = 5
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
     merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
     ST.challengeMatchdayStates(
