@@ -319,7 +319,8 @@ def test2():
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx2)
 
     initStatesHash       = serialHash(initPlayerStates)
-    dataAtMatchdayHashes = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+    dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+    assert dataAtMatchdayHashes[0] == serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
     ST.updateLeague(
         leagueIdx2,
         initStatesHash,

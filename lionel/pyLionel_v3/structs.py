@@ -894,6 +894,7 @@ class Storage(Counter):
         self.assertIsClient()
         # hash all except for last day:
         dataAtMatchdayHashes = [pylio.serialHash(d) for d in dataAtMatchdays[:-1]]
+        assert dataAtMatchdayHashes[0] == pylio.serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
         # compute MerkleRoot for last day:
         lastStatesFlattened = pylio.flatten(dataAtMatchdays[-1].statesAtMatchday)
         lastDayTree, depth = make_tree(lastStatesFlattened, pylio.serialHash)
