@@ -170,8 +170,11 @@ def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
 
 
-def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
-    return playerState in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague]
+def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState):
+    return areEqualStructs(
+        playerState,
+        list(dataToChallengePlayerState.values.values())[0]
+    )
 
 
 
@@ -214,3 +217,11 @@ def prepareProofForIdxs(idxsToProve, tree, leafs):
     for leafIdx in idxsToProve:
         values[leafIdx] = leafs[leafIdx]
     return neededHashes, values
+
+def flatten(statesPerTeam):
+    flatStates = []
+    for statesTeam in statesPerTeam:
+        for statePlayer in statesTeam:
+            flatStates.append(statePlayer)
+    return flatStates
+

@@ -144,12 +144,13 @@ class League():
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
 
-    def challengeMatchdayStates(self,
-                                selectedMatchday,
-                                dataAtPrevMatchday,
-                                usersInitData,
-                                seed
-                                ):
+    def challengeMatchdayStates(
+            self,
+            selectedMatchday,
+            dataAtPrevMatchday,
+            usersInitData,
+            seed
+        ):
 
         assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
@@ -183,6 +184,7 @@ class LeagueClient(League):
         self.usersInitData      = usersInitData
         self.initPlayerStates   = None
         self.statesAtMatchday   = None
+        self.lastDayTree        = None
         self.tacticsAtMatchday  = None
         self.scores             = None
         self.actionsPerMatchday = []
@@ -337,7 +339,6 @@ class Storage(Counter):
             pylio.duplicate(dataAtPrevMatchday),
             usersInitData,
             self.getSeedForVerse(verse)
-
         )
 
 
@@ -500,9 +501,15 @@ class Storage(Counter):
                 self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
             )
         else:
-            assert pylio.isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague), \
+            assert pylio.isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState), \
                 "The playerState provided is not part of the challengeData"
-            return self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1] == pylio.serialHash(dataToChallengePlayerState)
+            return verify(
+                self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1],
+                dataToChallengePlayerState.depth,
+                dataToChallengePlayerState.values,
+                dataToChallengePlayerState.merkleProof,
+                pylio.serialHash
+            ), "Provided Merkle proof is invalid"
 
 
     def challengeInitStates(self, leagueIdx, usersInitData, dataToChallengeInitStates):
@@ -626,16 +633,21 @@ class Storage(Counter):
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
     def getPlayerStateFromChallengeData(self, playerIdx, dataToChallengePlayerState):
+        # dataToChallengePlayerState can be:
+        #     - playerState
+        #     - merkleProof
+        #       CLARIFY !!!!!! maybe from where it comes
+        # TONI
         # TODO: very ugly if!!!
-        if type(dataToChallengePlayerState) == type(DataAtMatchday(0, 0, 0)):
-            prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-            thisPlayerState = [s for s in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague] if s.getPlayerIdx() == playerIdx]
-            assert len(thisPlayerState) < 2, "This data contains more than once the required playerIdx"
-            assert len(thisPlayerState) > 0, "This data does not contain the required playerIdx"
-            return thisPlayerState[0]
-        else:
+        if type(dataToChallengePlayerState) == type(PlayerState()):
             assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
             return dataToChallengePlayerState
+        else:
+            assert len(dataToChallengePlayerState.values)==1, "You should need only one item in the data2challenge"
+            playerState = list(dataToChallengePlayerState.values.values())[0]
+            assert playerState.getPlayerIdx() == playerIdx, "This data does not contain the required player"
+            return playerState
+
 
     def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
         selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
@@ -657,10 +669,11 @@ class Storage(Counter):
 
 
     # Stores the data, pre-hash, in the CLIENT
-    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, scores):
+    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores):
         self.assertIsClient()
         self.leagues[leagueIdx].updateInitState(initPlayerStates)
         self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
+        self.leagues[leagueIdx].lastDayTree = lastDayTree
         # the last matchday gives the final states used to update all players:
         for allPlayerStatesInTeam in dataAtMatchdays[-1].statesAtMatchday:
             for playerState in allPlayerStatesInTeam:
@@ -851,5 +864,53 @@ class Storage(Counter):
         if prevLeagueIdx == 0:
             return self.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
         else:
-            # statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday
-            return self.leagues[prevLeagueIdx].dataAtMatchdays[-1]
+            statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday
+            playerState, playerPosInPrevLeague   = self.getPlayerFromTeamStates(playerIdx, statesAtEndOfPrevLeague[teamPosInPrevLeague])
+
+            idxInFlattenedStates = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
+            leafs = pylio.flatten(self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday)
+            lastDayTree = self.leagues[prevLeagueIdx].lastDayTree
+
+            neededHashes, values = pylio.prepareProofForIdxs(
+                [idxInFlattenedStates],
+                lastDayTree,
+                leafs
+            )
+            assert verify(
+                self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1],
+                get_depth(lastDayTree),
+                values,
+                neededHashes,
+                pylio.serialHash
+            ), "Generated Merkle proof will not work"
+            return MerkleProofDataForMatchday(neededHashes, values, get_depth(lastDayTree))
+
+
+    # for all days in the league, except for the last one, it basically hashes
+    # the struct dataAtMatchday, which contains, besides states, the tactics and teamOrders.
+    # for the last day, you just need the states, and you actuall do a MerkleRoot, so
+    # that it can be later used for Merkle Proofs
+    def prepareHashesForDataAtMatchdays(self, dataAtMatchdays):
+        self.assertIsClient()
+        # hash all except for last day:
+        dataAtMatchdayHashes = [pylio.serialHash(d) for d in dataAtMatchdays[:-1]]
+        # compute MerkleRoot for last day:
+        lastStatesFlattened = pylio.flatten(dataAtMatchdays[-1].statesAtMatchday)
+        lastDayTree, depth = make_tree(lastStatesFlattened, pylio.serialHash)
+        dataAtMatchdayHashes.append(root(lastDayTree))
+        return dataAtMatchdayHashes, lastDayTree
+
+
+    def getPlayerFromTeamStates(self, playerIdx, statesInTeam):
+        playerState             = None
+        playerPosInPrevLeague   = None
+        for pos, state in enumerate(statesInTeam):
+            if playerIdx == state.getPlayerIdx():
+                if playerState:
+                    assert False, "Same player appears twice in a team!!!"
+                else:
+                    playerState             = pylio.duplicate(state)
+                    playerPosInPrevLeague   = pylio.duplicate(pos)
+        return playerState, playerPosInPrevLeague
+
+

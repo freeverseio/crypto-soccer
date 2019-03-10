@@ -154,7 +154,8 @@ def test2():
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
 
     initStatesHash       = serialHash(initPlayerStates)
-    dataAtMatchdayHashes = [serialHash(d) for d in dataAtMatchdays]
+
+    dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
 
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
     dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
@@ -177,7 +178,7 @@ def test2():
         ADDR2,
     )
     # ...and additionally, stores the league pre-hash data, and updates every player involved
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, scores)
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
@@ -317,9 +318,8 @@ def test2():
     initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx2)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx2)
 
-    initStatesHash          = serialHash(initPlayerStates)
-    dataAtMatchdayHashes = [serialHash(d) for d in dataAtMatchdays]
-
+    initStatesHash       = serialHash(initPlayerStates)
+    dataAtMatchdayHashes = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
     ST.updateLeague(
         leagueIdx2,
         initStatesHash,
@@ -338,7 +338,7 @@ def test2():
         scores,
         ADDR2,
     )
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, scores)
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, lastDayTree, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong with init states...
@@ -501,7 +501,12 @@ else:
 # how can we store the hash of the teamIdx???? can we not sign a team in another league?
 #     I think that the answer is that we store the league in the team property!
 # gather together code to update actions, e.g., find all  not actionsAtSelectedMatchday == 0
-# add test for selectedmathcday != 0!!!
+
+# Note that dataAtMatchday.states = after the given match!
+# remove ugly:         if type(dataToChallengePlayerState) == type(DataAtMatchday(0, 0, 0)):
+
+# leafIdx = list(dataToChallengePlayerState.values.keys())[0]
+# isPlayerStateInsideDataToChallenge => not need anymore, right? it's inside getPlayerStateFromChallengeData already
 
 # TODO: - less important -
 # do not store scores but the hash or merkle root
