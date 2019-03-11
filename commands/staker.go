@@ -68,14 +68,14 @@ func stakerNew(c *cli.Context) error {
 }
 
 func stakerInfo(c *cli.Context) error {
+	if err := load(c); err != nil {
+		return err
+	}
+	fmt.Println(stkrs.Info())
 	return nil
 }
 
 func stakerEnroll(c *cli.Context) error {
-	loadConfig(c)
-	if err := loadWeb3AndStakers(c); err != nil {
-		return err
-	}
 	if err := load(c); err != nil {
 		return err
 	}
@@ -90,10 +90,6 @@ func stakerEnroll(c *cli.Context) error {
 }
 
 func stakerQueryUnenroll(c *cli.Context) error {
-	loadConfig(c)
-	if err := loadWeb3AndStakers(c); err != nil {
-		return err
-	}
 	if err := load(c); err != nil {
 		return err
 	}
@@ -107,10 +103,6 @@ func stakerQueryUnenroll(c *cli.Context) error {
 	return nil
 }
 func stakerUnenroll(c *cli.Context) error {
-	loadConfig(c)
-	if err := loadWeb3AndStakers(c); err != nil {
-		return err
-	}
 	if err := load(c); err != nil {
 		return err
 	}
