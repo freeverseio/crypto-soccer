@@ -64,6 +64,18 @@ contract('TeamState', (accounts) => {
         rating.toNumber().should.be.equal(nPlayers * (nPlayers + 1) / 2);
     });
 
+    it('evolve team of delta 0', async () => {
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        let teamState = await instance.teamStateCreate().should.be.fulfilled;
+        teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        const evolvedTeamState = await instance.teamStateEvolve(teamState, 0).should.be.fulfilled;
+        const valid = await instance.isValidTeamState(evolvedTeamState).should.be.fulfilled;
+        valid.should.be.equal(true);
+        const evolvedPlayerState = await instance.teamStateAt(evolvedTeamState, 0).should.be.fulfilled;
+        const defence = await instance.getDefence(evolvedPlayerState).should.be.fulfilled;
+        defence.toString().should.be.equal('1');
+    });
+
     it('team state evolve', async () => {
         const defence = 3;
         const speed = 4;

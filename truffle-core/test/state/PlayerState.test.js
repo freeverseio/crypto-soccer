@@ -36,6 +36,12 @@ contract('PlayerState', (accounts) => {
         result.should.be.bignumber.that.equals(endurance);
     });
 
+    it('player with all skills 0 is valid', async () => {
+        const playerState = await instance.playerStateCreate(0,0,0,0,0,0,0,0,0,0,0,0,1).should.be.fulfilled;
+        const valid = await instance.isValidPlayerState(playerState).should.be.fulfilled;
+        valid.should.be.equal(true);
+    })
+
     it('is valid player state', async () => {
         let result = await instance.isValidPlayerState(TEAMSTATEEND).should.be.fulfilled;
         result.should.be.equal(false);
