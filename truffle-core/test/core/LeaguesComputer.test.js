@@ -107,35 +107,35 @@ contract('LeaguesComputer', (accounts) => {
         points.visitorPoints.toNumber().should.be.equal(5);
     });
 
-    it('compute points home rating higher than visitor', async () => {
-        const homeTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;
-        const visitorTeamRating = await states.computeTeamRating(teamState1).should.be.fulfilled;
-        homeTeamRating.toNumber().should.be.equal(68);
-        visitorTeamRating.toNumber().should.be.equal(66);
-        let points = await leagues.computePoints(teamState0, teamState1, 2, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState0, teamState1, 2, 1).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(2);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState0, teamState1, 1, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(8);
-    });
+    // it('compute points home rating higher than visitor', async () => {
+    //     const homeTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;
+    //     const visitorTeamRating = await states.computeTeamRating(teamState1).should.be.fulfilled;
+    //     homeTeamRating.toNumber().should.be.equal(68);
+    //     visitorTeamRating.toNumber().should.be.equal(66);
+    //     let points = await leagues.computePoints(teamState0, teamState1, 2, 2).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(0);
+    //     points.visitorPoints.toNumber().should.be.equal(0);
+    //     points = await leagues.computePoints(teamState0, teamState1, 2, 1).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(2);
+    //     points.visitorPoints.toNumber().should.be.equal(0);
+    //     points = await leagues.computePoints(teamState0, teamState1, 1, 2).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(0);
+    //     points.visitorPoints.toNumber().should.be.equal(8);
+    // });
 
-    it('compute points home rating lower than visitor', async () => {
-        const homeTeamRating = await states.computeTeamRating(teamState1).should.be.fulfilled;
-        const visitorTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;
-        homeTeamRating.toNumber().should.be.equal(66);
-        visitorTeamRating.toNumber().should.be.equal(68);
-        let points = await leagues.computePoints(teamState1, teamState0, 2, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState1, teamState0, 2, 1).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(8);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState1, teamState0, 1, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(2);
-    });
+    // it('compute points home rating lower than visitor', async () => {
+    //     const homeTeamRating = await states.computeTeamRating(teamState1).should.be.fulfilled;
+    //     const visitorTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;
+    //     homeTeamRating.toNumber().should.be.equal(66);
+    //     visitorTeamRating.toNumber().should.be.equal(68);
+    //     let points = await leagues.computePoints(teamState1, teamState0, 2, 2).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(0);
+    //     points.visitorPoints.toNumber().should.be.equal(0);
+    //     points = await leagues.computePoints(teamState1, teamState0, 2, 1).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(8);
+    //     points.visitorPoints.toNumber().should.be.equal(0);
+    //     points = await leagues.computePoints(teamState1, teamState0, 1, 2).should.be.fulfilled;
+    //     points.homePoints.toNumber().should.be.equal(0);
+    //     points.visitorPoints.toNumber().should.be.equal(2);
+    // });
 });
