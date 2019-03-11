@@ -81,14 +81,14 @@ contract LeaguesComputer is LeaguesScore {
         if (homeGoals == visitorGoals)
             return (0, 0);
 
-        uint128 homeTeamRating = _leagueState.computeTeamRating(homeTeamState);
-        uint128 visitorTeamRating = _leagueState.computeTeamRating(visitorTeamState);
-        int256 ratingDiff = int256(homeTeamRating) - int256(visitorTeamRating);
-        if (ratingDiff == 0)
+        uint256 homeTeamRating = _leagueState.computeTeamRating(homeTeamState);
+        uint256 visitorTeamRating = _leagueState.computeTeamRating(visitorTeamState);
+
+        if (homeTeamRating == visitorTeamRating)
             return homeGoals > visitorGoals ? (5, 0) : (0, 5);
-        if (ratingDiff > 0)
+        else if (homeTeamRating > visitorTeamRating)
             return homeGoals > visitorGoals ? (2, 0) : (0, 8);
-        if (ratingDiff < 0)
+        else 
             return homeGoals > visitorGoals ? (8, 0) : (0, 2);
     }
 

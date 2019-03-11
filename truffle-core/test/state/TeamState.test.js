@@ -15,12 +15,12 @@ contract('TeamState', (accounts) => {
         const teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState.length.should.be.equal(0);
     });
-    
+
     it('count players in team state', async () => {
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         let count = await instance.teamStateSize(teamState).should.be.fulfilled;
         count.toNumber().should.be.equal(0);
-        const playerState = await instance.playerStateCreate(1,2,3,4,5).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         count = await instance.teamStateSize(teamState).should.be.fulfilled;
         count.toNumber().should.be.equal(1);
@@ -43,13 +43,13 @@ contract('TeamState', (accounts) => {
         result.should.be.equal(true);
         result = await instance.isValidTeamState([0]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidTeamState([0, 4,3,2,1]).should.be.fulfilled;
+        result = await instance.isValidTeamState([0, 4, 3, 2, 1]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidTeamState([8,0,34]).should.be.fulfilled;
+        result = await instance.isValidTeamState([8, 0, 34]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidTeamState([4,0]).should.be.fulfilled;
+        result = await instance.isValidTeamState([4, 0]).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await instance.isValidTeamState([3,4,5,76]).should.be.fulfilled;
+        result = await instance.isValidTeamState([3, 4, 5, 76]).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
@@ -57,7 +57,7 @@ contract('TeamState', (accounts) => {
         const nPlayers = 100;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         for (var i = 1; i < nPlayers; i += 5) {
-            const playerState = await instance.playerStateCreate(i, i + 1, i + 2, i + 3, i + 4).should.be.fulfilled;
+            const playerState = await instance.playerStateCreate(i, i + 1, i + 2, i + 3, i + 4, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
             teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
         const rating = await instance.computeTeamRating(teamState).should.be.fulfilled;
@@ -70,8 +70,8 @@ contract('TeamState', (accounts) => {
         const pass = 6;
         const shoot = 11;
         const endurance = 9;
-        let playerState0 = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        let playerState1 = await instance.playerStateCreate(defence+1, speed+1, pass+1, shoot+1, endurance+1).should.be.fulfilled;
+        let playerState0 = await instance.playerStateCreate(defence, speed, pass, shoot, endurance, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        let playerState1 = await instance.playerStateCreate(defence + 1, speed + 1, pass + 1, shoot + 1, endurance + 1, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState0).should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState1).should.be.fulfilled;

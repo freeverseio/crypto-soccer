@@ -1,6 +1,8 @@
+const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
-    .should();
+    .use(require('chai-bn')(BN))
+    .should();;
 
 const PlayerState = artifacts.require('PlayerState');
 
@@ -14,17 +16,24 @@ contract('PlayerState', (accounts) => {
     });
 
     it('create player state', async () => {
-        const defence = 3;
-        const speed = 23;
-        const pass = 2;
-        const shoot = 21;
-        const endurance = 10;
-        const state = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
-        (state.toNumber() & 0xff).should.be.equal(endurance);
-        (state.toNumber() >> 8 & 0xff).should.be.equal(shoot);
-        (state.toNumber() >> 8*2 & 0xff).should.be.equal(pass);
-        (state.toNumber() >> 8*3 & 0xff).should.be.equal(speed);
-        (state.toNumber() >> 8*4 & 0xff).should.be.equal(endurance);
+        const state = await instance.playerStateCreate(
+            defence = '16383',
+            speed = '13',
+            pass = '4',
+            shoot = '56',
+            endurance = '456',
+            0, 0, 0, 0, 0, 0, 0, 0
+        ).should.be.fulfilled;
+        let result = await instance.getDefence(state).should.be.fulfilled;
+        result.should.be.bignumber.that.equals(defence);
+        result = await instance.getSpeed(state).should.be.fulfilled;
+        result.should.be.bignumber.that.equals(speed);
+        result = await instance.getPass(state).should.be.fulfilled;
+        result.should.be.bignumber.that.equals(pass);
+        result = await instance.getShoot(state).should.be.fulfilled;
+        result.should.be.bignumber.that.equals(shoot);
+        result = await instance.getEndurance(state).should.be.fulfilled;
+        result.should.be.bignumber.that.equals(endurance);
     });
 
     it('is valid player state', async () => {
@@ -38,7 +47,7 @@ contract('PlayerState', (accounts) => {
         const pass = 6;
         const shoot = 11;
         const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let result = await instance.getDefence(playerState).should.be.fulfilled;
         result.toNumber().should.be.equal(defence);
         result = await instance.getSpeed(playerState).should.be.fulfilled;
@@ -57,10 +66,10 @@ contract('PlayerState', (accounts) => {
         const pass = 6;
         const shoot = 11;
         const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         const delta = 3;
         const updatedState = await instance.playerStateEvolve(playerState, delta).should.be.fulfilled;
-        updatedState.toNumber().should.not.be.equal(playerState.toNumber());
+        updatedState.should.be.bignumber.that.not.equals(playerState);
         let skill = await instance.getDefence(updatedState).should.be.fulfilled;
         skill.toNumber().should.be.equal(defence + delta);
         skill = await instance.getSpeed(updatedState).should.be.fulfilled;

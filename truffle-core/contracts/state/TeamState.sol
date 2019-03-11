@@ -43,14 +43,15 @@ contract TeamState is PlayerState {
         return teamState;
     }
 
-    function computeTeamRating(uint256[] memory teamState) public pure returns (uint128 rating) {
+    function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
         require(isValidTeamState(teamState), "invalid team state");
         for(uint256 i = 0 ; i < teamState.length ; i++){
-            rating += uint8(teamState[i] >> 8 * 4 & 0xff);
-            rating += uint8(teamState[i] >> 8 * 3 & 0xff);
-            rating += uint8(teamState[i] >> 8 * 2 & 0xff);
-            rating += uint8(teamState[i] >> 8 & 0xff);
-            rating += uint8(teamState[i] & 0xff);
+            uint256 playerState = teamState[i];
+            rating += getDefence(playerState);
+            rating += getSpeed(playerState);
+            rating += getPass(playerState);
+            rating += getShoot(playerState);
+            rating += getEndurance(playerState);
         }
     }
 }

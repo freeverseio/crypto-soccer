@@ -10,6 +10,16 @@ contract PlayerState {
 
     /**
      * @dev encoding:
+     * 5x14bits 
+       skills                  = 5x14 bits
+       monthOfBirthInUnixTime  = 14 bits
+       playerIdx               = 28 bits
+       currentTeamIdx          = 28 bits
+       currentShirtNum         =  4 bits
+       prevLeagueIdx           = 25 bits
+       prevTeamPosInLeague     =  8 bits
+       prevShirtNumInLeague    =  4 bits
+       lastSaleBlocknum        = 35 bits 
      *        defence:   0xff00000000
      *        speed:     0x00ff000000
      *        pass:      0x0000ff0000
@@ -17,56 +27,134 @@ contract PlayerState {
      *        endurance: 0x00000000ff
      */
     function playerStateCreate(
-        uint8 defence,
-        uint8 speed,
-        uint8 pass,
-        uint8 shoot,
-        uint8 endurance 
+        uint256 defence,
+        uint256 speed,
+        uint256 pass,
+        uint256 shoot,
+        uint256 endurance,
+        uint256 monthOfBirthInUnixTime,
+        uint256 playerId,
+        uint256 currentTeamId,
+        uint256 currentShirtNum,
+        uint256 prevLeagueId,
+        uint256 prevTeamPosInLeague,
+        uint256 prevShirtNumInLeague,
+        uint256 lastSaleBlock
     )
         public 
         pure
-        returns (uint256 state)
-    {
-        state |= uint256(defence) << 8 * 4;
-        state |= uint256(speed) << 8 * 3;
-        state |= uint256(pass) << 8 * 2;
-        state |= uint256(shoot) << 8;
-        state |= endurance;
-    }
-
-    function getDefence(uint256 playerState) public pure returns (uint8) {
-        require(isValidPlayerState(playerState), "invalid player state");
-        return uint8(playerState >> 8 * 4);
-    }
-    
-    function getSpeed(uint256 playerState) public pure returns (uint8) {
-        require(isValidPlayerState(playerState), "invalid player state");
-        return uint8(playerState >> 8 * 3);
-    }
-
-    function getPass(uint256 playerState) public pure returns (uint8) {
-        require(isValidPlayerState(playerState), "invalid player state");
-        return uint8(playerState >> 8 * 2);
-    }
-
-    function getShoot(uint256 playerState) public pure returns (uint8) {
-        require(isValidPlayerState(playerState), "invalid player state");
-        return uint8(playerState >> 8);
-    }
-
-    function getEndurance(uint256 playerState) public pure returns (uint8) {
-        require(isValidPlayerState(playerState), "invalid player state");
-        return uint8(playerState);
+        returns (uint256 state) 
+    { 
+        require(defence < 2**14, "defence out of bound");
+        require(speed < 2**14, "defence out of bound");
+        require(pass < 2**14, "defence out of bound");
+        require(shoot < 2**14, "defence out of bound");
+        require(endurance < 2**14, "defence out of bound");
+        require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
+        require(playerId < 2**28, "playerId out of bound");
+        require(currentTeamId < 2**28, "currentTeamIdx out of bound");
+        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
+        require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
+        require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
+        require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
+        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
+        state |= uint256(defence) << 242;
+        state |= uint256(speed) << 228;
+        state |= uint256(pass) << 214;
+        state |= uint256(shoot) << 200;
+        state |= uint256(endurance) << 186;
+        state |= uint256(monthOfBirthInUnixTime) << 172;
+        state |= uint256(playerId) << 144;
+        state |= uint256(currentTeamId) << 116;
+        state |= uint256(currentShirtNum) << 112;
+        state |= uint256(prevLeagueId) << 87;
+        state |= uint256(prevTeamPosInLeague) << 79;
+        state |= uint256(prevShirtNumInLeague) << 75;
+        state |= uint256(lastSaleBlock) << 40;
     }
 
     /// increase the skills of delta
-    function playerStateEvolve(uint256 playerState, uint8 delta) public pure returns (uint256) {
+    function playerStateEvolve(uint256 playerState, uint16 delta) public pure returns (uint256 evolvedState) {
         require(isValidPlayerState(playerState), "invalid player playerState");
-        uint8 defence = getDefence(playerState) + delta;
-        uint8 speed = getSpeed(playerState) + delta;
-        uint8 pass = getPass(playerState) + delta;
-        uint8 shoot = getShoot(playerState) + delta;
-        uint8 endurance = getEndurance(playerState) + delta;
-        return playerStateCreate(defence, speed, pass, shoot, endurance);
+        uint256 defence = getDefence(playerState) + delta;
+        uint256 speed = getSpeed(playerState) + delta;
+        uint256 pass = getPass(playerState) + delta;
+        uint256 shoot = getShoot(playerState) + delta;
+        uint256 endurance = getEndurance(playerState) + delta;
+        require(defence < 2**14, "defence out of bound");
+        require(speed < 2**14, "defence out of bound");
+        require(pass < 2**14, "defence out of bound");
+        require(shoot < 2**14, "defence out of bound");
+        require(endurance < 2**14, "defence out of bound");
+        evolvedState |= uint256(defence) << 242;
+        evolvedState |= uint256(speed) << 228;
+        evolvedState |= uint256(pass) << 214;
+        evolvedState |= uint256(shoot) << 200;
+        evolvedState |= uint256(endurance) << 186;
+    }
+
+    function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 40 & 0x7ffffffff);
+    }
+
+    function getPrevShirtNumInLeague(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 75 & 0xf);
+    }
+
+    function getPrevTeamPosInLeague(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 79 & 0xff);
+    }
+
+    function getPrevLeagueId(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 87 & 0x1ffffff);
+    }
+
+    function getCurrentShirtNum(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 112 & 0xf);
+    }
+
+    function getCurrentTeamId(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 116 & 0xfffffff);
+    }
+
+    function getPlayerId(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 144 & 0xfffffff);
+    }
+
+    function getMonthOfBirthInUnixTime(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 172 & 0x3fff);
+    }
+
+    function getDefence(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 242);
+    }
+    
+    function getSpeed(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 228 & 0x3fff);
+    }
+
+    function getPass(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 214 & 0x3fff);
+    }
+
+    function getShoot(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 200 & 0x3fff);
+    }
+
+    function getEndurance(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return uint256(playerState >> 186 & 0x3fff);
     }
 }

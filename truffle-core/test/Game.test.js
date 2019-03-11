@@ -71,7 +71,8 @@ contract('Game', (accounts) => {
                 speed,
                 pass,
                 shoot,
-                endurance
+                endurance,
+                0,0,0,0,0,0,0,0
             );
             teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }

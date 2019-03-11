@@ -31,7 +31,7 @@ contract('LeagueState', (accounts) => {
     });
 
     it('append not empty team state', async () => {
-        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
@@ -77,15 +77,15 @@ contract('LeagueState', (accounts) => {
     });
 
     it('update team state', async () => {
-        const playerState = await instance.playerStateCreate(1,2,3,4,5).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
         leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
         leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
-        let newTeamState = await instance.teamStateCreate().should.be.fulfilled; 
+        let newTeamState = await instance.teamStateCreate().should.be.fulfilled;
         await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.rejected;
-        const newPlayerState = await instance.playerStateCreate(5,4,3,2,1).should.be.fulfilled;
+        const newPlayerState = await instance.playerStateCreate(5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         newTeamState = await instance.teamStateAppend(newTeamState, newPlayerState).should.be.fulfilled;
         const updatedleagueState = await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.fulfilled;
         const resultTeamState = await instance.leagueStateAt(updatedleagueState, 1).should.be.fulfilled;
