@@ -38,6 +38,14 @@ contract('LeaguesComputer', (accounts) => {
         address.should.be.equal(engine.address);
     });
 
+    it('evolve team', async () => {
+        const result = await leagues.evolveTeam(teamState0, teamState1, 0, 2).should.be.fulfilled;
+        let valid = await states.isValidTeamState(result.updatedHomeTeamState).should.be.fulfilled;
+        valid.should.be.equal(true);
+        valid = await states.isValidTeamState(result.updatedVisitorTeamState).should.be.fulfilled;
+        valid.should.be.equal(true);
+    })
+
     it('compute match', async () => {
         const result = await leagues.computeMatch(teamState0, teamState1, tactics, '0x0').should.be.fulfilled;
         const scores = await leagues.decodeScore(result.score).should.be.fulfilled;
