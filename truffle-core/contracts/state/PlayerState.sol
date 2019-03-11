@@ -11,20 +11,16 @@ contract PlayerState {
     /**
      * @dev encoding:
      * 5x14bits 
-       skills                  = 5x14 bits
-       monthOfBirthInUnixTime  = 14 bits
-       playerIdx               = 28 bits
-       currentTeamIdx          = 28 bits
-       currentShirtNum         =  4 bits
-       prevLeagueIdx           = 25 bits
-       prevTeamPosInLeague     =  8 bits
-       prevShirtNumInLeague    =  4 bits
-       lastSaleBlocknum        = 35 bits 
-     *        defence:   0xff00000000
-     *        speed:     0x00ff000000
-     *        pass:      0x0000ff0000
-     *        shoot:     0x000000ff00
-     *        endurance: 0x00000000ff
+     * skills                  = 5x14 bits
+     * monthOfBirthInUnixTime  = 14 bits
+     * playerIdx               = 28 bits
+     * currentTeamIdx          = 28 bits
+     * currentShirtNum         =  4 bits
+     * prevLeagueIdx           = 25 bits
+     * prevTeamPosInLeague     =  8 bits
+     * prevShirtNumInLeague    =  4 bits
+     * lastSaleBlocknum        = 35 bits 
+     * available               = 40 bits
      */
     function playerStateCreate(
         uint256 defence,
@@ -86,11 +82,12 @@ contract PlayerState {
         require(pass < 2**14, "defence out of bound");
         require(shoot < 2**14, "defence out of bound");
         require(endurance < 2**14, "defence out of bound");
-        evolvedState |= uint256(defence) << 242;
-        evolvedState |= uint256(speed) << 228;
-        evolvedState |= uint256(pass) << 214;
-        evolvedState |= uint256(shoot) << 200;
-        evolvedState |= uint256(endurance) << 186;
+        evolvedState = playerState;
+        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 242)) | uint256(defence) << 242;
+        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 228)) | uint256(speed) << 228;
+        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 214)) | uint256(pass) << 214;
+        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 200)) | uint256(shoot) << 200;
+        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 186)) | uint256(endurance) << 186;
     }
 
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {

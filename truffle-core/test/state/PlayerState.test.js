@@ -67,12 +67,13 @@ contract('PlayerState', (accounts) => {
     });
 
     it('player state evolve', async () => {
-        const defence = 3;
-        const speed = 4;
-        const pass = 6;
-        const shoot = 11;
-        const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(
+            defence = 3, 
+            speed = 4, 
+            pass = 6, 
+            shoot = 11, 
+            endurance = 9, 
+            0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         const delta = 3;
         const updatedState = await instance.playerStateEvolve(playerState, delta).should.be.fulfilled;
         updatedState.should.be.bignumber.that.not.equals(playerState);
