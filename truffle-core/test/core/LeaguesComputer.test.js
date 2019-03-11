@@ -39,7 +39,7 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('evolve team', async () => {
-        const result = await leagues.evolveTeam(teamState0, teamState1, 0, 2).should.be.fulfilled;
+        const result = await leagues.evolveTeams(teamState0, teamState1, 0, 2).should.be.fulfilled;
         let valid = await states.isValidTeamState(result.updatedHomeTeamState).should.be.fulfilled;
         valid.should.be.equal(true);
         valid = await states.isValidTeamState(result.updatedVisitorTeamState).should.be.fulfilled;

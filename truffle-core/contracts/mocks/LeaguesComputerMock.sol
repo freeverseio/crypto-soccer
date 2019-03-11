@@ -9,7 +9,7 @@ contract LeaguesComputerMock is LeaguesComputer {
     {
     }    
 
-    function evolveTeam(
+    function evolveTeams(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8 homeGoals,
