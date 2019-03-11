@@ -38,6 +38,14 @@ contract('LeaguesComputer', (accounts) => {
         address.should.be.equal(engine.address);
     });
 
+    it('compute match', async () => {
+        const result = await leagues.computeMatch(teamState0, teamState1, tactics, '0x0').should.be.fulfilled;
+        let valid = await states.isValidTeamState(result.newHomeState).should.be.fulfilled;
+        valid.should.be.equal(true);
+        valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
+        valid.should.be.equal(true);
+    });
+
     it('calculate a day in a league', async () => {
         let day = 0;
         let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x0').should.be.fulfilled;
