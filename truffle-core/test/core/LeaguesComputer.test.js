@@ -40,6 +40,9 @@ contract('LeaguesComputer', (accounts) => {
 
     it('compute match', async () => {
         const result = await leagues.computeMatch(teamState0, teamState1, tactics, '0x0').should.be.fulfilled;
+        const scores = await leagues.decodeScore(result.score).should.be.fulfilled;
+        scores.home.toString().should.be.equal('0');
+        scores.visitor.toString().should.be.equal('2');
         let valid = await states.isValidTeamState(result.newHomeState).should.be.fulfilled;
         valid.should.be.equal(true);
         valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
