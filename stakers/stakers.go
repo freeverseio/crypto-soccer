@@ -206,9 +206,13 @@ func (s *Stakers) State2Str(state uint64) string {
 }
 
 func (s *Stakers) Enroll(staker common.Address) error {
-	log.Info("Enrolling ", staker.Hex())
-	stk := s.stks[staker]
+	stk, keyFound := s.stks[staker]
 
+	if !keyFound {
+		return fmt.Errorf("Account not found:", staker.Hex())
+	}
+
+	log.Info("Enrolling ", staker.Hex())
 	hasStaker, err := s.storage.HasStaker(stk.Address)
 	if err != nil {
 		return err
