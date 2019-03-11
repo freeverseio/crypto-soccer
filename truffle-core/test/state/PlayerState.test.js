@@ -6,6 +6,7 @@ require('chai')
 
 const PlayerState = artifacts.require('PlayerState');
 
+/// TODO: evaluate to extract the skills part
 contract('PlayerState', (accounts) => {
     let instance = null;
     let TEAMSTATEEND = null;
