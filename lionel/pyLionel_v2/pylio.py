@@ -165,6 +165,9 @@ def printTeam(teamIdx, ST_CLIENT):
         hash += printPlayer(playerState)
     return hash
 
+def getBlockNumForLastLeagueOfTeam(teamIdx, ST):
+    return ST.leagues[ST.teams[teamIdx].currentLeagueIdx].blockInit
+
 
 # quick solution to simulate changing teams.
 # for the purpose of Lionel, we'll start with a simple exchange, instead
@@ -184,14 +187,15 @@ def exchangePlayers(playerIdx1, address1, playerIdx2, address2, ST):
     state1 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx1, ST))
     state2 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx2, ST))
 
+    # a player should change his prevLeagueIdx only if the current team played
+    # a last league that started AFTER the last sale
+    if getBlockNumForLastLeagueOfTeam(teamIdx1, ST) > state1.getLastSaleBlocknum():
+        state1.prevLeagueIdx = ST.teams[teamIdx1].currentLeagueIdx
+        state1.prevTeamPosInLeague = ST.teams[teamIdx1].teamPosInCurrentLeague
 
-
-    state1.prevLeagueIdx        = ST.teams[teamIdx1].currentLeagueIdx
-    state1.prevTeamPosInLeague  = ST.teams[teamIdx1].teamPosInCurrentLeague
-
-    state2.prevLeagueIdx        = ST.teams[teamIdx2].currentLeagueIdx
-    state2.prevTeamPosInLeague  = ST.teams[teamIdx2].teamPosInCurrentLeague
-
+    if getBlockNumForLastLeagueOfTeam(teamIdx2, ST) > state2.getLastSaleBlocknum():
+        state2.prevLeagueIdx = ST.teams[teamIdx2].currentLeagueIdx
+        state2.prevTeamPosInLeague = ST.teams[teamIdx2].teamPosInCurrentLeague
 
     state1.setCurrentTeamIdx(teamIdx2)
     state2.setCurrentTeamIdx(teamIdx1)
