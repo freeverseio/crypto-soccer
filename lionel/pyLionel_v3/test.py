@@ -393,7 +393,7 @@ def test2():
     # create many teams, and leagues, and mess it all.
     advanceNVerses(1000, ST, ST_CLIENT)
     teamIdxs = []
-    for t in range(100):
+    for t in range(200):
         teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
         ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
 
@@ -408,12 +408,35 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
-        print(p)
         playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1)
         dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(playerIdx1)
         assert ST.isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
+    verseInit = duplicate(ST.currentVerse)
+    lastTeamIdx = 1
+    nTeamsPerLeague = 8
+    teamOrders = []
+    tactics = []
+    for t in range(int(nTeamsPerLeague/2)):
+        teamOrders.append(DEFAULT_ORDER)
+        teamOrders.append(REVERSE_ORDER)
+        tactics.append(TACTICS["433"])
+        tactics.append(TACTICS["442"])
 
+    for l in range(20):
+        verseInit += 7
+        usersInitData = {
+            "teamIdxs": [t for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)],
+            "teamOrders": teamOrders,
+            "tactics": tactics
+        }
+        lastTeamIdx += nTeamsPerLeague
+        print(l)
+        leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
+        leagueIdx_client = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
+
+        assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
+        assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
@@ -508,7 +531,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 196)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 328)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
