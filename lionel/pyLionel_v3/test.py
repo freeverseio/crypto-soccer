@@ -392,12 +392,16 @@ def test2():
 
     # create many teams, and leagues, and mess it all.
     advanceNVerses(1000, ST, ST_CLIENT)
+    nTeams      = 200
+    nLeagues    = 20
+    nPlayers    = 400
+
     teamIdxs = []
-    for t in range(200):
+    for t in range(nTeams):
         teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
         ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
 
-    for p in range(400):
+    for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
         playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
         ST.exchangePlayers(
@@ -423,7 +427,7 @@ def test2():
         tactics.append(TACTICS["433"])
         tactics.append(TACTICS["442"])
 
-    for l in range(20):
+    for l in range(nLeagues):
         verseInit += 7
         usersInitData = {
             "teamIdxs": [t for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)],
@@ -431,12 +435,82 @@ def test2():
             "tactics": tactics
         }
         lastTeamIdx += nTeamsPerLeague
-        print(l)
         leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
         leagueIdx_client = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
+        if l==0:
+            firstLeagueIdx = duplicate(leagueIdx)
+
         assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
         assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
+
+    advanceNVerses(1000, ST, ST_CLIENT)
+    for l in range(nLeagues):
+        leagueIdx = firstLeagueIdx + l
+        assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
+        assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
+
+        initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
+        dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
+        initStatesHash = serialHash(initPlayerStates)
+        dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+        ST.updateLeague(
+            leagueIdx,
+            initStatesHash,
+            dataAtMatchdayHashes,
+            scores,
+            ADDR2,
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
+
+        ST_CLIENT.updateLeague(
+            leagueIdx,
+            initStatesHash,
+            dataAtMatchdayHashes,
+            scores,
+            ADDR2,
+        )
+        ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree,
+                                                        scores)
+        assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
+
+        # A challenger fails to prove anything is wrong with init states...
+        dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
+        ST.challengeInitStates(
+            leagueIdx,
+            ST_CLIENT.leagues[leagueIdx].usersInitData,
+            duplicate(dataToChallengeInitStates),
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+
+        # ...or with matchday 0...
+        selectedMatchday = 0
+        dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+        merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+        ST.challengeMatchdayStates(
+            leagueIdx,
+            selectedMatchday,
+            dataAtPrevMatchday,
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
+            merkleProofDataForMatchday
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+
+        # ...or with matchday 4...
+        selectedMatchday = 5
+        dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+        merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+        ST.challengeMatchdayStates(
+            leagueIdx,
+            selectedMatchday,
+            dataAtPrevMatchday,
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
+            merkleProofDataForMatchday
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
@@ -531,7 +605,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 328)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 451)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
