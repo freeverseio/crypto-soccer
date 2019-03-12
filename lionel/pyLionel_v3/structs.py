@@ -528,6 +528,11 @@ class Storage(Counter):
             print("Challenger Wins: initStates provided by updater are invalid")
             self.leagues[leagueIdx].resetUpdater()
 
+    def getBlockNumForLastLeagueOfTeam(self, teamIdx):
+        return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
+
+
+
 
     # quick solution to simulate changing teams.
     # for the purpose of Lionel, we'll start with a simple exchange, instead
@@ -547,15 +552,19 @@ class Storage(Counter):
         state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
         state2 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2))
 
-        state1.prevLeagueIdx        = self.teams[teamIdx1].currentLeagueIdx
-        state1.prevTeamPosInLeague  = self.teams[teamIdx1].teamPosInCurrentLeague
+        # a player should change his prevLeagueIdx only if the current team played
+        # a last league that started AFTER the last sale
+        if self.getBlockNumForLastLeagueOfTeam(teamIdx1) > state1.getLastSaleBlocknum():
+            state1.prevLeagueIdx        = self.teams[teamIdx1].currentLeagueIdx
+            state1.prevTeamPosInLeague  = self.teams[teamIdx1].teamPosInCurrentLeague
 
-        state2.prevLeagueIdx        = self.teams[teamIdx2].currentLeagueIdx
-        state2.prevTeamPosInLeague  = self.teams[teamIdx2].teamPosInCurrentLeague
+        if self.getBlockNumForLastLeagueOfTeam(teamIdx2) > state2.getLastSaleBlocknum():
+            state2.prevLeagueIdx        = self.teams[teamIdx2].currentLeagueIdx
+            state2.prevTeamPosInLeague  = self.teams[teamIdx2].teamPosInCurrentLeague
+
 
         state1.setCurrentTeamIdx(teamIdx2)
         state2.setCurrentTeamIdx(teamIdx1)
-
 
         state1.setCurrentShirtNum(shirtNum2)
         state2.setCurrentShirtNum(shirtNum1)

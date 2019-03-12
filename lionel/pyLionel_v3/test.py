@@ -397,7 +397,7 @@ def test2():
         teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
         ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
 
-    for p in range(200):
+    for p in range(400):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
         playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
         ST.exchangePlayers(
@@ -408,6 +408,12 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
+        print(p)
+        playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1)
+        dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(playerIdx1)
+        assert ST.isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+
+
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
