@@ -204,9 +204,13 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
 def advanceNVerses(nVerses, ST, ST_CLIENT):
     for verse in range(nVerses):
         advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+
+
+def getRandomElement(arr, seed):
+    nElems = len(arr)
+    return arr[intHash(serialize2str(seed)) % nElems]
+
 # ------------------------------------------------
-
-
 
 # Merkle proof: given a tree, and its leafs,
 # it creates the hashes required to prove that a given idx in the leave belongs to the tree.

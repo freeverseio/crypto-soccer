@@ -418,20 +418,13 @@ def test2():
 
     lastTeamIdx = 1
     nTeamsPerLeague = 8
-    teamOrders = []
-    tactics = []
-    for t in range(int(nTeamsPerLeague/2)):
-        teamOrders.append(DEFAULT_ORDER)
-        teamOrders.append(REVERSE_ORDER)
-        tactics.append(TACTICS["433"])
-        tactics.append(TACTICS["442"])
 
     for l in range(nLeagues):
         verseInit = ST.currentVerse + 7
         usersInitData = {
             "teamIdxs": [t for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)],
-            "teamOrders": teamOrders,
-            "tactics": tactics
+            "teamOrders": [getRandomElement(POSSIBLE_ORDERS, t) for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)],
+            "tactics": [getRandomElement(POSSIBLE_TACTICS, t) for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)]
         }
         lastTeamIdx += nTeamsPerLeague
         leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
@@ -445,7 +438,12 @@ def test2():
         # advanceNVerses(19, ST, ST_CLIENT)
 
     advanceNVerses(1000, ST, ST_CLIENT)
+    # action0 = {"teamIdx": teamIdx1, "teamOrder": ORDER2, "tactics": TACTICS["433"]}
+    # action1 = {"teamIdx": teamIdx2, "teamOrder": DEFAULT_ORDER, "tactics": TACTICS["442"]}
+    #
+    # ST_CLIENT.accumulateAction(action0)
     for l in range(nLeagues):
+        advanceNVerses(intHash(str(l))%27 , ST, ST_CLIENT)
         leagueIdx = firstLeagueIdx + l
         assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
         assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
