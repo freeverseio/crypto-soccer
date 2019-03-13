@@ -9,17 +9,16 @@ contract LeagueChallengeable is LeagueUpdatable {
         return CHALLENGING_PERIOD_BLKS;
     }
 
-    function challengeMatchdayStates(
+    function challengeInitStates(
         uint256 id,
-        uint256 leagueDay,
-        uint256[] memory prevLeagueState
-        // userInitData
-        // userAlongData
-    ) 
-        public 
+        uint256[] memory teamIds,
+        uint8[3][] memory tactics
+    )
+        public
     {
         require(_isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
+        require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
 
     }
 
