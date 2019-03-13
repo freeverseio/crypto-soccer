@@ -16,7 +16,13 @@ contract('LeagueUsersAlongData', (accounts) => {
     });
 
     it('initial hash of existing league', async () => {
-        await league.create(id = 0, initBlock = 1, step = 1, teamIds = [1, 2]).should.be.fulfilled;
+        await league.create(
+            id = 0, 
+            initBlock = 1, 
+            step = 1, 
+            teamIds = [1, 2], 
+            tactics = [[4, 4, 3], [4, 4, 3]]
+        ).should.be.fulfilled;
         const hash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
         hash.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000');
     });
@@ -26,16 +32,26 @@ contract('LeagueUsersAlongData', (accounts) => {
     })
 
     it('update finished league', async () => {
-        const id = 0;
-        await league.create(id, initBlock = 1, step = 1, teamIds = [1, 2]).should.be.fulfilled;
+        await league.create(
+            id = 0, 
+            initBlock = 1, 
+            step = 1, 
+            teamIds = [1, 2], 
+            tactics = [[4, 4, 3], [4, 4, 3]]
+        ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(true);
         await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.rejected;
     });
 
     it('update', async () => {
-        const id = 0;
-        await league.create(id, initBlock = 1, step = 100000, teamIds = [1, 2]).should.be.fulfilled;
+        await league.create(
+            id = 0, 
+            initBlock = 1, 
+            step = 100000, 
+            teamIds = [1, 2], 
+            tactics = [[4, 4, 3], [4, 4, 3]]
+        ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(false);
         await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.fulfilled;
@@ -47,8 +63,13 @@ contract('LeagueUsersAlongData', (accounts) => {
     });
 
     it('update with wrong teamIdx', async () => {
-        const id = 0;
-        await league.create(id, initBlock = 1, step = 100000, teamIds = [1, 2]).should.be.fulfilled;
+        await league.create(
+            id = 0,
+            initBlock = 1,
+            step = 100000,
+            teamIds = [1, 2],
+            tactics = [[4, 4, 3], [4, 4, 3]]
+        ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(false);
         await league.updateUsersAlongDataHash(id, teamIdx = 2, tactic = [4, 4, 2]).should.be.rejected;

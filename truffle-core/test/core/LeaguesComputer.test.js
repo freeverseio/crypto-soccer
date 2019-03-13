@@ -27,7 +27,7 @@ contract('LeaguesComputer', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         states = await States.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, states.address).should.be.fulfilled;
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, blocksToInit, step, teamIds, tactics).should.be.fulfilled;
         leagueState = await states.leagueStateCreate().should.be.fulfilled;
         leagueState = await states.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
         leagueState = await states.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;

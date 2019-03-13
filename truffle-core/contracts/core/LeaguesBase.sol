@@ -12,19 +12,32 @@ contract LeaguesBase {
 
     mapping(uint256 => League) private _leagues;
 
-    function create(uint256 id, uint256 initBlock, uint256 step, uint256[] memory teamIds) public {
+    function create(
+        uint256 id, 
+        uint256 initBlock, 
+        uint256 step, 
+        uint256[] memory teamIds,
+        uint8[3][] memory tactics
+    ) 
+        public 
+    {
         require(initBlock > 0, "invalid init block");
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(teamIds.length % 2 == 0, "odd teams count");
         require(!_exists(id), "league already created");
-        bytes32 usersInitDataHash = 0;
+        uint256 nTeams = teamIds.length;
+        bytes32 usersInitDataHash = hashUsersInitData(teamIds, tactics);
         _leagues[id] = League(
-            teamIds.length,
+            nTeams,
             initBlock, 
             step,
             usersInitDataHash
         );
+    }
+
+    function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
+        return keccak256(abi.encode(teamIds, tactics));
     }
 
     function getInitBlock(uint256 id) public view returns (uint256) {

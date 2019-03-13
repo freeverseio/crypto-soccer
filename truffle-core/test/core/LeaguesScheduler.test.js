@@ -13,9 +13,10 @@ contract('LeaguesScheduler', (accounts) => {
         const initBlock = 1;
         const step = 1;
         const teamIds = [1, 2];
+        const tactics = [[4, 4, 3], [4, 4, 3]];
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new().should.be.fulfilled;
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
     });
 
     it('end block of unexistend league', async () => {

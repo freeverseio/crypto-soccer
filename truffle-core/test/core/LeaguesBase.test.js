@@ -10,6 +10,7 @@ contract('LeaguesBase', (accounts) => {
     const step = 1;
     const id = 0;
     const teamIds = [1, 2];
+    const tactics = [[4,4,3], [4,5,2]];
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
@@ -23,42 +24,40 @@ contract('LeaguesBase', (accounts) => {
 
     it('create league with no team', async () => {
         const teamIds = [];
-        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;
     });
 
     it('create league with 1 team', async () => {
         const teamIds = [1];
-        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;
     });
 
     it('create league with 2 teams', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
     });
 
     it('create leagues with odd teams', async () => {
-        await leagues.create(id, initBlock, step, [1, 2, 3]).should.be.rejected;
-        await leagues.create(id, initBlock, step, [1, 2, 3, 4, 5]).should.be.rejected;
-        await leagues.create(id, initBlock, step, [1, 2, 3, 4, 5, 6, 7]).should.be.rejected;
+        await leagues.create(id, initBlock, step, [1], [[4,4,3]]).should.be.rejected;
     });
 
     it('init block of a league', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
         const result = await leagues.getInitBlock(id).should.be.fulfilled;
         result.toNumber().should.be.equal(initBlock);
     });
 
     it('create 2 leagues with the same id', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;
     });
 
     it('step == 0 is invalid', async () => {
         const step = 0;
-        await leagues.create(id, initBlock, step, teamIds).should.be.rejected;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;
     });
 
     it('count teams', async () => {
-        await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
         const count = await leagues.countTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
