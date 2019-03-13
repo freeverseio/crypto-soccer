@@ -1,2 +1,2 @@
-npm install easy-web-app
-node index.js
+npm install
+npm start
