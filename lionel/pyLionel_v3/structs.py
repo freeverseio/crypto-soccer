@@ -229,6 +229,7 @@ class ActionsAccumulator():
             else:
                 assert action[1] == 0, "Tried to remove from buffer the actions in a league that was not present"
 
+
 # Simple struct that stores the data that is computed/updated every matchday
 class DataAtMatchday():
     def __init__(self, statesAtMatchday, tacticsAtMatchday, teamOrdersAtMatchday):
@@ -779,7 +780,7 @@ class Storage(Counter):
 
 
         if leagueIdxAndActionsArray:
-            tree, depth = make_tree(leagueIdxAndActionsArray, pylio.serialHash)
+            tree, depth = make_tree(pylio.duplicate(leagueIdxAndActionsArray), pylio.serialHash)
             rootTree    = root(tree)
         else:
             tree        = 0
@@ -790,7 +791,7 @@ class Storage(Counter):
 
         self.Accumulator.commitedActions.append(leagueIdxAndActionsArray)
         self.Accumulator.commitedTrees.append(tree)
-        self.Accumulator.clearBuffer(leagueIdxAndActionsArray)
+        self.Accumulator.clearBuffer(pylio.duplicate(leagueIdxAndActionsArray))
 
     def getMerkleProof(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
@@ -912,7 +913,7 @@ class Storage(Counter):
         assert dataAtMatchdayHashes[0] == pylio.serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
         # compute MerkleRoot for last day:
         lastStatesFlattened = pylio.flatten(dataAtMatchdays[-1].statesAtMatchday)
-        lastDayTree, depth = make_tree(lastStatesFlattened, pylio.serialHash)
+        lastDayTree, depth = make_tree(pylio.duplicate(lastStatesFlattened), pylio.serialHash)
         dataAtMatchdayHashes.append(root(lastDayTree))
         return dataAtMatchdayHashes, lastDayTree
 

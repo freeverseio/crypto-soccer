@@ -416,7 +416,6 @@ def test2():
         dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(playerIdx1)
         assert ST.isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
-    verseInit = duplicate(ST.currentVerse)
     lastTeamIdx = 1
     nTeamsPerLeague = 8
     teamOrders = []
@@ -428,7 +427,7 @@ def test2():
         tactics.append(TACTICS["442"])
 
     for l in range(nLeagues):
-        verseInit += 7
+        verseInit = ST.currentVerse + 7
         usersInitData = {
             "teamIdxs": [t for t in range(lastTeamIdx,lastTeamIdx+nTeamsPerLeague)],
             "teamOrders": teamOrders,
@@ -443,6 +442,7 @@ def test2():
 
         assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
         assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
+        # advanceNVerses(19, ST, ST_CLIENT)
 
     advanceNVerses(1000, ST, ST_CLIENT)
     for l in range(nLeagues):
@@ -560,7 +560,7 @@ def test3():
 
 def test4():
     leafs = [1,2,3,4,5,6,"rew"]
-    tree, depth = make_tree(leafs, serialHash)
+    tree, depth = make_tree(duplicate(leafs), serialHash)
     assert depth == get_depth(tree), "Depth not computed correctly"
 
     # We show that this library can prove 1 leaf at a time, or (below), many
@@ -581,7 +581,7 @@ def test4():
     # it is also valid in the case of a single element, where the 'neededHashes' is empty,
     # as we just need the root(tree), which is passed too
     leafs = ["prew"]
-    tree, depth = make_tree(leafs, serialHash)
+    tree, depth = make_tree(duplicate(leafs), serialHash)
     idxsToProve = [0]
     neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
     assert not neededHashes, "No Hash should be needed, but you have a non empty array"
@@ -605,7 +605,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 451)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 321)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
