@@ -52,7 +52,7 @@ contract LeaguesBase {
         return _leagues[id].step;
     }
 
-    function countTeams(uint256 id) public view returns (uint256) {
+    function getNTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id].nTeams;
     }

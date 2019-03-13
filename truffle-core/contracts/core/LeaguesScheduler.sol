@@ -5,7 +5,7 @@ import "./LeaguesBase.sol";
 contract LeaguesScheduler is LeaguesBase {
     function countLeagueDays(uint256 id) public view returns (uint256) 
     {
-        uint256 nTeams = countTeams(id);
+        uint256 nTeams = getNTeams(id);
         return 2*(nTeams - 1);
     }
 
@@ -23,7 +23,7 @@ contract LeaguesScheduler is LeaguesBase {
 
     function getMatchPerDay(uint256 id) public view returns (uint256)
     {
-        uint256 nTeams = countTeams(id);
+        uint256 nTeams = getNTeams(id);
         return nTeams / 2;
     }
 
@@ -47,7 +47,7 @@ contract LeaguesScheduler is LeaguesBase {
     {
         require(matchday < countLeagueDays(id), "wrong match day");
         require(matchIdx < getMatchPerDay(id), "wrong match");
-        uint256 nTeams = countTeams(id);
+        uint256 nTeams = getNTeams(id);
         if (matchday < (nTeams - 1))
             (homeIdx, visitorIdx) = _getTeamsInMatchFirstHalf(matchday, matchIdx, nTeams);
         else

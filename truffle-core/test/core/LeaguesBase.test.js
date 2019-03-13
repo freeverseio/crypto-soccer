@@ -19,7 +19,7 @@ contract('LeaguesBase', (accounts) => {
     it('unexistent league', async () => {
         await leagues.getInitBlock(id).should.be.rejected;
         await leagues.getStep(id).should.be.rejected;
-        await leagues.countTeams(id).should.be.rejected;
+        await leagues.getNTeams(id).should.be.rejected;
     });
 
     it('create league with no team', async () => {
@@ -58,7 +58,7 @@ contract('LeaguesBase', (accounts) => {
 
     it('count teams', async () => {
         await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
-        const count = await leagues.countTeams(id).should.be.fulfilled;
+        const count = await leagues.getNTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
 

@@ -13,7 +13,7 @@ contract LeagueUsersAlongData is LeaguesScheduler {
     function updateUsersAlongDataHash(uint256 id, uint256 teamIdx, uint8[3] memory tactic) public {
         require(_exists(id), "unexistent league");
         require(!hasFinished(id), "finished league");
-        require(teamIdx < countTeams(id), "out of bouds: wrong team idx");
+        require(teamIdx < getNTeams(id), "out of bouds: wrong team idx");
         bytes32 dataHash = keccak256(abi.encode(_usersAlongDataHash[id], teamIdx, tactic, block.number));
         _usersAlongDataHash[id] = dataHash;
     }
