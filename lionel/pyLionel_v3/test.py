@@ -524,47 +524,6 @@ def test2():
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
     return testResult
 
-def test3():
-    ST          = Storage()
-    ST_CLIENT   = Storage()
-    ST_CLIENT.addAccumulator()
-
-    advanceToBlock(10, ST, ST_CLIENT)
-
-    action0 = {"teamIdx": 3, "tactics": TACTICS["433"]}
-    action1 = {"teamIdx": 2, "tactics": TACTICS["442"]}
-    action3 = {"teamIdx": 22, "tactics": TACTICS["433pressing"]}
-    action4 = {"teamIdx": 33, "tactics": TACTICS["442pressing"]}
-
-    ST_CLIENT.accumulateAction(action0)
-    ST_CLIENT.accumulateAction(action1)
-
-    assert ST.currentVerse == ST_CLIENT.currentVerse == 0, "Error: Starting verse should be 0 (dummy verse)."
-    assert len(ST_CLIENT.VerseCommits)==1, "Error: CLIENT should start with a single dummy commit."
-    assert len(ST.VerseCommits)==1, "Error: BC should start with a single dummy commit."
-    assert len(ST_CLIENT.Accumulator.buffer)==1, "Error: CLIENT should have accumulated actions from 1 block"
-    assert len(ST_CLIENT.Accumulator.buffer[10])==2, "Error: CLIENT should have accumulated 2 actions for 1st block"
-
-    advanceNBlocks(3, ST, ST_CLIENT)
-
-    ST_CLIENT.accumulateAction(action3)
-    assert len(ST_CLIENT.Accumulator.buffer[13])==1, "Error: CLIENT should have accumulated another action"
-
-    advanceNBlocks(360, ST, ST_CLIENT)
-
-    assert ST.currentVerse == ST_CLIENT.currentVerse == 1, "Error: Current verse is outdated"
-    assert len(ST_CLIENT.VerseCommits)==2, "Error: CLIENT should have made the first non-dummy commit already."
-    assert len(ST.VerseCommits)==2, "Error: BC should have made the first non-dummy commit already."
-    assert len(ST_CLIENT.Accumulator.buffer)==0, "Error: CLIENT should have emptied the actions buffer"
-    assert len(ST_CLIENT.Accumulator.commitedActions)==2, "Error: CLIENT should have updated the commited actions"
-
-
-    ST_CLIENT.accumulateAction(action4)
-
-
-    testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
-    return testResult
-
 
 def test4():
     leafs = [1,2,3,4,5,6,"rew"]
@@ -614,7 +573,6 @@ def runTest(name, result, expected):
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 73)
-# success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
