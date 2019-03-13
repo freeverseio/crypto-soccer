@@ -29,7 +29,7 @@ def test1():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State            = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
+    player1State            = getLastWrittenInClientPlayerStateFromPlayerIdx(1, ST_CLIENT)
     player1ChallengeData    = computeDataToChallengePlayerIdx(1, ST_CLIENT)
     assert isCorrectStateForPlayerIdx(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
 
@@ -37,12 +37,12 @@ def test1():
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print "\n\nplayers 2 and 24 before sale:\n"
-    hash1 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST_CLIENT))
+    hash1 = printPlayer(getLastWrittenInClientPlayerStateFromPlayerIdx(2, ST_CLIENT))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print "\n"
-    hash2 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash2 = printPlayer(getLastWrittenInClientPlayerStateFromPlayerIdx(24, ST_CLIENT))
 
     ST.advanceNBlocks(10)
     ST_CLIENT.advanceNBlocks(10)
@@ -59,9 +59,9 @@ def test1():
     )
 
     print "\n\nplayers 2 and 24 after sale:\n"
-    hash3 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST))
+    hash3 = printPlayer(getLastWrittenInClientPlayerStateFromPlayerIdx(2, ST))
     print "\n"
-    hash4 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash4 = printPlayer(getLastWrittenInClientPlayerStateFromPlayerIdx(24, ST_CLIENT))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -345,8 +345,6 @@ def test2():
     initStatesHash = serialHash(initPlayerStates)
     statesAtMatchdayHashes = [serialHash(state) for state in statesAtMatchday]
 
-    # compressedLeagueState encapsulates these hashes (in v2 maybe 1 single hash)
-    #
     ST.leagues[leagueIdx2].updateLeague(
         initStatesHash,
         statesAtMatchdayHashes,
@@ -383,8 +381,8 @@ def test2():
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
-    # ... not for matchdat = 2
-    selectedMatchday    = 2
+    # ... not for matchday = 5 (the last one)
+    selectedMatchday    = 5
     prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
                                             else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
 
@@ -410,7 +408,7 @@ def test2():
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1State = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
+    player1State = getLastWrittenInClientPlayerStateFromPlayerIdx(1, ST_CLIENT)
     player1ChallengeData = computeDataToChallengePlayerIdx(1, ST_CLIENT)
     assert isCorrectStateForPlayerIdx(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
 
@@ -418,6 +416,38 @@ def test2():
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
     # corresponds to the player bought from team4, in the exchange done above.
     printTeam(teamIdx1, ST_CLIENT)
+
+    # create many teams, and leagues, and mess it all.
+    ST.advanceNBlocks(1000)
+    ST_CLIENT.advanceNBlocks(1000)
+    nTeams      = 200
+    nLeagues    = 20
+    nPlayers    = 400
+
+    for t in range(nTeams):
+        createTeam("BotTeam"+str(t), ADDR1, ST)
+        createTeam("BotTeam"+str(t), ADDR2, ST_CLIENT)
+
+    for p in range(nPlayers):
+        playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
+        playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
+        exchangePlayers(
+            playerIdx1, getOwnerAddrFromPlayerIdx(playerIdx1, ST),
+            playerIdx2, getOwnerAddrFromPlayerIdx(playerIdx2, ST),
+            ST
+        )
+        exchangePlayers(
+            playerIdx1, getOwnerAddrFromPlayerIdx(playerIdx1, ST_CLIENT),
+            playerIdx2, getOwnerAddrFromPlayerIdx(playerIdx2, ST_CLIENT),
+            ST_CLIENT
+        )
+        # playerState = getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1, ST_CLIENT)
+        # dataToChallengePlayerState = computeDataToChallengePlayerIdx(playerIdx1, ST_CLIENT)
+        # assert isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState,
+        #                                   ST), "Computed player state by CLIENT is not recognized by BC.."
+
+
+
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize(ST) + serialize(ST_CLIENT)) % 1000
@@ -440,3 +470,5 @@ if success:
     print "ALL TESTS:  -- PASSED --"
 else:
     print "At least one test FAILED"
+
+# TODO: getLastWrittenPlayerStateFromPlayerIdx => thre are 2 others!

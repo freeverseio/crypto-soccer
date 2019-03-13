@@ -131,15 +131,6 @@ def getPlayerStateBeforePlayingAnyLeague(playerIdx, ST):
         return playerState
 
 
-def getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT):
-    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST_CLIENT)
-
-    if prevLeagueIdx == 0:
-        # this can be known both by CLIENT and BC
-        return getPlayerStateBeforePlayingAnyLeague(playerIdx, ST_CLIENT)
-    else:
-        # this can only be accessed by the CLIENT
-        return getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST_CLIENT)
 
 
 # Simple player print
@@ -159,7 +150,7 @@ def printTeam(teamIdx, ST_CLIENT):
     print "Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name)
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT)
-        playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx,ST_CLIENT)
+        playerState = getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx,ST_CLIENT)
         playerChallengeData = computeDataToChallengePlayerIdx(playerState.getPlayerIdx(), ST_CLIENT)
         assert isCorrectStateForPlayerIdx(playerState, playerChallengeData, ST_CLIENT), "Player state not correctly in sync"
         hash += printPlayer(playerState)
@@ -184,8 +175,8 @@ def exchangePlayers(playerIdx1, address1, playerIdx2, address2, ST):
     assert ST.teamNameHashToOwnerAddr[intHash(ST.teams[teamIdx2].name)] == address2, "Exchange Failed, owner not correct"
 
     # get states from BC in memory to do changes, and only write back once at the end
-    state1 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx1, ST))
-    state2 = copy.deepcopy(getLastWrittenPlayerStateFromPlayerIdx(playerIdx2, ST))
+    state1 = copy.deepcopy(getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1, ST))
+    state2 = copy.deepcopy(getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2, ST))
 
     # a player should change his prevLeagueIdx only if the current team played
     # a last league that started AFTER the last sale
@@ -296,7 +287,7 @@ def getInitPlayerStates(leagueIdx, ST, usersInitData = None, dataToChallengeInit
             else:
                 # if no dataToChallenge is provided, it means this is a request
                 # from a Client, so just read whatever pre-hash data you have
-                playerState = getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST)
+                playerState = getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx, ST)
             initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
         teamPosInLeague += 1
     return initPlayerStates
@@ -480,7 +471,7 @@ def areEqualStructs(st1, st2):
 def computeDataToChallengePlayerIdx(playerIdx, ST_CLIENT):
     prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST_CLIENT)
     if prevLeagueIdx == 0:
-        return getLastWrittenPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
+        return getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx, ST_CLIENT)
     else:
         return getAllStatesAtEndOfLeague(prevLeagueIdx, ST_CLIENT)
 
@@ -542,3 +533,27 @@ def getPlayerStateFromChallengeData(playerIdx, dataToChallengePlayerState, ST):
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+
+
+def getOwnerAddrFromTeamIdx(teamIdx, ST):
+    return ST.teamNameHashToOwnerAddr[intHash(ST.teams[teamIdx].name)]
+
+def getOwnerAddrFromPlayerIdx(playerIdx, ST):
+    currentTeamIdx = getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx, ST).currentTeamIdx
+    return getOwnerAddrFromTeamIdx(currentTeamIdx, ST)
+
+def getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx, ST):
+    if isPlayerVirtual(playerIdx, ST):
+        return getPlayerStateBeforePlayingAnyLeague(playerIdx, ST)
+    else:
+        return ST.playerIdxToPlayerState[playerIdx]
+
+def getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx, ST):
+    prevLeagueIdx, teamPosInPrevLeague = getLastPlayedLeagueIdx(playerIdx, ST)
+    if prevLeagueIdx == 0:
+        # this can be known both by CLIENT and BC
+        return getPlayerStateBeforePlayingAnyLeague(playerIdx, ST)
+    else:
+        # this can only be accessed by the CLIENT
+        return getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST)
+

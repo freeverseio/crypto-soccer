@@ -396,9 +396,8 @@ def test2():
     nLeagues    = 20
     nPlayers    = 400
 
-    teamIdxs = []
     for t in range(nTeams):
-        teamIdxs.append(ST.createTeam("BotTeam"+str(t), ADDR1))
+        ST.createTeam("BotTeam"+str(t), ADDR1)
         ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
 
     for p in range(nPlayers):
