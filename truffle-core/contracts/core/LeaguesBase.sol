@@ -25,6 +25,7 @@ contract LeaguesBase {
         require(step > 0, "invalid block step");
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(teamIds.length % 2 == 0, "odd teams count");
+        require(teamIds.length == tactics.length, "nTeams and nTactics mismatch");
         require(!_exists(id), "league already created");
         uint256 nTeams = teamIds.length;
         bytes32 usersInitDataHash = hashUsersInitData(teamIds, tactics);
@@ -36,8 +37,9 @@ contract LeaguesBase {
         );
     }
 
-    function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
-        return keccak256(abi.encode(teamIds, tactics));
+    function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
+        require(_exists(id), "unexistent league");
+        return _leagues[id].usersInitDataHash;
     }
 
     function getInitBlock(uint256 id) public view returns (uint256) {
@@ -53,6 +55,10 @@ contract LeaguesBase {
     function countTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id].nTeams;
+    }
+
+    function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
+        return keccak256(abi.encode(teamIds, tactics));
     }
 
     function _exists(uint256 id) internal view returns (bool) {

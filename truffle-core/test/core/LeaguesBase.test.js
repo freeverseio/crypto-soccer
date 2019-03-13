@@ -61,4 +61,12 @@ contract('LeaguesBase', (accounts) => {
         const count = await leagues.countTeams(id).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
+
+    it('hash users init data', async () => {
+        const hash = await leagues.hashUsersInitData(teamIds, tactics).should.be.fulfilled;
+        hash.should.be.equal('0xf8a82ba6630ed0305c4d7718ec5f87567f404ebffc7ddd22a344831368bf4537');
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
+        const usersInitDataHash = await leagues.getUsersInitDataHash(id).should.be.fulfilled;
+        usersInitDataHash.should.be.equal(hash);
+    });
 });
