@@ -63,8 +63,8 @@ def getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST):
 # The inverse of the previous relation
 def getTeamIdxAndShirtForPlayerIdx(playerIdx, ST, forceAtBirth = False):
     if forceAtBirth or isPlayerVirtual(playerIdx, ST):
-        teamIdx     = 1 + (playerIdx-1)/NPLAYERS_PER_TEAM
-        shirtNum    = (playerIdx-1) % NPLAYERS_PER_TEAM
+        teamIdx     = int(1 + (playerIdx-1)//NPLAYERS_PER_TEAM)
+        shirtNum    = int((playerIdx-1) % NPLAYERS_PER_TEAM)
         return teamIdx, shirtNum
     else:
         return ST.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx(), \
@@ -190,7 +190,6 @@ def exchangePlayers(playerIdx1, address1, playerIdx2, address2, ST):
 
     state1.setCurrentTeamIdx(teamIdx2)
     state2.setCurrentTeamIdx(teamIdx1)
-
 
     state1.setCurrentShirtNum(shirtNum2)
     state2.setCurrentShirtNum(shirtNum1)
@@ -401,7 +400,7 @@ def computeAllMatchdayStates(blockInit, blockStep, initPlayerStates, usersInitDa
     tactics = duplicate(usersInitData["tactics"])
     nTeams = len(usersInitData["teamIdxs"])
     nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams/2
+    nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchdays, nMatchesPerMatchday, 2], int)
     matchdayBlock = duplicate(blockInit)
 
@@ -431,7 +430,7 @@ def computeUsersAlongDataHash(usersAlongData):
 def getMatchsPlayerByTeam(selectedTeam, nTeams):
     matchdayMatch = []
     nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams/2
+    nMatchesPerMatchday = nTeams//2
     for matchday in range(nMatchdays):
         for match in range(nMatchesPerMatchday):
             team1, team2 = getTeamsInMatch(matchday, match, nTeams)
@@ -557,3 +556,6 @@ def getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx, ST):
         # this can only be accessed by the CLIENT
         return getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx, ST)
 
+def getRandomElement(arr, seed):
+    nElems = len(arr)
+    return arr[intHash(str(seed)) % nElems]

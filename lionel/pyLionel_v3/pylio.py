@@ -158,7 +158,7 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
 def getMatchsPlayerByTeam(selectedTeam, nTeams):
     matchdayMatch = []
     nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams/2
+    nMatchesPerMatchday = nTeams//2
     for matchday in range(nMatchdays):
         for match in range(nMatchesPerMatchday):
             team1, team2 = getTeamsInMatch(matchday, match, nTeams)

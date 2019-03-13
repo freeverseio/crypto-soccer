@@ -441,11 +441,36 @@ def test2():
             playerIdx2, getOwnerAddrFromPlayerIdx(playerIdx2, ST_CLIENT),
             ST_CLIENT
         )
-        # playerState = getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1, ST_CLIENT)
-        # dataToChallengePlayerState = computeDataToChallengePlayerIdx(playerIdx1, ST_CLIENT)
-        # assert isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState,
-        #                                   ST), "Computed player state by CLIENT is not recognized by BC.."
+        playerState = getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1, ST_CLIENT)
+        dataToChallengePlayerState = computeDataToChallengePlayerIdx(playerIdx1, ST_CLIENT)
+        assert isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState,
+                                          ST), "Computed player state by CLIENT is not recognized by BC.."
 
+    lastTeamIdx = 1
+    nTeamsPerLeague = 8
+    # toni
+    for l in range(nLeagues):
+        blockInit = ST.currentBlock + 7
+        usersInitData = {
+            "teamIdxs": [t for t in range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)],
+            "teamOrders": [getRandomElement(POSSIBLE_ORDERS, t) for t in
+                           range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)],
+            "tactics": [getRandomElement(POSSIBLE_TACTICS, t) for t in
+                        range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)]
+        }
+        lastTeamIdx += nTeamsPerLeague
+        leagueIdx           = createLeague(blockInit, blockStep, usersInitData, ST)
+        leagueIdx_client    = createLeagueClient(blockInit, blockStep, usersInitData, ST_CLIENT)
+
+        if l == 0:
+            firstLeagueIdx = duplicate(leagueIdx)
+
+        assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
+        assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentBlock), "League not detected as created"
+
+        # advance either 1 or 0 verses
+        ST.advanceNBlocks(intHash(str(l))%2)
+        ST_CLIENT.advanceNBlocks(intHash(str(l))%2)
 
 
 

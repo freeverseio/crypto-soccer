@@ -434,13 +434,12 @@ def test2():
 
         assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
         assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
-        # advanceNVerses(19, ST, ST_CLIENT)
+        advanceNVerses(intHash(str(l))%2 , ST, ST_CLIENT) # advance either 1 or 0 verses
 
     advanceNVerses(1000, ST, ST_CLIENT)
-    # ST_CLIENT.accumulateAction(action0)
     nActionsPerLoop = 3
     for l in range(nLeagues):
-        advanceNVerses(intHash(str(l))%27 , ST, ST_CLIENT)
+        advanceNVerses(intHash(str(l))%27 , ST, ST_CLIENT) # advance any number of verses between 0, 27
         leagueIdx = firstLeagueIdx + l
         assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
         assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
@@ -571,7 +570,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 73)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 804)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")

@@ -414,8 +414,8 @@ class Storage(Counter):
     # The inverse of the previous relation
     def getTeamIdxAndShirtForPlayerIdx(self, playerIdx, forceAtBirth=False):
         if forceAtBirth or self.isPlayerVirtual(playerIdx):
-            teamIdx = 1 + (playerIdx - 1) // NPLAYERS_PER_TEAM
-            shirtNum = (playerIdx - 1) % NPLAYERS_PER_TEAM
+            teamIdx = int(1 + (playerIdx - 1) // NPLAYERS_PER_TEAM)
+            shirtNum = int((playerIdx - 1) % NPLAYERS_PER_TEAM)
             return teamIdx, shirtNum
         else:
             return self.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx(), \
