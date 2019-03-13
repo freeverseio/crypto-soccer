@@ -18,7 +18,6 @@ contract('LeaguesBase', (accounts) => {
     it('unexistent league', async () => {
         await leagues.getInitBlock(id).should.be.rejected;
         await leagues.getStep(id).should.be.rejected;
-        await leagues.getTeamIds(id).should.be.rejected;
         await leagues.countTeams(id).should.be.rejected;
     });
 
@@ -34,10 +33,6 @@ contract('LeaguesBase', (accounts) => {
 
     it('create league with 2 teams', async () => {
         await leagues.create(id, initBlock, step, teamIds).should.be.fulfilled;
-        const result = await leagues.getTeamIds(id).should.be.fulfilled;
-        result.length.should.be.equal(2);
-        result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(2);
     });
 
     it('create leagues with odd teams', async () => {

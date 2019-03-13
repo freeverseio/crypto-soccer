@@ -2,12 +2,12 @@ pragma solidity ^0.5.0;
 
 contract LeaguesBase {
     struct League {
-        // teams ids in the league
-        uint256[] teamIds;
+        uint256 nTeams;
         // init block of the league
         uint256 initBlock;
         // step blocks of the league
         uint256 step;
+        bytes32 usersInitDataHash;
     }
 
     mapping(uint256 => League) private _leagues;
@@ -18,10 +18,12 @@ contract LeaguesBase {
         require(teamIds.length > 1, "minimum 2 teams per league");
         require(teamIds.length % 2 == 0, "odd teams count");
         require(!_exists(id), "league already created");
+        bytes32 usersInitDataHash = 0;
         _leagues[id] = League(
-            teamIds, 
+            teamIds.length,
             initBlock, 
-            step
+            step,
+            usersInitDataHash
         );
     }
 
@@ -35,14 +37,9 @@ contract LeaguesBase {
         return _leagues[id].step;
     }
 
-    function getTeamIds(uint256 id) public view returns (uint256[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].teamIds;
-    }
-
     function countTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].teamIds.length;
+        return _leagues[id].nTeams;
     }
 
     function _exists(uint256 id) internal view returns (bool) {
