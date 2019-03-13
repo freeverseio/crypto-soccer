@@ -5,7 +5,7 @@ import "./LeagueUpdatable.sol";
 contract LeagueChallengeable is LeagueUpdatable {
     uint256 constant private CHALLENGING_PERIOD_BLKS = 60;
 
-    function getChallengePeriod() external view returns (uint256) {
+    function getChallengePeriod() external pure returns (uint256) {
         return CHALLENGING_PERIOD_BLKS;
     }
 
