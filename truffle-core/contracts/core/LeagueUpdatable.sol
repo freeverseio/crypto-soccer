@@ -9,8 +9,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         bytes32 initStateHash;
         // hash of the day hashes of the league
         bytes32[] dayStateHashes;
-        // hash of tactics
-        bytes32[] tacticHashes;
         // scores of the league 
         uint16[] scores;
         // updater address
