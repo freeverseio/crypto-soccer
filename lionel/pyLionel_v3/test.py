@@ -438,15 +438,25 @@ def test2():
         # advanceNVerses(19, ST, ST_CLIENT)
 
     advanceNVerses(1000, ST, ST_CLIENT)
-    # action0 = {"teamIdx": teamIdx1, "teamOrder": ORDER2, "tactics": TACTICS["433"]}
-    # action1 = {"teamIdx": teamIdx2, "teamOrder": DEFAULT_ORDER, "tactics": TACTICS["442"]}
-    #
     # ST_CLIENT.accumulateAction(action0)
+    nActionsPerLoop = 3
     for l in range(nLeagues):
         advanceNVerses(intHash(str(l))%27 , ST, ST_CLIENT)
         leagueIdx = firstLeagueIdx + l
         assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
         assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
+
+        advanceNVerses(1 , ST, ST_CLIENT)
+
+        for a in range(nActionsPerLoop):
+            thisTeamIdx = getRandomElement(ST_CLIENT.leagues[leagueIdx].usersInitData["teamIdxs"],l+a)
+            action =  {
+                "teamIdx": thisTeamIdx,
+                "teamOrder": getRandomElement(POSSIBLE_ORDERS,l+a),
+                "tactics": getRandomElement(POSSIBLE_TACTICS,l+a+13)
+            }
+            advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
+            ST_CLIENT.accumulateAction(action)
 
         initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
         dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
@@ -603,7 +613,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 321)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 73)
 # success = success and runTest(name = "Test Accumulator",      result = test3(), expected = 396)
 success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
