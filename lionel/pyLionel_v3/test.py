@@ -145,16 +145,12 @@ def test2():
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
-
-    # CLIENT computes the data needed to update league
-    dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-
-    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
 
-    initStatesHash       = serialHash(ST_CLIENT.leagues[leagueIdx].initPlayerStates)
-    dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+    # CLIENT computes the data needed to update league (and stores it in the CLIENT)
+    initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
 
+    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
     dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
 
@@ -166,18 +162,6 @@ def test2():
         ADDR2,
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
-
-    # The CLIENT updates the league WITHOUT lying...
-    ST_CLIENT.updateLeague(
-        leagueIdx,
-        initStatesHash,
-        dataAtMatchdayHashes,
-        scores,
-        ADDR2,
-    )
-    # ...and additionally, stores the league pre-hash data, and updates every player involved
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
-    assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
@@ -312,10 +296,8 @@ def test2():
     advanceNVerses(1000, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League should be finished by now"
 
-    dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
+    initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
 
-    initStatesHash       = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
-    dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
     ST.updateLeague(
         leagueIdx,
         initStatesHash,
@@ -325,17 +307,6 @@ def test2():
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
-    # The CLIENT updates the league too,
-    # and additionally, stores the league pre-hash data, and updates every player involved
-    ST_CLIENT.updateLeague(
-        leagueIdx,
-        initStatesHash,
-        dataAtMatchdayHashes,
-        scores,
-        ADDR2,
-    )
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
-    assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong with init states...
     ST.challengeInitStates(
@@ -451,9 +422,12 @@ def test2():
             advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
             ST_CLIENT.accumulateAction(action)
 
-        dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-        initStatesHash = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
-        dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+        # dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
+        # initStatesHash = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
+        # dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+
+        initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+
         ST.updateLeague(
             leagueIdx,
             initStatesHash,
@@ -462,16 +436,6 @@ def test2():
             ADDR2,
         )
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
-
-        ST_CLIENT.updateLeague(
-            leagueIdx,
-            initStatesHash,
-            dataAtMatchdayHashes,
-            scores,
-            ADDR2,
-        )
-        ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
-        assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
         # A challenger fails to prove anything is wrong with init states...
         ST.challengeInitStates(

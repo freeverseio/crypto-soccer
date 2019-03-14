@@ -993,3 +993,20 @@ class Storage(Counter):
 
         return updatedStatesAfterPrevLeague
 
+
+    def updateLeagueInClient(self, leagueIdx, ADDR):
+        dataAtMatchdays, scores = self.computeAllMatchdayStates(leagueIdx)
+        initStatesHash          = pylio.serialHash(self.getInitPlayerStates(leagueIdx))
+        dataAtMatchdayHashes, lastDayTree = self.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+
+        self.updateLeague(
+            leagueIdx,
+            initStatesHash,
+            dataAtMatchdayHashes,
+            scores,
+            ADDR,
+        )
+        # and additionally, stores the league pre-hash data, and updates every player involved
+        self.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
+        assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
+        return initStatesHash, dataAtMatchdayHashes, scores
