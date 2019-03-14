@@ -34,7 +34,7 @@ contract('LeagueChallengeable', (accounts) => {
             dayStateHashes = ['0x24353', '0x5434432'],
             scores = ['0x12', '0x3']
         ).should.be.fulfilled;
-        await league.challengeInitStates(id, teamIds, tactics).should.be.fulfilled;
+        await league.challengeInitStates(id, teamIds, tactics, dataToChallengeInitStates = []).should.be.fulfilled;
     });
 
     it('challenge init state with wrong user init data', async () => {
@@ -44,7 +44,7 @@ contract('LeagueChallengeable', (accounts) => {
             dayStateHashes = ['0x24353', '0x5434432'],
             scores = ['0x12', '0x3']
         ).should.be.fulfilled;
-        await league.challengeInitStates(id, [3, 4], tactics).should.be.rejected;
-        await league.challengeInitStates(id, teamIds, [[4, 4, 2], [4, 4, 2]]).should.be.rejected;
+        await league.challengeInitStates(id, [3, 4], tactics, []).should.be.rejected;
+        await league.challengeInitStates(id, teamIds, [[4, 4, 2], [4, 4, 2]], []).should.be.rejected;
     });
 })
