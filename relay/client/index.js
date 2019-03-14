@@ -18,7 +18,6 @@ let mnemonic = 'public lion man jelly mom fitness awkward muscle target cactus c
 let wallet = utils.generateKeysMnemonic(mnemonic);
 console.log('wallet: ', wallet.address, "mnemonic: " , wallet.mnemonic)
 
-
 function writeDatabase() {
   const path = '/tmp/relaydb.txt'
   fs.writeFileSync(path, JSON.stringify(db), function(err){
@@ -28,6 +27,15 @@ function writeDatabase() {
           console.log('Database updated');
       }
   });
+}
+
+function getUserEntry(useraccount) {
+  for (var entry of db) {
+    if (entry.account === useraccount) {
+      return entry
+    }
+  }
+  return null
 }
 
 // ----------------------------
@@ -63,18 +71,16 @@ app.get(
     '/relay/v1/:useraccount',
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
-      const useraccount  = req.params.useraccount;
+      const useraccount = req.params.useraccount;
+      const entry = getUserEntry(useraccount)
 
-      db.map((entry) => {
-        if (entry.account === useraccount) {
-          return res.status(200).send({
+      if (entry) {
+        return res.status(200).send({
           success: 'true',
           message: 'account retrieved successfully',
           entry,
-          });
-        }
-      });
-
+        });
+      }
       return res.status(404).send({
         success: 'false',
         message: 'account ' + useraccount + ' does not exist',
@@ -87,24 +93,20 @@ app.get(
     '/relay/v1/:useraccount/nonce',
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
-      //res.statusCode = 200    // = OK
-      const useraccount  = req.params.useraccount;
-      db.map((entry) => {
-        if (entry.account === useraccount) {
-          return res.status(200).send({
+      const useraccount = req.params.useraccount;
+      const entry = getUserEntry(useraccount)
+
+      if (entry) {
+        return res.status(200).send({
           success: 'true',
           account : useraccount,
-          nonce: 0,
-          });
-        }
-      });
-
+          nonce: 0
+        });
+      }
       return res.status(404).send({
         success: 'false',
         message: 'account ' + useraccount + ' does not exist',
       });
-
-
     }
   )
 
@@ -135,26 +137,26 @@ app.post(
         });
       }
 
-      const useraccount = req.body.account
-      db.map((entry) => {
-        if (entry.account === useraccount) {
-          return res.status(400).send({
+      const useraccount = req.body.account;
+      const entry = getUserEntry(useraccount)
+
+      if (entry) {
+        return res.status(400).send({
           success: 'false',
           message: 'user already exists',
           entry,
-          });
-        }
-      });
+       });
+      }
 
-      const entry = {
+      const new_entry = {
         id : db.length + 1,
         account : req.body.account,
         mnemonic : req.body.mnemonic
       }
 
-      db.push(entry);
+      db.push(new_entry);
       writeDatabase();
 
-      return res.json({success: 'true', entry: entry})
+      return res.json({success: 'true', entry: new_entry})
     }
   )
