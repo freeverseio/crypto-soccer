@@ -741,7 +741,11 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        self.Accumulator.accumulateAction(action, self.getLeagueForAction(action))
+        leagueIdx = self.getLeagueForAction(action)
+        if self.hasLeagueFinished(leagueIdx):
+            print("Cannot accept actions for leagues that already finished! Action discarded")
+        else:
+            self.Accumulator.accumulateAction(action, leagueIdx)
 
     def getAllActionsBeforeBlock(self, blockNum):
         self.assertIsClient()
