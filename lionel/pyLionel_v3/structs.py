@@ -692,12 +692,7 @@ class Storage(Counter):
     def getPlayerStateAtEndOfLastLeague(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-        if prevLeagueIdx == 0:
-            # this can be known both by CLIENT and BC
-            return self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
-        else:
-            # this can only be accessed by the CLIENT
-            return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
+        return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
 
     # Stores the data, pre-hash, in the CLIENT
     def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, dataAtMatchdays, lastDayTree, scores):
@@ -953,8 +948,6 @@ class Storage(Counter):
         lastDayTree, depth = make_tree(pylio.duplicate(lastStatesFlattened), pylio.serialHash)
         dataAtMatchdayHashes.append(root(lastDayTree))
         return dataAtMatchdayHashes, lastDayTree
-
-
 
 
     def updatePlayerStaTeAfterLastLeaguePlayed(self, playerState):
