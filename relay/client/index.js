@@ -47,7 +47,7 @@ var formPlugInConfig = {
     ],
     actions: [
       {  id: 'actionGet',  actionName: 'GET',  method: 'GET',  actionURL: '/relay/v1', setData:[ {resId: 'myForm'} ] },
-      {  id: 'actionPost', actionName: 'POST', method: 'POST', actionURL: '/relay/v1', setData:[ {resId: 'myForm'} ]}
+      {  id: 'actionPost', actionName: 'POST', method: 'POST', actionURL: '/relay/v1' },
     ]
   }
 
@@ -59,6 +59,7 @@ let jsonParser  = bodyParser.json()
 let formParser  = bodyParser.urlencoded( { extended: true } );
 let db = [] // TODO use a proper database
 let mnemonic = 'public lion man jelly mom fitness awkward muscle target cactus coast depth'
+
 let wallet = utils.generateKeysMnemonic(mnemonic);
 console.log('wallet: ', wallet.address, "mnemonic: " , wallet.mnemonic)
 
@@ -73,7 +74,6 @@ function writeDatabase() {
       }
   });
 }
-
 
 // ----------------------------
 // GET
@@ -94,7 +94,8 @@ app.get(
   )
 
 //http://localhost:8888/relay/db
-app.get(
+app.get( // just for debugging
+    //u
     '/relay/db',
     function( req, res ) {
       res.statusCode = 200    // = OK
@@ -106,7 +107,7 @@ app.get(
 app.get(
     '/relay/v1/:useraccount',
     function( req, res ) {
-      console.log( 'GET Params: '+JSON.stringify( req.query ) )
+      console.log( 'GET Params: '+JSON.stringify( req.params ) )
       const useraccount  = req.params.useraccount;
 
       db.map((entry) => {
@@ -130,10 +131,25 @@ app.get(
 app.get(
     '/relay/v1/:useraccount/nonce',
     function( req, res ) {
+      console.log( 'GET Params: '+JSON.stringify( req.params ) )
       res.statusCode = 200    // = OK
-      const useraccount  = parseInt(req.params.useraccount, 10);
-      console.log( 'GET Params: '+JSON.stringify( req.query ) )
-      return  res.json( {user_account : useraccount} )
+      const useraccount  = req.params.useraccount;
+      db.map((entry) => {
+        if (entry.account === useraccount) {
+          return res.status(200).send({
+          success: 'true',
+          user_account : useraccount,
+          nonce: 0,
+          });
+        }
+      });
+
+      return res.status(404).send({
+        success: 'false',
+        message: 'account ' + useraccount + ' does not exist',
+      });
+
+
     }
   )
 
