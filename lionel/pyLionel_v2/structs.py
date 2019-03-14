@@ -100,7 +100,6 @@ class PlayerState():
         return self.lastSaleBlocknum
 
 
-
 # teamIdx = 0 is the null team
 class Team():
     def __init__(self, name):
@@ -153,7 +152,7 @@ class League():
         return self.hasLeagueBeenUpdated() and (blocknum > self.blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
     def updateUsersAlongDataHash(self, usersAlongData, currentBlock):
-        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is not finished"
+        assert not self.hasLeagueFinished(currentBlock), "cannot accept users actions if league is finished"
         # TODO: assert that league is not finished!!!!!!!!!
         self.usersAlongDataHash = pylio.intHash(
             str(self.usersAlongDataHash) +
@@ -177,7 +176,7 @@ class League():
         if selectedMatchday == 0:
             assert pylio.serialHash(prevMatchdayStates) == self.initStatesHash, "Incorrect provided: prevMatchdayStates"
         else:
-            assert pylio.serialHash(prevMatchdayStates) == self.statesAtMatchdayHashes[selectedMatchday-1], "Incorrect provided: prevMatchdayStates"
+            assert pylio.prepareOneMatchdayHash(prevMatchdayStates) == self.statesAtMatchdayHashes[selectedMatchday-1], "Incorrect provided: prevMatchdayStates"
 
         matchdayBlock = self.blockInit + selectedMatchday * self.blockStep
         tactics = pylio.duplicate(usersInitData["tactics"])
@@ -190,7 +189,7 @@ class League():
             matchdayBlock
         )
 
-        if not pylio.serialHash(statesAtMatchday) == self.statesAtMatchdayHashes[selectedMatchday]:
+        if not pylio.prepareOneMatchdayHash(statesAtMatchday) == self.statesAtMatchdayHashes[selectedMatchday]:
             print "Challenger Wins: statesAtMatchday provided by updater are invalid"
             self.resetUpdater()
             return

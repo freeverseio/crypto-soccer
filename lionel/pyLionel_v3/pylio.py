@@ -50,7 +50,7 @@ def printTeam(teamIdx, ST_CLIENT):
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-        playerState = ST_CLIENT.getLastWrittenPlayerStateFromPlayerIdx(playerIdx)
+        playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerIdx(playerState.getPlayerIdx())
         assert ST_CLIENT.isCorrectStateForPlayerIdx(playerState, playerChallengeData), "Player state not correctly in sync"
         hash += printPlayer(playerState)
@@ -158,7 +158,7 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
 def getMatchsPlayerByTeam(selectedTeam, nTeams):
     matchdayMatch = []
     nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams/2
+    nMatchesPerMatchday = nTeams//2
     for matchday in range(nMatchdays):
         for match in range(nMatchesPerMatchday):
             team1, team2 = getTeamsInMatch(matchday, match, nTeams)
@@ -170,8 +170,11 @@ def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
 
 
-def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState, teamPosInPrevLeague):
-    return playerState in dataToChallengePlayerState.statesAtMatchday[teamPosInPrevLeague]
+def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState):
+    return areEqualStructs(
+        playerState,
+        list(dataToChallengePlayerState.values.values())[0]
+    )
 
 
 
@@ -201,9 +204,13 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
 def advanceNVerses(nVerses, ST, ST_CLIENT):
     for verse in range(nVerses):
         advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+
+
+def getRandomElement(arr, seed):
+    nElems = len(arr)
+    return arr[intHash(serialize2str(seed)) % nElems]
+
 # ------------------------------------------------
-
-
 
 # Merkle proof: given a tree, and its leafs,
 # it creates the hashes required to prove that a given idx in the leave belongs to the tree.
@@ -214,3 +221,11 @@ def prepareProofForIdxs(idxsToProve, tree, leafs):
     for leafIdx in idxsToProve:
         values[leafIdx] = leafs[leafIdx]
     return neededHashes, values
+
+def flatten(statesPerTeam):
+    flatStates = []
+    for statesTeam in statesPerTeam:
+        for statePlayer in statesTeam:
+            flatStates.append(statePlayer)
+    return flatStates
+

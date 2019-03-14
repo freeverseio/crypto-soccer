@@ -32,6 +32,7 @@ def make_tree(leafs, hashFunction):
     The result is returned as a list where each value represents one hash in the
     tree. The indices in the array are as in a bbinary heap array.
     '''
+    # INPORTANT: you need to pass here a deepcopy of leafs, otherwise, it'll modify them!!!
     # it first doubles the tree so that in the 2nd half it places the hashes of the pre-hashed data
     # then it stores the parent hashes. For example, in a tree with 4 leaves, it stores:
     # step 1:   undef0,      undef1, undef2, undef3, data0Hash, data1Hash, data2Hash, data3Hash

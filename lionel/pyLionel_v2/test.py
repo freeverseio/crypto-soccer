@@ -29,20 +29,20 @@ def test1():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State            = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
-    player1ChallengeData    = computeDataToChallengePlayerIdx(1, ST_CLIENT)
-    assert isCorrectStateForPlayerIdx(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
+    player1State            = getPlayerStateAtEndOfLastLeague(1, ST_CLIENT)
+    player1ChallengeData    = computeDataToChallengePlayerSkills(1, ST_CLIENT)
+    assert areLatestSkills(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
 
     print "Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print "\n\nplayers 2 and 24 before sale:\n"
-    hash1 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST_CLIENT))
+    hash1 = printPlayer(getPlayerStateAtEndOfLastLeague(2, ST_CLIENT))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print "\n"
-    hash2 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash2 = printPlayer(getPlayerStateAtEndOfLastLeague(24, ST_CLIENT))
 
     ST.advanceNBlocks(10)
     ST_CLIENT.advanceNBlocks(10)
@@ -59,9 +59,9 @@ def test1():
     )
 
     print "\n\nplayers 2 and 24 after sale:\n"
-    hash3 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(2, ST))
+    hash3 = printPlayer(getPlayerStateAtEndOfLastLeague(2, ST))
     print "\n"
-    hash4 = printPlayer(getLastWrittenPlayerStateFromPlayerIdx(24, ST_CLIENT))
+    hash4 = printPlayer(getPlayerStateAtEndOfLastLeague(24, ST_CLIENT))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -124,7 +124,6 @@ def test2():
         "block": ST.currentBlock
     }
 
-
     # Submit data to change tactics
     ST.leagues[leagueIdx].updateUsersAlongDataHash(usersAlongData, ST.currentBlock)
     ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData, ST.currentBlock)
@@ -134,21 +133,20 @@ def test2():
     ST_CLIENT.advanceNBlocks(blockStep)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League not detected as already finished"
 
-    # The CLIENT computes the data needed to submit as an UPDATER: initStates, statesAtMatchday, scores.
-    initPlayerStates = getInitPlayerStates(leagueIdx, ST_CLIENT)
+    # The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
 
     statesAtMatchday, scores = computeAllMatchdayStates(
         ST_CLIENT.leagues[leagueIdx].blockInit,
         ST_CLIENT.leagues[leagueIdx].blockStep,
-        initPlayerStates,
+        ST_CLIENT.leagues[leagueIdx].initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
         ST_CLIENT.leagues[leagueIdx].usersAlongData,
     )
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
-    initStatesHash          = serialHash(initPlayerStates)
-    statesAtMatchdayHashes  = [serialHash(s) for s in statesAtMatchday]
+    initStatesHash          = serialHash(ST_CLIENT.leagues[leagueIdx].initPlayerStates)
+    statesAtMatchdayHashes  = prepareMatchdayHashes(statesAtMatchday)
 
     statesAtMatchdayHashesLie     = duplicate(statesAtMatchdayHashes)
     statesAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
@@ -171,7 +169,7 @@ def test2():
         ADDR2,
         ST_CLIENT.currentBlock
     )
-    updateClientAtEndOfLeague(leagueIdx, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
@@ -179,8 +177,7 @@ def test2():
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     assert not ST.leagues[leagueIdx].isFullyVerified(ST.currentBlock)
     selectedMatchday    = 0
-    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
-                                            else ST_CLIENT.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
+    prevMatchdayStates  = getPrevMatchDayStates(selectedMatchday, leagueIdx, ST_CLIENT)
 
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedMatchday,
@@ -241,6 +238,19 @@ def test2():
     ST.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     ST_CLIENT.advanceNBlocks(CHALLENGING_PERIOD_BLKS-5)
     selectedMatchday = 0
+    ST.leagues[leagueIdx].challengeMatchdayStates(
+        selectedMatchday,
+        prevMatchdayStates,
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
+        ST.currentBlock
+    )
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
+
+
+    selectedMatchday = 1
+    prevMatchdayStates  = getPrevMatchDayStates(selectedMatchday, leagueIdx, ST_CLIENT)
+
     ST.leagues[leagueIdx].challengeMatchdayStates(
         selectedMatchday,
         prevMatchdayStates,
@@ -329,25 +339,18 @@ def test2():
     ST_CLIENT.advanceNBlocks(1000)
     assert ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League should be finished by now"
 
-    initPlayerStates = getInitPlayerStates(leagueIdx2, ST_CLIENT)
-
     statesAtMatchday, scores = computeAllMatchdayStates(
         ST.leagues[leagueIdx2].blockInit,
         ST.leagues[leagueIdx2].blockStep,
-        initPlayerStates,
+        ST_CLIENT.leagues[leagueIdx2].initPlayerStates,
         duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
         ST_CLIENT.leagues[leagueIdx2].usersAlongData,
     )
 
-    # Having finished the league, the CLIENT can already update the CLIENT state
-    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
-
     assert not ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as not yet updated"
-    initStatesHash = serialHash(initPlayerStates)
-    statesAtMatchdayHashes = [serialHash(state) for state in statesAtMatchday]
+    initStatesHash = serialHash(ST_CLIENT.leagues[leagueIdx2].initPlayerStates)
+    statesAtMatchdayHashes = prepareMatchdayHashes(statesAtMatchday)
 
-    # compressedLeagueState encapsulates these hashes (in v2 maybe 1 single hash)
-    #
     ST.leagues[leagueIdx2].updateLeague(
         initStatesHash,
         statesAtMatchdayHashes,
@@ -366,14 +369,13 @@ def test2():
         ADDR2,
         ST_CLIENT.currentBlock
     )
-    updateClientAtEndOfLeague(leagueIdx2, initPlayerStates, statesAtMatchday, scores, ST_CLIENT)
+    updateClientAtEndOfLeague(leagueIdx2, statesAtMatchday, scores, ST_CLIENT)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already challenged"
 
     # a challenger fails to prove that anything was wrong...
     # ... not for matchady = 0
     selectedMatchday    = 0
-    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
-                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
+    prevMatchdayStates  = getPrevMatchDayStates(selectedMatchday, leagueIdx2, ST_CLIENT)
 
     ST.leagues[leagueIdx2].challengeMatchdayStates(
         selectedMatchday,
@@ -384,10 +386,9 @@ def test2():
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
-    # ... not for matchdat = 2
-    selectedMatchday    = 2
-    prevMatchdayStates  = initPlayerStates  if selectedMatchday == 0 \
-                                            else ST_CLIENT.leagues[leagueIdx2].statesAtMatchday[selectedMatchday-1]
+    # ... not for matchday = 5 (the last one)
+    selectedMatchday    = 5
+    prevMatchdayStates  = getPrevMatchDayStates(selectedMatchday, leagueIdx2, ST_CLIENT)
 
     ST.leagues[leagueIdx2].challengeMatchdayStates(
         selectedMatchday,
@@ -411,14 +412,169 @@ def test2():
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1State = getLastWrittenPlayerStateFromPlayerIdx(1, ST_CLIENT)
-    player1ChallengeData = computeDataToChallengePlayerIdx(1, ST_CLIENT)
-    assert isCorrectStateForPlayerIdx(player1State, player1ChallengeData, ST), "Computed player state by CLIENT is not recognized by BC.."
+    player1State = getPlayerStateAtEndOfLastLeague(1, ST_CLIENT)
+    certifyPlayerState(player1State, ST, ST_CLIENT)
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
     # corresponds to the player bought from team4, in the exchange done above.
     printTeam(teamIdx1, ST_CLIENT)
+
+    # create many teams, and leagues, and mess it all.
+    ST.advanceNBlocks(1000)
+    ST_CLIENT.advanceNBlocks(1000)
+    nTeams      = 200
+    nLeagues    = 20
+    nPlayers    = 400
+
+    for t in range(nTeams):
+        createTeam("BotTeam"+str(t), ADDR1, ST)
+        createTeam("BotTeam"+str(t), ADDR2, ST_CLIENT)
+
+    for p in range(nPlayers):
+        playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
+        playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
+        exchangePlayers(
+            playerIdx1, getOwnerAddrFromPlayerIdx(playerIdx1, ST),
+            playerIdx2, getOwnerAddrFromPlayerIdx(playerIdx2, ST),
+            ST
+        )
+        exchangePlayers(
+            playerIdx1, getOwnerAddrFromPlayerIdx(playerIdx1, ST_CLIENT),
+            playerIdx2, getOwnerAddrFromPlayerIdx(playerIdx2, ST_CLIENT),
+            ST_CLIENT
+        )
+        playerState = getPlayerStateAtEndOfLastLeague(playerIdx1, ST_CLIENT)
+        dataToChallengePlayerState = computeDataToChallengePlayerSkills(playerIdx1, ST_CLIENT)
+        assert areLatestSkills(playerState, dataToChallengePlayerState,
+                                          ST), "Computed player state by CLIENT is not recognized by BC.."
+
+    lastTeamIdx = 1
+    nTeamsPerLeague = 8
+    for l in range(nLeagues):
+        blockInit = ST.currentBlock + 7
+        usersInitData = {
+            "teamIdxs": [t for t in range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)],
+            "teamOrders": [getRandomElement(POSSIBLE_ORDERS, t) for t in
+                           range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)],
+            "tactics": [getRandomElement(POSSIBLE_TACTICS, t) for t in
+                        range(lastTeamIdx, lastTeamIdx + nTeamsPerLeague)]
+        }
+        lastTeamIdx += nTeamsPerLeague
+        leagueIdx           = createLeague(blockInit, blockStep, usersInitData, ST)
+        leagueIdx_client    = createLeagueClient(blockInit, blockStep, usersInitData, ST_CLIENT)
+
+        if l == 0:
+            firstLeagueIdx = duplicate(leagueIdx)
+
+        assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
+        assert ST.leagues[leagueIdx].isLeagueIsAboutToStart(ST.currentBlock), "League not detected as created"
+
+        # advance either 1 or 0 verses
+        ST.advanceNBlocks(intHash(str(l))%2)
+        ST_CLIENT.advanceNBlocks(intHash(str(l))%2)
+
+    nActionsPerLoop = 3
+    for l in range(nLeagues):
+        # advance any number of blocks between 0, 3
+        ST.advanceNBlocks(intHash(str(l))%3)
+        ST_CLIENT.advanceNBlocks(intHash(str(l))%3)
+        leagueIdx = firstLeagueIdx + l
+        assert not ST.leagues[leagueIdx].hasLeagueFinished(ST.currentBlock), "League should be ongoing to submit actions"
+
+        ST.advanceNBlocks(intHash(str(l))%3)
+        ST_CLIENT.advanceNBlocks(intHash(str(l))%3)
+
+        teamIdxs = []
+        tactics = []
+        for a in range(nActionsPerLoop):
+            teamIdxs.append(getRandomElement(range(nTeamsPerLeague),l+a))
+            tactics.append(getRandomElement(POSSIBLE_TACTICS,l+a+13))
+
+        usersAlongData =  {
+            "teamIdxsWithinLeague": teamIdxs,
+            "tactics":tactics,
+            "block": ST.currentBlock
+        }
+        ST.leagues[leagueIdx].updateUsersAlongDataHash(usersAlongData, ST.currentBlock)
+        ST_CLIENT.leagues[leagueIdx].updateUsersAlongData(usersAlongData, ST.currentBlock)
+
+    ST.advanceNBlocks(1000)
+    ST_CLIENT.advanceNBlocks(1000)
+    for l in range(nLeagues):
+        # advance any number of blocks between 0, 27
+        ST.advanceNBlocks(intHash(str(l))%3)
+        ST_CLIENT.advanceNBlocks(intHash(str(l))%3)
+        leagueIdx = firstLeagueIdx + l
+
+        statesAtMatchday, scores = computeAllMatchdayStates(
+            ST.leagues[leagueIdx].blockInit,
+            ST.leagues[leagueIdx].blockStep,
+            ST_CLIENT.leagues[leagueIdx].initPlayerStates,
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            ST_CLIENT.leagues[leagueIdx].usersAlongData,
+        )
+
+        assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not yet updated"
+        initStatesHash = serialHash(ST_CLIENT.leagues[leagueIdx].initPlayerStates)
+        statesAtMatchdayHashes = prepareMatchdayHashes(statesAtMatchday)
+
+        ST.leagues[leagueIdx].updateLeague(
+            initStatesHash,
+            statesAtMatchdayHashes,
+            scores,
+            ADDR2,
+            ST.currentBlock
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
+
+        ST_CLIENT.leagues[leagueIdx].updateLeague(
+            initStatesHash,
+            statesAtMatchdayHashes,
+            scores,
+            ADDR2,
+            ST_CLIENT.currentBlock
+        )
+        updateClientAtEndOfLeague(leagueIdx, statesAtMatchday, scores, ST_CLIENT)
+
+
+        # A challenger fails to prove anything is wrong with init states...
+        dataToChallengeInitStates = prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT)
+
+        ST.leagues[leagueIdx].challengeInitStates(
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            duplicate(dataToChallengeInitStates),
+            ST,
+            ST.currentBlock,
+            leagueIdx
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+
+        # # ...or with matchday 0...
+        selectedMatchday = 0
+        prevMatchdayStates = getPrevMatchDayStates(selectedMatchday, leagueIdx, ST_CLIENT)
+
+        ST.leagues[leagueIdx].challengeMatchdayStates(
+            selectedMatchday,
+            prevMatchdayStates,
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
+            ST.currentBlock
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
+        #
+        # # ...or with matchday 5...
+        selectedMatchday = 5
+        prevMatchdayStates = getPrevMatchDayStates(selectedMatchday, leagueIdx, ST_CLIENT)
+
+        ST.leagues[leagueIdx].challengeMatchdayStates(
+            selectedMatchday,
+            prevMatchdayStates,
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+            duplicate(ST_CLIENT.leagues[leagueIdx].usersAlongData),
+            ST.currentBlock
+        )
+        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful... but he should not be"
 
     # Returns test result, to later check against expected
     testResult = intHash(serialize(ST) + serialize(ST_CLIENT)) % 1000
@@ -436,8 +592,9 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10222)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 145)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 579)
 if success:
     print "ALL TESTS:  -- PASSED --"
 else:
     print "At least one test FAILED"
+
