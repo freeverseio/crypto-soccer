@@ -626,11 +626,10 @@ class Storage(Counter):
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
     def getPlayerStateFromChallengeData(self, playerIdx, dataToChallengePlayerState):
-        # dataToChallengePlayerState can be:
-        #     - playerState
-        #     - merkleProof
-        #       CLARIFY !!!!!! maybe from where it comes
-        # TONI
+        # dataToChallengePlayerState is either:
+        #  - just a player state
+        #  - a merkle proof for that player
+        # In the latter case, we can extract the state just from the values (leafs)
         if type(dataToChallengePlayerState) == type(PlayerState()):
             assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
             return dataToChallengePlayerState
