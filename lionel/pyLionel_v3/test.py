@@ -147,14 +147,12 @@ def test2():
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
 
     # CLIENT computes the data needed to update league
-    initPlayerStates        = ST_CLIENT.getInitPlayerStates(leagueIdx)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
 
     # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
 
-    initStatesHash       = serialHash(initPlayerStates)
-
+    initStatesHash       = serialHash(ST_CLIENT.leagues[leagueIdx].initPlayerStates)
     dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
 
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
@@ -178,7 +176,7 @@ def test2():
         ADDR2,
     )
     # ...and additionally, stores the league pre-hash data, and updates every player involved
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores)
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
     assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
@@ -315,10 +313,9 @@ def test2():
     advanceNVerses(1000, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx2), "League should be finished by now"
 
-    initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx2)
     dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx2)
 
-    initStatesHash       = serialHash(initPlayerStates)
+    initStatesHash       = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx2))
     dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
     assert dataAtMatchdayHashes[0] == serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
     ST.updateLeague(
@@ -339,7 +336,7 @@ def test2():
         scores,
         ADDR2,
     )
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, initPlayerStates, dataAtMatchdays, lastDayTree, scores)
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, dataAtMatchdays, lastDayTree, scores)
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong with init states...
@@ -456,9 +453,8 @@ def test2():
             advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
             ST_CLIENT.accumulateAction(action)
 
-        initPlayerStates = ST_CLIENT.getInitPlayerStates(leagueIdx)
         dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-        initStatesHash = serialHash(initPlayerStates)
+        initStatesHash = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
         dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
         ST.updateLeague(
             leagueIdx,
@@ -476,8 +472,7 @@ def test2():
             scores,
             ADDR2,
         )
-        ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree,
-                                                        scores)
+        ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
         assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
         # A challenger fails to prove anything is wrong with init states...
@@ -569,9 +564,9 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 804)
-success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
+# success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
@@ -580,6 +575,8 @@ else:
 
 
 # TODO:
+# store dataToChallengeInitStates with each client league, so that you can use it later any time without evolution/change of team issues
+# accumulate actions must check league has not finished!!
 # BUG: getLastWrittenPlayerStateFromPlayerIdx does not really return last written state in BC, but
 #  last written in Client
 #   - likeweise, put initStates as states at 0 (not sure)
@@ -602,3 +599,21 @@ else:
 # do not store scores but the hash or merkle root
 # unify all iniHash, serialHash, etc
 # remove need for the last matchdayHash, as we just need to test the states.
+
+
+# TEST IF def getLastPlayedLeagueIdx(playerIdx, ST):
+#     # if player state has never been written, it played all leagues with current team (obtained from formula)
+#     # otherwise, we check if it was sold to current team before start of team's previous league
+#     if isPlayerVirtual(playerIdx, ST):
+#         teamIdx, shirtNum = getTeamIdxAndShirtForPlayerIdx(playerIdx, ST)
+#         return ST.teams[teamIdx].prevLeagueIdx, ST.teams[teamIdx].teamPosInPrevLeague
+#
+#     currentTeamIdx  = ST.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx()
+#     currentLeagueIdxForCurrentTeam = ST.teams[currentTeamIdx].currentLeagueIdx
+#     assert ST.leagues[currentLeagueIdxForCurrentTeam].hasLeagueFinished(ST.currentBlock), "Player busy playing a league"
+#     didHePlayLastLeagueWithCurrentTeam = ST.playerIdxToPlayerState[playerIdx].getLastSaleBlocknum() < \
+#                                          ST.leagues[currentLeagueIdxForCurrentTeam].blockInit
+#     if didHePlayLastLeagueWithCurrentTeam:
+#         return currentLeagueIdxForCurrentTeam, ST.teams[currentTeamIdx].teamPosInPrevLeague
+#     else:
+#         return ST.playerIdxToPlayerState[playerIdx].prevLeagueIdx, ST.playerIdxToPlayerState[playerIdx].prevTeamPosInLeague

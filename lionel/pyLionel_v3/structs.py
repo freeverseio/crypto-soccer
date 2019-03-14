@@ -477,6 +477,7 @@ class Storage(Counter):
                     # if no dataToChallenge is provided, it means this is a request
                     # from a Client, so just read whatever pre-hash data you have
                     self.assertIsClient()
+                    # playerState = self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
                     playerState = self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
@@ -684,9 +685,8 @@ class Storage(Counter):
             return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
 
     # Stores the data, pre-hash, in the CLIENT
-    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores):
+    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, dataAtMatchdays, lastDayTree, scores):
         self.assertIsClient()
-        self.leagues[leagueIdx].updateInitState(initPlayerStates)
         self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
         self.leagues[leagueIdx].lastDayTree = lastDayTree
         # the last matchday gives the final states used to update all players:
@@ -714,6 +714,7 @@ class Storage(Counter):
         leagueIdx = len(self.leagues)
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        self.leagues[leagueIdx].updateInitState(self.getInitPlayerStates(leagueIdx))
         return leagueIdx
 
     def addAccumulator(self):
