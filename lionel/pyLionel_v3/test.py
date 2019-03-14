@@ -31,20 +31,20 @@ def test1():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State                = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(1)
-    dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerIdx(1)
+    player1State                = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
+    dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerSkills(1)
     assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print("\n\nplayers 2 and 24 before sale:\n")
-    hash1 = printPlayer(ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(2))
+    hash1 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(2))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print("\n")
-    hash2 = printPlayer(ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(24))
+    hash2 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(24))
 
     advanceNBlocks(10, ST, ST_CLIENT)
 
@@ -58,9 +58,9 @@ def test1():
     )
 
     print("\n\nplayers 2 and 24 after sale:\n")
-    hash3 = printPlayer(ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(2))
+    hash3 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(2))
     print("\n")
-    hash4 = printPlayer(ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(24))
+    hash4 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(24))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -378,8 +378,8 @@ def test2():
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1State = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(1)
-    dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(1)
+    player1State = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
+    dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
     assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
@@ -408,8 +408,8 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
-        playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx1)
-        dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerIdx(playerIdx1)
+        playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx1)
+        dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx1)
         assert ST.isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     lastTeamIdx = 1
