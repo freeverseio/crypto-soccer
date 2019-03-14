@@ -58,7 +58,8 @@ let bodyParser  = require( 'body-parser' )
 let jsonParser  = bodyParser.json()
 let formParser  = bodyParser.urlencoded( { extended: true } );
 let db = [] // TODO use a proper database
-let wallet = utils.generateKeysMnemonic('a b c');
+let mnemonic = 'public lion man jelly mom fitness awkward muscle target cactus coast depth'
+let wallet = utils.generateKeysMnemonic(mnemonic);
 console.log('wallet: ', wallet.address, "mnemonic: " , wallet.mnemonic)
 
 
