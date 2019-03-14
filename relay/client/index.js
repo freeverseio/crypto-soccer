@@ -1,59 +1,14 @@
-/** Simple example: Create a web page with form */
 //import db from './db/db'
-var gui = require ( 'easy-web-app' )
-var log = require( 'npmlog' )
-var fs = require('fs'); // to write to a file
-var utils = require('./utils.js')
+let express = require('express')
+const app = express();
+let fs = require('fs'); // to write to a file
+let utils = require('./utils.js')
 
-/** Initialize the framework, the default page and define a title */
-var port = 8888
-gui.init ( 'Relay client', port )
+const PORT = 8888
 
-var formConfig = {
-    id   : 'myForm',
-    title: 'User Actions',
-    type : 'pong-form',
-    resourceURL: 'hello',
-    height: '750px'
-  }
-
-var formPlugInConfig = {
-    id: 'myFormDef',
-    description: 'shows first form',
-    fieldGroups: [
-      {
-        columns: [
-          {
-            formFields: [
-              { id: 'account', label: 'Account', type: 'text' /*, request: 'header'*/ },
-              { id: 'mnemonic', label: 'Mnemonic', type: 'text', rows:'3', defaultVal:'' },
-              { id: 'password', label: 'Password', type: 'password' },
-              { id: 'actionType', label: 'Action type', type: 'select',
-                options:[
-                  {option:'tactic',  value:'tactic', selected:true },
-                  {option:'sell', value:'sell' },
-                  {option:'buy', value:'buy' }
-                ]
-              },
-              { id: 'actionValue', label: 'Action value', type: 'text' },
-            ]
-          },
-          {
-            formFields: [
-            ]
-          }
-        ]
-      }
-    ],
-    actions: [
-      {  id: 'actionGet',  actionName: 'GET',  method: 'GET',  actionURL: '/relay/v1', setData:[ {resId: 'myForm'} ] },
-      {  id: 'actionPost', actionName: 'POST', method: 'POST', actionURL: '/relay/v1' },
-    ]
-  }
-
-gui.addView ( formConfig, formPlugInConfig )
-
-let app  = gui.getExpress()
+app.listen(PORT, () => {
+  console.log(`server running on port ${PORT}`)
+});
 let bodyParser  = require( 'body-parser' )
 let jsonParser  = bodyParser.json()
 let formParser  = bodyParser.urlencoded( { extended: true } );
@@ -132,13 +87,13 @@ app.get(
     '/relay/v1/:useraccount/nonce',
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
-      res.statusCode = 200    // = OK
+      //res.statusCode = 200    // = OK
       const useraccount  = req.params.useraccount;
       db.map((entry) => {
         if (entry.account === useraccount) {
           return res.status(200).send({
           success: 'true',
-          user_account : useraccount,
+          account : useraccount,
           nonce: 0,
           });
         }
@@ -159,12 +114,12 @@ app.get(
 
 // curl -v -H "Content-Type: application/json" -X POST -d '{"name":"your name","phonenumber":"111-111"}' http://localhost:8888/relay/v1
 app.post(
-    '/relay/v1',
+    '/relay/v1/createuser',
     jsonParser,
     function( req, res ) {
       res.statusCode = 201    // = created
-      console.log( 'POST query: '+JSON.stringify( req.query ))
       console.log( 'POST Body: '+JSON.stringify( req.body ))
+
       if(!req.body.account)
       {
         return res.status(400).send({
@@ -179,6 +134,17 @@ app.post(
           message: 'description is required'
         });
       }
+
+      const useraccount = req.body.account
+      db.map((entry) => {
+        if (entry.account === useraccount) {
+          return res.status(400).send({
+          success: 'false',
+          message: 'user already exists',
+          entry,
+          });
+        }
+      });
 
       const entry = {
         id : db.length + 1,
