@@ -239,3 +239,25 @@ def certifyPlayerState(playerState, ST, ST_CLIENT):
     playerChallengeDataUpdated = ST_CLIENT.updateChallengeDataAfterLastLeaguePlayed(playerChallengeData)
     assert ST.areLatestSkills(playerState, playerChallengeDataUpdated), "Computed player state by CLIENT is not recognized by BC.."
 
+
+
+
+# It uses the CLIENT data to submit a challenge to the BC
+def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT):
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Cannot challenge a league that has not been updated"
+    assert not ST.isFullyVerified(leagueIdx), "Cannot challenge a league after challenging period is over"
+
+    # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+    # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+
+    # ...finally, it does the challenge
+    ST.challengeMatchdayStates(
+        leagueIdx,
+        selectedMatchday,
+        dataAtPrevMatchday,
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
+        merkleProofDataForMatchday
+    )

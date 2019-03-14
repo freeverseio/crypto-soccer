@@ -165,24 +165,9 @@ def test2():
 
     # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert not ST.isFullyVerified(leagueIdx)
 
-    # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
-    selectedMatchday    = 0
-    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
-
-    # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
-
-    # ...finally, it does the challenge
-    ST.challengeMatchdayStates(
-        leagueIdx,
-        selectedMatchday,
-        dataAtPrevMatchday,
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-        merkleProofDataForMatchday
-    )
+    selectedMatchday = 0
+    challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
     # Since it must succeed, the league is 'reset', without any update
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
@@ -319,30 +304,12 @@ def test2():
     # ...or with matchday 0...
     # challegeLeagueAtSelectedMatchday(leagueIdx)
     selectedMatchday = 0
-    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
-    ST.challengeMatchdayStates(
-        leagueIdx,
-        selectedMatchday,
-        dataAtPrevMatchday,
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-        merkleProofDataForMatchday
-    )
+    challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
     # ...or with matchday 4...
     selectedMatchday = 5
-    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
-    ST.challengeMatchdayStates(
-        leagueIdx,
-        selectedMatchday,
-        dataAtPrevMatchday,
-        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-        merkleProofDataForMatchday
-    )
+    challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
 
@@ -447,30 +414,12 @@ def test2():
 
         # ...or with matchday 0...
         selectedMatchday = 0
-        dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
-        merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
-        ST.challengeMatchdayStates(
-            leagueIdx,
-            selectedMatchday,
-            dataAtPrevMatchday,
-            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-            duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-            merkleProofDataForMatchday
-        )
+        challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
         # ...or with matchday 4...
         selectedMatchday = 5
-        dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
-        merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
-        ST.challengeMatchdayStates(
-            leagueIdx,
-            selectedMatchday,
-            dataAtPrevMatchday,
-            duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-            duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
-            merkleProofDataForMatchday
-        )
+        challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
 
