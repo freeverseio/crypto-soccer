@@ -156,13 +156,17 @@ class LeagueClient(League):
         self.tacticsAtMatchday  = None
         self.scores             = None
         self.actionsPerMatchday = []
+        self.dataToChallengeInitStates = None
 
     def updateDataAtMatchday(self, dataAtMatchdays, scores):
         self.dataAtMatchdays   = dataAtMatchdays
         self.scores             = scores
 
-    def updateInitState(self, initPlayerStates):
+    def writeInitState(self, initPlayerStates):
         self.initPlayerStates = initPlayerStates
+
+    def writeDataToChallengeInitStates(self, dataToChallengeInitStates):
+        self.dataToChallengeInitStates = dataToChallengeInitStates
 
 class VerseCommit:
     def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
@@ -726,7 +730,8 @@ class Storage(Counter):
         leagueIdx = len(self.leagues)
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
-        self.leagues[leagueIdx].updateInitState(self.getInitPlayerStates(leagueIdx))
+        self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
+        self.leagues[leagueIdx].writeDataToChallengeInitStates(self.prepareDataToChallengeInitStates(leagueIdx))
         return leagueIdx
 
     def addAccumulator(self):

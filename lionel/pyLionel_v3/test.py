@@ -222,11 +222,10 @@ def test2():
     assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
 
     # ...first it gathers the data needed to challenge the init states
-    dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
     ST.challengeInitStates(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(dataToChallengeInitStates),
+        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
     )
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
 
@@ -247,7 +246,7 @@ def test2():
     ST.challengeInitStates(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(dataToChallengeInitStates),
+        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
@@ -339,11 +338,10 @@ def test2():
     assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong with init states...
-    dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx2)
     ST.challengeInitStates(
         leagueIdx2,
         ST_CLIENT.leagues[leagueIdx2].usersInitData,
-        duplicate(dataToChallengeInitStates),
+        duplicate( ST_CLIENT.leagues[leagueIdx2].dataToChallengeInitStates )
     )
     assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
@@ -475,11 +473,10 @@ def test2():
         assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
         # A challenger fails to prove anything is wrong with init states...
-        dataToChallengeInitStates = ST_CLIENT.prepareDataToChallengeInitStates(leagueIdx)
         ST.challengeInitStates(
             leagueIdx,
             ST_CLIENT.leagues[leagueIdx].usersInitData,
-            duplicate(dataToChallengeInitStates),
+            duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates)
         )
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
@@ -563,9 +560,9 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 402)
-success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 264)
+# success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
@@ -574,7 +571,6 @@ else:
 
 
 # TODO:
-# store dataToChallengeInitStates with each client league, so that you can use it later any time without evolution/change of team issues
 # accumulate actions must check league has not finished!!
 # BUG: getLastWrittenPlayerStateFromPlayerIdx does not really return last written state in BC, but
 #  last written in Client
@@ -616,3 +612,6 @@ else:
 #         return currentLeagueIdxForCurrentTeam, ST.teams[currentTeamIdx].teamPosInPrevLeague
 #     else:
 #         return ST.playerIdxToPlayerState[playerIdx].prevLeagueIdx, ST.playerIdxToPlayerState[playerIdx].prevTeamPosInLeague
+
+# put a test for not being able to test a very old league using the current prepareDataToChallengeSTates
+# ... hence proving the need to store it in due time
