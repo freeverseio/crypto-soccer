@@ -261,7 +261,7 @@ def test2():
         "tactics": [TACTICS["433"], TACTICS["442"], TACTICS["433"], TACTICS["442"]]
     }
     try:
-        leagueIdx2 = ST.createLeague(verseInit, verseStep, usersInitData)
+        leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
         itFailed = False
     except:
         itFailed = True
@@ -303,75 +303,76 @@ def test2():
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1,1), "Exchange did not register properly in BC"
 
     # After the player exchange... we create another league
-    leagueIdx2          = ST.createLeague(verseInit, verseStep, usersInitData)
-    leagueIdx2_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
+    leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
+    leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
 
-    assert leagueIdx2 == leagueIdx2_client, "Leagues in client not in sync with BC"
+    assert leagueIdx == leagueIdx_client, "Leagues in client not in sync with BC"
 
     # At the end of league, an UPDATER updates telling the truth:
     advanceNVerses(1000, ST, ST_CLIENT)
-    assert ST.hasLeagueFinished(leagueIdx2), "League should be finished by now"
+    assert ST.hasLeagueFinished(leagueIdx), "League should be finished by now"
 
-    dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx2)
+    dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
 
-    initStatesHash       = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx2))
+    initStatesHash       = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
     dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
     ST.updateLeague(
-        leagueIdx2,
+        leagueIdx,
         initStatesHash,
         dataAtMatchdayHashes,
         scores,
         ADDR2,
     )
-    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # The CLIENT updates the league too,
     # and additionally, stores the league pre-hash data, and updates every player involved
     ST_CLIENT.updateLeague(
-        leagueIdx2,
+        leagueIdx,
         initStatesHash,
         dataAtMatchdayHashes,
         scores,
         ADDR2,
     )
-    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx2, dataAtMatchdays, lastDayTree, scores)
-    assert ST_CLIENT.leagues[leagueIdx2].hasLeagueBeenUpdated(), "League not detected as already updated"
+    ST_CLIENT.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
+    assert ST_CLIENT.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A challenger fails to prove anything is wrong with init states...
     ST.challengeInitStates(
-        leagueIdx2,
-        ST_CLIENT.leagues[leagueIdx2].usersInitData,
-        duplicate( ST_CLIENT.leagues[leagueIdx2].dataToChallengeInitStates )
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
     )
-    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
     # ...or with matchday 0...
+    # challegeLeagueAtSelectedMatchday(leagueIdx)
     selectedMatchday = 0
-    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
     ST.challengeMatchdayStates(
-        leagueIdx2,
+        leagueIdx,
         selectedMatchday,
         dataAtPrevMatchday,
-        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx2].actionsPerMatchday[selectedMatchday]),
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
         merkleProofDataForMatchday
     )
-    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
     # ...or with matchday 4...
     selectedMatchday = 5
-    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx2, selectedMatchday)
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx2, selectedMatchday)
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
     ST.challengeMatchdayStates(
-        leagueIdx2,
+        leagueIdx,
         selectedMatchday,
         dataAtPrevMatchday,
-        duplicate(ST_CLIENT.leagues[leagueIdx2].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx2].actionsPerMatchday[selectedMatchday]),
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
         merkleProofDataForMatchday
     )
-    assert ST.leagues[leagueIdx2].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
@@ -571,16 +572,6 @@ else:
 
 
 # TODO:
-# accumulate actions must check league has not finished!!
-# BUG: getLastWrittenPlayerStateFromPlayerIdx does not really return last written state in BC, but
-#  last written in Client
-#   - likeweise, put initStates as states at 0 (not sure)
-# treat initStates the same way as states and avoid initPlayerHash being different
-#         # TODO: check that the provided state proofs contain the actual player idx!!!!! --> see structs challengeinit hash
-# add test for multiple simultaneous leauges (for the proof), some with actions, some without, etc
-# use merkle proof for playerStates at previous league?
-# how can we store the hash of the teamIdx???? can we not sign a team in another league?
-#     I think that the answer is that we store the league in the team property!
 # gather together code to update actions, e.g., find all  not actionsAtSelectedMatchday == 0
 
 # Note that dataAtMatchday.states = after the given match!
