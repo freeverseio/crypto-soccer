@@ -3,6 +3,7 @@
 var gui = require ( 'easy-web-app' )
 var log = require( 'npmlog' )
 var fs = require('fs'); // to write to a file
+var utils = require('./utils.js')
 
 /** Initialize the framework, the default page and define a title */
 var port = 8888
@@ -52,11 +53,14 @@ var formPlugInConfig = {
 
 gui.addView ( formConfig, formPlugInConfig )
 
-var app  = gui.getExpress()
-var bodyParser  = require( 'body-parser' )
-var jsonParser  = bodyParser.json()
-var formParser  = bodyParser.urlencoded( { extended: true } );
-var db = [] // TODO use a proper database
+let app  = gui.getExpress()
+let bodyParser  = require( 'body-parser' )
+let jsonParser  = bodyParser.json()
+let formParser  = bodyParser.urlencoded( { extended: true } );
+let db = [] // TODO use a proper database
+let wallet = utils.generateKeysMnemonic('a b c');
+console.log('wallet: ', wallet.address, "mnemonic: " , wallet.mnemonic)
+
 
 function writeDatabase() {
   const path = '/tmp/relaydb.txt'
@@ -68,28 +72,6 @@ function writeDatabase() {
       }
   });
 }
-
-/*
- * function generateKeysMnemonic(mnemonic) {
-	if (mnemonic == undefined) {
-		mnemonic = bip39.generateMnemonic();
-	}
-
-	const root = hdkey.fromMasterSeed(mnemonic);
-	const masterPrivateKey = root.privateKey;
-	const masterPubKey = root.publicKey;
-	var path = "m/44'/60'/0'/0/0";
-	const addrNode = root.derive(path);
-	let privK = addrNode._privateKey;
-	const pubKey = ethUtil.privateToPublic(addrNode._privateKey);
-	let address = ethUtil.privateToAddress(addrNode._privateKey);
-	let addressHex = bytesToHex(address);
-	let privKHex = bytesToHex(privK);
-	localStorage.setItem(addressHex, privKHex);
-	return {address: addressHex, mnemonic: mnemonic};
-}
-
- */
 
 
 // ----------------------------
