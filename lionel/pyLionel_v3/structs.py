@@ -144,38 +144,6 @@ class League():
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
 
-    def challengeMatchdayStates(
-            self,
-            selectedMatchday,
-            dataAtPrevMatchday,
-            usersInitData,
-            seed
-        ):
-
-        assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
-        assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-        dataAtPrevMatchday.statesAtMatchday, scores = pylio.computeStatesAtMatchday(
-            selectedMatchday,
-            pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
-            pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
-            pylio.duplicate(dataAtPrevMatchday.teamOrdersAtMatchday),
-            seed
-        )
-
-        dataAtMatchdayHash = pylio.serialHash(dataAtPrevMatchday)
-
-        if not dataAtMatchdayHash == self.dataAtMatchdayHashes[selectedMatchday]:
-            print("Challenger Wins: statesAtMatchday provided by updater are invalid")
-            self.resetUpdater()
-            return
-
-        if not (self.scores[selectedMatchday] == scores).all():
-            print("Challenger Wins: scores provided by updater are invalid")
-            self.resetUpdater()
-            return
-
-        print("Challenger failed to prove that statesAtMatchday nor scores were wrong")
-
 
 # client leagues inherit from leagues, and extend to include the data pre-hash
 class LeagueClient(League):
@@ -308,7 +276,9 @@ class Storage(Counter):
             actionsAtSelectedMatchday,
             merkleProofDataForMatchday
         ):
+        assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
+        assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
@@ -326,7 +296,7 @@ class Storage(Counter):
             assert pylio.serialHash(dataAtPrevMatchday.tacticsAtMatchday) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
             assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
-            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
+            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
         if not actionsAtSelectedMatchday == 0:
@@ -335,13 +305,27 @@ class Storage(Counter):
                 dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
                 dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
 
-        self.leagues[leagueIdx].challengeMatchdayStates(
+        dataAtPrevMatchday.statesAtMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
-            pylio.duplicate(dataAtPrevMatchday),
-            usersInitData,
+            pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.teamOrdersAtMatchday),
             self.getSeedForVerse(verse)
         )
 
+        dataAtMatchdayHash = self.prepareOneMatchdayHash(dataAtPrevMatchday)
+
+        if not dataAtMatchdayHash == self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday]:
+            print("Challenger Wins: statesAtMatchday provided by updater are invalid")
+            self.leagues[leagueIdx].resetUpdater()
+            return
+
+        if not (self.leagues[leagueIdx].scores[selectedMatchday] == scores).all():
+            print("Challenger Wins: scores provided by updater are invalid")
+            self.leagues[leagueIdx].resetUpdater()
+            return
+
+        print("Challenger failed to prove that statesAtMatchday nor scores were wrong")
 
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
@@ -670,6 +654,25 @@ class Storage(Counter):
         return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
 
+    # From the states at a given matchday, we just need to store the hash... of the skills,
+    # ... disregarding other side info, like lastSaleBlock...
+    # This is important, because otherwise, it's impossible to use these hashes for challenges once
+    # sales have taken place.
+    def prepareOneMatchdayHash(self, dataAtMatchday):
+        # note that the matrix has size: statesAtOneMatchday[team][player]
+        # we basically convert from 'states' to 'skills':
+        #   dataAtMatchday.statesAtOneMatchday[team][player] --> dataAtMatchday.skillsAtOneMatchday[team][player]
+        skillsAtOneMatchday = []
+        for teams in dataAtMatchday.statesAtMatchday:
+            allTeamSkills = [s.getSkills() for s in teams]
+            skillsAtOneMatchday.append(pylio.duplicate(allTeamSkills))
+
+        updatedData = pylio.duplicate(dataAtMatchday)
+        updatedData.statesAtMatchday = skillsAtOneMatchday
+
+        return pylio.serialHash(updatedData)
+
+
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -945,34 +948,12 @@ class Storage(Counter):
         # dataAtMatchdayHashes = [pylio.serialHash(d) for d in dataAtMatchdays[:-1]]
         dataAtMatchdayHashes = [self.prepareOneMatchdayHash(dataAtMatchday) for dataAtMatchday in dataAtMatchdays]
 
-        assert dataAtMatchdayHashes[0] == pylio.serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
         # compute MerkleRoot for last day:
         lastStatesFlattened = pylio.flatten(dataAtMatchdays[-1].statesAtMatchday)
         lastDayTree, depth = make_tree(pylio.duplicate(lastStatesFlattened), pylio.serialHash)
         dataAtMatchdayHashes.append(root(lastDayTree))
         return dataAtMatchdayHashes, lastDayTree
 
-
-
-
-    # From the states at a given matchday, we just need to store the hash... of the skills,
-    # ... disregarding other side info, like lastSaleBlock...
-    # This is important, because otherwise, it's impossible to use these hashes for challenges once
-    # sales have taken place.
-    def prepareOneMatchdayHash(self, dataAtMatchday):
-        # note that the matrix has size: statesAtOneMatchday[team][player]
-        # we basically convert from 'states' to 'skills':
-        #   dataAtMatchday.statesAtOneMatchday[team][player] --> dataAtMatchday.skillsAtOneMatchday[team][player]
-        self.assertIsClient()
-        o = pylio.duplicate(dataAtMatchday)
-        for teams in dataAtMatchday.statesAtMatchday:
-            # this line overwrites the states of all players in a team, by their skills only:
-            teams = [s.getSkills() for s in teams]
-        return pylio.serialHash(dataAtMatchday)
-
-    def prepareMatchdayHashes(self, statesAtMatchdays):
-        self.assertIsClient()
-        return [prepareOneMatchdayHash(statesAtOneMatchday) for statesAtOneMatchday in statesAtMatchdays]
 
 
 
