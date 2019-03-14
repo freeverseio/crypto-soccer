@@ -412,15 +412,11 @@ def test2():
         )
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
-        # ...or with matchday 0...
-        selectedMatchday = 0
-        challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
-        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
-
-        # ...or with matchday 4...
-        selectedMatchday = 5
-        challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
-        assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
+        # ...or for any of the total number of matchdays
+        nDays = len( ST.leagues[leagueIdx].dataAtMatchdayHashes)-1 # the last one is the merkle root
+        for selectedMatchday in range(nDays):
+            challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
+            assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
 
     # Returns test result, to later check against expected
@@ -483,39 +479,11 @@ else:
     print("At least one test FAILED")
 
 
-
 # TODO:
-# gather together code to update actions, e.g., find all  not actionsAtSelectedMatchday == 0
-
-# Note that dataAtMatchday.states = after the given match!
 # remove ugly:         if type(dataToChallengePlayerState) == type(DataAtMatchday(0, 0, 0)):
-
-# leafIdx = list(dataToChallengePlayerState.values.keys())[0]
-# isPlayerStateInsideDataToChallenge => not need anymore, right? it's inside getPlayerStateFromChallengeData already
-# test getOwner works and use it in player exchange tests
+# add tests for getOwner
 
 # TODO: - less important -
 # do not store scores but the hash or merkle root
 # unify all iniHash, serialHash, etc
 # remove need for the last matchdayHash, as we just need to test the states.
-
-
-# TEST IF def getLastPlayedLeagueIdx(playerIdx, ST):
-#     # if player state has never been written, it played all leagues with current team (obtained from formula)
-#     # otherwise, we check if it was sold to current team before start of team's previous league
-#     if isPlayerVirtual(playerIdx, ST):
-#         teamIdx, shirtNum = getTeamIdxAndShirtForPlayerIdx(playerIdx, ST)
-#         return ST.teams[teamIdx].prevLeagueIdx, ST.teams[teamIdx].teamPosInPrevLeague
-#
-#     currentTeamIdx  = ST.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx()
-#     currentLeagueIdxForCurrentTeam = ST.teams[currentTeamIdx].currentLeagueIdx
-#     assert ST.leagues[currentLeagueIdxForCurrentTeam].hasLeagueFinished(ST.currentBlock), "Player busy playing a league"
-#     didHePlayLastLeagueWithCurrentTeam = ST.playerIdxToPlayerState[playerIdx].getLastSaleBlocknum() < \
-#                                          ST.leagues[currentLeagueIdxForCurrentTeam].blockInit
-#     if didHePlayLastLeagueWithCurrentTeam:
-#         return currentLeagueIdxForCurrentTeam, ST.teams[currentTeamIdx].teamPosInPrevLeague
-#     else:
-#         return ST.playerIdxToPlayerState[playerIdx].prevLeagueIdx, ST.playerIdxToPlayerState[playerIdx].prevTeamPosInLeague
-
-# put a test for not being able to test a very old league using the current prepareDataToChallengeSTates
-# ... hence proving the need to store it in due time
