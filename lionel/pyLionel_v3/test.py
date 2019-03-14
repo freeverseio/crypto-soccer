@@ -563,9 +563,9 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 402)
-# success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
+success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:

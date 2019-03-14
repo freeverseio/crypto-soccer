@@ -707,7 +707,6 @@ class Storage(Counter):
                 updatedAfterLeague = self.updateChallengeDataAfterLastLeaguePlayed(playerState)
                 self.playerIdxToPlayerState[playerState.getPlayerIdx()] = updatedAfterLeague
 
-    # Returns the data at that given matchday matchday: (states, tactics, teamOrders)
     def getPrevMatchdayData(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         if selectedMatchday == 0:
@@ -985,10 +984,3 @@ class Storage(Counter):
 
         return updatedStatesAfterPrevLeague
 
-
-    def getPrevMatchDayStates(self, selectedMatchday, leagueIdx):
-        self.assertIsClient()
-        if selectedMatchday == 0:
-            return self.leagues[leagueIdx].initPlayerStates
-        else:
-            return self.leagues[leagueIdx].statesAtMatchday[selectedMatchday-1]
