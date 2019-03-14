@@ -468,7 +468,7 @@ class Storage(Counter):
                             dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     )
                     # it makes sure that the state matches what the BC says about that player
-                    if not self.isCorrectStateForPlayerIdx(
+                    if not self.areLatestSkills(
                         playerState,
                         dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     ):
@@ -489,7 +489,7 @@ class Storage(Counter):
                 return tPos
         assert False, "Team not found in league"
 
-    def isCorrectStateForPlayerIdx(self, playerState, dataToChallengePlayerState):
+    def areLatestSkills(self, playerState, dataToChallengePlayerState):
         # If player has never played a league, we can compute the playerState directly in the BC
         # It basically is equal to the birth skills, with ,potentially, a few team changes via sales.
         # If not, we can just compare the hash of the dataToChallengePlayerState with the stored hash in the prev league

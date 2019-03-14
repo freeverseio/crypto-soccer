@@ -33,7 +33,7 @@ def test1():
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
     player1State                = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
     dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
     hash0 = printTeam(teamIdx1, ST_CLIENT)
@@ -380,7 +380,7 @@ def test2():
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     player1State = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
     dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.isCorrectStateForPlayerIdx(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
@@ -410,7 +410,7 @@ def test2():
         )
         playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx1)
         dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx1)
-        assert ST.isCorrectStateForPlayerIdx(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+        assert ST.areLatestSkills(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     lastTeamIdx = 1
     nTeamsPerLeague = 8

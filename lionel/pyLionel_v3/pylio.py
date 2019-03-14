@@ -52,7 +52,7 @@ def printTeam(teamIdx, ST_CLIENT):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
         playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
-        assert ST_CLIENT.isCorrectStateForPlayerIdx(playerState, playerChallengeData), "Player state not correctly in sync"
+        assert ST_CLIENT.areLatestSkills(playerState, playerChallengeData), "Player state not correctly in sync"
         hash += printPlayer(playerState)
     return hash
 
@@ -228,4 +228,14 @@ def flatten(statesPerTeam):
         for statePlayer in statesTeam:
             flatStates.append(statePlayer)
     return flatStates
+
+
+# MAIN function to be called by anyone who want to make sure that the playerState is the TRULY LATEST STATE in the game
+# It uses pre-hash data from CLIENT, and compares against whatever is needed in the BC
+def certifyPlayerState(playerState, ST, ST_CLIENT):
+    # As always we first derive the latest skills (from the last league played):
+    playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
+    # ...and then we update with whatever sales took place afterwards
+    playerChallengeDataUpdated = ST_CLIENT.updateChallengeDataAfterLastLeaguePlayed(playerChallengeData)
+    assert ST.areLatestSkills(playerState, playerChallengeDataUpdated), "Computed player state by CLIENT is not recognized by BC.."
 
