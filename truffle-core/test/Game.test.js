@@ -18,12 +18,6 @@ contract('Game', (accounts) => {
     let engine = null;
     let state = null;
     let leagues = null;
-    let barcelonaId = null;
-    let madridId = null;
-    let sevillaId = null;
-    let bilbaoId = null;
-    let veniceId = null;
-    let juventusId = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -39,19 +33,6 @@ contract('Game', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         state = await State.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
-
-        await horizon.createTeam("Barcelona").should.be.fulfilled;
-        await horizon.createTeam("Madrid").should.be.fulfilled;
-        await horizon.createTeam("Sevilla").should.be.fulfilled;
-        await horizon.createTeam("Bilbao").should.be.fulfilled;
-        await horizon.createTeam("Venice").should.be.fulfilled;
-        await horizon.createTeam("Juventus").should.be.fulfilled;
-        barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
-        madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
-        sevillaId = await teams.getTeamId("Sevilla").should.be.fulfilled;
-        bilbaoId = await teams.getTeamId("Bilbao").should.be.fulfilled;
-        veniceId = await teams.getTeamId("Venice").should.be.fulfilled;
-        juventusId = await teams.getTeamId("Juventus").should.be.fulfilled;
     });
 
     // we use the values in the blockchain to generate the team status
@@ -74,7 +55,7 @@ contract('Game', (accounts) => {
                 endurance,
                 0,
                 1, // TODO: make it properly
-                0,0,0,0,0,0
+                0, 0, 0, 0, 0, 0
             );
             teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
@@ -82,11 +63,25 @@ contract('Game', (accounts) => {
     }
 
     it('play a league of 6 teams', async () => {
+        await horizon.createTeam("Barcelona").should.be.fulfilled;
+        await horizon.createTeam("Madrid").should.be.fulfilled;
+        await horizon.createTeam("Sevilla").should.be.fulfilled;
+        await horizon.createTeam("Bilbao").should.be.fulfilled;
+        await horizon.createTeam("Venice").should.be.fulfilled;
+        await horizon.createTeam("Juventus").should.be.fulfilled;
+        const barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
+        const madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
+        const sevillaId = await teams.getTeamId("Sevilla").should.be.fulfilled;
+        const bilbaoId = await teams.getTeamId("Bilbao").should.be.fulfilled;
+        const veniceId = await teams.getTeamId("Venice").should.be.fulfilled;
+        const juventusId = await teams.getTeamId("Juventus").should.be.fulfilled;
+
+
         const initBlock = 1;
         const step = 1;
         const leagueId = 0;
         const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
-        const tactics = [[4,4,3], [4,4,3], [4,4,3], [4,4,3], [4,4,3], [4,4,3]];
+        const tactics = [[4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3]];
         await leagues.create(leagueId, initBlock, step, teamIds).should.be.fulfilled;
 
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
@@ -109,7 +104,7 @@ contract('Game', (accounts) => {
         const initStateHash = await leagues.hashState(initLeagueState).should.be.fulfilled;
         let dayStateHashes = [];
 
-        let leagueScores = await leagues.scoresCreate().should.be.fulfilled; 
+        let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
 
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
@@ -127,33 +122,33 @@ contract('Game', (accounts) => {
 
             // for each match of the day
             for (match = 0; match < matchesPerDay; match++) {
-                 // get the indexes of the teams of match 
-                 const teamsInMatch = await leagues.getTeamsInMatch(leagueId, leagueDay, match).should.be.fulfilled;
+                // get the indexes of the teams of match 
+                const teamsInMatch = await leagues.getTeamsInMatch(leagueId, leagueDay, match).should.be.fulfilled;
 
-                 // get ids of teams in match
-                 const homeTeamId = teamIds[teamsInMatch.homeIdx.toNumber()];
-                 const visitorTeamId = teamIds[teamsInMatch.visitorIdx.toNumber()];
+                // get ids of teams in match
+                const homeTeamId = teamIds[teamsInMatch.homeIdx.toNumber()];
+                const visitorTeamId = teamIds[teamsInMatch.visitorIdx.toNumber()];
 
-                 // get the names of the teams in the match
-                 const homeTeam = await teams.getName(homeTeamId).should.be.fulfilled;
-                 const visitorTeam = await teams.getName(visitorTeamId).should.be.fulfilled;
+                // get the names of the teams in the match
+                const homeTeam = await teams.getName(homeTeamId).should.be.fulfilled;
+                const visitorTeam = await teams.getName(visitorTeamId).should.be.fulfilled;
 
-                 // getting the goal of match 
-                 const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
+                // getting the goal of match 
+                const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
 
-                 // get the state of teams 
-                 const homeTeamState = await state.leagueStateAt(finalDayState, teamsInMatch.homeIdx).should.be.fulfilled;
-                 const visitorTeamState = await state.leagueStateAt(finalDayState, teamsInMatch.visitorIdx).should.be.fulfilled;
+                // get the state of teams 
+                const homeTeamState = await state.leagueStateAt(finalDayState, teamsInMatch.homeIdx).should.be.fulfilled;
+                const visitorTeamState = await state.leagueStateAt(finalDayState, teamsInMatch.visitorIdx).should.be.fulfilled;
 
-                 // calculate rating of teams
-                 const homeTeamRating = await state.computeTeamRating(homeTeamState).should.be.fulfilled;
-                 const visitorTeamRating = await state.computeTeamRating(visitorTeamState).should.be.fulfilled;
+                // calculate rating of teams
+                const homeTeamRating = await state.computeTeamRating(homeTeamState).should.be.fulfilled;
+                const visitorTeamRating = await state.computeTeamRating(visitorTeamState).should.be.fulfilled;
 
-                 console.log(
-                     "DAY " + leagueDay + ": " 
-                     + homeTeam + "(" + homeTeamRating.toNumber() + ") " + goals.home.toNumber() 
-                     + " - " 
-                     + goals.visitor.toNumber() + " " + visitorTeam + "(" + visitorTeamRating + ")");
+                console.log(
+                    "DAY " + leagueDay + ": "
+                    + homeTeam + "(" + homeTeamRating.toNumber() + ") " + goals.home.toNumber()
+                    + " - "
+                    + goals.visitor.toNumber() + " " + visitorTeam + "(" + visitorTeamRating + ")");
             }
             // concat day scores to league scores
             leagueScores = await leagues.scoresConcat(leagueScores, dayScores).should.be.fulfilled;
