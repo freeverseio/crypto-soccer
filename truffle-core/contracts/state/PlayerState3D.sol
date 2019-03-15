@@ -19,12 +19,12 @@ contract PlayerState3D is LeagueState {
     {
         require(isValidPlayerState3D(playerState3D), "invalid playerState3D");
         require(isValidTeamState(playerState2D), "invalid playerState2D");
-        state = new uint256[](playerState2D.length + playerState2D.length + 1);
-        for (uint256 i = 0 ; i < playerState2D.length ; i++)
-            state[i] = playerState2D[i];
+        state = new uint256[](playerState3D.length + playerState2D.length + 1);
+        for (uint256 i = 0 ; i < playerState3D.length ; i++)
+            state[i] = playerState3D[i];
         for (uint256 i = 0 ; i < playerState2D.length ; i++) 
-            state[playerState2D.length + i] = playerState2D[i];
-        state[playerState2D.length + playerState2D.length] = DIMENSION_2_END;
+            state[playerState3D.length + i] = playerState2D[i];
+        state[playerState3D.length + playerState2D.length] = DIMENSION_2_END;
     }
 
     function isValidPlayerState3D(uint256[] memory state) public pure returns (bool) {
@@ -34,4 +34,12 @@ contract PlayerState3D is LeagueState {
             return false;
         return true;
     }
+
+    function playerState3DSize(uint256[] memory state) public pure returns (uint256 count) {
+        require(isValidPlayerState3D(state), "invalid player state 3d");
+        for (uint256 i = 0 ; i < state.length ; i++)
+            if (state[i] == DIMENSION_2_END)
+                count++;
+    }
+    
 }
