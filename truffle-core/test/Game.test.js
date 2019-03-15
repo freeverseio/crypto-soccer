@@ -103,7 +103,7 @@ contract('Game', (accounts) => {
         // Move beyond league end
         waitBlock(100 + blockStep);
         const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
-        finished.should.be.equal(false);
+        finished.should.be.equal(true);
     });
 
     return;
