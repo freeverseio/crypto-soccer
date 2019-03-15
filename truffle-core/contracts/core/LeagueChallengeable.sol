@@ -17,7 +17,7 @@ contract LeagueChallengeable is LeagueUpdatable {
     )
         public
     {
-        require(_isUpdated(id), "not updated league. No challenge allowed");
+        require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
         require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
         uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);

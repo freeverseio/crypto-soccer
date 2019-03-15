@@ -76,6 +76,17 @@ contract('Game', (accounts) => {
         await advanceToBlock(current+blocks);
     }
 
+    const prepareMatchdayHashes = async (statesAtMatchday) => {
+        let result = [];
+        for (let i = 0; i < statesAtMatchday.length ; i++){
+            const state = statesAtMatchday[i];
+            const hash = await leagues.hashState(state).should.be.fulfilled;
+            result.push(hash);
+        }
+
+        return result;
+    }
+
     it('test2', async () => {
         await horizon.createTeam("Barca").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
@@ -124,10 +135,39 @@ contract('Game', (accounts) => {
         await advanceNBlocks(blockStep).should.be.fulfilled;
         finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
         finished.should.be.equal(true);
+
+        /**** big TODO: */
+        // The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
+        // TODO: calculate the league
+        const leagueDays = await leagues.countLeagueDays(leagueIdx).should.be.fulfilled;
+        const initPlayerStates = []; // TODO:
+        const statesAtMatchday = []; // TODO:
+        const scores = []; // TODO:
+        // leagueDays.toNumber().should.be.equal(statesAtMatchday.length);
+        /**** end big TODO */
+
+        let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(false);
+
+        const initStateHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
+        const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
+
+        console.log(statesAtMatchdayHashes)
+
+        let statesAtMatchdayHashesLie = statesAtMatchdayHashes;
+        // statesAtMatchdayHashesLie[0]++; // TODO: decomment he lies about matchday 0 only
+
+        await leagues.updateLeague(
+            leagueIdx,
+            initStateHash,
+            statesAtMatchdayHashesLie,
+            scores
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
     });
 
     return;
-
     it('play a league of 6 teams', async () => {
         await horizon.createTeam("Barcelona").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
@@ -148,7 +188,7 @@ contract('Game', (accounts) => {
         const leagueId = 0;
         const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
         const tactics = [[4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3]];
-        await leagues.create(leagueId, initBlock, step, teamIds).should.be.fulfilled;
+        await leagues.create(leagueId, initBlock, step, teamIds, tactics).should.be.fulfilled;
 
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
         const madridState = await generateTeamState(madridId).should.be.fulfilled;

@@ -30,7 +30,7 @@ contract LeagueUpdatable is LeaguesScheduler {
     {
         require(_exists(id), "invalid league id");
         require(hasFinished(id), "league not finished");
-        require(!_isUpdated(id), "already updated");
+        require(!isUpdated(id), "already updated");
         _result[id].initStateHash = initStateHash;
         _result[id].dayStateHashes = dayStateHashes;
         _result[id].scores = scores;
@@ -76,7 +76,7 @@ contract LeagueUpdatable is LeaguesScheduler {
         return _result[id].scores;
     }
 
-    function _isUpdated(uint256 id) internal view returns (bool) {
+    function isUpdated(uint256 id) public view returns (bool) {
         return _result[id].updateBlock != 0;
     }
 }
