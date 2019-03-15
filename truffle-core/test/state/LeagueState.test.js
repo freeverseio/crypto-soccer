@@ -6,11 +6,9 @@ const LeagueState = artifacts.require('LeagueState');
 
 contract('LeagueState', (accounts) => {
     let instance = null;
-    let TEAMSTATEEND = null;
 
     beforeEach(async () => {
         instance = await LeagueState.new().should.be.fulfilled;
-        TEAMSTATEEND = await instance.TEAMSTATEEND().should.be.fulfilled;
     });
 
     it('create day state has 0 size', async () => {
@@ -31,7 +29,7 @@ contract('LeagueState', (accounts) => {
     });
 
     it('append not empty team state', async () => {
-        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
@@ -44,15 +42,14 @@ contract('LeagueState', (accounts) => {
     });
 
     it('valid league state', async () => {
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let result = await instance.isValidLeagueState([]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidLeagueState([2]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, 3, TEAMSTATEEND, 4, TEAMSTATEEND, 4]).should.be.fulfilled;
-        result.should.be.equal(false);
-        result = await instance.isValidLeagueState([2, TEAMSTATEEND, TEAMSTATEEND, 1, TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([playerState, 0]).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await instance.isValidLeagueState([TEAMSTATEEND]).should.be.fulfilled;
+        result = await instance.isValidLeagueState([0]).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.isValidLeagueState([playerState,0,0]).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
@@ -77,7 +74,7 @@ contract('LeagueState', (accounts) => {
     });
 
     it('update team state', async () => {
-        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await instance.teamStateCreate().should.be.fulfilled;
         teamState = await instance.teamStateAppend(teamState, playerState).should.be.fulfilled;
         let leagueState = await instance.leagueStateCreate().should.be.fulfilled;
@@ -85,7 +82,7 @@ contract('LeagueState', (accounts) => {
         leagueState = await instance.leagueStateAppend(leagueState, teamState).should.be.fulfilled;
         let newTeamState = await instance.teamStateCreate().should.be.fulfilled;
         await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.rejected;
-        const newPlayerState = await instance.playerStateCreate(5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const newPlayerState = await instance.playerStateCreate(5, 4, 3, 2, 1, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         newTeamState = await instance.teamStateAppend(newTeamState, newPlayerState).should.be.fulfilled;
         const updatedleagueState = await instance.leagueStateUpdate(leagueState, 1, newTeamState).should.be.fulfilled;
         const resultTeamState = await instance.leagueStateAt(updatedleagueState, 1).should.be.fulfilled;

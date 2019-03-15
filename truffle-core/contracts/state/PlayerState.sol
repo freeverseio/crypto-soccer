@@ -2,10 +2,8 @@ pragma solidity ^0.5.0;
 
 /// @title the state of a player
 contract PlayerState {
-    uint256 constant public TEAMSTATEEND = 0;
-
     function isValidPlayerState(uint256 state) public pure returns (bool) {
-        return state != TEAMSTATEEND;
+        return getPlayerId(state) != 0;
     }
 
     /**
@@ -47,7 +45,7 @@ contract PlayerState {
         require(shoot < 2**14, "defence out of bound");
         require(endurance < 2**14, "defence out of bound");
         require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
-        require(playerId < 2**28, "playerId out of bound");
+        require(playerId > 0 && playerId < 2**28, "playerId out of bound");
         require(currentTeamId < 2**28, "currentTeamIdx out of bound");
         require(currentShirtNum < 2**4, "currentShirtNum out of bound");
         require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
@@ -121,7 +119,6 @@ contract PlayerState {
     }
 
     function getPlayerId(uint256 playerState) public pure returns (uint256) {
-        require(isValidPlayerState(playerState), "invalid player state");
         return uint256(playerState >> 144 & 0xfffffff);
     }
 

@@ -4,6 +4,8 @@ import "./PlayerState.sol";
 
 /// @title the state of a team
 contract TeamState is PlayerState {
+    uint256 constant internal TEAMSTATEEND = 0;
+
     function teamStateCreate() public pure returns (uint256[] memory state){
     }
 

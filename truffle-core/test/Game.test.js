@@ -72,7 +72,9 @@ contract('Game', (accounts) => {
                 pass,
                 shoot,
                 endurance,
-                0,0,0,0,0,0,0,0
+                0,
+                1, // TODO: make it properly
+                0,0,0,0,0,0
             );
             teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
