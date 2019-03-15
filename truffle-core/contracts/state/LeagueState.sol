@@ -4,23 +4,26 @@ import "./TeamState.sol";
 
 /// @title The state of a League
 contract LeagueState is TeamState {
+    uint256 constant private DIMENSION_1_END = 0;
+
     function leagueStateCreate() public pure returns (uint256[] memory state) {
     }
 
     function leagueStateAppend(uint256[] memory leagueState, uint256[] memory teamState) public pure returns (uint256[] memory state) {
+        require(isValidLeagueState(leagueState), "invalid league state");
         require(isValidTeamState(teamState), "invalid team state");
         state = new uint256[](leagueState.length + teamState.length + 1);
         for (uint256 i = 0 ; i < leagueState.length ; i++)
             state[i] = leagueState[i];
         for (uint256 i = 0 ; i < teamState.length ; i++) 
             state[leagueState.length + i] = teamState[i];
-        state[leagueState.length + teamState.length] = TEAMSTATEEND;
+        state[leagueState.length + teamState.length] = DIMENSION_1_END;
     }
 
     function leagueStateSize(uint256[] memory leagueState) public pure returns (uint256 count) {
         require(isValidLeagueState(leagueState), "invalid league state");
         for (uint256 i = 0 ; i < leagueState.length ; i++)
-            if (leagueState[i] == TEAMSTATEEND)
+            if (leagueState[i] == DIMENSION_1_END)
                 count++;
     }
 
@@ -29,7 +32,7 @@ contract LeagueState is TeamState {
         require(idx < leagueStateSize(leagueState), "out of range");
         uint256 first = _getFirstPlayerOfTeam(leagueState, idx);
         uint256 nPlayers;
-        while (first+nPlayers < leagueState.length && leagueState[first+nPlayers] != TEAMSTATEEND)
+        while (first+nPlayers < leagueState.length && leagueState[first+nPlayers] != DIMENSION_1_END)
             nPlayers++;
         uint256[] memory state = new uint256[](nPlayers);
         for (uint256 i = 0 ; i < nPlayers ; i++)
@@ -57,7 +60,7 @@ contract LeagueState is TeamState {
     function isValidLeagueState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
-        if (state[state.length - 1] != TEAMSTATEEND)
+        if (state[state.length - 1] != DIMENSION_1_END)
             return false;
         return true;
     }
@@ -66,7 +69,7 @@ contract LeagueState is TeamState {
         uint256 teamCounter;
         uint256 i;
         for (i = 0 ; i < leagueState.length && teamCounter < idx; i++){
-            if (leagueState[i] == TEAMSTATEEND)
+            if (leagueState[i] == DIMENSION_1_END)
                 teamCounter++;
         }
         return i;
