@@ -8,8 +8,7 @@ const Horizon = artifacts.require('Horizon');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
-
-
+const Cronos = artifacts.require('Cronos');
 
 contract('Game', (accounts) => {
     let horizon = null;
@@ -18,6 +17,7 @@ contract('Game', (accounts) => {
     let engine = null;
     let state = null;
     let leagues = null;
+    let cronos = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -33,6 +33,7 @@ contract('Game', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         state = await State.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
+        cronos = await Cronos.new().should.be.fulfilled;
     });
 
     // we use the values in the blockchain to generate the team status
@@ -61,6 +62,42 @@ contract('Game', (accounts) => {
         }
         return teamState;
     }
+
+    const waitBlock = async (block) => {
+        let current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        while (current.toString() < block)
+            await cronos.wait().should.be.fulfilled;
+    }
+
+    it('test2', async () => {
+        await horizon.createTeam("Barca").should.be.fulfilled;
+        await horizon.createTeam("Madrid").should.be.fulfilled;
+        await horizon.createTeam("Milan").should.be.fulfilled;
+        await horizon.createTeam("PSG").should.be.fulfilled;
+        const teamIdx1 = await teams.getTeamId("Barca").should.be.fulfilled;
+        const teamIdx2 = await teams.getTeamId("Madrid").should.be.fulfilled;
+        const teamIdx3 = await teams.getTeamId("Milan").should.be.fulfilled;
+        const teamIdx4 = await teams.getTeamId("PSG").should.be.fulfilled;
+
+        waitBlock(100);
+
+        const blockInit = 190;
+        const blockStep = 10;
+
+        const usersInitData = {
+            teamIdxs: [teamIdx1, teamIdx2],
+            // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
+            tactics: [[4,4,2], [4,3,3]]
+        };
+
+        leagueIdx = 0;
+        await leagues.create(leagueIdx, blockInit, blockStep, usersInitData.teamIdxs).should.be.fulfilled;
+
+        const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
+        startBlock.toNumber().should.be.equal(blockInit);
+    });
+
+    return;
 
     it('play a league of 6 teams', async () => {
         await horizon.createTeam("Barcelona").should.be.fulfilled;
