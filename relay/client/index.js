@@ -15,28 +15,25 @@ app.listen(PORT, () => {
 // ----------------------------
 // GET
 // ----------------------------
-
-app.get(
-    '/relay/v1',
-    function( req, res ) {
-      res.statusCode = 200    // = OK
-      console.log('account: ' + req.query.account)
-      console.log('mnemonic: ' + req.query.mnemonic)
-      console.log('password: ' + req.query.password)
-      console.log('actionType: ' + req.query.actionType)
-      console.log('actionValue: ' + req.query.actionValue)
-      console.log( 'GET Params: '+JSON.stringify( req.query ) )
-      return  res.json( {account : "ok!" } )
-    }
-  )
+//
 
 //http://localhost:8888/relay/db
 app.get( // TODO: just for debugging. remove
-    //u
     '/relay/db',
     function( req, res ) {
       res.statusCode = 200    // = OK
       return  res.json( db.getData() )
+    }
+  )
+
+
+//http://localhost:8888/relay/v1?account=1234
+app.get(
+    '/relay/v1',
+    function( req, res ) {
+      console.log( 'GET Params: '+JSON.stringify( req.query ) )
+      const useraccount = req.query.account;
+      return res.redirect('/relay/v1/'+useraccount)
     }
   )
 
@@ -70,17 +67,26 @@ app.get(
       const useraccount = req.params.useraccount;
       const entry = db.getUserEntry(useraccount)
 
+      var nonce = -1
       if (entry) {
-        return res.status(200).send({
-          success: 'true',
-          account : useraccount,
-          nonce: 0
+        utils.getAccountNonce(useraccount).then(
+        function(nonce) {
+          return res.status(200).send({
+            success: 'true',
+            account : useraccount,
+            nonce: nonce
+          });
+        }).catch(function(err) {
+          console.error(err)
         });
       }
-      return res.status(404).send({
-        success: 'false',
-        message: 'account ' + useraccount + ' does not exist',
-      });
+      else
+      {
+        return res.status(404).send({
+          success: 'false',
+          message: 'account ' + useraccount + ' does not exist',
+        });
+      }
     }
   )
 
@@ -88,29 +94,20 @@ app.get(
 // POST
 // ----------------------------
 
-// curl -v -H "Content-Type: application/json" -X POST -d '{"name":"your name","phonenumber":"111-111"}' http://localhost:8888/relay/v1
+// curl -v -H "Content-Type: application/json" -X POST -d '{"mnemonic":"a b c d e"}' http://localhost:8888/relay/v1
 app.post(
     '/relay/v1/createuser',
     jsonParser,
     function( req, res ) {
       console.log( 'POST Body: '+JSON.stringify( req.body ))
 
-      //if(!req.body.account)
-      //{
-      //  return res.status(400).send({
-      //    success: 'false',
-      //    message: 'account is required'
-      //  });
-      //}
-      //else if(!req.body.mnemonic)
-      //{
-      //  return res.status(400).send({
-      //    success: 'false',
-      //    message: 'description is required'
-      //  });
-      //}
+      var usermnemonic;
+      if(req.body.mnemonic)
+      {
+        usermnemonic = req.body.mnemonic
+      }
 
-      let wallet = utils.generateKeysMnemonic(null);
+      let wallet = utils.generateKeysMnemonic(usermnemonic);
 
       const account = wallet.address
       const mnemonic = wallet.mnemonic

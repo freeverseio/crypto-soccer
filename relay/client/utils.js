@@ -1,6 +1,9 @@
 var ethUtil = require('ethereumjs-util');
+var Web3 = require('web3');
 var HDKey = require('hdkey')
 var bip39 = require('bip39')
+var toastr = require('toastr')
+
 
 function bytesToHex(buff) {
   return `0x${buff.toString('hex')}`;
@@ -38,8 +41,22 @@ function generateKeysMnemonic(mnemonic) {
   return {address: addressHex, mnemonic: mnemonic};
 }
 
+function getAccountNonce(account) {
+  if(account==undefined) {
+      toastr.error("undefined address");
+      return -1;
+  }
+  if(account=="") { // TODO check also if it's a valid eth address
+      toastr.error("empty address");
+      return -1;
+  }
+
+  const web3 = new Web3('wss://ropsten.infura.io/ws'); // TODO: change to whatever the real thing is
+  return web3.eth.getTransactionCount(account, 'latest');
+}
+
 module.exports = {
-  generateKeysMnemonic
+  generateKeysMnemonic, getAccountNonce
 }
 
 /*
