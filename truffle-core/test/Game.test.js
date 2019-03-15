@@ -63,10 +63,12 @@ contract('Game', (accounts) => {
         return teamState;
     }
 
-    const waitBlock = async (block) => {
+    const advanceToBlock = async (block) => {
         let current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        while (current.toString() < block)
+        while (current.toString() < block) {
             await cronos.wait().should.be.fulfilled;
+            current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        }
     }
 
     it('test2', async () => {
@@ -79,7 +81,7 @@ contract('Game', (accounts) => {
         const teamIdx3 = await teams.getTeamId("Milan").should.be.fulfilled;
         const teamIdx4 = await teams.getTeamId("PSG").should.be.fulfilled;
 
-        waitBlock(100);
+        await advanceToBlock(100);
 
         const blockInit = 190;
         const blockStep = 10;
@@ -96,14 +98,16 @@ contract('Game', (accounts) => {
         const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
         startBlock.toNumber().should.be.equal(blockInit);
 
+        // Advance to matchday 2
+        await advanceToBlock(blockInit + blockStep - 5);
+        const started = await leagues.hasStarted(leagueIdx).should.be.fulfilled;
+        started.should.be.equal(true);
+        const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
+        finished.should.be.equal(false);
+
         // Submit data to change tactics
         await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx1, [4,3,3]).should.be.fulfilled;
         await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx2, [4,4,2]).should.be.fulfilled;
-
-        // Move beyond league end
-        waitBlock(100 + blockStep);
-        const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
-        finished.should.be.equal(true);
     });
 
     return;
