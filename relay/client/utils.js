@@ -2,11 +2,11 @@ var ethUtil = require('ethereumjs-util');
 var HDKey = require('hdkey')
 var bip39 = require('bip39')
 
-let bytesToHex = function bytesToHex(buff) {
+function bytesToHex(buff) {
   return `0x${buff.toString('hex')}`;
 }
 
-let hexToBytes = function hexToBytes(hex) {
+function hexToBytes(hex) {
   if (hex.substr(0, 2) === '0x') {
     return Buffer.from(hex.substr(2), 'hex');
   }
@@ -14,7 +14,7 @@ let hexToBytes = function hexToBytes(hex) {
   return Buffer.from(hex, 'hex');
 }
 
-let generateKeysMnemonic = function generateKeysMnemonic(mnemonic) {
+function generateKeysMnemonic(mnemonic) {
   if (mnemonic == undefined) {
     mnemonic = bip39.generateMnemonic();
   }
@@ -39,7 +39,7 @@ let generateKeysMnemonic = function generateKeysMnemonic(mnemonic) {
 }
 
 module.exports = {
-  hexToBytes, bytesToHex, generateKeysMnemonic
+  generateKeysMnemonic
 }
 
 /*

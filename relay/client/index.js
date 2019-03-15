@@ -1,42 +1,16 @@
-//import db from './db/db'
 let express = require('express')
 const app = express();
-let fs = require('fs'); // to write to a file
 let utils = require('./utils.js')
+let db = require('./db.js')
+let bodyParser  = require( 'body-parser' )
 
 const PORT = 8888
+let jsonParser  = bodyParser.json()
+let formParser  = bodyParser.urlencoded( { extended: true } );
 
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`)
 });
-let bodyParser  = require( 'body-parser' )
-let jsonParser  = bodyParser.json()
-let formParser  = bodyParser.urlencoded( { extended: true } );
-let db = [] // TODO use a proper database
-let mnemonic = 'public lion man jelly mom fitness awkward muscle target cactus coast depth'
-
-let wallet = utils.generateKeysMnemonic(mnemonic);
-console.log('wallet: ', wallet.address, "mnemonic: " , wallet.mnemonic)
-
-function writeDatabase() {
-  const path = '/tmp/relaydb.txt'
-  fs.writeFileSync(path, JSON.stringify(db), function(err){
-      if(err) {
-          console.log(err)
-      } else {
-          console.log('Database updated');
-      }
-  });
-}
-
-function getUserEntry(useraccount) {
-  for (var entry of db) {
-    if (entry.account === useraccount) {
-      return entry
-    }
-  }
-  return null
-}
 
 // ----------------------------
 // GET
@@ -57,12 +31,12 @@ app.get(
   )
 
 //http://localhost:8888/relay/db
-app.get( // just for debugging
+app.get( // TODO: just for debugging. remove
     //u
     '/relay/db',
     function( req, res ) {
       res.statusCode = 200    // = OK
-      return  res.json( {db} )
+      return  res.json( db.getData() )
     }
   )
 
@@ -72,7 +46,7 @@ app.get(
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
       const useraccount = req.params.useraccount;
-      const entry = getUserEntry(useraccount)
+      const entry = db.getUserEntry(useraccount)
 
       if (entry) {
         return res.status(200).send({
@@ -94,7 +68,7 @@ app.get(
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
       const useraccount = req.params.useraccount;
-      const entry = getUserEntry(useraccount)
+      const entry = db.getUserEntry(useraccount)
 
       if (entry) {
         return res.status(200).send({
@@ -119,26 +93,30 @@ app.post(
     '/relay/v1/createuser',
     jsonParser,
     function( req, res ) {
-      res.statusCode = 201    // = created
       console.log( 'POST Body: '+JSON.stringify( req.body ))
 
-      if(!req.body.account)
-      {
-        return res.status(400).send({
-          success: 'false',
-          message: 'account is required'
-        });
-      }
-      else if(!req.body.mnemonic)
-      {
-        return res.status(400).send({
-          success: 'false',
-          message: 'description is required'
-        });
-      }
+      //if(!req.body.account)
+      //{
+      //  return res.status(400).send({
+      //    success: 'false',
+      //    message: 'account is required'
+      //  });
+      //}
+      //else if(!req.body.mnemonic)
+      //{
+      //  return res.status(400).send({
+      //    success: 'false',
+      //    message: 'description is required'
+      //  });
+      //}
 
-      const useraccount = req.body.account;
-      const entry = getUserEntry(useraccount)
+      let wallet = utils.generateKeysMnemonic(null);
+
+      const account = wallet.address
+      const mnemonic = wallet.mnemonic
+
+      console.log('account: ', account, "mnemonic: ", mnemonic)
+      const entry = db.getUserEntry(account)
 
       if (entry) {
         return res.status(400).send({
@@ -148,15 +126,11 @@ app.post(
        });
       }
 
-      const new_entry = {
-        id : db.length + 1,
-        account : req.body.account,
-        mnemonic : req.body.mnemonic
-      }
+      const new_entry = db.addUserEntry(account, mnemonic);
 
-      db.push(new_entry);
-      writeDatabase();
-
-      return res.json({success: 'true', entry: new_entry})
+      return res.status(201).send({
+        success: 'true',
+        entry: new_entry
+      });
     }
   )
