@@ -71,6 +71,11 @@ contract('Game', (accounts) => {
         }
     }
 
+    const advanceNBlocks = async (blocks) => {
+        let current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        await advanceToBlock(current+blocks);
+    }
+
     it('test2', async () => {
         await horizon.createTeam("Barca").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
@@ -102,7 +107,7 @@ contract('Game', (accounts) => {
         await advanceToBlock(blockInit + blockStep - 5);
         const started = await leagues.hasStarted(leagueIdx).should.be.fulfilled;
         started.should.be.equal(true);
-        const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
+        let finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
         finished.should.be.equal(false);
 
         // Note that we could specify only for 1 of the teams if we wanted.
@@ -114,6 +119,11 @@ contract('Game', (accounts) => {
         // Submit data to change tactics
         await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[0], usersAlongData.tactics[0]).should.be.fulfilled;
         await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[1], usersAlongData.tactics[1]).should.be.fulfilled;
+
+        // Move beyond league end
+        await advanceNBlocks(blockStep).should.be.fulfilled;
+        finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
+        finished.should.be.equal(true);
     });
 
     return;
