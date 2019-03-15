@@ -51,7 +51,8 @@ function getAccountNonce(account) {
       return -1;
   }
 
-  const web3 = new Web3('wss://ropsten.infura.io/ws'); // TODO: change to whatever the real thing is
+  const web3 = new Web3('https://nou.network/web3'); // TODO: change to whatever the real thing is
+  // return web3.eth.getTransactionCount("0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd", 'latest'); -> returns 39
   return web3.eth.getTransactionCount(account, 'latest');
 }
 
