@@ -9,8 +9,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         bytes32 initStateHash;
         // hash of the day hashes of the league
         bytes32[] dayStateHashes;
-        // hash of tactics
-        bytes32[] tacticHashes;
         // scores of the league 
         uint16[] scores;
         // updater address
@@ -40,6 +38,11 @@ contract LeagueUpdatable is LeaguesScheduler {
         _result[id].updateBlock = block.number;
     }
 
+    function resetUpdater(uint256 id) public {
+        require(_exists(id), "unexistent league");
+        _result[id].updateBlock = 0;
+    }
+
     function getUpdater(uint256 id) external view returns (address) {
         require(_exists(id), "unexistent league");
         return _result[id].updater;
@@ -58,7 +61,7 @@ contract LeagueUpdatable is LeaguesScheduler {
         return keccak256(abi.encode(tactics));
     }
 
-    function getInitStateHash(uint256 id) external view returns (bytes32) {
+    function getInitStateHash(uint256 id) public view returns (bytes32) {
         require(_exists(id), "unexistent league");
         return _result[id].initStateHash;
     }

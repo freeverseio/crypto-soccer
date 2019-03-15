@@ -4,18 +4,21 @@ require('chai')
 
 const Leagues = artifacts.require('LeagueUpdatableMock');
 
-contract('LeaguesUpdater', (accounts) => {
+contract('LeaguesUpdatable', (accounts) => {
     let leagues = null;
     const id = 0;
-    const step = 1;
-    const teamIds = [1, 2]
 
     beforeEach(async () => {
-        const blocksToInit = 1;
         leagues = await Leagues.new().should.be.fulfilled;
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(
+            id,
+            blocksToInit = 1,
+            step = 1,
+            teamIds = [1, 2],
+            tactics = [[4, 4, 3], [4, 4, 3]]
+        ).should.be.fulfilled;
     });
-    
+
     it('unexistent league', async () => {
         const id = 3;
         await leagues.getDayStateHashes(id).should.be.rejected;

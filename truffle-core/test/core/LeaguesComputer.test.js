@@ -31,7 +31,7 @@ contract('LeaguesComputer', (accounts) => {
         teamState0 = [playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0];
         const playerState1 = await states.playerStateCreate(32, 11, 32, 22, 44, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         teamState1 = [playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1];
-        await leagues.create(id, blocksToInit, step, teamIds).should.be.fulfilled;
+        await leagues.create(id, blocksToInit, step, teamIds, tactics).should.be.fulfilled;
         leagueState = await states.leagueStateCreate().should.be.fulfilled;
         leagueState = await states.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
         leagueState = await states.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;

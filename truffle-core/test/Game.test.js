@@ -89,11 +89,11 @@ contract('Game', (accounts) => {
         const usersInitData = {
             teamIdxs: [teamIdx1, teamIdx2],
             // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
-            tactics: [[4,4,2], [4,3,3]] // TODO unused here
+            tactics: [[4,4,2], [4,3,3]] 
         };
 
         leagueIdx = 0;
-        await leagues.create(leagueIdx, blockInit, blockStep, usersInitData.teamIdxs).should.be.fulfilled;
+        await leagues.create(leagueIdx, blockInit, blockStep, usersInitData.teamIdxs, usersInitData.tactics).should.be.fulfilled;
 
         const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
         startBlock.toNumber().should.be.equal(blockInit);
@@ -105,9 +105,15 @@ contract('Game', (accounts) => {
         const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
         finished.should.be.equal(false);
 
+        // Note that we could specify only for 1 of the teams if we wanted.
+        usersAlongData = {
+            teamIdxsWithinLeague: [teamIdx1, teamIdx2],
+            tactics: [[4, 3, 3], [4, 4, 2]],
+        };
+
         // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx1, [4,3,3]).should.be.fulfilled;
-        await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx2, [4,4,2]).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[0], usersAlongData.tactics[0]).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[1], usersAlongData.tactics[1]).should.be.fulfilled;
     });
 
     return;
