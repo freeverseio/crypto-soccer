@@ -87,7 +87,7 @@ contract('Game', (accounts) => {
         const usersInitData = {
             teamIdxs: [teamIdx1, teamIdx2],
             // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
-            tactics: [[4,4,2], [4,3,3]]
+            tactics: [[4,4,2], [4,3,3]] // TODO unused here
         };
 
         leagueIdx = 0;
@@ -95,6 +95,15 @@ contract('Game', (accounts) => {
 
         const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
         startBlock.toNumber().should.be.equal(blockInit);
+
+        // Submit data to change tactics
+        await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx1, [4,3,3]).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueIdx, teamIdx2, [4,4,2]).should.be.fulfilled;
+
+        // Move beyond league end
+        waitBlock(100 + blockStep);
+        const finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
+        finished.should.be.equal(false);
     });
 
     return;
