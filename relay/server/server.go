@@ -1,3 +1,5 @@
+package server
+
 import (
 	"errors"
 	"fmt"
