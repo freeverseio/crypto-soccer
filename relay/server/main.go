@@ -2,19 +2,28 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
+// Action - ...
+type Action struct {
+	Type  string
+	Value string
+}
+
 // RelayUserEntry - ...
 type RelayUserEntry struct {
-	ID    int64
-	Nonce uint64
+	ID     int64
+	Nonce  uint64
+	Action Action
 }
 
 var db = make(map[string]*RelayUserEntry) // TODO: use storage.go
+var userNotFound = gin.H{"message": "User not found"}
 
 // AddUserEntry - adds user to db
 func AddUserEntry(account string) error {
@@ -28,8 +37,7 @@ func AddUserEntry(account string) error {
 
 // GetUserEntry - adds user to db
 func GetUserEntry(account string) *RelayUserEntry {
-	entry, ok := db[account]
-	if ok {
+	if entry, ok := db[account]; ok == true {
 		return entry
 	}
 	return nil
@@ -42,40 +50,61 @@ func pingGET(c *gin.Context) {
 // NonceGET - get user nonce (http://localhost:8080/relay/v1/1234/nonce)
 func NonceGET(c *gin.Context) {
 	user := c.Param("useraccount")
-	value, ok := db[user]
-	if ok {
-		c.JSON(http.StatusOK, gin.H{"user": user, "value": value, "nonce": time.Now().Unix()})
-	} else {
-		c.JSON(http.StatusOK, gin.H{"user": user, "status": "no value", "nonce": time.Now().Unix()})
+	if entry := GetUserEntry(user); entry != nil {
+		c.JSON(http.StatusOK, gin.H{"useraccount": user, "nonce": entry.Nonce})
+		return
 	}
+	c.JSON(http.StatusBadRequest, userNotFound)
 }
 
 // ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraccount/action?type=xyz&value=123)
 func ActionPOST(c *gin.Context) {
 	user := c.Params.ByName("useraccount")
-	action := c.Query("type")
-	value := c.Query("value")
 
-	entry, ok := db[user]
-	_ = entry
-	if ok {
-		c.JSON(http.StatusOK, gin.H{"user": user, "action": action, "value": value})
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{"user": user, "message": "user not found"})
+	var body struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
 	}
+	err := c.ShouldBindJSON(&body)
+
+	if err != nil {
+		fmt.Println("Error binding to json:", err)
+		return
+	}
+
+	if entry := GetUserEntry(user); entry != nil {
+		entry.Action = Action{body.Type, body.Value}
+		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action})
+		return
+	}
+	c.JSON(http.StatusBadRequest, userNotFound)
 }
 
 // CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?user=xyz)
 func CreateUserPOST(c *gin.Context) {
-	user := c.Query("user")
+	//user := c.Query("user")
 
-	entry := GetUserEntry(user)
-	if entry != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"user": user, "message": "user already in exists"})
-	} else {
-		AddUserEntry(user)
-		c.JSON(http.StatusCreated, gin.H{"user": user, "message": "user created"})
+	var body struct {
+		User string `json:"user"`
 	}
+	err := c.ShouldBindJSON(&body)
+	user := body.User
+
+	if err != nil {
+		fmt.Println("Error binding to json:", err)
+		return
+	}
+
+	if entry := GetUserEntry(user); entry != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "User already in exists"})
+		return
+	}
+	AddUserEntry(user)
+	c.JSON(http.StatusCreated, gin.H{"user": user, "message": "User created"})
+}
+
+func dbGET(c *gin.Context) {
+	c.JSON(http.StatusCreated, gin.H{"db": db})
 }
 
 func main() {
@@ -84,12 +113,15 @@ func main() {
 	router := gin.New()
 
 	// GET
-	router.GET("/ping", pingGET)
 	router.GET("/relay/v1/:useraccount/nonce", NonceGET)
 
 	// POST
-	router.POST("/relay/createuser", CreateUserPOST) // TODO: just for debugging
 	router.POST("/relay/v1/:useraccount/action", ActionPOST)
+
+	// DEBUG
+	router.GET("/ping", pingGET)
+	router.GET("/relay/db", dbGET)
+	router.POST("/relay/createuser", CreateUserPOST) // TODO: just for debugging
 
 	// Listen and Server in localhost:8080
 	router.Run(":8080")
