@@ -152,8 +152,6 @@ contract('Game', (accounts) => {
         const initStateHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
         const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
 
-        console.log(statesAtMatchdayHashes)
-
         let statesAtMatchdayHashesLie = statesAtMatchdayHashes;
         // statesAtMatchdayHashesLie[0]++; // TODO: decomment he lies about matchday 0 only
 
