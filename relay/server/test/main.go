@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	server := server.Server{}
+	server := relay.Server{}
 	server.Start()
 }

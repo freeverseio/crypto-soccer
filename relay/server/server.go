@@ -1,4 +1,4 @@
-package server
+package relay
 
 import (
 	"errors"
@@ -19,14 +19,14 @@ type Action struct {
 	Value string
 }
 
-// RelayUserEntry - ...
-type RelayUserEntry struct {
+// UserEntry - ...
+type UserEntry struct {
 	ID     int64
 	Nonce  uint64
 	Action Action
 }
 
-var db = make(map[string]*RelayUserEntry) // TODO: use storage.go
+var db = make(map[string]*UserEntry) // TODO: use storage.go
 var userNotFound = gin.H{"message": "User not found"}
 
 // AddUserEntry - adds user to db
@@ -35,12 +35,12 @@ func AddUserEntry(account string) error {
 	if ok {
 		return errors.New("User already exist")
 	}
-	db[account] = &RelayUserEntry{ID: time.Now().Unix(), Nonce: 0}
+	db[account] = &UserEntry{ID: time.Now().Unix(), Nonce: 0}
 	return nil
 }
 
 // GetUserEntry - adds user to db
-func GetUserEntry(account string) *RelayUserEntry {
+func GetUserEntry(account string) *UserEntry {
 	if entry, ok := db[account]; ok == true {
 		return entry
 	}
