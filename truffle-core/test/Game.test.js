@@ -90,12 +90,8 @@ contract('Game', (accounts) => {
     it('test2', async () => {
         await horizon.createTeam("Barca").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
-        await horizon.createTeam("Milan").should.be.fulfilled;
-        await horizon.createTeam("PSG").should.be.fulfilled;
         const teamIdx1 = await teams.getTeamId("Barca").should.be.fulfilled;
         const teamIdx2 = await teams.getTeamId("Madrid").should.be.fulfilled;
-        const teamIdx3 = await teams.getTeamId("Milan").should.be.fulfilled;
-        const teamIdx4 = await teams.getTeamId("PSG").should.be.fulfilled;
 
         await advanceToBlock(100);
 
@@ -139,8 +135,13 @@ contract('Game', (accounts) => {
         /**** big TODO: */
         // The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
         // TODO: calculate the league
+        const team1State = await generateTeamState(teamIdx1).should.be.fulfilled;
+        const team2State = await generateTeamState(teamIdx2).should.be.fulfilled;
+
+        let initPlayerStates = await state.leagueStateCreate().should.be.fulfilled;
+        initPlayerStates = await state.leagueStateAppend(initPlayerStates, team1State).should.be.fulfilled;
+        initPlayerStates = await state.leagueStateAppend(initPlayerStates, team2State).should.be.fulfilled;
         const leagueDays = await leagues.countLeagueDays(leagueIdx).should.be.fulfilled;
-        const initPlayerStates = []; // TODO:
         const statesAtMatchday = []; // TODO:
         const scores = []; // TODO:
         // leagueDays.toNumber().should.be.equal(statesAtMatchday.length);
