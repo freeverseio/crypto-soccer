@@ -132,20 +132,39 @@ contract('Game', (accounts) => {
         finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
         finished.should.be.equal(true);
 
-        /**** big TODO: */
-        // The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
-        // TODO: calculate the league
+        // START: The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
+        const leagueDays = await leagues.countLeagueDays(leagueIdx).should.be.fulfilled;
+        leagueDays.toNumber().should.be.equal(2);
+
+        // generate the init state of the teams from ERC721 because they never evolved
         const team1State = await generateTeamState(teamIdx1).should.be.fulfilled;
         const team2State = await generateTeamState(teamIdx2).should.be.fulfilled;
 
+        // construct the initPlayerState data structure
         let initPlayerStates = await state.leagueStateCreate().should.be.fulfilled;
         initPlayerStates = await state.leagueStateAppend(initPlayerStates, team1State).should.be.fulfilled;
         initPlayerStates = await state.leagueStateAppend(initPlayerStates, team2State).should.be.fulfilled;
-        const leagueDays = await leagues.countLeagueDays(leagueIdx).should.be.fulfilled;
-        const statesAtMatchday = []; // TODO:
-        const scores = []; // TODO:
-        // leagueDays.toNumber().should.be.equal(statesAtMatchday.length);
-        /**** end big TODO */
+
+        // day 0
+        let leagueDay = 0;
+        const tacticsDay0 = [[4, 3, 3], [4, 4, 2]]; // TODO: what is this ?
+        const initPlayerStatesDay0 = initPlayerStates;
+        let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
+        const scoresDay0 = result.scores;
+        const finalPlayerStatesDay0 = result.finalLeagueState;
+        // day 1
+        leagueDay = 1;
+        const tacticsDay1 = [[4, 3, 3], [4, 4, 2]]; // TODO: what is this ?
+        const initPlayerStatesDay1 = finalPlayerStatesDay0;
+        result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
+        const scoresDay1 = result.scores;
+        const finalPlayerStatesDay1 = result.finalLeagueState;
+
+        const statesAtMatchday = [finalPlayerStatesDay0, finalPlayerStatesDay1]; 
+        let scores = await leagues.scoresCreate().should.be.fulfilled; 
+        scores = await leagues.scoresConcat(scores, scoresDay0).should.be.fulfilled;
+        scores = await leagues.scoresConcat(scores, scoresDay1).should.be.fulfilled;
+        // END: The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
 
         let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
@@ -153,8 +172,9 @@ contract('Game', (accounts) => {
         const initStateHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
         const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
 
-        let statesAtMatchdayHashesLie = statesAtMatchdayHashes;
-        // statesAtMatchdayHashesLie[0]++; // TODO: decomment he lies about matchday 0 only
+        let statesAtMatchdayLie = statesAtMatchday;
+        statesAtMatchdayLie[0][0] += 1; // sinner operation!
+        const statesAtMatchdayHashesLie = await prepareMatchdayHashes(statesAtMatchdayLie);
 
         await leagues.updateLeague(
             leagueIdx,
@@ -210,6 +230,7 @@ contract('Game', (accounts) => {
         let dayStateHashes = [];
 
         let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
+        return;
 
         // get days in a league
         const leagueDays = await leagues.countLeagueDays(leagueId).should.be.fulfilled;
