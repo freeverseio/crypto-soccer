@@ -3,7 +3,9 @@ var Web3 = require('web3');
 var HDKey = require('hdkey')
 var bip39 = require('bip39')
 var toastr = require('toastr')
+let axios = require('axios')
 
+const RELAYURL = 'http://localhost:8080';
 
 function bytesToHex(buff) {
   return `0x${buff.toString('hex')}`;
@@ -15,6 +17,10 @@ function hexToBytes(hex) {
   }
 
   return Buffer.from(hex, 'hex');
+}
+
+function createUser(addr) {
+  return axios.post(RELAYURL + '/relay/createuser', {useraddr:addr})
 }
 
 function generateKeysMnemonic(mnemonic) {
@@ -37,27 +43,17 @@ function generateKeysMnemonic(mnemonic) {
   let address = ethUtil.privateToAddress(addrNode._privateKey);
   let addressHex = bytesToHex(address);
   let privKHex = bytesToHex(privK);
-  //localStorage.setItem(addressHex, privKHex);
-  return {address: addressHex, mnemonic: mnemonic};
+  return {address: addressHex, privatekey: privKHex, mnemonic: mnemonic};
 }
 
-function getAccountNonce(account) {
-  if(account==undefined) {
-      toastr.error("undefined address");
-      return -1;
-  }
-  if(account=="") { // TODO check also if it's a valid eth address
-      toastr.error("empty address");
-      return -1;
-  }
-
-  const web3 = new Web3('https://nou.network/web3'); // TODO: change to whatever the real thing is
-  // return web3.eth.getTransactionCount("0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd", 'latest'); -> returns 39
-  return web3.eth.getTransactionCount(account, 'latest');
+function sendAction(type, value) {
+      // TODO: first get nonce
+      //axios.get(RELAYURL + '/relay/v1/' + useraddr + '/nonce'
+      // TODO: query nonce and sign transaction
 }
 
 module.exports = {
-  generateKeysMnemonic, getAccountNonce
+  createUser, generateKeysMnemonic, sendAction
 }
 
 /*
@@ -120,3 +116,19 @@ function transact() {
 	  })
 }
 */
+
+//function getAccountNonce(account) {
+//  if(account==undefined) {
+//      toastr.error("undefined address");
+//      return -1;
+//  }
+//  if(account=="") { // TODO check also if it's a valid eth address
+//      toastr.error("empty address");
+//      return -1;
+//  }
+//
+//  const web3 = new Web3('https://nou.network/web3'); // TODO: change to whatever the real thing is
+//  // return web3.eth.getTransactionCount("0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd", 'latest'); -> returns 39
+//  return web3.eth.getTransactionCount(account, 'latest');
+//}
+

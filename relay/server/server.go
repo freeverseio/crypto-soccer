@@ -49,17 +49,17 @@ func GetUserEntry(account string) *UserEntry {
 
 // NonceGET - get user nonce (http://localhost:8080/relay/v1/1234/nonce)
 func NonceGET(c *gin.Context) {
-	user := c.Param("useraccount")
+	user := c.Param("useraddr")
 	if entry := GetUserEntry(user); entry != nil {
-		c.JSON(http.StatusOK, gin.H{"useraccount": user, "nonce": entry.Nonce})
+		c.JSON(http.StatusOK, gin.H{"useraddr": user, "nonce": entry.Nonce})
 		return
 	}
-	c.JSON(http.StatusBadRequest, userNotFound)
+	c.JSON(http.StatusOK, userNotFound)
 }
 
-// ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraccount/action?type=xyz&value=123)
+// ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraddr/action?type=xyz&value=123)
 func ActionPOST(c *gin.Context) {
-	user := c.Params.ByName("useraccount")
+	user := c.Params.ByName("useraddr")
 
 	var body struct {
 		Type  string `json:"type"`
@@ -77,15 +77,13 @@ func ActionPOST(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action})
 		return
 	}
-	c.JSON(http.StatusBadRequest, userNotFound)
+	c.JSON(http.StatusOK, userNotFound)
 }
 
-// CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?user=xyz)
+// CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?useraddr=xyz)
 func CreateUserPOST(c *gin.Context) {
-	//user := c.Query("user")
-
 	var body struct {
-		User string `json:"user"`
+		User string `json:"useraddr"`
 	}
 	err := c.ShouldBindJSON(&body)
 	user := body.User
@@ -96,7 +94,7 @@ func CreateUserPOST(c *gin.Context) {
 	}
 
 	if entry := GetUserEntry(user); entry != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "User already in exists"})
+		c.JSON(http.StatusOK, gin.H{"message": "User already exists"})
 		return
 	}
 	AddUserEntry(user)
@@ -109,10 +107,10 @@ func (s Server) Start() {
 	router := gin.New()
 
 	// GET
-	router.GET("/relay/v1/:useraccount/nonce", NonceGET)
+	router.GET("/relay/v1/:useraddr/nonce", NonceGET)
 
 	// POST
-	router.POST("/relay/v1/:useraccount/action", ActionPOST)
+	router.POST("/relay/v1/:useraddr/action", ActionPOST)
 	router.POST("/relay/createuser", CreateUserPOST)
 
 	// DEBUG

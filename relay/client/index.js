@@ -17,76 +17,78 @@ app.listen(PORT, () => {
 // ----------------------------
 //
 
-//http://localhost:8888/relay/db
-app.get( // TODO: just for debugging. remove
-    '/relay/db',
+// http://localhost:8888/relay/db
+// shows local user wallets (just for debugging)
+app.get(
+    '/relay/debug',
     function( req, res ) {
       res.statusCode = 200    // = OK
       return  res.json( db.getData() )
     }
   )
 
-
-//http://localhost:8888/relay/v1?account=1234
+// http://localhost:8888/relay/v1/1234
+// will post a Relay server to create a user with given address
 app.get(
-    '/relay/v1',
-    function( req, res ) {
-      console.log( 'GET Params: '+JSON.stringify( req.query ) )
-      const useraccount = req.query.account;
-      return res.redirect('/relay/v1/'+useraccount)
-    }
-  )
-
-//http://localhost:8888/relay/v1/1234
-app.get(
-    '/relay/v1/:useraccount',
+    '/relay/v1/:useraddr',
     function( req, res ) {
       console.log( 'GET Params: '+JSON.stringify( req.params ) )
-      const useraccount = req.params.useraccount;
-      const entry = db.getUserEntry(useraccount)
+      const useraddr = req.params.useraddr;
+      const entry = db.getAccount(useraddr)
 
-      if (entry) {
-        return res.status(200).send({
-          success: 'true',
-          message: 'account retrieved successfully',
-          entry,
-        });
-      }
-      return res.status(404).send({
-        success: 'false',
-        message: 'account ' + useraccount + ' does not exist',
-      });
-    }
-  )
-
-//http://localhost:8888/relay/v1/1234/nonce
-app.get(
-    '/relay/v1/:useraccount/nonce',
-    function( req, res ) {
-      console.log( 'GET Params: '+JSON.stringify( req.params ) )
-      const useraccount = req.params.useraccount;
-      const entry = db.getUserEntry(useraccount)
-
-      var nonce = -1
-      if (entry) {
-        utils.getAccountNonce(useraccount).then(
-        function(nonce) {
-          return res.status(200).send({
-            success: 'true',
-            account : useraccount,
-            nonce: nonce
-          });
-        }).catch(function(err) {
-          console.error(err)
-        });
-      }
-      else
-      {
+      if (!entry) {
         return res.status(404).send({
           success: 'false',
-          message: 'account ' + useraccount + ' does not exist',
+          message: 'account ' + useraddr + ' does not exist',
         });
       }
+
+      utils.createUser(useraddr)
+      .then(function(result) {
+        console.log(result.data);
+        return res.status(200).send({
+          user: result.data.user,
+          message: result.data.message
+        });
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+)
+
+// http://localhost:8888/account/:useraddr/action?type=xyz&value=123
+app.get(
+    '/relay/v1/:useraddr/action',
+    function( req, res ) {
+      console.log( 'GET Params: '+JSON.stringify( req.params ) )
+      const useraddr = req.params.useraddr;
+      const entry = db.getAccount(useraddr)
+
+      if (!entry) {
+        return res.status(404).send({
+          success: 'false',
+          message: 'account ' + useraddr + ' does not exist',
+        });
+      }
+
+      const actionType = req.query.type
+      const actionValue = req.query.value
+      utils.sendAction(actionType, actionValue)
+      return res.status(200).send({
+        success: true
+      })
+
+      //utils.getAccountNonce(useraddr).then(
+      //function(nonce) {
+      //  return res.status(200).send({
+      //    success: 'true',
+      //    account : useraddr,
+      //    nonce: nonce
+      //  });
+      //}).catch(function(err) {
+      //  console.error(err)
+      //});
     }
   )
 
@@ -94,9 +96,10 @@ app.get(
 // POST
 // ----------------------------
 
-// curl -v -H "Content-Type: application/json" -X POST -d '{"mnemonic":"a b c d e"}' http://localhost:8888/relay/v1
+// curl -v -H "Content-Type: application/json" -X POST -d '{"mnemonic":"a b c d e"}' http://localhost:8888/createwallet
+// creates a wallet with the given mnemonic phrase and adds it to local db. If mnemonic is empty, mnemonic will be generated
 app.post(
-    '/relay/v1/createuser',
+    '/createwallet',
     jsonParser,
     function( req, res ) {
       console.log( 'POST Body: '+JSON.stringify( req.body ))
@@ -111,19 +114,20 @@ app.post(
 
       const account = wallet.address
       const mnemonic = wallet.mnemonic
+      const privatekey = wallet.privatekey
 
       console.log('account: ', account, "mnemonic: ", mnemonic)
-      const entry = db.getUserEntry(account)
+      const entry = db.getAccount(account)
 
       if (entry) {
         return res.status(400).send({
           success: 'false',
-          message: 'user already exists',
+          message: 'account already exists',
           entry,
        });
       }
 
-      const new_entry = db.addUserEntry(account, mnemonic);
+      const new_entry = db.addAccount(account, privatekey, mnemonic);
 
       return res.status(201).send({
         success: 'true',

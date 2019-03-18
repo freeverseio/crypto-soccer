@@ -1,6 +1,8 @@
+// local storage for storing user wallets
+
 let fs = require('fs'); // to write to a file
 var data = [] // TODO use a proper database
-const path = '/tmp/relaydb.txt'
+const path = '/tmp/useraccounts.txt'
 load(path)
 
 function getData() {
@@ -29,7 +31,7 @@ function save() {
   });
 }
 
-function getUserEntry(useraccount) {
+function getAccount(useraccount) {
   for (var entry of data) {
     if (entry.account === useraccount) {
       return entry
@@ -38,11 +40,12 @@ function getUserEntry(useraccount) {
   return null
 }
 
-function addUserEntry(account, mnemonic) {
+function addAccount(account, privatekey, mnemonic) {
       const new_entry = {
         id : data.length + 1,
         account : account,
-        mnemonic : mnemonic // TODO: don't save it
+        privatekey: privatekey,
+        mnemonic : mnemonic
       }
       data.push(new_entry);
       save();
@@ -50,5 +53,5 @@ function addUserEntry(account, mnemonic) {
 }
 
 module.exports = {
-  getData, getUserEntry, addUserEntry
+  getData, getAccount, addAccount
 }
