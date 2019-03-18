@@ -18,6 +18,7 @@ contract('Game', (accounts) => {
     let state = null;
     let leagues = null;
     let cronos = null;
+    let CHALLENGING_PERIOD_BLKS = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -34,6 +35,7 @@ contract('Game', (accounts) => {
         state = await State.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         cronos = await Cronos.new().should.be.fulfilled;
+        CHALLENGING_PERIOD_BLKS = await leagues.getChallengePeriod().should.be.fulfilled;
     });
 
     // we use the values in the blockchain to generate the team status
@@ -184,6 +186,11 @@ contract('Game', (accounts) => {
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
+
+        // A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 20).should.be.fulfilled;
+        let verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
+        verified.should.be.equal(false);
     });
 
     return;
