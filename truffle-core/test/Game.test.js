@@ -191,6 +191,21 @@ contract('Game', (accounts) => {
         await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 20).should.be.fulfilled;
         let verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
+
+        // TODO: implement the following in the BC 
+        // currently we reset the league
+        // await leagues.challengeMatchdayStates( 
+        //     selectedMatchday = 0,
+        //     prevMatchdayStates = initPlayerStatesDay0
+        // )
+        await leagues.resetUpdater(leagueIdx).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(false);
+
+        // ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
+        verified.should.be.equal(false);
     });
 
     return;

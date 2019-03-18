@@ -39,8 +39,14 @@ contract LeagueChallengeable is LeagueUpdatable {
         uint256 nTeams = getNTeams(id);
     }
 
+    function getLastChallengeBlock(uint256 id) public view returns (uint256) {
+        require(isUpdated(id), "not updated league");
+        return getUpdateBlock(id) + CHALLENGING_PERIOD_BLKS;
+    }
+
     function isVerified(uint256 id) public view returns (bool) {
-        uint256 endBlock = getEndBlock(id);
-        return block.number > endBlock + CHALLENGING_PERIOD_BLKS;
+        if (!isUpdated(id))
+            return false;
+        return block.number > getLastChallengeBlock(id);
     }
 }
