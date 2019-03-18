@@ -44,11 +44,11 @@ app.get(
       }
 
       utils.createUser(useraddr)
-      .then(function(result) {
-        console.log(result.data);
+      .then(function(r) {
+        console.log(r.data);
         return res.status(200).send({
-          user: result.data.user,
-          message: result.data.message
+          user: r.data.user,
+          message: r.data.message
         });
       })
       .catch(function (error) {
@@ -61,7 +61,7 @@ app.get(
 app.get(
     '/relay/v1/:useraddr/action',
     function( req, res ) {
-      console.log( 'GET Params: '+JSON.stringify( req.params ) )
+      //console.log( 'GET Params: '+JSON.stringify( req.params ) )
       const useraddr = req.params.useraddr;
       const entry = db.getAccount(useraddr)
 
@@ -74,21 +74,23 @@ app.get(
 
       const actionType = req.query.type
       const actionValue = req.query.value
-      utils.sendAction(actionType, actionValue)
-      return res.status(200).send({
-        success: true
+      utils.submitAction(
+        useraddr,
+        entry.privatekey,
+        actionType,
+        actionValue
+      )
+      .then(function(r) {
+        console.log(r.data)
+        res.status(200).send({
+          success: true,
+          user: r.data.user,
+          action: r.data.action
+        })
       })
-
-      //utils.getAccountNonce(useraddr).then(
-      //function(nonce) {
-      //  return res.status(200).send({
-      //    success: 'true',
-      //    account : useraddr,
-      //    nonce: nonce
-      //  });
-      //}).catch(function(err) {
-      //  console.error(err)
-      //});
+      .catch(function(error) {
+        console.log(error);
+      });
     }
   )
 

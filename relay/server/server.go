@@ -15,8 +15,7 @@ type Server struct {
 
 // Action - ...
 type Action struct {
-	Type  string
-	Value string
+	Value interface{}
 }
 
 // UserEntry - ...
@@ -57,12 +56,12 @@ func NonceGET(c *gin.Context) {
 	c.JSON(http.StatusOK, userNotFound)
 }
 
-// ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraddr/action?type=xyz&value=123)
+// ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraddr/action?value=123)
 func ActionPOST(c *gin.Context) {
 	user := c.Params.ByName("useraddr")
 
 	var body struct {
-		Type  string `json:"type"`
+		//Type  string `json:"type"`
 		Value string `json:"value"`
 	}
 	err := c.ShouldBindJSON(&body)
@@ -73,7 +72,7 @@ func ActionPOST(c *gin.Context) {
 	}
 
 	if entry := GetUserEntry(user); entry != nil {
-		entry.Action = Action{body.Type, body.Value}
+		entry.Action = Action{body.Value}
 		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action})
 		return
 	}
