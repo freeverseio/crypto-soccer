@@ -48,7 +48,7 @@ contract LeagueUpdatable is LeaguesScheduler {
         return _result[id].updater;
     }
 
-    function getUpdateBlock(uint256 id) external view returns (uint256) {
+    function getUpdateBlock(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _result[id].updateBlock;
     }
