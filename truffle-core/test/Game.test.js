@@ -171,7 +171,7 @@ contract('Game', (accounts) => {
         let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
 
-        const initStateHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
+        const initStatesHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
         const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
 
         let statesAtMatchdayLie = statesAtMatchday;
@@ -180,7 +180,7 @@ contract('Game', (accounts) => {
 
         await leagues.updateLeague(
             leagueIdx,
-            initStateHash,
+            initStatesHash,
             statesAtMatchdayHashesLie,
             scores
         ).should.be.fulfilled;
@@ -206,6 +206,37 @@ contract('Game', (accounts) => {
         await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
+        let initPlayerStatesLie = initPlayerStates;
+        initPlayerStatesLie[0] += 1; // the sinner instruction
+        const initStatesHashLie = await leagues.hashState(initPlayerStatesLie) ;
+         await leagues.updateLeague(
+            leagueIdx,
+            initStatesHashLie,
+            statesAtMatchdayHashes,
+            scores
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
+
+        // A CHALLENGER tries to prove that the UPDATER lied with the initHash
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
+        verified.should.be.equal(false);
+
+        // create all the state of the environment (player team, owner, previous team ... league state)
+        const dataToChallengeInitStates = [] // TODO;
+
+        await leagues.challengeInitStates(
+            leagueIdx,
+            usersInitData.teamIdxs,
+            usersInitData.tactics,
+            dataToChallengeInitStates
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(false);
+
+        // A nicer UPDATER now tells the truth:
+        // ...
     });
 
     return;
