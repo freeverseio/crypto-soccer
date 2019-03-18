@@ -71,20 +71,20 @@ function submitAction(useraddr, privatekey, type, value) {
     console.log("response from server:", res.data);
 
     // after getting nonce, generate & sign & send transaction
-    let msg = "0x" +
-      buf(uint8(0x19)).toString('hex') +
+    let prefix = buf(uint8(0x19)).toString('hex')
+    let msg = "0x" + prefix +
       buf(uint8(0)).toString('hex') +
       buf(useraddr).toString('hex') +
       buf(uint256(nonce)).toString('hex') +
       buf(type).toString('hex') +
       buf(value).toString('hex')
 
-      let sig = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
-      console.log(sig);
-      stringSig = sig.r.toString('hex') + sig.s.toString('hex') + buf(uint8(sig.v)).toString('hex')
+      let signedData = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
+      console.log(signedData);
+      stringSig = signedData.r.toString('hex') + signedData.s.toString('hex') + buf(uint8(signedData.v)).toString('hex')
       return axios.post(userURL + '/action', {type:type, value:stringSig})
-      // TODO: send sig and not stringSig
-      //return axios.post(userURL + '/action', {type:type, value:sig})
+      // TODO: send signedData and not stringSig
+      //return axios.post(userURL + '/action', {type:type, value:signedData})
   })
 }
 

@@ -71,6 +71,9 @@ func ActionPOST(c *gin.Context) {
 		return
 	}
 
+	// TODO: verify action message
+	// https://golang.org/pkg/crypto/ecdsa/
+
 	if entry := GetUserEntry(user); entry != nil {
 		entry.Action = Action{body.Value}
 		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action})
