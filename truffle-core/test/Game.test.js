@@ -147,14 +147,14 @@ contract('Game', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = [[4, 3, 3], [4, 4, 2]]; // TODO: what is this ?
+        const tacticsDay0 = usersInitData.tactics; 
         const initPlayerStatesDay0 = initPlayerStates;
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
         const scoresDay0 = result.scores;
         const finalPlayerStatesDay0 = result.finalLeagueState;
         // day 1
         leagueDay = 1;
-        const tacticsDay1 = [[4, 3, 3], [4, 4, 2]]; // TODO: what is this ?
+        const tacticsDay1 = usersAlongData.tactics; 
         const initPlayerStatesDay1 = finalPlayerStatesDay0;
         result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
         const scoresDay1 = result.scores;
