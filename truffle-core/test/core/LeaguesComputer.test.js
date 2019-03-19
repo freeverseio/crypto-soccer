@@ -15,8 +15,8 @@ contract('LeaguesComputer', (accounts) => {
     let teamState0 = null;
     let teamState1 = null;
     const tactics = [
-        [4, 4, 3],  // Team 0
-        [5, 4, 2]   // Team 1
+        [4, 4, 2],  // Team 0
+        [5, 4, 1]   // Team 1
     ];
     let leagueState = null;
 
