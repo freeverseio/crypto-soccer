@@ -192,13 +192,11 @@ contract('Game', (accounts) => {
         let verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
 
-        // TODO: implement the following in the BC 
-        // currently we reset the league
-        // await leagues.challengeMatchdayStates( 
-        //     selectedMatchday = 0,
-        //     prevMatchdayStates = initPlayerStatesDay0
-        // )
-        await leagues.resetUpdater(leagueIdx).should.be.fulfilled;
+        await leagues.challengeMatchdayStates(
+            leagueIdx,
+            selectedMatchday = 0,
+            prevMatchdayStates = initPlayerStatesDay0
+        ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
 
@@ -247,6 +245,7 @@ contract('Game', (accounts) => {
         updated.should.be.equal(true);
 
         // ...and the CHALLENGER fails to prove anything
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
     });
 
     return;
