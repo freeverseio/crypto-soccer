@@ -72,19 +72,27 @@ function submitAction(useraddr, privatekey, type, value) {
 
     // after getting nonce, generate & sign & send transaction
     let prefix = buf(uint8(0x19)).toString('hex')
+    //TODO: ask adria "\x19Ethereum Signed Message:\n"
+    let hexType = buf(type).toString('hex')
+    let hexValue = buf(value).toString('hex')
     let msg = "0x" + prefix +
       buf(uint8(0)).toString('hex') +
       buf(useraddr).toString('hex') +
       buf(uint256(nonce)).toString('hex') +
-      buf(type).toString('hex') +
-      buf(value).toString('hex')
+      hexType + hexValue
 
       let signedData = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
-      console.log(signedData);
-      stringSig = signedData.r.toString('hex') + signedData.s.toString('hex') + buf(uint8(signedData.v)).toString('hex')
-      return axios.post(userURL + '/action', {type:type, value:stringSig})
-      // TODO: send signedData and not stringSig
-      //return axios.post(userURL + '/action', {type:type, value:signedData})
+      console.log("signedData:", signedData);
+      let txData = {
+              from: useraddr,
+              type: hexType,
+              value: hexValue,
+              r: signedData.r.toString('hex'),
+              s: signedData.s.toString('hex'),
+              v: signedData.v
+          };
+      console.log("txData:", txData)
+      return axios.post(userURL + '/action', txData)
   })
 }
 

@@ -6,5 +6,5 @@ import (
 
 func main() {
 	server := relay.Server{}
-	server.Start()
+	server.Start(":8080")
 }

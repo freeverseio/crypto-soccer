@@ -85,7 +85,8 @@ app.get(
         res.status(200).send({
           success: true,
           user: r.data.user,
-          action: r.data.action
+          action: r.data.action,
+          verified: r.data.verified
         })
       })
       .catch(function(error) {
