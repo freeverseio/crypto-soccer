@@ -244,7 +244,36 @@ contract('Test2', (accounts) => {
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
+        // TODO: uncomment the following
         // ...and the CHALLENGER fails to prove anything
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await leagues.challengeMatchdayStates(
+        //     leagueIdx,
+        //     selectedMatchday = 0,
+        //     prevMatchdayStates
+        // ).should.be.fulfilled;
+        // updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        // updated.should.be.equal(true);
+
+        // await leagues.challengeMatchdayStates(
+        //     leagueIdx,
+        //     selectedMatchday = 1,
+        //     prevMatchdayStates = initPlayerStatesDay1,
+        // ).should.be.fulfilled;
+        // updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        // updated.should.be.equal(true);
+
+        await leagues.challengeInitStates(
+            leagueIdx,
+            usersInitData.teamIdxs,
+            usersInitData.tactics,
+            dataToChallengeInitStates
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
+
+        // We do not wait enough and try to:
+        //   create another league. It fails to do so because teams are still busy
+        await advanceNBlocks(2).should.be.fulfilled;
     });
 })
