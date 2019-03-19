@@ -9,8 +9,8 @@ contract('Engine', (accounts) => {
     const seed = '0x610106';
     const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     const state1 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-    const tactic0 = [4, 4, 3];
-    const tactic1 = [4, 5, 2];
+    const tactic0 = [4, 4, 2];
+    const tactic1 = [4, 5, 1];
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
@@ -29,10 +29,10 @@ contract('Engine', (accounts) => {
     });
 
     it('play match with wrong tactic', async () => {
-        await engine.playMatch(seed, state0, state1, [4,4,2], tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, [4,4,4], tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, tactic0, [4,4,2]).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, tactic0, [4,4,4]).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, [4,4,1], tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, [4,4,3], tactic1).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, tactic0, [4,4,1]).should.be.rejected;
+        await engine.playMatch(seed, state0, state1, tactic0, [4,4,3]).should.be.rejected;
     });
 
     it('different seeds => different result', async () => {
