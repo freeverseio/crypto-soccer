@@ -75,12 +75,12 @@ contract('Game', (accounts) => {
 
     const advanceNBlocks = async (blocks) => {
         let current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        await advanceToBlock(current+blocks);
+        await advanceToBlock(current + blocks);
     }
 
     const prepareMatchdayHashes = async (statesAtMatchday) => {
         let result = [];
-        for (let i = 0; i < statesAtMatchday.length ; i++){
+        for (let i = 0; i < statesAtMatchday.length; i++) {
             const state = statesAtMatchday[i];
             const hash = await leagues.hashState(state).should.be.fulfilled;
             result.push(hash);
@@ -103,7 +103,7 @@ contract('Game', (accounts) => {
         const usersInitData = {
             teamIdxs: [teamIdx1, teamIdx2],
             // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
-            tactics: [[4,4,2], [4,3,3]] 
+            tactics: [[4, 4, 2], [4, 3, 3]]
         };
 
         leagueIdx = 0;
@@ -149,21 +149,21 @@ contract('Game', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = usersInitData.tactics; 
+        const tacticsDay0 = usersInitData.tactics;
         const initPlayerStatesDay0 = initPlayerStates;
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
         const scoresDay0 = result.scores;
         const finalPlayerStatesDay0 = result.finalLeagueState;
         // day 1
         leagueDay = 1;
-        const tacticsDay1 = usersAlongData.tactics; 
+        const tacticsDay1 = usersAlongData.tactics;
         const initPlayerStatesDay1 = finalPlayerStatesDay0;
         result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
         const scoresDay1 = result.scores;
         const finalPlayerStatesDay1 = result.finalLeagueState;
 
-        const statesAtMatchday = [finalPlayerStatesDay0, finalPlayerStatesDay1]; 
-        let scores = await leagues.scoresCreate().should.be.fulfilled; 
+        const statesAtMatchday = [finalPlayerStatesDay0, finalPlayerStatesDay1];
+        let scores = await leagues.scoresCreate().should.be.fulfilled;
         scores = await leagues.scoresConcat(scores, scoresDay0).should.be.fulfilled;
         scores = await leagues.scoresConcat(scores, scoresDay1).should.be.fulfilled;
         // END: The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
@@ -208,8 +208,8 @@ contract('Game', (accounts) => {
         verified.should.be.equal(false);
         let initPlayerStatesLie = initPlayerStates;
         initPlayerStatesLie[0] += 1; // the sinner instruction
-        const initStatesHashLie = await leagues.hashState(initPlayerStatesLie) ;
-         await leagues.updateLeague(
+        const initStatesHashLie = await leagues.hashState(initPlayerStatesLie);
+        await leagues.updateLeague(
             leagueIdx,
             initStatesHashLie,
             statesAtMatchdayHashes,
@@ -236,7 +236,17 @@ contract('Game', (accounts) => {
         updated.should.be.equal(false);
 
         // A nicer UPDATER now tells the truth:
-        // ...
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        await leagues.updateLeague(
+            leagueIdx,
+            initStatesHash,
+            statesAtMatchdayHashes,
+            scores
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
+
+        // ...and the CHALLENGER fails to prove anything
     });
 
     return;
