@@ -4,6 +4,7 @@ let HDKey = require('hdkey')
 let bip39 = require('bip39')
 let toastr = require('toastr')
 let axios = require('axios')
+let assert = require('assert')
 
 
 var web3 = new Web3(new Web3.providers.HttpProvider(''));
@@ -71,29 +72,55 @@ function submitAction(useraddr, privatekey, type, value) {
     console.log("response from server:", res.data);
 
     // after getting nonce, generate & sign & send transaction
-    let prefix = buf(uint8(0x19)).toString('hex')
+    //let prefix = buf(uint8(0x19)).toString('hex')
+    let prefix = buf("\x19Ethereum Signed Message:\n32")
     //TODO: ask adria "\x19Ethereum Signed Message:\n"
     let hexType = buf(type).toString('hex')
     let hexValue = buf(value).toString('hex')
-    let msg = "0x" + prefix +
-      buf(uint8(0)).toString('hex') +
-      buf(useraddr).toString('hex') +
-      buf(uint256(nonce)).toString('hex') +
-      hexType + hexValue
 
-      let signedData = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
-      console.log("signedData:", signedData);
-      let txData = {
-              from: useraddr,
-              type: hexType,
-              value: hexValue,
-              r: signedData.r.toString('hex'),
-              s: signedData.s.toString('hex'),
-              v: signedData.v
-          };
-      console.log("txData:", txData)
-      return axios.post(userURL + '/action', txData)
+    // old stuff from kvartalo
+    //let msg = "0x" + prefix +
+    //  buf(uint8(0)).toString('hex') +
+    //  buf(useraddr).toString('hex') +
+    //  buf(uint256(nonce)).toString('hex') +
+    //  hexType + hexValue
+    //let signedData = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
+    //let txData = {
+    //        from: useraddr,
+    //        type: hexType,
+    //        value: hexValue,
+    //        r: signedData.r.toString('hex'),
+    //        s: signedData.s.toString('hex'),
+    //        v: signedData.v
+    //    };
+    //console.log("txData:", txData)
+
+
+    var message = buf(type + value);
+    var msgHash = ethUtil.hashPersonalMessage(message);
+    var sig = ethUtil.ecsign(msgHash, new Buffer(privatekey.replace("0x",""), "hex"));
+
+    // test recovery
+    assert.strictEqual(recoverAddress(msgHash, sig.r, sig.s, sig.v), useraddr)
+    console.log("Recovered address:", recoverAddress(msgHash, sig.r, sig.s, sig.v))
+
+    let txData = {
+            from: useraddr,
+            type: type,
+            value: value,
+            r: sig.r.toString('hex'),
+            s: sig.s.toString('hex'),
+            v: sig.v
+        };
+    console.log("txData:", txData)
+    return axios.post(userURL + '/action', txData)
   })
+}
+
+function recoverAddress(msgHash, r, s, v) {
+  var publicKey = ethUtil.ecrecover(msgHash, v, r, s)
+  var sender = ethUtil.publicToAddress(publicKey)
+  return ethUtil.bufferToHex(sender)
 }
 
 module.exports = {
