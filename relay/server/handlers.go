@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 )
@@ -30,34 +29,53 @@ func ActionPOST(c *gin.Context) {
 	user := c.Params.ByName("useraddr")
 
 	var body struct {
-		From  string `json:"from"`
+		From  string `json:"from"` // TODO: redundant and could be omitted
 		Type  string `json:"type"`
 		Value string `json:"value"`
-		Msg   string `json:"msg"`
+		Msg   string `json:"msg"` // TODO: redundant, currently just for debugging
 		R     string `json:"r"`
 		S     string `json:"s"`
 		V     int    `json:"v"`
 	}
 	c.ShouldBindJSON(&body)
-	fmt.Println("body", body)
 
-	// assert that user equals body.From
-	// TODO: Get the last user nonce from db, and verify if recieved nonce is the same -> ask adria: which received nonce? ethclient.PendingNonceAt?
-	// TODO: make sure V is 27 (just as a double check, but we actually do not need it)
+	typeBytes, err := hex.DecodeString(body.Type)
+	if err != nil {
+		log.Println("Error decoding type: ", err)
+		return
+	}
+	valueBytes, err := hex.DecodeString(body.Value)
+	if err != nil {
+		log.Println("Error decoding value: ", err)
+		return
+	}
+	msgBytes, err := str2bytes(body.Msg)
+	if err != nil {
+		log.Println("Error decoding msg: ", err)
+		return
+	}
 
-	//ok := verifyEthMsg(user, ethHashMsg(body.Type+body.Value), body.R, body.S)
-	ok := verifyEthMsg(user, common.HexToHash(body.Msg), body.R, body.S)
+	typeStr := string(typeBytes)
+	valueStr := string(valueBytes)
+
+	// TODO: Get the last user nonce from db and use it when computing hashMsg
+	hashMsg := ethHashMsg(typeStr + valueStr)
+
+	if !bytes.Equal(hashMsg.Bytes(), msgBytes[:]) {
+		log.Println("Hash message differs")
+		return
+	}
+
+	ok := verifyEthMsg(user, hashMsg, body.R, body.S, body.V)
 	if !ok {
 		c.JSON(http.StatusOK, gin.H{"message": "failed to verify message"})
 		return
 	}
 	// TODO: If success, increment the user nonce and store in the database -> ask adria do we need to do any transaction first?
-	typeBytes, _ := hex.DecodeString(body.Type)
-	valueBytes, _ := hex.DecodeString(body.Value)
-	message := string(typeBytes) + " " + string(valueBytes)
+	processAction(typeStr, valueStr)
 
 	if entry := GetUserEntry(user); entry != nil {
-		entry.Action = Action{message}
+		entry.Action = Action{typeStr + valueStr}
 		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action, "verified": ok})
 	}
 }
@@ -85,6 +103,10 @@ func CreateUserPOST(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"user": user, "message": "User created"})
 }
 
+func processAction(actionType string, actionValue string) {
+	// TODO: interact with lionel
+}
+
 func dbGET(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"db": db})
 }
@@ -100,10 +122,10 @@ func str2bytes(s string) ([32]byte, error) {
 func ethHashMsg(msg string) common.Hash {
 	const web3SignaturePrefix = "\x19Ethereum Signed Message:\n"
 	data := []byte(msg)
-	header := fmt.Sprintf("%s%d", web3SignaturePrefix, len(data))
+	header := fmt.Sprintf("%s%d", web3SignaturePrefix, len(msg))
 	return crypto.Keccak256Hash([]byte(header), data)
 }
-func verifyEthMsg(from string, hash common.Hash, r string, s string) bool {
+func verifyEthMsg(from string, hash common.Hash, r string, s string, v int) bool {
 	rBytes, err := str2bytes(r)
 	if err != nil {
 		log.Println(err)
@@ -115,13 +137,9 @@ func verifyEthMsg(from string, hash common.Hash, r string, s string) bool {
 		return false
 	}
 	sig := append(rBytes[:], sBytes[:]...)
-	sig = append(sig[:], byte(0))
+	// recovery id is either 27 or 28. Remove 27 so it becomes either 0 or 1.
+	sig = append(sig[:], byte(v-27))
 
-	// remove ethereum quirk
-	//ethPostfix := byte(27)
-	//sig[64] -= ethPostfix
-
-	log.Println("verifying message: ", hash.Hex())
 	sigPublicKey, err := crypto.Ecrecover(hash.Bytes(), sig)
 	if err != nil {
 		log.Println(err)
@@ -131,7 +149,7 @@ func verifyEthMsg(from string, hash common.Hash, r string, s string) bool {
 	pubKey, _ := crypto.UnmarshalPubkey(sigPublicKey)
 	recoveredAddr := crypto.PubkeyToAddress(*pubKey)
 	if !bytes.Equal(common.HexToAddress(from).Bytes(), recoveredAddr.Bytes()) {
-		log.Println("reovered address: ", recoveredAddr.Hex(), " does not match ", from)
+		log.Println("recovered address: ", recoveredAddr.Hex(), " does not match ", from)
 		return false
 	}
 
@@ -141,6 +159,5 @@ func verifyEthMsg(from string, hash common.Hash, r string, s string) bool {
 		return false
 	}
 	sigPublicKeyBytes := crypto.FromECDSAPub(sigPublicKeyECDSA)
-	fmt.Println("public key: ", hexutil.Encode(sigPublicKeyBytes[1:]))
 	return crypto.VerifySignature(sigPublicKeyBytes, hash.Bytes(), sig[:len(sig)-1])
 }

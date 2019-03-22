@@ -73,12 +73,12 @@ function submitAction(useraddr, privatekey, type, value) {
     nonce = res.data.nonce;
     console.log("response from server:", res.data);
 
-    var msgHash = ethUtil.hashPersonalMessage(buf(type + value));
-    var sig = ethUtil.ecsign(msgHash, new Buffer(privatekey.replace("0x",""), "hex"));
+    var msgHash = ethUtil.hashPersonalMessage(buf(type + value)); // TODO: add user nonce
+    var sig = ethUtil.ecsign(msgHash, Buffer.from(privatekey.replace("0x",""), "hex"));
 
     // test recovery
     assert.strictEqual(recoverAddress(msgHash, sig.r, sig.s, sig.v), useraddr)
-    console.log("Recovered address:", recoverAddress(msgHash, sig.r, sig.s, sig.v))
+    //console.log("Recovered address:", recoverAddress(msgHash, sig.r, sig.s, sig.v))
 
     let txData = {
             from: useraddr,
@@ -89,7 +89,7 @@ function submitAction(useraddr, privatekey, type, value) {
             s: sig.s.toString('hex'),
             v: sig.v
         };
-    console.log("txData:", txData)
+    //console.log("txData:", txData)
     return axios.post(userURL + '/action', txData)
   })
 }
