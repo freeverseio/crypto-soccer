@@ -51,6 +51,8 @@ function generateKeysMnemonic(mnemonic) {
   let address = ethUtil.privateToAddress(addrNode._privateKey);
   let addressHex = bytesToHex(address);
   let privKHex = bytesToHex(privK);
+
+  console.log("pubKey:", bytesToHex(pubKey))
   return {address: addressHex, privatekey: privKHex, mnemonic: mnemonic};
 }
 
@@ -71,33 +73,7 @@ function submitAction(useraddr, privatekey, type, value) {
     nonce = res.data.nonce;
     console.log("response from server:", res.data);
 
-    // after getting nonce, generate & sign & send transaction
-    //let prefix = buf(uint8(0x19)).toString('hex')
-    let prefix = buf("\x19Ethereum Signed Message:\n32")
-    //TODO: ask adria "\x19Ethereum Signed Message:\n"
-    let hexType = buf(type).toString('hex')
-    let hexValue = buf(value).toString('hex')
-
-    // old stuff from kvartalo
-    //let msg = "0x" + prefix +
-    //  buf(uint8(0)).toString('hex') +
-    //  buf(useraddr).toString('hex') +
-    //  buf(uint256(nonce)).toString('hex') +
-    //  hexType + hexValue
-    //let signedData = ethUtil.ecsign(buf(sha3(msg)),buf(privatekey));
-    //let txData = {
-    //        from: useraddr,
-    //        type: hexType,
-    //        value: hexValue,
-    //        r: signedData.r.toString('hex'),
-    //        s: signedData.s.toString('hex'),
-    //        v: signedData.v
-    //    };
-    //console.log("txData:", txData)
-
-
-    var message = buf(type + value);
-    var msgHash = ethUtil.hashPersonalMessage(message);
+    var msgHash = ethUtil.hashPersonalMessage(buf(type + value));
     var sig = ethUtil.ecsign(msgHash, new Buffer(privatekey.replace("0x",""), "hex"));
 
     // test recovery
@@ -106,8 +82,9 @@ function submitAction(useraddr, privatekey, type, value) {
 
     let txData = {
             from: useraddr,
-            type: type,
-            value: value,
+            type: buf(type).toString('hex'),
+            value: buf(value).toString('hex'),
+            msg: msgHash.toString('hex'),
             r: sig.r.toString('hex'),
             s: sig.s.toString('hex'),
             v: sig.v

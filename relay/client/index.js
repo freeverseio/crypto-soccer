@@ -86,7 +86,8 @@ app.get(
           success: true,
           user: r.data.user,
           action: r.data.action,
-          verified: r.data.verified
+          verified: r.data.verified,
+          message: r.data.message
         })
       })
       .catch(function(error) {
