@@ -12,7 +12,7 @@ the client should now be running at http://localhost:8888
 the server should now be running at http://localhost:8080
 
 # interaction between server and client
-first post to the client to create one ore more wallets:
+First post to the client to create one ore more wallets:
 ```sh
 curl -v -H "Content-Type: application/json" -X POST http://localhost:8888/createwallet
 ```
@@ -33,12 +33,12 @@ The application should respon with a json message similar to the following:
     }
 }
 ```
-account is what we will use to communicate with the server from now on. That is
+Account is what we will use to communicate with the server from now on. That is
 ```
 0x82973f0ceed111576c508bcd999c92c9e83e49f0
 ```
 
-Once we have created a wallet, we need to register it with the server:
+Once a wallet has been created, register it with the server:
 ```http
 http://localhost:8888/relay/v1/0x82973f0ceed111576c508bcd999c92c9e83e49f0
 ```
