@@ -14,7 +14,7 @@ import (
 
 var userNotFound = gin.H{"message": "User not found"}
 
-// NonceGET - get user nonce (http://localhost:8080/relay/v1/1234/nonce)
+// NonceGET - get user nonce (/relay/v1/:useraddr/nonce)
 func NonceGET(c *gin.Context) {
 	user := c.Param("useraddr")
 	if entry := GetUserEntry(user); entry != nil {
@@ -24,7 +24,7 @@ func NonceGET(c *gin.Context) {
 	c.JSON(http.StatusOK, userNotFound)
 }
 
-// ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraddr/action)
+// ActionPOST - post action from user (/relay/v1/:useraddr/action)
 func ActionPOST(c *gin.Context) {
 	useraddr := c.Params.ByName("useraddr")
 
@@ -89,7 +89,7 @@ func ActionPOST(c *gin.Context) {
 	}
 }
 
-// CreateUserPOST - adds user to db
+// CreateUserPOST - adds user to db (/relay/createuser)
 func CreateUserPOST(c *gin.Context) {
 
 	var body struct {
