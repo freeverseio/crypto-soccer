@@ -6,7 +6,7 @@
 the client should now be running at http://localhost:8888
 
 # server
-- cd server
+- cd server/test
 - go run main.go
 
 the server should now be running at http://localhost:8080

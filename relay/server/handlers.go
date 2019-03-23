@@ -89,7 +89,7 @@ func ActionPOST(c *gin.Context) {
 	}
 }
 
-// CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?useraddr=xyz)
+// CreateUserPOST - adds user to db
 func CreateUserPOST(c *gin.Context) {
 
 	var body struct {
