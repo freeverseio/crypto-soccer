@@ -96,7 +96,7 @@ func CreateUserPOST(c *gin.Context) {
 	user := body.User
 
 	if err != nil {
-		fmt.Println("Error binding to json:", err)
+		log.Println("Error binding to json:", err)
 		return
 	}
 
