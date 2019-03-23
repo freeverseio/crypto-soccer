@@ -3,9 +3,13 @@
 - npm install
 - npm start
 
+the client should now be running at http://localhost:8888
+
 # server
 - cd server
 - go run main.go
+
+the server should now be running at http://localhost:8080
 
 # interaction between server and client
 first post to the client to create one ore more wallets:
