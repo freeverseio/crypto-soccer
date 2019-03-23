@@ -70,10 +70,10 @@ function submitAction(useraddr, privatekey, type, value) {
   let userURL = RELAYURL + '/relay/v1/' + useraddr
   return axios.get(userURL + '/nonce')
   .then(function(res) {
-    nonce = res.data.nonce;
+    nonce = res.data.nonceHex;
     console.log("response from server:", res.data);
 
-    var msgHash = ethUtil.hashPersonalMessage(buf(type + value)); // TODO: add user nonce
+    var msgHash = ethUtil.hashPersonalMessage(buf(type + value + nonce));
     var sig = ethUtil.ecsign(msgHash, Buffer.from(privatekey.replace("0x",""), "hex"));
 
     // test recovery

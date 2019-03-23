@@ -18,7 +18,7 @@ var userNotFound = gin.H{"message": "User not found"}
 func NonceGET(c *gin.Context) {
 	user := c.Param("useraddr")
 	if entry := GetUserEntry(user); entry != nil {
-		c.JSON(http.StatusOK, gin.H{"useraddr": user, "nonce": entry.Nonce})
+		c.JSON(http.StatusOK, gin.H{"useraddr": user, "nonceHex": nonce2Hex(entry.Nonce)})
 		return
 	}
 	c.JSON(http.StatusOK, userNotFound)
@@ -26,13 +26,13 @@ func NonceGET(c *gin.Context) {
 
 // ActionPOST - post action from user (http://localhost:8080/relay/v1/:useraddr/action)
 func ActionPOST(c *gin.Context) {
-	user := c.Params.ByName("useraddr")
+	useraddr := c.Params.ByName("useraddr")
 
 	var body struct {
-		From  string `json:"from"` // TODO: redundant and could be omitted
+		From  string `json:"from"` // TODO: redundant and could be removed in production
 		Type  string `json:"type"`
 		Value string `json:"value"`
-		Msg   string `json:"msg"` // TODO: redundant, currently just for debugging
+		Msg   string `json:"msg"` // TODO: redundant, currently just for debugging, can be removed in production
 		R     string `json:"r"`
 		S     string `json:"s"`
 		V     int    `json:"v"`
@@ -58,26 +58,31 @@ func ActionPOST(c *gin.Context) {
 	typeStr := string(typeBytes)
 	valueStr := string(valueBytes)
 
-	// TODO: Get the last user nonce from db and use it when computing hashMsg
-	hashMsg := ethHashMsg(typeStr + valueStr)
+	nonce := uint64(0)
+	if entry := GetUserEntry(useraddr); entry != nil {
+		nonce = entry.Nonce
+	}
+
+	hashMsg := ethHashMsg(typeStr + valueStr + nonce2Hex(nonce))
 
 	if !bytes.Equal(hashMsg.Bytes(), msgBytes[:]) {
 		log.Println("Hash message differs")
 		return
 	}
 
-	ok := verifyEthMsg(user, hashMsg, body.R, body.S, body.V)
+	ok := verifyEthMsg(useraddr, hashMsg, body.R, body.S, body.V)
 	if !ok {
 		c.JSON(http.StatusOK, gin.H{"message": "failed to verify message"})
 		return
 	}
-	// TODO: If success, increment the user nonce and store in the database -> ask adria do we need to do any transaction first?
-	processAction(typeStr, valueStr)
 
-	if entry := GetUserEntry(user); entry != nil {
+	if entry := GetUserEntry(useraddr); entry != nil {
 		entry.Action = Action{typeStr + valueStr}
-		c.JSON(http.StatusOK, gin.H{"user": user, "action": entry.Action, "verified": ok})
+		entry.Nonce++
+		c.JSON(http.StatusOK, gin.H{"useraddr": useraddr, "action": entry.Action, "verified": ok})
 	}
+
+	processAction(typeStr, valueStr)
 }
 
 // CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?useraddr=xyz)
@@ -109,6 +114,9 @@ func processAction(actionType string, actionValue string) {
 
 func dbGET(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"db": db})
+}
+func nonce2Hex(nonce uint64) string {
+	return fmt.Sprintf("%064x", nonce)
 }
 func str2bytes(s string) ([32]byte, error) {
 	bytes, err := hex.DecodeString(s)
