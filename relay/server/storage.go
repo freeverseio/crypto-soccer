@@ -11,6 +11,7 @@ var db = make(map[string]*UserEntry)
 
 // Action - ...
 type Action struct {
+	Type  interface{}
 	Value interface{}
 }
 

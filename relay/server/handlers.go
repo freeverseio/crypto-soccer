@@ -82,12 +82,11 @@ func ActionPOST(c *gin.Context) {
 	}
 
 	if entry := GetUserEntry(useraddr); entry != nil {
-		entry.Action = Action{typeStr + valueStr}
+		entry.Action = Action{typeStr, valueStr}
 		entry.Nonce++
 		c.JSON(http.StatusOK, gin.H{"useraddr": useraddr, "action": entry.Action, "verified": ok})
+		processAction(typeStr, valueStr)
 	}
-
-	processAction(typeStr, valueStr)
 }
 
 // CreateUserPOST - adds user to db (http://localhost:8080/relay/createuser?useraddr=xyz)
@@ -116,7 +115,6 @@ func CreateUserPOST(c *gin.Context) {
 func processAction(actionType string, actionValue string) {
 	// TODO: interact with lionel
 }
-
 func dbGET(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"db": db})
 }

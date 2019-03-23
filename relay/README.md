@@ -47,7 +47,20 @@ This will sign the current action and will be verified by the server before subm
 {
     "success":true,
     "useraddr":"0x82973f0ceed111576c508bcd999c92c9e83e49f0",
-    "action":{"Value":"sellplayer"},
+    "action": {
+        "Type":"sell",
+        "Value":"player"
+        },
     "verified":true
 }
+```
+
+Wallets created by the client application can be inspected in:
+```http
+http://localhost:8888/relay/debug
+```
+
+Current server storage can be inspected in:
+```http
+http://localhost:8080/relay/db
 ```
