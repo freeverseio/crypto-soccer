@@ -37,7 +37,12 @@ func ActionPOST(c *gin.Context) {
 		S     string `json:"s"`
 		V     int    `json:"v"`
 	}
-	c.ShouldBindJSON(&body)
+	err := c.ShouldBindJSON(&body)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"message": "failed to parse action request"})
+		log.Println("Error: failed to parse action request")
+		return
+	}
 
 	typeBytes, err := hex.DecodeString(body.Type)
 	if err != nil {

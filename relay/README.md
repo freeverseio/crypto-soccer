@@ -42,3 +42,12 @@ Once registered, user actions can be submitted specifying a type and a value:
 ```http
 http://localhost:8888/relay/v1/0x82973f0ceed111576c508bcd999c92c9e83e49f0/action?type=sell&value=player
 ```
+This will sign the current action and will be verified by the server before submitting the action. If the action was succesfully submitted you should obtain a response like the following
+```json
+{
+    "success":true,
+    "useraddr":"0x82973f0ceed111576c508bcd999c92c9e83e49f0",
+    "action":{"Value":"sellplayer"},
+    "verified":true
+}
+```
