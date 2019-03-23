@@ -68,3 +68,9 @@ Current server storage can be inspected in:
 ```http
 http://localhost:8080/relay/db
 ```
+or alternatively
+```sh
+curl -v -H Content-Type: application/json GET http://localhost:8888/relay/debug
+
+curl -v -H Content-Type: application/json GET http://localhost:8080/relay/db
+```
