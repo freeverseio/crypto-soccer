@@ -194,6 +194,8 @@ contract('Test2', (accounts) => {
 
         await leagues.challengeMatchdayStates(
             leagueIdx,
+            usersInitData.teamIdxs,
+            usersInitData.tactics,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0
         ).should.be.fulfilled;
@@ -246,14 +248,16 @@ contract('Test2', (accounts) => {
 
         // TODO: uncomment the following
         // ...and the CHALLENGER fails to prove anything
-        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
-        // await leagues.challengeMatchdayStates(
-        //     leagueIdx,
-        //     selectedMatchday = 0,
-        //     prevMatchdayStates
-        // ).should.be.fulfilled;
-        // updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
-        // updated.should.be.equal(true);
+        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        await leagues.challengeMatchdayStates(
+            leagueIdx,
+            usersInitData.teamIdxs,
+            usersInitData.tactics,
+            selectedMatchday = 0,
+            prevMatchdayStates
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
 
         // await leagues.challengeMatchdayStates(
         //     leagueIdx,
