@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
 import "./LeagueUpdatable.sol";
+import "./LeagueUsersAlongData.sol";
 
-contract LeagueChallengeable is LeagueUpdatable {
+contract LeagueChallengeable is LeagueUpdatable, LeagueUsersAlongData {
     uint256 constant private CHALLENGING_PERIOD_BLKS = 60;
 
     function getChallengePeriod() external pure returns (uint256) {
