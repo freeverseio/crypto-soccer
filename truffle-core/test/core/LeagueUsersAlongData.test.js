@@ -58,12 +58,16 @@ contract('LeagueUsersAlongData', (accounts) => {
         await league.updateUsersAlongDataHash(id, teamIdx = [0], tactic = [[4, 4, 2]]).should.be.fulfilled;
     });
 
-    // TODO: reactive
     // it('update with wrong teamIdx', async () => {
-    //     const id = 0;
-    //     await league.create(id, initBlock = 1, step = 100000, teamIds = [1, 2]).should.be.fulfilled;
+    //     await league.create(
+    //         id = 0, 
+    //         initBlock = 1, 
+    //         step = 100000, 
+    //         teamIds = [1, 2], 
+    //         tactics = [[4, 4, 3], [4, 4, 3]]
+    //     ).should.be.fulfilled;
     //     const finished = await league.hasFinished(id).should.be.fulfilled;
     //     finished.should.be.equal(false);
-    //     await league.updateUsersAlongDataHash(id, teamIdx = 2, tactic = [4, 4, 2]).should.be.rejected;
+    //     await league.updateUsersAlongDataHash(id, teamIdx = [1, 3], tactic = [[4, 4, 2], [4, 4, 2]]).should.be.rejected;
     // });
 }) 
