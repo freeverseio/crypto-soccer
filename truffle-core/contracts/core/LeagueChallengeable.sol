@@ -29,8 +29,10 @@ contract LeagueChallengeable is LeagueUpdatable {
 
     function challengeMatchdayStates(
         uint256 id,
-        uint256[] memory teamIds,
-        uint8[3][] memory tactics,
+        uint256[] memory usersInitDataTeamIds,
+        uint8[3][] memory usersInitDataTactics,
+        uint256[] memory usersAlongDataTeamIds,
+        uint8[3][] memory usersAlongDataTactics,
         uint256 leagueDay,
         uint256[] memory prevMatchdayStates
     )
@@ -38,8 +40,7 @@ contract LeagueChallengeable is LeagueUpdatable {
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
-        
+        require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
         resetUpdater(id);
     }
 

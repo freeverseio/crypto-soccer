@@ -126,8 +126,7 @@ contract('Test2', (accounts) => {
         };
 
         // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[0], usersAlongData.tactics[0]).should.be.fulfilled;
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[1], usersAlongData.tactics[1]).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tactics).should.be.fulfilled;
 
         // Move beyond league end
         await advanceNBlocks(blockStep).should.be.fulfilled;
@@ -196,6 +195,8 @@ contract('Test2', (accounts) => {
             leagueIdx,
             usersInitData.teamIdxs,
             usersInitData.tactics,
+            usersAlongData.teamIdxsWithinLeague,
+            usersAlongData.tactics,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0
         ).should.be.fulfilled;
@@ -253,6 +254,8 @@ contract('Test2', (accounts) => {
             leagueIdx,
             usersInitData.teamIdxs,
             usersInitData.tactics,
+            usersAlongData.teamIdxsWithinLeague,
+            usersAlongData.tactics,
             selectedMatchday = 0,
             prevMatchdayStates
         ).should.be.fulfilled;
