@@ -10,10 +10,13 @@ contract LeagueUsersAlongData is LeaguesScheduler {
         return _usersAlongDataHash[id];
     }
 
-    function updateUsersAlongDataHash(uint256 id, uint256 teamId, uint8[3] memory tactic) public {
+    function updateUsersAlongDataHash(uint256 id, uint256[] memory teamIds, uint8[3][] memory tactics) public {
         require(_exists(id), "unexistent league");
         require(!hasFinished(id), "finished league");
-        bytes32 dataHash = keccak256(abi.encode(_usersAlongDataHash[id], teamId, tactic, block.number));
-        _usersAlongDataHash[id] = dataHash;
+        require(teamIds.length == tactics.length, "teams and tactics mismatch");
+        bytes32 usersAlongDataHash = _usersAlongDataHash[id];
+        for(uint256 i = 0 ; i < teamIds.length ; i++)
+            usersAlongDataHash = keccak256(abi.encode(usersAlongDataHash, teamIds[i], tactics[i], block.number));
+        _usersAlongDataHash[id] = usersAlongDataHash;
     }
 }

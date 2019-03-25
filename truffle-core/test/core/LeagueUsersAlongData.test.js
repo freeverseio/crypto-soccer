@@ -28,7 +28,7 @@ contract('LeagueUsersAlongData', (accounts) => {
     });
 
     it('update unexistent league', async () => {
-        await league.updateUsersAlongDataHash(id = 0, teamIdx = 0, tactic = [4, 4, 3]).should.be.rejected;
+        await league.updateUsersAlongDataHash(id = 0, teamIdx = [0], tactic = [[4, 4, 3]]).should.be.rejected;
     })
 
     it('update finished league', async () => {
@@ -41,7 +41,7 @@ contract('LeagueUsersAlongData', (accounts) => {
         ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(true);
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.rejected;
+        await league.updateUsersAlongDataHash(id, teamIdx = [0], tactic = [[4, 4, 2]]).should.be.rejected;
     });
 
     it('update', async () => {
@@ -54,12 +54,8 @@ contract('LeagueUsersAlongData', (accounts) => {
         ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(false);
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.fulfilled;
-        let hash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
-        hash.should.be.equal('0xd0c6de7df5b6f49e55dab2d876310253a8da499e94d6de0e3a50fc437fd9d75d');
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.fulfilled;
-        hash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
-        hash.should.be.equal('0x3d829cedc91a56c3fc097e80a4a70ee30d63ede10f0356d0565741208fcb8cb6');
+        await league.updateUsersAlongDataHash(id, teamIdx = [0], tactic = [[4, 4, 2]]).should.be.fulfilled;
+        await league.updateUsersAlongDataHash(id, teamIdx = [0], tactic = [[4, 4, 2]]).should.be.fulfilled;
     });
 
     // TODO: reactive
