@@ -120,13 +120,15 @@ contract('Test2', (accounts) => {
         finished.should.be.equal(false);
 
         // Note that we could specify only for 1 of the teams if we wanted.
+        const currentBlock = await web3.eth.getBlockNumber();
         usersAlongData = {
             teamIdxsWithinLeague: [teamIdx1, teamIdx2],
             tactics: [[4, 3, 3], [4, 4, 2]],
+            blocks: [currentBlock, currentBlock]
         };
 
         // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tactics).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tactics, usersAlongData.blocks).should.be.fulfilled;
 
         // Move beyond league end
         await advanceNBlocks(blockStep).should.be.fulfilled;
