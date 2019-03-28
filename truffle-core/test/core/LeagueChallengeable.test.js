@@ -4,6 +4,8 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 
+const Engine = artifacts.require('Engine');
+const States = artifacts.require('LeagueState');
 const League = artifacts.require('LeagueChallengeable');
 const Cronos = artifacts.require('Cronos');
 
@@ -16,7 +18,9 @@ contract('LeagueChallengeable', (accounts) => {
     let challengePeriod = null;
 
     beforeEach(async () => {
-        league = await League.new().should.be.fulfilled;
+        const engine = await Engine.new().should.be.fulfilled;
+        const states = await States.new().should.be.fulfilled;
+        league = await League.new(engine.address, states.address).should.be.fulfilled;
         await league.create(
             id,
             blocksToInit = 1,
