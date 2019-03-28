@@ -199,6 +199,7 @@ contract('Test2', (accounts) => {
             usersInitData.tactics,
             usersAlongData.teamIdxsWithinLeague,
             usersAlongData.tactics,
+            usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0
         ).should.be.fulfilled;
@@ -209,7 +210,7 @@ contract('Test2', (accounts) => {
         await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
-        let initPlayerStatesLie = initPlayerStates;
+        let initPlayerStatesLie = [...initPlayerStates];
         initPlayerStatesLie[0] += 1; // the sinner instruction
         const initStatesHashLie = await leagues.hashState(initPlayerStatesLie);
         await leagues.updateLeague(
@@ -258,6 +259,7 @@ contract('Test2', (accounts) => {
             usersInitData.tactics,
             usersAlongData.teamIdxsWithinLeague,
             usersAlongData.tactics,
+            usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates
         ).should.be.fulfilled;

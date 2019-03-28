@@ -5,7 +5,7 @@ import "./LeaguesScheduler.sol";
 contract LeagueUsersAlongData is LeaguesScheduler {
     mapping(uint256 => bytes32) private _usersAlongDataHash;
 
-    function getUsersAlongDataHash(uint256 id) external view returns (bytes32) {
+    function getUsersAlongDataHash(uint256 id) public view returns (bytes32) {
         require(_exists(id), "unexistent league");
         return _usersAlongDataHash[id];
     }
