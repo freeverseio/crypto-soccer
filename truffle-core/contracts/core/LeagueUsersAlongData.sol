@@ -20,7 +20,12 @@ contract LeagueUsersAlongData is LeaguesScheduler {
         uint256 nTeams = teamIds.length;
         require(tactics.length == nTeams, "teams and tactics mismatch");
         require(blocks.length == nTeams, "teams and blocks mismatch");
-        bytes32 usersAlongDataHash;
+        bytes32 base;
+        return _computeUsersAlongDataHash(base, teamIds, tactics, blocks);
+    }
+
+    function _computeUsersAlongDataHash(bytes32 base, uint256[] memory teamIds, uint8[3][] memory tactics, uint256[] memory blocks) private pure returns (bytes32 usersAlongDataHash) {
+        usersAlongDataHash = base;
         for(uint256 i = 0 ; i < teamIds.length ; i++)
             usersAlongDataHash = keccak256(abi.encode(usersAlongDataHash, teamIds[i], tactics[i], blocks[i]));
         return usersAlongDataHash;
