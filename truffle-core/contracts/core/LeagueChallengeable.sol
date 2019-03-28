@@ -46,9 +46,18 @@ contract LeagueChallengeable is LeagueUpdatable, LeagueUsersAlongData {
         require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
         if (leagueDay == 0)
             require(hashState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
-        // else
+        else
+            require(prepareOneMatchdayHash(prevMatchdayStates) == getDayStateHashes(id)[leagueDay-1], "Incorrect provided: prevMatchdayStates");
+
+        uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
+        // uint8[3][] memory tactics = updateTacticsToBlockNum(matchdayBlock, usersAlongDataTactics);
+
 
         resetUpdater(id);
+    }
+
+    function prepareOneMatchdayHash(uint256[] memory state) public pure returns (bytes32) {
+        return 0; // TODO:
     }
 
     function getInitPlayerStates(
