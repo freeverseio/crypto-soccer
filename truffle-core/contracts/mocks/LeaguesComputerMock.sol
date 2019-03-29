@@ -39,7 +39,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initleagueState, 
-        uint256[3][] memory tactics,
+        uint8[3][] memory tactics,
         bytes32 seed
     )
         public
@@ -52,7 +52,7 @@ contract LeaguesComputerMock is LeaguesComputer {
     function computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
-        uint256[3][] memory tactics,
+        uint8[3][] memory tactics,
         bytes32 seed
     )
         public

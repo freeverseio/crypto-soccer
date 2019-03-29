@@ -53,10 +53,39 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             require(prepareOneMatchdayHash(prevMatchdayStates) == getDayStateHashes(id)[leagueDay-1], "Incorrect provided: prevMatchdayStates");
 
         uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
-        // uint8[3][] memory tactics = updateTacticsToBlockNum(matchdayBlock, usersAlongDataTactics);
+        uint8[3][] memory tactics = _updateTacticsToBlockNum(
+            usersInitDataTeamIds,
+            usersInitDataTactics,
+            matchdayBlock, 
+            usersAlongDataTeamIds,
+            usersAlongDataTactics,
+            usersAlongDataBlocks);
+        (uint16[] memory scores, uint256[] memory finalLeagueState) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
 
         resetUpdater(id);
+    }
+
+    function _updateTacticsToBlockNum(
+        uint256[] memory usersInitDataTeamIds,
+        uint8[3][] memory usersInitDataTactics, 
+        uint256 blockNum, 
+        uint256[] memory usersAlongDataTeamIds,
+        uint8[3][] memory usersAlongDataTactics,
+        uint256[] memory usersAlongDataBlocks
+    ) 
+        internal 
+        pure 
+        returns (uint8[3][] memory) 
+    {
+        for (uint256 i = 0 ; i < usersAlongDataTeamIds.length ; i++){
+            if (usersAlongDataBlocks[i] <= blockNum){
+                for (uint256 j = 0 ; j < usersInitDataTeamIds.length ; j++)
+                    if (usersInitDataTeamIds[j] == usersAlongDataTeamIds[i])
+                        usersInitDataTactics[j] = usersAlongDataTactics[i];
+            }
+        }
+        return usersInitDataTactics;
     }
 
     function prepareOneMatchdayHash(uint256[] memory state) public pure returns (bytes32) {

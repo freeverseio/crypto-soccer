@@ -189,7 +189,7 @@ contract('Test2', (accounts) => {
         updated.should.be.equal(true);
 
         // A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 20).should.be.fulfilled;
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 20).should.be.fulfilled;
         let verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
 
@@ -207,7 +207,7 @@ contract('Test2', (accounts) => {
         updated.should.be.equal(false);
 
         // ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
         let initPlayerStatesLie = [...initPlayerStates];
@@ -223,7 +223,7 @@ contract('Test2', (accounts) => {
         updated.should.be.equal(true);
 
         // A CHALLENGER tries to prove that the UPDATER lied with the initHash
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
 
@@ -240,7 +240,7 @@ contract('Test2', (accounts) => {
         updated.should.be.equal(false);
 
         // A nicer UPDATER now tells the truth:
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         await leagues.updateLeague(
             leagueIdx,
             initStatesHash,
@@ -250,9 +250,11 @@ contract('Test2', (accounts) => {
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
+        console.log(await web3.eth.getBlockNumber());
+
         // TODO: uncomment the following
         // ...and the CHALLENGER fails to prove anything
-        await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
+        // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,

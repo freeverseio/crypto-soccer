@@ -16,8 +16,8 @@ contract Engine {
         bytes32 seed,
         uint256[] memory state0,
         uint256[] memory state1, 
-        uint256[3] memory tactic0, 
-        uint256[3] memory tactic1
+        uint8[3] memory tactic0, 
+        uint8[3] memory tactic1
     ) 
         public 
         pure 

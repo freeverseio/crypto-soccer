@@ -6,7 +6,7 @@ require('chai')
 
 const Engine = artifacts.require('Engine');
 const States = artifacts.require('LeagueState');
-const League = artifacts.require('LeagueChallengeable');
+const League = artifacts.require('LeagueChallengeableMock');
 const Cronos = artifacts.require('Cronos');
 
 contract('LeagueChallengeable', (accounts) => {
@@ -108,5 +108,38 @@ contract('LeagueChallengeable', (accounts) => {
         ).should.be.fulfilled;
         await league.challengeInitStates(id, [3, 4], tactics, []).should.be.rejected;
         await league.challengeInitStates(id, teamIds, [[4, 4, 2], [4, 4, 2]], []).should.be.rejected;
+    });
+
+    it('update tactics with no new tactics', async () => {
+        const tactics = await league.updateTacticsToBlockNum(
+            usersInitDataTeamIds = [1],
+            userInitDataTactics = [[4,4,2]],
+            blockNum = [10],
+            usersAlongDataTeamIds = [],
+            usersAlongDataTactics = [],
+            usersAlongDataBlocks = []
+        ).should.be.fulfilled;
+        tactics.length.should.be.equal(3);
+        tactics[0].toNumber().should.be.equal(4);
+        tactics[1].toNumber().should.be.equal(4);
+        tactics[2].toNumber().should.be.equal(2);
+    });
+
+    it('update tactics new tactics', async () => {
+        const tactics = await league.updateTacticsToBlockNum(
+            usersInitDataTeamIds = [1, 5],
+            userInitDataTactics = [[4, 4, 2], [5, 5, 0]],
+            blockNum = [10],
+            usersAlongDataTeamIds = [1, 5, 2],
+            usersAlongDataTactics = [[5, 3, 2], [4, 4, 2], [1, 8, 1]],
+            usersAlongDataBlocks = [1, 8, 10]
+        ).should.be.fulfilled;
+        tactics.length.should.be.equal(6);
+        tactics[0].toNumber().should.be.equal(5);
+        tactics[1].toNumber().should.be.equal(3);
+        tactics[2].toNumber().should.be.equal(2);
+        tactics[3].toNumber().should.be.equal(4);
+        tactics[4].toNumber().should.be.equal(4);
+        tactics[5].toNumber().should.be.equal(2);
     });
 })
