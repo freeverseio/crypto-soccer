@@ -250,8 +250,6 @@ contract('Test2', (accounts) => {
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
-        console.log(await web3.eth.getBlockNumber());
-
         // TODO: uncomment the following
         // ...and the CHALLENGER fails to prove anything
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);

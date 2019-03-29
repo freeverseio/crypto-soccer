@@ -32,4 +32,13 @@ contract LeaguesScore is LeagueUpdatable {
             result[target.length + i] = scores[i];
         return result;
     }
+
+    function scoresGetDay(uint256 id, uint256 day) public view returns (uint16[] memory dayScores) {
+        uint256 matchPerDay = getMatchPerDay(id);
+        uint16[] memory scores = getScores(id);
+        uint256 first = day*matchPerDay;
+        dayScores = new uint16[](matchPerDay);
+        for (uint256 i = 0 ; i < matchPerDay ; i++) 
+            dayScores[i] = scores[first+i];
+    }
 }

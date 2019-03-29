@@ -71,7 +71,7 @@ contract LeagueUpdatable is LeaguesScheduler {
         return _result[id].dayStateHashes;
     }
 
-    function getScores(uint256 id) external view returns (uint16[] memory) {
+    function getScores(uint256 id) public view returns (uint16[] memory) {
         require(_exists(id), "unexistent league");
         return _result[id].scores;
     }

@@ -60,10 +60,13 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             usersAlongDataTeamIds,
             usersAlongDataTactics,
             usersAlongDataBlocks);
-        (uint16[] memory scores, uint256[] memory finalLeagueState) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
+        (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
+        if (prepareOneMatchdayHash(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
+            resetUpdater(id);
 
-        resetUpdater(id);
+        if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
+            resetUpdater(id);
     }
 
     function _updateTacticsToBlockNum(
