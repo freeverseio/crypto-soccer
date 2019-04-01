@@ -5,14 +5,12 @@ import "./LeagueUsersAlongData.sol";
 
 contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     uint256 constant private CHALLENGING_PERIOD_BLKS = 60;
-    LeagueState private _leagueState;
 
     function getChallengePeriod() external pure returns (uint256) {
         return CHALLENGING_PERIOD_BLKS;
     }
 
     constructor(address engine, address leagueState) LeaguesComputer(engine, leagueState) public {
-        _leagueState = LeagueState(leagueState);
     }
 
     function challengeInitStates(
@@ -52,7 +50,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         if (leagueDay == 0)
             require(hashState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
         else
-            require(prepareOneMatchdayHash(prevMatchdayStates) == getDayStateHashes(id)[leagueDay-1], "Incorrect provided: prevMatchdayStates");
+            require(hashState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay-1], "Incorrect provided: prevMatchdayStates");
 
         uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
         uint8[3][] memory tactics = _updateTacticsToBlockNum(
@@ -64,7 +62,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             usersAlongDataBlocks);
         (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
-        if (prepareOneMatchdayHash(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
+        if (hashState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
             resetUpdater(id);
 
         if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
@@ -91,11 +89,6 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             }
         }
         return usersInitDataTactics;
-    }
-
-    function prepareOneMatchdayHash(uint256[] memory state) public view returns (bytes32) {
-        uint256[] memory skillsAtOneMatchday = _leagueState.leagueStateGetSkills(state);
-        return keccak256(abi.encode(skillsAtOneMatchday));
     }
 
     function getInitPlayerStates(

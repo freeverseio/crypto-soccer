@@ -19,8 +19,9 @@ contract LeaguesComputer is LeaguesScore {
         return address(_engine);
     }
 
-    function hashState(uint256[] memory state) public pure returns (bytes32) {
-        return keccak256(abi.encode(state));
+    function hashState(uint256[] memory state) public view returns (bytes32) {
+        uint256[] memory stateSkills = _leagueState.leagueStateGetSkills(state);
+        return keccak256(abi.encode(stateSkills));
     }
 
     function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {

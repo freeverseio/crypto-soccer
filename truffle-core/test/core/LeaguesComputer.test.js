@@ -111,6 +111,34 @@ contract('LeaguesComputer', (accounts) => {
         points.visitorPoints.toNumber().should.be.equal(5);
     });
 
+    it('hash tactics', async () => {
+        const hash0 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
+        const hash1 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
+        hash1.should.be.equal(hash0);
+        const hash2 = await leagues.hashTactics([[3, 4, 2]]).should.be.fulfilled;
+        hash2.should.be.not.equal(hash0);
+        const hash3 = await leagues.hashTactics([[4, 5, 2]]).should.be.fulfilled;
+        hash3.should.be.not.equal(hash0);
+        const hash4 = await leagues.hashTactics([[4, 4, 3]]).should.be.fulfilled;
+        hash4.should.be.not.equal(hash0);
+        const hash5 = await leagues.hashTactics([[4, 4, 2], [4, 4, 2]]).should.be.fulfilled;
+        hash5.should.be.not.equal(hash0);
+    });
+
+    it('hash state', async () => {
+        const playerState = await states.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        let teamState = await states.teamStateCreate().should.be.fulfilled;
+        teamState = await states.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        let state = await states.leagueStateCreate().should.be.fulfilled;
+        state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
+        const hash0 = await leagues.hashState(state).should.be.fulfilled;
+        hash0.should.be.equal('0x2227d2ea6d7e6fef37a87a88d133d1c6fefc67bc1f55d81e7eb8db2874594d37');
+        state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
+        const hash1 = await leagues.hashState(state).should.be.fulfilled;
+        hash1.should.be.not.equal(hash0);
+    });
+
+
     // it('compute points home rating higher than visitor', async () => {
     //     const homeTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;
     //     const visitorTeamRating = await states.computeTeamRating(teamState1).should.be.fulfilled;
