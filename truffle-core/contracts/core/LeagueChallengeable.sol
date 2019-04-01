@@ -5,12 +5,14 @@ import "./LeagueUsersAlongData.sol";
 
 contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     uint256 constant private CHALLENGING_PERIOD_BLKS = 60;
+    LeagueState private _leagueState;
 
     function getChallengePeriod() external pure returns (uint256) {
         return CHALLENGING_PERIOD_BLKS;
     }
 
     constructor(address engine, address leagueState) LeaguesComputer(engine, leagueState) public {
+        _leagueState = LeagueState(leagueState);
     }
 
     function challengeInitStates(
@@ -91,8 +93,9 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         return usersInitDataTactics;
     }
 
-    function prepareOneMatchdayHash(uint256[] memory state) public pure returns (bytes32) {
-        return 0; // TODO:
+    function prepareOneMatchdayHash(uint256[] memory state) public view returns (bytes32) {
+        uint256[] memory skillsAtOneMatchday = _leagueState.leagueStateGetSkills(state);
+        return keccak256(abi.encode(skillsAtOneMatchday));
     }
 
     function getInitPlayerStates(
