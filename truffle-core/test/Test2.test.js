@@ -150,18 +150,18 @@ contract('Test2', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = usersInitData.tactics;
-        const initPlayerStatesDay0 = initPlayerStates;
+        const tacticsDay0 = [...usersInitData.tactics];
+        const initPlayerStatesDay0 = [...initPlayerStates];
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
-        const scoresDay0 = result.scores;
-        const finalPlayerStatesDay0 = result.finalLeagueState;
+        const scoresDay0 = [...result.scores];
+        const finalPlayerStatesDay0 = [...result.finalLeagueState];
         // day 1
         leagueDay = 1;
-        const tacticsDay1 = usersAlongData.tactics;
-        const initPlayerStatesDay1 = finalPlayerStatesDay0;
+        const tacticsDay1 = [...usersAlongData.tactics];
+        const initPlayerStatesDay1 = [...finalPlayerStatesDay0];
         result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
-        const scoresDay1 = result.scores;
-        const finalPlayerStatesDay1 = result.finalLeagueState;
+        const scoresDay1 = [...result.scores];
+        const finalPlayerStatesDay1 = [...result.finalLeagueState];
 
         const statesAtMatchday = [finalPlayerStatesDay0, finalPlayerStatesDay1];
         let scores = await leagues.scoresCreate().should.be.fulfilled;
