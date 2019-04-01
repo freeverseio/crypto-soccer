@@ -53,14 +53,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         return _result[id].updateBlock;
     }
 
-    function hashState(uint256[] memory state) public pure returns (bytes32) {
-        return keccak256(abi.encode(state));
-    }
-
-    function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
-        return keccak256(abi.encode(tactics));
-    }
-
     function getInitStateHash(uint256 id) public view returns (bytes32) {
         require(_exists(id), "unexistent league");
         return _result[id].initStateHash;
