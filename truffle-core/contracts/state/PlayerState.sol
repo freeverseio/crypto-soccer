@@ -151,4 +151,9 @@ contract PlayerState {
         require(isValidPlayerState(playerState), "invalid player state");
         return uint256(playerState >> 186 & 0x3fff);
     }
+
+    function getSkills(uint256 playerState) public pure returns (uint256) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        return playerState >> 186;
+    }
 }

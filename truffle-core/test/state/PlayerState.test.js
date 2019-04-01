@@ -89,4 +89,16 @@ contract('PlayerState', (accounts) => {
         skill = await instance.getEndurance(updatedState).should.be.fulfilled;
         skill.toNumber().should.be.equal(endurance + delta);
     });
+
+    it('get skills', async () => {
+        const playerState = await instance.playerStateCreate(
+            defence = 0, 
+            speed = 0, 
+            pass = 0, 
+            shoot = 0, 
+            endurance = 1, 
+            0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const skills = await instance.getSkills(playerState).should.be.fulfilled;
+        skills.toNumber().should.be.equal(1);
+    })
 });
