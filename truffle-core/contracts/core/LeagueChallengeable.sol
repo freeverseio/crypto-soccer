@@ -50,7 +50,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         if (leagueDay == 0)
             require(hashState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
         else
-            require(hashState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay-1], "Incorrect provided: prevMatchdayStates");
+            require(hashState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
         uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
         uint8[3][] memory tactics = _updateTacticsToBlockNum(
@@ -89,8 +89,8 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             }
         }
         return usersInitDataTactics;
-    }
 
+    }
     function getInitPlayerStates(
         uint256 id,
         uint256[] memory teamIds,
