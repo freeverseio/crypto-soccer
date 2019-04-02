@@ -91,6 +91,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         return usersInitDataTactics;
 
     }
+
     function getInitPlayerStates(
         uint256 id,
         uint256[] memory teamIds,
