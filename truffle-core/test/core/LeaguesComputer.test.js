@@ -125,16 +125,16 @@ contract('LeaguesComputer', (accounts) => {
         hash5.should.be.not.equal(hash0);
     });
 
-    it('hash state', async () => {
+    it('hash init state', async () => {
         const playerState = await states.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         let teamState = await states.teamStateCreate().should.be.fulfilled;
         teamState = await states.teamStateAppend(teamState, playerState).should.be.fulfilled;
         let state = await states.leagueStateCreate().should.be.fulfilled;
         state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
-        const hash0 = await leagues.hashState(state).should.be.fulfilled;
-        hash0.should.be.equal('0x2227d2ea6d7e6fef37a87a88d133d1c6fefc67bc1f55d81e7eb8db2874594d37');
+        const hash0 = await leagues.hashInitState(state).should.be.fulfilled;
+        hash0.should.be.equal('0x3314e33d03ecb18ceb0a2f84d6a7186c252a35f2bb7ce025002927dcfcd9b21d');
         state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
-        const hash1 = await leagues.hashState(state).should.be.fulfilled;
+        const hash1 = await leagues.hashInitState(state).should.be.fulfilled;
         hash1.should.be.not.equal(hash0);
     });
 

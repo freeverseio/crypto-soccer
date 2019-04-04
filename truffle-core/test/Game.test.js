@@ -128,7 +128,7 @@ contract('Game', (accounts) => {
         initLeagueState = await state.leagueStateAppend(initLeagueState, juventusState).should.be.fulfilled;
 
         // generate init league state hash
-        const initStateHash = await leagues.hashState(initLeagueState).should.be.fulfilled;
+        const initStateHash = await leagues.hashInitState(initLeagueState).should.be.fulfilled;
         let dayStateHashes = [];
 
         let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
@@ -181,7 +181,7 @@ contract('Game', (accounts) => {
             leagueScores = await leagues.scoresConcat(leagueScores, dayScores).should.be.fulfilled;
 
             // hash of the day state
-            const dayHash = await leagues.hashState(finalDayState).should.be.fulfilled;
+            const dayHash = await leagues.hashDayState(finalDayState).should.be.fulfilled;
             // append the day state hash
             dayStateHashes.push(dayHash);
 
