@@ -4,15 +4,23 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 
-const League = artifacts.require('LeagueChallengeable');
+const Engine = artifacts.require('Engine');
+const States = artifacts.require('LeagueState');
+const League = artifacts.require('LeagueChallengeableMock');
+const Cronos = artifacts.require('Cronos');
 
 contract('LeagueChallengeable', (accounts) => {
+    let league = null;
+    let crosos = null;
     const id = 0;
     const teamIds = [1, 2];
     const tactics = [[4, 4, 3], [4, 5, 2]];
+    let challengePeriod = null;
 
     beforeEach(async () => {
-        league = await League.new().should.be.fulfilled;
+        const engine = await Engine.new().should.be.fulfilled;
+        const states = await States.new().should.be.fulfilled;
+        league = await League.new(engine.address, states.address).should.be.fulfilled;
         await league.create(
             id,
             blocksToInit = 1,
@@ -20,11 +28,65 @@ contract('LeagueChallengeable', (accounts) => {
             teamIds,
             tactics
         ).should.be.fulfilled;
+        const result = await league.getChallengePeriod().should.be.fulfilled;
+        challengePeriod = result.toNumber();
+        cronos = await Cronos.new().should.be.fulfilled;
     });
+    
+    const advanceToBlock = async (block) => {
+        let current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        while (current.toString() < block) {
+            await cronos.wait().should.be.fulfilled;
+            current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        }
+        // console.log("current block: " + current);
+    }
  
     it('challenge period', async () => {
-        const period = await league.getChallengePeriod().should.be.fulfilled;
-        period.should.be.a.bignumber.that.equals('60');
+        challengePeriod.should.be.equal(60);
+    });
+
+    it('last challenge block', async () => {
+        await league.getLastChallengeBlock(id).should.be.rejected;
+        const result = await league.updateLeague(
+            id, 
+            initStateHash = '0x54564', 
+            dayStateHashes = ['0x24353', '0x5434432'],
+            scores = ['0x12', '0x3']
+        ).should.be.fulfilled;
+        const lastChallengeBlock = await league.getLastChallengeBlock(id).should.be.fulfilled;
+        lastChallengeBlock.toNumber().should.be.equal(result.receipt.blockNumber + challengePeriod);
+    });
+
+    it('reset league makes invalid last challenge block', async () => {
+        await league.updateLeague(
+            id, 
+            initStateHash = '0x54564', 
+            dayStateHashes = ['0x24353', '0x5434432'],
+            scores = ['0x12', '0x3']
+        ).should.be.fulfilled;
+        await league.resetUpdater(id).should.be.fulfilled;
+        await league.getLastChallengeBlock(id).should.be.rejected;
+    });
+
+    it('is verified', async () => {
+        let verified = await league.isVerified(id).should.be.fulfilled;
+        verified.should.be.equal(false);
+        let result = await league.updateLeague(
+            id, 
+            initStateHash = '0x54564', 
+            dayStateHashes = ['0x24353', '0x5434432'],
+            scores = ['0x12', '0x3']
+        ).should.be.fulfilled;
+        verified = await league.isVerified(id).should.be.fulfilled;
+        verified.should.be.equal(false);
+        const updateBlockNumber = result.receipt.blockNumber;
+        await advanceToBlock(updateBlockNumber + challengePeriod - 1).should.be.fulfilled;
+        verified = await league.isVerified(id).should.be.fulfilled;
+        verified.should.be.equal(false);
+        await advanceToBlock(updateBlockNumber + challengePeriod).should.be.fulfilled;
+        verified = await league.isVerified(id).should.be.fulfilled;
+        verified.should.be.equal(true);
     });
 
     it('challenge init state', async () => {
@@ -46,5 +108,38 @@ contract('LeagueChallengeable', (accounts) => {
         ).should.be.fulfilled;
         await league.challengeInitStates(id, [3, 4], tactics, []).should.be.rejected;
         await league.challengeInitStates(id, teamIds, [[4, 4, 2], [4, 4, 2]], []).should.be.rejected;
+    });
+
+    it('update tactics with no new tactics', async () => {
+        const tactics = await league.updateTacticsToBlockNum(
+            usersInitDataTeamIds = [1],
+            userInitDataTactics = [[4,4,2]],
+            blockNum = [10],
+            usersAlongDataTeamIds = [],
+            usersAlongDataTactics = [],
+            usersAlongDataBlocks = []
+        ).should.be.fulfilled;
+        tactics.length.should.be.equal(3);
+        tactics[0].toNumber().should.be.equal(4);
+        tactics[1].toNumber().should.be.equal(4);
+        tactics[2].toNumber().should.be.equal(2);
+    });
+
+    it('update tactics new tactics', async () => {
+        const tactics = await league.updateTacticsToBlockNum(
+            usersInitDataTeamIds = [1, 5],
+            userInitDataTactics = [[4, 4, 2], [5, 5, 0]],
+            blockNum = [10],
+            usersAlongDataTeamIds = [1, 5, 2],
+            usersAlongDataTactics = [[5, 3, 2], [4, 4, 2], [1, 8, 1]],
+            usersAlongDataBlocks = [1, 8, 10]
+        ).should.be.fulfilled;
+        tactics.length.should.be.equal(6);
+        tactics[0].toNumber().should.be.equal(5);
+        tactics[1].toNumber().should.be.equal(3);
+        tactics[2].toNumber().should.be.equal(2);
+        tactics[3].toNumber().should.be.equal(4);
+        tactics[4].toNumber().should.be.equal(4);
+        tactics[5].toNumber().should.be.equal(2);
     });
 })

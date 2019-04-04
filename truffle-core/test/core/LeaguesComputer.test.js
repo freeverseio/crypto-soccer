@@ -15,8 +15,8 @@ contract('LeaguesComputer', (accounts) => {
     let teamState0 = null;
     let teamState1 = null;
     const tactics = [
-        [4, 4, 3],  // Team 0
-        [5, 4, 2]   // Team 1
+        [4, 4, 2],  // Team 0
+        [5, 4, 1]   // Team 1
     ];
     let leagueState = null;
 
@@ -110,6 +110,34 @@ contract('LeaguesComputer', (accounts) => {
         points.homePoints.toNumber().should.be.equal(0);
         points.visitorPoints.toNumber().should.be.equal(5);
     });
+
+    it('hash tactics', async () => {
+        const hash0 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
+        const hash1 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
+        hash1.should.be.equal(hash0);
+        const hash2 = await leagues.hashTactics([[3, 4, 2]]).should.be.fulfilled;
+        hash2.should.be.not.equal(hash0);
+        const hash3 = await leagues.hashTactics([[4, 5, 2]]).should.be.fulfilled;
+        hash3.should.be.not.equal(hash0);
+        const hash4 = await leagues.hashTactics([[4, 4, 3]]).should.be.fulfilled;
+        hash4.should.be.not.equal(hash0);
+        const hash5 = await leagues.hashTactics([[4, 4, 2], [4, 4, 2]]).should.be.fulfilled;
+        hash5.should.be.not.equal(hash0);
+    });
+
+    it('hash init state', async () => {
+        const playerState = await states.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        let teamState = await states.teamStateCreate().should.be.fulfilled;
+        teamState = await states.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        let state = await states.leagueStateCreate().should.be.fulfilled;
+        state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
+        const hash0 = await leagues.hashInitState(state).should.be.fulfilled;
+        hash0.should.be.equal('0x3314e33d03ecb18ceb0a2f84d6a7186c252a35f2bb7ce025002927dcfcd9b21d');
+        state = await states.leagueStateAppend(state, teamState).should.be.fulfilled;
+        const hash1 = await leagues.hashInitState(state).should.be.fulfilled;
+        hash1.should.be.not.equal(hash0);
+    });
+
 
     // it('compute points home rating higher than visitor', async () => {
     //     const homeTeamRating = await states.computeTeamRating(teamState0).should.be.fulfilled;

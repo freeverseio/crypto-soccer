@@ -19,11 +19,24 @@ contract LeaguesComputer is LeaguesScore {
         return address(_engine);
     }
 
+    function hashDayState(uint256[] memory state) public view returns (bytes32) {
+        uint256[] memory stateSkills = _leagueState.leagueStateGetSkills(state);
+        return keccak256(abi.encode(stateSkills));
+    }
+
+    function hashInitState(uint256[] memory state) public pure returns (bytes32) {
+        return keccak256(abi.encode(state));
+    }
+
+    function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
+        return keccak256(abi.encode(tactics));
+    }
+
     function computeDay(
         uint256 leagueId,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint256[3][] memory tactics
+        uint8[3][] memory tactics
     )
         public
         view
@@ -96,7 +109,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint256[3][] memory tactics,
+        uint8[3][] memory tactics,
         bytes32 seed
     )
         internal
@@ -128,7 +141,7 @@ contract LeaguesComputer is LeaguesScore {
     function _computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
-        uint256[3][] memory tactics,
+        uint8[3][] memory tactics,
         bytes32 seed
     )
         internal

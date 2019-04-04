@@ -4,6 +4,8 @@ const Horizon = artifacts.require("Horizon");
 
 module.exports = function (deployer) {
   deployer.then(async () => {
+      return;
+
       const players = await deployer.deploy(Players);
       console.log(`Players deployed at address: ${players.address}`);
       console.log(`Players transaction at hash: ${players.transactionHash}`);

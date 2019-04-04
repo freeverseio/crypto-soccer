@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./LeagueChallengeable.sol";
+import "./LeagueUpdatable.sol";
 
-contract LeaguesScore is LeagueChallengeable {
+contract LeaguesScore is LeagueUpdatable {
     function scoresCreate() public pure returns (uint16[] memory) {
     }
 
@@ -31,5 +31,14 @@ contract LeaguesScore is LeagueChallengeable {
         for (uint256 i = 0 ; i < scores.length ; i++)
             result[target.length + i] = scores[i];
         return result;
+    }
+
+    function scoresGetDay(uint256 id, uint256 day) public view returns (uint16[] memory dayScores) {
+        uint256 matchPerDay = getMatchPerDay(id);
+        uint16[] memory scores = getScores(id);
+        uint256 first = day*matchPerDay;
+        dayScores = new uint16[](matchPerDay);
+        for (uint256 i = 0 ; i < matchPerDay ; i++) 
+            dayScores[i] = scores[first+i];
     }
 }

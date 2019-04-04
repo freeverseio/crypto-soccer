@@ -18,6 +18,7 @@ contract('Game', (accounts) => {
     let state = null;
     let leagues = null;
     let cronos = null;
+    let CHALLENGING_PERIOD_BLKS = null;
 
     beforeEach(async () => {
         players = await Players.new().should.be.fulfilled;
@@ -34,6 +35,7 @@ contract('Game', (accounts) => {
         state = await State.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         cronos = await Cronos.new().should.be.fulfilled;
+        CHALLENGING_PERIOD_BLKS = await leagues.getChallengePeriod().should.be.fulfilled;
     });
 
     // we use the values in the blockchain to generate the team status
@@ -73,12 +75,12 @@ contract('Game', (accounts) => {
 
     const advanceNBlocks = async (blocks) => {
         let current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        await advanceToBlock(current+blocks);
+        await advanceToBlock(current + blocks);
     }
 
     const prepareMatchdayHashes = async (statesAtMatchday) => {
         let result = [];
-        for (let i = 0; i < statesAtMatchday.length ; i++){
+        for (let i = 0; i < statesAtMatchday.length; i++) {
             const state = statesAtMatchday[i];
             const hash = await leagues.hashState(state).should.be.fulfilled;
             result.push(hash);
@@ -87,85 +89,6 @@ contract('Game', (accounts) => {
         return result;
     }
 
-    it('test2', async () => {
-        await horizon.createTeam("Barca").should.be.fulfilled;
-        await horizon.createTeam("Madrid").should.be.fulfilled;
-        await horizon.createTeam("Milan").should.be.fulfilled;
-        await horizon.createTeam("PSG").should.be.fulfilled;
-        const teamIdx1 = await teams.getTeamId("Barca").should.be.fulfilled;
-        const teamIdx2 = await teams.getTeamId("Madrid").should.be.fulfilled;
-        const teamIdx3 = await teams.getTeamId("Milan").should.be.fulfilled;
-        const teamIdx4 = await teams.getTeamId("PSG").should.be.fulfilled;
-
-        await advanceToBlock(100);
-
-        const blockInit = 190;
-        const blockStep = 10;
-
-        const usersInitData = {
-            teamIdxs: [teamIdx1, teamIdx2],
-            // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
-            tactics: [[4,4,2], [4,3,3]] 
-        };
-
-        leagueIdx = 0;
-        await leagues.create(leagueIdx, blockInit, blockStep, usersInitData.teamIdxs, usersInitData.tactics).should.be.fulfilled;
-
-        const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
-        startBlock.toNumber().should.be.equal(blockInit);
-
-        // Advance to matchday 2
-        await advanceToBlock(blockInit + blockStep - 5);
-        const started = await leagues.hasStarted(leagueIdx).should.be.fulfilled;
-        started.should.be.equal(true);
-        let finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
-        finished.should.be.equal(false);
-
-        // Note that we could specify only for 1 of the teams if we wanted.
-        usersAlongData = {
-            teamIdxsWithinLeague: [teamIdx1, teamIdx2],
-            tactics: [[4, 3, 3], [4, 4, 2]],
-        };
-
-        // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[0], usersAlongData.tactics[0]).should.be.fulfilled;
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague[1], usersAlongData.tactics[1]).should.be.fulfilled;
-
-        // Move beyond league end
-        await advanceNBlocks(blockStep).should.be.fulfilled;
-        finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
-        finished.should.be.equal(true);
-
-        /**** big TODO: */
-        // The CLIENT computes the data needed to submit as an UPDATER: statesAtMatchday, scores.
-        // TODO: calculate the league
-        const leagueDays = await leagues.countLeagueDays(leagueIdx).should.be.fulfilled;
-        const initPlayerStates = []; // TODO:
-        const statesAtMatchday = []; // TODO:
-        const scores = []; // TODO:
-        // leagueDays.toNumber().should.be.equal(statesAtMatchday.length);
-        /**** end big TODO */
-
-        let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
-        updated.should.be.equal(false);
-
-        const initStateHash = await leagues.hashState(initPlayerStates).should.be.fulfilled;
-        const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
-
-        let statesAtMatchdayHashesLie = statesAtMatchdayHashes;
-        // statesAtMatchdayHashesLie[0]++; // TODO: decomment he lies about matchday 0 only
-
-        await leagues.updateLeague(
-            leagueIdx,
-            initStateHash,
-            statesAtMatchdayHashesLie,
-            scores
-        ).should.be.fulfilled;
-        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
-        updated.should.be.equal(true);
-    });
-
-    return;
     it('play a league of 6 teams', async () => {
         await horizon.createTeam("Barcelona").should.be.fulfilled;
         await horizon.createTeam("Madrid").should.be.fulfilled;
@@ -185,7 +108,7 @@ contract('Game', (accounts) => {
         const step = 1;
         const leagueId = 0;
         const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
-        const tactics = [[4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3], [4, 4, 3]];
+        const tactics = [[4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2]];
         await leagues.create(leagueId, initBlock, step, teamIds, tactics).should.be.fulfilled;
 
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
@@ -205,7 +128,7 @@ contract('Game', (accounts) => {
         initLeagueState = await state.leagueStateAppend(initLeagueState, juventusState).should.be.fulfilled;
 
         // generate init league state hash
-        const initStateHash = await leagues.hashState(initLeagueState).should.be.fulfilled;
+        const initStateHash = await leagues.hashInitState(initLeagueState).should.be.fulfilled;
         let dayStateHashes = [];
 
         let leagueScores = await leagues.scoresCreate().should.be.fulfilled;
@@ -258,7 +181,7 @@ contract('Game', (accounts) => {
             leagueScores = await leagues.scoresConcat(leagueScores, dayScores).should.be.fulfilled;
 
             // hash of the day state
-            const dayHash = await leagues.hashState(finalDayState).should.be.fulfilled;
+            const dayHash = await leagues.hashDayState(finalDayState).should.be.fulfilled;
             // append the day state hash
             dayStateHashes.push(dayHash);
 

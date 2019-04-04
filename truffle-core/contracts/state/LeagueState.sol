@@ -74,4 +74,16 @@ contract LeagueState is TeamState {
         }
         return i;
     }
+
+    function leagueStateGetSkills(uint256[] memory leagueState) public pure returns (uint256[] memory skills) {
+        require(isValidLeagueState(leagueState), "invalid league state");
+        skills = new uint256[](leagueState.length);
+        for (uint256 i = 0 ; i < leagueState.length ; i++){
+            if (leagueState[i] == DIMENSION_1_END)
+                skills[i] = DIMENSION_1_END;
+            else
+                skills[i] = getSkills(leagueState[i]);
+        }
+    }
+    
 }

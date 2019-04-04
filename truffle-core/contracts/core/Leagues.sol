@@ -1,13 +1,12 @@
 pragma solidity ^0.5.0;
 
-import "./LeagueUpdatable.sol";
+import "./LeagueChallengeable.sol";
 import "./LeaguesComputer.sol";
-import "./LeagueUsersAlongData.sol";
 
-contract Leagues is LeagueUpdatable, LeaguesComputer, LeagueUsersAlongData {
+contract Leagues is LeagueChallengeable {
     constructor(address engine, address state) 
     public 
-    LeaguesComputer(engine, state)
+    LeagueChallengeable(engine, state)
     {
     }    
 }

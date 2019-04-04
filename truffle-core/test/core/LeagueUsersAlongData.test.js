@@ -28,7 +28,7 @@ contract('LeagueUsersAlongData', (accounts) => {
     });
 
     it('update unexistent league', async () => {
-        await league.updateUsersAlongDataHash(id = 0, teamIdx = 0, tactic = [4, 4, 3]).should.be.rejected;
+        await league.updateUsersAlongDataHash(id = 0, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.rejected;
     })
 
     it('update finished league', async () => {
@@ -41,7 +41,7 @@ contract('LeagueUsersAlongData', (accounts) => {
         ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(true);
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.rejected;
+        await league.updateUsersAlongDataHash(id, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.rejected;
     });
 
     it('update', async () => {
@@ -54,20 +54,32 @@ contract('LeagueUsersAlongData', (accounts) => {
         ).should.be.fulfilled;
         const finished = await league.hasFinished(id).should.be.fulfilled;
         finished.should.be.equal(false);
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.fulfilled;
-        let hash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
-        hash.should.be.equal('0xd0c6de7df5b6f49e55dab2d876310253a8da499e94d6de0e3a50fc437fd9d75d');
-        await league.updateUsersAlongDataHash(id, teamIdx = 0, tactic = [4, 4, 2]).should.be.fulfilled;
-        hash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
-        hash.should.be.equal('0x3d829cedc91a56c3fc097e80a4a70ee30d63ede10f0356d0565741208fcb8cb6');
+        await league.updateUsersAlongDataHash(id, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
+        const hash = await league.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
+        const usersAlongDataHash = await league.getUsersAlongDataHash(id).should.be.fulfilled;
+        hash.should.be.equal(usersAlongDataHash);
     });
 
-    // TODO: reactive
+    it('compute user along data hash', async () => {
+        let hash = await league.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
+        hash.should.be.equal('0x23f31280f69accf85f4ed1f35b9b7c8120241435f7f1c7005d1a397e09035c4b');
+        hash = await league.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [2]).should.be.fulfilled;
+        hash.should.be.equal('0x94cc21c8dfb0a81fb883059124ef97d417f42f86c1caa0c248ae05eda99ff245');
+        hash = await league.computeUsersAlongDataHash(teamIds = [0, 1], tactic = [[4, 4, 2], [4, 4, 2]], block = [2, 4]).should.be.fulfilled;
+        hash.should.be.equal('0xb854db7f540d4de46dd8e42fdaf48fed19057ae2e0e60e8be3c460647ceae2d6');
+    });
+
+
     // it('update with wrong teamIdx', async () => {
-    //     const id = 0;
-    //     await league.create(id, initBlock = 1, step = 100000, teamIds = [1, 2]).should.be.fulfilled;
+    //     await league.create(
+    //         id = 0, 
+    //         initBlock = 1, 
+    //         step = 100000, 
+    //         teamIds = [1, 2], 
+    //         tactics = [[4, 4, 3], [4, 4, 3]]
+    //     ).should.be.fulfilled;
     //     const finished = await league.hasFinished(id).should.be.fulfilled;
     //     finished.should.be.equal(false);
-    //     await league.updateUsersAlongDataHash(id, teamIdx = 2, tactic = [4, 4, 2]).should.be.rejected;
+    //     await league.updateUsersAlongDataHash(id, teamIdx = [1, 3], tactic = [[4, 4, 2], [4, 4, 2]]).should.be.rejected;
     // });
 }) 
