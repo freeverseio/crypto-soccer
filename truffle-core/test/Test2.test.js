@@ -172,7 +172,7 @@ contract('Test2', (accounts) => {
         let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
 
-        const initStatesHash = await leagues.hashDayState(initPlayerStates).should.be.fulfilled;
+        const initStatesHash = await leagues.hashInitState(initPlayerStates).should.be.fulfilled;
         const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
 
         let statesAtMatchdayLie = statesAtMatchday;
@@ -212,7 +212,7 @@ contract('Test2', (accounts) => {
         verified.should.be.equal(false);
         let initPlayerStatesLie = [...initPlayerStates];
         initPlayerStatesLie[0] += 1; // the sinner instruction
-        const initStatesHashLie = await leagues.hashDayState(initPlayerStatesLie);
+        const initStatesHashLie = await leagues.hashInitState(initPlayerStatesLie);
         await leagues.updateLeague(
             leagueIdx,
             initStatesHashLie,

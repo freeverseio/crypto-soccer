@@ -48,7 +48,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
         require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
         if (leagueDay == 0)
-            require(hashDayState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
+            require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
         else
             require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
