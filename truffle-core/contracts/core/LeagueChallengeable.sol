@@ -27,7 +27,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
         if (initPlayerStates.length == 0) // challenger wins
             resetUpdater(id);
-        else if (getInitStateHash(id) != hashState(initPlayerStates)) // challenger wins
+        else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
             resetUpdater(id);
     }
 
@@ -48,9 +48,9 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
         require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
         if (leagueDay == 0)
-            require(hashState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
+            require(hashDayState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
         else
-            require(hashState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
+            require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
         uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
         uint8[3][] memory tactics = _updateTacticsToBlockNum(
@@ -62,7 +62,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             usersAlongDataBlocks);
         (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
-        if (hashState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
+        if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
             resetUpdater(id);
 
         if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
