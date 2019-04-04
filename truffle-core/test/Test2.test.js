@@ -278,6 +278,7 @@ contract('Test2', (accounts) => {
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
+        return;
         await leagues.challengeInitStates(
             leagueIdx,
             usersInitData.teamIdxs,
