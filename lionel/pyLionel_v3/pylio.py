@@ -50,9 +50,9 @@ def printTeam(teamIdx, ST_CLIENT):
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-        playerState = ST_CLIENT.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
-        playerChallengeData = ST_CLIENT.computeDataToChallengePlayerIdx(playerState.getPlayerIdx())
-        assert ST_CLIENT.isCorrectStateForPlayerIdx(playerState, playerChallengeData), "Player state not correctly in sync"
+        playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx)
+        playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
+        assert ST_CLIENT.areLatestSkills(playerState, playerChallengeData), "Player state not correctly in sync"
         hash += printPlayer(playerState)
     return hash
 
@@ -87,19 +87,23 @@ def getTeamsInMatch(matchday, match, nTeams):
         (team2, team1) = getTeamsInMatchFirstHalf(matchday - (nTeams - 1), match, nTeams);
     return team1, team2
 
-
+# mockup
 def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, teamOrders1, teamOrders2, MatchSeed):
     hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerStates1)+serialize2str(tactics1)+serialize2str(teamOrders1))
     hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerStates2)+serialize2str(tactics2)+serialize2str(teamOrders2))
     return hash1 % 4, hash2 % 4
 
+# mockup: the rating of a team is just the sum of all skills
 def computeTeamRating(playerStates):
     return sum([sum(thisPlayerState.getSkills()) for thisPlayerState in playerStates])
+
 
 def addFixedPointsToAllPlayers(playerStates, points):
     for playerState in playerStates:
         playerState.setSkills(playerState.getSkills() + points)
 
+
+# given the result, it computes the evolution points won per team, and applies them to their players
 def updatePlayerStatesAfterMatch(playerStates1, playerStates2, goals1, goals2):
     ps1 = duplicate(playerStates1)
     ps2 = duplicate(playerStates2)
@@ -116,6 +120,7 @@ def updatePlayerStatesAfterMatch(playerStates1, playerStates2, goals1, goals2):
     return ps1, ps2
 
 
+# simple mockup of what the evolution points could look like.
 def computePointsWon(playerState1, playerState2, goals1, goals2):
     ratingDiff              = computeTeamRating(playerState1) - computeTeamRating(playerState2)
     winnerWasBetter         = (ratingDiff > 0 and goals1>goals2) or (ratingDiff < 0 and goals1<goals2)
@@ -126,6 +131,8 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
         return (2 if winnerWasBetter else 10)
 
 
+# plays all games in a given matchday, using the provided input for how the teams
+# were right at the beginning of that matchday
 def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevStates)
     nMatchesPerMatchday = nTeams//2
@@ -154,22 +161,13 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
                 )
     return statesAtMatchday, scores
 
-
-def getMatchsPlayerByTeam(selectedTeam, nTeams):
-    matchdayMatch = []
-    nMatchdays = 2*(nTeams-1)
-    nMatchesPerMatchday = nTeams//2
-    for matchday in range(nMatchdays):
-        for match in range(nMatchesPerMatchday):
-            team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-            if (team1==selectedTeam) or (team2==selectedTeam):
-                matchdayMatch.append([matchday,match])
-    return matchdayAndMatch
-
+# checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
 
 
+# the dataToChallenge should contain only one entry, which is the value of the first leaf.
+# we just check that this leaf is the actual playerState we're testing
 def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState):
     return areEqualStructs(
         playerState,
@@ -177,12 +175,8 @@ def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState):
     )
 
 
-
-
 def createEmptyPlayerStatesForAllTeams(nTeams):
     return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
-
-
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
@@ -206,11 +200,15 @@ def advanceNVerses(nVerses, ST, ST_CLIENT):
         advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
 
 
+# ------------------------------------------------
+
+
+# selects a pseudo-random element of an array (obtained from hashing the seed)
 def getRandomElement(arr, seed):
     nElems = len(arr)
     return arr[intHash(serialize2str(seed)) % nElems]
 
-# ------------------------------------------------
+
 
 # Merkle proof: given a tree, and its leafs,
 # it creates the hashes required to prove that a given idx in the leave belongs to the tree.
@@ -222,6 +220,7 @@ def prepareProofForIdxs(idxsToProve, tree, leafs):
         values[leafIdx] = leafs[leafIdx]
     return neededHashes, values
 
+# returns an 1D-array from a 2D-array
 def flatten(statesPerTeam):
     flatStates = []
     for statesTeam in statesPerTeam:
@@ -229,3 +228,35 @@ def flatten(statesPerTeam):
             flatStates.append(statePlayer)
     return flatStates
 
+
+# MAIN function to be called by anyone who want to make sure that the playerState is the TRULY LATEST STATE in the game
+# It uses pre-hash data from CLIENT, and compares against whatever is needed in the BC
+def certifyPlayerState(playerState, ST, ST_CLIENT):
+    # As always we first derive the latest skills (from the last league played):
+    playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
+    # ...and then we update with whatever sales took place afterwards
+    playerChallengeDataUpdated = ST_CLIENT.updateChallengeDataAfterLastLeaguePlayed(playerChallengeData)
+    assert ST.areLatestSkills(playerState, playerChallengeDataUpdated), "Computed player state by CLIENT is not recognized by BC.."
+
+
+
+
+# It uses the CLIENT data to submit a challenge to the BC
+def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT):
+    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Cannot challenge a league that has not been updated"
+    assert not ST.isFullyVerified(leagueIdx), "Cannot challenge a league after challenging period is over"
+
+    # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
+    dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
+    # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+
+    # ...finally, it does the challenge. If successful, it will reset() the leauge update
+    ST.challengeMatchdayStates(
+        leagueIdx,
+        selectedMatchday,
+        dataAtPrevMatchday,
+        duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
+        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
+        merkleProofDataForMatchday
+    )

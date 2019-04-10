@@ -144,38 +144,6 @@ class League():
         self.updaterAddr                = updaterAddr
         self.blockLastUpdate            = blocknum
 
-    def challengeMatchdayStates(
-            self,
-            selectedMatchday,
-            dataAtPrevMatchday,
-            usersInitData,
-            seed
-        ):
-
-        assert self.hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
-        assert pylio.serialHash(usersInitData) == self.usersInitDataHash, "Incorrect provided: usersInitData"
-        dataAtPrevMatchday.statesAtMatchday, scores = pylio.computeStatesAtMatchday(
-            selectedMatchday,
-            pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
-            pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
-            pylio.duplicate(dataAtPrevMatchday.teamOrdersAtMatchday),
-            seed
-        )
-
-        dataAtMatchdayHash = pylio.serialHash(dataAtPrevMatchday)
-
-        if not dataAtMatchdayHash == self.dataAtMatchdayHashes[selectedMatchday]:
-            print("Challenger Wins: statesAtMatchday provided by updater are invalid")
-            self.resetUpdater()
-            return
-
-        if not (self.scores[selectedMatchday] == scores).all():
-            print("Challenger Wins: scores provided by updater are invalid")
-            self.resetUpdater()
-            return
-
-        print("Challenger failed to prove that statesAtMatchday nor scores were wrong")
-
 
 # client leagues inherit from leagues, and extend to include the data pre-hash
 class LeagueClient(League):
@@ -188,13 +156,17 @@ class LeagueClient(League):
         self.tacticsAtMatchday  = None
         self.scores             = None
         self.actionsPerMatchday = []
+        self.dataToChallengeInitStates = None
 
     def updateDataAtMatchday(self, dataAtMatchdays, scores):
         self.dataAtMatchdays   = dataAtMatchdays
         self.scores             = scores
 
-    def updateInitState(self, initPlayerStates):
+    def writeInitState(self, initPlayerStates):
         self.initPlayerStates = initPlayerStates
+
+    def writeDataToChallengeInitStates(self, dataToChallengeInitStates):
+        self.dataToChallengeInitStates = dataToChallengeInitStates
 
 class VerseCommit:
     def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
@@ -308,7 +280,9 @@ class Storage(Counter):
             actionsAtSelectedMatchday,
             merkleProofDataForMatchday
         ):
+        assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
+        assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
@@ -326,7 +300,7 @@ class Storage(Counter):
             assert pylio.serialHash(dataAtPrevMatchday.tacticsAtMatchday) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
             assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
         else:
-            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == pylio.serialHash(dataAtPrevMatchday),\
+            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
         if not actionsAtSelectedMatchday == 0:
@@ -335,13 +309,27 @@ class Storage(Counter):
                 dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
                 dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
 
-        self.leagues[leagueIdx].challengeMatchdayStates(
+        dataAtPrevMatchday.statesAtMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
-            pylio.duplicate(dataAtPrevMatchday),
-            usersInitData,
+            pylio.duplicate(dataAtPrevMatchday.statesAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.tacticsAtMatchday),
+            pylio.duplicate(dataAtPrevMatchday.teamOrdersAtMatchday),
             self.getSeedForVerse(verse)
         )
 
+        dataAtMatchdayHash = self.prepareOneMatchdayHash(dataAtPrevMatchday)
+
+        if not dataAtMatchdayHash == self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday]:
+            print("Challenger Wins: statesAtMatchday provided by updater are invalid")
+            self.leagues[leagueIdx].resetUpdater()
+            return
+
+        if not (self.leagues[leagueIdx].scores[selectedMatchday] == scores).all():
+            print("Challenger Wins: scores provided by updater are invalid")
+            self.leagues[leagueIdx].resetUpdater()
+            return
+
+        print("Challenger failed to prove that statesAtMatchday nor scores were wrong")
 
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
@@ -468,7 +456,7 @@ class Storage(Counter):
                             dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     )
                     # it makes sure that the state matches what the BC says about that player
-                    if not self.isCorrectStateForPlayerIdx(
+                    if not self.areLatestSkills(
                         playerState,
                         dataToChallengeInitStates[teamPosInLeague][shirtNum]
                     ):
@@ -477,7 +465,8 @@ class Storage(Counter):
                     # if no dataToChallenge is provided, it means this is a request
                     # from a Client, so just read whatever pre-hash data you have
                     self.assertIsClient()
-                    playerState = self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
+                    # playerState = self.getPlayerStateAtEndOfLastLeague(playerIdx)
+                    playerState = self.getPlayerStateAtEndOfLastLeague(playerIdx)
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
@@ -488,7 +477,7 @@ class Storage(Counter):
                 return tPos
         assert False, "Team not found in league"
 
-    def isCorrectStateForPlayerIdx(self, playerState, dataToChallengePlayerState):
+    def areLatestSkills(self, playerState, dataToChallengePlayerState):
         # If player has never played a league, we can compute the playerState directly in the BC
         # It basically is equal to the birth skills, with ,potentially, a few team changes via sales.
         # If not, we can just compare the hash of the dataToChallengePlayerState with the stored hash in the prev league
@@ -553,6 +542,15 @@ class Storage(Counter):
         state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
         state2 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2))
 
+        # a player should change his prevLeagueIdx only if the current team played
+        # a last league that started AFTER the last sale
+        if self.getBlockNumForLastLeagueOfTeam(teamIdx1) > state1.getLastSaleBlocknum():
+            state1.prevLeagueIdx = self.teams[teamIdx1].currentLeagueIdx
+            state1.prevTeamPosInLeague = self.teams[teamIdx1].teamPosInCurrentLeague
+
+        if self.getBlockNumForLastLeagueOfTeam(teamIdx2) > state2.getLastSaleBlocknum():
+            state2.prevLeagueIdx = self.teams[teamIdx2].currentLeagueIdx
+            state2.prevTeamPosInLeague = self.teams[teamIdx2].teamPosInCurrentLeague
 
         state1.setCurrentTeamIdx(teamIdx2)
         state2.setCurrentTeamIdx(teamIdx1)
@@ -628,12 +626,10 @@ class Storage(Counter):
                (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
 
     def getPlayerStateFromChallengeData(self, playerIdx, dataToChallengePlayerState):
-        # dataToChallengePlayerState can be:
-        #     - playerState
-        #     - merkleProof
-        #       CLARIFY !!!!!! maybe from where it comes
-        # TONI
-        # TODO: very ugly if!!!
+        # dataToChallengePlayerState is either:
+        #  - just a player state
+        #  - a merkle proof for that player
+        # In the latter case, we can extract the state just from the values (leafs)
         if type(dataToChallengePlayerState) == type(PlayerState()):
             assert dataToChallengePlayerState.getPlayerIdx() == playerIdx, "This data does not contain the required playerIdx"
             return dataToChallengePlayerState
@@ -660,41 +656,60 @@ class Storage(Counter):
         return self.getBlockHash(self.VerseCommits[verse].blockNum)
 
 
+    # From the states at a given matchday, we just need to store the hash... of the skills,
+    # ... disregarding other side info, like lastSaleBlock...
+    # This is important, because otherwise, it's impossible to use these hashes for challenges once
+    # sales have taken place.
+    def prepareOneMatchdayHash(self, dataAtMatchday):
+        # note that the matrix has size: statesAtOneMatchday[team][player]
+        # we basically convert from 'states' to 'skills':
+        #   dataAtMatchday.statesAtOneMatchday[team][player] --> dataAtMatchday.skillsAtOneMatchday[team][player]
+        skillsAtOneMatchday = []
+        for teams in dataAtMatchday.statesAtMatchday:
+            allTeamSkills = [s.getSkills() for s in teams]
+            skillsAtOneMatchday.append(pylio.duplicate(allTeamSkills))
+
+        updatedData = pylio.duplicate(dataAtMatchday)
+        updatedData.statesAtMatchday = skillsAtOneMatchday
+
+        return pylio.serialHash(updatedData)
+
+
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
     # ------------------------------------------------------------------------
 
-    def getPlayerStateAtEndOfLeague(self, prevLeagueIdx, teamPosInPrevLeague, playerIdx):
+    # return state of a player at end of a certain league
+    # note that these do not contain potential sales done after the league
+    def getPlayerStateAtEndOfLeague(self, leagueIdx, teamPosInLeague, playerIdx):
         self.assertIsClient()
-        selectedStates = [s for s in self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInPrevLeague] if
+        if leagueIdx == 0:
+            return self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
+
+        selectedStates = [s for s in self.leagues[leagueIdx].dataAtMatchdays[-1].statesAtMatchday[teamPosInLeague] if
                           s.getPlayerIdx() == playerIdx]
-        assert len(
-            selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
+        assert len(selectedStates) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
         return selectedStates[0]
 
-    def getLastWrittenInClientPlayerStateFromPlayerIdx(self, playerIdx):
+    def getPlayerStateAtEndOfLastLeague(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-        if prevLeagueIdx == 0:
-            # this can be known both by CLIENT and BC
-            return self.getPlayerStateBeforePlayingAnyLeague(playerIdx)
-        else:
-            # this can only be accessed by the CLIENT
-            return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
+        return self.getPlayerStateAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
 
     # Stores the data, pre-hash, in the CLIENT
-    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, initPlayerStates, dataAtMatchdays, lastDayTree, scores):
+    def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, dataAtMatchdays, lastDayTree, scores):
         self.assertIsClient()
-        self.leagues[leagueIdx].updateInitState(initPlayerStates)
         self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
         self.leagues[leagueIdx].lastDayTree = lastDayTree
-        # the last matchday gives the final states used to update all players:
+        # the last matchday gives the final skills used to update all players:
+        # After the end of the league, there could be other things, like sales, so we need to update
+        # those (while keeping the skills as of last league's end)
         for allPlayerStatesInTeam in dataAtMatchdays[-1].statesAtMatchday:
             for playerState in allPlayerStatesInTeam:
-                self.playerIdxToPlayerState[playerState.getPlayerIdx()] = playerState
+                updatedAfterLeague = self.updateChallengeDataAfterLastLeaguePlayed(playerState)
+                self.playerIdxToPlayerState[playerState.getPlayerIdx()] = updatedAfterLeague
 
-    # Returns the data at that given matchday matchday: (states, tactics, teamOrders)
     def getPrevMatchdayData(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         if selectedMatchday == 0:
@@ -707,13 +722,17 @@ class Storage(Counter):
             return pylio.duplicate(self.leagues[leagueIdx].dataAtMatchdays[selectedMatchday-1])
 
 
-
+    # Besides creating the league, it also:
+    # - computes the init states and stores them
+    # - computes the data needed to challenge those init states and stores them
     def createLeagueClient(self, verseInit, verseStep, usersInitData):
         self.assertIsClient()
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
         leagueIdx = len(self.leagues)
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
+        self.leagues[leagueIdx].writeDataToChallengeInitStates(self.prepareDataToChallengeInitStates(leagueIdx))
         return leagueIdx
 
     def addAccumulator(self):
@@ -723,17 +742,13 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        self.Accumulator.accumulateAction(action, self.getLeagueForAction(action))
+        leagueIdx = self.getLeagueForAction(action)
+        if self.hasLeagueFinished(leagueIdx):
+            print("Cannot accept actions for leagues that already finished! Action discarded")
+        else:
+            self.Accumulator.accumulateAction(action, leagueIdx)
 
-    def getAllActionsBeforeBlock(self, blockNum):
-        self.assertIsClient()
-        actions2commit = []
-        for (block, actions) in self.Accumulator.buffer.items():
-            if block < blockNum:
-                for a in actions:
-                    actions2commit.append(a)
-        return actions2commit
-
+    # returns all verses were matchdays of a league took/take place
     def getVersesForLeague(self, leagueIdx):
         self.assertIsClient()
         nMatchdays = 2*(self.leagues[leagueIdx].nTeams-1)
@@ -742,6 +757,7 @@ class Storage(Counter):
             verses.append(self.leagues[leagueIdx].verseInit + matchday * self.leagues[leagueIdx].verseStep)
         return verses
 
+    # returns all seeds used for all matchdays of a league
     def getAllSeedsForLeague(self, leagueIdx):
         self.assertIsClient()
         assert self.hasLeagueFinished(leagueIdx), "All seeds only available at end of league"
@@ -750,6 +766,7 @@ class Storage(Counter):
             seedsPerVerse.append(self.getSeedForVerse(verse))
         return seedsPerVerse
 
+    # returns which league did this action refer to
     def getLeagueForAction(self, action):
         self.assertIsClient()
         return self.teams[action["teamIdx"]].currentLeagueIdx
@@ -764,7 +781,12 @@ class Storage(Counter):
                 leagueIdxs.append(leagueIdx)
         return leagueIdxs
 
-    # Sends the actions acummulated in the buffer to the BC, by doing a hash first
+
+    # Sends the actions acummulated in the buffer to the BC, by sending the Merkle Root first.
+    # It only sends the actions corresponding to leagues that play games at the current verse.
+    # Before computing the Merkler Root, it first orders all the actions in the form:
+    # [leagueIdx0, allActionsInLeagueIdx0], [leagueIdx1, allActionsInLeagueIdx1], ...
+    # So each leaf has the form [leagueIdx, allActionsInLeagueIdx]
     def syncActions(self, ST):
         self.assertIsClient()
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
@@ -793,6 +815,12 @@ class Storage(Counter):
         self.Accumulator.commitedTrees.append(tree)
         self.Accumulator.clearBuffer(pylio.duplicate(leagueIdxAndActionsArray))
 
+
+    # It gathers all actions that were sent for a given selectedMatchday of a given league.
+    # It then builds a proof that can be used by someone who:
+    # - receives those actions (pre-hash)
+    # - knows the MerkleRoot of that verse
+    # ...to prove that the actions were included in that Merkle proof verse
     def getMerkleProof(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
@@ -869,15 +897,19 @@ class Storage(Counter):
                 correctPlayerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 if playerIdx != 0:
                     assert playerIdx == correctPlayerIdx, "The function getPlayerIdxFromTeamIdxAndShirt is not working correctly"
-                dataToChallengeInitStates[teamPos][shirtNum] = self.computeDataToChallengePlayerIdx(correctPlayerIdx)
+                dataToChallengeInitStates[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(correctPlayerIdx)
         return dataToChallengeInitStates
 
-
-    def computeDataToChallengePlayerIdx(self, playerIdx):
+    # This function uses CLIENT data to return what is needed to then be able to challenge the player skills.
+    # If it has already played leagues, it returns the states of all teams at last matchday.
+    # If not, then the birth skills with, possibly, extra sales.
+    # note: statesAtEndOfPrevLeague does not take into account possible evolution/sales after the league
+    # note: yes, it returns either a playerState, or a matrix of playerStates (teams x players in team)
+    def computeDataToChallengePlayerSkills(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
-            return self.getLastWrittenInClientPlayerStateFromPlayerIdx(playerIdx)
+            return self.getPlayerStateAtEndOfLastLeague(playerIdx)
         else:
             statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].statesAtMatchday
             playerState, playerPosInPrevLeague   = self.getPlayerFromTeamStates(playerIdx, statesAtEndOfPrevLeague[teamPosInPrevLeague])
@@ -900,6 +932,21 @@ class Storage(Counter):
             ), "Generated Merkle proof will not work"
             return MerkleProofDataForMatchday(neededHashes, values, get_depth(lastDayTree))
 
+    # Given all states of players in a team, returns the state corresponding to
+    # the required playerIdx, as well as its position in the team.
+    def getPlayerFromTeamStates(self, playerIdx, statesInTeam):
+        self.assertIsClient()
+        playerState = None
+        playerPos   = None
+        for pos, state in enumerate(statesInTeam):
+            if playerIdx == state.getPlayerIdx():
+                if playerState:
+                    assert False, "Same player appears twice in a team!!!"
+                else:
+                    playerState             = pylio.duplicate(state)
+                    playerPos   = pylio.duplicate(pos)
+        return playerState, playerPos
+
 
     # for all days in the league, except for the last one, it basically hashes
     # the struct dataAtMatchday, which contains, besides states, the tactics and teamOrders.
@@ -909,25 +956,73 @@ class Storage(Counter):
         self.assertIsClient()
         # hash all except for last day:
         # dataAtMatchdayHashes = [pylio.serialHash(d) for d in dataAtMatchdays[:-1]]
-        dataAtMatchdayHashes = [pylio.serialHash(d) for d in dataAtMatchdays]
-        assert dataAtMatchdayHashes[0] == pylio.serialHash(dataAtMatchdays[0]), "Something went wrong preparing hashes"
+        dataAtMatchdayHashes = [self.prepareOneMatchdayHash(dataAtMatchday) for dataAtMatchday in dataAtMatchdays]
+
         # compute MerkleRoot for last day:
         lastStatesFlattened = pylio.flatten(dataAtMatchdays[-1].statesAtMatchday)
         lastDayTree, depth = make_tree(pylio.duplicate(lastStatesFlattened), pylio.serialHash)
         dataAtMatchdayHashes.append(root(lastDayTree))
         return dataAtMatchdayHashes, lastDayTree
 
+    # If we start from the state at the end of last played league, then only the skills remain unchanged.
+    # In general, the player can have been sold many times up to the current time.
+    # So we start with whatever state is currently written, and insert the skills from end of last league
+    def updatePlayerStateAfterLastLeaguePlayed(self, playerState):
+        self.assertIsClient()
+        if self.isPlayerVirtual(playerState.getPlayerIdx()):
+            return playerState
+        else:
+            updatedState = pylio.duplicate(self.playerIdxToPlayerState[playerState.getPlayerIdx()])
+            updatedState.setSkills(
+                playerState.getSkills()
+            )
+            return updatedState
 
-    def getPlayerFromTeamStates(self, playerIdx, statesInTeam):
-        playerState             = None
-        playerPosInPrevLeague   = None
-        for pos, state in enumerate(statesInTeam):
-            if playerIdx == state.getPlayerIdx():
-                if playerState:
-                    assert False, "Same player appears twice in a team!!!"
-                else:
-                    playerState             = pylio.duplicate(state)
-                    playerPosInPrevLeague   = pylio.duplicate(pos)
-        return playerState, playerPosInPrevLeague
+    def updateChallengeDataAfterLastLeaguePlayed(self, playerChallengeData):
+        # The playerChallengeData is build from the last league's states, and hence,
+        # does not contain the latest changes after league (sales, etc).
+        # The latter (sales, etc) are written in the BC (and the CLIENT, of course), directly
+        # in each playerState.
+        # So this function retrieves whatever is written in the BC, and replace the skills by those from the last league.
+        # Note that if the player is still virtual, it's not in the BC, so we skip updating anything
+        #   (in particular, it was never sold)
+        # Finally, note that playerChallengeData can be either:
+        #   - an array:  states[team][players] which describe the states at end of last leagues
+        #   - or just a playerState, in case there were no previous leagues.
+
+        self.assertIsClient()
+        if type(playerChallengeData) == type([]):  # it is an array
+            # start from the data provided (so as to avoid updating virtual players)
+            updatedStatesAfterPrevLeague = duplicate(playerChallengeData)
+            for team, statesPerTeam in enumerate(playerChallengeData):
+                for player, playerState in enumerate(statesPerTeam):
+                    updatedStatesAfterPrevLeague[team][player] = self.updatePlayerStateAfterLastLeaguePlayed(playerState)
+        else:
+            updatedStatesAfterPrevLeague = self.updatePlayerStateAfterLastLeaguePlayed(playerChallengeData)
+
+        return updatedStatesAfterPrevLeague
 
 
+    # The CLIENT:
+    # - computes all games of the league,
+    # - stores both the pre-hash and the hashed data
+    # - returns the hashed data so that it can then be send to the BC
+    def updateLeagueInClient(self, leagueIdx, ADDR):
+        self.assertIsClient()
+        assert self.hasLeagueFinished(leagueIdx), "cannot update a league that is not finished"
+        assert not self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has already been updated"
+        dataAtMatchdays, scores = self.computeAllMatchdayStates(leagueIdx)
+        initStatesHash          = pylio.serialHash(self.getInitPlayerStates(leagueIdx))
+        dataAtMatchdayHashes, lastDayTree = self.prepareHashesForDataAtMatchdays(dataAtMatchdays)
+
+        self.updateLeague(
+            leagueIdx,
+            initStatesHash,
+            dataAtMatchdayHashes,
+            scores,
+            ADDR,
+        )
+        # and additionally, stores the league pre-hash data, and updates every player involved
+        self.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
+        assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
+        return initStatesHash, dataAtMatchdayHashes, scores
