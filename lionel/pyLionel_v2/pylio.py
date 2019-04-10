@@ -499,15 +499,15 @@ def prepareDataToChallengeInitStates(leagueIdx, ST_CLIENT):
     #   if that a given player is virtual, then it contains just its state
     #   if not, it contains all states of prev league's team
     for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
-        for shirtNum, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
+        for playerPosInTeam, playerIdx in enumerate(ST_CLIENT.teams[teamIdx].playerIdxs):
             if playerIdx == 0:
-                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerSkills(
-                    getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT),
+                dataToChallengeInitStates[teamPos][playerPosInTeam] = computeDataToChallengePlayerSkills(
+                    getPlayerIdxFromTeamIdxAndShirt(teamIdx, playerPosInTeam, ST_CLIENT),
                     ST_CLIENT
                 )
             else:
-                assert playerIdx == getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum, ST_CLIENT), "PlayerIdx should always coincide"
-                dataToChallengeInitStates[teamPos][shirtNum] = computeDataToChallengePlayerSkills(playerIdx, ST_CLIENT)
+                assert playerIdx == getPlayerIdxFromTeamIdxAndShirt(teamIdx, playerPosInTeam, ST_CLIENT), "PlayerIdx should always coincide"
+                dataToChallengeInitStates[teamPos][playerPosInTeam] = computeDataToChallengePlayerSkills(playerIdx, ST_CLIENT)
     return dataToChallengeInitStates
 
 # MAIN function to be called by anyone who want to make sure that the playerState is the TRULY LATEST STATE in the game
