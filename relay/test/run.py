@@ -45,6 +45,8 @@ def stop_process(p):
     try:
         p.terminate()
         p.wait()
+        if not p.poll():
+            p.kill()
     except OSError as e:
         print 'Error terminating process', e
 
@@ -104,7 +106,7 @@ if __name__ == "__main__":
 
     time.sleep(5) # TODO: wait until server and client are fully available
 
-    print 'creating wallets in client app'
+    print 'TEST: creating wallets in client app'
 
     for account in accounts:
         endpoint='http://localhost:8888/createwallet'
@@ -122,7 +124,44 @@ if __name__ == "__main__":
         ASSERT_EQ(account['privatekey'], entry['privatekey'])
         ASSERT_EQ(account['mnemonic'], entry['mnemonic'])
 
-    time.sleep(5)
+    print 'TEST: create the same wallet'
+    ASSERT_EQ("false", requests.post(
+            url = 'http://localhost:8888/createwallet',
+            data = json.dumps({'mnemonic' : accounts[0]['mnemonic']}),
+            headers={'Content-Type': 'application/json'}
+            ).json()['success'])
+
+
+    print 'TEST: register client accounts to the server'
+    for account in accounts:
+        endpoint='http://localhost:8888/relay/v1/' + account['account']
+        r = requests.get(url = endpoint)
+        if not r:
+            FAIL('GET failed for account ' + str(account['id']))
+        d = r.json()
+        ASSERT_EQ('User created', d['message'])
+        ASSERT_EQ(account['account'], d['user'])
+
+    print 'TEST: submit user actions'
+    #http://localhost:8888/relay/v1/0x82973f0ceed111576c508bcd999c92c9e83e49f0/action?type=sell&value=player
+    for account in accounts:
+        endpoint='http://localhost:8888/relay/v1/%(account)s/action'%{'account' : account['account']}
+        payload = {
+                'type': 'type_' + str(account['id']),
+                'value': 'value_' + str(account['id']),
+                }
+        r = requests.get(url = endpoint, params = payload)
+        if not r:
+            FAIL('GET failed for account ' + str(account['id']))
+        d = r.json()
+        ASSERT_EQ(True, d['success'])
+        ASSERT_EQ(True, d['verified'])
+        ASSERT_EQ(account['account'], d['useraddr'])
+        action = d['action']
+        ASSERT_EQ(payload['type'], action['Type'])
+        ASSERT_EQ(payload['value'], action['Value'])
 
     print "SUCCESS"
-    stop();
+
+    stop_process(server_process)
+    stop_process(client_process)
