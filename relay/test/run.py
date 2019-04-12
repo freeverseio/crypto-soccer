@@ -6,10 +6,15 @@ import argparse
 import time
 import requests
 import json
+from inspect import currentframe
 
 MY_DIR = os.path.dirname(os.path.abspath(__file__))
 server_process = None
 client_process = None
+
+def get_linenumber():
+    cf = currentframe()
+    return cf.f_back.f_lineno
 
 def run_async_task(cmd, working_dir = os.getcwd()):
     print 'running', ' '.join(cmd), 'from', working_dir
@@ -54,15 +59,17 @@ def stop():
     stop_process(server_process)
     stop_process(client_process)
 
-def FAIL(msg):
+def FAIL(msg, line_number):
+    print 'FAILED at line number', line_number
     print msg
     stop()
     sys.exit(-1)
 
-def ASSERT_EQ(expected,actual):
+def ASSERT_EQ(expected,actual, line_number):
     if not expected == actual:
         stop()
-        print "FAILED\nexpected:", expected,'\nactual:',actual
+        print 'FAILED at line number', line_number
+        print "expected:", expected,'\nactual:',actual
         sys.exit(-1)
 
 accounts = [
@@ -114,22 +121,22 @@ if __name__ == "__main__":
         headers = {'Content-Type': 'application/json'}
         r = requests.post(url = endpoint, data = data, headers=headers)
         if not r:
-            FAIL('POST failed for account ' + str(account['id']))
+            FAIL('POST failed for account ' + str(account['id']), get_linenumber())
         d = r.json()
         if not d['success'] == 'true':
-            FAIL('response not successful for account ' + str(account['id']))
+            FAIL('response not successful for account ' + str(account['id']), get_linenumber())
 
         entry = d['entry']
-        ASSERT_EQ(account['account'], entry['account'])
-        ASSERT_EQ(account['privatekey'], entry['privatekey'])
-        ASSERT_EQ(account['mnemonic'], entry['mnemonic'])
+        ASSERT_EQ(account['account'], entry['account'], get_linenumber())
+        ASSERT_EQ(account['privatekey'], entry['privatekey'], get_linenumber())
+        ASSERT_EQ(account['mnemonic'], entry['mnemonic'], get_linenumber())
 
     print 'TEST: create the same wallet'
     ASSERT_EQ("false", requests.post(
             url = 'http://localhost:8888/createwallet',
             data = json.dumps({'mnemonic' : accounts[0]['mnemonic']}),
             headers={'Content-Type': 'application/json'}
-            ).json()['success'])
+            ).json()['success'], get_linenumber())
 
 
     print 'TEST: register client accounts to the server'
@@ -137,10 +144,10 @@ if __name__ == "__main__":
         endpoint='http://localhost:8888/relay/v1/' + account['account']
         r = requests.get(url = endpoint)
         if not r:
-            FAIL('GET failed for account ' + str(account['id']))
+            FAIL('GET failed for account ' + str(account['id']), get_linenumber())
         d = r.json()
-        ASSERT_EQ('User created', d['message'])
-        ASSERT_EQ(account['account'], d['user'])
+        ASSERT_EQ('User created', d['message'], get_linenumber())
+        ASSERT_EQ(account['account'], d['user'], get_linenumber())
 
     print 'TEST: submit user actions'
     #http://localhost:8888/relay/v1/0x82973f0ceed111576c508bcd999c92c9e83e49f0/action?type=sell&value=player
@@ -152,14 +159,14 @@ if __name__ == "__main__":
                 }
         r = requests.get(url = endpoint, params = payload)
         if not r:
-            FAIL('GET failed for account ' + str(account['id']))
+            FAIL('GET failed for account ' + str(account['id']), get_linenumber())
         d = r.json()
-        ASSERT_EQ(True, d['success'])
-        ASSERT_EQ(True, d['verified'])
-        ASSERT_EQ(account['account'], d['useraddr'])
+        ASSERT_EQ(True, d['success'], get_linenumber())
+        ASSERT_EQ(True, d['verified'], get_linenumber())
+        ASSERT_EQ(account['account'], d['useraddr'], get_linenumber())
         action = d['action']
-        ASSERT_EQ(payload['type'], action['Type'])
-        ASSERT_EQ(payload['value'], action['Value'])
+        ASSERT_EQ(payload['type'], action['Type'], get_linenumber())
+        ASSERT_EQ(payload['value'], action['Value'], get_linenumber())
 
     print "SUCCESS"
 
