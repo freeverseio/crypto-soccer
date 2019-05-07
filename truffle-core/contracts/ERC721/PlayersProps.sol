@@ -19,7 +19,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return name of existing player
      */
     function getName(uint256 playerId) external view returns(string memory) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return _playerProps[playerId].name;
     }
 
@@ -27,7 +27,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return genome of existing player
      */
     function getGenome(uint256 playerId) public view returns (uint88){
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return _playerProps[playerId].genome;
     }
 
@@ -35,7 +35,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return birth of existing player
      */
     function getBirth(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome);
     }
     
@@ -43,7 +43,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return defence of existing player
      */
     function getDefence(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
     }
     
@@ -51,7 +51,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return speed of existing player
      */
     function getSpeed(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
     }
     
@@ -59,7 +59,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return pass of existing player
      */
     function getPass(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
     }
     
@@ -67,7 +67,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return shoot of existing player
      */
     function getShoot(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
     }
     
@@ -75,7 +75,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @return endurance of existing player
      */
     function getEndurance(uint256 playerId) external view returns (uint16) {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 5);
     }
 
@@ -83,7 +83,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      * @dev sets name of existing player
      */
     function _setName(uint256 playerId, string memory name) internal {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         _playerProps[playerId].name = name;
     }
 
@@ -96,7 +96,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         uint16 shoot,
         uint16 endurance
     ) internal {
-        require(_exists(playerId));
+        require(_exists(playerId), "playerId not found");
         uint88 genome;
         genome |= birth;
         genome |= uint88(defence) << 14;
