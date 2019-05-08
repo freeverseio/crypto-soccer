@@ -8,6 +8,8 @@ import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
  * @dev Players minting logic
  */
 contract PlayersMintable is PlayersProps, MinterRole {
+    mapping(bytes32 => uint256) private _nameHashToId;
+
     /**
      * @dev Function to mint players
      * @param to The address that will receive the minted players.
@@ -15,7 +17,10 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @return A boolean that indicates if the operation was successful.
      */
     function mint(address to, string memory name) public onlyMinter {
-        uint256 playerId = _computeId(name);
+        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        require(_nameHashToId[playerNameHash] == 0, "player already exists");
+        uint256 playerId = totalSupply() + 1;
+        _nameHashToId[playerNameHash] = playerId;
         uint16 birth = uint16(block.number);  // TODO: reformulate
         uint16[5] memory skills = _computeSkills(playerId);
         _mint(to, playerId);
@@ -44,15 +49,10 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @return player ID from player name
      */
     function getPlayerId(string memory name) public view returns(uint256) {
-        uint256 id = _computeId(name);
-        require(_exists(id), "playerId not found");
-        return id;
-    }
-
-    function _computeId(string memory name) internal pure returns (uint256) {
         bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 id = uint256(playerNameHash);
-        return id;
+        uint256 id = _nameHashToId[playerNameHash];
+        require(id != 0, "unexistent player");
+        return _nameHashToId[playerNameHash];
     }
 
     /**
