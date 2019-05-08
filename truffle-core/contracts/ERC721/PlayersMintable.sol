@@ -28,7 +28,16 @@ contract PlayersMintable is PlayersProps, MinterRole {
             skills[2],
             skills[3],
             skills[4]
-            );
+        );
+        _setCurrentHistory(
+            playerId, 
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        );    
     }
 
     /**

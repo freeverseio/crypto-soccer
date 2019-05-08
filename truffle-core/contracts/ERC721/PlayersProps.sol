@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 contract PlayersProps is ERC721, ERC721Enumerable {
     struct Props {
         string name;
-        uint88 genome;
+        uint256 genome;
     }
 
     // Mapping from player ID to Props
@@ -26,7 +26,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
     /**
      * @return genome of existing player
      */
-    function getGenome(uint256 playerId) public view returns (uint88){
+    function getGenome(uint256 playerId) public view returns (uint256){
         require(_exists(playerId), "playerId not found");
         return _playerProps[playerId].genome;
     }
@@ -87,6 +87,21 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         _playerProps[playerId].name = name;
     }
 
+    /**
+     * @dev encoding:
+     * 5x14bits 
+     * skills                  = 5x14 bits
+     * monthOfBirthInUnixTime  = 14 bits
+     * playerIdx               = 28 bits
+     * currentTeamIdx          = 28 bits
+     * currentShirtNum         =  4 bits
+     * prevLeagueIdx           = 25 bits
+     * prevTeamPosInLeague     =  8 bits
+     * prevShirtNumInLeague    =  4 bits
+     * lastSaleBlocknum        = 35 bits 
+     * available               = 40 bits
+     */
+
     function _setGenome(
         uint256 playerId,
         uint16 birth,
@@ -97,13 +112,47 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         uint16 endurance
     ) internal {
         require(_exists(playerId), "playerId not found");
-        uint88 genome;
-        genome |= birth;
-        genome |= uint88(defence) << 14;
-        genome |= uint88(speed) << 14 * 2;
-        genome |= uint88(pass) << 14 * 3;
-        genome |= uint88(shoot) << 14 * 4;
-        genome |= uint88(endurance) << 14 * 5;
+        require(defence < 2**14, "defence out of bound");
+        require(speed < 2**14, "defence out of bound");
+        require(pass < 2**14, "defence out of bound");
+        require(shoot < 2**14, "defence out of bound");
+        require(endurance < 2**14, "defence out of bound");
+        require(birth < 2**14, "birth out of bound");
+        require(playerId > 0 && playerId < 2**28, "playerId out of bound");
+        uint256 genome = birth;
+        genome |= uint256(defence) << 14;
+        genome |= uint256(speed) << 14 * 2;
+        genome |= uint256(pass) << 14 * 3;
+        genome |= uint256(shoot) << 14 * 4;
+        genome |= uint256(endurance) << 14 * 5;
+        _playerProps[playerId].genome = genome;
+    }
+
+
+    function _setCurrentHistory(
+        uint256 playerId,
+        uint32 currentTeamId,
+        uint8 currentShirtNum,
+        uint32 prevLeagueId,
+        uint8 prevTeamPosInLeague,
+        uint8 prevShirtNumInLeague,
+        uint40 lastSaleBlock
+    ) internal {
+        require(_exists(playerId), "playerId not found");
+        require(playerId > 0 && playerId < 2**28, "playerId out of bound");
+        require(currentTeamId < 2**28, "currentTeamIdx out of bound");
+        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
+        require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
+        require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
+        require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
+        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
+        uint256 genome = _playerProps[playerId].genome;
+        genome |= uint256(currentTeamId) << 14 * 5 + 28;
+        genome |= uint256(currentShirtNum) << 14 * 5 + 28 + 4;
+        genome |= uint256(prevLeagueId) << 14 * 5 + 28 + 25;
+        genome |= uint256(prevTeamPosInLeague) << 14 * 5 + 28 + 25 + 8;
+        genome |= uint256(prevShirtNumInLeague) << 14 * 5 + 28 + 25 + 8 + 4;
+        genome |= uint256(lastSaleBlock) << 14 * 5 + 28 + 25 + 8 + 4 + 35;
         _playerProps[playerId].genome = genome;
     }
 }

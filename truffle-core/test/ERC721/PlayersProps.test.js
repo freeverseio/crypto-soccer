@@ -42,9 +42,19 @@ contract('PlayersProps', (accounts) => {
         const pass = 0x03;
         const shoot = 0x04;
         const endurance = 0x05;
-        await contract.setGenome(id, birth, defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const currentTeamId = 0x01;
+        const currentShirtNum = 0x01;
+        const prevLeagueId = 0x01;
+        const prevTeamPosInLeague = 0x01;
+        const prevShirtNumInLeague = 0x01;
+        const lastSaleBlock = 0x01;
+        await contract.setGenome(
+            id, birth, defence, speed, pass, shoot, endurance,
+            currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
+        ).should.be.fulfilled;
         const genome = await contract.getGenome(id).should.be.fulfilled;
-        genome.toString(16).should.be.equal('14004000c002000400c');
+//        genome.toString(16).should.be.equal('14004000c002000400c');
+        genome.toString(16).should.be.equal('40000000088080000440000014004000c002000400c');
     });
 
     it('get infos of unexistent player', async () => {
@@ -67,7 +77,16 @@ contract('PlayersProps', (accounts) => {
         const pass = 0x03;
         const shoot = 0x04;
         const endurance = 0x05;
-        await contract.setGenome(id, birth, defence, speed, pass, shoot, endurance).should.be.fulfilled;
+        const currentTeamId = 0x01;
+        const currentShirtNum = 0x01;
+        const prevLeagueId = 0x01;
+        const prevTeamPosInLeague = 0x01;
+        const prevShirtNumInLeague = 0x01;
+        const lastSaleBlock = 0x01;
+        await contract.setGenome(
+            id, birth, defence, speed, pass, shoot, endurance,
+            currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
+        ).should.be.fulfilled;
         let result = await contract.getBirth(id).should.be.fulfilled;
         result.toNumber().should.be.equal(birth);
         result = await contract.getDefence(id).should.be.fulfilled;

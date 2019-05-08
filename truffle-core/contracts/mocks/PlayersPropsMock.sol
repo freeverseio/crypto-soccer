@@ -22,8 +22,15 @@ contract PlayersPropsMock is PlayersProps {
         uint16 speed,
         uint16 pass,
         uint16 shoot,
-        uint16 endurance
+        uint16 endurance,
+        uint32 currentTeamId,
+        uint8 currentShirtNum,
+        uint32 prevLeagueId,
+        uint8 prevTeamPosInLeague,
+        uint8 prevShirtNumInLeague,
+        uint40 lastSaleBlock
     ) public {
         _setGenome(playerId, birth, defence, speed, pass, shoot, endurance);
+        _setCurrentHistory(playerId, currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock);
     }
 }
