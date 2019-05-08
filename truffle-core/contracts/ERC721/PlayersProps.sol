@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721Enumerable.sol";
 contract PlayersProps is ERC721, ERC721Enumerable {
     struct Props {
         string name;
-        uint256 genome;
+        uint256 playerState;
     }
 
     // Mapping from player ID to Props
@@ -24,11 +24,11 @@ contract PlayersProps is ERC721, ERC721Enumerable {
     }
 
     /**
-     * @return genome of existing player
+     * @return playerState of existing player
      */
-    function getGenome(uint256 playerId) public view returns (uint256){
+    function getPlayerState(uint256 playerId) public view returns (uint256){
         require(_exists(playerId), "playerId not found");
-        return _playerProps[playerId].genome;
+        return _playerProps[playerId].playerState;
     }
 
     /**
@@ -36,7 +36,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getBirth(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome);
+        return 0x3fff & uint16(_playerProps[playerId].playerState);
     }
     
     /**
@@ -44,7 +44,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getDefence(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome >> 14);
+        return 0x3fff & uint16(_playerProps[playerId].playerState >> 14);
     }
     
     /**
@@ -52,7 +52,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getSpeed(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 2);
+        return 0x3fff & uint16(_playerProps[playerId].playerState >> 14 * 2);
     }
     
     /**
@@ -60,7 +60,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getPass(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 3);
+        return 0x3fff & uint16(_playerProps[playerId].playerState >> 14 * 3);
     }
     
     /**
@@ -68,7 +68,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getShoot(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 4);
+        return 0x3fff & uint16(_playerProps[playerId].playerState >> 14 * 4);
     }
     
     /**
@@ -76,7 +76,7 @@ contract PlayersProps is ERC721, ERC721Enumerable {
      */
     function getEndurance(uint256 playerId) external view returns (uint16) {
         require(_exists(playerId), "playerId not found");
-        return 0x3fff & uint16(_playerProps[playerId].genome >> 14 * 5);
+        return 0x3fff & uint16(_playerProps[playerId].playerState >> 14 * 5);
     }
 
     /**
@@ -119,13 +119,13 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         require(endurance < 2**14, "defence out of bound");
         require(birth < 2**14, "birth out of bound");
         require(playerId > 0 && playerId < 2**28, "playerId out of bound");
-        uint256 genome = birth;
-        genome |= uint256(defence) << 14;
-        genome |= uint256(speed) << 14 * 2;
-        genome |= uint256(pass) << 14 * 3;
-        genome |= uint256(shoot) << 14 * 4;
-        genome |= uint256(endurance) << 14 * 5;
-        _playerProps[playerId].genome = genome;
+        uint256 playerState = birth;
+        playerState |= uint256(defence) << 14;
+        playerState |= uint256(speed) << 14 * 2;
+        playerState |= uint256(pass) << 14 * 3;
+        playerState |= uint256(shoot) << 14 * 4;
+        playerState |= uint256(endurance) << 14 * 5;
+        _playerProps[playerId].playerState = playerState;
     }
 
 
@@ -146,13 +146,13 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
         require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
         require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
-        uint256 genome = _playerProps[playerId].genome;
-        genome |= uint256(currentTeamId) << 14 * 5 + 28;
-        genome |= uint256(currentShirtNum) << 14 * 5 + 28 + 4;
-        genome |= uint256(prevLeagueId) << 14 * 5 + 28 + 25;
-        genome |= uint256(prevTeamPosInLeague) << 14 * 5 + 28 + 25 + 8;
-        genome |= uint256(prevShirtNumInLeague) << 14 * 5 + 28 + 25 + 8 + 4;
-        genome |= uint256(lastSaleBlock) << 14 * 5 + 28 + 25 + 8 + 4 + 35;
-        _playerProps[playerId].genome = genome;
+        uint256 playerState = _playerProps[playerId].playerState;
+        playerState |= uint256(currentTeamId) << 14 * 5 + 28;
+        playerState |= uint256(currentShirtNum) << 14 * 5 + 28 + 4;
+        playerState |= uint256(prevLeagueId) << 14 * 5 + 28 + 25;
+        playerState |= uint256(prevTeamPosInLeague) << 14 * 5 + 28 + 25 + 8;
+        playerState |= uint256(prevShirtNumInLeague) << 14 * 5 + 28 + 25 + 8 + 4;
+        playerState |= uint256(lastSaleBlock) << 14 * 5 + 28 + 25 + 8 + 4 + 35;
+        _playerProps[playerId].playerState = playerState;
     }
 }

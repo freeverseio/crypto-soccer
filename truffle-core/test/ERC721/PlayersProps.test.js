@@ -29,7 +29,7 @@ contract('PlayersProps', (accounts) => {
     it('default genome', async () => {
         const id = 1;
         await contract.mint(accounts[0], id).should.be.fulfilled;
-        const genome = await contract.getGenome(id).should.be.fulfilled;
+        const genome = await contract.getPlayerState(id).should.be.fulfilled;
         genome.toString(16).should.be.equal('0');
     });
 
@@ -52,14 +52,14 @@ contract('PlayersProps', (accounts) => {
             id, birth, defence, speed, pass, shoot, endurance,
             currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
         ).should.be.fulfilled;
-        const genome = await contract.getGenome(id).should.be.fulfilled;
+        const genome = await contract.getPlayerState(id).should.be.fulfilled;
 //        genome.toString(16).should.be.equal('14004000c002000400c');
         genome.toString(16).should.be.equal('40000000088080000440000014004000c002000400c');
     });
 
     it('get infos of unexistent player', async () => {
         const id = 1;
-        await contract.getGenome(id).should.be.rejected;
+        await contract.getPlayerState(id).should.be.rejected;
         await contract.getBirth(id).should.be.rejected;
         await contract.getDefence(id).should.be.rejected;
         await contract.getSpeed(id).should.be.rejected;
