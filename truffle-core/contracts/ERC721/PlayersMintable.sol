@@ -55,12 +55,6 @@ contract PlayersMintable is PlayersProps, MinterRole {
         return _nameHashToId[playerNameHash];
     }
 
-    function _computeId(string memory name) internal pure returns (uint256) {
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
-        uint256 id = uint256(playerNameHash);
-        return id;
-    }
-
     /**
      * @dev Compute the pseudorandom skills, sum of the skills is 250
      * @param seed to generate the skills

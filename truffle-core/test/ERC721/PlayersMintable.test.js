@@ -28,11 +28,6 @@ contract('PlayersMintable', (accounts) => {
         name.should.be.equal("player");
     });
 
-    it('compute id from name', async () => {
-        const id = await contract.computeId("player").should.be.fulfilled;
-        id.toString().should.be.equal('22809286798487902832201615439579618037268015162185435671200675544629215329481');
-    });
-
     it('get player id of existing player', async () => {
         await contract.mint(accounts[0], "player").should.be.fulfilled;
         await contract.getPlayerId("player").should.be.fulfilled;
