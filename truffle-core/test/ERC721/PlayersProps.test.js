@@ -48,7 +48,7 @@ contract('PlayersProps', (accounts) => {
         const prevTeamPosInLeague = 0x01;
         const prevShirtNumInLeague = 0x01;
         const lastSaleBlock = 0x01;
-        await contract.setGenome(
+        await contract.setPlayerState(
             id, birth, defence, speed, pass, shoot, endurance,
             currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
         ).should.be.fulfilled;
@@ -83,7 +83,7 @@ contract('PlayersProps', (accounts) => {
         const prevTeamPosInLeague = 0x01;
         const prevShirtNumInLeague = 0x01;
         const lastSaleBlock = 0x01;
-        await contract.setGenome(
+        await contract.setPlayerState(
             id, birth, defence, speed, pass, shoot, endurance,
             currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
         ).should.be.fulfilled;

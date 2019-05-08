@@ -15,7 +15,7 @@ contract PlayersPropsMock is PlayersProps {
         _setName(playerId, name);
     }
 
-    function setGenome(
+    function setPlayerState(
         uint256 playerId,
         uint16 birth,
         uint16 defence,

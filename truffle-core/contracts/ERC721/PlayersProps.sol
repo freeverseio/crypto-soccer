@@ -118,7 +118,6 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         require(shoot < 2**14, "defence out of bound");
         require(endurance < 2**14, "defence out of bound");
         require(birth < 2**14, "birth out of bound");
-        require(playerId > 0 && playerId < 2**28, "playerId out of bound");
         uint256 playerState = birth;
         playerState |= uint256(defence) << 14;
         playerState |= uint256(speed) << 14 * 2;
@@ -139,7 +138,6 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         uint40 lastSaleBlock
     ) internal {
         require(_exists(playerId), "playerId not found");
-        require(playerId > 0 && playerId < 2**28, "playerId out of bound");
         require(currentTeamId < 2**28, "currentTeamIdx out of bound");
         require(currentShirtNum < 2**4, "currentShirtNum out of bound");
         require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
