@@ -28,7 +28,16 @@ contract PlayersMintable is PlayersProps, MinterRole {
             skills[2],
             skills[3],
             skills[4]
-            );
+        );
+        _setCurrentHistory(
+            playerId, 
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        );    
     }
 
     /**
@@ -36,7 +45,7 @@ contract PlayersMintable is PlayersProps, MinterRole {
      */
     function getPlayerId(string memory name) public view returns(uint256) {
         uint256 id = _computeId(name);
-        require(_exists(id));
+        require(_exists(id), "playerId not found");
         return id;
     }
 
