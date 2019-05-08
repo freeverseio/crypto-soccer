@@ -52,9 +52,8 @@ contract('PlayersProps', (accounts) => {
             id, birth, defence, speed, pass, shoot, endurance,
             currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
         ).should.be.fulfilled;
-        const genome = await contract.getPlayerState(id).should.be.fulfilled;
-//        genome.toString(16).should.be.equal('14004000c002000400c');
-        genome.toString(16).should.be.equal('40000000088080000440000014004000c002000400c');
+        const playerState = await contract.getPlayerState(id).should.be.fulfilled;
+        playerState.toString(16).should.be.equal('40000000088080000440000014004000c002000400c');
     });
 
     it('get infos of unexistent player', async () => {

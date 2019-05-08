@@ -89,17 +89,9 @@ contract PlayersProps is ERC721, ERC721Enumerable {
 
     /**
      * @dev encoding:
-     * 5x14bits 
      * skills                  = 5x14 bits
      * monthOfBirthInUnixTime  = 14 bits
-     * playerIdx               = 28 bits
-     * currentTeamIdx          = 28 bits
-     * currentShirtNum         =  4 bits
-     * prevLeagueIdx           = 25 bits
-     * prevTeamPosInLeague     =  8 bits
-     * prevShirtNumInLeague    =  4 bits
-     * lastSaleBlocknum        = 35 bits 
-     * available               = 40 bits
+     * playerIdx               = 28 bits (TODO: add)
      */
 
     function _setGenome(
@@ -128,6 +120,18 @@ contract PlayersProps is ERC721, ERC721Enumerable {
     }
 
 
+    /**
+     * @dev encoding:
+     * the genome chunk is already 6x14 bits
+     * currentTeamIdx          = 28 bits
+     * currentShirtNum         =  4 bits
+     * prevLeagueIdx           = 25 bits
+     * prevTeamPosInLeague     =  8 bits
+     * prevShirtNumInLeague    =  4 bits
+     * lastSaleBlocknum        = 35 bits 
+     * available               = 40 bits
+     */
+
     function _setCurrentHistory(
         uint256 playerId,
         uint32 currentTeamId,
@@ -145,12 +149,12 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
         require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
         uint256 playerState = _playerProps[playerId].playerState;
-        playerState |= uint256(currentTeamId) << 14 * 5 + 28;
-        playerState |= uint256(currentShirtNum) << 14 * 5 + 28 + 4;
-        playerState |= uint256(prevLeagueId) << 14 * 5 + 28 + 25;
-        playerState |= uint256(prevTeamPosInLeague) << 14 * 5 + 28 + 25 + 8;
-        playerState |= uint256(prevShirtNumInLeague) << 14 * 5 + 28 + 25 + 8 + 4;
-        playerState |= uint256(lastSaleBlock) << 14 * 5 + 28 + 25 + 8 + 4 + 35;
+        playerState |= uint256(currentTeamId) << 14 * 6 + 28;
+        playerState |= uint256(currentShirtNum) << 14 * 6 + 28 + 4;
+        playerState |= uint256(prevLeagueId) << 14 * 6 + 28 + 25;
+        playerState |= uint256(prevTeamPosInLeague) << 14 * 6 + 28 + 25 + 8;
+        playerState |= uint256(prevShirtNumInLeague) << 14 * 6 + 28 + 25 + 8 + 4;
+        playerState |= uint256(lastSaleBlock) << 14 * 6 + 28 + 25 + 8 + 4 + 35;
         _playerProps[playerId].playerState = playerState;
     }
 }
