@@ -53,7 +53,7 @@ contract('PlayersProps', (accounts) => {
             currentTeamId, currentShirtNum, prevLeagueId, prevTeamPosInLeague, prevShirtNumInLeague, lastSaleBlock 
         ).should.be.fulfilled;
         const playerState = await contract.getPlayerState(id).should.be.fulfilled;
-        playerState.toString(16).should.be.equal('40000000088080000440000014004000c002000400c');
+        playerState.toString(16).should.be.equal('100000000220200001100000000014004000c002000400c');
     });
 
     it('get infos of unexistent player', async () => {
