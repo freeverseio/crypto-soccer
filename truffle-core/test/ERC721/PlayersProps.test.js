@@ -99,4 +99,16 @@ contract('PlayersProps', (accounts) => {
         result = await contract.getEndurance(id).should.be.fulfilled;
         result.toNumber().should.be.equal(endurance);
     });
+
+    it('create a player with id 0', async () => {
+        await contract.mint(accounts[0], 0).should.be.rejected;
+    });
+
+    it('create a player with id 2^28-1', async () => {
+        await contract.mint(accounts[0], Math.pow(2,28)-1).should.be.fulfilled;
+    });
+
+    it('create a player with id 2^28', async () => {
+        await contract.mint(accounts[0], Math.pow(2,28)).should.be.rejected;
+    });
 });

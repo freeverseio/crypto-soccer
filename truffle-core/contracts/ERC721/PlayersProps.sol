@@ -157,4 +157,10 @@ contract PlayersProps is ERC721, ERC721Enumerable {
         playerState |= uint256(lastSaleBlock) << 14 * 6 + 28 + 25 + 8 + 4 + 35;
         _playerProps[playerId].playerState = playerState;
     }
+
+    function _mint(address to, uint256 playerId) internal {
+        require(playerId != 0, "id 0 not allowed");
+        require(playerId < 2**28, "playerId out of bound");
+        super._mint(to, playerId);
+    }
 }
