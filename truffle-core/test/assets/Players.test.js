@@ -21,7 +21,8 @@ contract('Players', (accounts) => {
 
     it('get player team of existing player', async () => {
         await players.addTeam("Barca").should.be.fulfilled;
-        await players.getPlayerTeam(1).should.be.fulfilled;
+        let teamId = await players.getPlayerTeam(1).should.be.fulfilled;
+        teamId.toNumber().should.be.equal(1);
         await players.getPlayerTeam(2).should.be.fulfilled;
         return;
         await players.getPlayerTeam(3).should.be.fulfilled;
