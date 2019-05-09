@@ -34,8 +34,4 @@ contract Storage {
         teams.push(Team(name));
         return teams.length - 1;
     }
-
-    // function _getTeamName();
-
-    // function _getPlayersIds();
 }
