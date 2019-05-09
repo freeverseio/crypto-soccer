@@ -13,7 +13,7 @@ contract Storage {
     /// @dev The ID of each team is actually his index in this array.
     Team[] private teams;
 
-    function _countTeams() internal view returns (uint256){
+    function countTeams() external view returns (uint256){
         return teams.length;
     }
 
