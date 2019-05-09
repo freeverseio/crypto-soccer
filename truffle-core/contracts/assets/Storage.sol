@@ -20,7 +20,7 @@ contract Storage {
         teams.push(Team("_"));
     }
 
-    function countTeams() external view returns (uint256){
+    function countTeams() public view returns (uint256){
         return teams.length - 1;
     }
 
