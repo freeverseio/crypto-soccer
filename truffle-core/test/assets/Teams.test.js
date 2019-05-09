@@ -17,8 +17,10 @@ contract('Assets', (accounts) => {
     });
 
     it('create team', async () => {
-        await assets.createTeam(name = "Barca").should.be.fulfilled;
+        const receipt = await assets.createTeam(name = "Barca").should.be.fulfilled;
         const count = await assets.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
+        console.log(receipt)
+        
     });
 })

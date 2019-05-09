@@ -17,8 +17,9 @@ contract Storage {
         return teams.length;
     }
 
-    function _addTeam(string memory name) internal {
+    function _addTeam(string memory name) internal returns (uint256) {
         teams.push(Team(name));
+        return teams.length;
     }
 
     // function _getTeamName();
