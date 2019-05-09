@@ -17,6 +17,10 @@ contract Storage {
         return teams.length;
     }
 
+    function getTeamName(uint256 teamId) external view returns (string memory) {
+        return teams[teamId-1].name;
+    }
+
     function _addTeam(string memory name) internal returns (uint256) {
         teams.push(Team(name));
         return teams.length;
