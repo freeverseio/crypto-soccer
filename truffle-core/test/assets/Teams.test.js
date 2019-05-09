@@ -20,7 +20,9 @@ contract('Assets', (accounts) => {
         const receipt = await assets.createTeam(name = "Barca").should.be.fulfilled;
         const count = await assets.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        console.log(receipt)
-        
+        const teamName = receipt.logs[0].args.teamName;
+        teamName.should.be.equal("Barca");
+        const teamId = receipt.logs[0].args.teamId.toNumber();
+        teamId.should.be.equal(1);
     });
 })
