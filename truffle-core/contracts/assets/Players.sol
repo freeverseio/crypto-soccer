@@ -29,6 +29,8 @@ contract Players is Storage {
         return _computeSkills(seed);
     }
 
+    /// Compute a random age between 16 and 35 
+    /// @return monthOfBirth in monthUnixTime
     function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
         rnd >>= BITS_PER_SKILL*NUM_SKILLS;
         uint16 seed = uint16(rnd & SKILL_MASK);
