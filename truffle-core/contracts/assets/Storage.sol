@@ -4,6 +4,8 @@ pragma solidity ^0.5.0;
  * teamId == 0 is invalid and represents the null team
  */
 contract Storage {
+    uint8 constant PLAYERS_PER_TEAM = 11;
+
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
     /// @dev and select his favourite one.
@@ -18,6 +20,10 @@ contract Storage {
 
     constructor() public {
         teams.push(Team("_"));
+    }
+
+    function getPlayersPerTeam() external view returns (uint8) {
+        return PLAYERS_PER_TEAM;
     }
 
     function countTeams() public view returns (uint256){
