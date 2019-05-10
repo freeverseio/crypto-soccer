@@ -40,4 +40,8 @@ contract Storage {
         teams.push(Team(name));
         return teams.length - 1;
     }
+
+    function _teamExists(uint256 teamId) internal view returns (bool) {
+        return teamId != 0 && teamId < teams.length;
+    }
 }

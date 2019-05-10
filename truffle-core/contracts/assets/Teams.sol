@@ -9,4 +9,8 @@ contract Teams is Storage {
         uint256 teamId = _addTeam(teamName);
         emit TeamCreation(teamName, teamId);
     }
+
+    function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) external view returns (uint256) {
+        require(_teamExists(teamId), "unexistent team");
+    }
 }

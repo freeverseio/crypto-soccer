@@ -35,4 +35,8 @@ contract('Assets', (accounts) => {
     it('get name of unexistent team', async () => {
         await assets.getTeamName(1).should.be.rejected;
     });
+
+    it('get playersId from teamId and pos in team', async () => {
+        await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=0).should.be.rejected;
+    })
 })
