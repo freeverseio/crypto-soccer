@@ -27,6 +27,53 @@ contract('Players', (accounts) => {
             teamId.toNumber().should.be.equal(1);
         }
         await players.getPlayerTeam(nPLayersPerTeam+1).should.be.rejected;
-    })
+    });
+
+    it('sum of computed skills is 250', async () => {
+        let skills = await players.computeSkills(0).should.be.fulfilled;
+        skills[0].toNumber().should.be.equal(50);
+        skills[1].toNumber().should.be.equal(50);
+        skills[2].toNumber().should.be.equal(50);
+        skills[3].toNumber().should.be.equal(50);
+        skills[4].toNumber().should.be.equal(50);
+        let sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+        sum.should.be.equal(250);
+    });
+
+    it('int hash is deterministic', async () => {
+        const rand0 = await players.intHash("Barca0").should.be.fulfilled;
+        const rand1 = await players.intHash("Barca0").should.be.fulfilled;
+        rand0.toString().should.be.equal(rand1.toString());
+        const rand2 = await players.intHash("Barca1").should.be.fulfilled;
+        rand0.toString().should.be.not.equal(rand2.toString());
+    });
+
+    // it('sum of computed skills is 250', async () => {
+    //     for (let i = 0; i < 10; i++) {
+    //         const skills = await players.computeSkills(Math.floor(Math.random() * 1000)).should.be.fulfilled;
+    //         const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+    //         sum.should.be.equal(250);
+    //     }
+    // });
+
+
+    // it('minted player skills sum is 250', async () => {
+    //     await contract.mint(accounts[0], "player").should.be.fulfilled;
+    //     await 
+    //     const id = await contract.getPlayerId("player").should.be.fulfilled;
+    //     const defence = await contract.getDefence(id).should.be.fulfilled;
+    //     const speed = await contract.getSpeed(id).should.be.fulfilled;
+    //     const pass = await contract.getPass(id).should.be.fulfilled;
+    //     const shoot = await contract.getShoot(id).should.be.fulfilled;
+    //     const endurance = await contract.getEndurance(id).should.be.fulfilled;
+    //     const sum = defence.toNumber() + speed.toNumber() + pass.toNumber() + shoot.toNumber() + endurance.toNumber();
+    //     sum.should.be.equal(250);
+    // });
+
+    
+
+    // it('get skills of player', async () => {
+    //     await players
+    // })
 });
  

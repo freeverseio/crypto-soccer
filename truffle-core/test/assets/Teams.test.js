@@ -44,5 +44,5 @@ contract('Assets', (accounts) => {
         playerId.toNumber().should.be.equal(1);
         playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=10).should.be.fulfilled;
         playerId.toNumber().should.be.equal(11);
-    })
+    });
 })
