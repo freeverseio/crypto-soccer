@@ -1,5 +1,7 @@
+const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
     .should();
 
 const Players = artifacts.require('PlayersMock');
@@ -43,9 +45,9 @@ contract('Players', (accounts) => {
     it('int hash is deterministic', async () => {
         const rand0 = await players.intHash("Barca0").should.be.fulfilled;
         const rand1 = await players.intHash("Barca0").should.be.fulfilled;
-        rand0.toString().should.be.equal(rand1.toString());
+        rand0.should.be.bignumber.equal(rand1);
         const rand2 = await players.intHash("Barca1").should.be.fulfilled;
-        rand0.toString().should.be.not.equal(rand2.toString());
+        rand0.should.be.bignumber.not.equal(rand2);
     });
 
     // it('sum of computed skills is 250', async () => {
