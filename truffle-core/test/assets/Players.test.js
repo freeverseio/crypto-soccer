@@ -81,7 +81,7 @@ contract('Players', (accounts) => {
     it('compute player birth', async () => {
         await players.addTeam("Barca").should.be.fulfilled;
         const birth = await players.computeBirth(0).should.be.fulfilled;
-        birth.should.be.bignumber.equal('10867');
+        birth.should.be.bignumber.equal('406');
     });
 
     // it('minted player skills sum is 250', async () => {

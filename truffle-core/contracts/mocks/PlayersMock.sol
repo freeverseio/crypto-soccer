@@ -16,7 +16,7 @@ contract PlayersMock is Players {
     }
 
     function computeBirth(uint256 rnd) public pure returns (uint16) {
-        uint256 currentTime = 1557497494798;
+        uint256 currentTime = 1557495456;
         return _computeBirth(rnd, currentTime);
     }
 }
