@@ -48,6 +48,7 @@ contract('Players', (accounts) => {
         rand0.should.be.bignumber.equal(rand1);
         const rand2 = await players.intHash("Barca1").should.be.fulfilled;
         rand0.should.be.bignumber.not.equal(rand2);
+        rand0.should.be.bignumber.equal('64856073772839990506814373782217928521534618466099710722049665631602958392435');
     });
 
     // it('sum of computed skills is 250', async () => {
