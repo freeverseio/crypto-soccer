@@ -67,7 +67,7 @@ contract('Players', (accounts) => {
     it('get existing player skills', async () => {
         const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
         await players.addTeam("Barca").should.be.fulfilled;
-        const skills = await players.getPlayerSkillsAndBirth(playerId = 10).should.be.fulfilled;
+        const skills = await players.getPlayerSkills(playerId = 10).should.be.fulfilled;
         skills.length.should.be.equal(numSkills.toNumber());
         skills[0].should.be.bignumber.equal('48');
         skills[1].should.be.bignumber.equal('72');

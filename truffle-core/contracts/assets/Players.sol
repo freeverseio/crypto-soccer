@@ -21,7 +21,7 @@ contract Players is Storage {
         return playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
     }
 
-    function getPlayerSkillsAndBirth(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
+    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
         uint256 teamId = getPlayerTeam(playerId);
         uint256 posInTeam = getPlayerPosInTeam(playerId);
         string memory teamName = getTeamName(teamId);
