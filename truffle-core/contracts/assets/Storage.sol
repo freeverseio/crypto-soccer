@@ -13,9 +13,9 @@ contract Storage {
     struct Team {
         string name;
         uint256 currentLeagueId;
-        uint256 teamPosInCurrentLeague;
+        uint8 posInCurrentLeague;
         uint256 prevLeagueId;
-        uint256 teamPosInPrevLeague;
+        uint8 posInPrevLeague;
     }
 
     /// @dev An array containing the Team struct for all teams in existence.
@@ -38,6 +38,36 @@ contract Storage {
         require(_teamExists(teamId), "invalid team id");
         return teams[teamId].name;
     }
+
+    function getTeamCurrentHistory(uint256 teamId) external view returns (
+        uint256 currentLeagueId, 
+        uint8 posInCurrentLeague,
+        uint256 prevLeagueId,
+        uint8 posInPrevLeague
+        ) 
+    {
+        require(_teamExists(teamId), "invalid team id");
+        return (
+            teams[teamId].currentLeagueId,
+            teams[teamId].posInCurrentLeague,
+            teams[teamId].prevLeagueId,
+            teams[teamId].posInPrevLeague);
+    }
+
+    function _updateTeamCurrentHistory(
+        uint256 teamId,
+        uint256 currentLeagueId, 
+        uint8 posInCurrentLeague
+    )
+    internal
+    {
+        require(_teamExists(teamId), "invalid team id");
+        teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
+        teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
+        teams[teamId].currentLeagueId = currentLeagueId;
+        teams[teamId].posInCurrentLeague = posInCurrentLeague;
+    }
+
 
     function _addTeam(string memory name) internal returns (uint256) {
         teams.push(Team(name, 0, 0, 0, 0));

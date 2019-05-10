@@ -1,7 +1,9 @@
+const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
     .should();
-
+    
 const Assets = artifacts.require('Teams');
 
 contract('Assets', (accounts) => {
@@ -45,4 +47,15 @@ contract('Assets', (accounts) => {
         playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=10).should.be.fulfilled;
         playerId.toNumber().should.be.equal(11);
     });
+
+    it('sign team to league', async () => {
+        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
+        await assets.createTeam(name = "Barca").should.be.fulfilled;
+        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.fulfilled;
+        const currentHistory = await assets.getTeamCurrentHistory(1).should.be.fulfilled;
+        currentHistory.currentLeagueId.should.be.bignumber.equal('1');
+        currentHistory.posInCurrentLeague.should.be.bignumber.equal('3');
+        currentHistory.prevLeagueId.should.be.bignumber.equal('0');
+        currentHistory.posInPrevLeague.should.be.bignumber.equal('0');
+    })
 })

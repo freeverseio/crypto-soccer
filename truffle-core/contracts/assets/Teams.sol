@@ -15,4 +15,9 @@ contract Teams is Storage {
         require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
         return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
     }
+
+    function signToLeague(uint256 teamId, uint256 leagueId, uint8 posInLeague) public {
+        require(_teamExists(teamId), "unexistent team");
+        _updateTeamCurrentHistory(teamId, leagueId, posInLeague);
+    }
 }
