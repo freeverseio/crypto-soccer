@@ -24,7 +24,6 @@ contract('Players', (accounts) => {
         let teamId = await players.getPlayerTeam(1).should.be.fulfilled;
         teamId.toNumber().should.be.equal(1);
         await players.getPlayerTeam(2).should.be.fulfilled;
-        return;
         await players.getPlayerTeam(3).should.be.fulfilled;
         await players.getPlayerTeam(4).should.be.fulfilled;
         await players.getPlayerTeam(5).should.be.fulfilled;
@@ -33,6 +32,8 @@ contract('Players', (accounts) => {
         await players.getPlayerTeam(8).should.be.fulfilled;
         await players.getPlayerTeam(9).should.be.fulfilled;
         await players.getPlayerTeam(10).should.be.fulfilled;
+        await players.getPlayerTeam(11).should.be.fulfilled;
+        await players.getPlayerTeam(12).should.be.rejected;
     })
 });
  
