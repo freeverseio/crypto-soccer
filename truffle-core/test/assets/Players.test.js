@@ -54,6 +54,29 @@ contract('Players', (accounts) => {
         }
     });
 
+    it('get player pos in team', async () => {
+        const nPLayersPerTeam = await players.getPlayersPerTeam().should.be.fulfilled;
+        await players.addTeam("Barca").should.be.fulfilled;
+        for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
+            const pos = await players.getPlayerPosInTeam(playerId).should.be.fulfilled;
+            pos.toNumber().should.be.equal(playerId - 1);
+        }
+        await players.getPlayerPosInTeam(nPLayersPerTeam+1).should.be.rejected;
+    })
+
+    it('get existing player skills', async () => {
+        const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
+        await players.addTeam("Barca").should.be.fulfilled;
+        const skills = await players.getPlayerSkills(playerId = 10).should.be.fulfilled;
+        skills.length.should.be.equal(numSkills.toNumber());
+        skills[0].should.be.bignumber.equal('48');
+        skills[1].should.be.bignumber.equal('72');
+        skills[2].should.be.bignumber.equal('51');
+        skills[3].should.be.bignumber.equal('42');
+        skills[4].should.be.bignumber.equal('37');
+        const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+        sum.should.be.equal(250);
+    });
 
     // it('minted player skills sum is 250', async () => {
     //     await contract.mint(accounts[0], "player").should.be.fulfilled;
