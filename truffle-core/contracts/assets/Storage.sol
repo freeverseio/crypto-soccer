@@ -4,7 +4,9 @@ pragma solidity ^0.5.0;
  * teamId == 0 is invalid and represents the null team
  */
 contract Storage {
-    uint8 constant PLAYERS_PER_TEAM = 11;
+    uint8 constant PLAYERS_PER_TEAM = 11; // TODO: add public
+
+    mapping(uint256 => uint256) private _playerIdToState;
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -26,6 +28,16 @@ contract Storage {
         teams.push(Team("_", 0, 0, 0, 0));
     }
 
+    function _setPlayerState(uint256 playerId, uint256 state) internal {
+        // TODO: require and checks on existence
+        _playerIdToState[playerId] = state;
+    }
+
+    function getPlayerState(uint256 playerId) public view returns (uint256) {
+        return _playerIdToState[playerId];
+    }
+
+    // TODO: remove
     function getPlayersPerTeam() external view returns (uint8) {
         return PLAYERS_PER_TEAM;
     }
