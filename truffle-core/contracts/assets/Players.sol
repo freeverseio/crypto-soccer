@@ -1,11 +1,17 @@
 pragma solidity ^0.5.0;
 
 import "./Storage.sol";
+import "../state/PlayerState.sol";
 
-contract Players is Storage {
+contract Players is Storage, PlayerState {
     uint8 constant BITS_PER_SKILL = 14;
     uint16 constant SKILL_MASK = 0x3fff; 
     uint8 constant public NUM_SKILLS = 5;
+
+    function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
+        // TODO: check ownership address
+        // TODO: check playerId
+    }
 
     /// this function uses the inverse of the following formula
     /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
