@@ -20,20 +20,13 @@ contract('Players', (accounts) => {
     });
 
     it('get player team of existing player', async () => {
+        const nPLayersPerTeam = await players.getPlayersPerTeam().should.be.fulfilled;
         await players.addTeam("Barca").should.be.fulfilled;
-        let teamId = await players.getPlayerTeam(1).should.be.fulfilled;
-        teamId.toNumber().should.be.equal(1);
-        await players.getPlayerTeam(2).should.be.fulfilled;
-        await players.getPlayerTeam(3).should.be.fulfilled;
-        await players.getPlayerTeam(4).should.be.fulfilled;
-        await players.getPlayerTeam(5).should.be.fulfilled;
-        await players.getPlayerTeam(6).should.be.fulfilled;
-        await players.getPlayerTeam(7).should.be.fulfilled;
-        await players.getPlayerTeam(8).should.be.fulfilled;
-        await players.getPlayerTeam(9).should.be.fulfilled;
-        await players.getPlayerTeam(10).should.be.fulfilled;
-        await players.getPlayerTeam(11).should.be.fulfilled;
-        await players.getPlayerTeam(12).should.be.rejected;
+        for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
+            const teamId = await players.getPlayerTeam(playerId).should.be.fulfilled;
+            teamId.toNumber().should.be.equal(1);
+        }
+        await players.getPlayerTeam(nPLayersPerTeam+1).should.be.rejected;
     })
 });
  
