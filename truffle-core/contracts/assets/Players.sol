@@ -21,12 +21,26 @@ contract Players is Storage {
         return playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
     }
 
-    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
+    function getPlayerSkillsAndBirth(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
         uint256 teamId = getPlayerTeam(playerId);
         uint256 posInTeam = getPlayerPosInTeam(playerId);
         string memory teamName = getTeamName(teamId);
         uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
         return _computeSkills(seed);
+    }
+
+    function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
+        rnd >>= BITS_PER_SKILL*NUM_SKILLS;
+        uint16 seed = uint16(rnd & SKILL_MASK);
+        /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
+        uint16 age = 16 + (seed % 20);
+
+        /// @dev Convert age to monthOfBirthAfterUnixEpoch.
+        /// @dev I leave it this way for clarity, for the time being.
+        uint years2secs = 365 * 24 * 3600;
+        uint month2secs = 30 * 24 * 3600;
+
+        return uint16((currentTime - age * years2secs) / month2secs);
     }
 
      /**

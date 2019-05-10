@@ -7,11 +7,16 @@ contract PlayersMock is Players {
         return _addTeam(name);
     }
 
-    function computeSkills(uint256 seed) public pure returns (uint16[5] memory) {
-        return _computeSkills(seed);
+    function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {
+        return _computeSkills(rnd);
     }
 
     function intHash(string memory arg) public pure returns (uint256) { 
         return _intHash(arg);
+    }
+
+    function computeBirth(uint256 rnd) public pure returns (uint16) {
+        uint256 currentTime = 1557497494798;
+        return _computeBirth(rnd, currentTime);
     }
 }
