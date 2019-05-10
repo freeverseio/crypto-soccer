@@ -38,5 +38,11 @@ contract('Assets', (accounts) => {
 
     it('get playersId from teamId and pos in team', async () => {
         await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=0).should.be.rejected;
+        await assets.createTeam(name = "Barca").should.be.fulfilled;
+        await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=11).should.be.rejected;
+        let playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=0).should.be.fulfilled;
+        playerId.toNumber().should.be.equal(1);
+        playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=10).should.be.fulfilled;
+        playerId.toNumber().should.be.equal(11);
     })
 })

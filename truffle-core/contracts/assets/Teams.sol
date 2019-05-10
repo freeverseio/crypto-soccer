@@ -12,5 +12,7 @@ contract Teams is Storage {
 
     function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) external view returns (uint256) {
         require(_teamExists(teamId), "unexistent team");
+        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
+        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
     }
 }
