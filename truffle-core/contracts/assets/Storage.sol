@@ -12,6 +12,10 @@ contract Storage {
     /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
     struct Team {
         string name;
+        uint256 currentLeagueId;
+        uint256 teamPosInCurrentLeague;
+        uint256 prevLeagueId;
+        uint256 teamPosInPrevLeague;
     }
 
     /// @dev An array containing the Team struct for all teams in existence.
@@ -19,7 +23,7 @@ contract Storage {
     Team[] private teams;
 
     constructor() public {
-        teams.push(Team("_"));
+        teams.push(Team("_", 0, 0, 0, 0));
     }
 
     function getPlayersPerTeam() external view returns (uint8) {
@@ -36,7 +40,7 @@ contract Storage {
     }
 
     function _addTeam(string memory name) internal returns (uint256) {
-        teams.push(Team(name));
+        teams.push(Team(name, 0, 0, 0, 0));
         return teams.length - 1;
     }
 
