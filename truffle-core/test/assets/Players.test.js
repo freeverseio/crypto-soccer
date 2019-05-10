@@ -31,15 +31,9 @@ contract('Players', (accounts) => {
         await players.getPlayerTeam(nPLayersPerTeam+1).should.be.rejected;
     });
 
-    it('sum of computed skills is 250', async () => {
+    it('computed skills with rnd = 0 is 50 each', async () => {
         let skills = await players.computeSkills(0).should.be.fulfilled;
-        skills[0].toNumber().should.be.equal(50);
-        skills[1].toNumber().should.be.equal(50);
-        skills[2].toNumber().should.be.equal(50);
-        skills[3].toNumber().should.be.equal(50);
-        skills[4].toNumber().should.be.equal(50);
-        let sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-        sum.should.be.equal(250);
+        skills.forEach(skill => (skill.toNumber().should.be.equal(50)));
     });
 
     it('int hash is deterministic', async () => {
@@ -51,13 +45,14 @@ contract('Players', (accounts) => {
         rand0.should.be.bignumber.equal('64856073772839990506814373782217928521534618466099710722049665631602958392435');
     });
 
-    // it('sum of computed skills is 250', async () => {
-    //     for (let i = 0; i < 10; i++) {
-    //         const skills = await players.computeSkills(Math.floor(Math.random() * 1000)).should.be.fulfilled;
-    //         const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-    //         sum.should.be.equal(250);
-    //     }
-    // });
+    it('sum of computed skills is 250', async () => {
+        for (let i = 0; i < 10; i++) {
+            const seed = await players.intHash("Barca" + i).should.be.fulfilled;
+            const skills = await players.computeSkills(seed).should.be.fulfilled;
+            const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+            sum.should.be.equal(250);
+        }
+    });
 
 
     // it('minted player skills sum is 250', async () => {
