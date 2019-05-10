@@ -32,7 +32,7 @@ contract Storage {
 
 
     function getTeamName(uint256 teamId) external view returns (string memory) {
-        require(teamId != 0 && teamId < teams.length, "invalid team id");
+        require(_teamExists(teamId), "invalid team id");
         return teams[teamId].name;
     }
 
