@@ -4,7 +4,7 @@ pragma solidity ^0.5.0;
  * teamId == 0 is invalid and represents the null team
  */
 contract Storage {
-    uint8 constant PLAYERS_PER_TEAM = 11; // TODO: add public
+    uint8 constant public PLAYERS_PER_TEAM = 11; 
 
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -35,11 +35,6 @@ contract Storage {
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         return _playerIdToState[playerId];
-    }
-
-    // TODO: remove
-    function getPlayersPerTeam() external view returns (uint8) {
-        return PLAYERS_PER_TEAM;
     }
 
     function countTeams() public view returns (uint256){

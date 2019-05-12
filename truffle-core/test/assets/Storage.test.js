@@ -10,9 +10,4 @@ contract('Storage', (accounts) => {
     beforeEach(async () => {
         instance = await Storage.new().should.be.fulfilled;
     });
-
-    it('number of players per team', async () => {
-        const result = await instance.getPlayersPerTeam().should.be.fulfilled;
-        result.toNumber().should.be.equal(11);
-    })
 });

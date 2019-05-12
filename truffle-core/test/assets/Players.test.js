@@ -22,7 +22,7 @@ contract('Players', (accounts) => {
     });
 
     it('get player team of existing player', async () => {
-        const nPLayersPerTeam = await players.getPlayersPerTeam().should.be.fulfilled;
+        const nPLayersPerTeam = await players.PLAYERS_PER_TEAM().should.be.fulfilled;
         await players.addTeam("Barca").should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
             const teamId = await players.getPlayerTeam(playerId).should.be.fulfilled;
@@ -55,7 +55,7 @@ contract('Players', (accounts) => {
     });
 
     it('get player pos in team', async () => {
-        const nPLayersPerTeam = await players.getPlayersPerTeam().should.be.fulfilled;
+        const nPLayersPerTeam = await players.PLAYERS_PER_TEAM().should.be.fulfilled;
         await players.addTeam("Barca").should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
             const pos = await players.getPlayerPosInTeam(playerId).should.be.fulfilled;
@@ -84,33 +84,14 @@ contract('Players', (accounts) => {
         birth.should.be.bignumber.equal('406');
     });
 
-    it('exchange players team', async () => {
-        await players.addTeam("Barca").should.be.fulfilled;
-        await players.addTeam("Madrid").should.be.fulfilled;
-        await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
-        const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
-        teamPlayer0.should.be.bignumber.equal('2');
-        const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
-        teamPlayer1.should.be.bignumber.equal('1');
-    })
-
-    // it('minted player skills sum is 250', async () => {
-    //     await contract.mint(accounts[0], "player").should.be.fulfilled;
-    //     await 
-    //     const id = await contract.getPlayerId("player").should.be.fulfilled;
-    //     const defence = await contract.getDefence(id).should.be.fulfilled;
-    //     const speed = await contract.getSpeed(id).should.be.fulfilled;
-    //     const pass = await contract.getPass(id).should.be.fulfilled;
-    //     const shoot = await contract.getShoot(id).should.be.fulfilled;
-    //     const endurance = await contract.getEndurance(id).should.be.fulfilled;
-    //     const sum = defence.toNumber() + speed.toNumber() + pass.toNumber() + shoot.toNumber() + endurance.toNumber();
-    //     sum.should.be.equal(250);
-    // });
-
-    
-
-    // it('get skills of player', async () => {
-    //     await players
+    // it('exchange players team', async () => {
+    //     await players.addTeam("Barca").should.be.fulfilled;
+    //     await players.addTeam("Madrid").should.be.fulfilled;
+    //     await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
+    //     const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
+    //     teamPlayer0.should.be.bignumber.equal('2');
+    //     const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
+    //     teamPlayer1.should.be.bignumber.equal('1');
     // })
 });
  
