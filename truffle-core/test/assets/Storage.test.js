@@ -2,7 +2,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Storage = artifacts.require('Storage');
+const Storage = artifacts.require('StorageMock');
 
 contract('Storage', (accounts) => {
     let instance = null;
@@ -22,5 +22,10 @@ contract('Storage', (accounts) => {
 
     it('get name of unexistent team', async () => {
         await instance.getTeamName(1).should.be.rejected;
+    });
+
+    it('existence of null player', async () => {
+        const exists = await instance.playerExists(playerId = 0).should.be.fulfilled;
+        exists.should.be.equal(false);
     });
 });

@@ -84,4 +84,8 @@ contract Storage {
     function _teamExists(uint256 teamId) internal view returns (bool) {
         return teamId != 0 && teamId < teams.length;
     }
+
+    function _playerExists(uint256 playerId) internal view returns (bool) {
+        return playerId != 0;
+    }
 }
