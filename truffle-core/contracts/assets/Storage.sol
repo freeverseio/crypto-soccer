@@ -1,10 +1,10 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 /**
  * teamId == 0 is invalid and represents the null team
  */
 contract Storage {
-    uint8 constant public PLAYERS_PER_TEAM = 11; 
+    uint8 constant public PLAYERS_PER_TEAM = 11;
 
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -48,11 +48,11 @@ contract Storage {
     }
 
     function getTeamCurrentHistory(uint256 teamId) external view returns (
-        uint256 currentLeagueId, 
+        uint256 currentLeagueId,
         uint8 posInCurrentLeague,
         uint256 prevLeagueId,
         uint8 posInPrevLeague
-        ) 
+        )
     {
         require(_teamExists(teamId), "invalid team id");
         return (
@@ -64,7 +64,7 @@ contract Storage {
 
     function _updateTeamCurrentHistory(
         uint256 teamId,
-        uint256 currentLeagueId, 
+        uint256 currentLeagueId,
         uint8 posInCurrentLeague
     )
     internal
@@ -88,7 +88,7 @@ contract Storage {
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
         if (playerId == 0) return false;
-        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM; 
+        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
         return teamId <= countTeams();
     }
 }

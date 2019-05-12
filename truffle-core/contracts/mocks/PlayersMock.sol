@@ -3,9 +3,9 @@ pragma solidity >=0.4.21 <0.6.0;
 import "../assets/Players.sol";
 
 contract PlayersMock is Players {
-    constructor(address playerState) 
-    public 
-    Players(playerState) 
+    constructor(address playerState)
+    public
+    Players(playerState)
     {
     }
 
@@ -17,7 +17,7 @@ contract PlayersMock is Players {
         return _computeSkills(rnd);
     }
 
-    function intHash(string memory arg) public pure returns (uint256) { 
+    function intHash(string memory arg) public pure returns (uint256) {
         return _intHash(arg);
     }
 

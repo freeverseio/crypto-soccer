@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 /// @title the state of a player
 contract PlayerState {
@@ -8,7 +8,7 @@ contract PlayerState {
 
     /**
      * @dev encoding:
-     * 5x14bits 
+     * 5x14bits
      * skills                  = 5x14 bits
      * monthOfBirthInUnixTime  = 14 bits
      * playerIdx               = 28 bits
@@ -17,7 +17,7 @@ contract PlayerState {
      * prevLeagueIdx           = 25 bits
      * prevTeamPosInLeague     =  8 bits
      * prevShirtNumInLeague    =  4 bits
-     * lastSaleBlocknum        = 35 bits 
+     * lastSaleBlocknum        = 35 bits
      * available               = 40 bits
      */
     function playerStateCreate(
@@ -35,10 +35,10 @@ contract PlayerState {
         uint256 prevShirtNumInLeague,
         uint256 lastSaleBlock
     )
-        public 
+        public
         pure
-        returns (uint256 state) 
-    { 
+        returns (uint256 state)
+    {
         require(defence < 2**14, "defence out of bound");
         require(speed < 2**14, "defence out of bound");
         require(pass < 2**14, "defence out of bound");

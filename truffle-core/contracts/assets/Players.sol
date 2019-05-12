@@ -1,11 +1,11 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 import "./Storage.sol";
 import "../state/PlayerState.sol";
 
 contract Players is Storage, PlayerState {
     uint8 constant BITS_PER_SKILL = 14;
-    uint16 constant SKILL_MASK = 0x3fff; 
+    uint16 constant SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
 
     PlayerState private _playerState;
@@ -23,7 +23,7 @@ contract Players is Storage, PlayerState {
     /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
     function getPlayerTeam(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM; 
+        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
         return teamId;
     }
 
@@ -40,7 +40,7 @@ contract Players is Storage, PlayerState {
         return _computeSkills(seed);
     }
 
-    /// Compute a random age between 16 and 35 
+    /// Compute a random age between 16 and 35
     /// @return monthOfBirth in monthUnixTime
     function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
         rnd >>= BITS_PER_SKILL*NUM_SKILLS;
@@ -77,7 +77,7 @@ contract Players is Storage, PlayerState {
 
         /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
         uint16 delta = (250 - excess) / 5;
-        for (uint8 i = 0; i < 5; i++) 
+        for (uint8 i = 0; i < 5; i++)
             skills[i] = skills[i] + delta;
 
         uint16 remainder = (250 - excess) % 5;
