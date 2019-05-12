@@ -5,12 +5,14 @@ require('chai')
     .should();
 
 const Players = artifacts.require('PlayersMock');
+const PlayerStateLib = artifacts.require('PlayerState');
 
 contract('Players', (accounts) => {
     let players = null;
 
     beforeEach(async () => {
-        players = await Players.new().should.be.fulfilled;
+        const playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
+        players = await Players.new(playerStateLib.address).should.be.fulfilled;
     });
 
     it('query null player id', async () => {

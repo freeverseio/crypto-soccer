@@ -8,6 +8,12 @@ contract Players is Storage, PlayerState {
     uint16 constant SKILL_MASK = 0x3fff; 
     uint8 constant public NUM_SKILLS = 5;
 
+    PlayerState private _playerState;
+
+    constructor(address playerState) public {
+        _playerState = PlayerState(playerState);
+    }
+
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
         // TODO: check ownership address
         // TODO: check playerId
