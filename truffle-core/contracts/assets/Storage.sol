@@ -29,6 +29,7 @@ contract Storage {
     }
 
     function _setPlayerState(uint256 playerId, uint256 state) internal {
+        require(_playerExists(playerId), "unexistent player");
         // TODO: require and checks on existence
         _playerIdToState[playerId] = state;
     }
@@ -86,6 +87,8 @@ contract Storage {
     }
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
-        return playerId != 0;
+        if (playerId == 0) return false;
+        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM; 
+        return teamId <= countTeams();
     }
 }

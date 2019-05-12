@@ -28,4 +28,15 @@ contract('Storage', (accounts) => {
         const exists = await instance.playerExists(playerId = 0).should.be.fulfilled;
         exists.should.be.equal(false);
     });
+
+    it('existence of unexistent player', async () => {
+        const exists = await instance.playerExists(playerId = 1).should.be.fulfilled;
+        exists.should.be.equal(false);
+    });
+
+    it('existence of existent player', async () => {
+        await instance.addTeam("Barca").should.be.fulfilled;
+        const exists = await instance.playerExists(playerId = 1).should.be.fulfilled;
+        exists.should.be.equal(true);
+    });
 });
