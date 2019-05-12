@@ -30,11 +30,11 @@ contract Storage {
 
     function _setPlayerState(uint256 playerId, uint256 state) internal {
         require(_playerExists(playerId), "unexistent player");
-        // TODO: require and checks on existence
         _playerIdToState[playerId] = state;
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
+        require(_playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId];
     }
 
