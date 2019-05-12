@@ -13,11 +13,6 @@ contract('Assets', (accounts) => {
         assets = await Assets.new().should.be.fulfilled;
     });
 
-    it('initial number of team', async () => {
-        const count = await assets.countTeams().should.be.fulfilled;
-        count.toNumber().should.be.equal(0);
-    });
-
     it('create team', async () => {
         const receipt = await assets.createTeam(name = "Barca").should.be.fulfilled;
         const count = await assets.countTeams().should.be.fulfilled;
@@ -28,14 +23,6 @@ contract('Assets', (accounts) => {
         teamId.should.be.equal(1);
         teamName = await assets.getTeamName(teamId).should.be.fulfilled;
         teamName.should.be.equal("Barca");
-    });
-
-    it('get name of invalid team', async () => {
-        await assets.getTeamName(0).should.be.rejected;
-    });
-
-    it('get name of unexistent team', async () => {
-        await assets.getTeamName(1).should.be.rejected;
     });
 
     it('get playersId from teamId and pos in team', async () => {
