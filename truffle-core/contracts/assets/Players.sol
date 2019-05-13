@@ -12,7 +12,7 @@ contract Players is Storage {
 
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
         // TODO: check ownership address
-        // TODO: check playerId
+        
     }
 
     function getPlayerPosInTeam(uint256 playerId) public view returns (uint256) {
@@ -21,11 +21,15 @@ contract Players is Storage {
     }
 
     function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
-        uint256 teamId = getPlayerTeam(playerId);
-        uint256 posInTeam = getPlayerPosInTeam(playerId);
-        string memory teamName = getTeamName(teamId);
-        uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
-        return _computeSkills(seed);
+        require(_playerExists(playerId), "unexistent player");
+        if (_isVirtual(playerId)) {
+            uint256 teamId = getPlayerTeam(playerId);
+            uint256 posInTeam = getPlayerPosInTeam(playerId);
+            string memory teamName = getTeamName(teamId);
+            uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
+            return _computeSkills(seed);
+        }
+        return _playerState.getSkillsVec(getPlayerState(playerId));
     }
 
     /// Compute a random age between 16 and 35

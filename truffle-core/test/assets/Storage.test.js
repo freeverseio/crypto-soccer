@@ -16,6 +16,18 @@ contract('Storage', (accounts) => {
         instance = await Storage.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('team exists', async () => {
+        let result = await instance.teamExists(0).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await instance.teamExists(1).should.be.fulfilled;
+        result.should.be.equal(false);
+        await instance.addTeam("Barca").should.be.fulfilled;
+        result = await instance.teamExists(1).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await instance.teamExists(2).should.be.fulfilled;
+        result.should.be.equal(false);
+    });
+
     it('initial number of team', async () => {
         const count = await instance.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(0);

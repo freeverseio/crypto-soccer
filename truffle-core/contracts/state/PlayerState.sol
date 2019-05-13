@@ -156,4 +156,13 @@ contract PlayerState {
         require(isValidPlayerState(playerState), "invalid player state");
         return playerState >> 186;
     }
+
+    function getSkillsVec(uint256 playerState) public pure returns (uint16[5] memory skills) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        skills[0] = uint16(getDefence(playerState));
+        skills[1] = uint16(getSpeed(playerState));
+        skills[2] = uint16(getPass(playerState));
+        skills[3] = uint16(getShoot(playerState));
+        skills[4] = uint16(getEndurance(playerState));
+    }
 }
