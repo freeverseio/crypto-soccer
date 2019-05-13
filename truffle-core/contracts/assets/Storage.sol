@@ -53,8 +53,8 @@ contract Storage {
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
         if (_isVirtual(playerId)) {
-            uint256 teamId = getPlayerTeam(playerId);
-            uint256 posInTeam = getPlayerPosInTeam(playerId);
+            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
+            uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
             uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
             uint16[5] memory skills = _computeSkills(seed);
@@ -127,8 +127,10 @@ contract Storage {
     }
 
     function getPlayerPosInTeam(uint256 playerId) public view returns (uint256) {
+        require(_playerExists(playerId), "unexistent player");
         uint256 teamId = getPlayerTeam(playerId);
-        return playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
+        uint256 state = getPlayerState(playerId);
+        return _playerState.getCurrentShirtNum(state);
     }
 
     function countTeams() public view returns (uint256){
@@ -144,11 +146,6 @@ contract Storage {
     /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
     function getPlayerTeam(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        if(_isVirtual(playerId)){
-            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
-            return teamId;
-        }
-
         uint256 state = getPlayerState(playerId);
         return _playerState.getCurrentTeamId(state);
     }
