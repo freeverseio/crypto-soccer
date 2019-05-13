@@ -99,14 +99,14 @@ contract PlayerState {
 
     function setCurrentTeamId(uint256 playerState, uint256 teamId) public pure returns (uint256) {
         require(teamId < 2**28, "currentTeamIdx out of bound");
-        playerState &= ~uint256(0x19 << 116);
+        playerState &= ~uint256(2**28-1 << 116);
         playerState |= uint256(teamId) << 116;
         return playerState;
     }
 
     function setCurrentShirtNum(uint256 state, uint256 currentShirtNum) public pure returns (uint256) {
         require(currentShirtNum < 2**4, "currentShirtNum out of bound");
-        state &= ~uint256(0x4 << 112);
+        state &= ~uint256(2**4-1 << 112);
         state |= uint256(currentShirtNum) << 112;
         return state;
     }

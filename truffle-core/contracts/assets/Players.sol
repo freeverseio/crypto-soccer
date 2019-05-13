@@ -11,34 +11,25 @@ contract Players is Storage {
         require(_playerExists(playerId0) && _playerExists(playerId1), "unexistent playerId");
         uint256 state0 = getPlayerState(playerId0);
         uint256 state1 = getPlayerState(playerId1);
-//         _playerState.playerStateCreate([
-//                 _playerState.getDefence(state0), // defence,
-//                 _playerState.getSpeed(state0), // defence,
-//                 _playerState.getPass(state0), // defence,
-//                 _playerState.getShoot(state0), // defence,
-//                 _playerState.getEndurance(state0), // defence,
-//                 _playerState.getMonthOfBirthInUnixTime(state0), // defence,
-//                 playerId0, // defence,
-//                 _playerState.getCurrentTeamId(state1), // defence,
-//                 _playerState.getCurrentShirtNum(state1), // defence,
-//                 _playerState.getPrevLeagueId(state0), // defence,
-//                 _playerState.getPrevTeamPosInLeague(state0), // defence,
-//                 _playerState.getPrevShirtNumInLeague(state0), // defence,
-//                 block.number ]);
-// _playerState.playerStateCreate(
-//                 _playerState.getDefence(state0), // defence,
-//                 _playerState.getSpeed(state0), // defence,
-//                 _playerState.getPass(state0), // defence,
-//                 _playerState.getShoot(state0), // defence,
-//                 _playerState.getEndurance(state0), // defence,
-//                 _playerState.getMonthOfBirthInUnixTime(state0), // defence,
-//                 playerId0, // defence,
-//                 _playerState.getCurrentTeamId(state1), // defence,
-//                 _playerState.getCurrentShirtNum(state1), // defence,
-//                 _playerState.getPrevLeagueId(state0), // defence,
-//                 _playerState.getPrevTeamPosInLeague(state0), // defence,
-//                 _playerState.getPrevShirtNumInLeague(state0), // defence,
-//                 block.number);
+        uint256 newState0 = state0;
+        newState0 = _playerState.setCurrentTeamId(newState0, _playerState.getCurrentTeamId(state1));
+        newState0 = _playerState.setCurrentShirtNum(newState0, _playerState.getCurrentShirtNum(state1));
+        state1 = _playerState.setCurrentTeamId(state1,_playerState.getCurrentTeamId(state0));
+        state1 = _playerState.setCurrentShirtNum(state1,_playerState.getCurrentShirtNum(state0));
+        newState0 = _playerState.setLastSaleBlock(newState0, block.number);
+        state1 = _playerState.setLastSaleBlock(state1, block.number);
+
+        // TODO
+        // if getBlockNumForLastLeagueOfTeam(teamIdx1, ST) > state1.getLastSaleBlocknum():
+        //     state1.prevLeagueIdx = ST.teams[teamIdx1].currentLeagueIdx
+        //     state1.prevTeamPosInLeague = ST.teams[teamIdx1].teamPosInCurrentLeague
+
+        // if getBlockNumForLastLeagueOfTeam(teamIdx2, ST) > state2.getLastSaleBlocknum():
+        //     state2.prevLeagueIdx = ST.teams[teamIdx2].currentLeagueIdx
+        //     state2.prevTeamPosInLeague = ST.teams[teamIdx2].teamPosInCurrentLeague
+
+        _setPlayerState(newState0);
+        _setPlayerState(state1);
     }
 
     function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {

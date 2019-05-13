@@ -16,6 +16,16 @@ contract('Players', (accounts) => {
         players = await Players.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('exchange players team', async () => {
+        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Madrid").should.be.fulfilled;
+        await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 19).should.be.fulfilled;
+        const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
+        teamPlayer0.should.be.bignumber.equal('2');
+        const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
+        teamPlayer1.should.be.bignumber.equal('1');
+    });
+
     it('query null player id', async () => {
         await players.getPlayerTeam(0).should.be.rejected;
     });
@@ -137,16 +147,6 @@ contract('Players', (accounts) => {
         const teamAfter = await players.getPlayerTeam(playerId = 1).should.be.fulfilled;
         teamAfter.should.be.bignumber.not.equal(teamBefore);
         teamAfter.should.be.bignumber.equal('2');
-    });
-
-    it('exchange players team', async () => {
-        await players.addTeam("Barca").should.be.fulfilled;
-        await players.addTeam("Madrid").should.be.fulfilled;
-        await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
-        const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
-        teamPlayer0.should.be.bignumber.equal('2');
-        const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
-        teamPlayer1.should.be.bignumber.equal('1');
     });
 });
  
