@@ -25,4 +25,8 @@ contract PlayersMock is Players {
         uint256 currentTime = 1557495456;
         return _computeBirth(rnd, currentTime);
     }
+
+    function setPlayerState(uint256 playerId, uint256 state) public {
+        _setPlayerState(playerId, state);
+    }
 }

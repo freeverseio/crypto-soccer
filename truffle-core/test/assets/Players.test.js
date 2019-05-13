@@ -9,9 +9,10 @@ const PlayerStateLib = artifacts.require('PlayerState');
 
 contract('Players', (accounts) => {
     let players = null;
+    let playerStateLib = null;
 
     beforeEach(async () => {
-        const playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
+        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
         players = await Players.new(playerStateLib.address).should.be.fulfilled;
     });
 
@@ -86,14 +87,38 @@ contract('Players', (accounts) => {
         birth.should.be.bignumber.equal('406');
     });
 
-    it('exchange players team', async () => {
+    // it('exchange players team', async () => {
+    //     await players.addTeam("Barca").should.be.fulfilled;
+    //     await players.addTeam("Madrid").should.be.fulfilled;
+    //     await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
+    //     const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
+    //     teamPlayer0.should.be.bignumber.equal('2');
+    //     const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
+    //     teamPlayer1.should.be.bignumber.equal('1');
+    // });
+
+    it('get non virtual player team', async () => {
         await players.addTeam("Barca").should.be.fulfilled;
-        await players.addTeam("Madrid").should.be.fulfilled;
-        await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
-        const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
-        teamPlayer0.should.be.bignumber.equal('2');
-        const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
-        teamPlayer1.should.be.bignumber.equal('1');
+        const teamBefore = await players.getPlayerTeam(playerId = 1).should.be.fulfilled;
+        const state = await playerStateLib.playerStateCreate(
+            defence = 3,
+            speed = 3,
+            pass = 3,
+            shoot = 3,
+            endurance = 3,
+            monthOfBirthInUnixTime = 3,
+            playerId = 3,
+            currentTeamId = 4,
+            currentShirtNum = 3,
+            prevLeagueId = 3,
+            prevTeamPosInLeague = 3,
+            prevShirtNumInLeague = 3,
+            lastSaleBlock = 3
+        ).should.be.fulfilled;
+        await players.setPlayerState(playerId = 1, state).should.be.fulfilled;
+        const teamAfter = await players.getPlayerTeam(playerId = 1).should.be.fulfilled;
+        teamAfter.should.be.bignumber.not.equal(teamBefore);
+        teamAfter.should.be.bignumber.equal('4');
     });
 });
  

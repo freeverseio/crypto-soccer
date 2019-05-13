@@ -83,4 +83,16 @@ contract Players is Storage {
         return uint256(keccak256(abi.encodePacked(arg)));
     }
 
+    /// this function uses the inverse of the following formula
+    /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
+    function getPlayerTeam(uint256 playerId) public view returns (uint256) {
+        require(_playerExists(playerId), "unexistent player");
+        if(_isVirtual(playerId)){
+            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
+            return teamId;
+        }
+
+        uint256 state = getPlayerState(playerId);
+        return _playerState.getCurrentTeamId(state);
+    }
   }

@@ -1,5 +1,7 @@
+const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
     .should();
 
 const Storage = artifacts.require('StorageMock');
@@ -58,5 +60,6 @@ contract('Storage', (accounts) => {
         await instance.addTeam("Barca").should.be.fulfilled;
         await instance.setPlayerState(playerId = 1, state = 4).should.be.fulfilled;
         await instance.isVirtual(playerId = 1).should.eventually.equal(false);
-    })
+    });
+
 });
