@@ -1,5 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+import "../state/PlayerState.sol";
+
 /**
  * teamId == 0 is invalid and represents the null team
  */
@@ -24,11 +26,16 @@ contract Storage {
     /// @dev The ID of each team is actually his index in this array.
     Team[] private teams;
 
-    constructor() public {
+    PlayerState internal _playerState;
+
+    constructor(address playerState) public {
+        _playerState = PlayerState(playerState);
         teams.push(Team("_", 0, 0, 0, 0));
     }
 
     function _setPlayerState(uint256 playerId, uint256 state) internal {
+        uint256 statePlayerId = _playerState.getPlayerId(state);
+        require(playerId == statePlayerId, "wroooong");
         require(_playerExists(playerId), "unexistent player");
         _playerIdToState[playerId] = state;
     }
