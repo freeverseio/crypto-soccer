@@ -54,6 +54,9 @@ contract('Storage', (accounts) => {
     });
 
     it('is existent non virtual player', async () => {
-
+        await instance.setPlayerState(playerId = 1, state = 4).should.be.rejected;
+        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.setPlayerState(playerId = 1, state = 4).should.be.fulfilled;
+        await instance.isVirtual(playerId = 1).should.eventually.equal(false);
     })
 });

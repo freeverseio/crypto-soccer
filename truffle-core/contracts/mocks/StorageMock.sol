@@ -14,4 +14,8 @@ contract StorageMock is Storage {
     function isVirtual(uint256 playerId) public view returns (bool) {
         return _isVirtual(playerId);
     }
+
+    function setPlayerState(uint256 playerId, uint256 state) public {
+        _setPlayerState(playerId, state);
+    }
 }
