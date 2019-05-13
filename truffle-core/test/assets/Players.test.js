@@ -86,6 +86,14 @@ contract('Players', (accounts) => {
         birth.should.be.bignumber.equal('406');
     });
 
-
+    // it('exchange players team', async () => {
+    //     await players.addTeam("Barca").should.be.fulfilled;
+    //     await players.addTeam("Madrid").should.be.fulfilled;
+    //     await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
+    //     const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
+    //     teamPlayer0.should.be.bignumber.equal('2');
+    //     const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
+    //     teamPlayer1.should.be.bignumber.equal('1');
+    // });
 });
  
