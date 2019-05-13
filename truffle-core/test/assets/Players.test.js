@@ -67,7 +67,7 @@ contract('Players', (accounts) => {
         await players.getPlayerPosInTeam(nPLayersPerTeam+1).should.be.rejected;
     })
 
-    it('get existing player skills', async () => {
+    it('get existing virtual player skills', async () => {
         const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
         await players.addTeam("Barca").should.be.fulfilled;
         const skills = await players.getPlayerSkills(playerId = 10).should.be.fulfilled;
@@ -81,21 +81,41 @@ contract('Players', (accounts) => {
         sum.should.be.equal(250);
     });
 
+    // it('get existing non virtual player skills', async () => {
+    //     const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
+    //     await players.addTeam("Barca").should.be.fulfilled;
+    //     const state = await playerStateLib.playerStateCreate(
+    //         defence = 1,
+    //         speed = 2,
+    //         pass = 3,
+    //         shoot = 4,
+    //         endurance = 5,
+    //         monthOfBirthInUnixTime = 6,
+    //         playerId = 1,
+    //         currentTeamId = 1,
+    //         currentShirtNum = 3,
+    //         prevLeagueId = 3,
+    //         prevTeamPosInLeague = 3,
+    //         prevShirtNumInLeague = 3,
+    //         lastSaleBlock = 3
+    //     ).should.be.fulfilled;
+    //     const skills = await players.getPlayerSkills(playerId = 10).should.be.fulfilled;
+    //     skills.length.should.be.equal(numSkills.toNumber());
+    //     skills[0].should.be.bignumber.equal('48');
+    //     skills[1].should.be.bignumber.equal('72');
+    //     skills[2].should.be.bignumber.equal('51');
+    //     skills[3].should.be.bignumber.equal('42');
+    //     skills[4].should.be.bignumber.equal('37');
+    //     const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+    //     sum.should.be.equal(250);
+    // });
+
     it('compute player birth', async () => {
         await players.addTeam("Barca").should.be.fulfilled;
         const birth = await players.computeBirth(0).should.be.fulfilled;
         birth.should.be.bignumber.equal('406');
     });
 
-    // it('exchange players team', async () => {
-    //     await players.addTeam("Barca").should.be.fulfilled;
-    //     await players.addTeam("Madrid").should.be.fulfilled;
-    //     await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
-    //     const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
-    //     teamPlayer0.should.be.bignumber.equal('2');
-    //     const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
-    //     teamPlayer1.should.be.bignumber.equal('1');
-    // });
 
     it('get non virtual player team', async () => {
         await players.addTeam("Barca").should.be.fulfilled;
@@ -120,5 +140,15 @@ contract('Players', (accounts) => {
         teamAfter.should.be.bignumber.not.equal(teamBefore);
         teamAfter.should.be.bignumber.equal('4');
     });
+
+    // it('exchange players team', async () => {
+    //     await players.addTeam("Barca").should.be.fulfilled;
+    //     await players.addTeam("Madrid").should.be.fulfilled;
+    //     await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 17).should.be.fulfilled;
+    //     const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
+    //     teamPlayer0.should.be.bignumber.equal('2');
+    //     const teamPlayer1 = await players.getPlayerTeam(playerId1).should.be.fulfilled;
+    //     teamPlayer1.should.be.bignumber.equal('1');
+    // });
 });
  

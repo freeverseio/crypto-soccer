@@ -69,7 +69,7 @@ contract('Storage', (accounts) => {
             endurance = 3,
             monthOfBirthInUnixTime = 3,
             playerId = 1,
-            currentTeamId = 4,
+            currentTeamId = 1,
             currentShirtNum = 3,
             prevLeagueId = 3,
             prevTeamPosInLeague = 3,
@@ -79,5 +79,12 @@ contract('Storage', (accounts) => {
         await instance.setPlayerState(state).should.be.fulfilled;
         await instance.isVirtual(playerId = 1).should.eventually.equal(false);
     });
+
+    // it('get state of virtual player', async () => {
+    //     await instance.addTeam("Barca").should.be.fulfilled;
+    //     const state = await instance.getPlayerState(playerId = 1).should.be.fulfilled;
+    //     state.should.be.bignumber.equal('4');
+    //     // await playerStateLib.getDefence
+    // })
 
 });

@@ -36,12 +36,25 @@ contract Storage {
     function _setPlayerState(uint256 state) internal {
         uint256 playerId = _playerState.getPlayerId(state);
         require(_playerExists(playerId), "unexistent player");
+        uint256 teamId = _playerState.getCurrentTeamId(state);
+        require(_teamExists(teamId), "unexistent team");
+        uint256 shirtNumber = _playerState.getCurrentShirtNum(state);
+        require(shirtNumber < PLAYERS_PER_TEAM, "invalid shirt number");
+        shirtNumber = _playerState.getPrevShirtNumInLeague(state);
+        require(shirtNumber < PLAYERS_PER_TEAM, "invalid shirt number");
+        uint256 saleBlock = _playerState.getLastSaleBlock(state);
+        require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
         _playerIdToState[playerId] = state;
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        return _playerIdToState[playerId];
+        if (_isVirtual(playerId)) {
+            // uint256[5] skills = 
+            return 0;
+        }
+        else
+            return _playerIdToState[playerId];
     }
 
     function countTeams() public view returns (uint256){
@@ -89,7 +102,7 @@ contract Storage {
     }
 
     function _teamExists(uint256 teamId) internal view returns (bool) {
-        return teamId != 0 && teamId < teams.length;
+        return teamId != 0 && teamId <= teams.length;
     }
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
