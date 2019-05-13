@@ -7,6 +7,9 @@ import "../state/PlayerState.sol";
  */
 contract Storage {
     uint8 constant public PLAYERS_PER_TEAM = 11;
+    uint8 constant internal BITS_PER_SKILL = 14;
+    uint16 constant internal SKILL_MASK = 0x3fff;
+    uint8 constant public NUM_SKILLS = 5;
 
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -50,11 +53,82 @@ contract Storage {
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
         if (_isVirtual(playerId)) {
-            // uint256[5] skills = 
-            return 0;
+            uint256 teamId = getPlayerTeam(playerId);
+            uint256 posInTeam = getPlayerPosInTeam(playerId);
+            string memory teamName = getTeamName(teamId);
+            uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
+            uint16[5] memory skills = _computeSkills(seed);
+            uint16 birth = _computeBirth(seed, block.timestamp);
+            return _playerState.playerStateCreate(
+                skills[0], // defence,
+                skills[1], //uint256 speed,
+                skills[2], //uint256 pass,
+                skills[3], //uint256 shoot,
+                skills[4], //uint256 endurance,
+                birth, //uint256 monthOfBirthInUnixTime,
+                playerId,
+                teamId,
+                posInTeam, //uint256 currentShirtNum,
+                0, //uint256 prevLeagueId,
+                0, //uint256 prevTeamPosInLeague,
+                0, //uint256 prevShirtNumInLeague,
+                0 //uint256 lastSaleBloc
+            );
         }
         else
             return _playerIdToState[playerId];
+    }
+    
+    /// Compute a random age between 16 and 35
+    /// @return monthOfBirth in monthUnixTime
+    function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
+        rnd >>= BITS_PER_SKILL*NUM_SKILLS;
+        uint16 seed = uint16(rnd & SKILL_MASK);
+        /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
+        uint16 age = 16 + (seed % 20);
+
+        /// @dev Convert age to monthOfBirthAfterUnixEpoch.
+        /// @dev I leave it this way for clarity, for the time being.
+        uint years2secs = 365 * 24 * 3600; // TODO: make it a constant
+        uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
+
+        return uint16((currentTime - age * years2secs) / month2secs);
+    }    
+
+     /**
+     * @dev Compute the pseudorandom skills, sum of the skills is 250
+     * @param rnd is a random number
+     * @return 5 skills
+     */
+    function _computeSkills(uint256 rnd) internal pure returns (uint16[NUM_SKILLS] memory) {
+        uint16[5] memory skills;
+        for (uint8 i = 0; i<5; i++) {
+            skills[i] = uint16(rnd & SKILL_MASK);
+            rnd >>= BITS_PER_SKILL;
+        }
+
+        /// The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
+        uint16 excess;
+        for (uint8 i = 0; i < 5; i++) {
+            skills[i] = skills[i] % 50;
+            excess += skills[i];
+        }
+
+        /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
+        uint16 delta = (250 - excess) / 5;
+        for (uint8 i = 0; i < 5; i++)
+            skills[i] = skills[i] + delta;
+
+        uint16 remainder = (250 - excess) % 5;
+        for (uint8 i = 0 ; i < remainder ; i++)
+            skills[i]++;
+
+        return skills;
+    }
+
+    function getPlayerPosInTeam(uint256 playerId) public view returns (uint256) {
+        uint256 teamId = getPlayerTeam(playerId);
+        return playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
     }
 
     function countTeams() public view returns (uint256){
@@ -64,6 +138,19 @@ contract Storage {
     function getTeamName(uint256 teamId) public view returns (string memory) {
         require(_teamExists(teamId), "invalid team id");
         return teams[teamId].name;
+    }
+
+    /// this function uses the inverse of the following formula
+    /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
+    function getPlayerTeam(uint256 playerId) public view returns (uint256) {
+        require(_playerExists(playerId), "unexistent player");
+        if(_isVirtual(playerId)){
+            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
+            return teamId;
+        }
+
+        uint256 state = getPlayerState(playerId);
+        return _playerState.getCurrentTeamId(state);
     }
 
     function getTeamCurrentHistory(uint256 teamId) external view returns (

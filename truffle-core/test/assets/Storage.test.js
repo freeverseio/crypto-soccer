@@ -92,11 +92,9 @@ contract('Storage', (accounts) => {
         await instance.isVirtual(playerId = 1).should.eventually.equal(false);
     });
 
-    // it('get state of virtual player', async () => {
-    //     await instance.addTeam("Barca").should.be.fulfilled;
-    //     const state = await instance.getPlayerState(playerId = 1).should.be.fulfilled;
-    //     state.should.be.bignumber.equal('4');
-    //     // await playerStateLib.getDefence
-    // })
-
+    it('get state of virtual player', async () => {
+        await instance.addTeam("Barca").should.be.fulfilled;
+        const state = await instance.getPlayerState(playerId = 1).should.be.fulfilled;
+        state.should.be.bignumber.equal('473533131866555579417557877411906949081105664487195487081826231992180539392');
+    });
 });
