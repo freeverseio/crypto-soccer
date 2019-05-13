@@ -16,7 +16,7 @@ contract PlayerState {
      * currentShirtNum         =  4 bits
      * prevLeagueIdx           = 25 bits
      * prevTeamPosInLeague     =  8 bits
-     * prevShirtNumInLeague    =  4 bits
+     * prevShirtNumInLeague    =  4 bits // TODO: remove: unused
      * lastSaleBlocknum        = 35 bits
      * available               = 40 bits
      */
@@ -46,8 +46,6 @@ contract PlayerState {
         require(endurance < 2**14, "defence out of bound");
         require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**28, "playerId out of bound");
-        require(currentTeamId < 2**28, "currentTeamIdx out of bound");
-        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
         require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
         require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
         require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
@@ -59,8 +57,9 @@ contract PlayerState {
         state |= uint256(endurance) << 186;
         state |= uint256(monthOfBirthInUnixTime) << 172;
         state |= uint256(playerId) << 144;
+        state = setCurrentTeamId(state, currentTeamId);
         state |= uint256(currentTeamId) << 116;
-        state |= uint256(currentShirtNum) << 112;
+        state = setCurrentShirtNum(state, currentShirtNum);
         state |= uint256(prevLeagueId) << 87;
         state |= uint256(prevTeamPosInLeague) << 79;
         state |= uint256(prevShirtNumInLeague) << 75;
@@ -86,6 +85,20 @@ contract PlayerState {
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 214)) | uint256(pass) << 214;
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 200)) | uint256(shoot) << 200;
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 186)) | uint256(endurance) << 186;
+    }
+
+    function setCurrentTeamId(uint256 playerState, uint256 teamId) public pure returns (uint256) {
+        require(teamId < 2**28, "currentTeamIdx out of bound");
+        playerState &= ~uint256(0x19 << 116);
+        playerState |= uint256(teamId) << 116;
+        return playerState;
+    }
+
+    function setCurrentShirtNum(uint256 state, uint256 currentShirtNum) public pure returns (uint256) {
+        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
+        state &= ~uint256(0x4 << 112);
+        state |= uint256(currentShirtNum) << 112;
+        return state;
     }
 
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
@@ -164,5 +177,19 @@ contract PlayerState {
         skills[2] = uint16(getPass(playerState));
         skills[3] = uint16(getShoot(playerState));
         skills[4] = uint16(getEndurance(playerState));
+    }
+
+    /// @dev Sets the number at a given index in a serialized uint256
+    function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
+        internal
+        pure
+        returns(uint)
+    {
+        uint maxnum = 1<<bits; // 2**bits
+        require(value < maxnum, "Value too large to fit in available space");
+        uint b = bits*index;
+        uint mask = (1 << bits)-1; // (2**bits)-1
+        serialized &= ~(mask << b); // clear all bits at index
+        return serialized + (value << b);
     }
 }
