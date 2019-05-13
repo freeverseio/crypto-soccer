@@ -33,8 +33,5 @@ module.exports = {
     solc: {
       version: "0.5.8"
     }
-  },
-  development: {
-    gas: 200000000
   }
 }
