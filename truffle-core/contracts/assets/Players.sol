@@ -90,4 +90,5 @@ contract Players is Storage {
     function _intHash(string memory arg) internal pure returns (uint256) {
         return uint256(keccak256(abi.encodePacked(arg)));
     }
-}
+
+  }

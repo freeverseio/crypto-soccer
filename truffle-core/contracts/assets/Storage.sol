@@ -91,4 +91,9 @@ contract Storage {
         uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
         return teamId <= countTeams();
     }
+
+    function _isVirtual(uint256 playerId) internal view returns (bool) {
+        require(_playerExists(playerId), "unexistent player");
+        return _playerIdToState[playerId] == 0;
+    }
 }

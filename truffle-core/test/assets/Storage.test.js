@@ -39,4 +39,21 @@ contract('Storage', (accounts) => {
         const exists = await instance.playerExists(playerId = 1).should.be.fulfilled;
         exists.should.be.equal(true);
     });
+
+    it('is null player virtual', async () => {
+        await instance.isVirtual(0).should.be.rejected;
+    });
+
+    it('is unexistent player virtual', async () => {
+        await instance.isVirtual(1).should.be.rejected;
+    });
+
+    it('is existent player virtual', async () => {
+        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.isVirtual(1).should.eventually.equal(true);
+    });
+
+    it('is existent non virtual player', async () => {
+
+    })
 });

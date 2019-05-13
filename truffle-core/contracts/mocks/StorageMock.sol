@@ -10,4 +10,8 @@ contract StorageMock is Storage {
     function playerExists(uint256 playerId) public view returns (bool) {
         return _playerExists(playerId);
     }
+
+    function isVirtual(uint256 playerId) public view returns (bool) {
+        return _isVirtual(playerId);
+    }
 }
