@@ -33,9 +33,8 @@ contract Storage {
         teams.push(Team("_", 0, 0, 0, 0));
     }
 
-    function _setPlayerState(uint256 playerId, uint256 state) internal {
-        uint256 statePlayerId = _playerState.getPlayerId(state);
-        require(playerId == statePlayerId, "wroooong");
+    function _setPlayerState(uint256 state) internal {
+        uint256 playerId = _playerState.getPlayerId(state);
         require(_playerExists(playerId), "unexistent player");
         _playerIdToState[playerId] = state;
     }
@@ -104,5 +103,4 @@ contract Storage {
         require(_playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId] == 0;
     }
-
 }

@@ -3,13 +3,11 @@ pragma solidity >=0.4.21 <0.6.0;
 import "./Storage.sol";
 
 contract Players is Storage {
-    uint8 constant BITS_PER_SKILL = 14;
-    uint16 constant SKILL_MASK = 0x3fff;
+    uint8 constant private BITS_PER_SKILL = 14;
+    uint16 constant private SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
 
-    constructor(address playerState)
-    public
-    Storage(playerState) {
+    constructor(address playerState) public Storage(playerState) {
     }
 
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {

@@ -115,7 +115,7 @@ contract('Players', (accounts) => {
             prevShirtNumInLeague = 3,
             lastSaleBlock = 3
         ).should.be.fulfilled;
-        await players.setPlayerState(playerId = 1, state).should.be.fulfilled;
+        await players.setPlayerState(state).should.be.fulfilled;
         const teamAfter = await players.getPlayerTeam(playerId = 1).should.be.fulfilled;
         teamAfter.should.be.bignumber.not.equal(teamBefore);
         teamAfter.should.be.bignumber.equal('4');

@@ -1,9 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Storage.sol";
+import "./Players.sol";
 
-contract Teams is Storage {
+contract Teams is Players {
     event TeamCreation (string teamName, uint256 teamId);
+
+    constructor(address playerState) public Players(playerState) {
+    }
 
     function createTeam(string memory teamName) public {
         uint256 teamId = _addTeam(teamName);

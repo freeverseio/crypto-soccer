@@ -5,12 +5,14 @@ require('chai')
     .should();
     
 const Assets = artifacts.require('Teams');
+const PlayerStateLib = artifacts.require('PlayerState');
 
 contract('Assets', (accounts) => {
     let assets = null;
 
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
+        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
+        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
     it('create team', async () => {
