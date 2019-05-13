@@ -46,10 +46,7 @@ contract PlayerState {
         require(endurance < 2**14, "defence out of bound");
         require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**28, "playerId out of bound");
-        require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
-        require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
         require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
-        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
         state |= uint256(defence) << 242;
         state |= uint256(speed) << 228;
         state |= uint256(pass) << 214;
@@ -58,14 +55,27 @@ contract PlayerState {
         state |= uint256(monthOfBirthInUnixTime) << 172;
         state |= uint256(playerId) << 144;
         state = setCurrentTeamId(state, currentTeamId);
-        state |= uint256(currentTeamId) << 116;
         state = setCurrentShirtNum(state, currentShirtNum);
-        state |= uint256(prevLeagueId) << 87;
-        state |= uint256(prevTeamPosInLeague) << 79;
+        state = setPrevLeagueId(state, prevLeagueId);
+        state = setPrevTeamPosInLeague(state, prevTeamPosInLeague);
         state |= uint256(prevShirtNumInLeague) << 75;
-        state |= uint256(lastSaleBlock) << 40;
+        state = setLastSaleBlock(state, lastSaleBlock);
     }
 
+    function setPrevLeagueId(uint256 state, uint256 value) public pure returns (uint256) {
+        require(value < 2**25, "prevLeagueIdx out of bound");
+        state &= ~uint256(2**25-1 << 87);
+        state |= uint256(value) << 87;
+        return state;
+    }
+
+    function setPrevTeamPosInLeague(uint256 state, uint256 value) public pure returns (uint256) {
+        require(value < 2**8, "prevTeamPosInLeague out of bound");
+        state &= ~uint256(2**8-1 << 79);
+        state |= uint256(value) << 79;
+        return state;
+    }
+    
     /// increase the skills of delta
     function playerStateEvolve(uint256 playerState, uint16 delta) public pure returns (uint256 evolvedState) {
         require(isValidPlayerState(playerState), "invalid player playerState");
@@ -98,6 +108,13 @@ contract PlayerState {
         require(currentShirtNum < 2**4, "currentShirtNum out of bound");
         state &= ~uint256(0x4 << 112);
         state |= uint256(currentShirtNum) << 112;
+        return state;
+    }
+
+    function setLastSaleBlock(uint256 state, uint256 lastSaleBlock) public pure returns (uint256) {
+        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
+        state &= ~uint256(2*35-1 << 40);
+        state |= uint256(lastSaleBlock) << 40;
         return state;
     }
 
