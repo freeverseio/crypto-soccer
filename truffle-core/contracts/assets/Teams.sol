@@ -16,8 +16,8 @@ contract Teams is Players {
         return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
     }
 
-    function createTeam(string memory teamName) public {
-        uint256 teamId = _addTeam(teamName);
+    function createTeam(string memory teamName, address owner) public {
+        uint256 teamId = _addTeam(teamName, owner);
         emit TeamCreation(teamName, teamId);
     }
 

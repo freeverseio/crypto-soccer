@@ -9,8 +9,8 @@ contract PlayersMock is Players {
     {
     }
 
-    function addTeam(string memory name) public returns (uint256) {
-        return _addTeam(name);
+    function addTeam(string memory name, address owner) public returns (uint256) {
+        return _addTeam(name, owner);
     }
 
     function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {

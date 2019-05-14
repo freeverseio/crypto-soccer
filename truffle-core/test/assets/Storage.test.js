@@ -16,9 +16,15 @@ contract('Storage', (accounts) => {
         instance = await Storage.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('add team with different owner than the sender', async () => {
+        await instance.addTeam('Barca', accounts[1]).should.be.fulfilled;
+        const owner = await instance.getTeamOwner('Barca').should.be.fulfilled;
+        owner.should.be.equal(accounts[1]);
+    })
+
     it('add 2 teams with same name', async() => {
-        await instance.addTeam('Barca').should.be.fulfilled;
-        await instance.addTeam('Barca').should.be.rejected;
+        await instance.addTeam('Barca', accounts[1]).should.be.fulfilled;
+        await instance.addTeam('Barca', accounts[1]).should.be.rejected;
     })
 
     it('team exists', async () => {
@@ -26,7 +32,7 @@ contract('Storage', (accounts) => {
         result.should.be.equal(false);
         result = await instance.teamExists(1).should.be.fulfilled;
         result.should.be.equal(false);
-        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.addTeam("Barca", accounts[1]).should.be.fulfilled;
         result = await instance.teamExists(1).should.be.fulfilled;
         result.should.be.equal(true);
         result = await instance.teamExists(2).should.be.fulfilled;
@@ -57,7 +63,7 @@ contract('Storage', (accounts) => {
     });
 
     it('existence of existent player', async () => {
-        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const exists = await instance.playerExists(playerId = 1).should.be.fulfilled;
         exists.should.be.equal(true);
     });
@@ -71,13 +77,13 @@ contract('Storage', (accounts) => {
     });
 
     it('is existent player virtual', async () => {
-        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.addTeam("Barca",accounts[1]).should.be.fulfilled;
         await instance.isVirtual(1).should.eventually.equal(true);
     });
 
     it('is existent non virtual player', async () => {
         await instance.setPlayerState(4).should.be.rejected;
-        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await playerStateLib.playerStateCreate(
             defence = 3,
             speed = 3,
@@ -98,7 +104,7 @@ contract('Storage', (accounts) => {
     });
 
     it('get state of virtual player', async () => {
-        await instance.addTeam("Barca").should.be.fulfilled;
+        await instance.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await instance.getPlayerState(playerId = 1).should.be.fulfilled;
         state.should.be.bignumber.equal('473533131866555579417557877411906949081105664487195487081826231992180539392');
     });

@@ -8,9 +8,9 @@ contract StorageMock is Storage {
     Storage(playerState)
     {
     }
-    
-    function addTeam(string memory name) public returns (uint256) {
-        return _addTeam(name);
+
+    function addTeam(string memory name, address owner) public returns (uint256) {
+        return _addTeam(name, owner);
     }
 
     function playerExists(uint256 playerId) public view returns (bool) {

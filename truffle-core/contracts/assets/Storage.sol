@@ -37,6 +37,12 @@ contract Storage {
         teams.push(Team("_", 0, 0, 0, 0));
     }
 
+    // TODO: exception when not existent team
+    function getTeamOwner(string memory name) public view returns (address) {
+        bytes32 nameHash = keccak256(abi.encode(name));
+        return _teamNameHashToOwner[nameHash];
+    }
+
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
@@ -133,10 +139,10 @@ contract Storage {
         teams[teamId].posInCurrentLeague = posInLeague;
     }
 
-    function _addTeam(string memory name) internal returns (uint256) {
+    function _addTeam(string memory name, address owner) internal returns (uint256) {
         bytes32 nameHash = keccak256(abi.encode(name));
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
-        _teamNameHashToOwner[nameHash] = msg.sender;
+        _teamNameHashToOwner[nameHash] = owner;
         teams.push(Team(name, 0, 0, 0, 0));
         return teams.length - 1;
     }

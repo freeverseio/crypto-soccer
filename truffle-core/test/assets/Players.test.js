@@ -17,8 +17,8 @@ contract('Players', (accounts) => {
     });
 
     it('exchange players team', async () => {
-        await players.addTeam("Barca").should.be.fulfilled;
-        await players.addTeam("Madrid").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
+        await players.addTeam("Madrid",accounts[1]).should.be.fulfilled;
         await players.exchangePlayersTeams(playerId0 = 8, playerId1 = 19).should.be.fulfilled;
         const teamPlayer0 = await players.getPlayerTeam(playerId0).should.be.fulfilled;
         teamPlayer0.should.be.bignumber.equal('2');
@@ -36,7 +36,7 @@ contract('Players', (accounts) => {
 
     it('get player team of existing player', async () => {
         const nPLayersPerTeam = await players.PLAYERS_PER_TEAM().should.be.fulfilled;
-        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
             const teamId = await players.getPlayerTeam(playerId).should.be.fulfilled;
             teamId.toNumber().should.be.equal(1);
@@ -69,7 +69,7 @@ contract('Players', (accounts) => {
 
     it('get player pos in team', async () => {
         const nPLayersPerTeam = await players.PLAYERS_PER_TEAM().should.be.fulfilled;
-        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
             const pos = await players.getPlayerPosInTeam(playerId).should.be.fulfilled;
             pos.toNumber().should.be.equal(playerId - 1);
@@ -79,7 +79,7 @@ contract('Players', (accounts) => {
 
     it('get existing virtual player skills', async () => {
         const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
-        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const skills = await players.getPlayerSkills(playerId = 10).should.be.fulfilled;
         skills.length.should.be.equal(numSkills.toNumber());
         skills[0].should.be.bignumber.equal('48');
@@ -93,7 +93,7 @@ contract('Players', (accounts) => {
 
     it('get existing non virtual player skills', async () => {
         const numSkills = await players.NUM_SKILLS().should.be.fulfilled;
-        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await playerStateLib.playerStateCreate(
             defence = 1,
             speed = 2,
@@ -119,14 +119,14 @@ contract('Players', (accounts) => {
     });
 
     it('compute player birth', async () => {
-        await players.addTeam("Barca").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
         const birth = await players.computeBirth(0).should.be.fulfilled;
         birth.should.be.bignumber.equal('406');
     });
 
     it('get non virtual player team', async () => {
-        await players.addTeam("Barca").should.be.fulfilled;
-        await players.addTeam("Madrid").should.be.fulfilled;
+        await players.addTeam("Barca",accounts[1]).should.be.fulfilled;
+        await players.addTeam("Madrid",accounts[1]).should.be.fulfilled;
         const teamBefore = await players.getPlayerTeam(playerId = 1).should.be.fulfilled;
         const state = await playerStateLib.playerStateCreate(
             defence = 3,
