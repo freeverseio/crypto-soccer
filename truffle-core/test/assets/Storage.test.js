@@ -16,6 +16,11 @@ contract('Storage', (accounts) => {
         instance = await Storage.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('add 2 teams with same name', async() => {
+        await instance.addTeam('Barca').should.be.fulfilled;
+        await instance.addTeam('Barca').should.be.rejected;
+    })
+
     it('team exists', async () => {
         let result = await instance.teamExists(0).should.be.fulfilled;
         result.should.be.equal(false);

@@ -2,9 +2,9 @@ pragma solidity >=0.4.21 <0.6.0;
 
 import "../state/PlayerState.sol";
 
-/**
- * teamId == 0 is invalid and represents the null team
- */
+
+/// teamId == 0 is invalid and represents the null team
+/// TODO: fix the playerPos <=> playerShirt doubt
 contract Storage {
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -27,7 +27,8 @@ contract Storage {
 
     /// @dev An array containing the Team struct for all teams in existence.
     /// @dev The ID of each team is actually his index in this array.
-    Team[] private teams;
+    Team[] private teams; // TODO: teams -> _teams
+    mapping(bytes32 => address) private _teamNameHashToOwner;
 
     PlayerState internal _playerState;
 
@@ -36,6 +37,7 @@ contract Storage {
         teams.push(Team("_", 0, 0, 0, 0));
     }
 
+    /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
         uint8 posInCurrentLeague,
@@ -85,18 +87,18 @@ contract Storage {
             uint16 birth = _computeBirth(seed, block.timestamp);
             return _playerState.playerStateCreate(
                 skills[0], // defence,
-                skills[1], //uint256 speed,
-                skills[2], //uint256 pass,
-                skills[3], //uint256 shoot,
-                skills[4], //uint256 endurance,
-                birth, //uint256 monthOfBirthInUnixTime,
+                skills[1], // speed,
+                skills[2], // pass,
+                skills[3], // shoot,
+                skills[4], // endurance,
+                birth, // monthOfBirthInUnixTime,
                 playerId,
                 teamId,
-                posInTeam, //uint256 currentShirtNum,
-                0, //uint256 prevLeagueId,
-                0, //uint256 prevTeamPosInLeague,
-                0, //uint256 prevShirtNumInLeague,
-                0 //uint256 lastSaleBloc
+                posInTeam, // currentShirtNum,
+                0, // prevLeagueId,
+                0, // prevTeamPosInLeague,
+                0, // prevShirtNumInLeague,
+                0 // lastSaleBloc
             );
         }
         else
@@ -132,6 +134,9 @@ contract Storage {
     }
 
     function _addTeam(string memory name) internal returns (uint256) {
+        bytes32 nameHash = keccak256(abi.encode(name));
+        require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
+        _teamNameHashToOwner[nameHash] = msg.sender;
         teams.push(Team(name, 0, 0, 0, 0));
         return teams.length - 1;
     }
