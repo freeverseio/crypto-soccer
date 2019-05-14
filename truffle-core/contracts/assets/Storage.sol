@@ -95,11 +95,10 @@ contract Storage {
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
         require(_teamExists(teamId), "invalid team id");
         for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
-            if (teams[teamId].playerIds[pos] == 0){ // virtual player
+            if (teams[teamId].playerIds[pos] == 0) // virtual player
                 playerIds[pos] = getPlayerIdFromTeamIdAndPos(teamId, pos);
-            }
-            
-
+            else
+                playerIds[pos] = teams[teamId].playerIds[pos];
         }
     }
 
@@ -230,5 +229,39 @@ contract Storage {
             skills[i]++;
 
         return skills;
+    }
+
+    // TODO: exchange fails on playerId0 & playerId1 of the same team
+    function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
+        // TODO: check ownership address
+        require(_playerExists(playerId0) && _playerExists(playerId1), "unexistent playerId");
+        uint256 state0 = getPlayerState(playerId0);
+        uint256 state1 = getPlayerState(playerId1);
+        uint256 newState0 = state0;
+        uint256 teamId0 = _playerState.getCurrentTeamId(state0);
+        uint256 teamId1 = _playerState.getCurrentTeamId(state1);
+        uint256 playerShirt0 = _playerState.getCurrentShirtNum(state0);
+        uint256 playerShirt1 = _playerState.getCurrentShirtNum(state1);
+        newState0 = _playerState.setCurrentTeamId(newState0, _playerState.getCurrentTeamId(state1));
+        newState0 = _playerState.setCurrentShirtNum(newState0, _playerState.getCurrentShirtNum(state1));
+        state1 = _playerState.setCurrentTeamId(state1,_playerState.getCurrentTeamId(state0));
+        state1 = _playerState.setCurrentShirtNum(state1,_playerState.getCurrentShirtNum(state0));
+        newState0 = _playerState.setLastSaleBlock(newState0, block.number);
+        state1 = _playerState.setLastSaleBlock(state1, block.number);
+
+        teams[teamId0].playerIds[playerShirt0] = playerId1;
+        teams[teamId1].playerIds[playerShirt1] = playerId0;
+
+        // TODO
+        // if getBlockNumForLastLeagueOfTeam(teamIdx1, ST) > state1.getLastSaleBlocknum():
+        //     state1.prevLeagueIdx = ST.teams[teamIdx1].currentLeagueIdx
+        //     state1.prevTeamPosInLeague = ST.teams[teamIdx1].teamPosInCurrentLeague
+
+        // if getBlockNumForLastLeagueOfTeam(teamIdx2, ST) > state2.getLastSaleBlocknum():
+        //     state2.prevLeagueIdx = ST.teams[teamIdx2].currentLeagueIdx
+        //     state2.prevTeamPosInLeague = ST.teams[teamIdx2].teamPosInCurrentLeague
+
+        _setPlayerState(newState0);
+        _setPlayerState(state1);
     }
 }

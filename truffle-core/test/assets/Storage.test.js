@@ -6,7 +6,7 @@ require('chai')
 
 const Storage = artifacts.require('StorageMock');
 const PlayerStateLib = artifacts.require('PlayerState');
-
+ 
 contract('Storage', (accounts) => {
     let instance = null;
     let playerStateLib = null;
@@ -18,11 +18,21 @@ contract('Storage', (accounts) => {
 
     it('get playerIds of the team', async () => {
         await instance.addTeam(name = "Barca",accounts[1]).should.be.fulfilled;
-        const playerIds = await instance.getTeamPlayerIds(1).should.be.fulfilled;
+        let playerIds = await instance.getTeamPlayerIds(1).should.be.fulfilled;
         playerIds.length.should.be.equal(11);
         for (let pos = 0; pos < 11 ; pos++) 
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+
+        await instance.addTeam(name = "Madrid",accounts[1]).should.be.fulfilled;
+        await instance.exchangePlayersTeams(playerId0 = 11, playerId1 = 14).should.be.fulfilled;
+        playerIds = await instance.getTeamPlayerIds(1).should.be.fulfilled;
+        playerIds.length.should.be.equal(11);
+        for (let pos = 0; pos < 10 ; pos++) 
+            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+        playerIds[10].should.be.bignumber.equal('14');
     });
+
+    return;
 
     it('add team with different owner than the sender', async () => {
         await instance.addTeam('Barca', accounts[1]).should.be.fulfilled;
