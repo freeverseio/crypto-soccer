@@ -8,14 +8,6 @@ contract Teams is Players {
     constructor(address playerState) public Players(playerState) {
     }
 
-    // TODO: name of the function carries information stored in the name of the params
-    // TODO: getPlayerId(uint256 teamId, uint8 posInTeam) already gives all the info
-    function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) external view returns (uint256) {
-        require(_teamExists(teamId), "unexistent team");
-        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
-        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
-    }
-
     function createTeam(string memory teamName, address owner) public {
         uint256 teamId = _addTeam(teamName, owner);
         emit TeamCreation(teamName, teamId);

@@ -16,6 +16,7 @@ contract Storage {
         uint8 posInCurrentLeague;
         uint256 prevLeagueId;
         uint8 posInPrevLeague;
+        uint256[PLAYERS_PER_TEAM] playerIds;
     }
 
     uint8 constant public PLAYERS_PER_TEAM = 11;
@@ -34,7 +35,8 @@ contract Storage {
 
     constructor(address playerState) public {
         _playerState = PlayerState(playerState);
-        teams.push(Team("_", 0, 0, 0, 0));
+        uint256[PLAYERS_PER_TEAM] memory playerIds;
+        teams.push(Team("_", 0, 0, 0, 0, playerIds));
     }
 
     // TODO: exception when not existent team
@@ -74,12 +76,31 @@ contract Storage {
         return teams[teamId].name;
     }
 
+    // TODO: name of the function carries information stored in the name of the params
+    // TODO: getPlayerId(uint256 teamId, uint8 posInTeam) already gives all the info
+    function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
+        require(_teamExists(teamId), "unexistent team");
+        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
+        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
+    }
+
     /// this function uses the inverse of the following formula
     /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
     function getPlayerTeam(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
         uint256 state = getPlayerState(playerId);
         return _playerState.getCurrentTeamId(state);
+    }
+
+    function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
+        require(_teamExists(teamId), "invalid team id");
+        for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
+            if (teams[teamId].playerIds[pos] == 0){ // virtual player
+                playerIds[pos] = getPlayerIdFromTeamIdAndPos(teamId, pos);
+            }
+            
+
+        }
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
@@ -143,7 +164,8 @@ contract Storage {
         bytes32 nameHash = keccak256(abi.encode(name));
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
         _teamNameHashToOwner[nameHash] = owner;
-        teams.push(Team(name, 0, 0, 0, 0));
+        uint256[PLAYERS_PER_TEAM] memory playerIds;
+        teams.push(Team(name, 0, 0, 0, 0, playerIds));
         return teams.length - 1;
     }
 

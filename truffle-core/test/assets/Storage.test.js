@@ -16,6 +16,14 @@ contract('Storage', (accounts) => {
         instance = await Storage.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('get playerIds of the team', async () => {
+        await instance.addTeam(name = "Barca",accounts[1]).should.be.fulfilled;
+        const playerIds = await instance.getTeamPlayerIds(1).should.be.fulfilled;
+        playerIds.length.should.be.equal(11);
+        for (let pos = 0; pos < 11 ; pos++) 
+            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+    });
+
     it('add team with different owner than the sender', async () => {
         await instance.addTeam('Barca', accounts[1]).should.be.fulfilled;
         const owner = await instance.getTeamOwner('Barca').should.be.fulfilled;
