@@ -9,6 +9,19 @@ contract StorageMock is Storage {
     {
     }
 
+    function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {
+        return _computeSkills(rnd);
+    }
+
+    function intHash(string memory arg) public pure returns (uint256) {
+        return _intHash(arg);
+    }
+
+    function computeBirth(uint256 rnd) public pure returns (uint16) {
+        uint256 currentTime = 1557495456;
+        return _computeBirth(rnd, currentTime);
+    }
+
     function addTeam(string memory name, address owner) public returns (uint256) {
         return _addTeam(name, owner);
     }
