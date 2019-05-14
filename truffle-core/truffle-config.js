@@ -22,13 +22,13 @@ module.exports = {
       port: 8545
     }
   },
-  mocha: {
-    reporter: 'eth-gas-reporter',
-    reporterOptions: {
-      currency: 'EUR',
-      gasPrice: 21
-    }
-  },
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   reporterOptions: {
+  //     currency: 'EUR',
+  //     gasPrice: 21
+  //   }
+  // },
   compilers: {
     solc: {
       version: "0.5.8"
