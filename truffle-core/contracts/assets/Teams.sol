@@ -25,6 +25,6 @@ contract Teams is Players {
         require(_teamExists(teamId), "unexistent team");
         // TODO: looking to the usage I think _signToLeague fits more:
         // TODO: What happen inside that function stays inside that function
-        _updateTeamCurrentHistory(teamId, leagueId, posInLeague);
+        _signToLeague(teamId, leagueId, posInLeague);
     }
 }

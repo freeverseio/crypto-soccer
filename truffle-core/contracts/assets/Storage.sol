@@ -117,18 +117,18 @@ contract Storage {
         _playerIdToState[playerId] = state;
     }
 
-    function _updateTeamCurrentHistory(
+    function _signToLeague(
         uint256 teamId,
-        uint256 currentLeagueId,
-        uint8 posInCurrentLeague
+        uint256 leagueId,
+        uint8 posInLeague
     )
     internal
     {
         require(_teamExists(teamId), "invalid team id");
         teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
         teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
-        teams[teamId].currentLeagueId = currentLeagueId;
-        teams[teamId].posInCurrentLeague = posInCurrentLeague;
+        teams[teamId].currentLeagueId = leagueId;
+        teams[teamId].posInCurrentLeague = posInLeague;
     }
 
     function _addTeam(string memory name) internal returns (uint256) {
