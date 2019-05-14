@@ -56,7 +56,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         uint8[3][] memory tactics = _updateTacticsToBlockNum(
             usersInitDataTeamIds,
             usersInitDataTactics,
-            matchdayBlock, 
+            matchdayBlock,
             usersAlongDataTeamIds,
             usersAlongDataTactics,
             usersAlongDataBlocks);
@@ -71,15 +71,15 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
 
     function _updateTacticsToBlockNum(
         uint256[] memory usersInitDataTeamIds,
-        uint8[3][] memory usersInitDataTactics, 
-        uint256 blockNum, 
+        uint8[3][] memory usersInitDataTactics,
+        uint256 blockNum,
         uint256[] memory usersAlongDataTeamIds,
         uint8[3][] memory usersAlongDataTactics,
         uint256[] memory usersAlongDataBlocks
-    ) 
-        internal 
-        pure 
-        returns (uint8[3][] memory) 
+    )
+        internal
+        pure
+        returns (uint8[3][] memory)
     {
         for (uint256 i = 0 ; i < usersAlongDataTeamIds.length ; i++){
             if (usersAlongDataBlocks[i] <= blockNum){
@@ -101,7 +101,6 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         public
         returns (uint256[] memory state)
     {
-        uint256 nTeams = getNTeams(id);
     }
 
     function getLastChallengeBlock(uint256 id) public view returns (uint256) {
