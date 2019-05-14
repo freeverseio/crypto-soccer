@@ -47,6 +47,12 @@ contract Assets {
         return _teamNameHashToOwner[nameHash];
     }
 
+    /// Get the skills of a player
+    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
+        require(_playerExists(playerId), "unexistent player");
+        return _playerState.getSkillsVec(getPlayerState(playerId));
+    }
+
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
@@ -147,12 +153,12 @@ contract Assets {
         _playerIdToState[playerId] = state;
     }
 
-    function _signToLeague(
+    function signToLeague(
         uint256 teamId,
         uint256 leagueId,
         uint8 posInLeague
     )
-    internal
+    public
     {
         require(_teamExists(teamId), "invalid team id");
         teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
@@ -267,22 +273,11 @@ contract Assets {
         _setPlayerState(state1);
     }
 
-    /// Get the skills of a player
-    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
-        require(_playerExists(playerId), "unexistent player");
-        return _playerState.getSkillsVec(getPlayerState(playerId));
-    }
+    
 
     function createTeam(string memory teamName, address owner) public {
         uint256 teamId = _addTeam(teamName, owner);
         emit TeamCreation(teamName, teamId);
-    }
-
-    function signToLeague(uint256 teamId, uint256 leagueId, uint8 posInLeague) public {
-        require(_teamExists(teamId), "unexistent team");
-        // TODO: looking to the usage I think _signToLeague fits more:
-        // TODO: What happen inside that function stays inside that function
-        _signToLeague(teamId, leagueId, posInLeague);
     }
 
     /// @return hashed arg casted to uint256
