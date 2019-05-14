@@ -53,7 +53,6 @@ contract Storage {
 
     function getPlayerPosInTeam(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        uint256 teamId = getPlayerTeam(playerId);
         uint256 state = getPlayerState(playerId);
         return _playerState.getCurrentShirtNum(state);
     }
