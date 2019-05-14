@@ -2,16 +2,12 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Players = artifacts.require('Players');
-const Teams = artifacts.require('Teams');
-const Horizon = artifacts.require('Horizon');
+const Assets = artifacts.require('Teams');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
-const Cronos = artifacts.require('Cronos');
 
 contract('Game', (accounts) => {
-    let horizon = null;
     let players = null;
     let teams = null;
     let engine = null;
@@ -21,45 +17,27 @@ contract('Game', (accounts) => {
     let CHALLENGING_PERIOD_BLKS = null;
 
     beforeEach(async () => {
-        players = await Players.new().should.be.fulfilled;
-        teams = await Teams.new(players.address).should.be.fulfilled;
-        horizon = await Horizon.new(teams.address).should.be.fulfilled;
-        await players.addMinter(horizon.address).should.be.fulfilled;
-        await players.renounceMinter().should.be.fulfilled;
-        await teams.addMinter(horizon.address).should.be.fulfilled;
-        await teams.renounceMinter().should.be.fulfilled;
-        await players.addTeamsContract(teams.address).should.be.fulfilled;
-        await players.renounceTeamsContract().should.be.fulfilled;
-
-        engine = await Engine.new().should.be.fulfilled;
         state = await State.new().should.be.fulfilled;
+
+        assets = await Assets.new(state.address).should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
+
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
-        cronos = await Cronos.new().should.be.fulfilled;
-        CHALLENGING_PERIOD_BLKS = await leagues.getChallengePeriod().should.be.fulfilled;
     });
+
+    const createTeam = async (name, owner) => {
+        let receipt = await assets.createTeam(name, owner).should.be.fulfilled;
+        const teamId = receipt.logs[0].args.teamId.toNumber()
+        return teamId;
+    }
 
     // we use the values in the blockchain to generate the team status
     // it will use a local DBMS in the final version
     const generateTeamState = async (id) => {
         let teamState = await state.teamStateCreate().should.be.fulfilled;
-        const playersIds = await teams.getPlayers(id).should.be.fulfilled;
+        const playersIds = await assets.getTeamPlayerIds(id).should.be.fulfilled;
         for (let i = 0; i < playersIds.length; i++) {
-            const playerId = playersIds[i];
-            const defence = await players.getDefence(playerId).should.be.fulfilled;
-            const speed = await players.getSpeed(playerId).should.be.fulfilled;
-            const pass = await players.getPass(playerId).should.be.fulfilled;
-            const shoot = await players.getShoot(playerId).should.be.fulfilled;
-            const endurance = await players.getEndurance(playerId).should.be.fulfilled;
-            const playerState = await state.playerStateCreate(
-                defence,
-                speed,
-                pass,
-                shoot,
-                endurance,
-                0,
-                1, // TODO: make it properly
-                0, 0, 0, 0, 0, 0
-            );
+            const playerState = await assets.getPlayerState(playersIds[i]).should.be.fulfilled;
             teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
         return teamState;
@@ -90,19 +68,12 @@ contract('Game', (accounts) => {
     }
 
     it('play a league of 6 teams', async () => {
-        await horizon.createTeam("Barcelona").should.be.fulfilled;
-        await horizon.createTeam("Madrid").should.be.fulfilled;
-        await horizon.createTeam("Sevilla").should.be.fulfilled;
-        await horizon.createTeam("Bilbao").should.be.fulfilled;
-        await horizon.createTeam("Venice").should.be.fulfilled;
-        await horizon.createTeam("Juventus").should.be.fulfilled;
-        const barcelonaId = await teams.getTeamId("Barcelona").should.be.fulfilled;
-        const madridId = await teams.getTeamId("Madrid").should.be.fulfilled;
-        const sevillaId = await teams.getTeamId("Sevilla").should.be.fulfilled;
-        const bilbaoId = await teams.getTeamId("Bilbao").should.be.fulfilled;
-        const veniceId = await teams.getTeamId("Venice").should.be.fulfilled;
-        const juventusId = await teams.getTeamId("Juventus").should.be.fulfilled;
-
+        const barcelonaId = await createTeam("Barcelona", accounts[0]).should.be.fulfilled;
+        const madridId = await createTeam("Madrid", accounts[0]).should.be.fulfilled;
+        const sevillaId = await createTeam("Sevilla", accounts[0]).should.be.fulfilled;
+        const bilbaoId = await createTeam("Bilbao", accounts[0]).should.be.fulfilled;
+        const veniceId = await createTeam("Venice", accounts[0]).should.be.fulfilled;
+        const juventusId = await createTeam("Juventus", accounts[0]).should.be.fulfilled;
 
         const initBlock = 1;
         const step = 1;
@@ -157,8 +128,8 @@ contract('Game', (accounts) => {
                 const visitorTeamId = teamIds[teamsInMatch.visitorIdx.toNumber()];
 
                 // get the names of the teams in the match
-                const homeTeam = await teams.getName(homeTeamId).should.be.fulfilled;
-                const visitorTeam = await teams.getName(visitorTeamId).should.be.fulfilled;
+                const homeTeam = await assets.getTeamName(homeTeamId).should.be.fulfilled;
+                const visitorTeam = await assets.getTeamName(visitorTeamId).should.be.fulfilled;
 
                 // getting the goal of match 
                 const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
