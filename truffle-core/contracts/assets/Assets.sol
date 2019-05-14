@@ -5,7 +5,7 @@ import "../state/PlayerState.sol";
 
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
-contract Storage {
+contract Assets {
     event TeamCreation (string teamName, uint256 teamId);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice

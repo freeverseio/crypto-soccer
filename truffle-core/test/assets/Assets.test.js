@@ -4,16 +4,16 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 
-const Storage = artifacts.require('StorageMock');
+const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
  
-contract('Storage', (accounts) => {
+contract('Assets', (accounts) => {
     let instance = null;
     let playerStateLib = null;
 
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        instance = await Storage.new(playerStateLib.address).should.be.fulfilled;
+        instance = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
     it('get playerIds of the team', async () => {

@@ -1,12 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "../assets/Storage.sol";
+import "../assets/Assets.sol";
 
-contract StorageMock is Storage {
-    constructor(address playerState)
-    public
-    Storage(playerState)
-    {
+contract AssetsMock is Assets {
+    constructor(address playerState) public Assets(playerState) {
     }
 
     function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {
