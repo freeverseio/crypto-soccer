@@ -96,9 +96,14 @@ contract Assets {
         _setPlayerState(state1);
     }
 
-    function createTeam(string memory teamName, address owner) public {
-        uint256 teamId = _addTeam(teamName, owner);
-        emit TeamCreation(teamName, teamId);
+    function createTeam(string memory name, address owner) public {
+        bytes32 nameHash = keccak256(abi.encode(name));
+        require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
+        _teamNameHashToOwner[nameHash] = owner;
+        uint256[PLAYERS_PER_TEAM] memory playerIds;
+        teams.push(Team(name, 0, 0, 0, 0, playerIds));
+        uint256 teamId = teams.length - 1;
+        emit TeamCreation(name, teamId);
     }
 
     function signToLeague(
@@ -189,15 +194,6 @@ contract Assets {
         }
         else
             return _playerIdToState[playerId];
-    }
-
-    function _addTeam(string memory name, address owner) internal returns (uint256) {
-        bytes32 nameHash = keccak256(abi.encode(name));
-        require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
-        _teamNameHashToOwner[nameHash] = owner;
-        uint256[PLAYERS_PER_TEAM] memory playerIds;
-        teams.push(Team(name, 0, 0, 0, 0, playerIds));
-        return teams.length - 1;
     }
 
     function _setPlayerState(uint256 state) internal {

@@ -19,10 +19,6 @@ contract AssetsMock is Assets {
         return _computeBirth(rnd, currentTime);
     }
 
-    function addTeam(string memory name, address owner) public returns (uint256) {
-        return _addTeam(name, owner);
-    }
-
     function playerExists(uint256 playerId) public view returns (bool) {
         return _playerExists(playerId);
     }
