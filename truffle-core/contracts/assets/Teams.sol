@@ -8,19 +8,23 @@ contract Teams is Players {
     constructor(address playerState) public Players(playerState) {
     }
 
-    function createTeam(string memory teamName) public {
-        uint256 teamId = _addTeam(teamName);
-        emit TeamCreation(teamName, teamId);
-    }
-
+    // TODO: name of the function carries information stored in the name of the params
+    // TODO: getPlayerId(uint256 teamId, uint8 posInTeam) already gives all the info
     function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) external view returns (uint256) {
         require(_teamExists(teamId), "unexistent team");
         require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
         return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
     }
 
+    function createTeam(string memory teamName) public {
+        uint256 teamId = _addTeam(teamName);
+        emit TeamCreation(teamName, teamId);
+    }
+
     function signToLeague(uint256 teamId, uint256 leagueId, uint8 posInLeague) public {
         require(_teamExists(teamId), "unexistent team");
+        // TODO: looking to the usage I think _signToLeague fits more:
+        // TODO: What happen inside that function stays inside that function
         _updateTeamCurrentHistory(teamId, leagueId, posInLeague);
     }
 }

@@ -154,6 +154,8 @@ contract Storage {
     }
 
     /// Compute a random age between 16 and 35
+    /// @param rnd is a random number used as seed of the skills
+    /// @param currentTime in seconds since unix epoch
     /// @return monthOfBirth in monthUnixTime
     function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
         rnd >>= BITS_PER_SKILL*NUM_SKILLS;
@@ -167,13 +169,11 @@ contract Storage {
         uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
 
         return uint16((currentTime - age * years2secs) / month2secs);
-    }    
+    }
 
-     /**
-     * @dev Compute the pseudorandom skills, sum of the skills is 250
-     * @param rnd is a random number
-     * @return 5 skills
-     */
+    /// Compute the pseudorandom skills, sum of the skills is 250
+    /// @param rnd is a random number used as seed of the skills
+    /// @return 5 skills
     function _computeSkills(uint256 rnd) internal pure returns (uint16[NUM_SKILLS] memory) {
         uint16[5] memory skills;
         for (uint8 i = 0; i<5; i++) {

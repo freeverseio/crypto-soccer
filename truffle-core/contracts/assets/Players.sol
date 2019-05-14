@@ -6,6 +6,11 @@ contract Players is Storage {
     constructor(address playerState) public Storage(playerState) {
     }
 
+    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
+        require(_playerExists(playerId), "unexistent player");
+        return _playerState.getSkillsVec(getPlayerState(playerId));
+    }
+
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
         // TODO: check ownership address
         require(_playerExists(playerId0) && _playerExists(playerId1), "unexistent playerId");
@@ -30,11 +35,6 @@ contract Players is Storage {
 
         _setPlayerState(newState0);
         _setPlayerState(state1);
-    }
-
-    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
-        require(_playerExists(playerId), "unexistent player");
-        return _playerState.getSkillsVec(getPlayerState(playerId));
     }
 
     function _intHash(string memory arg) internal pure returns (uint256) {
