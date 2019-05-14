@@ -9,9 +9,6 @@ const State = artifacts.require('LeagueState');
 const Cronos = artifacts.require('Cronos');
 
 contract('Test2', (accounts) => {
-    let horizon = null;
-    let players = null;
-    let teams = null;
     let engine = null;
     let state = null;
     let leagues = null;
