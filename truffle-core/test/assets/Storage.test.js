@@ -32,8 +32,6 @@ contract('Storage', (accounts) => {
         playerIds[10].should.be.bignumber.equal('14');
     });
 
-    return;
-
     it('add team with different owner than the sender', async () => {
         await instance.addTeam('Barca', accounts[1]).should.be.fulfilled;
         const owner = await instance.getTeamOwner('Barca').should.be.fulfilled;
