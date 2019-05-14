@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 import "./TeamState.sol";
 
@@ -15,7 +15,7 @@ contract LeagueState is TeamState {
         state = new uint256[](leagueState.length + teamState.length + 1);
         for (uint256 i = 0 ; i < leagueState.length ; i++)
             state[i] = leagueState[i];
-        for (uint256 i = 0 ; i < teamState.length ; i++) 
+        for (uint256 i = 0 ; i < teamState.length ; i++)
             state[leagueState.length + i] = teamState[i];
         state[leagueState.length + teamState.length] = DIMENSION_1_END;
     }
@@ -41,13 +41,13 @@ contract LeagueState is TeamState {
     } 
 
     function leagueStateUpdate(
-        uint256[] memory leagueState, 
-        uint256 teamIdx, 
+        uint256[] memory leagueState,
+        uint256 teamIdx,
         uint256[] memory teamState
-    ) 
-        public 
-        pure 
-        returns (uint256[] memory) 
+    )
+        public
+        pure
+        returns (uint256[] memory)
     {
         uint256 nPlayers = teamStateSize(leagueStateAt(leagueState, teamIdx));
         require(nPlayers == teamStateSize(teamState), "mismatch in teams size");
@@ -56,7 +56,7 @@ contract LeagueState is TeamState {
             leagueState[firstPlayerIdx + i] = teamState[i];
         return leagueState;
     }
-   
+
     function isValidLeagueState(uint256[] memory state) public pure returns (bool) {
         if (state.length == 0)
             return true;
@@ -85,5 +85,4 @@ contract LeagueState is TeamState {
                 skills[i] = getSkills(leagueState[i]);
         }
     }
-    
 }

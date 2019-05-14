@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 /// @title the state of a player
 contract PlayerState {
@@ -8,7 +8,7 @@ contract PlayerState {
 
     /**
      * @dev encoding:
-     * 5x14bits 
+     * 5x14bits
      * skills                  = 5x14 bits
      * monthOfBirthInUnixTime  = 14 bits
      * playerIdx               = 28 bits
@@ -16,8 +16,8 @@ contract PlayerState {
      * currentShirtNum         =  4 bits
      * prevLeagueIdx           = 25 bits
      * prevTeamPosInLeague     =  8 bits
-     * prevShirtNumInLeague    =  4 bits
-     * lastSaleBlocknum        = 35 bits 
+     * prevShirtNumInLeague    =  4 bits // TODO: remove: unused
+     * lastSaleBlocknum        = 35 bits
      * available               = 40 bits
      */
     function playerStateCreate(
@@ -35,10 +35,10 @@ contract PlayerState {
         uint256 prevShirtNumInLeague,
         uint256 lastSaleBlock
     )
-        public 
+        public
         pure
-        returns (uint256 state) 
-    { 
+        returns (uint256 state)
+    {
         require(defence < 2**14, "defence out of bound");
         require(speed < 2**14, "defence out of bound");
         require(pass < 2**14, "defence out of bound");
@@ -46,12 +46,7 @@ contract PlayerState {
         require(endurance < 2**14, "defence out of bound");
         require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**28, "playerId out of bound");
-        require(currentTeamId < 2**28, "currentTeamIdx out of bound");
-        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
-        require(prevLeagueId < 2**25, "prevLeagueIdx out of bound");
-        require(prevTeamPosInLeague < 2**8, "prevTeamPosInLeague out of bound");
         require(prevShirtNumInLeague < 2**4, "prevShirtNumInLeague out of bound");
-        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
         state |= uint256(defence) << 242;
         state |= uint256(speed) << 228;
         state |= uint256(pass) << 214;
@@ -59,14 +54,28 @@ contract PlayerState {
         state |= uint256(endurance) << 186;
         state |= uint256(monthOfBirthInUnixTime) << 172;
         state |= uint256(playerId) << 144;
-        state |= uint256(currentTeamId) << 116;
-        state |= uint256(currentShirtNum) << 112;
-        state |= uint256(prevLeagueId) << 87;
-        state |= uint256(prevTeamPosInLeague) << 79;
+        state = setCurrentTeamId(state, currentTeamId);
+        state = setCurrentShirtNum(state, currentShirtNum);
+        state = setPrevLeagueId(state, prevLeagueId);
+        state = setPrevTeamPosInLeague(state, prevTeamPosInLeague);
         state |= uint256(prevShirtNumInLeague) << 75;
-        state |= uint256(lastSaleBlock) << 40;
+        state = setLastSaleBlock(state, lastSaleBlock);
     }
 
+    function setPrevLeagueId(uint256 state, uint256 value) public pure returns (uint256) {
+        require(value < 2**25, "prevLeagueIdx out of bound");
+        state &= ~uint256(2**25-1 << 87);
+        state |= uint256(value) << 87;
+        return state;
+    }
+
+    function setPrevTeamPosInLeague(uint256 state, uint256 value) public pure returns (uint256) {
+        require(value < 2**8, "prevTeamPosInLeague out of bound");
+        state &= ~uint256(2**8-1 << 79);
+        state |= uint256(value) << 79;
+        return state;
+    }
+    
     /// increase the skills of delta
     function playerStateEvolve(uint256 playerState, uint16 delta) public pure returns (uint256 evolvedState) {
         require(isValidPlayerState(playerState), "invalid player playerState");
@@ -86,6 +95,27 @@ contract PlayerState {
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 214)) | uint256(pass) << 214;
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 200)) | uint256(shoot) << 200;
         evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 186)) | uint256(endurance) << 186;
+    }
+
+    function setCurrentTeamId(uint256 playerState, uint256 teamId) public pure returns (uint256) {
+        require(teamId < 2**28, "currentTeamIdx out of bound");
+        playerState &= ~uint256(2**28-1 << 116);
+        playerState |= uint256(teamId) << 116;
+        return playerState;
+    }
+
+    function setCurrentShirtNum(uint256 state, uint256 currentShirtNum) public pure returns (uint256) {
+        require(currentShirtNum < 2**4, "currentShirtNum out of bound");
+        state &= ~uint256(2**4-1 << 112);
+        state |= uint256(currentShirtNum) << 112;
+        return state;
+    }
+
+    function setLastSaleBlock(uint256 state, uint256 lastSaleBlock) public pure returns (uint256) {
+        require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
+        state &= ~uint256(2*35-1 << 40);
+        state |= uint256(lastSaleBlock) << 40;
+        return state;
     }
 
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
@@ -155,5 +185,28 @@ contract PlayerState {
     function getSkills(uint256 playerState) public pure returns (uint256) {
         require(isValidPlayerState(playerState), "invalid player state");
         return playerState >> 186;
+    }
+
+    function getSkillsVec(uint256 playerState) public pure returns (uint16[5] memory skills) {
+        require(isValidPlayerState(playerState), "invalid player state");
+        skills[0] = uint16(getDefence(playerState));
+        skills[1] = uint16(getSpeed(playerState));
+        skills[2] = uint16(getPass(playerState));
+        skills[3] = uint16(getShoot(playerState));
+        skills[4] = uint16(getEndurance(playerState));
+    }
+
+    /// @dev Sets the number at a given index in a serialized uint256
+    function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
+        internal
+        pure
+        returns(uint)
+    {
+        uint maxnum = 1<<bits; // 2**bits
+        require(value < maxnum, "Value too large to fit in available space");
+        uint b = bits*index;
+        uint mask = (1 << bits)-1; // (2**bits)-1
+        serialized &= ~(mask << b); // clear all bits at index
+        return serialized + (value << b);
     }
 }

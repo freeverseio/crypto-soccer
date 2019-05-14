@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.4.21 <0.6.0;
 
 import "./LeagueState.sol";
 
@@ -10,19 +10,19 @@ contract PlayerState3D is LeagueState {
     }
 
     function playerState3DAppend(
-        uint256[] memory playerState3D, 
+        uint256[] memory playerState3D,
         uint256[] memory playerState2D
-    ) 
-        public 
-        pure 
-        returns (uint256[] memory state) 
+    )
+        public
+        pure
+        returns (uint256[] memory state)
     {
         require(isValidPlayerState3D(playerState3D), "invalid playerState3D");
         require(isValidTeamState(playerState2D), "invalid playerState2D");
         state = new uint256[](playerState3D.length + playerState2D.length + 1);
         for (uint256 i = 0 ; i < playerState3D.length ; i++)
             state[i] = playerState3D[i];
-        for (uint256 i = 0 ; i < playerState2D.length ; i++) 
+        for (uint256 i = 0 ; i < playerState2D.length ; i++)
             state[playerState3D.length + i] = playerState2D[i];
         state[playerState3D.length + playerState2D.length] = DIMENSION_2_END;
     }

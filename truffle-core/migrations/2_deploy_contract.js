@@ -1,6 +1,6 @@
-const Players = artifacts.require("Players");
-const Teams = artifacts.require("Teams");
-const Horizon = artifacts.require("Horizon");
+// const Players = artifacts.require("Players");
+// const Teams = artifacts.require("Teams");
+// const Horizon = artifacts.require("Horizon");
 
 module.exports = function (deployer) {
   deployer.then(async () => {

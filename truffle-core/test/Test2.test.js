@@ -2,18 +2,13 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Players = artifacts.require('Players');
-const Teams = artifacts.require('Teams');
-const Horizon = artifacts.require('Horizon');
+const Assets = artifacts.require('Teams');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
 const Cronos = artifacts.require('Cronos');
 
 contract('Test2', (accounts) => {
-    let horizon = null;
-    let players = null;
-    let teams = null;
     let engine = null;
     let state = null;
     let leagues = null;
@@ -21,19 +16,13 @@ contract('Test2', (accounts) => {
     let CHALLENGING_PERIOD_BLKS = null;
 
     beforeEach(async () => {
-        players = await Players.new().should.be.fulfilled;
-        teams = await Teams.new(players.address).should.be.fulfilled;
-        horizon = await Horizon.new(teams.address).should.be.fulfilled;
-        await players.addMinter(horizon.address).should.be.fulfilled;
-        await players.renounceMinter().should.be.fulfilled;
-        await teams.addMinter(horizon.address).should.be.fulfilled;
-        await teams.renounceMinter().should.be.fulfilled;
-        await players.addTeamsContract(teams.address).should.be.fulfilled;
-        await players.renounceTeamsContract().should.be.fulfilled;
-
-        engine = await Engine.new().should.be.fulfilled;
         state = await State.new().should.be.fulfilled;
+
+        assets = await Assets.new(state.address).should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
+
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
+
         cronos = await Cronos.new().should.be.fulfilled;
         CHALLENGING_PERIOD_BLKS = await leagues.getChallengePeriod().should.be.fulfilled;
     });
@@ -42,24 +31,9 @@ contract('Test2', (accounts) => {
     // it will use a local DBMS in the final version
     const generateTeamState = async (id) => {
         let teamState = await state.teamStateCreate().should.be.fulfilled;
-        const playersIds = await teams.getPlayers(id).should.be.fulfilled;
+        const playersIds = await assets.getTeamPlayerIds(id).should.be.fulfilled;
         for (let i = 0; i < playersIds.length; i++) {
-            const playerId = playersIds[i];
-            const defence = await players.getDefence(playerId).should.be.fulfilled;
-            const speed = await players.getSpeed(playerId).should.be.fulfilled;
-            const pass = await players.getPass(playerId).should.be.fulfilled;
-            const shoot = await players.getShoot(playerId).should.be.fulfilled;
-            const endurance = await players.getEndurance(playerId).should.be.fulfilled;
-            const playerState = await state.playerStateCreate(
-                defence,
-                speed,
-                pass,
-                shoot,
-                endurance,
-                0,
-                1, // TODO: make it properly
-                0, 0, 0, 0, 0, 0
-            );
+            const playerState = await assets.getPlayerState(playersIds[i]).should.be.fulfilled;
             teamState = await state.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
         return teamState;
@@ -90,10 +64,13 @@ contract('Test2', (accounts) => {
     }
 
     it('test2', async () => {
-        await horizon.createTeam("Barca").should.be.fulfilled;
-        await horizon.createTeam("Madrid").should.be.fulfilled;
-        const teamIdx1 = await teams.getTeamId("Barca").should.be.fulfilled;
-        const teamIdx2 = await teams.getTeamId("Madrid").should.be.fulfilled;
+        let receipt = await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;
+        const teamIdx1 = receipt.logs[0].args.teamId.toNumber();
+        teamIdx1.should.be.equal(1);
+
+        receipt = await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
+        const teamIdx2 = receipt.logs[0].args.teamId.toNumber();
+        teamIdx2.should.be.equal(2);
 
         await advanceToBlock(100);
 

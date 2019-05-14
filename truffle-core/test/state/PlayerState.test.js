@@ -54,7 +54,20 @@ contract('PlayerState', (accounts) => {
         const pass = 6;
         const shoot = 11;
         const endurance = 9;
-        const playerState = await instance.playerStateCreate(defence, speed, pass, shoot, endurance, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
+        const playerState = await instance.playerStateCreate(
+            defence,
+            speed,
+            pass,
+            shoot,
+            endurance,
+            monthOfBirthInUnixTime = 40,
+            playerId = 41,
+            currentTeamId = 42,
+            currentShirtNum = 3,
+            prevLeagueId = 44,
+            prevTeamPosInLeague = 45,
+            prevShirtNumInLeague = 6,
+            lastSaleBlock = 47).should.be.fulfilled;
         let result = await instance.getDefence(playerState).should.be.fulfilled;
         result.toNumber().should.be.equal(defence);
         result = await instance.getSpeed(playerState).should.be.fulfilled;
@@ -65,6 +78,8 @@ contract('PlayerState', (accounts) => {
         result.toNumber().should.be.equal(shoot);
         result = await instance.getEndurance(playerState).should.be.fulfilled;
         result.toNumber().should.be.equal(endurance);
+        result = await instance.getCurrentTeamId(playerState).should.be.fulfilled;
+        result.should.be.bignumber.equal('42');
     });
 
     it('player state evolve', async () => {
@@ -100,5 +115,5 @@ contract('PlayerState', (accounts) => {
             0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
         const skills = await instance.getSkills(playerState).should.be.fulfilled;
         skills.toNumber().should.be.equal(1);
-    })
+    });
 });
