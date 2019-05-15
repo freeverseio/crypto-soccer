@@ -11,15 +11,23 @@
  *     gasPrice: 10000000000,
  *   },
  */
+const HDWalletProvider = require("truffle-hdwallet-provider");
+ 
+const mnemonic = "twelve_words";
+const infura_apikey = "XXXXXX"; // infura api key
 
 module.exports = {
-  // See <http://truffleframework.com/docs/advanced/configuration>
+    // See <http://truffleframework.com/docs/advanced/configuration>
   // to customize your Truffle configuration!
   networks: {
     ganache: {
       network_id: '*',
       host: '127.0.0.1',
       port: 8545
+    },
+    infura_ropsten: {
+      provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
+      network_id: 3
     }
   },
   // mocha: {
