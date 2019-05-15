@@ -1,13 +1,14 @@
 pragma solidity ^ 0.5.0;
 
-import "./StakersInterface.sol";
+import "./GameControllerInterface.sol";
+import "../stakers/StakersInterface.sol";
 
 // TODOs:
 // 1. Restricted window updates is still missing
 // 2. Test restricted window update
 
 
-contract GameController {
+contract GameController is GameControllerInterface {
 
   string constant ERR_NO_STAKERS         = "err-no-stakers-contract-set";
   string constant ERR_WINDOW_NOT_STARTED = "err-window-not-started";
@@ -53,21 +54,13 @@ contract GameController {
   }
 
   // ----------------- internal/protected functions -----------------------
-
-  /// @dev called thru inheritance by game logic when league id is updated by a staker
-  /// @param _id game identifier
-  /// @param _windowStart should be the block number at which the league ended
-  function updated(uint256 _id, uint256 _windowStart, address _updater) internal onlyIfStakersAddressValid {
+  function updated(uint256 _id, uint256 _windowStart, address _updater) external onlyIfStakersAddressValid {
     checkUpdateWindow(_windowStart, _updater);
     StakersInterface(stakersContractAddress).initChallenge(_updater);
     emit UpdateEvent(_id, _updater);
   }
 
-  /// @dev called thru inheritance by game logic when a challenger succesfully
-  /// demonstrates that the updater was lying. Typically _windowStart should be
-  /// the block number at which the league ended, however it should be reset when
-  /// an updater lies.
-  function challenged(uint256 _id, address _updater) internal onlyIfStakersAddressValid {
+  function challenged(uint256 _id, address _updater) external onlyIfStakersAddressValid {
     StakersInterface(stakersContractAddress).lierChallenge(_updater); // will revert if _updater was not in challengable state
     emit ChallengeEvent(_id, _updater);
   }

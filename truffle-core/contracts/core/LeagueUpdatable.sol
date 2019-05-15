@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./LeaguesScheduler.sol";
+import "../game_controller/GameControllerInterface.sol";
 
 /// @title an updatable league
 contract LeagueUpdatable is LeaguesScheduler {
@@ -17,7 +18,13 @@ contract LeagueUpdatable is LeaguesScheduler {
         uint256 updateBlock;
     }
 
+    GameControllerInterface private _stakers;
+
     mapping(uint256 => Result) private _result;
+
+    function setStakersContract(address stakersContract) public  {
+        _stakers = GameControllerInterface(stakersContract);
+    }
 
     // TODO: add minimum checks
     function updateLeague(
@@ -36,11 +43,17 @@ contract LeagueUpdatable is LeaguesScheduler {
         _result[id].scores = scores;
         _result[id].updater = msg.sender;
         _result[id].updateBlock = block.number;
+
+        if (_stakers != GameControllerInterface(0))
+            _stakers.updated(id, 0, msg.sender);
     }
 
     function resetUpdater(uint256 id) public {
         require(_exists(id), "unexistent league");
         _result[id].updateBlock = 0;
+
+        if (_stakers != GameControllerInterface(0))
+            _stakers.challenged(id, msg.sender);
     }
 
     function getUpdater(uint256 id) external view returns (address) {
