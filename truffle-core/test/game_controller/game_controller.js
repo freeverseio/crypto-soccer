@@ -38,12 +38,12 @@ contract('game_controller', (accounts) => {
 
     it("Tests invalid stakers address", async () => {
         await truffleAssert.reverts(
-          controller.test_updated(1, 0, bob),
+          controller.updated(1, 0, bob),
           ERR_NO_STAKERS,
           "Stakers address is not valid so it should revert"
         )
         await truffleAssert.reverts(
-          controller.test_challenged(1, bob),
+          controller.challenged(1, bob),
           ERR_NO_STAKERS,
           "Stakers address is not valid so it should revert"
         )
@@ -85,7 +85,7 @@ contract('game_controller', (accounts) => {
         windowEnd  = windowStart + windowLength
 
         await truffleAssert.reverts(
-          controller.test_updated(leagueId, windowStart, alice),
+          controller.updated(leagueId, windowStart, alice),
           ERR_WINDOW_NOT_STARTED,
           "League updated before league duration"
         )
@@ -106,20 +106,20 @@ contract('game_controller', (accounts) => {
           "window should not be ended"
         )
         await truffleAssert.passes(
-          controller.test_updated(leagueId, windowStart, bob),
+          controller.updated(leagueId, windowStart, bob),
           "Failed updating league after league duration"
         )
         await truffleAssert.reverts(
-          controller.test_updated(leagueId, windowStart + 10000, bob),
+          controller.updated(leagueId, windowStart + 10000, bob),
           ERR_WINDOW_NOT_STARTED,
           "Was able to update before window start"
         )
         await truffleAssert.passes(
-          controller.test_challenged(leagueId, bob),
+          controller.challenged(leagueId, bob),
           "Failed to challenge"
         )
         await truffleAssert.reverts(
-          controller.test_challenged(leagueId, alice),
+          controller.challenged(leagueId, alice),
           ERR_BADSTATE,
           "Alice was challenged without being an updater"
         )
