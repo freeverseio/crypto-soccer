@@ -1,4 +1,4 @@
-const GameController = artifacts.require("../contracts/TestableGameController.sol");
+const GameController = artifacts.require("GameController");
 const Stakers = artifacts.require("Stakers")
 const truffleAssert = require('truffle-assertions');
 const util = require('util')
