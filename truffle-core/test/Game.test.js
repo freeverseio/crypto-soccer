@@ -2,26 +2,21 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Assets = artifacts.require('Teams');
+const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
 
 contract('Game', (accounts) => {
-    let players = null;
-    let teams = null;
     let engine = null;
     let state = null;
     let leagues = null;
     let cronos = null;
-    let CHALLENGING_PERIOD_BLKS = null;
 
     beforeEach(async () => {
         state = await State.new().should.be.fulfilled;
-
         assets = await Assets.new(state.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
-
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
     });
 

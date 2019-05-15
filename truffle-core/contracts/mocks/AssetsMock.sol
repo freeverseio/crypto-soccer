@@ -1,16 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "../assets/Players.sol";
+import "../assets/Assets.sol";
 
-contract PlayersMock is Players {
-    constructor(address playerState)
-    public
-    Players(playerState)
-    {
-    }
-
-    function addTeam(string memory name, address owner) public returns (uint256) {
-        return _addTeam(name, owner);
+contract AssetsMock is Assets {
+    constructor(address playerState) public Assets(playerState) {
     }
 
     function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {
@@ -26,7 +19,19 @@ contract PlayersMock is Players {
         return _computeBirth(rnd, currentTime);
     }
 
+    function playerExists(uint256 playerId) public view returns (bool) {
+        return _playerExists(playerId);
+    }
+
+    function isVirtual(uint256 playerId) public view returns (bool) {
+        return _isVirtual(playerId);
+    }
+
     function setPlayerState(uint256 state) public {
         _setPlayerState(state);
+    }
+
+    function teamExists(uint256 teamId) public view returns (bool){
+        return _teamExists(teamId);
     }
 }

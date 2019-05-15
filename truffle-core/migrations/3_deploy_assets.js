@@ -1,5 +1,5 @@
 const States = artifacts.require('LeagueState');
-const Assets = artifacts.require('Teams');
+const Assets = artifacts.require('Assets');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
