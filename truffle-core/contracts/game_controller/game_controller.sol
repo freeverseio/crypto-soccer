@@ -57,7 +57,7 @@ contract GameController {
   /// @dev called thru inheritance by game logic when league id is updated by a staker
   /// @param _id game identifier
   /// @param _windowStart should be the block number at which the league ended
-  function updated(uint256 _id, uint256 _windowStart, address _updater) internal onlyIfStakersAddressValid {
+  function updated(uint256 _id, uint256 _windowStart, address _updater) public onlyIfStakersAddressValid {
     checkUpdateWindow(_windowStart, _updater);
     StakersInterface(stakersContractAddress).initChallenge(_updater);
     emit UpdateEvent(_id, _updater);
@@ -67,7 +67,7 @@ contract GameController {
   /// demonstrates that the updater was lying. Typically _windowStart should be
   /// the block number at which the league ended, however it should be reset when
   /// an updater lies.
-  function challenged(uint256 _id, address _updater) internal onlyIfStakersAddressValid {
+  function challenged(uint256 _id, address _updater) public onlyIfStakersAddressValid {
     StakersInterface(stakersContractAddress).lierChallenge(_updater); // will revert if _updater was not in challengable state
     emit ChallengeEvent(_id, _updater);
   }
