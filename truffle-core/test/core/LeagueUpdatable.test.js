@@ -3,13 +3,17 @@ require('chai')
     .should();
 
 const Leagues = artifacts.require('LeagueUpdatableMock');
+const GameController = artifacts.require('GameControllerDummy');
 
 contract('LeaguesUpdatable', (accounts) => {
     let leagues = null;
+    let gameControllerDummy = null;
     const id = 0;
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
+        gameControllerDummy = await GameController.new().should.be.fulfilled;
+        await leagues.setStakersContract(gameControllerDummy.address).should.be.fulfilled;
         await leagues.create(
             id,
             blocksToInit = 1,
