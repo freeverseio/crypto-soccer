@@ -97,6 +97,16 @@ contract('Assets', (accounts) => {
         await assets.isVirtual(1).should.eventually.equal(true);
     });
 
+    it('set player state of existent virtual player', async () => {
+        await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
+        let state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
+        const currentBlock = 5; // TODO: get it properly
+        state = await playerStateLib.setLastSaleBlock(state, currentBlock).should.be.fulfilled;
+        await assets.setPlayerState(state).should.be.fulfilled;
+        const resultState = await assets.getPlayerState(playerId).should.be.fulfilled;
+        resultState.should.be.bignumber.equal(state);
+    });
+
     it('is existent non virtual player', async () => {
         await assets.setPlayerState(4).should.be.rejected;
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
@@ -129,28 +139,20 @@ contract('Assets', (accounts) => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         await assets.createTeam("Madrid",accounts[1]).should.be.fulfilled;
         await assets.exchangePlayersTeams(playerId0 = 8, playerId1 = 19).should.be.fulfilled;
-        const teamPlayer0 = await assets.getPlayerTeam(playerId0).should.be.fulfilled;
+        const statePlayer0 = await assets.getPlayerState(playerId0).should.be.fulfilled;
+        const teamPlayer0 = await playerStateLib.getCurrentTeamId(statePlayer0).should.be.fulfilled;
         teamPlayer0.should.be.bignumber.equal('2');
-        const teamPlayer1 = await assets.getPlayerTeam(playerId1).should.be.fulfilled;
+        const statePlayer1 = await assets.getPlayerState(playerId1).should.be.fulfilled;
+        const teamPlayer1 = await playerStateLib.getCurrentTeamId(statePlayer1).should.be.fulfilled;
         teamPlayer1.should.be.bignumber.equal('1');
     });
 
-    it('query null player id', async () => {
-        await assets.getPlayerTeam(0).should.be.rejected;
-    });
-
-    it('query non created player id', async () => {
-        await assets.getPlayerTeam(1).should.be.rejected;
-    });
-
-    it('get player team of existing player', async () => {
+    it('get player state of existing player', async () => {
         const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM().should.be.fulfilled;
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
-        for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
-            const teamId = await assets.getPlayerTeam(playerId).should.be.fulfilled;
-            teamId.toNumber().should.be.equal(1);
-        }
-        await assets.getPlayerTeam(nPLayersPerTeam+1).should.be.rejected;
+        for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++)
+            await assets.getPlayerState(playerId).should.be.fulfilled;
+        await assets.getPlayerState(nPLayersPerTeam+1).should.be.rejected;
     });
 
     it('computed skills with rnd = 0 is 50 each', async () => {
@@ -180,16 +182,18 @@ contract('Assets', (accounts) => {
         const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM().should.be.fulfilled;
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
-            const pos = await assets.getPlayerPosInTeam(playerId).should.be.fulfilled;
+            const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
+            const pos = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
             pos.toNumber().should.be.equal(playerId - 1);
         }
-        await assets.getPlayerPosInTeam(nPLayersPerTeam+1).should.be.rejected;
+        await assets.getPlayerState(nPLayersPerTeam+1).should.be.rejected;
     })
 
     it('get existing virtual player skills', async () => {
         const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
-        const skills = await assets.getPlayerSkills(playerId = 10).should.be.fulfilled;
+        const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
+        const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
         skills.length.should.be.equal(numSkills.toNumber());
         skills[0].should.be.bignumber.equal('48');
         skills[1].should.be.bignumber.equal('72');
@@ -200,8 +204,8 @@ contract('Assets', (accounts) => {
         sum.should.be.equal(250);
     });
 
+
     it('get existing non virtual player skills', async () => {
-        const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await playerStateLib.playerStateCreate(
             defence = 1,
@@ -219,7 +223,8 @@ contract('Assets', (accounts) => {
             lastSaleBlock = 3
         ).should.be.fulfilled;
         await assets.setPlayerState(state).should.be.fulfilled;
-        const skills = await assets.getPlayerSkills(playerId = 10).should.be.fulfilled;
+        const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
+        const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
         skills[0].should.be.bignumber.equal('1');
         skills[1].should.be.bignumber.equal('2');
         skills[2].should.be.bignumber.equal('3');
@@ -236,7 +241,8 @@ contract('Assets', (accounts) => {
     it('get non virtual player team', async () => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         await assets.createTeam("Madrid",accounts[1]).should.be.fulfilled;
-        const teamBefore = await assets.getPlayerTeam(playerId = 1).should.be.fulfilled;
+        let playerState = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
+        const teamBefore = await playerStateLib.getCurrentTeamId(playerState).should.be.fulfilled;
         const state = await playerStateLib.playerStateCreate(
             defence = 3,
             speed = 3,
@@ -253,7 +259,8 @@ contract('Assets', (accounts) => {
             lastSaleBlock = 3
         ).should.be.fulfilled;
         await assets.setPlayerState(state).should.be.fulfilled;
-        const teamAfter = await assets.getPlayerTeam(playerId = 1).should.be.fulfilled;
+        playerState = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
+        const teamAfter = await playerStateLib.getCurrentTeamId(playerState).should.be.fulfilled;
         teamAfter.should.be.bignumber.not.equal(teamBefore);
         teamAfter.should.be.bignumber.equal('2');
     });

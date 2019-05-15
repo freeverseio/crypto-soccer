@@ -40,12 +40,6 @@ contract Assets {
         teams.push(Team("_", 0, 0, 0, 0, playerIds));
     }
 
-    /// Get the skills of a player
-    function getPlayerSkills(uint256 playerId) external view returns (uint16[NUM_SKILLS] memory) {
-        require(_playerExists(playerId), "unexistent player");
-        return _playerState.getSkillsVec(getPlayerState(playerId));
-    }
-
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
@@ -126,12 +120,6 @@ contract Assets {
         return _teamNameHashToOwner[nameHash];
     }
 
-    function getPlayerPosInTeam(uint256 playerId) public view returns (uint256) {
-        require(_playerExists(playerId), "unexistent player");
-        uint256 state = getPlayerState(playerId);
-        return _playerState.getCurrentShirtNum(state);
-    }
-
     function countTeams() public view returns (uint256){
         return teams.length - 1;
     }
@@ -147,14 +135,6 @@ contract Assets {
         require(_teamExists(teamId), "unexistent team");
         require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
         return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
-    }
-
-    /// this function uses the inverse of the following formula
-    /// playerId = playersPerTeam * (teamId -1) + 1 + posInTeam;
-    function getPlayerTeam(uint256 playerId) public view returns (uint256) {
-        require(_playerExists(playerId), "unexistent player");
-        uint256 state = getPlayerState(playerId);
-        return _playerState.getCurrentTeamId(state);
     }
 
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
