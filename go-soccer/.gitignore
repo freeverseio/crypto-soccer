@@ -1,0 +1,7 @@
+.vscode
+gipc.yaml
+.DS_Store
+*.swp
+ganache/build/*
+relay/client/node_modules/*
+relay/client/package-lock.json

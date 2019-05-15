@@ -1,0 +1,26 @@
+contracts:
+  lioneladdress: 0x09595f135aacad54930fae705db316af0a346547
+  stakersaddress: 0x8Cc179eBa03a5BDcC37FA8481D08FaE17965c712
+
+stakers:
+  accounts:
+    - address: 0xC6cdeF8d53Cf6756A9a7B056Bd3614FD3Ebd80cd
+      onion:   0x148b0aeaf8c96515ac19f5dcd2c1c42beead584aa658f51f574abc8c66e46551
+    - address: 0x296d380C93e4eaAE321E20e2e95d95BC0d8fF4E9
+      onion:   0xf50d184a431b01bb7cadec47b686fc73aa85a0283ef0bedd264372e8d5c7b42a
+    - address: 0x389d4768A04E1206836BFd005Df2Cfd1EF8EDE1C
+      onion:   0x42158b950bce8fc4a1767283707ffe803eb50e85bf7f5e3046cb43b2d91fa551
+  keystore: data/keystore
+  keypasswd: 111111   
+
+db:
+  path: /tmp/soccerdb
+
+api:
+  port: 3000
+
+web3:
+  rpcurl: https://nou.network/web3
+  maxgasprice: 14000000000
+
+# block explorer is in http://testnet.busyverse.com:8000/
