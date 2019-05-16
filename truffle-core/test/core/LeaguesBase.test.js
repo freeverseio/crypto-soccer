@@ -51,6 +51,17 @@ contract('LeaguesBase', (accounts) => {
         await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;
     });
 
+    it('count leagues', async () => {
+        let counter = await leagues.leaguesCount().should.be.fulfilled;
+        counter.toNumber().should.be.equal(0);
+        await leagues.create(1, initBlock, step, teamIds, tactics).should.be.fulfilled;
+        counter = await leagues.leaguesCount().should.be.fulfilled;
+        counter.toNumber().should.be.equal(1);
+        await leagues.create(2, initBlock, step, teamIds, tactics).should.be.fulfilled;
+        counter = await leagues.leaguesCount().should.be.fulfilled;
+        counter.toNumber().should.be.equal(2);
+    });
+
     it('step == 0 is invalid', async () => {
         const step = 0;
         await leagues.create(id, initBlock, step, teamIds, tactics).should.be.rejected;

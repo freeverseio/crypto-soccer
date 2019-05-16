@@ -11,6 +11,12 @@ contract LeaguesBase {
     }
 
     mapping(uint256 => League) private _leagues;
+    uint256 private _leaguesCount;
+
+
+    function leaguesCount() external view returns (uint256) {
+        return _leaguesCount;
+    }
 
     function create(
         uint256 id, 
@@ -35,6 +41,7 @@ contract LeaguesBase {
             step,
             usersInitDataHash
         );
+        _leaguesCount++;
     }
 
     function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
