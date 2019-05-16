@@ -23,7 +23,7 @@ const SLASHABLE        = 8;
 const SLASHED          = 9
 
 contract('IntegrationTest', (accounts) => {
-    const [owner, bob, alice] = accounts
+    const [owner, bob, alice, carol, david] = accounts
 
     let engine = null;
     let state = null;
@@ -51,6 +51,8 @@ contract('IntegrationTest', (accounts) => {
 
         await stakers.enroll(onion3,{from:bob, value:stake});
         await stakers.enroll(onion3,{from:alice, value:stake});
+        await stakers.enroll(onion3,{from:carol, value:stake});
+        await stakers.enroll(onion3,{from:david, value:stake});
         await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber());
     });
 
@@ -229,10 +231,11 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHashLie,
             statesAtMatchdayHashes,
-            scores
+            scores, {from: alice}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
+        console.log("alice updated");
 
         // A CHALLENGER tries to prove that the UPDATER lied with the initHash
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
@@ -246,10 +249,12 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             usersInitData.teamIdxs,
             usersInitData.tactics,
-            dataToChallengeInitStates
+            dataToChallengeInitStates, {from: carol}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
+
+        console.log("carol challenged");
 
         // A nicer UPDATER now tells the truth:
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
@@ -257,10 +262,12 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashes,
-            scores
+            scores, {from: carol}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
+        console.log("carol updated");
+
 
         // ...and the CHALLENGER fails to prove anything
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
@@ -272,7 +279,7 @@ contract('IntegrationTest', (accounts) => {
             usersAlongData.tactics,
             usersAlongData.blocks,
             selectedMatchday = 0,
-            prevMatchdayStates = initPlayerStatesDay0
+            prevMatchdayStates = initPlayerStatesDay0, {from: david}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -285,7 +292,7 @@ contract('IntegrationTest', (accounts) => {
             usersAlongData.tactics,
             usersAlongData.blocks,
             selectedMatchday = 1,
-            prevMatchdayStates = initPlayerStatesDay1
+            prevMatchdayStates = initPlayerStatesDay1, {from: david}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
