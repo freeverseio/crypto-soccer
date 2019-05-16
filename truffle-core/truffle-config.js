@@ -30,6 +30,7 @@ module.exports = {
       network_id: 3
     },
     devnet: {
+      // public key 0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7
       provider: new HDWalletProvider("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "https://devnet.busyverse.com/web3"),
       network_id: 63819
     }
