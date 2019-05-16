@@ -23,7 +23,7 @@ const SLASHABLE        = 8;
 const SLASHED          = 9
 
 contract('IntegrationTest', (accounts) => {
-    const [owner, bob, alice, carol, david] = accounts
+    const [owner, bob, alice, carol] = accounts
 
     let engine = null;
     let state = null;
@@ -49,10 +49,9 @@ contract('IntegrationTest', (accounts) => {
         await gameController.setStakersContractAddress(stakers.address);
         await leagues.setStakersContract(gameController.address).should.be.fulfilled;
 
-        await stakers.enroll(onion3,{from:bob, value:stake});
+        await stakers.enroll(onion2,{from:bob, value:stake});
         await stakers.enroll(onion3,{from:alice, value:stake});
         await stakers.enroll(onion3,{from:carol, value:stake});
-        await stakers.enroll(onion3,{from:david, value:stake});
         await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber());
     });
 
@@ -249,12 +248,15 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             usersInitData.teamIdxs,
             usersInitData.tactics,
-            dataToChallengeInitStates, {from: carol}
+            dataToChallengeInitStates, {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
 
-        console.log("carol challenged");
+        console.log("bob challenged");
+
+        await stakers.resolveChallenge(onion1, {from: bob}).should.be.fulfilled;
+        console.log("bob reveal the secret");
 
         // A nicer UPDATER now tells the truth:
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
@@ -262,11 +264,11 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashes,
-            scores, {from: carol}
+            scores, {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
-        console.log("carol updated");
+        console.log("bob updated 2");
 
 
         // ...and the CHALLENGER fails to prove anything
@@ -279,7 +281,7 @@ contract('IntegrationTest', (accounts) => {
             usersAlongData.tactics,
             usersAlongData.blocks,
             selectedMatchday = 0,
-            prevMatchdayStates = initPlayerStatesDay0, {from: david}
+            prevMatchdayStates = initPlayerStatesDay0, {from: carol}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -292,10 +294,15 @@ contract('IntegrationTest', (accounts) => {
             usersAlongData.tactics,
             usersAlongData.blocks,
             selectedMatchday = 1,
-            prevMatchdayStates = initPlayerStatesDay1, {from: david}
+            prevMatchdayStates = initPlayerStatesDay1, {from: carol}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
+
+        await jumpSeconds((await stakers.MAXIDLE_SECS()).toNumber());
+        // console.log("alice state : " + await stakers.state(alice,0));
+        await stakers.slash(alice, {from: bob}).should.be.fulfilled;
+        console.log("Alice slashed");
 
         return;
         await leagues.challengeInitStates(
