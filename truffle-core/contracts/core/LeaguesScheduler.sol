@@ -35,7 +35,7 @@ contract LeaguesScheduler is LeaguesBase {
     {
         uint256 initBlock = getInitBlock(id);
         uint256 step = getStep(id);
-        bytes32 blockHash = blockhash(initBlock + step * day);
+        bytes32 blockHash = keccak256(abi.encode(initBlock + step * day));
         require(blockHash != 0, "unable to retrive block hash");
         return blockHash;
     }
