@@ -63,9 +63,7 @@ contract('LeaguesScheduler', (accounts) => {
     });
 
     it('get match day', async () => {
-        const initBlock = await leagues.getInitBlock(id).should.be.fulfilled;
         let hash = await leagues.getMatchDayBlockHash(id, 0).should.be.fulfilled;
-        let block = await web3.eth.getBlock(initBlock);
-        hash.should.be.equal(block.hash);
+        hash.should.be.equal("0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6");
     });
 });
