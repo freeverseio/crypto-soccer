@@ -43,7 +43,7 @@ contract('game_controller', (accounts) => {
           "Stakers address is not valid so it should revert"
         )
         await truffleAssert.reverts(
-          controller.challenged(1, bob),
+          controller.challenged(1),
           ERR_NO_STAKERS,
           "Stakers address is not valid so it should revert"
         )
@@ -115,11 +115,11 @@ contract('game_controller', (accounts) => {
           "Was able to update before window start"
         )
         await truffleAssert.passes(
-          controller.challenged(leagueId, bob),
+          controller.challenged(leagueId),
           "Failed to challenge"
         )
         await truffleAssert.reverts(
-          controller.challenged(leagueId, alice),
+          controller.challenged(leagueId),
           ERR_BADSTATE,
           "Alice was challenged without being an updater"
         )
