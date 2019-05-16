@@ -55,7 +55,7 @@ contract GameController is GameControllerInterface {
 
   // ----------------- internal/protected functions -----------------------
   function updated(uint256 _id, uint256 _windowStart, address _updater) external onlyIfStakersAddressValid {
-    checkUpdateWindow(_windowStart, _updater);
+    // checkUpdateWindow(_windowStart, _updater);
     StakersInterface(stakersContractAddress).initChallenge(_updater);
     emit UpdateEvent(_id, _updater);
   }

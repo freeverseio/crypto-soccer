@@ -1,19 +1,40 @@
 require('chai')
     .use(require('chai-as-promised'))
     .should();
+const util = require('util');
 
 const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
 const Cronos = artifacts.require('Cronos');
-const GameController = artifacts.require('GameControllerDummy');
+const GameController = artifacts.require('GameController');
+const Stakers = artifacts.require("Stakers")
+
+const UNENROLLED       = 0;
+const ENROLLING        = 1;
+const UNENROLLING      = 2;
+const UNENROLLABLE     = 3;
+const ENROLLED         = 4;
+const CHALLENGE_TT     = 5;
+const CHALLENGE_LI_RES = 6;
+const CHALLENGE_TT_RES = 7;
+const SLASHABLE        = 8;
+const SLASHED          = 9
 
 contract('IntegrationTest', (accounts) => {
+    const [owner, bob, alice] = accounts
+
     let engine = null;
     let state = null;
     let leagues = null;
     let cronos = null;
+    let stake = null;
+
+    const onion0 = web3.utils.keccak256("hel24"); // finishes 2
+    const onion1 = web3.utils.keccak256(onion0);  // finishes 0
+    const onion2 = web3.utils.keccak256(onion1);  // finishes b
+    const onion3 = web3.utils.keccak256(onion2);  // finishes 
 
     beforeEach(async () => {
         state = await State.new().should.be.fulfilled;
@@ -21,8 +42,16 @@ contract('IntegrationTest', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         cronos = await Cronos.new().should.be.fulfilled;        
-        gameControllerDummy = await GameController.new().should.be.fulfilled;
-        await leagues.setStakersContract(gameControllerDummy.address).should.be.fulfilled;
+        gameController = await GameController.new().should.be.fulfilled;
+        stakers = await Stakers.new(gameController.address);
+        stake = await stakers.REQUIRED_STAKE();
+
+        await gameController.setStakersContractAddress(stakers.address);
+        await leagues.setStakersContract(gameController.address).should.be.fulfilled;
+
+        await stakers.enroll(onion3,{from:bob, value:stake});
+        await stakers.enroll(onion3,{from:alice, value:stake});
+        await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber());
     });
 
     // we use the values in the blockchain to generate the team status
@@ -154,20 +183,25 @@ contract('IntegrationTest', (accounts) => {
         statesAtMatchdayLie[0][0] += 1; // sinner operation!
         const statesAtMatchdayHashesLie = await prepareMatchdayHashes(statesAtMatchdayLie);
 
+        console.log("updating the league");
         await leagues.updateLeague(
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashesLie,
-            scores
+            scores, {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
+        console.log("update done");
         // A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 20).should.be.fulfilled;
         let verified = await leagues.isVerified(leagueIdx).should.be.fulfilled;
         verified.should.be.equal(false);
 
+        console.log("challenging");
+        console.log("State Bob: " + await stakers.state(bob,0));
+        console.log("State Alice: " + await stakers.state(alice,0));
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
@@ -176,10 +210,13 @@ contract('IntegrationTest', (accounts) => {
             usersAlongData.tactics,
             usersAlongData.blocks,
             selectedMatchday = 0,
-            prevMatchdayStates = initPlayerStatesDay0
+            prevMatchdayStates = initPlayerStatesDay0,
+            {from: alice}
+
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
+        console.log("challenged");
 
         // ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
         // await advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5);
@@ -267,4 +304,29 @@ contract('IntegrationTest', (accounts) => {
         //   create another league. It fails to do so because teams are still busy
         await advanceNBlocks(2).should.be.fulfilled;
     });
+
+
+const jumpSeconds = function(duration) {
+  const id = Date.now()
+  const sendAsync = util.promisify(web3.currentProvider.send);
+
+  return new Promise((resolve, reject) => {
+    sendAsync({
+      jsonrpc: '2.0',
+      method: 'evm_increaseTime',
+      params: [duration],
+      id: id,
+    }, err1 => {
+      if (err1) return reject(err1)
+
+      sendAsync({
+        jsonrpc: '2.0',
+        method: 'evm_mine',
+        id: id+1,
+      }, (err2, res) => {
+        return err2 ? reject(err2) : resolve(res)
+      })
+    })
+  })
+}
 })
