@@ -20,6 +20,7 @@ func main() {
 	app.Commands = append(app.Commands, commands.StakerCommands...)
 	app.Commands = append(app.Commands, commands.DbCommands...)
 	app.Commands = append(app.Commands, commands.ServiceCommands...)
+	app.Commands = append(app.Commands, commands.TestCommands...)
 	err := app.Run(os.Args)
 	if err != nil {
 		color.Red(err.Error())

@@ -286,7 +286,7 @@ func (s *Stakers) Unenroll(staker common.Address) error {
 	return err
 }
 
-func (s *Stakers) IsTrueTeller(staker common.Address) (bool, error) {
+func (s *Stakers) IsLier(staker common.Address) (bool, error) {
 	stakerEntry, err := s.storage.Staker(staker)
 	if err != nil {
 		return false, err
