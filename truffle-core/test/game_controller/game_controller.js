@@ -97,18 +97,15 @@ contract('game_controller', (accounts) => {
         // jump beyond restricted period
         await jumpBlocks(leagueDuration + restrictedPeriod + 1)
         latestBlock = await web3.eth.getBlock('latest')
-          console.log("1")
         assert.isTrue(
           latestBlock.number > windowEveryone,
           "Everyone should be able to update"
         )
 
-          console.log("2")
         assert.isTrue(
           latestBlock.number < windowEnd,
           "window should not be ended"
         )
-        console.log("ciaoooo")
         await truffleAssert.passes(
           controller.updated(leagueId, windowStart, bob),
           "Failed updating league after league duration"
