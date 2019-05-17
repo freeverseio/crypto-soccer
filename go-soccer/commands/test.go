@@ -24,12 +24,13 @@ func runTest(c *cli.Context) {
 			Tactics: [][3]uint8{[3]uint8{4, 4, 2}, [3]uint8{4, 3, 3}},
 		},
 		// day 1
-		//		sto.UserActions{
-		//			Tactics: [][3]uint8{[3]uint8{4, 3, 3}, [3]uint8{4, 4, 3}},
-		//		},
+		sto.UserActions{
+			Tactics: [][3]uint8{[3]uint8{4, 3, 3}, [3]uint8{4, 4, 2}},
+		},
 	}
 
 	must(load(c))
+
 	lionel, err := lionel.New(stkrs.Members()[0].Client, storage, stkrs)
 	must(err)
 	_, err = lionel.ComputeLeague(

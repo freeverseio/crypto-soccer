@@ -218,7 +218,7 @@ func (s *Stakers) Enroll(staker common.Address) error {
 		return err
 	}
 	if hasStaker {
-		return fmt.Errorf("Stacker already enrolled")
+		return fmt.Errorf("Stacker already exists in db")
 	}
 
 	// get stake and check if there's enough balance

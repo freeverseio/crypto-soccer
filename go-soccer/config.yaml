@@ -1,8 +1,8 @@
 contracts:
-  stakersaddress: 0x8debA7259ccc702f8494D1846FFd983cdbD81F82
-  assetsaddress: 0x211E35D95c7f49a6EcC934f915Bc33D248A91DC9
-  leaguesaddress: 0xE25cb113FB51607632e7A8f1148652552b9A044e
-  stateaddress: 0x13801be9212ce0D1bFDf801f1c4348E445c0d55F
+  stakersaddress: 0xeA396Df5CE1E7F6e78648A470929e5589976A93b
+  assetsaddress: 0x1b14294C5f6AB7cC6262381EC27F7788aD9df7aA
+  leaguesaddress: 0x4Ddb1D9bd9623bf6a6E7e97A7EDA418910f4869B
+  stateaddress: 0xe48D48E9276e91efB4eC0EcC0DA4a9a072096678
   
 stakers:
   accounts:

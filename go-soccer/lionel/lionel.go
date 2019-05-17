@@ -1,6 +1,7 @@
 package lionel
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"strings"
@@ -69,9 +70,24 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	var err error
 
-	userActions, err := l.storage.UserActions(leagueIdx)
-	if err != nil {
+	var teamIdxs []*big.Int
+	if err := l.leagues.Call(&teamIdxs, "getTeams", big.NewInt(int64(leagueIdx))); err != nil {
 		return err
+	}
+	var countLeagueDays *big.Int
+	if err := l.leagues.Call(&countLeagueDays, "countLeagueDays", big.NewInt(int64(leagueIdx))); err != nil {
+		return err
+	}
+
+	userActions := []sto.UserActions{}
+	for teamNo := 0; teamNo < len(teamIdxs); teamNo++ {
+		tactics := [][3]uint8{}
+		for dayNo := 0; dayNo < int(countLeagueDays.Uint64()); dayNo++ {
+			tactics = append(tactics, [3]uint8{4, 4, 2})
+		}
+		userActions = append(userActions, sto.UserActions{
+			Tactics: tactics,
+		})
 	}
 
 	isLier, err := l.stakers.IsLier(staker)
@@ -81,8 +97,8 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	res, err := l.ComputeLeague(
 		big.NewInt(int64(leagueIdx)),
-		userActions.TeamIdxs,
-		userActions.ActionsPerDay,
+		teamIdxs,
+		userActions,
 		isLier,
 	)
 	if err != nil {
@@ -91,12 +107,23 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	stk := l.stakers.Get(staker)
 
-	tx, _, err := l.state.SendTransactionSyncWithClient(
+	tx, _, err := l.leagues.SendTransactionSyncWithClient(
 		stk.Client, nil, 0,
 		"updateLeague",
-		leagueIdx,
-		res.initStatesHash, res.statesAtMatchdayHashes, res.scores,
+		big.NewInt(int64(leagueIdx)),
+		res.initStatesHash,
+		res.statesAtMatchdayHashes,
+		res.scores,
 	)
+
+	fmt.Printf("updateLeague leagueIdx: %v\n", leagueIdx)
+	fmt.Printf("updateLeague initStatesHash: %v\n", hex.EncodeToString(res.initStatesHash[:]))
+	for i, v := range res.statesAtMatchdayHashes {
+		fmt.Printf("updateLeague statesAtMatchdayHashes[%v]=%v\n", i, hex.EncodeToString(v[:]))
+	}
+	for i, v := range res.scores {
+		fmt.Printf("updateLeague scores[%v]=%v\n", i, v)
+	}
 
 	if err == nil {
 		log.WithField("tx", tx.Hash().Hex()).Info("  League ", leagueIdx, " : updating lier=", isLier)
@@ -122,32 +149,38 @@ func (l *Lionel) Challange(staker common.Address, leagueNo uint64) error {
 	}
 	return err
 	*/
-	return nil
+	return fmt.Errorf("Unimplemented")
 }
 
-func (l *Lionel) LeagueCount() (uint64, error) {
-	/*
-		var legueCount *big.Int
-		if err := l.contract.Call(&legueCount, "legueCount"); err != nil {
-			return 0, err
-		}
-		return legueCount.Uint64(), nil
-	*/
-	return 0, nil
+func (l *Lionel) LeaguesCount() (uint64, error) {
+	var leaguesCount *big.Int
+	if err := l.leagues.Call(&leaguesCount, "leaguesCount"); err != nil {
+		return 0, err
+	}
+	return leaguesCount.Uint64(), nil
 }
 
 func (l *Lionel) CanLeagueBeUpdated(leagueNo uint64) (bool, error) {
-	/*
-		var canLeagueBeUpdated bool
-		if err := l.contract.Call(&canLeagueBeUpdated, "canLeagueBeUpdated", big.NewInt(int64(leagueNo))); err != nil {
-			return false, err
-		}
-		return canLeagueBeUpdated, nil
-	*/
-	return false, nil
+
+	leagueNoNum := big.NewInt(int64(leagueNo))
+
+	var hasFinished bool
+	if err := l.leagues.Call(&hasFinished, "hasFinished", leagueNoNum); err != nil {
+		return false, err
+	}
+	var isUpdated bool
+	if err := l.leagues.Call(&isUpdated, "isUpdated", leagueNoNum); err != nil {
+		return false, err
+	}
+	var isVerified bool
+	if err := l.leagues.Call(&isVerified, "isVerified", leagueNoNum); err != nil {
+		return false, err
+	}
+	return hasFinished && !isUpdated && !isVerified, nil
 }
 
 func (l *Lionel) CanLeagueBeChallanged(leagueNo uint64) (bool, error) {
+	return false, nil
 	/*
 		var canLeagueBeChallanged bool
 		if err := l.contract.Call(&canLeagueBeChallanged, "canLeagueBeChallanged", big.NewInt(int64(leagueNo))); err != nil {
@@ -155,7 +188,6 @@ func (l *Lionel) CanLeagueBeChallanged(leagueNo uint64) (bool, error) {
 		}
 		return canLeagueBeChallanged, nil
 	*/
-	return false, nil
 }
 
 func (l *Lionel) generateTeamState(teamId *big.Int) ([]*big.Int, error) {
@@ -216,11 +248,11 @@ type LeagueResult struct {
 func (l *Lionel) ComputeLeague(leagueIdx *big.Int, teamIdxs []*big.Int, actionsPerDay []storage.UserActions, lier bool) (*LeagueResult, error) {
 
 	// compute leagueState at beginning of the league
-	var leagueState []*big.Int
-	if err := l.state.Call(&leagueState, "leagueStateCreate"); err != nil {
+	var initLeagueState []*big.Int
+
+	if err := l.state.Call(&initLeagueState, "leagueStateCreate"); err != nil {
 		return nil, err
 	}
-	log.Info("leagueState ", leagueState)
 
 	for _, teamIdx := range teamIdxs {
 		var teamState []*big.Int
@@ -228,11 +260,13 @@ func (l *Lionel) ComputeLeague(leagueIdx *big.Int, teamIdxs []*big.Int, actionsP
 		if teamState, err = l.generateTeamState(teamIdx); err != nil {
 			return nil, err
 		}
-		if err := l.state.Call(&leagueState, "leagueStateAppend", leagueState, teamState); err != nil {
+		if err := l.state.Call(&initLeagueState, "leagueStateAppend", initLeagueState, teamState); err != nil {
 			return nil, err
 		}
 	}
-	log.Info("leagueState ", leagueState)
+
+	leagueState := make([]*big.Int, len(initLeagueState))
+	copy(leagueState, initLeagueState)
 
 	scores := []uint16{}
 	if err := l.leagues.Call(&scores, "scoresCreate"); err != nil {
@@ -242,35 +276,24 @@ func (l *Lionel) ComputeLeague(leagueIdx *big.Int, teamIdxs []*big.Int, actionsP
 	statesAtMatchday := [][]*big.Int{}
 
 	for day, dayUserActions := range actionsPerDay {
-		log.Info(fmt.Sprintf("---day %v----", day))
-
 		// update league state given day user actions
 		type ComputeDateResultType struct {
-			scores           []uint16
-			finalLeagueState []*big.Int
+			Scores           []uint16
+			FinalLeagueState []*big.Int
 		}
 		var computeDateResult ComputeDateResultType
 		if err := l.leagues.Call(&computeDateResult, "computeDay", leagueIdx, big.NewInt(int64(day)), leagueState, dayUserActions.Tactics); err != nil {
 			return nil, err
 		}
-		log.Info(fmt.Sprintf(
-			"computeDay(leagueIdx=%v,day=%v,leagueState=%v,tactics=%v)=%#v",
-			leagueIdx,
-			big.NewInt(int64(day)),
-			leagueState,
-			dayUserActions.Tactics,
-			computeDateResult),
-		)
 
-		leagueState = computeDateResult.finalLeagueState
+		leagueState = computeDateResult.FinalLeagueState
 
 		// apend scores
-		statesAtMatchday = append(statesAtMatchday, computeDateResult.finalLeagueState)
+		statesAtMatchday = append(statesAtMatchday, computeDateResult.FinalLeagueState)
 
-		if err := l.leagues.Call(&scores, "scoresConcat", scores, computeDateResult.scores); err != nil {
+		if err := l.leagues.Call(&scores, "scoresConcat", scores, computeDateResult.Scores); err != nil {
 			return nil, err
 		}
-		log.Info(fmt.Sprintf("scoresAtDay[%v]=%v", day, scores))
 	}
 
 	// let updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
@@ -284,11 +307,10 @@ func (l *Lionel) ComputeLeague(leagueIdx *big.Int, teamIdxs []*big.Int, actionsP
 		return nil, fmt.Errorf("leagues.isUpdated(leagueIdx) failed")
 	}
 
-	log.Info("---a001---")
 	// const initStatesHash = await leagues.hashInitState(initPlayerStates).should.be.fulfilled;
 	// const statesAtMatchdayHashes = await prepareMatchdayHashes(statesAtMatchday);
 	var initStatesHash [32]byte
-	if err := l.leagues.Call(&initStatesHash, "hashInitState", leagueState); err != nil {
+	if err := l.leagues.Call(&initStatesHash, "hashInitState", initLeagueState); err != nil {
 		return nil, err
 	}
 
@@ -296,17 +318,16 @@ func (l *Lionel) ComputeLeague(leagueIdx *big.Int, teamIdxs []*big.Int, actionsP
 		statesAtMatchday[0][0] = statesAtMatchday[0][0].Add(statesAtMatchday[0][0], big.NewInt(1))
 	}
 
-	log.Info("---a002---")
-
 	statesAtMatchdayHashes, err := l.prepareMatchdayHashes(statesAtMatchday)
 	if err != nil {
 		return nil, err
 	}
-	log.Info("---a003---")
 
-	return &LeagueResult{
+	lr := LeagueResult{
 		initStatesHash:         initStatesHash,
 		statesAtMatchdayHashes: statesAtMatchdayHashes,
 		scores:                 scores,
-	}, nil
+	}
+
+	return &lr, nil
 }

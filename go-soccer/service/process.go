@@ -14,7 +14,7 @@ func (s *Service) process() (bool, error) {
 	fmt.Println("=========================================================")
 	fmt.Println(s.stakers.Info())
 
-	if legueCount, err = s.lionel.LeagueCount(); err != nil {
+	if legueCount, err = s.lionel.LeaguesCount(); err != nil {
 		return false, err
 	}
 
