@@ -45,7 +45,8 @@ contract LeaguesBase {
             usersInitDataHash
         );
         _leaguesCount++;
-        _leagueToTeams[id] = teamIds;
+        for (uint256 i=0 ; i<teamIds.length ; i++)
+            _leagueToTeams[id].push(teamIds[i]);
     }
 
     function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
@@ -65,8 +66,7 @@ contract LeaguesBase {
 
     function getNTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
-        return _leagueToTeams[id].length; // TODO: use the following line
-        // return _leagues[id].nTeams;
+        return _leagues[id].nTeams;
     }
 
     function getTeams(uint256 id) external view returns (uint256[] memory) {
