@@ -10,6 +10,9 @@ contract LeaguesBase {
         bytes32 usersInitDataHash;
     }
 
+    // TODO: remove cause local db will store it
+    mapping(uint256 => uint256[]) private _leagueToTeams;
+
     mapping(uint256 => League) private _leagues;
     uint256 private _leaguesCount;
 
@@ -42,6 +45,7 @@ contract LeaguesBase {
             usersInitDataHash
         );
         _leaguesCount++;
+        _leagueToTeams[id] = teamIds;
     }
 
     function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
@@ -61,7 +65,13 @@ contract LeaguesBase {
 
     function getNTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
-        return _leagues[id].nTeams;
+        return _leagueToTeams[id].length; // TODO: use the following line
+        // return _leagues[id].nTeams;
+    }
+
+    function getTeams(uint256 id) external view returns (uint256[] memory) {
+        require(_exists(id), "unexistent league");
+        return _leagueToTeams[id];
     }
 
     function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
