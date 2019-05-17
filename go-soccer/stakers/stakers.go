@@ -218,7 +218,7 @@ func (s *Stakers) Enroll(staker common.Address) error {
 		return err
 	}
 	if hasStaker {
-		return fmt.Errorf("Stacker already enrolled")
+		return fmt.Errorf("Stacker already exists in db")
 	}
 
 	// get stake and check if there's enough balance
@@ -286,7 +286,7 @@ func (s *Stakers) Unenroll(staker common.Address) error {
 	return err
 }
 
-func (s *Stakers) IsTrueTeller(staker common.Address) (bool, error) {
+func (s *Stakers) IsLier(staker common.Address) (bool, error) {
 	stakerEntry, err := s.storage.Staker(staker)
 	if err != nil {
 		return false, err

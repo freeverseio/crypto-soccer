@@ -6,9 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math/big"
+	"strings"
 
 	abi "github.com/ethereum/go-ethereum/accounts/abi"
 	common "github.com/ethereum/go-ethereum/common"
@@ -27,6 +29,24 @@ type Contract struct {
 var (
 	errAddressHasNoCode = errors.New("address has no code")
 )
+
+const revertAbiJson = `
+[
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "reason",
+				"type": "string"
+			}
+		],
+		"name": "Error",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]`
 
 func UnmarshallSolcAbiJson(jsonReader io.Reader) (*abi.ABI, []byte, error) {
 
@@ -154,9 +174,27 @@ func (c *Contract) CallWithClient(client *Web3Client, ret interface{}, funcname 
 	if err != nil {
 		return err
 	}
+
 	output, err := client.Call(c.address, big.NewInt(0), input)
 	if err != nil {
 		return err
+	}
+
+	if strings.HasPrefix(hex.EncodeToString(output), "08c379a0") {
+		/*
+			fmt.Println(">>> ", hex.EncodeToString(output))
+			revertAbi, err := abi.JSON(strings.NewReader(revertAbiJson))
+			if err != nil {
+				return err
+			}
+			var reason string
+			if err = revertAbi.Unpack(&reason, "Error", output); err != nil {
+				return err
+			}
+		*/
+		reason := string(output[68:])
+		return fmt.Errorf("REVERT '%v'", reason)
+
 	}
 	return c.abi.Unpack(ret, funcname, output)
 }
