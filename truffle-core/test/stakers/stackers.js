@@ -458,4 +458,83 @@ contract("stakers", (accounts) => {
             "Should fail because incorrect onion layer"
         );
     });
+
+        it("Tests ERR_BADSTATE, ERR_BADHFIN and ERR_BADHASH from CHALLENGE_LI_RES", async () => {
+
+        const initialBalance = await web3.eth.getBalance(staker);
+        const stake = await stakers.REQUIRED_STAKE()
+
+        // check not enrolled initially
+        assert.equal(UNENROLLED,await stakers.state(staker,0));
+
+        // enroll
+        await truffleAssert.passes(
+            stakers.enroll(onion3,{from : staker, value: stake }),
+            "failed to enroll"
+        );
+        assert.isTrue(initialBalance > await web3.eth.getBalance(staker));
+        assert.equal(ENROLLING,await stakers.state(staker,0));
+
+        // wait enroll blocks
+        await timetravel((await stakers.MINENROLL_SECS()).toNumber());
+        assert.equal(ENROLLED,await stakers.state(staker,0));
+
+        // game updates
+        await stakers.initChallenge(staker,{from : game});
+        assert.equal(CHALLENGE_TT,await stakers.state(staker,0));
+        await truffleAssert.passes(stakers.lierChallenge(staker,{from : game}));
+        assert.equal(CHALLENGE_LI_RES,await stakers.state(staker,0));
+
+        // check any call will fail with ERR_BADSTATE
+        await truffleAssert.reverts(stakers.queryUnenroll({from : staker}),      ERR_BADSTATE);
+        await truffleAssert.reverts(stakers.unenroll({from : staker}),           ERR_BADSTATE);
+        await truffleAssert.reverts(stakers.touch({from : staker}),              ERR_BADSTATE);
+        await truffleAssert.reverts(stakers.slash(staker, {from : updater}),     ERR_BADSTATE);
+        await truffleAssert.reverts(stakers.initChallenge(staker,{from : game}), ERR_BADSTATE);
+
+        await truffleAssert.reverts(
+            stakers.resolveChallenge(onion2, {from : staker}),
+            ERR_BADHFIN,
+            "Should fail because onion % 16 != 0"
+        );
+        await truffleAssert.reverts(
+            stakers.resolveChallenge(onion1, {from : staker}),
+            ERR_BADHASH,
+            "Should fail because incorrect onion layer"
+        );
+    });
+
+    it("Owner can modify stakers parameter", async () => {
+
+        const REQUIRED_STAKE = 1;
+        const MINENROLL_SECS = 2;
+        const MAXIDLE_SECS = 3;
+        const MINUNENROLL_SECS = 4;
+        const MAXCHALL_SECS = 5;
+
+        // check owner
+        assert.equal(game,await stakers.owner());
+
+        // modify params
+        await truffleAssert.passes(
+            stakers.updateParams(
+                REQUIRED_STAKE,
+                MINENROLL_SECS,
+                MAXIDLE_SECS,
+                MINUNENROLL_SECS,
+                MAXCHALL_SECS,
+                {from : game }),
+            "failed to update params"
+        );
+
+        // check set parameters
+        assert.equal(REQUIRED_STAKE,await stakers.REQUIRED_STAKE());
+        assert.equal(MINENROLL_SECS,await stakers.MINENROLL_SECS());
+        assert.equal(MAXIDLE_SECS,await stakers.MAXIDLE_SECS());
+        assert.equal(MINUNENROLL_SECS,await stakers.MINUNENROLL_SECS());
+        assert.equal(MAXCHALL_SECS,await stakers.MAXCHALL_SECS());
+
+    });
+
+
 });

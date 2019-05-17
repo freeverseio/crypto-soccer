@@ -1,0 +1,24 @@
+contracts:
+  stakersaddress: 0xeA396Df5CE1E7F6e78648A470929e5589976A93b
+  assetsaddress: 0x1b14294C5f6AB7cC6262381EC27F7788aD9df7aA
+  leaguesaddress: 0x4Ddb1D9bd9623bf6a6E7e97A7EDA418910f4869B
+  stateaddress: 0xe48D48E9276e91efB4eC0EcC0DA4a9a072096678
+  
+stakers:
+  accounts:
+    - address: 0x3893e05Ea1Ae26bED0541274942a398aF9385EB7
+      onion:   0xb14efb72fd2c5b9fb09f87330f263c1207b700f908f89d24e071e1bfe000965a
+  keystore: data/keystore
+  keypasswd: 111111   
+
+db:
+  path: /tmp/soccerdb
+
+api:
+  port: 3000
+
+web3:
+  rpcurl: https://devnet.busyverse.com/web3
+  maxgasprice: 20000000000
+
+# block explorer is in http://testnet.busyverse.com:8000/

@@ -22,6 +22,8 @@ contract GameController is GameControllerInterface {
   address owner;
   address stakersContractAddress;
 
+  mapping (uint256 => address) public id2staker;
+
   event UpdateEvent(uint256 id, address staker);
   event ChallengeEvent(uint256 id, address staker);
 
@@ -55,14 +57,15 @@ contract GameController is GameControllerInterface {
 
   // ----------------- internal/protected functions -----------------------
   function updated(uint256 _id, uint256 _windowStart, address _updater) external onlyIfStakersAddressValid {
-    checkUpdateWindow(_windowStart, _updater);
+    // checkUpdateWindow(_windowStart, _updater);
     StakersInterface(stakersContractAddress).initChallenge(_updater);
+    id2staker[_id] = _updater;
     emit UpdateEvent(_id, _updater);
   }
 
-  function challenged(uint256 _id, address _updater) external onlyIfStakersAddressValid {
-    StakersInterface(stakersContractAddress).lierChallenge(_updater); // will revert if _updater was not in challengable state
-    emit ChallengeEvent(_id, _updater);
+  function challenged(uint256 _id) external onlyIfStakersAddressValid {
+    StakersInterface(stakersContractAddress).lierChallenge(id2staker[_id]); // will revert if _updater was not in challengable state
+    emit ChallengeEvent(_id, id2staker[_id]);
   }
 
   // ----------------- private functions -----------------------

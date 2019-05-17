@@ -1,9 +1,0 @@
-*.[oa]
-#*~
-build
-*.swp
-node_modules
-*.code-workspace
-.DS_store
-.idea
-*.pyc

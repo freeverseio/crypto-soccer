@@ -11,5 +11,5 @@ interface GameControllerInterface {
   /// demonstrates that the updater was lying. Typically _windowStart should be
   /// the block number at which the league ended, however it should be reset when
   /// an updater lies.
-  function challenged(uint256 _id, address _updater) external;
+  function challenged(uint256 _id) external;
 }

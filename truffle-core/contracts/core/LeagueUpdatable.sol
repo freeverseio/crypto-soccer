@@ -53,7 +53,7 @@ contract LeagueUpdatable is LeaguesScheduler {
         _result[id].updateBlock = 0;
 
         if (_stakers != GameControllerInterface(0))
-            _stakers.challenged(id, msg.sender);
+            _stakers.challenged(id);
     }
 
     function getUpdater(uint256 id) external view returns (address) {

@@ -13,11 +13,11 @@ contract Stakers is StakersInterface {
     string constant ERR_POSTCOND  = "err-postcon";
     string constant ERR_BADSENDER = "err-sender";
 
-    uint public constant REQUIRED_STAKE   = 4 ether;
-    uint public constant MINENROLL_SECS   = 1 days;
-    uint public constant MAXIDLE_SECS     = 1 weeks;
-    uint public constant MINUNENROLL_SECS = 2 days;
-    uint public constant MAXCHALL_SECS    = 5 minutes;
+    uint256 public REQUIRED_STAKE   = 4 ether;
+    uint256 public MINENROLL_SECS   = 1 days;
+    uint256 public MAXIDLE_SECS     = 1 weeks;
+    uint256 public MINUNENROLL_SECS = 2 days;
+    uint256 public MAXCHALL_SECS    = 5 minutes;
 
     // types ---------------------------------------------------------------
 
@@ -44,11 +44,29 @@ contract Stakers is StakersInterface {
 
     mapping(address=>Staker) public stakers;
     address                  public game;
+    address                  public owner;
 
     // constructor and state automata -----------------------------------------------
 
     constructor(address _game) public {
         game = _game;
+        owner = msg.sender;
+    }
+
+    function updateParams(
+        uint256 requiered_stake, 
+        uint256 minenroll_secs,
+        uint256 maxidle_secs,
+        uint256 minunroll_secs,
+        uint256 maxchall_secs
+    ) external {
+        require(msg.sender==owner,ERR_BADSENDER);
+        
+        REQUIRED_STAKE = requiered_stake;
+        MINENROLL_SECS = minenroll_secs;
+        MAXIDLE_SECS = maxidle_secs;
+        MINUNENROLL_SECS = minunroll_secs;
+        MAXCHALL_SECS = maxchall_secs;
     }
 
     function state(address _staker, uint256 _when) public view returns (State) {
