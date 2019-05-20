@@ -1,5 +1,11 @@
 # go-soccer
 
+## RESTful 
+| Resource  | GET (read)        | POST (create)       | PULL (update)       | DELETE              |
+|-----------|-------------------|---------------------|---------------------|---------------------|
+| /teams    | Not allowed (405) | Create a new team   |  Not allowed (405)  |  Not allowed (405)  |
+| /teams/1  |  Returns team 1   |  Not allowed (405)  |  Not allowed (405)  |  Not allowed (405)  |
+
 # How to start
 
 - initialize db
