@@ -21,6 +21,7 @@ jobs:
       #- run: 'sudo apt update'
       #- run: 'sudo apt dist-upgrade'
       # - run: 'sudo apt install build-essential'
-      - run: 'npm update -g truffle'
+      - run: truffle version
+      - run: 'sudo npm update -g truffle'
       - run: cd truffle-core && npm install && truffle test
       #- run: cd metadata-server && npm install && npm test
