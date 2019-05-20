@@ -16,6 +16,18 @@ contract('LeaguesBase', (accounts) => {
         leagues = await Leagues.new().should.be.fulfilled;
     });
 
+    it('get tactics', async () => {
+        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
+        const result = await leagues.getTactics(id).should.be.fulfilled;
+        result.length.should.be.equal(tactics.length*3);
+        result[0].toNumber().should.be.equal(4);
+        result[1].toNumber().should.be.equal(4);
+        result[2].toNumber().should.be.equal(3);
+        result[3].toNumber().should.be.equal(4);
+        result[4].toNumber().should.be.equal(5);
+        result[5].toNumber().should.be.equal(2);
+    });
+
     it('unexistent league', async () => {
         await leagues.getInitBlock(id).should.be.rejected;
         await leagues.getStep(id).should.be.rejected;
