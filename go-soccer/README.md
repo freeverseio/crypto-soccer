@@ -1,6 +1,7 @@
 # go-soccer
 
-## RESTful 
+## RESTful service
+A server will be opened on port 33333 with the following endpoints.
 | Resource  | GET (read)        | POST (create)       | PULL (update)       | DELETE              |
 |-----------|-------------------|---------------------|---------------------|---------------------|
 | /teams    | Not allowed (405) | Create a new team   |  Not allowed (405)  |  Not allowed (405)  |
