@@ -89,6 +89,7 @@ contract('game_controller', (accounts) => {
         //   ERR_WINDOW_NOT_STARTED,
         //   "League updated before league duration"
         // )
+          console.log("0")
 
         await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber())
         assert.equal(ENROLLED,await stakers.state(bob,0));

@@ -25,9 +25,6 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         require(!isVerified(id), "not challengeable league");
         require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
         uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
         if (initPlayerStates.length == 0) // challenger wins
             resetUpdater(id);
         else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
@@ -64,10 +61,6 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             usersAlongDataTactics,
             usersAlongDataBlocks);
         (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
-
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
 
         if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
             resetUpdater(id);
