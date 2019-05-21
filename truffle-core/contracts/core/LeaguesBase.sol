@@ -13,6 +13,9 @@ contract LeaguesBase {
     // TODO: remove cause local db will store it
     mapping(uint256 => uint256[]) private _leagueToTeams;
 
+    // TODO: remove cause local db will store it
+    mapping(uint256 => uint8[3][]) private _leagueToTactics;
+
     mapping(uint256 => League) private _leagues;
     uint256 private _leaguesCount;
 
@@ -47,6 +50,8 @@ contract LeaguesBase {
         _leaguesCount++;
         for (uint256 i=0 ; i<teamIds.length ; i++)
             _leagueToTeams[id].push(teamIds[i]);
+        for (uint256 i=0 ; i<tactics.length ; i++)
+            _leagueToTactics[id].push(tactics[i]);
     }
 
     function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
@@ -72,6 +77,17 @@ contract LeaguesBase {
     function getTeams(uint256 id) external view returns (uint256[] memory) {
         require(_exists(id), "unexistent league");
         return _leagueToTeams[id];
+    }
+
+    function getTactics(uint256 id) external view returns (uint8[] memory) {
+        require(_exists(id), "unexistent league");
+        uint8[] memory tactics = new uint8[](_leagueToTactics[id].length*3);
+        for (uint256 i=0 ; i < _leagueToTactics[id].length ; i++) {
+            tactics[3*i] = _leagueToTactics[id][i][0];
+            tactics[3*i + 1] = _leagueToTactics[id][i][1];
+            tactics[3*i + 2] = _leagueToTactics[id][i][2];
+        }
+        return tactics;
     }
 
     function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
