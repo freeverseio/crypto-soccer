@@ -155,8 +155,7 @@ contract('Test2', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashesLie,
-            scores,
-            isLie = true
+            scores
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -190,8 +189,7 @@ contract('Test2', (accounts) => {
             leagueIdx,
             initStatesHashLie,
             statesAtMatchdayHashes,
-            scores,
-            isLie = true
+            scores
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -219,8 +217,7 @@ contract('Test2', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashes,
-            scores,
-            isLie = false
+            scores
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -252,5 +249,19 @@ contract('Test2', (accounts) => {
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
+
+        return;
+        await leagues.challengeInitStates(
+            leagueIdx,
+            usersInitData.teamIdxs,
+            usersInitData.tactics,
+            dataToChallengeInitStates
+        ).should.be.fulfilled;
+        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
+        updated.should.be.equal(true);
+
+        // We do not wait enough and try to:
+        //   create another league. It fails to do so because teams are still busy
+        await advanceNBlocks(2).should.be.fulfilled;
     });
 })

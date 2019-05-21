@@ -79,7 +79,6 @@ contract PlayerState {
     /// increase the skills of delta
     function playerStateEvolve(uint256 playerState, uint16 delta) public pure returns (uint256 evolvedState) {
         require(isValidPlayerState(playerState), "invalid player playerState");
-        return playerState;
         uint256 defence = getDefence(playerState) + delta;
         uint256 speed = getSpeed(playerState) + delta;
         uint256 pass = getPass(playerState) + delta;

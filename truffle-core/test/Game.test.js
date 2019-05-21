@@ -161,8 +161,7 @@ contract('Game', (accounts) => {
             leagueId,
             initStateHash,
             dayStateHashes,
-            leagueScores,
-            isLie = false
+            leagueScores
         ).should.be.fulfilled;
     });
 })

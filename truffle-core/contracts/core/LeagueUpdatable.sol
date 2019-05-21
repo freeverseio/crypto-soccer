@@ -16,8 +16,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         address updater;
         // update block
         uint256 updateBlock;
-        // TODO: remove
-        bool isLie;
     }
 
     GameControllerInterface private _stakers;
@@ -30,13 +28,12 @@ contract LeagueUpdatable is LeaguesScheduler {
 
     // TODO: add minimum checks
     function updateLeague(
-        uint256 id,
+        uint256 id, 
         bytes32 initStateHash,
         bytes32[] memory dayStateHashes,
-        uint16[] memory scores,
-        bool isLie
-    )
-        public
+        uint16[] memory scores
+    ) 
+        public 
     {
         require(_exists(id), "invalid league id");
         require(hasFinished(id), "league not finished");
@@ -46,7 +43,6 @@ contract LeagueUpdatable is LeaguesScheduler {
         _result[id].scores = scores;
         _result[id].updater = msg.sender;
         _result[id].updateBlock = block.number;
-        _result[id].isLie = isLie;
 
         if (_stakers != GameControllerInterface(0))
             _stakers.updated(id, 0, msg.sender);
@@ -58,11 +54,6 @@ contract LeagueUpdatable is LeaguesScheduler {
 
         if (_stakers != GameControllerInterface(0))
             _stakers.challenged(id);
-    }
-
-    function getIsLie(uint256 id) public view returns (bool) {
-        require(_exists(id), "unexistent league");
-        return _result[id].isLie;
     }
 
     function getUpdater(uint256 id) external view returns (address) {
