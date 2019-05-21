@@ -45,13 +45,15 @@ verifyAllActionsOfMatchdayOne(L1, MerkleProof(L1)):
 
 ------------
 
-Cost estimates:
+Cost estimates:  1 uint = 20K
 
 Per day: 4 x 24 hashes (all actions per league), one every 15 min.
-	- negligible
+	- negligible: 100 uints per day, say 200 if you need blocknum too => 4M
+
 
 Per League (when finished): 
 	- UpdateLeague (3 uints: leaguehash, updaterAddr, blockn) => 60K => 80K
+
 
 Per League (when created): 
 	- append to leagues[]  (2 uint)
@@ -109,7 +111,12 @@ v0 del cost estimate
 
 
 
+-----
 
+From CK: 
+The investment also comes though activity on the CryptoKitties platform appears to have waned somewhat since it briefly went viral last year. In December, the platform processed 1.3 million transactions, based on data from Bloxy. This month, roughly 163,340 transactions in October despite a push into Greater China and Singapore earlier this year.
+
+500K kitties sold in 1 year
 
 
 
