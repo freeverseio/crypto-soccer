@@ -190,7 +190,7 @@ contract('IntegrationTest', (accounts) => {
             initStatesHash,
             statesAtMatchdayHashesLie,
             scores,
-            isLie = false,
+            isLie = true,
             {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
@@ -233,7 +233,7 @@ contract('IntegrationTest', (accounts) => {
             initStatesHashLie,
             statesAtMatchdayHashes,
             scores,
-            isLie = false,
+            isLie = true,
             {from: alice}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;

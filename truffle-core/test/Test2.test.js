@@ -156,7 +156,7 @@ contract('Test2', (accounts) => {
             initStatesHash,
             statesAtMatchdayHashesLie,
             scores,
-            isLie = false
+            isLie = true
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -191,7 +191,7 @@ contract('Test2', (accounts) => {
             initStatesHashLie,
             statesAtMatchdayHashes,
             scores,
-            isLie = false
+            isLie = true
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
