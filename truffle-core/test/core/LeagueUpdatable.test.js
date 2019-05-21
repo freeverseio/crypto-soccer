@@ -42,7 +42,7 @@ contract('LeaguesUpdatable', (accounts) => {
         const initStateHash = '0x54564';
         const dayStateHashes = ['0x24353', '0x5434432'];
         const scores = ['0x12', '0x3'];
-        await leagues.updateLeague(id, initStateHash, dayStateHashes, scores).should.be.fulfilled;
+        await leagues.updateLeague(id, initStateHash, dayStateHashes, scores, isLie = false).should.be.fulfilled;
         result = await leagues.isUpdated(id).should.be.fulfilled;
         result.should.be.equal(true);
     });
@@ -51,7 +51,7 @@ contract('LeaguesUpdatable', (accounts) => {
         const initStateHash = '0x54564';
         const dayStateHashes = ['0x24353', '0x5434432'];
         const scores = ['0x12', '0x3'];
-        const result = await leagues.updateLeague(id, initStateHash, dayStateHashes, scores).should.be.fulfilled;
+        const result = await leagues.updateLeague(id, initStateHash, dayStateHashes, scores, isLie = false).should.be.fulfilled;
         const updateBlock = await leagues.getUpdateBlock(id).should.be.fulfilled;
         updateBlock.toNumber().should.be.equal(result.receipt.blockNumber);
         const updater = await leagues.getUpdater(id).should.be.fulfilled;

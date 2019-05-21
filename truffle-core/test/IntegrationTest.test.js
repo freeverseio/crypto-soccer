@@ -189,7 +189,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashesLie,
-            scores, {from: bob}
+            scores,
+            isLie = true,
+            {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -230,7 +232,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHashLie,
             statesAtMatchdayHashes,
-            scores, {from: alice}
+            scores,
+            isLie = true,
+            {from: alice}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -264,7 +268,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashes,
-            scores, {from: bob}
+            scores,
+            isLie = false,
+            {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -303,20 +309,6 @@ contract('IntegrationTest', (accounts) => {
         // console.log("alice state : " + await stakers.state(alice,0));
         await stakers.slash(alice, {from: bob}).should.be.fulfilled;
         console.log("Alice slashed");
-
-        return;
-        await leagues.challengeInitStates(
-            leagueIdx,
-            usersInitData.teamIdxs,
-            usersInitData.tactics,
-            dataToChallengeInitStates
-        ).should.be.fulfilled;
-        updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
-        updated.should.be.equal(true);
-
-        // We do not wait enough and try to:
-        //   create another league. It fails to do so because teams are still busy
-        await advanceNBlocks(2).should.be.fulfilled;
     });
 
 
