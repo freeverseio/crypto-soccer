@@ -189,7 +189,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashesLie,
-            scores, {from: bob}
+            scores,
+            isLie = false,
+            {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -230,7 +232,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHashLie,
             statesAtMatchdayHashes,
-            scores, {from: alice}
+            scores,
+            isLie = false,
+            {from: alice}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
@@ -264,7 +268,9 @@ contract('IntegrationTest', (accounts) => {
             leagueIdx,
             initStatesHash,
             statesAtMatchdayHashes,
-            scores, {from: bob}
+            scores,
+            isLie = false,
+            {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);

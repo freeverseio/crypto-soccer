@@ -28,12 +28,13 @@ contract LeagueUpdatable is LeaguesScheduler {
 
     // TODO: add minimum checks
     function updateLeague(
-        uint256 id, 
+        uint256 id,
         bytes32 initStateHash,
         bytes32[] memory dayStateHashes,
-        uint16[] memory scores
-    ) 
-        public 
+        uint16[] memory scores,
+        bool isLie
+    )
+        public
     {
         require(_exists(id), "invalid league id");
         require(hasFinished(id), "league not finished");
