@@ -9,13 +9,14 @@ const web3 = new Web3(providerURL, null, {});
 
 web3.eth.net.isListening()
   .then(connected => {
-      console.log('provider ' + providerURL + ' is connected: ' + connected);
-      const assetsContract = new web3.eth.Contract(assetsContractJSON.abi, assetsContractAddress);
+    console.log('provider ' + providerURL + ' is connected: ' + connected);
+    const assetsContract = new web3.eth.Contract(assetsContractJSON.abi, assetsContractAddress);
 
-      const typeDefs = `
+    const typeDefs = `
         type Query {
           getProvider: Provider!
           getAssetsContractAddress: String
+          getTeamCount: String!
         }
 
         type Provider {
@@ -29,7 +30,11 @@ web3.eth.net.isListening()
           url: web3.currentProvider.connection._url,
           isListening: await web3.eth.net.isListening()
         }),
-        getAssetsContractAddress: () => (assetsContract.address)
+        getAssetsContractAddress: () => (assetsContract.address),
+        getTeamCount: async () => {
+          const count = await assetsContract.methods.countTeams().call()
+          return count.toString();
+        }
       },
     }
 
