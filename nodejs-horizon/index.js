@@ -14,8 +14,6 @@ web3.eth.net.isListening()
 
       const typeDefs = `
         type Query {
-          hello(name : String): String!
-          team: Team!
           getProvider: Provider!
           getAssetsContractAddress: String
         }
@@ -24,37 +22,15 @@ web3.eth.net.isListening()
           url: String
           isListening: Boolean!
         }
-
-        type Mutation {
-          setProviderUrl(url: String!): Provider!
-        }
-
-        type Team {
-          name: String!
-        }
       `
     const resolvers = {
       Query: {
-        hello: (_, {
-          name
-        }) => `Hello ${name || 'World'}`,
-        team: (_) => (''),
         getProvider: async () => ({
           url: web3.currentProvider.connection._url,
           isListening: await web3.eth.net.isListening()
         }),
         getAssetsContractAddress: () => (assetsContract.address)
       },
-      Mutation: {
-        setProviderUrl: () => (console.log("setProviderUrl"))
-      },
-      Provider: {
-        url: () => (web3.currentProvider.connection._url),
-        isListening: async () => (await web3.eth.net.isListening()),
-      },
-      Team: {
-        name: () => 'Ciao qui'
-      }
     }
 
     const server = new GraphQLServer({
