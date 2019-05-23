@@ -10,14 +10,34 @@ web3.eth.net.isListening().then(connected => {
 
 const typeDefs = `
   type Query {
-    hello(name: String): String!
+    hello(name : String): String!
+    team: Team!
+    provider: Provider!
+  }
+
+  type Provider {
+    url: String!
+    isListening: Boolean!
+  }
+
+  type Team {
+    name: String!
   }
 `
 
 const resolvers = {
   Query: {
     hello: (_, { name }) => `Hello ${name || 'World'}`,
+    team: () =>  (''),
+    provider: () => ('')
   },
+  Provider: {
+    url: () => (web3.currentProvider.connection._url),
+    isListening: async () => (await web3.eth.net.isListening()),
+  },
+  Team: {
+    name: () => 'Ciao qui'
+  }
 }
 
 const server = new GraphQLServer({ typeDefs, resolvers })
