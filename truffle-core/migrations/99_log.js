@@ -1,4 +1,5 @@
 const fs = require('fs');
+const Assets = artifacts.require('Assets');
 const States = artifacts.require('LeagueState');
 const Engine = artifacts.require('Engine');
 const GameController = artifacts.require("GameController");
@@ -8,6 +9,7 @@ const Stakers = artifacts.require('Stakers');
 module.exports = function (deployer) {
   deployer.then(async () => {
       let log = "--------------------------------" + "\n";
+      log += "Assets:         " + Assets.address + "\n";
       log += "States:         " + States.address + "\n";
       log += "Engine:         " + Engine.address + "\n";
       log += "GameController: " + GameController.address + "\n";
