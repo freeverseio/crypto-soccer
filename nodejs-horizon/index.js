@@ -19,6 +19,10 @@ web3.eth.net.isListening()
           getTeamCount: String!
         }
 
+        type Mutation {
+          createTeam(name: String!, owner: String!): String
+        }
+
         type Provider {
           url: String
           isListening: Boolean!
@@ -34,9 +38,18 @@ web3.eth.net.isListening()
         getTeamCount: async () => {
           const count = await assetsContract.methods.countTeams().call()
           return count.toString();
-        }
-      },
-    }
+          }
+          },
+          Mutation: {
+            createTeam: (_, params) => {
+              console.log(params)
+              assetsContract.methods.createTeam(params.name, params.owner).send({
+                from: '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef',
+                gas: 6721975
+              });
+            }
+            }
+          }
 
     const server = new GraphQLServer({
       typeDefs,
