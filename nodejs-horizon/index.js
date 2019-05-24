@@ -1,7 +1,5 @@
 const Web3 = require('web3');
-const {
-  GraphQLServer
-} = require('graphql-yoga');
+const { GraphQLServer, PubSub } = require('graphql-yoga');
 
 const assetsContractJSON = require('../truffle-core/build/contracts/Assets.json');
 
@@ -50,7 +48,7 @@ const resolvers = {
       gas
     }),
     getTeamCount: async () => {
-      const count = await assetsContract.methods.countTeams().call()
+      const count = await assetsContract.methods.countTeams().call();
       return count.toString();
     },
     getTeam: async (_, params) => ({
@@ -60,17 +58,11 @@ const resolvers = {
   },
   Mutation: {
     createTeam: (_, params) => {
-      assetsContract.methods.createTeam(params.name, params.owner).send({
-        from,
-        gas
-      });
+      assetsContract.methods.createTeam(params.name, params.owner).send({ from, gas });
     }
   }
 }
-
-const server = new GraphQLServer({
-  typeDefs,
-  resolvers
-})
+const pubSub = new PubSub();
+const server = new GraphQLServer({ typeDefs, resolvers, context: { pubSub } });
 
 server.start(() => console.log('Server is running on localhost:4000'))
