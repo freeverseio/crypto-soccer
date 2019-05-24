@@ -7,14 +7,17 @@ const assetsContractAddress = '0x14ebD51cD831f8B371b19ad571FaCDa3655004a4';
 const providerURL = 'ws://localhost:8545';
 const web3 = new Web3(providerURL, null, {});
 
-web3.eth.net.isListening()
-  .then(connected => {
-    console.log('provider ' + providerURL + ' is connected: ' + connected);
-    const assetsContract = new web3.eth.Contract(assetsContractJSON.abi, assetsContractAddress);
+// web3.eth.net.isListening()
+//   .then(connected => {
+//     console.log('provider ' + providerURL + ' is connected: ' + connected);
+//     const assetsContract = new web3.eth.Contract(assetsContractJSON.abi, assetsContractAddress);
 
-    const typeDefs = `
+//   })
+//   .catch(console.log);
+
+const typeDefs = `
         type Query {
-          getProvider: Provider!
+          getSettings: Settings!
           getAssetsContractAddress: String
           getTeamCount: String!
         }
@@ -23,39 +26,41 @@ web3.eth.net.isListening()
           createTeam(name: String!, owner: String!): String
         }
 
+        type Settings {
+          providerUrl: String
+          assetsContractAddress: String
+        }
+
         type Provider {
           url: String
           isListening: Boolean!
         }
       `
-    const resolvers = {
-      Query: {
-        getProvider: async () => ({
-          url: web3.currentProvider.connection._url,
-          isListening: await web3.eth.net.isListening()
-        }),
-        getAssetsContractAddress: () => (assetsContract.address),
-        getTeamCount: async () => {
-          const count = await assetsContract.methods.countTeams().call()
-          return count.toString();
-          }
-          },
-          Mutation: {
-            createTeam: (_, params) => {
-              console.log(params)
-              assetsContract.methods.createTeam(params.name, params.owner).send({
-                from: '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef',
-                gas: 6721975
-              });
-            }
-            }
-          }
+const resolvers = {
+  Query: {
+    getSettings: () => ({
+      providerUrl: web3.currentProvider.connection._url,
+      assetsContractAddress: assetsContractAddress
+    }),
+    getAssetsContractAddress: () => (assetsContract.address),
+    getTeamCount: async () => {
+      const count = await assetsContract.methods.countTeams().call()
+      return count.toString();
+    }
+  },
+  Mutation: {
+    createTeam: (_, params) => {
+      assetsContract.methods.createTeam(params.name, params.owner).send({
+        from: '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef',
+        gas: 6721975
+      });
+    }
+  }
+}
 
-    const server = new GraphQLServer({
-      typeDefs,
-      resolvers
-    })
+const server = new GraphQLServer({
+  typeDefs,
+  resolvers
+})
 
-    server.start(() => console.log('Server is running on localhost:4000'))
-  })
-  .catch(console.log);
+server.start(() => console.log('Server is running on localhost:4000'))
