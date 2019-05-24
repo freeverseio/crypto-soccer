@@ -6,7 +6,7 @@ const {
 const assetsContractJSON = require('../truffle-core/build/contracts/Assets.json');
 
 const providerUrl = 'ws://localhost:8545';
-const assetsContractAddress = '0x14ebD51cD831f8B371b19ad571FaCDa3655004a4';
+const assetsContractAddress = '0x5841d35b6580b1f7599b2e1157CAd16690A86f16';
 const from = '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef';
 const gas = 6721975;
 
@@ -17,6 +17,7 @@ const typeDefs = `
   type Query {
     getSettings: Settings!
     getTeamCount: String!
+    getTeam(id: ID!): Team
   }
 
   type Mutation {
@@ -34,6 +35,11 @@ const typeDefs = `
     url: String
     isListening: Boolean!
   }
+
+  type Team {
+    id: ID!
+    name: String!
+  }
 `
 const resolvers = {
   Query: {
@@ -46,7 +52,11 @@ const resolvers = {
     getTeamCount: async () => {
       const count = await assetsContract.methods.countTeams().call()
       return count.toString();
-    }
+    },
+    getTeam: async (_, params) => ({
+      id: params.id,
+      name: await assetsContract.methods.getTeamName(params.id).call()
+    })
   },
   Mutation: {
     createTeam: (_, params) => {
