@@ -86,4 +86,13 @@ const resolvers = {
 const pubsub = new PubSub();
 const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
 
+assetsContract.events.TeamCreation()
+  .on('data', (event) => {
+    pubsub.publish(TEAM_CREATED, { teamCreated: event.returnValues.teamId.toString() });
+  })
+  .on('changed', (event) => {
+    // remove event from local database
+  })
+  .on('error', console.error);
+
 server.start(() => console.log('Server is running on localhost:4000'))
