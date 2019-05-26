@@ -44,6 +44,7 @@ const typeDefs = `
   type Team {
     id: ID!
     name: String!
+    playerIds: [ID!]
   }
 `
 
@@ -59,10 +60,15 @@ const resolvers = {
       const count = await assetsContract.methods.countTeams().call();
       return count.toString();
     },
-    getTeam: async (_, params) => ({
-      id: params.id,
-      name: await assetsContract.methods.getTeamName(params.id).call()
-    })
+    getTeam: async (_, params) => {
+      const ids = await assetsContract.methods.getTeamPlayerIds(params.id).call();
+      ids.forEach((part, index) => ids[index] = part.toString());
+      return {
+        id: params.id,
+        name: await assetsContract.methods.getTeamName(params.id).call(),
+        playerIds: ids
+      }
+    }
   },
   Mutation: {
     createTeam: (_, params) => {
