@@ -11,6 +11,8 @@ const gas = 6721975;
 const web3 = new Web3(providerUrl, null, {});
 const assetsContract = new web3.eth.Contract(assetsContractJSON.abi, assetsContractAddress);
 
+const TEAM_CREATED = 'TEAM_CREATED';
+
 const typeDefs = `
   type Query {
     getSettings: Settings!
@@ -24,6 +26,7 @@ const typeDefs = `
 
   type Subscription {
     counter: String!
+    teamCreated: ID!
   }
 
   type Settings {
@@ -70,9 +73,12 @@ const resolvers = {
     counter: {
       subscribe: (parent, args, { pubsub }) => {
         const channel = Math.random().toString(36).substring(2, 15) // random channel name
-        setInterval(() => pubsub.publish(channel, { counter: channel } ), 2000)
+        setInterval(() => pubsub.publish(channel, { counter: channel, pippo: channel } ), 2000)
         return pubsub.asyncIterator(channel)
       },
+    },
+    teamCreated: {
+      subscribe: () => pubsub.asyncIterator([TEAM_CREATED])
     }
   },
 }
