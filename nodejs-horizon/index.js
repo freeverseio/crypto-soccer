@@ -22,6 +22,10 @@ const typeDefs = `
     createTeam(name: String!, owner: String!): String
   }
 
+  type Subscription {
+    counter: String!
+  }
+
   type Settings {
     providerUrl: String
     assetsContractAddress: String
@@ -39,6 +43,7 @@ const typeDefs = `
     name: String!
   }
 `
+
 const resolvers = {
   Query: {
     getSettings: () => ({
@@ -60,9 +65,19 @@ const resolvers = {
     createTeam: (_, params) => {
       assetsContract.methods.createTeam(params.name, params.owner).send({ from, gas });
     }
-  }
+  },
+  Subscription: {
+    counter: {
+      subscribe: (parent, args, { pubsub }) => {
+        const channel = Math.random().toString(36).substring(2, 15) // random channel name
+        setInterval(() => pubsub.publish(channel, { counter: channel } ), 2000)
+        return pubsub.asyncIterator(channel)
+      },
+    }
+  },
 }
-const pubSub = new PubSub();
-const server = new GraphQLServer({ typeDefs, resolvers, context: { pubSub } });
+
+const pubsub = new PubSub();
+const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
 
 server.start(() => console.log('Server is running on localhost:4000'))
