@@ -65,7 +65,11 @@ const resolvers = {
       }
     },
     allTeams: async () => {
-      console.log("on development");
+      const count = await resolvers.Query.countTeams();
+      let teams = [];
+      for (let i=1 ; i <= count ; i++)
+        teams.push(await resolvers.Query.teamById("", {id: i}));
+      return teams;
     }
   },
   Mutation: {
