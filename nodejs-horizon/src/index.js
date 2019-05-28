@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const { GraphQLServer, PubSub } = require('graphql-yoga');
 
-const assetsContractJSON = require('../truffle-core/build/contracts/Assets.json');
+const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.json');
 
 const providerUrl = 'ws://localhost:8545';
 const assetsContractAddress = '0xBaeb6C89EB37A467D8e54CCe11D1E093C5B18d6f';
