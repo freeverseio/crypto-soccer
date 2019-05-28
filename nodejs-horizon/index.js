@@ -4,7 +4,7 @@ const { GraphQLServer, PubSub } = require('graphql-yoga');
 const assetsContractJSON = require('../truffle-core/build/contracts/Assets.json');
 
 const providerUrl = 'ws://localhost:8545';
-const assetsContractAddress = '0x5841d35b6580b1f7599b2e1157CAd16690A86f16';
+const assetsContractAddress = '0xBaeb6C89EB37A467D8e54CCe11D1E093C5B18d6f';
 const from = '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef';
 const gas = 6721975;
 
@@ -15,9 +15,10 @@ const TEAM_CREATED = 'TEAM_CREATED';
 
 const typeDefs = `
   type Query {
-    getSettings: Settings!
-    getTeamCount: String!
-    getTeam(id: ID!): Team
+    settings: Settings!
+    countTeams: String!
+    teamById(id: ID!): Team
+    allTeams: [Team]
   }
 
   type Mutation {
@@ -25,7 +26,6 @@ const typeDefs = `
   }
 
   type Subscription {
-    counter: String!
     teamCreated: ID!
   }
 
@@ -36,31 +36,26 @@ const typeDefs = `
     gas: String
   }
 
-  type Provider {
-    url: String
-    isListening: Boolean!
-  }
-
   type Team {
     id: ID!
     name: String!
     playerIds: [ID!]
   }
-`
+`;
 
 const resolvers = {
   Query: {
-    getSettings: () => ({
+    settings: () => ({
       providerUrl: web3.currentProvider.connection._url,
       assetsContractAddress: assetsContractAddress,
       from,
       gas
     }),
-    getTeamCount: async () => {
+    countTeams: async () => {
       const count = await assetsContract.methods.countTeams().call();
       return count.toString();
     },
-    getTeam: async (_, params) => {
+    teamById: async (_, params) => {
       const ids = await assetsContract.methods.getTeamPlayerIds(params.id).call();
       ids.forEach((part, index) => ids[index] = part.toString());
       return {
@@ -68,6 +63,9 @@ const resolvers = {
         name: await assetsContract.methods.getTeamName(params.id).call(),
         playerIds: ids
       }
+    },
+    allTeams: async () => {
+      console.log("on development");
     }
   },
   Mutation: {
@@ -76,13 +74,6 @@ const resolvers = {
     }
   },
   Subscription: {
-    counter: {
-      subscribe: (parent, args, { pubsub }) => {
-        const channel = Math.random().toString(36).substring(2, 15) // random channel name
-        setInterval(() => pubsub.publish(channel, { counter: channel, pippo: channel } ), 2000)
-        return pubsub.asyncIterator(channel)
-      },
-    },
     teamCreated: {
       subscribe: () => pubsub.asyncIterator([TEAM_CREATED])
     }
