@@ -10,6 +10,8 @@ require('chai')
 const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.json');
 const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
 
+const Resolvers = require('../src/resolvers');
+
 const identity = {
     address: '0x3Abf1775944E2B2C15c05D044632831f0Dfc9130',
     privateKey: '0x0a69684608770d018143dd70dc5dc5b6beadc366b87e45fcb567fc09407e7fe5'
@@ -23,7 +25,7 @@ const provider = ganache.provider({
 const web3 = new Web3(provider, null, {});
 web3.currentProvider.setMaxListeners(0);
 
-describe('teleport ERC20 tokens', () => {
+describe('assets resolvers', () => {
     const PlayerState = new web3.eth.Contract(playerStateJSON.abi);
     const Assets = new web3.eth.Contract(assetsJSON.abi);
     let playerState = null;
@@ -36,7 +38,13 @@ describe('teleport ERC20 tokens', () => {
         assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).send({ from: identity.address, gas });
     });
 
-    it('test the test', async () => {
-        console.log("the test");
-    })
+    it('countTeams', async () => {
+        const resolver = new Resolvers({provider, assetsContractAddress: assets.options.address});
+        let count = await resolver.getResolvers().Query.countTeams().should.be.fulfilled;
+        count.should.be.equal('0');
+        let gas = await assets.methods.createTeam("Barca", identity.address).estimateGas();
+        await assets.methods.createTeam("Barca", identity.address).send({from: identity.address, gas});
+        count = await resolver.getResolvers().Query.countTeams().should.be.fulfilled;
+        count.should.be.equal('1');
+    });
 });
