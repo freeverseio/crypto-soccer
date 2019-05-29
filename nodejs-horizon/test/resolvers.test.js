@@ -26,6 +26,7 @@ web3.currentProvider.setMaxListeners(0);
 describe('teleport ERC20 tokens', () => {
     const PlayerState = new web3.eth.Contract(playerStateJSON.abi);
     const Assets = new web3.eth.Contract(assetsContractJSON.abi);
+    let playerState = null;
     let assets = null;
 
     beforeEach(async () => {
