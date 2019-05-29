@@ -8,7 +8,7 @@ require('chai')
     .should();
 
 const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.json');
-const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.json'); // TODO: change to assetsJSON
+const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
 
 const identity = {
     address: '0x3Abf1775944E2B2C15c05D044632831f0Dfc9130',
@@ -25,15 +25,15 @@ web3.currentProvider.setMaxListeners(0);
 
 describe('teleport ERC20 tokens', () => {
     const PlayerState = new web3.eth.Contract(playerStateJSON.abi);
-    const Assets = new web3.eth.Contract(assetsContractJSON.abi);
+    const Assets = new web3.eth.Contract(assetsJSON.abi);
     let playerState = null;
     let assets = null;
 
     beforeEach(async () => {
         let gas = await PlayerState.deploy({ data: playerStateJSON.bytecode }).estimateGas();
         playerState = await PlayerState.deploy({ data: playerStateJSON.bytecode }).send({ from: identity.address, gas });
-        gas = await Assets.deploy({ data: assetsContractJSON.bytecode, arguments: [playerState.options.address] }).estimateGas();
-        assets = await Assets.deploy({ data: assetsContractJSON.bytecode, arguments: [playerState.options.address] }).send({ from: identity.address, gas });
+        gas = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).estimateGas();
+        assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).send({ from: identity.address, gas });
     });
 
     it('test the test', async () => {
