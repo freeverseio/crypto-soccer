@@ -17,11 +17,11 @@ const identity = {
 
 // we preset the balance of our identities to 100 ether
 const provider = ganache.provider({
-    accounts: [{ secretKey: identity.privateKey, balance: Web3Utils.toWei('100', 'ether') }],
-    logger: console
+    accounts: [{ secretKey: identity.privateKey, balance: Web3Utils.toWei('100', 'ether') }]
 });
 
 const web3 = new Web3(provider, null, {});
+web3.currentProvider.setMaxListeners(0);
 
 describe('teleport ERC20 tokens', () => {
     const PlayerState = new web3.eth.Contract(playerStateJSON.abi);
@@ -29,16 +29,13 @@ describe('teleport ERC20 tokens', () => {
     let assets = null;
 
     beforeEach(async () => {
-        playerState = await PlayerState.deploy({
-            data: playerStateJSON.bytecode
-        })
-        .send({
-            from: identity.address,
-            gas: 5000000
-        });
+        let gas = await PlayerState.deploy({ data: playerStateJSON.bytecode }).estimateGas();
+        playerState = await PlayerState.deploy({ data: playerStateJSON.bytecode }).send({ from: identity.address, gas });
+        gas = await Assets.deploy({ data: assetsContractJSON.bytecode, arguments: [playerState.options.address] }).estimateGas();
+        assets = await Assets.deploy({ data: assetsContractJSON.bytecode, arguments: [playerState.options.address] }).send({ from: identity.address, gas });
     });
 
     it('test the test', async () => {
-        console.log("tris is the test");
+        console.log("the test");
     })
 });
