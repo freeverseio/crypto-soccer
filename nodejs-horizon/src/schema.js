@@ -17,10 +17,8 @@ const typeDefs = gql`
   }
 
   type Settings {
-    providerUrl: String
+    network_id: String
     assetsContractAddress: String
-    from: String
-    gas: String
   }
 
   type Team {

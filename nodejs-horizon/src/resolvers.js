@@ -1,6 +1,5 @@
 const Web3 = require('web3');
 const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.json');
-const assetsContractAddress = '0xBaeb6C89EB37A467D8e54CCe11D1E093C5B18d6f';
 
 module.exports = class Resolvers {
   constructor({
@@ -16,10 +15,8 @@ module.exports = class Resolvers {
     return {
       Query: {
         settings: () => ({
-          providerUrl: web3.currentProvider.connection._url,
-          assetsContractAddress: assetsContractAddress,
-          from,
-          gas
+          network_id: web3.eth.currentProvider.options.network_id,
+          assetsContractAddress: assetsContract.options.address
         }),
         countTeams: async () => {
           const count = await assetsContract.methods.countTeams().call();

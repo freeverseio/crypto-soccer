@@ -30,21 +30,29 @@ describe('assets resolvers', () => {
     const Assets = new web3.eth.Contract(assetsJSON.abi);
     let playerState = null;
     let assets = null;
+    let resolvers = null;
 
     beforeEach(async () => {
         let gas = await PlayerState.deploy({ data: playerStateJSON.bytecode }).estimateGas();
         playerState = await PlayerState.deploy({ data: playerStateJSON.bytecode }).send({ from: identity.address, gas });
         gas = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).estimateGas();
         assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).send({ from: identity.address, gas });
+
+        resolvers = new Resolvers({provider, assetsContractAddress: assets.options.address}).getResolvers();
+    });
+
+    it('settings', () => {
+        const settings = resolvers.Query.settings();
+        settings.network_id.should.be.equal(web3.eth.currentProvider.options.network_id);
+        settings.assetsContractAddress.should.be.equal(assets.options.address);
     });
 
     it('countTeams', async () => {
-        const resolver = new Resolvers({provider, assetsContractAddress: assets.options.address});
-        let count = await resolver.getResolvers().Query.countTeams().should.be.fulfilled;
+        let count = await resolvers.Query.countTeams().should.be.fulfilled;
         count.should.be.equal('0');
         let gas = await assets.methods.createTeam("Barca", identity.address).estimateGas();
         await assets.methods.createTeam("Barca", identity.address).send({from: identity.address, gas});
-        count = await resolver.getResolvers().Query.countTeams().should.be.fulfilled;
+        count = await resolvers.Query.countTeams().should.be.fulfilled;
         count.should.be.equal('1');
     });
 });

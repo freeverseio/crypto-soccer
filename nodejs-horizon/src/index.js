@@ -1,7 +1,7 @@
 const Web3 = require('web3');
 const { ApolloServer, gql, PubSub } = require('apollo-server');
 const typeDefs = require('./schema');
-const resolvers = require('./resolvers');
+const Resolvers = require('./resolvers');
 
 const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.json');
 
@@ -26,6 +26,8 @@ assetsContract.events.TeamCreation()
     // remove event from local database
   })
   .on('error', console.error);
+
+const resolvers = new Resolvers({provider: providerUrl, assetsContractAddress}).getResolvers();
 
 // server.start(() => console.log('Server is running on localhost:4000'))
 
