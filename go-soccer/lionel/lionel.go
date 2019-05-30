@@ -107,6 +107,7 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	stk := l.stakers.Get(staker)
 
+	isLieHardCoded := false // TODO
 	tx, _, err := l.leagues.SendTransactionSyncWithClient(
 		stk.Client, nil, 0,
 		"updateLeague",
@@ -114,6 +115,7 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 		res.initStatesHash,
 		res.statesAtMatchdayHashes,
 		res.scores,
+		isLieHardCoded,
 	)
 
 	fmt.Printf("updateLeague leagueIdx: %v\n", leagueIdx)
