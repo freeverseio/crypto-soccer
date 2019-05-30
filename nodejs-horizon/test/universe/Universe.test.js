@@ -26,4 +26,10 @@ describe('Universe', () => {
         const count = await universe.countTeams().should.be.fulfilled;
         count.should.be.equal('0');
     });
+
+    it('create team', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const count = await universe.countTeams().should.be.fulfilled;
+        count.should.be.equal('1');
+    });
 });       

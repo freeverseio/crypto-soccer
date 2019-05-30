@@ -28,6 +28,12 @@ class Universe {
     async countTeams() {
         return await this.assets.methods.countTeams().call();
     }
+
+    async createTeam(name, owner) {
+        const { assets, from } = this;
+        const gas = await assets.methods.createTeam(name, owner).estimateGas();
+        await assets.methods.createTeam(name, owner).send({ from, gas });
+    }
 }
 
 module.exports = Universe;
