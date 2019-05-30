@@ -1,9 +1,7 @@
-const Web3 = require('web3');
-const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.json');
-
 module.exports = function Resolvers(universe) {
   this.Query = {
-    countTeams: () => universe.countTeams()
+    countTeams: () => universe.countTeams(),
+    allTeams: () => universe.allTeams(),
     // // teamById: async (_, params) => {
     //   const ids = await assetsContract.methods.getTeamPlayerIds(params.id).call();
     //   ids.forEach((part, index) => ids[index] = part.toString());
