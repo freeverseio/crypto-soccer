@@ -24,7 +24,11 @@ const typeDefs = gql`
   type Team {
     id: ID!
     name: String!
-    playerIds: [ID!]
+    players: [Player!]
+  }
+  
+  type Player {
+    id: ID!
   }`;
 
 module.exports = typeDefs;
