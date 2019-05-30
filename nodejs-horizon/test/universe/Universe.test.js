@@ -1,11 +1,8 @@
 const ganache = require('ganache-cli');
-const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
-    .use(require('chai-bn')(BN))
     .should();
-const Universe = require('../src/universe/Universe');
-const Resolvers = require('../src/resolvers');
+const Universe = require('../../src/universe/Universe');
 
 const identity = {
     address: '0x3Abf1775944E2B2C15c05D044632831f0Dfc9130',
@@ -15,20 +12,18 @@ const identity = {
 // we preset the balance of our identities to 100 ether
 const provider = ganache.provider({
     accounts: [{ secretKey: identity.privateKey, balance: '100000000000000000000000' }]
-})
+});
 
-
-describe('assets resolvers', () => {
-    let resolvers = null;
+describe('Universe', () => {
+    let universe = null;
 
     beforeEach(async () => {
         universe = new Universe(provider, null, identity.address);
         await universe.genesis();
-        resolvers = new Resolvers(universe);
     });
 
-    it('countTeams', async () => {
-        let count = await resolvers.Query.countTeams().should.be.fulfilled;
+    it('count teams', async () => {
+        const count = await universe.countTeams().should.be.fulfilled;
         count.should.be.equal('0');
     });
-});
+});       
