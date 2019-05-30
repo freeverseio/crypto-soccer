@@ -23,9 +23,8 @@ module.exports = function Resolvers(universe) {
   };
 
   this.Mutation = {
-    createTeam: async (parent, args, context, info) => {
-      await universe.createTeam(args.name, args.owner);
-    }
+    createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner)
+    
   };
 
   this.Subscription = {
