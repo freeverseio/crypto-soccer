@@ -5,7 +5,7 @@ import "../state/PlayerState.sol";
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets {
-    event TeamCreation (string teamName, uint256 teamId);
+    event TeamCreation (string teamName, uint256 teamId); // TODO: rename to TeamCreated
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
