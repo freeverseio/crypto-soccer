@@ -2,9 +2,8 @@ const { gql } = require('apollo-server');
 
 const typeDefs = gql`
   type Query {
-    settings: Settings!
     countTeams: String!
-    teamById(id: ID!): Team
+    getTeam(id: ID!): Team
     allTeams: [Team]
   }
 
@@ -29,6 +28,7 @@ const typeDefs = gql`
   
   type Player {
     id: ID!
+    name: String!
   }`;
 
 module.exports = typeDefs;

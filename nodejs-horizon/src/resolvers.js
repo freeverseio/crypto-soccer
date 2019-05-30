@@ -1,24 +1,21 @@
 module.exports = function Resolvers(universe) {
   this.Query = {
     countTeams: () => universe.countTeams(),
-    allTeams: () => universe.allTeams(),
-    // // teamById: async (_, params) => {
-    //   const ids = await assetsContract.methods.getTeamPlayerIds(params.id).call();
-    //   ids.forEach((part, index) => ids[index] = part.toString());
-    //   return {
-    //     id: params.id,
-    //     name: await assetsContract.methods.getTeamName(params.id).call(),
-    //     playerIds: ids
-    //   }
-    // },
-    // allTeams: async () => {
-    //   const count = await resolvers.Query.countTeams();
-    //   let teams = [];
-    //   for (let i = 1; i <= count; i++)
-    //     teams.push(await resolvers.Query.teamById("", { id: i }));
-    //   return teams;
-    // }
+    allTeams: (parent, args, context, info) => [{id:3}],
+    getTeam: (parent, args, context, info) => {
+      return args;
+    },
   };
+
+  this.Team = {
+    name: ({ id }) => universe.getTeamName(id),
+    players: ({ id }) => universe.getTeamPlayerIds(id)
+  };
+
+  this.Player = {
+    id: (id) => id,
+    name: (id) => universe.getPlayerName(id)
+  }
 
   this.Mutation = {
     createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner)
@@ -29,4 +26,4 @@ module.exports = function Resolvers(universe) {
     //   subscribe: () => pubsub.asyncIterator([TEAM_CREATED])
     // }
   };
-};
+}

@@ -33,4 +33,18 @@ describe('Universe', () => {
         const count = await universe.countTeams().should.be.fulfilled;
         count.should.be.equal('1');
     });
+
+    it('get team name', async () => {
+        await universe.getTeamName(1).should.be.rejected;
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const name = await universe.getTeamName(1).should.be.fulfilled;
+        name.should.be.equal("Barca");
+    });
+
+    it('get team player ids', async () => {
+        await universe.getTeamPlayerIds(1).should.be.rejected;
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const players = await universe.getTeamPlayerIds(1).should.be.fulfilled;
+        players.should.be.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11' ]);
+    })
 });       

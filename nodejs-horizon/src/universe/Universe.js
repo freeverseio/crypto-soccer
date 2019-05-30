@@ -33,6 +33,18 @@ class Universe {
         const gas = await assets.methods.createTeam(name, owner).estimateGas();
         await assets.methods.createTeam(name, owner).send({ from, gas });
     }
+
+    async getTeamName(id) {
+        return await this.assets.methods.getTeamName(id).call();
+    }
+
+    async getTeamPlayerIds(id) {
+        return await this.assets.methods.getTeamPlayerIds(id).call();
+    }
+
+    getPlayerName(id) {
+        return "player_" + id;
+    }
 }
 
 module.exports = Universe;
