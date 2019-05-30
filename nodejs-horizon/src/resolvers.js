@@ -3,11 +3,8 @@ const assetsContractJSON = require('../../truffle-core/build/contracts/Assets.js
 
 module.exports = function Resolvers(universe) {
   this.Query = {
-    countTeams: async () => {
-      const count = await universe.countTeams();
-      return count.toString();
-    },
-    // teamById: async (_, params) => {
+    countTeams: () => universe.countTeams()
+    // // teamById: async (_, params) => {
     //   const ids = await assetsContract.methods.getTeamPlayerIds(params.id).call();
     //   ids.forEach((part, index) => ids[index] = part.toString());
     //   return {
@@ -26,9 +23,9 @@ module.exports = function Resolvers(universe) {
   };
 
   this.Mutation = {
-    // createTeam: (_, params) => {
-    //   assetsContract.methods.createTeam(params.name, params.owner).send({ from, gas });
-    // }
+    createTeam: async (parent, args, context, info) => {
+      await universe.createTeam(args.name, args.owner);
+    }
   };
 
   this.Subscription = {

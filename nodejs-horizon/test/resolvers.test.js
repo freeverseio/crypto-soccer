@@ -32,4 +32,10 @@ describe('assets resolvers', () => {
         let count = await resolvers.Query.countTeams().should.be.fulfilled;
         count.should.be.equal('0');
     });
+
+    it('create team', async () => {
+        await resolvers.Mutation.createTeam(_, {name: "Barca", owner: identity.address}).should.be.fulfilled;
+        let count = await resolvers.Query.countTeams().should.be.fulfilled;
+        count.should.be.equal('1');
+    });
 });
