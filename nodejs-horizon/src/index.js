@@ -21,7 +21,12 @@ const pubsub = new PubSub();
 //   })
 //   .on('error', console.error);
 
-const universe = new Universe(providerUrl, assetsContractAddress, from);
+const universe = new Universe({
+  provider: providerUrl,
+  assetsAddress: assetsContractAddress,
+  playerStateAddress: '0x6367bd320b0Ce4C99f58685E6ca61F0F9660cdb9',
+  from
+});
 const resolvers = new Resolvers(universe);
 
 const server = new ApolloServer({ typeDefs, resolvers });

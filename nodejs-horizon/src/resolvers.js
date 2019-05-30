@@ -13,7 +13,8 @@ module.exports = function Resolvers(universe) {
 
   this.Player = {
     id: (id) => id,
-    name: (id) => universe.getPlayerName(id)
+    name: (id) => universe.getPlayerName(id),
+    defence: (id) => universe.getPlayerDefence(id)
   }
 
   this.Mutation = {

@@ -30,6 +30,7 @@ const typeDefs = gql`
   type Player {
     id: ID!
     name: String!
+    defence: Int!
   }`;
 
 module.exports = typeDefs;
