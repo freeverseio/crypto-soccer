@@ -49,5 +49,11 @@ describe('Universe', () => {
         await universe.createTeam("Barca", identity.address).should.be.fulfilled;
         const players = await universe.getTeamPlayerIds(1).should.be.fulfilled;
         players.should.be.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11' ]);
+    });
+
+    it('get player defence', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const defence =  await universe.getPlayerDefence(3).should.be.fulfilled;
+        defence.should.be.equal('50')
     })
 });       

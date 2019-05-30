@@ -48,8 +48,8 @@ class Universe {
     }
 
     async getPlayerDefence(id) {
-        const state = await this.assets.methods.getPlayerState(id);
-        return await this.playerState.methods.getDefence(state);
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getDefence(state).call();
     }
 }
 
