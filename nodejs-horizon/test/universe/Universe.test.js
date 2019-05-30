@@ -19,6 +19,7 @@ describe('Universe', () => {
 
     beforeEach(async () => {
         universe = new Universe(provider, null, identity.address);
+        universe.web3.currentProvider.setMaxListeners(0);
         await universe.genesis();
     });
 

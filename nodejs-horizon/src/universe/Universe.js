@@ -5,7 +5,6 @@ const assetsJSON = require('../../../truffle-core/build/contracts/Assets.json');
 class Universe {
     constructor(provider, assetsAddress, from) {
         this.web3 = new Web3(provider, null, {});
-        // this.web3.currentProvider.setMaxListeners(0);
         this.assets = new this.web3.eth.Contract(assetsJSON.abi, assetsAddress);
         this.from = from;
     }
