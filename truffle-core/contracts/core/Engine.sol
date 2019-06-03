@@ -1,8 +1,11 @@
 pragma solidity ^0.5.0;
 
 import "./Leagues.sol";
+import "../state/PlayerState.sol";
 
-contract Engine {
+contract Engine is PlayerState {
+    // @dev Max num of players allowed in a team
+    uint8 constant kMaxPlayersInTeam = 11;
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
@@ -46,10 +49,28 @@ contract Engine {
         pure
         returns (
             uint[5] memory globSkills,
-            uint[11] memory attackersSpeed, // TODO: replace 11 magic numbers with compile-time variable
-            uint[11] memory attackersShoot
+            uint[] memory attackersSpeed, 
+            uint[] memory attackersShoot
         )
     {
+        attackersSpeed = new uint[](tactic[2]); 
+        attackersShoot = new uint[](tactic[2]); 
+
+        uint8 p = 1;
+        uint8 i = 0;
+/*
+        for (;p <= tactic[0]; p++) {
+        }
+        for (;p <= tactic[1]; p++) {
+        }
+        */
+        for (;p <= tactic[2]; p++) {
+            attackersSpeed[i] = getSpeed(teamState[p]); 
+            attackersShoot[i] = getShoot(teamState[p]); 
+            i++;
+        }
+
+
 /*
         uint move2attack;
         uint createShoot;

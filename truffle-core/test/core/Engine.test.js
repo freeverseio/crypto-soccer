@@ -1,5 +1,7 @@
+const BN = require('bn.js');
 require('chai')
     .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
     .should();
 
 const Engine = artifacts.require('Engine');
@@ -48,9 +50,16 @@ contract('Engine', (accounts) => {
             teamState = await teamStateLib.teamStateAppend(teamState, playerState).should.be.fulfilled;
         }
         let result = await engine.getTeamGlobSkills(teamState, [4,4,2]).should.be.fulfilled;
+        result.attackersSpeed.length.should.be.equal(2);
+        result.attackersShoot.length.should.be.equal(2);
+        result.attackersSpeed[0].should.be.bignumber.equal("1");
+        result.attackersSpeed[1].should.be.bignumber.equal("1");
+        result.attackersShoot[0].should.be.bignumber.equal("1");
+        result.attackersShoot[1].should.be.bignumber.equal("1");
+        console.log(result);
         // result.home.toNumber().should.be.equal(2);
     });
-
+    return;
     it('play a match', async () => {
         const result = await engine.playMatch(seed, state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
