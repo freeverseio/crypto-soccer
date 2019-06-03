@@ -51,6 +51,26 @@ class Universe {
         const state = await this.assets.methods.getPlayerState(id).call();
         return await this.playerState.methods.getDefence(state).call();
     }
+
+    async getPlayerSpeed(id) {
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getSpeed(state).call();
+    }
+
+    async getPlayerPass(id) {
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getPass(state).call();
+    }
+
+    async getPlayerShoot(id) {
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getShoot(state).call();
+    }
+
+    async getPlayerEndurance(id) {
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getEndurance(state).call();
+    }
 }
 
 module.exports = Universe;

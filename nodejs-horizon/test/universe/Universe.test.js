@@ -53,7 +53,31 @@ describe('Universe', () => {
 
     it('get player defence', async () => {
         await universe.createTeam("Barca", identity.address).should.be.fulfilled;
-        const defence =  await universe.getPlayerDefence(3).should.be.fulfilled;
-        defence.should.be.equal('50')
-    })
+        const skill =  await universe.getPlayerDefence(3).should.be.fulfilled;
+        skill.should.be.equal('50')
+    });
+
+    it('get player speed', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const skill =  await universe.getPlayerSpeed(3).should.be.fulfilled;
+        skill.should.be.equal('62')
+    });
+
+    it('get player pass', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const skill =  await universe.getPlayerPass(3).should.be.fulfilled;
+        skill.should.be.equal('47')
+    });
+
+    it('get player shoot', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const skill =  await universe.getPlayerShoot(3).should.be.fulfilled;
+        skill.should.be.equal('27')
+    });
+
+    it('get player endurance', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const skill =  await universe.getPlayerEndurance(3).should.be.fulfilled;
+        skill.should.be.equal('64')
+    });
 });       
