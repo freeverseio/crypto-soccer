@@ -29,9 +29,10 @@ contract('Engine', (accounts) => {
         //                  speed(defenders + 2*midfields) +
         //                  pass(defenders + 3*midfields) 
         //             =    14 + 12 + 16 = 42
-        // createShoot =    speed(attackers) + pass(attackers) = 2 + 4 = 6
+        // createShoot =    speed(attackers) + pass(attackers) = 2 + 2 = 4
         // defendShoot =    speed(defenders) + defence(defenders) = 4 + 4 = 8 
         // blockShoot  =    shoot(keeper); 1
+        // endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
         const playerState = await teamStateLib.playerStateCreate(
@@ -56,6 +57,11 @@ contract('Engine', (accounts) => {
         result.attackersSpeed[1].should.be.bignumber.equal("1");
         result.attackersShoot[0].should.be.bignumber.equal("1");
         result.attackersShoot[1].should.be.bignumber.equal("1");
+        result.globSkills[0].should.be.bignumber.equal("42");
+        result.globSkills[1].should.be.bignumber.equal("4");
+        result.globSkills[2].should.be.bignumber.equal("8");
+        result.globSkills[3].should.be.bignumber.equal("1");
+        result.globSkills[4].should.be.bignumber.equal("70");
         console.log(result);
         // result.home.toNumber().should.be.equal(2);
     });

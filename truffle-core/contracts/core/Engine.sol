@@ -56,20 +56,59 @@ contract Engine is PlayerState {
         attackersSpeed = new uint[](tactic[2]); 
         attackersShoot = new uint[](tactic[2]); 
 
-        uint8 p = 1;
+        uint move2attack;
+        uint createShoot;
+        uint defendShoot;
+        uint blockShoot;
+        uint endurance;
 
+        uint8 p = 0;
+
+        // for a keeper, the 'shoot skill' is interpreted as block skill
+        blockShoot  += getShoot(teamState[p]); 
+        endurance   += getEndurance(teamState[p]);
+        p++;
+
+        // loop over defenders
         for (uint8 i = 0; i < tactic[0]; i++) {
+            move2attack += getDefence(teamState[p]) + getSpeed(teamState[p]) + getPass(teamState[p]);
+            defendShoot += getDefence(teamState[p]) + getSpeed(teamState[p]);
+            endurance   += getEndurance(teamState[p]);
             p++;
         }
+        // loop over midfielders
         for (uint8 i = 0; i < tactic[1]; i++) {
+            move2attack += 2*getDefence(teamState[p]) + 2*getSpeed(teamState[p]) + 3*getPass(teamState[p]);
+            endurance   += getEndurance(teamState[p]);
             p++;
         }
+        // loop over strikers
         for (uint8 i = 0; i < tactic[2]; i++) {
+            move2attack += getDefence(teamState[p]) ;
+            createShoot += getSpeed(teamState[p]) + getPass(teamState[p]);
+            endurance   += getEndurance(teamState[p]);
             attackersSpeed[i] = getSpeed(teamState[p]); 
             attackersShoot[i] = getShoot(teamState[p]); 
             p++;
         }
 
+        // endurance is converted to a percentage, 
+        // used to multiply (and hence decrease) the start endurance.
+        // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
+        if (endurance < 500) {
+            endurance = 70;
+        } else if (endurance < 1400) {
+            endurance = 100 - (1400-endurance)/30;
+        } else {
+            endurance = 100;
+        }
+
+
+        return (
+            [move2attack, createShoot, defendShoot, blockShoot, endurance],
+            attackersSpeed,
+            attackersShoot
+        );
 
 /*
         uint move2attack;
