@@ -7,8 +7,9 @@ const Engine = artifacts.require('Engine');
 contract('Engine', (accounts) => {
     let engine = null;
     const seed = '0x610106';
-    const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    const state1 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+    const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const state1 = state0;
+    console.log(state1);
     const tactic0 = [4, 4, 2];
     const tactic1 = [4, 5, 1];
 
@@ -19,7 +20,7 @@ contract('Engine', (accounts) => {
     it('play a match', async () => {
         const result = await engine.playMatch(seed, state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(3);
+        result[1].toNumber().should.be.equal(0);
     });
 
     it('play match with less than 11 players', async () => {
@@ -38,10 +39,10 @@ contract('Engine', (accounts) => {
     it('different seeds => different result', async () => {
         let result = await engine.playMatch('0x123456', state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(2);
+        result[1].toNumber().should.be.equal(0);
         result = await engine.playMatch('0x654321', state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(3);
+        result[1].toNumber().should.be.equal(1);
     });
 
     it('different team state => different result', async () => {

@@ -23,8 +23,8 @@ contract Engine {
         pure 
         returns (uint8 home, uint8 visitor) 
     {
-        require(state0.length >= 11, "Team 0 needs at least 11 players");
-        require(state1.length >= 11, "Team 1 needs at least 11 players");
+        require(state0.length == 11, "Team 0 needs 11 players");
+        require(state1.length == 11, "Team 1 needs 11 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1");
         bytes32 hash0 = keccak256(abi.encode(uint256(seed) + state0[0] + tactic0[0]));
