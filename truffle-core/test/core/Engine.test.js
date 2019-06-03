@@ -21,6 +21,14 @@ contract('Engine', (accounts) => {
         teamStateLib = await TeamStateLib.new().should.be.fulfilled;
     });
 
+    it('gets n rands from a seed', async () => {
+        nRnds = 235;
+        const result = await engine.getNRandsFromSeed(nRnds, seed).should.be.fulfilled;
+        result.length.should.be.equal(nRnds);
+        result[0].should.be.bignumber.equal("6279");
+        result[nRnds-1].should.be.bignumber.equal("7237");
+    });
+    return;
 
 
     it('computes team global skills by aggregating across all players in team', async () => {
@@ -65,7 +73,6 @@ contract('Engine', (accounts) => {
         console.log(result);
         // result.home.toNumber().should.be.equal(2);
     });
-    return;
     it('play a match', async () => {
         const result = await engine.playMatch(seed, state0, state1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
