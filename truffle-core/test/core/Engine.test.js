@@ -3,18 +3,52 @@ require('chai')
     .should();
 
 const Engine = artifacts.require('Engine');
+const TeamStateLib = artifacts.require('TeamState');
 
 contract('Engine', (accounts) => {
     let engine = null;
+    let teamStateLib = null;
     const seed = '0x610106';
     const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const state1 = state0;
-    console.log(state1);
     const tactic0 = [4, 4, 2];
     const tactic1 = [4, 5, 1];
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
+        teamStateLib = await TeamStateLib.new().should.be.fulfilled;
+    });
+
+
+
+    it('computes team global skills by aggregating across all players in team', async () => {
+        // If all skills where 1 for all players, and tactics = 442 =>
+        // move2attack =    defence(defenders + 2*midfields + attackers) +
+        //                  speed(defenders + 2*midfields) +
+        //                  pass(defenders + 3*midfields) 
+        //             =    14 + 12 + 16 = 42
+        // createShoot =    speed(attackers) + pass(attackers) = 2 + 4 = 6
+        // defendShoot =    speed(defenders) + defence(defenders) = 4 + 4 = 8 
+        // blockShoot  =    shoot(keeper); 1
+        // attackersSpeed = [1,1]
+        // attackersShoot = [1,1]
+        const playerState = await teamStateLib.playerStateCreate(
+            defence = '1',
+            speed = '1',
+            pass = '1',
+            shoot = '1',
+            endurance = '1',
+            0, 
+            playerId = '1',
+            0, 0, 0, 0, 0, 0
+        ).should.be.fulfilled;
+        const nPlayers = 11;
+        let teamState = await teamStateLib.teamStateCreate().should.be.fulfilled;
+        for (var i = 0; i < nPlayers; i++) {
+            teamState = await teamStateLib.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        }
+        let result = await engine.getTeamGlobSkills(teamState, [4,4,2]).should.be.fulfilled;
+        // result.home.toNumber().should.be.equal(2);
     });
 
     it('play a match', async () => {
@@ -56,8 +90,4 @@ contract('Engine', (accounts) => {
         result.visitor.toNumber().should.be.equal(2);
     });
 
-    it('computes team global skills by aggregating across all players in team', async () => {
-        let result = await engine.getTeamGlobSkills(state0, tactic0).should.be.fulfilled;
-        // result.home.toNumber().should.be.equal(2);
-    });
 });
