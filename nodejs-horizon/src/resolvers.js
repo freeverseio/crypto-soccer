@@ -14,7 +14,11 @@ module.exports = function Resolvers(universe) {
   this.Player = {
     id: (id) => id,
     name: (id) => universe.getPlayerName(id),
-    defence: (id) => universe.getPlayerDefence(id)
+    defence: (id) => universe.getPlayerDefence(id),
+    speed: (id) => universe.getPlayerSpeed(id),
+    pass: (id) => universe.getPlayerPass(id),
+    shoot: (id) => universe.getPlayerShoot(id),
+    endurance: (id) => universe.getPlayerEndurance(id),
   }
 
   this.Mutation = {
