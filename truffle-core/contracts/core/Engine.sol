@@ -57,17 +57,17 @@ contract Engine is PlayerState {
         attackersShoot = new uint[](tactic[2]); 
 
         uint8 p = 1;
-        uint8 i = 0;
-/*
-        for (;p <= tactic[0]; p++) {
+
+        for (uint8 i = 0; i < tactic[0]; i++) {
+            p++;
         }
-        for (;p <= tactic[1]; p++) {
+        for (uint8 i = 0; i < tactic[1]; i++) {
+            p++;
         }
-        */
-        for (;p <= tactic[2]; p++) {
+        for (uint8 i = 0; i < tactic[2]; i++) {
             attackersSpeed[i] = getSpeed(teamState[p]); 
             attackersShoot[i] = getShoot(teamState[p]); 
-            i++;
+            p++;
         }
 
 
