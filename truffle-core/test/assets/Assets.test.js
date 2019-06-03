@@ -16,6 +16,11 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('compute seed', async () => {
+        const seed = await assets.computeSeed("ciao", 55).should.be.fulfilled;
+        seed.should.be.bignumber.equal('102547434092017079837680488740905628255437880050736598764126453081239303428819');
+    });
+
     it('get team creation timestamp', async () => {
         await assets.getTeamCreationTimestamp(1).should.be.rejected;
         const receipt = await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
