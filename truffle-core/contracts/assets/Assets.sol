@@ -18,6 +18,7 @@ contract Assets {
         uint256 prevLeagueId;
         uint8 posInPrevLeague;
         uint256[PLAYERS_PER_TEAM] playerIds;
+        uint256 creationTimestamp; // timestamp as seconds since unix epoch
     }
 
     uint8 constant public PLAYERS_PER_TEAM = 11;
@@ -37,7 +38,12 @@ contract Assets {
     constructor(address playerState) public {
         _playerState = PlayerState(playerState);
         uint256[PLAYERS_PER_TEAM] memory playerIds;
-        teams.push(Team("_", 0, 0, 0, 0, playerIds));
+        teams.push(Team("_", 0, 0, 0, 0, playerIds, block.timestamp));
+    }
+
+    function getTeamCreationTimestamp(uint256 teamId) external view returns (uint256) {
+        require(_teamExists(teamId), "invalid team id");
+        return teams[teamId].creationTimestamp;
     }
 
     /// get the current and previous team league and position in league
@@ -95,7 +101,7 @@ contract Assets {
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
         _teamNameHashToOwner[nameHash] = owner;
         uint256[PLAYERS_PER_TEAM] memory playerIds;
-        teams.push(Team(name, 0, 0, 0, 0, playerIds));
+        teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
         uint256 teamId = teams.length - 1;
         emit TeamCreation(name, teamId);
     }

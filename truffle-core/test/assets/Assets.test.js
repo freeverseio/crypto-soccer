@@ -16,6 +16,18 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('get team creation timestamp', async () => {
+        await assets.getTeamCreationTimestamp(1).should.be.rejected;
+        const receipt = await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
+        const blockNumber = receipt.receipt.blockNumber;
+        const block = await web3.eth.getBlock(blockNumber).should.be.fulfilled;
+        const timestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
+        timestamp.should.be.bignumber.equal(block.timestamp.toString());
+    });
+
+    it('player birth is team creation timestamp', async () => {
+    });
+
     it('get playerIds of the team', async () => {
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
         let playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
