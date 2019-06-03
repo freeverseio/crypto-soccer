@@ -4,7 +4,7 @@ const typeDefs = gql`
   type Query {
     countTeams: String!
     getTeam(id: ID!): Team
-    allTeams: [Team]
+    allTeams: [Team]!
     getPlayer(id: ID!): Player
   }
 
@@ -31,6 +31,11 @@ const typeDefs = gql`
     id: ID!
     name: String!
     defence: Int!
+    speed: Int!
+    pass: Int!
+    shoot: Int!
+    endurance: Int!
+    team: Team!
   }`;
 
 module.exports = typeDefs;

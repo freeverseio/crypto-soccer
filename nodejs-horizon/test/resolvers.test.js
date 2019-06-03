@@ -37,8 +37,76 @@ describe('assets resolvers', () => {
     });
 
     it('create team', async () => {
-        await resolvers.Mutation.createTeam(_, {name: "Barca", owner: identity.address}).should.be.fulfilled;
+        await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
         let count = await resolvers.Query.countTeams().should.be.fulfilled;
         count.should.be.equal('1');
+    });
+
+    it('get player', async () => {
+        const id = 3;
+        const player = await resolvers.Query.getPlayer(_, { id });
+        player.should.be.equal(id);
+    });
+
+    it('get all teams', async () => {
+        const teams = await resolvers.Query.allTeams().should.be.fulfilled;
+    });
+
+    describe('Player', () => {
+        it('id', () => {
+            resolvers.Player.id(3).should.be.equal(3);
+        });
+
+        it('name', () => {
+            resolvers.Player.name(3).should.be.equal('player_3');
+        });
+
+        it('defence', async () => {
+            const id = 3;
+            await resolvers.Player.defence(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.defence(id).should.be.fulfilled;
+            skill.should.be.equal('50');
+        });
+
+        it('speed', async () => {
+            const id = 3;
+            await resolvers.Player.speed(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.speed(id).should.be.fulfilled;
+            skill.should.be.equal('62');
+        }); 
+        
+        it('pass', async () => {
+            const id = 3;
+            await resolvers.Player.pass(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.pass(id).should.be.fulfilled;
+            skill.should.be.equal('47');
+        }); 
+        
+        it('shoot', async () => {
+            const id = 3;
+            await resolvers.Player.shoot(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.shoot(id).should.be.fulfilled;
+            skill.should.be.equal('27');
+        }); 
+        
+        it('endurance', async () => {
+            const id = 3;
+            await resolvers.Player.endurance(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.endurance(id).should.be.fulfilled;
+            skill.should.be.equal('64');
+        }); 
+
+        it('team', async () => {
+            const id = 3;
+            await resolvers.Player.team(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.team(id).should.be.fulfilled;
+            skill.should.be.equal('1');
+        }); 
     });
 });

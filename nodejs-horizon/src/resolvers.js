@@ -1,12 +1,13 @@
 module.exports = function Resolvers(universe) {
   this.Query = {
     countTeams: () => universe.countTeams(),
-    allTeams: (parent, args, context, info) => [{ id: 3 }],
+    allTeams: () => universe.getTeamIds(),
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id
   };
 
   this.Team = {
+    id: (id) => id,
     name: (id) => universe.getTeamName(id),
     players: (id) => universe.getTeamPlayerIds(id)
   };
@@ -14,7 +15,12 @@ module.exports = function Resolvers(universe) {
   this.Player = {
     id: (id) => id,
     name: (id) => universe.getPlayerName(id),
-    defence: (id) => universe.getPlayerDefence(id)
+    defence: (id) => universe.getPlayerDefence(id),
+    speed: (id) => universe.getPlayerSpeed(id),
+    pass: (id) => universe.getPlayerPass(id),
+    shoot: (id) => universe.getPlayerShoot(id),
+    endurance: (id) => universe.getPlayerEndurance(id),
+    team: (id) => universe.getPlayerTeamId(id),
   }
 
   this.Mutation = {
