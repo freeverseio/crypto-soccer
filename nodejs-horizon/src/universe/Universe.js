@@ -71,6 +71,14 @@ class Universe {
         const state = await this.assets.methods.getPlayerState(id).call();
         return await this.playerState.methods.getEndurance(state).call();
     }
+
+    async getTeamIds() {
+        const count = await this.assets.methods.countTeams().call();
+        let ids = [];
+        for (let i = 1 ; i <= count ; i++)
+            ids.push(i);
+        return ids;
+    }
 }
 
 module.exports = Universe;

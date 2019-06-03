@@ -80,4 +80,13 @@ describe('Universe', () => {
         const skill =  await universe.getPlayerEndurance(3).should.be.fulfilled;
         skill.should.be.equal('64')
     });
+
+    it('get teams ids', async () => {
+        let ids = await universe.getTeamIds().should.be.fulfilled;
+        ids.should.be.eql([]);
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        await universe.createTeam("Madrid", identity.address).should.be.fulfilled;
+        ids = await universe.getTeamIds().should.be.fulfilled;
+        ids.should.be.eql([1, 2]);
+    })
 });       

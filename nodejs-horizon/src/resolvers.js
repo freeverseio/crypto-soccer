@@ -1,12 +1,13 @@
 module.exports = function Resolvers(universe) {
   this.Query = {
     countTeams: () => universe.countTeams(),
-    allTeams: (parent, args, context, info) => [{ id: 3 }],
+    allTeams: () => universe.getTeamIds(),
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id
   };
 
   this.Team = {
+    id: (id) => id,
     name: (id) => universe.getTeamName(id),
     players: (id) => universe.getTeamPlayerIds(id)
   };

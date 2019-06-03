@@ -48,6 +48,10 @@ describe('assets resolvers', () => {
         player.should.be.equal(id);
     });
 
+    it('get all teams', async () => {
+        const teams = await resolvers.Query.allTeams().should.be.fulfilled;
+    });
+
     describe('Player', () => {
         it('id', () => {
             resolvers.Player.id(3).should.be.equal(3);
