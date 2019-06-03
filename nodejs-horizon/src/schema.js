@@ -35,6 +35,7 @@ const typeDefs = gql`
     pass: Int!
     shoot: Int!
     endurance: Int!
+    team: Team!
   }`;
 
 module.exports = typeDefs;

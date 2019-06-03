@@ -88,5 +88,11 @@ describe('Universe', () => {
         await universe.createTeam("Madrid", identity.address).should.be.fulfilled;
         ids = await universe.getTeamIds().should.be.fulfilled;
         ids.should.be.eql([1, 2]);
+    });
+
+    it('get player team', async () => {
+        await universe.createTeam("Barca", identity.address).should.be.fulfilled;
+        const team = await universe.getPlayerTeamId(3).should.be.fulfilled;
+        team.should.be.equal('1');
     })
 });       

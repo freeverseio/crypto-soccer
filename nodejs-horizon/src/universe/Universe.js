@@ -79,6 +79,11 @@ class Universe {
             ids.push(i);
         return ids;
     }
+
+    async getPlayerTeamId(id) {
+        const state = await this.assets.methods.getPlayerState(id).call();
+        return await this.playerState.methods.getCurrentTeamId(state).call();
+    }
 }
 
 module.exports = Universe;

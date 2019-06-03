@@ -20,6 +20,7 @@ module.exports = function Resolvers(universe) {
     pass: (id) => universe.getPlayerPass(id),
     shoot: (id) => universe.getPlayerShoot(id),
     endurance: (id) => universe.getPlayerEndurance(id),
+    team: (id) => universe.getPlayerTeamId(id),
   }
 
   this.Mutation = {

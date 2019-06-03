@@ -100,5 +100,13 @@ describe('assets resolvers', () => {
             const skill = await resolvers.Player.endurance(id).should.be.fulfilled;
             skill.should.be.equal('64');
         }); 
+
+        it('team', async () => {
+            const id = 3;
+            await resolvers.Player.team(id).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const skill = await resolvers.Player.team(id).should.be.fulfilled;
+            skill.should.be.equal('1');
+        }); 
     });
 });
