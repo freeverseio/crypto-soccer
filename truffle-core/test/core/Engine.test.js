@@ -28,7 +28,6 @@ contract('Engine', (accounts) => {
         result[0].should.be.bignumber.equal("6279");
         result[nRnds-1].should.be.bignumber.equal("7237");
     });
-    return;
 
 
     it('computes team global skills by aggregating across all players in team', async () => {
@@ -93,23 +92,23 @@ contract('Engine', (accounts) => {
     });
 
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch('0x123456', state0, state1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(0);
-        result = await engine.playMatch('0x654321', state0, state1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(1);
+        let result = await engine.playMatch(123456, state0, state1, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(2);
+        result[1].toNumber().should.be.equal(2);
+        result = await engine.playMatch(654321, state0, state1, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(3);
+        result[1].toNumber().should.be.equal(3);
     });
 
     it('different team state => different result', async () => {
         const state = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
-        let result = await engine.playMatch('0x123456', state, state, tactic0, tactic1).should.be.fulfilled;
-        result.home.toNumber().should.be.equal(2);
-        result.visitor.toNumber().should.be.equal(2);
+        let result = await engine.playMatch(123456, state, state, tactic0, tactic1).should.be.fulfilled;
+        result.home.toNumber().should.be.equal(1);
+        result.visitor.toNumber().should.be.equal(1);
         const state0 = [44, 12, 13, 44, 3, 66, 5, 5, 3, 2, 1];
-        result = await engine.playMatch('0x123456', state, state0, tactic0, tactic1).should.be.fulfilled;
-        result.home.toNumber().should.be.equal(2);
-        result.visitor.toNumber().should.be.equal(2);
+        result = await engine.playMatch(123456, state, state0, tactic0, tactic1).should.be.fulfilled;
+        result.home.toNumber().should.be.equal(1);
+        result.visitor.toNumber().should.be.equal(0);
     });
 
 });

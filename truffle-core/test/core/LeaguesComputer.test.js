@@ -63,37 +63,37 @@ contract('LeaguesComputer', (accounts) => {
 
     it('calculate a day in a league', async () => {
         let day = 0;
-        let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x0').should.be.fulfilled;
+        let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 0).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         let scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
         scores.home.toNumber().should.be.equal(1);
         scores.visitor.toNumber().should.be.equal(0);
         day = 1;
-        result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x4354646451').should.be.fulfilled;
+        result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4354646451).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(1);
-        scores.visitor.toNumber().should.be.equal(3);
+        scores.home.toNumber().should.be.equal(2);
+        scores.visitor.toNumber().should.be.equal(0);
     });
 
     it('result of a day in league is deterministic', async () => {
         const day = 1;
-        let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x123456').should.be.fulfilled;
+        let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 123456).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         let scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(0);
+        scores.home.toNumber().should.be.equal(2);
         scores.visitor.toNumber().should.be.equal(1);
-        result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x123456').should.be.fulfilled;
+        result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 123456).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(0);
+        scores.home.toNumber().should.be.equal(2);
         scores.visitor.toNumber().should.be.equal(1);
     });
 
     it('different seed => different results', async () => {
         const day = 1;
-        const result0 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x1234').should.be.fulfilled;
-        const result1 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, '0x4321').should.be.fulfilled;
+        const result0 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 1234).should.be.fulfilled;
+        const result1 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4321).should.be.fulfilled;
         result0.scores.length.should.be.equal(1);
         result1.scores.length.should.be.equal(1);
         result0.scores[0].toNumber().should.not.be.equal(result1.scores[0].toNumber());

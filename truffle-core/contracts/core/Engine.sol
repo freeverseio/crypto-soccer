@@ -9,6 +9,7 @@ contract Engine is PlayerState {
     uint256 constant kBitsPerRndNum = 14; 
     uint8 constant rndsPerUint256 = 18; // = 256 / kBitsPerRndNum;
     uint256 constant mask = (1 << kBitsPerRndNum)-1; // (2**bits)-1
+    uint8 constant kRoundsPerGame = 18; 
 
     /**
      * @dev playMatch returns the result of a match
@@ -20,7 +21,7 @@ contract Engine is PlayerState {
      * @return the score of the match
      */
     function playMatch(
-        bytes32 seed,
+        uint256 seed,
         uint256[] memory state0,
         uint256[] memory state1, 
         uint8[3] memory tactic0, 
@@ -34,8 +35,8 @@ contract Engine is PlayerState {
         require(state1.length == 11, "Team 1 needs 11 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1");
-        bytes32 hash0 = keccak256(abi.encode(uint256(seed) + state0[0] + tactic0[0]));
-        bytes32 hash1 = keccak256(abi.encode(uint256(seed) + state1[0] + tactic1[0]));
+        bytes32 hash0 = keccak256(abi.encode(seed + state0[0] + tactic0[0]));
+        bytes32 hash1 = keccak256(abi.encode(seed + state1[0] + tactic1[0]));
         return (uint8(uint256(hash0) % 4), uint8(uint256(hash1) % 4));
     }
 
@@ -55,39 +56,22 @@ contract Engine is PlayerState {
         return rnds;
     }
 
-/*
-    function decode(uint8 nElem, uint serialized, uint bits) internal pure returns(uint16[] decoded) {
-        require (bits <= 16, "Not enough bits to encode each number, since they are read as uint16");
-        uint mask = (1 << bits)-1; // (2**bits)-1
-        decoded = new uint16[](nElem);
-        for (uint8 i=0; i<nElem; i++) {
-            decoded[i] = uint16(serialized & mask);
-            serialized >>= bits;
-        }
-    }
-*/
-
-
-/*
     /// @dev Plays a game and, currently, returns the number of goals by each team.
     function playMatchOld(
-        bytes32 seed,
+        uint256 seed,
         uint256[] memory state0,
         uint256[] memory state1, 
         uint8[3] memory tactic0, 
         uint8[3] memory tactic1
     )
-        internal
-        returns (uint16[2] memory teamGoals)
+        public
+        pure
+        returns (uint8, uint8) 
     {
-        /// @dev We extract 18 randnumbers, each is 14 bit long, from a uint256
-        ///  generated from a seed. We do that 4 times. Each of this 4 arrays
-        ///  is used in a particular event of the 18 rounds. 
-        uint16[] memory rndNum1 = getRndNumArrays(seed, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum2 = getRndNumArrays(seed+1, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum3 = getRndNumArrays(seed+2, kRoundsPerGame, kBitsPerRndNum);
-        uint16[] memory rndNum4 = getRndNumArrays(seed+3, kRoundsPerGame, kBitsPerRndNum);
+        uint16[] memory rnds = getNRandsFromSeed(kRoundsPerGame*4, seed);
+        return (3,4);
 
+/*
         uint[5][2] memory globSkills;
         uint[kMaxPlayersInTeam][2] memory attackersSpeed;
         uint[kMaxPlayersInTeam][2] memory attackersShoot;
@@ -123,8 +107,8 @@ contract Engine is PlayerState {
             }
         }
         return teamGoals;
+        */
     }
-*/
 
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
