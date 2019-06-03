@@ -159,7 +159,7 @@ contract Assets {
             uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
-            uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
+            uint256 seed = _computeSeed(teamName, posInTeam);
             uint16[5] memory skills = _computeSkills(seed);
             uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
             return _playerState.playerStateCreate(
@@ -257,6 +257,11 @@ contract Assets {
             skills[i]++;
 
         return skills;
+    }
+
+    /// @return seed
+    function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
     }
 
     /// @return hashed arg casted to uint256

@@ -30,11 +30,11 @@ contract('Assets', (accounts) => {
         const teamCreationTimestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
         const playerState = await assets.getPlayerState(5).should.be.fulfilled;
         const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
-        playerBirth.should.be.bignumber.equal(teamCreationTimestamp);
-
+        const posInTeam = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
+        const seed = await assets.computeSeed("Barca", posInTeam).should.be.fulfilled;
+        const computedBirth = await assets.computeBirth(seed, teamCreationTimestamp).should.be.fulfilled;
+        playerBirth.should.be.bignumber.equal(computedBirth);
     });
-
-    // return;
 
     it('get playerIds of the team', async () => {
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;

@@ -19,6 +19,10 @@ contract AssetsMock is Assets {
         return _computeBirth(rnd, currentTime);
     }
 
+    function computeSeed(string memory teamName, uint256 posInTeam) public pure returns (uint256) {
+        return _computeSeed(teamName, posInTeam);
+    }
+
     function playerExists(uint256 playerId) public view returns (bool) {
         return _playerExists(playerId);
     }
