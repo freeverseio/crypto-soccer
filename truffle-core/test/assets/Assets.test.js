@@ -154,10 +154,25 @@ contract('Assets', (accounts) => {
         await assets.isVirtual(playerId = 1).should.eventually.equal(false);
     });
 
-    it('get state of virtual player', async () => {
+    it('get state of player on creation', async () => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
-        state.should.be.bignumber.equal('473533131866555579417557877411906949081105664487195487081826231992180539392');
+        let result = await playerStateLib.getSkills(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('4828043532990890026');
+        result = await playerStateLib.getPlayerId(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('1');
+        result = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('1');
+        result = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        result = await playerStateLib.getPrevLeagueId(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        result = await playerStateLib.getPrevTeamPosInLeague(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        result = await playerStateLib.getPrevShirtNumInLeague(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        result = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
     });
 
     it('exchange players team', async () => {
