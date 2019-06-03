@@ -26,7 +26,15 @@ contract('Assets', (accounts) => {
     });
 
     it('player birth is team creation timestamp', async () => {
+        await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
+        const teamCreationTimestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
+        const playerState = await assets.getPlayerState(5).should.be.fulfilled;
+        const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
+        playerBirth.should.be.bignumber.equal(teamCreationTimestamp);
+
     });
+
+    // return;
 
     it('get playerIds of the team', async () => {
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
@@ -246,7 +254,7 @@ contract('Assets', (accounts) => {
 
     it('compute player birth', async () => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
-        const birth = await assets.computeBirth(0).should.be.fulfilled;
+        const birth = await assets.computeBirth(0, 1557495456).should.be.fulfilled;
         birth.should.be.bignumber.equal('406');
     });
 

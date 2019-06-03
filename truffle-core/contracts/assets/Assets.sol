@@ -41,7 +41,7 @@ contract Assets {
         teams.push(Team("_", 0, 0, 0, 0, playerIds, block.timestamp));
     }
 
-    function getTeamCreationTimestamp(uint256 teamId) external view returns (uint256) {
+    function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
         require(_teamExists(teamId), "invalid team id");
         return teams[teamId].creationTimestamp;
     }
@@ -161,7 +161,7 @@ contract Assets {
             string memory teamName = getTeamName(teamId);
             uint256 seed = uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
             uint16[5] memory skills = _computeSkills(seed);
-            uint16 birth = _computeBirth(seed, block.timestamp);
+            uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
             return _playerState.playerStateCreate(
                 skills[0], // defence,
                 skills[1], // speed,

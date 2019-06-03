@@ -14,8 +14,8 @@ contract AssetsMock is Assets {
         return _intHash(arg);
     }
 
-    function computeBirth(uint256 rnd) public pure returns (uint16) {
-        uint256 currentTime = 1557495456;
+    function computeBirth(uint256 rnd, uint256 currentTime) public pure returns (uint16) {
+        // uint256 currentTime = 1557495456;
         return _computeBirth(rnd, currentTime);
     }
 
