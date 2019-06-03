@@ -30,7 +30,7 @@ contract('Assets', (accounts) => {
         timestamp.should.be.bignumber.equal(block.timestamp.toString());
     });
 
-    it('player birth is team creation timestamp', async () => {
+    it('player birth is generated from team creation timestamp', async () => {
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         const teamCreationTimestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
         const playerState = await assets.getPlayerState(5).should.be.fulfilled;
