@@ -55,4 +55,9 @@ contract('Engine', (accounts) => {
         result.home.toNumber().should.be.equal(2);
         result.visitor.toNumber().should.be.equal(2);
     });
+
+    it('computes team global skills by aggregating across all players in team', async () => {
+        let result = await engine.getTeamGlobSkills(state0).should.be.fulfilled;
+        // result.home.toNumber().should.be.equal(2);
+    });
 });
