@@ -57,7 +57,7 @@ contract('Engine', (accounts) => {
     });
 
     it('computes team global skills by aggregating across all players in team', async () => {
-        let result = await engine.getTeamGlobSkills(state0).should.be.fulfilled;
+        let result = await engine.getTeamGlobSkills(state0, tactic0).should.be.fulfilled;
         // result.home.toNumber().should.be.equal(2);
     });
 });

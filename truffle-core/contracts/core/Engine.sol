@@ -41,17 +41,16 @@ contract Engine {
     // createShoot =    speed(attackers) + pass(attackers)
     // defendShoot =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[] memory teamState)
+    function getTeamGlobSkills(uint256[] memory teamState, uint8[3] memory tactic)
         public
         pure
         returns (
             uint[5] memory globSkills,
             uint8 nAttackers,
-            uint[11] memory attackersSpeed,
+            uint[11] memory attackersSpeed, // TODO: replace 11 magic numbers with compile-time variable
             uint[11] memory attackersShoot
         )
     {
-/*
         uint move2attack;
         uint createShoot;
         uint defendShoot;
@@ -59,6 +58,8 @@ contract Engine {
         uint endurance;
 
         nAttackers = 0;
+
+/*
         for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
             uint16[] memory skills = decode(kNumStates, getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
             endurance += skills[kStatEndur];
