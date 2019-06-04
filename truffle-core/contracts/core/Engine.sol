@@ -83,6 +83,29 @@ contract Engine is PlayerState {
         }
     }
 
+    /// @dev Generalization of the previous to any number of input weights
+    /// @dev It therefore throws any number of dice and returns the winner's idx.
+    function throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
+        public
+        pure
+        returns(uint8 w)
+    {
+        uint uniformRndInSumOfWeights;
+        for (w = 0; w<weights.length; w++) {
+            uniformRndInSumOfWeights += weights[w];
+        }
+        uniformRndInSumOfWeights *= rndNum;
+        uint cumSum = 0;
+        for (w = 0; w<weights.length-1; w++) {
+            cumSum += weights[w];
+            if( uniformRndInSumOfWeights < ( cumSum * (maxRndNum-1) )) {
+                return w;
+            }
+        }
+        return w;
+    }
+
+
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
     // TODO: remove maxRndNum for the constant
     function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint maxRndNum)
@@ -98,6 +121,37 @@ contract Engine is PlayerState {
         ) == 1 ? true : false;
     }
 
+/*
+    /// @dev Decides if a team that creates a shoot manages to score.
+    /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
+    function managesToScore(
+        uint8 nAttackers1,
+        uint8 nAttackers2,
+        uint[] memory attackersSpeed,
+        uint[] memory attackersShoot,
+        uint blockShoot,
+        uint rndNum1,
+        uint rndNum2,
+        uint maxRndNum
+    )
+        internal
+        pure
+        returns (bool, uint8)
+    {
+        /// @dev attacker who actually shoots is selected weighted by his speed
+        uint[] memory weights = new uint[](nAttackers);
+        for (uint8 p=0; p<nAttackers; p++) {
+            weights[p] = attackersSpeed[p];
+        }
+        uint8 shooter = throwDiceArray(weights, rndNum1, maxRndNum);
+
+        /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
+        return (
+            throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, maxRndNum) == 0,
+            shooter
+        );
+    }
+*/
 
 /*
     /// @dev Plays a game and, currently, returns the number of goals by each team.

@@ -37,6 +37,20 @@ contract('Engine', (accounts) => {
         }
     });
 
+
+
+    it('throws dice array', async () => {
+        // interface: throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
+        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+        const kMaxRndNumHalf = 8000;
+        let result = await engine.throwDiceArray([1000,1,1],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDiceArray([1,1000,1],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await engine.throwDiceArray([1,1,1000],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+    });
+
     it('manages to shoot', async () => {
         // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint kMaxRndNum)
         const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
