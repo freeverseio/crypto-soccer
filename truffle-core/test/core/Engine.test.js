@@ -166,6 +166,9 @@ contract('Engine', (accounts) => {
         await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,3], tactic1).should.be.rejected;
         await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,1]).should.be.rejected;
         await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,3]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,5,0]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,0,5]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [0,5,5]).should.be.rejected;
     });
 
 

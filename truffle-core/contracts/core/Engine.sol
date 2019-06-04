@@ -4,7 +4,7 @@ import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {
-    uint8 constant  kMaxPlayersInTeam   = 11;   // Max num of players allowed in a team
+    uint8 constant kMaxPlayersInTeam    = 11;   // Max num of players allowed in a team
     uint8 constant rndsPerUint256       = 18;   // Num of short nums that fit in a bignum = (256/ kBitsPerRndNum);
     uint8 constant kRoundsPerMatch      = 18;   // Number of rounds played in each match
     uint256 constant kBitsPerRndNum     = 14;   // Number of bits allowed for random numbers inside match decisisons
@@ -38,10 +38,12 @@ contract Engine is PlayerState {
         pure
         returns (uint8 home, uint8 visitor) 
     {
-        require(state0.length == 11, "Team 0 needs 11 players");
-        require(state1.length == 11, "Team 1 needs 11 players");
-        require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0");
-        require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1");
+        require(state0.length == kMaxPlayersInTeam, "Team 0 needs 11 players");
+        require(state1.length == kMaxPlayersInTeam, "Team 1 needs 11 players");
+        require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0: sum is not correct");
+        require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1: sum is not correct");
+        require(tactic0[0] > 0 && tactic0[1] > 0 && tactic0[2] > 0, "wrong tactic for team 0: all should be >0");
+        require(tactic1[0] > 0 && tactic1[1] > 0 && tactic1[2] > 0, "wrong tactic for team 1: all should be >0");
         uint16[] memory rnds = getNRandsFromSeed(kRoundsPerMatch*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
