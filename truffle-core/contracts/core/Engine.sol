@@ -4,19 +4,18 @@ import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {
-    // @dev Max num of players allowed in a team
-    uint8 constant kMaxPlayersInTeam = 11;
-    uint256 constant kBitsPerRndNum = 14; 
-    uint8 constant rndsPerUint256 = 18; // = 256 / kBitsPerRndNum;
-    uint256 constant mask = (1 << kBitsPerRndNum)-1; // (2**bits)-1
-    uint8 constant kRoundsPerGame = 18; // 
-    uint256 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
-    /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
-    uint8 constant kMove2Attack = 0; 
-    uint8 constant kCreateShoot = 1; 
-    uint8 constant kDefendShoot = 2; 
-    uint8 constant kBlockShoot = 3; 
-    uint8 constant kEndurance = 4; 
+    uint8 constant  kMaxPlayersInTeam   = 11;   // Max num of players allowed in a team
+    uint8 constant rndsPerUint256       = 18;   // Num of short nums that fit in a bignum = (256/ kBitsPerRndNum);
+    uint8 constant kRoundsPerMatch      = 18;   // Number of rounds played in each match
+    uint256 constant kBitsPerRndNum     = 14;   // Number of bits allowed for random numbers inside match decisisons
+    uint256 constant kMaxRndNum         = 16383;// Max random number allowed inside match decisions = 2^kBitsPerRndNum-1 
+    uint256 constant mask               = (1 << kBitsPerRndNum)-1; // = (2**bits)-1, mask used to extract short nums from bignum
+    // Idxs for vector of globSkills: [0=move2attack, 1=createShoot, 2=defendShoot, 3=blockShoot, 4=currentEndurance]
+    uint8 constant kMove2Attack         = 0;        
+    uint8 constant kCreateShoot         = 1; 
+    uint8 constant kDefendShoot         = 2; 
+    uint8 constant kBlockShoot          = 3; 
+    uint8 constant kEndurance           = 4; 
 
 
     /**
@@ -28,25 +27,70 @@ contract Engine is PlayerState {
      * @param tactic1 a vector[3] with the tactic (ex. [4,4,2]) of team 1
      * @return the score of the match
      */
-    function playMatchOld(
+    function playMatch(
         uint256 seed,
         uint256[] memory state0,
         uint256[] memory state1, 
         uint8[3] memory tactic0, 
         uint8[3] memory tactic1
-    ) 
-        public 
-        pure 
+    )
+        public
+        pure
         returns (uint8 home, uint8 visitor) 
     {
         require(state0.length == 11, "Team 0 needs 11 players");
         require(state1.length == 11, "Team 1 needs 11 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1");
-        bytes32 hash0 = keccak256(abi.encode(seed + state0[0] + tactic0[0]));
-        bytes32 hash1 = keccak256(abi.encode(seed + state1[0] + tactic1[0]));
-        return (uint8(uint256(hash0) % 4), uint8(uint256(hash1) % 4));
+        uint16[] memory rnds = getNRandsFromSeed(kRoundsPerMatch*4, seed);
+        uint[5][2] memory globSkills;
+        uint[][2] memory attackersSpeed;
+        uint[][2] memory attackersShoot;
+        uint8[2] memory nAttackers;
+        // TODO: ugly
+        nAttackers[0] = tactic0[2];
+        nAttackers[1] = tactic1[2];
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
+        uint8 teamThatAttacks;
+        uint8[2] memory teamGoals;
+
+        for (uint8 round = 0; round < kRoundsPerMatch; round++){
+            // TODO: team gets tired
+            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round]);
+            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+                if ( managesToScore(
+                    nAttackers[teamThatAttacks],
+                    attackersSpeed[teamThatAttacks],
+                    attackersShoot[teamThatAttacks],
+                    globSkills[1-teamThatAttacks][kBlockShoot],
+                    rnds[4*round+2],
+                    rnds[4*round+3]
+                    )
+                ) 
+                {
+                    teamGoals[teamThatAttacks]++;
+                }
+            }
+        }
+        return (teamGoals[0], teamGoals[1]);
     }
+
+    /// @dev Rescales global skills of both teams according to their endurance
+    function teamsGetTired(uint[5] memory skillsTeamA, uint[5]  memory skillsTeamB )
+        public
+        pure
+        returns (uint[5] memory, uint[5] memory)
+    {
+        uint currentEnduranceA = skillsTeamA[kEndurance];
+        uint currentEnduranceB = skillsTeamB[kEndurance];
+        for (uint8 sk = kMove2Attack; sk < kEndurance; sk++) {
+            skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
+            skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
+        }
+        return(skillsTeamA, skillsTeamB);
+    }
+
 
     function getNRandsFromSeed(uint16 nRands, uint256 seed) public pure returns (uint16[] memory rnds) {
         rnds = new uint16[](nRands);
@@ -144,55 +188,7 @@ contract Engine is PlayerState {
         return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
     }
 
-    /// @dev Plays a game and, currently, returns the number of goals by each team.
-    function playMatch(
-        uint256 seed,
-        uint256[] memory state0,
-        uint256[] memory state1, 
-        uint8[3] memory tactic0, 
-        uint8[3] memory tactic1
-    )
-        public
-        pure
-        returns (uint8 home, uint8 visitor) 
-    {
-        require(state0.length == 11, "Team 0 needs 11 players");
-        require(state1.length == 11, "Team 1 needs 11 players");
-        require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0");
-        require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1");
-        uint16[] memory rnds = getNRandsFromSeed(kRoundsPerGame*4, seed);
-        uint[5][2] memory globSkills;
-        uint[][2] memory attackersSpeed;
-        uint[][2] memory attackersShoot;
-        uint8[2] memory nAttackers;
-        // TODO: ugly
-        nAttackers[0] = tactic0[2];
-        nAttackers[1] = tactic1[2];
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
-        uint8 teamThatAttacks;
-        uint8[2] memory teamGoals;
 
-        for (uint8 round = 0; round < kRoundsPerGame; round++){
-            // TODO: team gets tired
-            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
-                if ( managesToScore(
-                    nAttackers[teamThatAttacks],
-                    attackersSpeed[teamThatAttacks],
-                    attackersShoot[teamThatAttacks],
-                    globSkills[1-teamThatAttacks][kBlockShoot],
-                    rnds[4*round+2],
-                    rnds[4*round+3]
-                    )
-                ) 
-                {
-                    teamGoals[teamThatAttacks]++;
-                }
-            }
-        }
-        return (teamGoals[0], teamGoals[1]);
-    }
 
 
     /// @dev Computes basic data, including globalSkills, needed during the game.

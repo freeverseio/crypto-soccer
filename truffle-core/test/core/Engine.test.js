@@ -40,6 +40,21 @@ contract('Engine', (accounts) => {
         teamStateAll50 = await createTeamStateFromSinglePlayer(50,50,50,50,50, teamStateLib);
     });
 
+    it('teams get tired', async () => {
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        result[0][0].toNumber().should.be.equal(10);
+        result[0][1].toNumber().should.be.equal(20);
+        result[0][2].toNumber().should.be.equal(30);
+        result[0][3].toNumber().should.be.equal(40);
+        result[0][4].toNumber().should.be.equal(100);
+        result[1][0].toNumber().should.be.equal(10);
+        result[1][1].toNumber().should.be.equal(20);
+        result[1][2].toNumber().should.be.equal(30);
+        result[1][3].toNumber().should.be.equal(40);
+        result[1][4].toNumber().should.be.equal(50);
+    });
+   
+    return;
 
     it('play a match', async () => {
         let teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1, teamStateLib);
