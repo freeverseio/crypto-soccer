@@ -12,13 +12,33 @@ contract('LeaguesComputer', (accounts) => {
     let leagues = null;
 
     const id = 0;
-    let teamState0 = null;
-    let teamState1 = null;
+    let teamStateAll1 = null;
+    let teamStateAll50 = null;
     const tactics = [
         [4, 4, 2],  // Team 0
         [5, 4, 1]   // Team 1
     ];
     let leagueState = null;
+    const nPlayers = 11;
+
+    const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
+        const playerStateTemp = await teamStateLib.playerStateCreate(
+            defence,
+            speed,
+            pass,
+            shoot,
+            endurance,
+            0, 
+            playerId = '1',
+            0, 0, 0, 0, 0, 0
+        ).should.be.fulfilled;
+        teamStateTemp = await teamStateLib.teamStateCreate().should.be.fulfilled;
+        for (var i = 0; i < nPlayers; i++) {
+            teamStateTemp = await teamStateLib.teamStateAppend(teamStateTemp, playerStateTemp).should.be.fulfilled;
+        }
+        return teamStateTemp;
+    };
+    
 
     beforeEach(async () => {
         const blocksToInit = 1;
@@ -27,14 +47,23 @@ contract('LeaguesComputer', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         states = await States.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, states.address).should.be.fulfilled;
-        const playerState0 = await states.playerStateCreate(1, 2, 3, 4, 5, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
-        teamState0 = [playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0, playerState0];
-        const playerState1 = await states.playerStateCreate(32, 11, 32, 22, 44, 0, playerId = 1, 0, 0, 0, 0, 0, 0).should.be.fulfilled;
-        teamState1 = [playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1, playerState1];
+        teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1,states);
+        teamStateAll50 = await createTeamStateFromSinglePlayer(50,50,50,50,50,states);
         await leagues.create(id, blocksToInit, step, teamIds, tactics).should.be.fulfilled;
         leagueState = await states.leagueStateCreate().should.be.fulfilled;
-        leagueState = await states.leagueStateAppend(leagueState, teamState0).should.be.fulfilled;
-        leagueState = await states.leagueStateAppend(leagueState, teamState1).should.be.fulfilled;
+        leagueState = await states.leagueStateAppend(leagueState, teamStateAll1).should.be.fulfilled;
+        leagueState = await states.leagueStateAppend(leagueState, teamStateAll50).should.be.fulfilled;
+    });
+
+    it('compute match', async () => {
+        const result = await leagues.computeMatch(teamStateAll1, teamStateAll50, tactics, 0).should.be.fulfilled;
+        const scores = await leagues.decodeScore(result.score).should.be.fulfilled;
+        scores.home.toString().should.be.equal('0');
+        scores.visitor.toString().should.be.equal('15');
+        let valid = await states.isValidTeamState(result.newHomeState).should.be.fulfilled;
+        valid.should.be.equal(true);
+        valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
+        valid.should.be.equal(true);
     });
 
     it('Engine contract', async () => {
@@ -43,36 +72,25 @@ contract('LeaguesComputer', (accounts) => {
     });
 
     it('evolve team', async () => {
-        const result = await leagues.evolveTeams(teamState0, teamState1, 0, 2).should.be.fulfilled;
+        const result = await leagues.evolveTeams(teamStateAll1, teamStateAll50, 0, 2).should.be.fulfilled;
         let valid = await states.isValidTeamState(result.updatedHomeTeamState).should.be.fulfilled;
         valid.should.be.equal(true);
         valid = await states.isValidTeamState(result.updatedVisitorTeamState).should.be.fulfilled;
         valid.should.be.equal(true);
     })
 
-    it('compute match', async () => {
-        const result = await leagues.computeMatch(teamState0, teamState1, tactics, '0x0').should.be.fulfilled;
-        const scores = await leagues.decodeScore(result.score).should.be.fulfilled;
-        scores.home.toString().should.be.equal('1');
-        scores.visitor.toString().should.be.equal('0');
-        let valid = await states.isValidTeamState(result.newHomeState).should.be.fulfilled;
-        valid.should.be.equal(true);
-        valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
-        valid.should.be.equal(true);
-    });
-
     it('calculate a day in a league', async () => {
         let day = 0;
         let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 0).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         let scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(1);
-        scores.visitor.toNumber().should.be.equal(0);
+        scores.home.toNumber().should.be.equal(0);
+        scores.visitor.toNumber().should.be.equal(15);
         day = 1;
         result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4354646451).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(2);
+        scores.home.toNumber().should.be.equal(18);
         scores.visitor.toNumber().should.be.equal(0);
     });
 
@@ -81,32 +99,33 @@ contract('LeaguesComputer', (accounts) => {
         let result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 123456).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         let scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(2);
-        scores.visitor.toNumber().should.be.equal(1);
+        scores.home.toNumber().should.be.equal(14);
+        scores.visitor.toNumber().should.be.equal(0);
         result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 123456).should.be.fulfilled;
         result.scores.length.should.be.equal(1);
         scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
-        scores.home.toNumber().should.be.equal(2);
-        scores.visitor.toNumber().should.be.equal(1);
+        scores.home.toNumber().should.be.equal(14);
+        scores.visitor.toNumber().should.be.equal(0);
     });
+
 
     it('different seed => different results', async () => {
         const day = 1;
         const result0 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 1234).should.be.fulfilled;
-        const result1 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4321).should.be.fulfilled;
+        const result1 = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4354646451).should.be.fulfilled;
         result0.scores.length.should.be.equal(1);
         result1.scores.length.should.be.equal(1);
         result0.scores[0].toNumber().should.not.be.equal(result1.scores[0].toNumber());
     });
 
-    it('compute points same rating', async () => {
-        let points = await leagues.computePoints(teamState0, teamState0, 2, 2).should.be.fulfilled;
+   it('compute points same rating', async () => {
+        let points = await leagues.computePoints(teamStateAll50, teamStateAll50, 2, 2).should.be.fulfilled;
         points.homePoints.toNumber().should.be.equal(0);
         points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState0, teamState0, 2, 1).should.be.fulfilled;
+        points = await leagues.computePoints(teamStateAll50, teamStateAll50, 2, 1).should.be.fulfilled;
         points.homePoints.toNumber().should.be.equal(5);
         points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computePoints(teamState0, teamState0, 1, 2).should.be.fulfilled;
+        points = await leagues.computePoints(teamStateAll50, teamStateAll50, 1, 2).should.be.fulfilled;
         points.homePoints.toNumber().should.be.equal(0);
         points.visitorPoints.toNumber().should.be.equal(5);
     });
