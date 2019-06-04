@@ -31,6 +31,9 @@ const typeDefs = gql`
 
   type League {
     id: ID!
+    initBlock: Int!
+    step: Int!
+    nTeams: Int!
   }
   
   type Player {
