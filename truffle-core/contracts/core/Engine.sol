@@ -117,11 +117,7 @@ contract Engine is PlayerState {
     /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
     /// @dev kMaxRndNum controls the resolution or fine-graining of the algorithm.
-    function throwDice(uint weight1, uint weight2, uint rndNum)
-        public
-        pure
-        returns(uint8)
-    {
+    function throwDice(uint weight1, uint weight2, uint rndNum) public pure returns(uint8) {
         if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (kMaxRndNum-1) ) ) {
             return 0;
         } else {
@@ -131,11 +127,7 @@ contract Engine is PlayerState {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
-    function throwDiceArray(uint[] memory weights, uint rndNum)
-        public
-        pure
-        returns(uint8 w)
-    {
+    function throwDiceArray(uint[] memory weights, uint rndNum) public pure returns(uint8 w) {
         uint uniformRndInSumOfWeights;
         for (w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
@@ -165,6 +157,7 @@ contract Engine is PlayerState {
         ) == 1 ? true : false;
     }
 
+
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
@@ -189,9 +182,6 @@ contract Engine is PlayerState {
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
     }
-
-
-
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
     /// @dev Basically implements the formulas:
@@ -266,56 +256,6 @@ contract Engine is PlayerState {
             attackersSpeed,
             attackersShoot
         );
-
-/*
-        uint move2attack;
-        uint createShoot;
-        uint defendShoot;
-        uint blockShoot;
-        uint endurance;
-
-        nAttackers = 0;
-
-        for (uint8 p = 0; p < kMaxPlayersInTeam; p++) {
-            uint16[] memory skills = decode(kNumStates, getStatePlayerInTeam(p, _teamIdx), kBitsPerState);
-            endurance += skills[kStatEndur];
-            if (skills[kStatRole] == kRoleKeeper) {
-                blockShoot = skills[kStatShoot];
-            }
-            else if (skills[kStatRole] == kRoleDef) {
-                move2attack = move2attack + skills[kStatDef] + skills[kStatSpeed] + skills[kStatPass];
-                defendShoot = defendShoot + skills[kStatSpeed] + skills[kStatDef];
-            }
-            else if (skills[kStatRole] == kRoleMid) {
-                move2attack = move2attack + 2 * skills[kStatDef] + 2 * skills[kStatSpeed] + 3 * skills[kStatPass];
-            }
-            else if (skills[kStatRole] == kRoleAtt) {
-                move2attack = move2attack + skills[kStatDef];
-                createShoot = createShoot + skills[kStatSpeed] + skills[kStatPass];
-                attackersSpeed[nAttackers] = skills[kStatSpeed];
-                attackersShoot[nAttackers] = skills[kStatShoot];
-                nAttackers++;
-            }
-        }
-        /// @dev endurance is converted to a percentage, 
-        /// @dev used to multiply (and hence decrease) the start endurance.
-        /// @dev 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (endurance < 500) {
-            endurance = 70;
-        } else if (endurance < 1400) {
-            endurance = 100 - (1400-endurance)/30;
-        } else {
-            endurance = 100;
-        }
-
-        return (
-            [move2attack, createShoot, defendShoot, blockShoot, endurance],
-            nAttackers,
-            attackersSpeed,
-            attackersShoot
-        );
-*/
-
     }
 }
 
