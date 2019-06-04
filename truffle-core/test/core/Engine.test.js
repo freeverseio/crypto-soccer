@@ -37,6 +37,25 @@ contract('Engine', (accounts) => {
         }
     });
 
+    it('manages to score', async () => {
+        // interface: 
+        // managesToScore(uint8 nAttackers, uint[] attackersSpeed, uint[], attackersShoot, blockShoot, rndNum1,rndNum2, uint maxRndNum)
+        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+        let kMaxRndNumHalf = 8000;
+        let attackersSpeed = [10,1,1];
+        let attackersShoot = [10,1,1];
+        let blockShoot     = 1;
+        nAttackers         = attackersShoot.length;
+        let result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(true);
+        blockShoot     = 1000;
+        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(false);
+        // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
+        kMaxRndNumHalf = 1;
+        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
 
 
     it('throws dice array', async () => {

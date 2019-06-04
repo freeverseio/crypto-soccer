@@ -121,12 +121,10 @@ contract Engine is PlayerState {
         ) == 1 ? true : false;
     }
 
-/*
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
-        uint8 nAttackers1,
-        uint8 nAttackers2,
+        uint8 nAttackers,
         uint[] memory attackersSpeed,
         uint[] memory attackersShoot,
         uint blockShoot,
@@ -134,24 +132,20 @@ contract Engine is PlayerState {
         uint rndNum2,
         uint maxRndNum
     )
-        internal
+        public
         pure
-        returns (bool, uint8)
+        returns (bool)
     {
-        /// @dev attacker who actually shoots is selected weighted by his speed
+        /// attacker who actually shoots is selected weighted by his speed
         uint[] memory weights = new uint[](nAttackers);
-        for (uint8 p=0; p<nAttackers; p++) {
+        for (uint8 p = 0; p < nAttackers; p++) {
             weights[p] = attackersSpeed[p];
         }
         uint8 shooter = throwDiceArray(weights, rndNum1, maxRndNum);
 
-        /// @dev a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return (
-            throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, maxRndNum) == 0,
-            shooter
-        );
+        /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
+        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, maxRndNum) == 0;
     }
-*/
 
 /*
     /// @dev Plays a game and, currently, returns the number of goals by each team.
