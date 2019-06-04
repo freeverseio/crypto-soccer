@@ -59,6 +59,12 @@ describe('assets resolvers', () => {
             let count = await resolvers.Query.countTeams().should.be.fulfilled;
             count.should.be.equal('1');
         });
+
+        it('createLeague', async () => {
+            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2] }).should.be.fulfilled;
+            const count = await resolvers.Query.countLeagues().should.be.fulfilled;
+            count.should.be.equal('1');
+        });
     });
 
     describe('Player', () => {
@@ -122,10 +128,6 @@ describe('assets resolvers', () => {
     describe('League', () => {
         it('id', async () => {
             resolvers.League.id(3).should.be.equal(3);
-        });
-
-        it('create', async () => {
-            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2] }).should.be.fulfilled;
         });
     });
 });

@@ -99,14 +99,23 @@ class Universe {
         return await this.playerState.methods.getCurrentTeamId(state).call();
     }
 
-    async createLeague(id, initBlock, step, teamIds, teactics) {
-        this.leagues.methods.create(
+    async createLeague(initBlock, step, teamIds, tactics = [[4,4,2], [4,4,2]]) {
+        const { leagues, from } = this;
+        const id = 0;
+        const gas = await leagues.methods.create(
             id,
             initBlock,
             step,
             teamIds,
-            teactics
-        );
+            tactics
+        ).estimateGas();
+        await leagues.methods.create(
+            id,
+            initBlock,
+            step,
+            teamIds,
+            tactics
+        ).send({ from, gas });
     }
 }
 
