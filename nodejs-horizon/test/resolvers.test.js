@@ -62,8 +62,12 @@ describe('assets resolvers', () => {
 
         it('createLeague', async () => {
             await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2] }).should.be.fulfilled;
-            const count = await resolvers.Query.countLeagues().should.be.fulfilled;
+            let count = await resolvers.Query.countLeagues().should.be.fulfilled;
             count.should.be.equal('1');
+            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2] }).should.be.fulfilled;
+            count = await resolvers.Query.countLeagues().should.be.fulfilled;
+            count.should.be.equal('2');
+
         });
     });
 
