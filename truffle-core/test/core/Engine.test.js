@@ -12,8 +12,6 @@ contract('Engine', (accounts) => {
     let engine = null;
     let teamStateLib = null;
     const seed = 610106;
-    const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const state1 = state0;
     const tactic0 = [4, 4, 2];
     const tactic1 = [4, 5, 1];
     const nPlayers = 11;
@@ -46,7 +44,7 @@ contract('Engine', (accounts) => {
     it('play a match', async () => {
         let teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1, teamStateLib);
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(8);
+        result[0].toNumber().should.be.equal(16);
         result[1].toNumber().should.be.equal(0);
     });
 
@@ -69,7 +67,6 @@ contract('Engine', (accounts) => {
         result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
         result.should.be.equal(true);
     });
-
 
     it('throws dice array', async () => {
         // interface: throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
@@ -151,36 +148,37 @@ contract('Engine', (accounts) => {
 
     it('play match with less than 11 players', async () => {
         const wrongTeam = [0,1,2,3,4,5,6,7,8,9];
-        await engine.playMatch(seed, wrongTeam, state1, tactic0, tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, wrongTeam, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
     });
 
     it('play match with wrong tactic', async () => {
-        await engine.playMatch(seed, state0, state1, [4,4,1], tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, [4,4,3], tactic1).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, tactic0, [4,4,1]).should.be.rejected;
-        await engine.playMatch(seed, state0, state1, tactic0, [4,4,3]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,1], tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,3], tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,1]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,3]).should.be.rejected;
     });
 
 
     it('different team state => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
         console.log(result);
-        result.home.toNumber().should.be.equal(1);
-        result.visitor.toNumber().should.be.equal(0);
+        result.home.toNumber().should.be.equal(2);
+        result.visitor.toNumber().should.be.equal(1);
         let teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1, teamStateLib);
         result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
         console.log(result);
-        result.home.toNumber().should.be.equal(7);
+        result.home.toNumber().should.be.equal(14);
         result.visitor.toNumber().should.be.equal(0);
     });
 
     it('different seeds => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(0);
+        result[0].toNumber().should.be.equal(2);
+        result[1].toNumber().should.be.equal(1);
         result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0);
+        console.log(result);
+        result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(0);
     });
 

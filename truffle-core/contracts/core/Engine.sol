@@ -9,7 +9,7 @@ contract Engine is PlayerState {
     uint256 constant kBitsPerRndNum = 14; 
     uint8 constant rndsPerUint256 = 18; // = 256 / kBitsPerRndNum;
     uint256 constant mask = (1 << kBitsPerRndNum)-1; // (2**bits)-1
-    uint8 constant kRoundsPerGame = 9; // 18; 
+    uint8 constant kRoundsPerGame = 18; // 
     uint16 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
     /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
     uint8 constant kMove2Attack = 0; 
