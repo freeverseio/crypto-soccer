@@ -56,7 +56,9 @@ contract Engine is PlayerState {
         uint8[2] memory teamGoals;
 
         for (uint8 round = 0; round < kRoundsPerMatch; round++){
-            // TODO: team gets tired
+            if ((round == 8) || (round == 13)) {
+                (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
+            }
             teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(

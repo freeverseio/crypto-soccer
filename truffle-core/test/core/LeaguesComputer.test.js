@@ -59,7 +59,7 @@ contract('LeaguesComputer', (accounts) => {
         const result = await leagues.computeMatch(teamStateAll1, teamStateAll50, tactics, 0).should.be.fulfilled;
         const scores = await leagues.decodeScore(result.score).should.be.fulfilled;
         scores.home.toString().should.be.equal('0');
-        scores.visitor.toString().should.be.equal('15');
+        scores.visitor.toString().should.be.equal('16');
         let valid = await states.isValidTeamState(result.newHomeState).should.be.fulfilled;
         valid.should.be.equal(true);
         valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
@@ -85,7 +85,7 @@ contract('LeaguesComputer', (accounts) => {
         result.scores.length.should.be.equal(1);
         let scores = await leagues.decodeScore(result.scores[0]).should.be.fulfilled;
         scores.home.toNumber().should.be.equal(0);
-        scores.visitor.toNumber().should.be.equal(15);
+        scores.visitor.toNumber().should.be.equal(16);
         day = 1;
         result = await leagues.computeDayWithSeed(id, day, leagueState, tactics, 4354646451).should.be.fulfilled;
         result.scores.length.should.be.equal(1);

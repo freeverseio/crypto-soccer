@@ -54,12 +54,10 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
    
-    return;
-
     it('play a match', async () => {
         let teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1, teamStateLib);
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(16);
+        result[0].toNumber().should.be.equal(17);
         result[1].toNumber().should.be.equal(0);
     });
 
