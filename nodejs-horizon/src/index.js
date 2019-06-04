@@ -38,7 +38,13 @@ const universe = new Universe({
   leaguesAddress: '0xceA8d1CdB4518ca453039Cb4829518ff71DACE08',
   from
 });
-const resolvers = new Resolvers(universe);
+const resolvers = new Resolvers({
+  provider: providerUrl,
+  playerStateAddress: '0xD5165DDd523F5dB1b20552fD949f149C363F417d',
+  assetsAddress: '0xf60DAC49d2E0C7b3091A0423693757CEEeB642e5',
+  leaguesAddress: '0xceA8d1CdB4518ca453039Cb4829518ff71DACE08',
+  from
+});
 
 const server = new ApolloServer({ typeDefs, resolvers });
 

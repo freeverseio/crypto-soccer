@@ -17,7 +17,6 @@ const provider = ganache.provider({
     accounts: [{ secretKey: identity.privateKey, balance: '100000000000000000000000' }]
 })
 
-
 describe('assets resolvers', () => {
     let resolvers = null;
 
@@ -28,7 +27,13 @@ describe('assets resolvers', () => {
         });
         universe.web3.currentProvider.setMaxListeners(0);
         await universe.genesis();
-        resolvers = new Resolvers(universe);
+        resolvers = new Resolvers({
+            provider: provider,
+            playerStateAddress: universe.playerState.options.address,
+            assetsAddress: universe.assets.options.address,
+            leaguesAddress: universe.leagues.options.address,
+            from: identity.address
+        });
     });
 
     describe('Query', () => {
