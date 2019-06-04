@@ -3,8 +3,18 @@ const Universe = require('./universe/Universe');
 const typeDefs = require('./schema');
 const Resolvers = require('./resolvers');
 
+/*
+--------------------------------
+Assets:         0xf60DAC49d2E0C7b3091A0423693757CEEeB642e5
+States:         0xD5165DDd523F5dB1b20552fD949f149C363F417d
+Engine:         0xe917715Db02C7355c06f2450042F2B25f5FEc77a
+GameController: 0xC54CeBFeF6d3fed158C264f0a2dD6B46c89c0bbD
+Leagues:        0xceA8d1CdB4518ca453039Cb4829518ff71DACE08
+Stakers:        0x6c27FD6573DbCe335c6ee1480DFBC6FD4A0602b6
+--------------------------------
+*/
+
 const providerUrl = 'ws://localhost:8545';
-const assetsContractAddress = '0xBaeb6C89EB37A467D8e54CCe11D1E093C5B18d6f';
 const from = '0x9C33497cEc1E9603Ba65D3A8d5e59F543950d6Ef';
 
 const TEAM_CREATED = 'TEAM_CREATED';
@@ -23,8 +33,9 @@ const pubsub = new PubSub();
 
 const universe = new Universe({
   provider: providerUrl,
-  assetsAddress: assetsContractAddress,
-  playerStateAddress: '0x6367bd320b0Ce4C99f58685E6ca61F0F9660cdb9',
+  playerStateAddress: '0xD5165DDd523F5dB1b20552fD949f149C363F417d',
+  assetsAddress: '0xf60DAC49d2E0C7b3091A0423693757CEEeB642e5',
+  leaguesAddress: '0xceA8d1CdB4518ca453039Cb4829518ff71DACE08',
   from
 });
 const resolvers = new Resolvers(universe);

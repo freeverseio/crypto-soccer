@@ -3,7 +3,19 @@ module.exports = function Resolvers(universe) {
     countTeams: () => universe.countTeams(),
     allTeams: () => universe.getTeamIds(),
     getTeam: (_, { id }) => id,
-    getPlayer: (_, { id }) => id
+    getPlayer: (_, { id }) => id,
+    countLeagues: () => universe.leagues.methods.leaguesCount().call(),
+  };
+
+  this.Mutation = {
+    createTeam: (_, { name, owner }) => universe.createTeam(name, owner),
+    createLeague: (_, { initBlock, step, teamIds, tactics }) => universe.createLeague(initBlock, step, teamIds, tactics),
+  };
+
+  this.Subscription = {
+    // teamCreated: {
+    //   subscribe: () => pubsub.asyncIterator([TEAM_CREATED])
+    // }
   };
 
   this.Team = {
@@ -21,15 +33,12 @@ module.exports = function Resolvers(universe) {
     shoot: (id) => universe.getPlayerShoot(id),
     endurance: (id) => universe.getPlayerEndurance(id),
     team: (id) => universe.getPlayerTeamId(id),
-  }
-
-  this.Mutation = {
-    createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner)
   };
 
-  this.Subscription = {
-    // teamCreated: {
-    //   subscribe: () => pubsub.asyncIterator([TEAM_CREATED])
-    // }
+  this.League = {
+    id: (id) => id,
+    initBlock: (id) => universe.legues.methods.getInitBlock(id).call(),
+    step: (id) => universe.leagues.methods.getStep(id).call(),
+    nTeams: (id) => universe.leagues.methods.getNTeams(id).call(),
   };
 }

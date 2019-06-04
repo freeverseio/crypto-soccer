@@ -6,25 +6,34 @@ const typeDefs = gql`
     getTeam(id: ID!): Team
     allTeams: [Team]!
     getPlayer(id: ID!): Player
+    countLeagues: String!
   }
 
   type Mutation {
-    createTeam(name: String!, owner: String!): String
+    createTeam(name: String!, owner: String!): String,
+    createLeague(
+      initBlock: Int!
+      step: Int!
+      teamIds: [ID!]!
+      tactics: [[Int!]!]
+    ): League
   }
 
   type Subscription {
     teamCreated: ID!
   }
 
-  type Settings {
-    network_id: String
-    assetsContractAddress: String
-  }
-
   type Team {
     id: ID!
     name: String!
     players: [Player!]
+  }
+
+  type League {
+    id: ID!
+    initBlock: Int!
+    step: Int!
+    nTeams: Int!
   }
   
   type Player {
