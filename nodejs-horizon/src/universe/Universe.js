@@ -24,22 +24,19 @@ class Universe {
 
         const PlayerState = new web3.eth.Contract(playerStateJSON.abi);
         let gas = await PlayerState.deploy({ data: playerStateJSON.bytecode }).estimateGas();
-        const playerState = await PlayerState.deploy({ data: playerStateJSON.bytecode }).send({ from, gas });
+        this.playerState = await PlayerState.deploy({ data: playerStateJSON.bytecode }).send({ from, gas });
 
         const Assets = new web3.eth.Contract(assetsJSON.abi);
-        gas = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).estimateGas();
-        const assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [playerState.options.address] }).send({ from, gas });
+        gas = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [this.playerState.options.address] }).estimateGas();
+        this.assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [this.playerState.options.address] }).send({ from, gas });
 
         const Engine = new web3.eth.Contract(engineJSON.abi);
         gas = await Engine.deploy({ data: engineJSON.bytecode }).estimateGas();
         this.engine = await Engine.deploy({ data: engineJSON.bytecode }).send({ from, gas });
 
         const Leagues = new web3.eth.Contract(leaguesJSON.abi);
-        gas = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [playerState.options.address, this.engine.options.address] }).estimateGas();
-        this.leagues = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [playerState.options.address, this.engine.options.address] }).send({ from, gas });
-
-        this.playerState = playerState;
-        this.assets = assets;
+        gas = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [this.playerState.options.address, this.engine.options.address] }).estimateGas();
+        this.leagues = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [this.playerState.options.address, this.engine.options.address] }).send({ from, gas });
     }
 
     async countTeams() {
