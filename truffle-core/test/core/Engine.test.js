@@ -10,23 +10,60 @@ const TeamStateLib = artifacts.require('TeamState');
 contract('Engine', (accounts) => {
     let engine = null;
     let teamStateLib = null;
-    const seed = '0x610106';
+    let teamState = null;
+    const seed = 610106;
     const state0 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const state1 = state0;
     const tactic0 = [4, 4, 2];
     const tactic1 = [4, 5, 1];
+    const nPlayers = 11;
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         teamStateLib = await TeamStateLib.new().should.be.fulfilled;
+        const playerState = await teamStateLib.playerStateCreate(
+            defence = '1',
+            speed = '1',
+            pass = '1',
+            shoot = '1',
+            endurance = '1',
+            0, 
+            playerId = '1',
+            0, 0, 0, 0, 0, 0
+        ).should.be.fulfilled;
+        teamState = await teamStateLib.teamStateCreate().should.be.fulfilled;
+        for (var i = 0; i < nPlayers; i++) {
+            teamState = await teamStateLib.teamStateAppend(teamState, playerState).should.be.fulfilled;
+        }
     });
+
+    it('play a match', async () => {
+        const result = await engine.playMatch(seed, teamState, teamState, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(0);
+    });
+
+    return;
+    it('throws dice', async () => {
+        // interface: throwDice(uint weight1, uint weight2, uint rndNum, uint maxRndNum)
+        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+        let result = await engine.throwDice(0,10,2,kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await engine.throwDice(10,0,2,kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,2,kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,16000,kMaxRndNum).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
+
 
     it('gets n rands from a seed', async () => {
         nRnds = 235;
         const result = await engine.getNRandsFromSeed(nRnds, seed).should.be.fulfilled;
         result.length.should.be.equal(nRnds);
-        result[0].should.be.bignumber.equal("6279");
-        result[nRnds-1].should.be.bignumber.equal("7237");
+        result[0].should.be.bignumber.equal("6666");
+        result[nRnds-1].should.be.bignumber.equal("5318");
     });
 
 
@@ -71,11 +108,6 @@ contract('Engine', (accounts) => {
         result.globSkills[4].should.be.bignumber.equal("70");
         console.log(result);
         // result.home.toNumber().should.be.equal(2);
-    });
-    it('play a match', async () => {
-        const result = await engine.playMatch(seed, state0, state1, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(0);
     });
 
     it('play match with less than 11 players', async () => {
