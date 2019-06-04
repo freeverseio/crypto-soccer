@@ -48,8 +48,8 @@ describe('assets resolvers', () => {
         });
 
         it('countLeagues', async () => {
-            const count = resolvers.Query.countLeagues().should.be.fulfilled;
-            count.should.be.equal(0);
+            const count = await resolvers.Query.countLeagues().should.be.fulfilled;
+            count.should.be.equal('0');
         });
     });
 

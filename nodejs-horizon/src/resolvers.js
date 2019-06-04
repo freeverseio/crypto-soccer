@@ -4,7 +4,7 @@ module.exports = function Resolvers(universe) {
     allTeams: () => universe.getTeamIds(),
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id,
-    countLeagues: async () => await universe.leagues.methods.leaguesCount(),
+    countLeagues: () => universe.leagues.methods.leaguesCount().call(),
   };
 
   this.Team = {
