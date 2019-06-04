@@ -50,63 +50,59 @@ contract('Engine', (accounts) => {
 
     it('manages to score', async () => {
         // interface: 
-        // managesToScore(uint8 nAttackers, uint[] attackersSpeed, uint[], attackersShoot, blockShoot, rndNum1,rndNum2, uint maxRndNum)
-        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
-        let kMaxRndNumHalf = 8000;
+        // managesToScore(uint8 nAttackers, uint[] attackersSpeed, uint[], attackersShoot, blockShoot, rndNum1,rndNum2)
+        let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
         let attackersSpeed = [10,1,1];
         let attackersShoot = [10,1,1];
         let blockShoot     = 1;
         nAttackers         = attackersShoot.length;
-        let result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        let result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
         blockShoot     = 1000;
-        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
         // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
         kMaxRndNumHalf = 1;
-        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.managesToScore(nAttackers,attackersSpeed,attackersShoot,blockShoot,kMaxRndNumHalf,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
     it('throws dice array', async () => {
-        // interface: throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
-        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
-        const kMaxRndNumHalf = 8000;
-        let result = await engine.throwDiceArray([1000,1,1],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        // interface: throwDiceArray(uint[] memory weights, uint rndNum)
+        let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
+        let result = await engine.throwDiceArray([1000,1,1],kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        result = await engine.throwDiceArray([1,1000,1],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        result = await engine.throwDiceArray([1,1000,1],kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
-        result = await engine.throwDiceArray([1,1,1000],kMaxRndNumHalf, kMaxRndNum).should.be.fulfilled;
+        result = await engine.throwDiceArray([1,1,1000],kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(2);
     });
 
     it('manages to shoot', async () => {
-        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint kMaxRndNum)
-        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
-        const kMaxRndNumHalf = 8000;
+        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
+        let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
         let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
-        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
         globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
-        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
-        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
     });
 
     it('throws dice', async () => {
-        // interface: throwDice(uint weight1, uint weight2, uint rndNum, uint maxRndNum)
-        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
-        const kMaxRndNumHalf = 8000;
-        let result = await engine.throwDice(1,10,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        // interface: throwDice(uint weight1, uint weight2, uint rndNum)
+        let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
+        let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
-        result = await engine.throwDice(10,1,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.throwDice(10,1,kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        result = await engine.throwDice(10,10,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result = await engine.throwDice(10,10,kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
-        result = await engine.throwDice(10,10,kMaxRndNum-1,kMaxRndNum).should.be.fulfilled;
+        result = await engine.throwDice(10,10,2*kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
     });
 
@@ -162,12 +158,10 @@ contract('Engine', (accounts) => {
 
     it('different team state => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        console.log(result);
         result.home.toNumber().should.be.equal(2);
         result.visitor.toNumber().should.be.equal(1);
         let teamStateAll1 = await createTeamStateFromSinglePlayer(1,1,1,1,1, teamStateLib);
         result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
-        console.log(result);
         result.home.toNumber().should.be.equal(14);
         result.visitor.toNumber().should.be.equal(0);
     });
@@ -177,7 +171,6 @@ contract('Engine', (accounts) => {
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
         result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        console.log(result);
         result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(0);
     });

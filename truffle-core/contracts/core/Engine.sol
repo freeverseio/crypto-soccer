@@ -10,7 +10,7 @@ contract Engine is PlayerState {
     uint8 constant rndsPerUint256 = 18; // = 256 / kBitsPerRndNum;
     uint256 constant mask = (1 << kBitsPerRndNum)-1; // (2**bits)-1
     uint8 constant kRoundsPerGame = 18; // 
-    uint16 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+    uint256 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
     /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
     uint8 constant kMove2Attack = 0; 
     uint8 constant kCreateShoot = 1; 
@@ -70,13 +70,13 @@ contract Engine is PlayerState {
     /// @dev We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
     /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
-    /// @dev maxRndNum controls the resolution or fine-graining of the algorithm.
-    function throwDice(uint weight1, uint weight2, uint rndNum, uint maxRndNum)
+    /// @dev kMaxRndNum controls the resolution or fine-graining of the algorithm.
+    function throwDice(uint weight1, uint weight2, uint rndNum)
         public
         pure
         returns(uint8)
     {
-        if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (maxRndNum-1) ) ) {
+        if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (kMaxRndNum-1) ) ) {
             return 0;
         } else {
             return 1;
@@ -85,7 +85,7 @@ contract Engine is PlayerState {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
-    function throwDiceArray(uint[] memory weights, uint rndNum, uint maxRndNum)
+    function throwDiceArray(uint[] memory weights, uint rndNum)
         public
         pure
         returns(uint8 w)
@@ -98,7 +98,7 @@ contract Engine is PlayerState {
         uint cumSum = 0;
         for (w = 0; w<weights.length-1; w++) {
             cumSum += weights[w];
-            if( uniformRndInSumOfWeights < ( cumSum * (maxRndNum-1) )) {
+            if( uniformRndInSumOfWeights < ( cumSum * (kMaxRndNum-1) )) {
                 return w;
             }
         }
@@ -107,8 +107,7 @@ contract Engine is PlayerState {
 
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
-    // TODO: remove maxRndNum for the constant
-    function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint maxRndNum)
+    function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
         public
         pure
         returns (bool)
@@ -116,8 +115,7 @@ contract Engine is PlayerState {
         return throwDice(
             globSkills[1-teamThatAttacks][kDefendShoot],       // defendShoot of defending team against...
             (globSkills[teamThatAttacks][kCreateShoot]*6)/10,  // createShoot of attacking team.
-            rndNum,
-            maxRndNum
+            rndNum
         ) == 1 ? true : false;
     }
 
@@ -129,8 +127,7 @@ contract Engine is PlayerState {
         uint[] memory attackersShoot,
         uint blockShoot,
         uint rndNum1,
-        uint rndNum2,
-        uint maxRndNum
+        uint rndNum2
     )
         public
         pure
@@ -141,10 +138,10 @@ contract Engine is PlayerState {
         for (uint8 p = 0; p < nAttackers; p++) {
             weights[p] = attackersSpeed[p];
         }
-        uint8 shooter = throwDiceArray(weights, rndNum1, maxRndNum);
+        uint8 shooter = throwDiceArray(weights, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2, maxRndNum) == 0;
+        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
     }
 
     /// @dev Plays a game and, currently, returns the number of goals by each team.
@@ -178,16 +175,15 @@ contract Engine is PlayerState {
 
         for (uint8 round = 0; round < kRoundsPerGame; round++){
             // TODO: team gets tired
-            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round], kMaxRndNum);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1], kMaxRndNum)) {
+            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round]);
+            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
                     attackersSpeed[teamThatAttacks],
                     attackersShoot[teamThatAttacks],
                     globSkills[1-teamThatAttacks][kBlockShoot],
                     rnds[4*round+2],
-                    rnds[4*round+3],
-                    kMaxRndNum
+                    rnds[4*round+3]
                     )
                 ) 
                 {
