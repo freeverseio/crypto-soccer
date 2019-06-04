@@ -1,12 +1,20 @@
 const Web3 = require('web3');
 const playerStateJSON = require('../../../truffle-core/build/contracts/PlayerState.json');
 const assetsJSON = require('../../../truffle-core/build/contracts/Assets.json');
+const leaguesJSON = require('../../../truffle-core/build/contracts/Leagues.json');
 
 class Universe {
-    constructor({ provider, assetsAddress, playerStateAddress, from }) {
+    constructor({
+        provider,
+        playerStateAddress,
+        assetsAddress,
+        leaguesAddress,
+        from
+    }) {
         this.web3 = new Web3(provider, null, {});
         this.playerState = new this.web3.eth.Contract(playerStateJSON.abi, playerStateAddress);
         this.assets = new this.web3.eth.Contract(assetsJSON.abi, assetsAddress);
+        this.leagues = new this.web3.eth.Contract(leaguesJSON.abi, leaguesAddress);
         this.from = from;
     }
 
@@ -85,8 +93,14 @@ class Universe {
         return await this.playerState.methods.getCurrentTeamId(state).call();
     }
 
-    async createLeague() {
-        
+    async createLeague(id, initBlock, step, teamIds, teactics) {
+        this.leagues.methods.create(
+            id,
+            initBlock,
+            step,
+            teamIds,
+            teactics
+        );
     }
 }
 

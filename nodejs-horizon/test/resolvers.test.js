@@ -31,25 +31,33 @@ describe('assets resolvers', () => {
         resolvers = new Resolvers(universe);
     });
 
-    it('countTeams', async () => {
-        let count = await resolvers.Query.countTeams().should.be.fulfilled;
-        count.should.be.equal('0');
+    describe('Query', () => {
+        it('countTeams', async () => {
+            let count = await resolvers.Query.countTeams().should.be.fulfilled;
+            count.should.be.equal('0');
+        });
+
+        it('get player', async () => {
+            const id = 3;
+            const player = await resolvers.Query.getPlayer(_, { id });
+            player.should.be.equal(id);
+        });
+
+        it('get all teams', async () => {
+            const teams = await resolvers.Query.allTeams().should.be.fulfilled;
+        });
+
+        it('countLeagues', async () => {
+            // resolvers.Query.
+        });
     });
 
-    it('create team', async () => {
-        await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
-        let count = await resolvers.Query.countTeams().should.be.fulfilled;
-        count.should.be.equal('1');
-    });
-
-    it('get player', async () => {
-        const id = 3;
-        const player = await resolvers.Query.getPlayer(_, { id });
-        player.should.be.equal(id);
-    });
-
-    it('get all teams', async () => {
-        const teams = await resolvers.Query.allTeams().should.be.fulfilled;
+    describe('Mutation', () => {
+        it('create team', async () => {
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            let count = await resolvers.Query.countTeams().should.be.fulfilled;
+            count.should.be.equal('1');
+        });
     });
 
     describe('Player', () => {
@@ -116,7 +124,7 @@ describe('assets resolvers', () => {
         });
 
         it('create', async () => {
-            await resolvers.Mutation.createLeague().should.be.fulfilled;
+            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2] }).should.be.fulfilled;
         });
     });
 });

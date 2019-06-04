@@ -29,7 +29,7 @@ module.exports = function Resolvers(universe) {
 
   this.Mutation = {
     createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner),
-    createLeague: () => universe.createLeague(),
+    createLeague: (_, {initBlock, step, teamIds}) => universe.createLeague(initBlock, step, teamIds),
   };
 
   this.Subscription = {
