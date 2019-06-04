@@ -3,7 +3,8 @@ module.exports = function Resolvers(universe) {
     countTeams: () => universe.countTeams(),
     allTeams: () => universe.getTeamIds(),
     getTeam: (_, { id }) => id,
-    getPlayer: (_, { id }) => id
+    getPlayer: (_, { id }) => id,
+    countLeagues: async () => await universe.leagues.methods.leaguesCount(),
   };
 
   this.Team = {
