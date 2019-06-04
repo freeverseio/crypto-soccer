@@ -23,8 +23,13 @@ module.exports = function Resolvers(universe) {
     team: (id) => universe.getPlayerTeamId(id),
   }
 
+  this.League = {
+    id: (id) => id
+  }
+
   this.Mutation = {
-    createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner)
+    createTeam: (parent, args, context, info) => universe.createTeam(args.name, args.owner),
+    createLeague: () => universe.createLeague(),
   };
 
   this.Subscription = {

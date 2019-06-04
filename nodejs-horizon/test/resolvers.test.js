@@ -109,4 +109,14 @@ describe('assets resolvers', () => {
             skill.should.be.equal('1');
         }); 
     });
+
+    describe('League', () => {
+        it('id', async () => {
+            resolvers.League.id(3).should.be.equal(3);
+        });
+
+        it('create', async () => {
+            await resolvers.Mutation.createLeague().should.be.fulfilled;
+        });
+    });
 });

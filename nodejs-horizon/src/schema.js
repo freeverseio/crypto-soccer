@@ -26,6 +26,10 @@ const typeDefs = gql`
     name: String!
     players: [Player!]
   }
+
+  type League {
+    id: ID!
+  }
   
   type Player {
     id: ID!

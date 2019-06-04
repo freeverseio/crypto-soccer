@@ -5,8 +5,8 @@ const assetsJSON = require('../../../truffle-core/build/contracts/Assets.json');
 class Universe {
     constructor({ provider, assetsAddress, playerStateAddress, from }) {
         this.web3 = new Web3(provider, null, {});
-        this.assets = new this.web3.eth.Contract(assetsJSON.abi, assetsAddress);
         this.playerState = new this.web3.eth.Contract(playerStateJSON.abi, playerStateAddress);
+        this.assets = new this.web3.eth.Contract(assetsJSON.abi, assetsAddress);
         this.from = from;
     }
 
@@ -83,6 +83,10 @@ class Universe {
     async getPlayerTeamId(id) {
         const state = await this.assets.methods.getPlayerState(id).call();
         return await this.playerState.methods.getCurrentTeamId(state).call();
+    }
+
+    async createLeague() {
+        
     }
 }
 
