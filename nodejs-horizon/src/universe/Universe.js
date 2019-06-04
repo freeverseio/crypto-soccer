@@ -99,7 +99,7 @@ class Universe {
         return await this.playerState.methods.getCurrentTeamId(state).call();
     }
 
-    async createLeague(initBlock, step, teamIds, tactics = [[4,4,2], [4,4,2]]) {
+    async createLeague(initBlock, step, teamIds, tactics) {
         const { leagues, from } = this;
         const count = await leagues.methods.leaguesCount().call();
         const id = count + 1;
