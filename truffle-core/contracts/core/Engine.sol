@@ -11,6 +11,13 @@ contract Engine is PlayerState {
     uint256 constant mask = (1 << kBitsPerRndNum)-1; // (2**bits)-1
     uint8 constant kRoundsPerGame = 18; 
     uint16 constant kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+    /// @dev Ennum for globSkills: [0-move2attack, 1-createShoot, 2-defendShoot, 3-blockShoot, 4-currentEndurance]
+    uint8 constant kMove2Attack = 0; 
+    uint8 constant kCreateShoot = 1; 
+    uint8 constant kDefendShoot = 2; 
+    uint8 constant kBlockShoot = 3; 
+    uint8 constant kEndurance = 4; 
+
 
     /**
      * @dev playMatch returns the result of a match
@@ -74,6 +81,21 @@ contract Engine is PlayerState {
         } else {
             return 1;
         }
+    }
+
+    /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
+    // TODO: remove maxRndNum for the constant
+    function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint maxRndNum)
+        public
+        pure
+        returns (bool)
+    {
+        return throwDice(
+            globSkills[1-teamThatAttacks][kDefendShoot],       // defendShoot of defending team against...
+            (globSkills[teamThatAttacks][kCreateShoot]*6)/10,  // createShoot of attacking team.
+            rndNum,
+            maxRndNum
+        ) == 1 ? true : false;
     }
 
 

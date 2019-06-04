@@ -37,13 +37,22 @@ contract('Engine', (accounts) => {
         }
     });
 
-    it('play a match', async () => {
-        const result = await engine.playMatch(seed, teamState, teamState, tactic0, tactic1).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0);
-        result[1].toNumber().should.be.equal(0);
+    it('manages to shoot', async () => {
+        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum, uint kMaxRndNum)
+        const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
+        const kMaxRndNumHalf = 8000;
+        let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
+        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(false);
+        globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
+        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf,kMaxRndNum).should.be.fulfilled;
+        result.should.be.equal(true);
     });
 
-    return;
     it('throws dice', async () => {
         // interface: throwDice(uint weight1, uint weight2, uint rndNum, uint maxRndNum)
         const kMaxRndNum = 16383; // 16383 = 2^kBitsPerRndNum-1 
@@ -56,6 +65,14 @@ contract('Engine', (accounts) => {
         result = await engine.throwDice(10,10,16000,kMaxRndNum).should.be.fulfilled;
         result.toNumber().should.be.equal(1);
     });
+
+    return;
+    it('play a match', async () => {
+        const result = await engine.playMatch(seed, teamState, teamState, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(0);
+    });
+
 
 
     it('gets n rands from a seed', async () => {
