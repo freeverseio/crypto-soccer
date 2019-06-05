@@ -4,18 +4,18 @@ import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {
-    uint8 constant kMaxPlayersInTeam    = 11;   // Max num of players allowed in a team
-    uint8 constant rndsPerUint256       = 18;   // Num of short nums that fit in a bignum = (256/ kBitsPerRndNum);
-    uint8 constant kRoundsPerMatch      = 18;   // Number of rounds played in each match
-    uint256 constant kBitsPerRndNum     = 14;   // Number of bits allowed for random numbers inside match decisisons
-    uint256 constant kMaxRndNum         = 16383;// Max random number allowed inside match decisions = 2^kBitsPerRndNum-1 
-    uint256 constant mask               = (1 << kBitsPerRndNum)-1; // = (2**bits)-1, mask used to extract short nums from bignum
+    uint8 private constant MAX_PLAYERS      = 11;   // Max num of players allowed in a team
+    uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
+    uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of rounds played in each match
+    uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
+    uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
+    uint256 private constant MASK               = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
     // Idxs for vector of globSkills: [0=move2attack, 1=createShoot, 2=defendShoot, 3=blockShoot, 4=currentEndurance]
-    uint8 constant kMove2Attack         = 0;        
-    uint8 constant kCreateShoot         = 1; 
-    uint8 constant kDefendShoot         = 2; 
-    uint8 constant kBlockShoot          = 3; 
-    uint8 constant kEndurance           = 4; 
+    uint8 private constant IDX_MOVE2ATTACK  = 0;        
+    uint8 private constant IDX_CREATES_HOOT = 1; 
+    uint8 private constant IDX_DEFEND_SHOOT = 2; 
+    uint8 private constant IDX_BLOCK_SHOOT  = 3; 
+    uint8 private constant IDX_ENDURANCE    = 4; 
 
 
     /**
@@ -38,13 +38,13 @@ contract Engine is PlayerState {
         pure
         returns (uint8 home, uint8 visitor) 
     {
-        require(state0.length == kMaxPlayersInTeam, "Team 0 needs 11 players");
-        require(state1.length == kMaxPlayersInTeam, "Team 1 needs 11 players");
+        require(state0.length == MAX_PLAYERS, "Team 0 needs 11 players");
+        require(state1.length == MAX_PLAYERS, "Team 1 needs 11 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0: sum is not correct");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1: sum is not correct");
         require(tactic0[0] > 0 && tactic0[1] > 0 && tactic0[2] > 0, "wrong tactic for team 0: all should be >0");
         require(tactic1[0] > 0 && tactic1[1] > 0 && tactic1[2] > 0, "wrong tactic for team 1: all should be >0");
-        uint16[] memory rnds = getNRandsFromSeed(kRoundsPerMatch*4, seed);
+        uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
@@ -57,17 +57,17 @@ contract Engine is PlayerState {
         uint8 teamThatAttacks;
         uint8[2] memory teamGoals;
 
-        for (uint8 round = 0; round < kRoundsPerMatch; round++){
+        for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice(globSkills[0][kMove2Attack], globSkills[1][kMove2Attack], rnds[4*round]);
+            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
                     attackersSpeed[teamThatAttacks],
                     attackersShoot[teamThatAttacks],
-                    globSkills[1-teamThatAttacks][kBlockShoot],
+                    globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     rnds[4*round+2],
                     rnds[4*round+3]
                     )
@@ -86,9 +86,9 @@ contract Engine is PlayerState {
         pure
         returns (uint[5] memory, uint[5] memory)
     {
-        uint currentEnduranceA = skillsTeamA[kEndurance];
-        uint currentEnduranceB = skillsTeamB[kEndurance];
-        for (uint8 sk = kMove2Attack; sk < kEndurance; sk++) {
+        uint currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
+        uint currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
+        for (uint8 sk = IDX_MOVE2ATTACK; sk < IDX_ENDURANCE; sk++) {
             skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
             skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
         }
@@ -101,12 +101,12 @@ contract Engine is PlayerState {
         uint256 currentBigRnd = uint(keccak256(abi.encodePacked(seed)));
         uint8 rndsFromSameBigRnd = 0;
         for (uint8 n = 0; n < nRands; n++) {
-            if (rndsFromSameBigRnd == rndsPerUint256) {
+            if (rndsFromSameBigRnd == RNDS_PER_UINT) {
                 currentBigRnd = uint(keccak256(abi.encodePacked(seed+1)));
                 rndsFromSameBigRnd = 0;
             }
-            rnds[n] = uint16(currentBigRnd & mask);
-            currentBigRnd >>= kBitsPerRndNum;
+            rnds[n] = uint16(currentBigRnd & MASK);
+            currentBigRnd >>= BITS_PER_RND;
             rndsFromSameBigRnd ++;
         }
         return rnds;
@@ -118,9 +118,9 @@ contract Engine is PlayerState {
     /// @dev We return a uint8, not bool, to allow the return to be used as an idx in an array by the callee.
     /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
-    /// @dev kMaxRndNum controls the resolution or fine-graining of the algorithm.
+    /// @dev MAX_RND controls the resolution or fine-graining of the algorithm.
     function throwDice(uint weight1, uint weight2, uint rndNum) public pure returns(uint8) {
-        if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (kMaxRndNum-1) ) ) {
+        if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (MAX_RND-1) ) ) {
             return 0;
         } else {
             return 1;
@@ -138,7 +138,7 @@ contract Engine is PlayerState {
         uint cumSum = 0;
         for (w = 0; w<weights.length-1; w++) {
             cumSum += weights[w];
-            if( uniformRndInSumOfWeights < ( cumSum * (kMaxRndNum-1) )) {
+            if( uniformRndInSumOfWeights < ( cumSum * (MAX_RND-1) )) {
                 return w;
             }
         }
@@ -153,8 +153,8 @@ contract Engine is PlayerState {
         returns (bool)
     {
         return throwDice(
-            globSkills[1-teamThatAttacks][kDefendShoot],       // defendShoot of defending team against...
-            (globSkills[teamThatAttacks][kCreateShoot]*6)/10,  // createShoot of attacking team.
+            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // defendShoot of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATES_HOOT]*6)/10,  // createShoot of attacking team.
             rndNum
         ) == 1 ? true : false;
     }
