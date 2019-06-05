@@ -10,8 +10,8 @@ const HDWalletProvider = require("truffle-hdwallet-provider");
 const address = '0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7';
 const privateKey = "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54";
 const providerUrl = "https://devnet.busyverse.com/web3";
-const provider = new HDWalletProvider("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "https://devnet.busyverse.com/web3");
 
+const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
 const states = new web3.eth.Contract(playerStateJSON.abi, '0x0836cB83c11Ce40C77eCF77a541a32c26C146b79');
 const assets = new web3.eth.Contract(assetsJSON.abi, '0xd2A1716E791C73C6E8CC589E75452C85B64bed7a');
@@ -24,7 +24,7 @@ const resolvers = new Resolvers({
   from: address
 });
 
-const pubsub = new PubSub();
+// const pubsub = new PubSub();
 const server = new ApolloServer({ typeDefs, resolvers });
 
 // This `listen` method launches a web-server.  Existing apps
