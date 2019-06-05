@@ -3,7 +3,7 @@
 MY_DIR=`dirname "$0"`
 MY_DIR=`cd "$MY_DIR" ; pwd`
 
-function exit_on_error
+exit_on_error()
 {
     if [ $? -ne 0 ]; then
         echo "An error occured. Exiting"
@@ -11,7 +11,7 @@ function exit_on_error
     fi
 }
 
-function help
+help()
 {
     echo "Option list:"
     echo "  --clean      remove build directories, compile and test"
@@ -24,19 +24,19 @@ clean=0
 until [ $# -eq 0 ]
 do
     arg=$1
-    if [ $arg == '--clean' ]; then
+    if [ $arg = '--clean' ]; then
         clean=1
         shift 1
-    elif [ $arg == '-h' ]; then
+    elif [ $arg = '-h' ]; then
          help
          exit 0
-    elif [ $arg == '--h' ]; then
+    elif [ $arg = '--h' ]; then
          help
          exit 0
-    elif [ $arg == '--help' ]; then
+    elif [ $arg = '--help' ]; then
          help
          exit 0
-    elif [ $arg == '-help' ]; then
+    elif [ $arg = '-help' ]; then
          help
          exit 0
     else
@@ -49,25 +49,26 @@ do
 # -----------------------------------------------------------------------
 # truffle
 # -----------------------------------------------------------------------
-function install_truffle
+install_truffle()
 {
   cd ${MY_DIR}/truffle-core && npm install
   exit_on_error
 }
 
-function clean_truffle
+clean_truffle()
 {
-  rm -r ${MY_DIR}/truffle-core/build
+  rm -rf ${MY_DIR}/truffle-core/build 
+  rm -rf ${MY_DIR}/truffle-core/node_modules 
   exit_on_error
 }
-function build_truffle
+build_truffle()
 {
   if [ ! -d "${MY_DIR}/truffle-core/build" ]; then
     cd ${MY_DIR}/truffle-core && node_modules/.bin/truffle compile
   fi
   exit_on_error
 }
-function test_truffle
+test_truffle()
 {
   cd ${MY_DIR}/truffle-core && node_modules/.bin/truffle test
   exit_on_error
@@ -77,31 +78,35 @@ function test_truffle
 # graphql
 # -----------------------------------------------------------------------
 
-function install_graph_ql
+install_graph_ql()
 {
   cd ${MY_DIR}/nodejs-horizon && npm install
   exit_on_error
 }
-function test_graph_ql
+test_graph_ql()
 {
   cd ${MY_DIR}/nodejs-horizon && npm test
   exit_on_error
+}
+clean_graph_ql()
+{
+  rm -rf ${MY_DIR}/nodejs-horizon/node_modules
 }
 
 # -----------------------------------------------------------------------
 # go
 # -----------------------------------------------------------------------
-function clean_go
+clean_go()
 {
   cd ${MY_DIR}/go-soccer && go clean
   exit_on_error
 }
-function build_go
+build_go()
 {
   cd ${MY_DIR}/go-soccer && go build
   exit_on_error
 }
-function test_go
+test_go()
 {
   #TODO
   exit_on_error
@@ -112,6 +117,7 @@ function test_go
 
 if [ $clean -eq 1 ]; then
   clean_truffle
+  clean_graph_ql
   clean_go
 fi
 
