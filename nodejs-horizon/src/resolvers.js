@@ -1,15 +1,46 @@
-module.exports = function Resolvers(universe) {
+function Resolvers({
+  states,
+  assets,
+  leagues,
+  from
+}) {
   this.Query = {
-    countTeams: () => universe.countTeams(),
-    allTeams: () => universe.getTeamIds(),
+    countTeams: () => assets.methods.countTeams().call(),
+    allTeams: async () => {
+      const count = await assets.methods.countTeams().call();
+      let ids = [];
+      for (let i = 1; i <= count; i++)
+        ids.push(i);
+      return ids;
+    },
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id,
-    countLeagues: () => universe.leagues.methods.leaguesCount().call(),
+    countLeagues: () => leagues.methods.leaguesCount().call(),
   };
 
   this.Mutation = {
-    createTeam: (_, { name, owner }) => universe.createTeam(name, owner),
-    createLeague: (_, { initBlock, step, teamIds, tactics }) => universe.createLeague(initBlock, step, teamIds, tactics),
+    createTeam: async (_, { name, owner }) => {
+      const gas = await assets.methods.createTeam(name, owner).estimateGas();
+      await assets.methods.createTeam(name, owner).send({ from: from, gas });
+    },
+    createLeague: async (_, { initBlock, step, teamIds, tactics }) => {
+      const count = await leagues.methods.leaguesCount().call();
+      const id = count + 1;
+      const gas = await leagues.methods.create(
+        id,
+        initBlock,
+        step,
+        teamIds,
+        tactics
+      ).estimateGas();
+      await leagues.methods.create(
+        id,
+        initBlock,
+        step,
+        teamIds,
+        tactics
+      ).send({ from, gas });
+    },
   };
 
   this.Subscription = {
@@ -20,25 +51,45 @@ module.exports = function Resolvers(universe) {
 
   this.Team = {
     id: (id) => id,
-    name: (id) => universe.getTeamName(id),
-    players: (id) => universe.getTeamPlayerIds(id)
+    name: (id) => assets.methods.getTeamName(id).call(),
+    players: (id) => assets.methods.getTeamPlayerIds(id).call()
   };
 
   this.Player = {
     id: (id) => id,
-    name: (id) => universe.getPlayerName(id),
-    defence: (id) => universe.getPlayerDefence(id),
-    speed: (id) => universe.getPlayerSpeed(id),
-    pass: (id) => universe.getPlayerPass(id),
-    shoot: (id) => universe.getPlayerShoot(id),
-    endurance: (id) => universe.getPlayerEndurance(id),
-    team: (id) => universe.getPlayerTeamId(id),
+    name: (id) => "player_" + id,
+    defence: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getDefence(state).call();
+    },
+    speed: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getSpeed(state).call();
+    },
+    pass: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getPass(state).call();
+    },
+    shoot: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getShoot(state).call();
+    },
+    endurance: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getEndurance(state).call();
+    },
+    team: async (id) => {
+      const state = await assets.methods.getPlayerState(id).call();
+      return await states.methods.getCurrentTeamId(state).call();
+    },
   };
 
   this.League = {
     id: (id) => id,
-    initBlock: (id) => universe.legues.methods.getInitBlock(id).call(),
-    step: (id) => universe.leagues.methods.getStep(id).call(),
-    nTeams: (id) => universe.leagues.methods.getNTeams(id).call(),
+    initBlock: (id) => legues.methods.getInitBlock(id).call(),
+    step: (id) => leagues.methods.getStep(id).call(),
+    nTeams: (id) => leagues.methods.getNTeams(id).call(),
   };
 }
+
+module.exports = Resolvers;
