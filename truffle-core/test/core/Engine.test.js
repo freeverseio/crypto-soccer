@@ -4,7 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 
-const Engine = artifacts.require('Engine');
+const Engine = artifacts.require('EngineMock');
 const TeamStateLib = artifacts.require('TeamState');
 
 

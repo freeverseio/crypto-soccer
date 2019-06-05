@@ -44,7 +44,7 @@ contract Engine is PlayerState {
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1: sum is not correct");
         require(tactic0[0] > 0 && tactic0[1] > 0 && tactic0[2] > 0, "wrong tactic for team 0: all should be >0");
         require(tactic1[0] > 0 && tactic1[1] > 0 && tactic1[2] > 0, "wrong tactic for team 1: all should be >0");
-        uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
+        uint16[] memory rnds = _getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
@@ -52,18 +52,18 @@ contract Engine is PlayerState {
         // TODO: ugly
         nAttackers[0] = tactic0[2];
         nAttackers[1] = tactic1[2];
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = _getTeamGlobSkills(state0, tactic0);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = _getTeamGlobSkills(state1, tactic1);
         uint8 teamThatAttacks;
         uint8[2] memory teamGoals;
 
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
-                (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
+                (globSkills[0], globSkills[1]) = _teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
-                if ( managesToScore(
+            teamThatAttacks = _throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
+            if ( _managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+                if ( _managesToScore(
                     nAttackers[teamThatAttacks],
                     attackersSpeed[teamThatAttacks],
                     attackersShoot[teamThatAttacks],
@@ -81,8 +81,8 @@ contract Engine is PlayerState {
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
-    function teamsGetTired(uint[5] memory skillsTeamA, uint[5]  memory skillsTeamB )
-        public
+    function _teamsGetTired(uint[5] memory skillsTeamA, uint[5]  memory skillsTeamB )
+        internal
         pure
         returns (uint[5] memory, uint[5] memory)
     {
@@ -96,7 +96,7 @@ contract Engine is PlayerState {
     }
 
 
-    function getNRandsFromSeed(uint16 nRands, uint256 seed) public pure returns (uint16[] memory rnds) {
+    function _getNRandsFromSeed(uint16 nRands, uint256 seed) internal pure returns (uint16[] memory rnds) {
         rnds = new uint16[](nRands);
         uint256 currentBigRnd = uint(keccak256(abi.encodePacked(seed)));
         uint8 rndsFromSameBigRnd = 0;
@@ -119,7 +119,7 @@ contract Engine is PlayerState {
     /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
     /// @dev MAX_RND controls the resolution or fine-graining of the algorithm.
-    function throwDice(uint weight1, uint weight2, uint rndNum) public pure returns(uint8) {
+    function _throwDice(uint weight1, uint weight2, uint rndNum) internal pure returns(uint8) {
         if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (MAX_RND-1) ) ) {
             return 0;
         } else {
@@ -129,7 +129,7 @@ contract Engine is PlayerState {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
-    function throwDiceArray(uint[] memory weights, uint rndNum) public pure returns(uint8 w) {
+    function _throwDiceArray(uint[] memory weights, uint rndNum) internal pure returns(uint8 w) {
         uint uniformRndInSumOfWeights;
         for (w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
@@ -147,12 +147,12 @@ contract Engine is PlayerState {
 
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
-    function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-        public
+    function _managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
+        internal
         pure
         returns (bool)
     {
-        return throwDice(
+        return _throwDice(
             globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // defendShoot of defending team against...
             (globSkills[teamThatAttacks][IDX_CREATES_HOOT]*6)/10,  // createShoot of attacking team.
             rndNum
@@ -162,7 +162,7 @@ contract Engine is PlayerState {
 
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
-    function managesToScore(
+    function _managesToScore(
         uint8 nAttackers,
         uint[] memory attackersSpeed,
         uint[] memory attackersShoot,
@@ -170,7 +170,7 @@ contract Engine is PlayerState {
         uint rndNum1,
         uint rndNum2
     )
-        public
+        internal
         pure
         returns (bool)
     {
@@ -179,10 +179,10 @@ contract Engine is PlayerState {
         for (uint8 p = 0; p < nAttackers; p++) {
             weights[p] = attackersSpeed[p];
         }
-        uint8 shooter = throwDiceArray(weights, rndNum1);
+        uint8 shooter = _throwDiceArray(weights, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
+        return _throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
     }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
@@ -193,8 +193,8 @@ contract Engine is PlayerState {
     // createShoot =    speed(attackers) + pass(attackers)
     // defendShoot =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[] memory teamState, uint8[3] memory tactic)
-        public
+    function _getTeamGlobSkills(uint256[] memory teamState, uint8[3] memory tactic)
+        internal
         pure
         returns (
             uint[5] memory globSkills,
