@@ -170,7 +170,7 @@ contract Stakers is StakersInterface {
             require(uint8(_hash[31]) & 0xf == 0,ERR_BADHFIN);
         }
 
-        require(keccak256(abi.encodePacked(_hash))==stakers[msg.sender].onion,ERR_BADHASH);
+        require(keccak256(abi.encode(_hash))==stakers[msg.sender].onion,ERR_BADHASH);
         stakers[msg.sender].onion = _hash;
         stakers[msg.sender].state = State.ENROLLED;
         stakers[msg.sender].touch = uint64(block.timestamp);

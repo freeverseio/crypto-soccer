@@ -18,7 +18,7 @@ contract('Assets', (accounts) => {
 
     it('compute seed', async () => {
         const seed = await assets.computeSeed("ciao", 55).should.be.fulfilled;
-        seed.should.be.bignumber.equal('102547434092017079837680488740905628255437880050736598764126453081239303428819');
+        seed.should.be.bignumber.equal('70784264222015847647364792903196777080414493477200674456068616512110552463457');
     });
 
     it('get team creation timestamp', async () => {
@@ -158,7 +158,7 @@ contract('Assets', (accounts) => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         const state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
         let result = await playerStateLib.getSkills(state).should.be.fulfilled;
-        result.should.be.bignumber.equal('4828043532990890026');
+        result.should.be.bignumber.equal('4972233480341569567');
         result = await playerStateLib.getPlayerId(state).should.be.fulfilled;
         result.should.be.bignumber.equal('1');
         result = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
@@ -206,7 +206,7 @@ contract('Assets', (accounts) => {
         rand0.should.be.bignumber.equal(rand1);
         const rand2 = await assets.intHash("Barca1").should.be.fulfilled;
         rand0.should.be.bignumber.not.equal(rand2);
-        rand0.should.be.bignumber.equal('64856073772839990506814373782217928521534618466099710722049665631602958392435');
+        rand0.should.be.bignumber.equal('16868380996023217686301278465084779672212597498847303814512224087959838246889');
     });
 
     it('sum of computed skills is 250', async () => {
@@ -235,10 +235,10 @@ contract('Assets', (accounts) => {
         const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
         const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
         skills.length.should.be.equal(numSkills.toNumber());
-        skills[0].should.be.bignumber.equal('48');
-        skills[1].should.be.bignumber.equal('72');
-        skills[2].should.be.bignumber.equal('51');
-        skills[3].should.be.bignumber.equal('42');
+        skills[0].should.be.bignumber.equal('78');
+        skills[1].should.be.bignumber.equal('65');
+        skills[2].should.be.bignumber.equal('35');
+        skills[3].should.be.bignumber.equal('35');
         skills[4].should.be.bignumber.equal('37');
         const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
         sum.should.be.equal(250);

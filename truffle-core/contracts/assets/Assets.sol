@@ -261,11 +261,11 @@ contract Assets {
 
     /// @return seed
     function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(teamName, posInTeam)));
+        return uint256(keccak256(abi.encode(teamName, posInTeam)));
     }
 
     /// @return hashed arg casted to uint256
     function _intHash(string memory arg) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(arg)));
+        return uint256(keccak256(abi.encode(arg)));
     }
 }

@@ -170,7 +170,7 @@ contract Stakers {
             if (!_require(uint8(_hash[31]) & 0xf == 0,ERR_BADHFIN)) return;
         }
 
-        if (!_require(keccak256(abi.encodePacked(_hash))==stakers[msg.sender].onion,ERR_BADHASH)) return;
+        if (!_require(keccak256(abi.encode(_hash))==stakers[msg.sender].onion,ERR_BADHASH)) return;
         stakers[msg.sender].onion = _hash;
         stakers[msg.sender].state = State.ENROLLED;
         stakers[msg.sender].touch = uint64(block.timestamp);
