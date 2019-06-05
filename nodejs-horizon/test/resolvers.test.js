@@ -87,7 +87,7 @@ describe('assets resolvers', () => {
             await resolvers.Player.defence(id).should.be.rejected;
             await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
             const skill = await resolvers.Player.defence(id).should.be.fulfilled;
-            skill.should.be.equal('50');
+            skill.should.be.equal('46');
         });
 
         it('speed', async () => {
@@ -95,7 +95,7 @@ describe('assets resolvers', () => {
             await resolvers.Player.speed(id).should.be.rejected;
             await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
             const skill = await resolvers.Player.speed(id).should.be.fulfilled;
-            skill.should.be.equal('62');
+            skill.should.be.equal('70');
         }); 
         
         it('pass', async () => {
@@ -103,7 +103,7 @@ describe('assets resolvers', () => {
             await resolvers.Player.pass(id).should.be.rejected;
             await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
             const skill = await resolvers.Player.pass(id).should.be.fulfilled;
-            skill.should.be.equal('47');
+            skill.should.be.equal('49');
         }); 
         
         it('shoot', async () => {
@@ -111,7 +111,7 @@ describe('assets resolvers', () => {
             await resolvers.Player.shoot(id).should.be.rejected;
             await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
             const skill = await resolvers.Player.shoot(id).should.be.fulfilled;
-            skill.should.be.equal('27');
+            skill.should.be.equal('52');
         }); 
         
         it('endurance', async () => {
@@ -119,7 +119,7 @@ describe('assets resolvers', () => {
             await resolvers.Player.endurance(id).should.be.rejected;
             await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
             const skill = await resolvers.Player.endurance(id).should.be.fulfilled;
-            skill.should.be.equal('64');
+            skill.should.be.equal('33');
         }); 
 
         it('team', async () => {
