@@ -98,11 +98,11 @@ contract Engine is PlayerState {
 
     function _getNRandsFromSeed(uint16 nRands, uint256 seed) internal pure returns (uint16[] memory rnds) {
         rnds = new uint16[](nRands);
-        uint256 currentBigRnd = uint(keccak256(abi.encodePacked(seed)));
+        uint256 currentBigRnd = uint(keccak256(abi.encode(seed)));
         uint8 rndsFromSameBigRnd = 0;
         for (uint8 n = 0; n < nRands; n++) {
             if (rndsFromSameBigRnd == RNDS_PER_UINT) {
-                currentBigRnd = uint(keccak256(abi.encodePacked(seed+1)));
+                currentBigRnd = uint(keccak256(abi.encode(seed+1)));
                 rndsFromSameBigRnd = 0;
             }
             rnds[n] = uint16(currentBigRnd & MASK);

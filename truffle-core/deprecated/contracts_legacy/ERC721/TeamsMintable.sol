@@ -18,7 +18,7 @@ contract TeamsMintable is TeamsProps, MinterRole {
     }
 
     function calculateId(string memory name) public pure returns (uint256) {
-        bytes32 nameHash = keccak256(abi.encodePacked(name));
+        bytes32 nameHash = keccak256(abi.encode(name));
         uint256 id = uint256(nameHash);
         return id;
     }

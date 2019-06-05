@@ -17,7 +17,7 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @return A boolean that indicates if the operation was successful.
      */
     function mint(address to, string memory name) public onlyMinter {
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        bytes32 playerNameHash = keccak256(abi.encode(name));
         require(_nameHashToId[playerNameHash] == 0, "player already exists");
         uint256 playerId = totalSupply() + 1;
         _nameHashToId[playerNameHash] = playerId;
@@ -49,7 +49,7 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @return player ID from player name
      */
     function getPlayerId(string memory name) public view returns(uint256) {
-        bytes32 playerNameHash = keccak256(abi.encodePacked(name));
+        bytes32 playerNameHash = keccak256(abi.encode(name));
         uint256 id = _nameHashToId[playerNameHash];
         require(id != 0, "unexistent player");
         return _nameHashToId[playerNameHash];
@@ -61,7 +61,7 @@ contract PlayersMintable is PlayersProps, MinterRole {
      * @return 5 skills
      */
     function _computeSkills(uint256 seed) internal view returns (uint16[5] memory) {
-        uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number-1))));
+        uint256 rand = uint256(keccak256(abi.encode(blockhash(block.number-1))));
         uint256 rna = rand + seed;
 
         uint16[5] memory skills;
