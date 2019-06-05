@@ -42,7 +42,7 @@ contract LeaguesComputer is LeaguesScore {
         view
         returns (uint16[] memory scores, uint256[] memory finalLeagueState)
     {
-        bytes32 seed = getMatchDayBlockHash(leagueId, leagueDay);
+        uint256 seed = uint256(getMatchDayBlockHash(leagueId, leagueDay));
         return _computeDayWithSeed(
             leagueId,
             leagueDay,
@@ -110,7 +110,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
         uint8[3][] memory tactics,
-        bytes32 seed
+        uint256 seed
     )
         internal
         view
@@ -142,7 +142,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8[3][] memory tactics,
-        bytes32 seed
+        uint256 seed
     )
         internal
         view
