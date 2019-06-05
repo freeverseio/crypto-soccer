@@ -4,7 +4,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
-const Universe = require('../src/universe/Universe');
+const genesis = require('./Genesis');
 const Resolvers = require('../src/resolvers');
 
 const identity = {
@@ -15,26 +15,23 @@ const identity = {
 // we preset the balance of our identities to 100 ether
 const provider = ganache.provider({
     accounts: [{ secretKey: identity.privateKey, balance: '100000000000000000000000' }]
-})
+});
 
 describe('assets resolvers', () => {
     let resolvers = null;
 
     beforeEach(async () => {
-        universe = new Universe({
-            provider,
-            from: identity.address
-        });
-        universe.web3.currentProvider.setMaxListeners(0);
-        await universe.genesis();
+        contracts = await genesis(provider, identity.address);
+
+        const { states, assets, leagues } = contracts;
         resolvers = new Resolvers({
-            provider: provider,
-            playerStateAddress: universe.playerState.options.address,
-            assetsAddress: universe.assets.options.address,
-            leaguesAddress: universe.leagues.options.address,
+            states,
+            assets,
+            leagues,
             from: identity.address
         });
     });
+
 
     describe('Query', () => {
         it('countTeams', async () => {
@@ -132,6 +129,26 @@ describe('assets resolvers', () => {
             const skill = await resolvers.Player.team(id).should.be.fulfilled;
             skill.should.be.equal('1');
         }); 
+    });
+
+    describe('Team', () => {
+        it('id', async () => {
+            resolvers.Team.id(3).should.be.equal(3);
+        });
+
+        it('name', async () => {
+            await resolvers.Team.name(3).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const name = await resolvers.Team.name(1).should.be.fulfilled;
+            name.should.be.equal('Barca');
+        });
+
+        it('players', async () => {
+            await resolvers.Team.players(1).should.be.rejected;
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const players = await resolvers.Team.players(1).should.be.fulfilled;
+            players.length.should.be.equal(11);
+        });
     });
 
     describe('League', () => {
