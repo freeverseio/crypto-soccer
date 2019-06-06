@@ -25,7 +25,7 @@ function Resolvers({
     },
     createLeague: async (_, { initBlock, step, teamIds, tactics }) => {
       const count = await leagues.methods.leaguesCount().call();
-      const id = count + 1;
+      const id = count;
       const gas = await leagues.methods.create(
         id,
         initBlock,
