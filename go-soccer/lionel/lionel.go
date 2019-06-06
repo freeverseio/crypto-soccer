@@ -107,7 +107,6 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	stk := l.stakers.Get(staker)
 
-	isLieHardCoded := false // TODO
 	tx, _, err := l.leagues.SendTransactionSyncWithClient(
 		stk.Client, nil, 0,
 		"updateLeague",
@@ -115,7 +114,7 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 		res.initStatesHash,
 		res.statesAtMatchdayHashes,
 		res.scores,
-		isLieHardCoded,
+		isLier,
 	)
 
 	fmt.Printf("updateLeague leagueIdx: %v\n", leagueIdx)
@@ -168,14 +167,17 @@ func (l *Lionel) CanLeagueBeUpdated(leagueNo uint64) (bool, error) {
 
 	var hasFinished bool
 	if err := l.leagues.Call(&hasFinished, "hasFinished", leagueNoNum); err != nil {
+		fmt.Println("*err1", l.leagues.Address().Hex(), leagueNo)
 		return false, err
 	}
 	var isUpdated bool
 	if err := l.leagues.Call(&isUpdated, "isUpdated", leagueNoNum); err != nil {
+		fmt.Println("*err2", leagueNo)
 		return false, err
 	}
 	var isVerified bool
 	if err := l.leagues.Call(&isVerified, "isVerified", leagueNoNum); err != nil {
+		fmt.Println("*err3", leagueNo)
 		return false, err
 	}
 	return hasFinished && !isUpdated && !isVerified, nil
