@@ -20,22 +20,22 @@ jobs:
       - checkout
 
       - run: 
-        name: Install truffle
-        command: 'sudo npm install -g truffle'
+          name: Install truffle
+          command: 'sudo npm install -g truffle'
       - run: 
-        name: Set up truffle-core
-        command: cd truffle-core && npm install
+          name: Set up truffle-core
+          command: cd truffle-core && npm install
       - run:
-        name: Compile truffle-core
-        command: cd truffle-core && truffle build
+          name: Compile truffle-core
+          command: cd truffle-core && truffle build
       - run:
-        name: Test truffle-core
-        command: cd truffle-core && truffle test
+          name: Test truffle-core
+          command: cd truffle-core && truffle test
       - run:
-        name: Setup nodejs-horizon
-        command: cd nodejs-horizon && npm install
+          name: Setup nodejs-horizon
+          command: cd nodejs-horizon && npm install
       - run:
-        name: Test nodejs-horizon
-        command: cd nodejs-horizon && npm test
+          name: Test nodejs-horizon
+          command: cd nodejs-horizon && npm test
 
 
