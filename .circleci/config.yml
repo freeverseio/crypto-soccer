@@ -27,7 +27,7 @@ jobs:
           command: cd truffle-core && npm install
       - run:
           name: Compile truffle-core
-          command: cd truffle-core && truffle build
+          command: cd truffle-core && truffle build && truffle test
       - run:
           name: Test truffle-core
           command: cd truffle-core && truffle test
