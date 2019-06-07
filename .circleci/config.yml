@@ -21,7 +21,7 @@ jobs:
 
       - run: 
           name: Install goLang
-          command: 'sudo apt-get install -y software-properties-common'
+          command: 'sudo apt-get install -y software-properties-common && sudo apt-get dist-upgrade'
       - run:
           name: Configure
           command: 'sudo add-apt-repository ppa:longsleep/golang-backports && sudo apt-get update && sudo apt-get -y install golang-go'
