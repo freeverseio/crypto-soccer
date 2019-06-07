@@ -10,7 +10,6 @@ jobs:
     docker:
       # specify the version you desire here
       - image: circleci/node:10.16.0
-      - image: circleci/golang:1.12
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -38,6 +37,9 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
+      - run:
+          name: Install goLang
+          command: 'sudo snap install --classic go'
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
