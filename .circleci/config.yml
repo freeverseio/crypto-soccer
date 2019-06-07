@@ -19,19 +19,15 @@ jobs:
     steps:
       - checkout
 
-      - run: go version
-      - run: 
-          name: Install truffle
-          command: 'sudo npm install -g truffle'
       - run: 
           name: Set up truffle-core
           command: cd truffle-core && npm install
       - run:
           name: Compile truffle-core
-          command: cd truffle-core && truffle build
+          command: cd truffle-core && ./node_modules/.bin/truffle build
       - run:
           name: Test truffle-core
-          command: cd truffle-core && truffle test
+          command: cd truffle-core && ./node_modules/.bin/truffle test
       - run:
           name: Setup nodejs-horizon
           command: cd nodejs-horizon && npm install
