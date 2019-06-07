@@ -19,27 +19,23 @@ jobs:
     steps:
       - checkout
 
-      - run: 'sudo npm install -g truffle'
-      - run: cd truffle-core && npm install && truffle build
-
-  test:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.6.0
-    steps: 
-      - checkout
-      - run: cd truffle-core && truffle test
-
-workflow: 
-  version: 2
-  build_and_test:
-    jobs:
-      - build
-      - test:
-          requires:
-            - build
-          # filters:
-          #   branches:
-          #     only: master 
+      - run: 
+        name: Install truffle
+        command: 'sudo npm install -g truffle'
+      - run: 
+        name: Set up truffle-core
+        command: cd truffle-core && npm install
+      - run:
+        name: Compile truffle-core
+        command: cd truffle-core && truffle build
+      - run:
+        name: Test truffle-core
+        command: cd truffle-core && truffle test
+      - run:
+        name: Setup nodejs-horizon
+        command: cd nodejs-horizon && npm install
+      - run:
+        name: Test nodejs-horizon
+        command: cd nodejs-horizon && npm test
 
 
