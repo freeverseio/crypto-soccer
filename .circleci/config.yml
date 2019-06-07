@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: asiniscalchi/fv_develop
+      - image: asiniscalchi/fv_develop:firsttry
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
