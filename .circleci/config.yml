@@ -23,6 +23,9 @@ jobs:
       - run: cd truffle-core && truffle build
 
   test:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:10.6.0
     steps: 
       - run: cd truffle-core && truffle test
 
