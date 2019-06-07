@@ -20,12 +20,6 @@ jobs:
       - checkout
 
       - run: 
-          name: Install goLang
-          command: 'sudo apt-get install -y software-properties-common && sudo apt-get dist-upgrade'
-      - run:
-          name: Configure
-          command: 'sudo add-apt-repository ppa:longsleep/golang-backports && sudo apt-get update && sudo apt-get -y install golang-go'
-      - run: 
           name: Set up truffle-core
           command: cd truffle-core && npm install
       - run:
@@ -40,6 +34,8 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
-      - run:
-          name: Compile goSoccer
-          command: cd go-soccer && go build
+      # - run:
+      #     name: Compile goSoccer
+      #     command: cd go-soccer && go build
+
+
