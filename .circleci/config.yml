@@ -20,6 +20,22 @@ jobs:
       - checkout
 
       - run: 'sudo npm install -g truffle'
-      - run: cd truffle-core && npm install && truffle test
-      - run: cd nodejs-horizon && npm install && npm test
+      - run: cd truffle-core && truffle build
+
+  test:
+    steps: 
+      - run: cd truffle-core && truffle test
+
+workflow: 
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+          # filters:
+          #   branches:
+          #     only: master 
+
 
