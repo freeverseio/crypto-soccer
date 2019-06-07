@@ -20,7 +20,7 @@ jobs:
       - checkout
 
       - run: 'sudo npm install -g truffle'
-      - run: cd truffle-core && truffle build
+      - run: cd truffle-core && npm install && truffle build
 
   test:
     docker:
