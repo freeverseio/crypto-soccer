@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: circleci/node:8.10
+      - image: circleci/node:10.16.0
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -18,9 +18,24 @@ jobs:
 
     steps:
       - checkout
-      - run: 'sudo apt update'
-      - run: 'sudo apt dist-upgrade'
-      # - run: 'sudo apt install build-essential'
-      - run: 'sudo npm install -g truffle'
-      - run: cd truffle-core && npm install && truffle compile && truffle test
-      - run: cd metadata-server && npm install && npm test
+
+      - run: 
+          name: Install truffle
+          command: 'sudo npm install -g truffle'
+      - run: 
+          name: Set up truffle-core
+          command: cd truffle-core && npm install
+      - run:
+          name: Compile truffle-core
+          command: cd truffle-core && truffle build
+      - run:
+          name: Test truffle-core
+          command: cd truffle-core && truffle test
+      - run:
+          name: Setup nodejs-horizon
+          command: cd nodejs-horizon && npm install
+      - run:
+          name: Test nodejs-horizon
+          command: cd nodejs-horizon && npm test
+
+
