@@ -21,7 +21,7 @@ jobs:
 
       - run: 
           name: Install goLang
-          command: add-apt-repository ppa:longsleep/golang-backports && apt-get update && apt-get -y install golang-go
+          command: apt-get install -y software-properties-common && add-apt-repository ppa:longsleep/golang-backports && apt-get update && apt-get -y install golang-go
       - run: 
           name: Set up truffle-core
           command: cd truffle-core && npm install
