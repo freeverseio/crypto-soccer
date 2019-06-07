@@ -14,10 +14,10 @@ contract Stakers is StakersInterface {
     string constant ERR_BADSENDER = "err-sender";
 
     uint256 public REQUIRED_STAKE   = 4 ether;
-    uint256 public MINENROLL_SECS   = 1 seconds;
-    uint256 public MAXIDLE_SECS     = 5 minutes;
-    uint256 public MINUNENROLL_SECS = 1 seconds;
-    uint256 public MAXCHALL_SECS    = 15 seconds;
+    uint256 public MINENROLL_SECS   = 1 days;
+    uint256 public MAXIDLE_SECS     = 1 weeks;
+    uint256 public MINUNENROLL_SECS = 2 days;
+    uint256 public MAXCHALL_SECS    = 5 minutes;
 
     // types ---------------------------------------------------------------
 
