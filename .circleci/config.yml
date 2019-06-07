@@ -27,6 +27,7 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:10.6.0
     steps: 
+      - checkout
       - run: cd truffle-core && truffle test
 
 workflow: 
