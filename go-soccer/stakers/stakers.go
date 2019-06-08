@@ -287,10 +287,14 @@ func (s *Stakers) Unenroll(staker common.Address) error {
 }
 
 func (s *Stakers) IsLier(staker common.Address) (bool, error) {
+	fmt.Print("IsLier 0\n")
+
 	stakerEntry, err := s.storage.Staker(staker)
 	if err != nil {
 		return false, err
 	}
+
+	fmt.Print("IsLier 1\n")
 
 	stk := s.stks[staker]
 
