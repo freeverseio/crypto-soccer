@@ -21,7 +21,8 @@ function Resolvers({
   this.Mutation = {
     createTeam: async (_, { name, owner }) => {
       const gas = await assets.methods.createTeam(name, owner).estimateGas();
-      await assets.methods.createTeam(name, owner).send({ from: from, gas });
+      const receipt = await assets.methods.createTeam(name, owner).send({ from: from, gas });
+      return receipt.events.TeamCreation.returnValues.teamId;
     },
     createLeague: async (_, { initBlock, step, teamIds, tactics }) => {
       const count = await leagues.methods.leaguesCount().call();

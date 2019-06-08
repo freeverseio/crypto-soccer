@@ -10,7 +10,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createTeam(name: String!, owner: String!): String,
+    createTeam(name: String!, owner: String!): Team,
     createLeague(
       initBlock: Int!
       step: Int!
