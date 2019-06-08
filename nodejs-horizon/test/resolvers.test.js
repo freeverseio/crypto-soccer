@@ -57,13 +57,15 @@ describe('assets resolvers', () => {
 
     describe('Mutation', () => {
         it('create team', async () => {
-            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            const id = await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            id.should.be.equal('1');
             let count = await resolvers.Query.countTeams().should.be.fulfilled;
             count.should.be.equal('1');
         });
 
         it('createLeague', async () => {
-            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            id.should.be.equal('0');
             let count = await resolvers.Query.countLeagues().should.be.fulfilled;
             count.should.be.equal('1');
             await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;

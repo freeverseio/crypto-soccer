@@ -209,7 +209,7 @@ func (s *Stakers) Enroll(staker common.Address) error {
 	stk, keyFound := s.stks[staker]
 
 	if !keyFound {
-		return fmt.Errorf("Account not found:", staker.Hex())
+		return fmt.Errorf("Account not found: %v", staker.Hex())
 	}
 
 	log.Info("Enrolling ", staker.Hex())
@@ -287,10 +287,14 @@ func (s *Stakers) Unenroll(staker common.Address) error {
 }
 
 func (s *Stakers) IsLier(staker common.Address) (bool, error) {
+	log.Debug("IsLier 0\n")
+
 	stakerEntry, err := s.storage.Staker(staker)
 	if err != nil {
 		return false, err
 	}
+
+	log.Debug("IsLier 1\n")
 
 	stk := s.stks[staker]
 
