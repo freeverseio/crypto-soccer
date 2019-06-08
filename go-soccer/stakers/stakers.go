@@ -209,7 +209,7 @@ func (s *Stakers) Enroll(staker common.Address) error {
 	stk, keyFound := s.stks[staker]
 
 	if !keyFound {
-		return fmt.Errorf("Account not found:", staker.Hex())
+		return fmt.Errorf("Account not found: %v", staker.Hex())
 	}
 
 	log.Info("Enrolling ", staker.Hex())
