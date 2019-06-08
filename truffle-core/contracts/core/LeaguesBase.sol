@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 
 contract LeaguesBase {
+    event LeagueCreated(uint256 id);
+
     struct League {
         uint256 nTeams;
         // init block of the league
@@ -52,6 +54,7 @@ contract LeaguesBase {
             _leagueToTeams[id].push(teamIds[i]);
         for (uint256 i=0 ; i<tactics.length ; i++)
             _leagueToTactics[id].push(tactics[i]);
+        emit LeagueCreated(id);
     }
 
     function getUsersInitDataHash(uint256 id) public view returns (bytes32) {

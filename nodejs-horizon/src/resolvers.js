@@ -34,13 +34,14 @@ function Resolvers({
         teamIds,
         tactics
       ).estimateGas();
-      await leagues.methods.create(
+      const receipt = await leagues.methods.create(
         id,
         initBlock,
         step,
         teamIds,
         tactics
       ).send({ from, gas });
+      return receipt.events.LeagueCreated.returnValues.id;
     },
   };
 
