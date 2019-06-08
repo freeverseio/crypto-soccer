@@ -15,6 +15,9 @@ func (s *Storage) Staker(staker common.Address) (*StakerEntry, error) {
 	key = append(key, staker.Bytes()...)
 
 	value, err := s.db.Get(key, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	var entry StakerEntry
 	err = rlp.DecodeBytes(value, &entry)

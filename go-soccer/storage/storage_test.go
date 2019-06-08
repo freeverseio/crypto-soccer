@@ -1,15 +1,18 @@
 package storage
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 func TestNew(t *testing.T) {
 	t.Log("Creating a storage")
 
-	path := "./"
-	storage, err := New(path)
+	storage, err := New("./test")
 	if err != nil {
 		t.Error(err)
 	}
+	defer os.RemoveAll("./test")
 
 	count := 0
 	iter := storage.db.NewIterator(nil, nil)
