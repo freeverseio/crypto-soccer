@@ -10,11 +10,10 @@ import (
 
 func TestStaker(t *testing.T) {
 	s, err := New("./test");
+	defer os.RemoveAll("./test")
 	if err != nil{
 		t.Error(err)
 	}
-
-	defer os.RemoveAll("./test")
 
 	address := common.HexToAddress("0x44")
 	_, err = s.Staker(address)
@@ -25,11 +24,10 @@ func TestStaker(t *testing.T) {
 
 func TestHasStaker(t* testing.T) {
 	s, err := New("./test");
+	defer os.RemoveAll("./test")
 	if err != nil{
 		t.Error(err)
 	}
-
-	defer os.RemoveAll("./test")
 
 	address := common.HexToAddress("0x44")
 	has, err := s.HasStaker(address)
