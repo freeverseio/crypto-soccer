@@ -37,5 +37,8 @@ jobs:
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
+      - run:
+          name: Test goSoccer
+          command: cd go-soccer && go test ./...
 
 
