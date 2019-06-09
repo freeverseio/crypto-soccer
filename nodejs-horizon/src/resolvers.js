@@ -16,6 +16,7 @@ function Resolvers({
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id,
     countLeagues: () => leagues.methods.leaguesCount().call(),
+    getLeague: (_, { id }) => id,
   };
 
   this.Mutation = {
@@ -88,7 +89,7 @@ function Resolvers({
 
   this.League = {
     id: (id) => id,
-    initBlock: (id) => legues.methods.getInitBlock(id).call(),
+    initBlock: (id) => leagues.methods.getInitBlock(id).call(),
     step: (id) => leagues.methods.getStep(id).call(),
     nTeams: (id) => leagues.methods.getNTeams(id).call(),
   };

@@ -6,16 +6,31 @@ const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.
 const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
 const leaguesJSON = require('../../truffle-core/build/contracts/Leagues.json');
 const HDWalletProvider = require("truffle-hdwallet-provider");
+const config = require("../config.json");
 
-const address = '0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7';
-const privateKey = "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54";
-const providerUrl = "https://devnet.busyverse.com/web3";
+const {
+  providerUrl,
+  address,
+  privateKey,
+  statesContractAddress,
+  assetsContractAddress,
+  leaguesContractAddress
+} = config;
 
+console.log("--------------------------------------------------------");
+console.log("providerUrl       : ", providerUrl);
+console.log("account           : ", address);
+console.log("🔥  account p.k.  : ", privateKey);
+console.log("states address    : ", statesContractAddress);
+console.log("assets address    : ", assetsContractAddress);
+console.log("leagues address   : ", leaguesContractAddress);
+
+console.log("--------------------------------------------------------");
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
-const states = new web3.eth.Contract(playerStateJSON.abi, '0x0836cB83c11Ce40C77eCF77a541a32c26C146b79');
-const assets = new web3.eth.Contract(assetsJSON.abi, '0xd2A1716E791C73C6E8CC589E75452C85B64bed7a');
-const leagues = new web3.eth.Contract(leaguesJSON.abi, '0x3629436292F52830dBd467A95eAdd8BB3d84f9eb');
+const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress);
+const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
+const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
 
 const resolvers = new Resolvers({
   states,

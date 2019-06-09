@@ -44,6 +44,12 @@ describe('assets resolvers', () => {
             const player = await resolvers.Query.getPlayer(_, { id });
             player.should.be.equal(id);
         });
+        
+        it('get league', async () => {
+            const id = 3;
+            const player = await resolvers.Query.getLeague(_, { id });
+            player.should.be.equal(id);
+        });
 
         it('get all teams', async () => {
             const teams = await resolvers.Query.allTeams().should.be.fulfilled;
@@ -156,6 +162,27 @@ describe('assets resolvers', () => {
     describe('League', () => {
         it('id', async () => {
             resolvers.League.id(3).should.be.equal(3);
+        });
+
+        it('initBlock', async () => {
+            await resolvers.League.initBlock(0).should.be.rejected;
+            const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            const initBLock = await resolvers.League.initBlock(id).should.be.fulfilled;
+            initBLock.should.be.equal('10');
+        });
+
+        it('step', async () => {
+            await resolvers.League.step(0).should.be.rejected;
+            const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            const initBLock = await resolvers.League.step(id).should.be.fulfilled;
+            initBLock.should.be.equal('20');
+        });
+
+        it('step', async () => {
+            await resolvers.League.nTeams(0).should.be.rejected;
+            const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            const initBLock = await resolvers.League.nTeams(id).should.be.fulfilled;
+            initBLock.should.be.equal('2');
         });
     });
 });
