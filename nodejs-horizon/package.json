@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./src/index.js",
+    "start": "node ./src/index.js",
     "test": "mocha --recursive"
   },
   "author": "",
@@ -21,7 +21,6 @@
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.1.1",
     "ganache-cli": "^6.4.3",
-    "mocha": "^6.1.4",
-    "nodemon": "^1.19.1"
+    "mocha": "^6.1.4"
   }
 }
