@@ -6,8 +6,23 @@ const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.
 const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
 const leaguesJSON = require('../../truffle-core/build/contracts/Leagues.json');
 const HDWalletProvider = require("truffle-hdwallet-provider");
-const config = require("../config.json");
+const program = require('commander');
+const version = require('../package.json').version;
 
+// Parsing command line arguments
+program
+  .version(version)
+  .option('-c, --config <path>', 'set config path. defaults to config.json')
+  .parse(process.argv);
+
+let configFile = "../";
+if (typeof program.config !== 'undefined')
+  configFile += program.config;
+else
+  configFile += "config.json";
+
+console.log("Configuration file: " + configFile);
+const config = require(configFile);
 const {
   providerUrl,
   address,
