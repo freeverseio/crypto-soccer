@@ -16,6 +16,7 @@ function Resolvers({
     getTeam: (_, { id }) => id,
     getPlayer: (_, { id }) => id,
     countLeagues: () => leagues.methods.leaguesCount().call(),
+    getLeague: (_, { id }) => id,
   };
 
   this.Mutation = {

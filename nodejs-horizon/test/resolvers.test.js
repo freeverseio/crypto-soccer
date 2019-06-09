@@ -44,6 +44,12 @@ describe('assets resolvers', () => {
             const player = await resolvers.Query.getPlayer(_, { id });
             player.should.be.equal(id);
         });
+        
+        it('get league', async () => {
+            const id = 3;
+            const player = await resolvers.Query.getLeague(_, { id });
+            player.should.be.equal(id);
+        });
 
         it('get all teams', async () => {
             const teams = await resolvers.Query.allTeams().should.be.fulfilled;
