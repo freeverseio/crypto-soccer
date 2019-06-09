@@ -44,10 +44,10 @@ type Config struct {
 
 func MustRead(c *cli.Context) error {
 	configfile := strings.TrimSuffix(c.GlobalString("config"), ".yaml")
-	return readConfig(configfile)
+	return ReadConfig(configfile)
 }
 
-func readConfig(configfile string) error {
+func ReadConfig(configfile string) error {
 	if len(configfile) == 0 {
 		configfile = "config"
 	}
