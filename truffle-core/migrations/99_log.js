@@ -20,13 +20,14 @@ module.exports = function (deployer) {
     console.log(deployer)
 
     config = {};
+    config.network = deployer.networks[deployer.network];
     config.assetsContractAddress = Assets.address;
     config.statesContractAddress = States.address;
     config.engineContractAddress = Engine.address;
     config.gameControllerContractAddress = GameController.address;
     config.leaguesContractAddress = Leagues.address;
     config.stakersContractAddress = Stakers.address;
-    await fs.writeFileSync("../migrate_" + deployer.network + ".json",JSON.stringify(config, null, 4));
+    await fs.writeFileSync("./migration.json",JSON.stringify(config, null, 4));
 
     console.log(log);
   })
