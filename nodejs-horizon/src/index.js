@@ -6,7 +6,7 @@ const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.
 const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
 const leaguesJSON = require('../../truffle-core/build/contracts/Leagues.json');
 const HDWalletProvider = require("truffle-hdwallet-provider");
-const config = require("../config.json");
+const config = require("../../config/config.json");
 
 const {
   providerUrl,

@@ -1,8 +1,0 @@
-{
-    "providerUrl": "http://localhost:8545",
-    "privateKey": "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54",
-    "address": "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
-    "assetsContractAddress": "0x989287a11BD70fdd4ABe75f52D2015389f507457",
-    "statesContractAddress": "0xdB37123dCFB19287BD2AEc093B67778c5Cb848F7",
-    "leaguesContractAddress": "0xA63A7526aeBcB69A0AEF9a951474E0c062Ba6eda"
-}
