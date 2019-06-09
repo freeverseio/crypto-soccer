@@ -17,13 +17,15 @@ const {
   leaguesContractAddress
 } = config;
 
-console.log("providerUrl: ", providerUrl);
-console.log("sender address: ", address);
-console.log("🔥  private key: ", privateKey);
-console.log("states address: ", statesContractAddress);
-console.log("assets address: ", assetsContractAddress);
-console.log("leagues address: ", leaguesContractAddress);
+console.log("--------------------------------------------------------");
+console.log("providerUrl       : ", providerUrl);
+console.log("account           : ", address);
+console.log("🔥  account p.k.  : ", privateKey);
+console.log("states address    : ", statesContractAddress);
+console.log("assets address    : ", assetsContractAddress);
+console.log("leagues address   : ", leaguesContractAddress);
 
+console.log("--------------------------------------------------------");
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
 const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress);
