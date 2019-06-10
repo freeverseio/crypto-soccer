@@ -19,7 +19,6 @@ func (s *Service) process() (bool, error) {
 	}
 
 	for i := uint64(0); i < legueCount; i++ {
-		log.Info("Scanning league #", i)
 
 		// find free staker
 		staker, err := s.stakers.NextFreeStaker()
@@ -30,6 +29,7 @@ func (s *Service) process() (bool, error) {
 			break
 		}
 
+		log.Info("Scanning league #", i)
 		// process update events ---------------------------------------
 		canBeUpdated, err := s.lionel.CanLeagueBeUpdated(i)
 		if err == nil {
@@ -57,15 +57,6 @@ func (s *Service) process() (bool, error) {
 
 	//  -------------------------------------------------------------------
 	for _, staker := range s.stakers.Members() {
-		needsTouch, err := s.stakers.NeedsTouch(staker.Address)
-		if err != nil {
-			log.Error("Failed NeedsTouch: ", err)
-		} else if needsTouch {
-			if err = s.stakers.Touch(staker.Address); err != nil {
-				log.Error("Failed Touch: ", err)
-			}
-			continue
-		}
 		needsResolve, err := s.stakers.NeedsResolve(staker.Address)
 		if err != nil {
 			log.Error("Failed NeedsResolve: ", err)
@@ -75,6 +66,16 @@ func (s *Service) process() (bool, error) {
 			}
 			continue
 		}
+		needsTouch, err := s.stakers.NeedsTouch(staker.Address)
+		if err != nil {
+			log.Error("Failed NeedsTouch: ", err)
+		} else if needsTouch {
+			if err = s.stakers.Touch(staker.Address); err != nil {
+				log.Error("Failed Touch: ", err)
+			}
+			continue
+		}
+
 	}
 
 	return true, nil

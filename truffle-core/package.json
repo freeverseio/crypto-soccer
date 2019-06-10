@@ -22,7 +22,6 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
-    "chai-bn": "^0.1.1",
-    "eth-gas-reporter": "^0.1.12"
+    "chai-bn": "^0.1.1"
   }
 }

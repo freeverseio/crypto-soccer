@@ -70,14 +70,20 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 
 	var err error
 
+	log.Debug("Update step 0\n")
+
 	var teamIdxs []*big.Int
 	if err := l.leagues.Call(&teamIdxs, "getTeams", big.NewInt(int64(leagueIdx))); err != nil {
 		return err
 	}
+
+	log.Debug("Update step 1\n")
 	var countLeagueDays *big.Int
 	if err := l.leagues.Call(&countLeagueDays, "countLeagueDays", big.NewInt(int64(leagueIdx))); err != nil {
 		return err
 	}
+
+	log.Debug("Update step 2\n")
 
 	userActions := []sto.UserActions{}
 	for teamNo := 0; teamNo < len(teamIdxs); teamNo++ {
@@ -90,10 +96,14 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 		})
 	}
 
+	log.Debug("Update step 3\n")
+
 	isLier, err := l.stakers.IsLier(staker)
 	if err != nil {
 		return err
 	}
+
+	log.Debug("Update step 4\n")
 
 	res, err := l.ComputeLeague(
 		big.NewInt(int64(leagueIdx)),
@@ -101,9 +111,14 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 		userActions,
 		isLier,
 	)
+
+	log.Debug("Update step 5\n")
+
 	if err != nil {
 		return err
 	}
+
+	log.Debug("Update step 6\n")
 
 	stk := l.stakers.Get(staker)
 
@@ -114,7 +129,10 @@ func (l *Lionel) Update(staker common.Address, leagueIdx uint64) error {
 		res.initStatesHash,
 		res.statesAtMatchdayHashes,
 		res.scores,
+		isLier,
 	)
+
+	log.Debug("Update step 7\n")
 
 	fmt.Printf("updateLeague leagueIdx: %v\n", leagueIdx)
 	fmt.Printf("updateLeague initStatesHash: %v\n", hex.EncodeToString(res.initStatesHash[:]))
@@ -166,14 +184,17 @@ func (l *Lionel) CanLeagueBeUpdated(leagueNo uint64) (bool, error) {
 
 	var hasFinished bool
 	if err := l.leagues.Call(&hasFinished, "hasFinished", leagueNoNum); err != nil {
+		fmt.Println("*err1", l.leagues.Address().Hex(), leagueNo)
 		return false, err
 	}
 	var isUpdated bool
 	if err := l.leagues.Call(&isUpdated, "isUpdated", leagueNoNum); err != nil {
+		fmt.Println("*err2", leagueNo)
 		return false, err
 	}
 	var isVerified bool
 	if err := l.leagues.Call(&isVerified, "isVerified", leagueNoNum); err != nil {
+		fmt.Println("*err3", leagueNo)
 		return false, err
 	}
 	return hasFinished && !isUpdated && !isVerified, nil

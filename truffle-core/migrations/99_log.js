@@ -1,4 +1,5 @@
 const fs = require('fs');
+const Assets = artifacts.require('Assets');
 const States = artifacts.require('LeagueState');
 const Engine = artifacts.require('Engine');
 const GameController = artifacts.require("GameController");
@@ -7,17 +8,18 @@ const Stakers = artifacts.require('Stakers');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-      let log = "--------------------------------" + "\n";
-      log += "States:         " + States.address + "\n";
-      log += "Engine:         " + Engine.address + "\n";
-      log += "GameController: " + GameController.address + "\n";
-      log += "Leagues:        " + Leagues.address + "\n";
-      log += "Stakers:        " + Stakers.address + "\n";
-      log += "--------------------------------";
-
-      fs.writeFileSync('deploy_addresses.txt', log);
-      console.log(log);
-    })
+    console.log("");
+    console.log("🚀  Deployed on:", deployer.network)
+    console.log("------------------------");
+    config = {};
+    config.assetsContractAddress = Assets.address;
+    config.statesContractAddress = States.address;
+    config.engineContractAddress = Engine.address;
+    config.gameControllerContractAddress = GameController.address;
+    config.leaguesContractAddress = Leagues.address;
+    config.stakersContractAddress = Stakers.address;
+    console.log(JSON.stringify(config, null, 4));
+  })
     .catch(console.error);
 };
 

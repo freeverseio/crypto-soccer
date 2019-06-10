@@ -40,7 +40,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         uint256 leagueDay, 
         uint256[] memory initleagueState, 
         uint8[3][] memory tactics,
-        bytes32 seed
+        uint256 seed
     )
         public
         view
@@ -53,7 +53,7 @@ contract LeaguesComputerMock is LeaguesComputer {
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
         uint8[3][] memory tactics,
-        bytes32 seed
+        uint256 seed
     )
         public
         view
