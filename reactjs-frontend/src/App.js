@@ -1,7 +1,7 @@
 import React from 'react';
 import ApolloClient, { gql } from "apollo-boost";
 import { ApolloProvider, Query } from "react-apollo";
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import './App.css';
 
 const client = new ApolloClient({
@@ -11,7 +11,7 @@ const client = new ApolloClient({
 const App = () => (
   <ApolloProvider client={client}>
     <div>
-      <h2>My first Apollo app 🚀</h2>
+      <h2>My first Apollo app</h2>
       <Query
         query={gql`
           {
