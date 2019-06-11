@@ -44,6 +44,9 @@ jobs:
           name: Setup reactjs-frontend
           command: cd reactjs-frontend && npm install
       - run:
+          name: Test reactjs-frontend
+          command: cd reactjs-frontend && npm test
+      - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
 
