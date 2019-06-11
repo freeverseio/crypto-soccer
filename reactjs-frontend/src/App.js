@@ -5,7 +5,7 @@ import { ApolloProvider, Query } from "react-apollo";
 import './App.css';
 
 const client = new ApolloClient({
-  uri: "http://192.168.10.204:4000/"
+  uri: "http://localhost:4000/"
 });
 
 const App = () => (
