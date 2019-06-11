@@ -9,7 +9,6 @@ const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
 const Cronos = artifacts.require('Cronos');
 const GameController = artifacts.require('GameController');
-const Stakers = artifacts.require("Stakers")
 
 const UNENROLLED       = 0;
 const ENROLLING        = 1;
@@ -42,12 +41,10 @@ contract('IntegrationTest', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         cronos = await Cronos.new().should.be.fulfilled;        
-        gameController = await GameController.new().should.be.fulfilled;
-        stakers = await Stakers.new(gameController.address);
+        stakers = await GameController.new(leagues.address).should.be.fulfilled;
         stake = await stakers.REQUIRED_STAKE();
 
-        await gameController.setStakersContractAddress(stakers.address);
-        await leagues.setStakersContract(gameController.address).should.be.fulfilled;
+        await leagues.setStakersContract(stakers.address).should.be.fulfilled;
 
         await stakers.enroll(onion2,{from:bob, value:stake});
         await stakers.enroll(onion3,{from:alice, value:stake});

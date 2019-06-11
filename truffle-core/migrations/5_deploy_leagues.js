@@ -6,7 +6,8 @@ const Leagues = artifacts.require('Leagues');
 module.exports = function (deployer) {
   deployer.then(async () => {
       const leagues = await deployer.deploy(Leagues, Engine.address, States.address);
-      await leagues.setStakersContract(GameController.address);
+      const gameController = await deployer.deploy(GameController, leagues.address);
+      await leagues.setStakersContract(gameController.address);
     })
     .catch(console.error);
 };

@@ -177,7 +177,7 @@ contract Stakers {
 
     // game functions  ---------------------------------------------------
 
-    function initChallenge(address _staker) external {
+    function initChallenge(address _staker) public {
         require(msg.sender == game,ERR_BADSENDER);
 
         State st = state(_staker,block.timestamp);
@@ -188,7 +188,7 @@ contract Stakers {
         require(state(_staker,block.timestamp)==State.CHALLENGE_TT,ERR_POSTCOND);
     }
 
-    function lierChallenge(address _staker) external {
+    function lierChallenge(address _staker) public {
         require(msg.sender == game,ERR_BADSENDER);
 
         State st = state(_staker,block.timestamp);
