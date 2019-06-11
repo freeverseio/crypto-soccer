@@ -1,8 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "./StakersInterface.sol";
-
-contract Stakers is StakersInterface {
+contract Stakers {
 
     // constants ---------------------------------------------------------------
 

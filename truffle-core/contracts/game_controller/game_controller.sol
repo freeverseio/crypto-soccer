@@ -1,7 +1,7 @@
 pragma solidity ^ 0.5.0;
 
 import "./GameControllerInterface.sol";
-import "./StakersInterface.sol";
+import "./Stakers.sol";
 
 // TODOs:
 // 1. Restricted window updates is still missing
@@ -58,13 +58,13 @@ contract GameController is GameControllerInterface {
   // ----------------- internal/protected functions -----------------------
   function updated(uint256 _id, uint256 _windowStart, address _updater) external onlyIfStakersAddressValid {
     // checkUpdateWindow(_windowStart, _updater);
-    StakersInterface(stakersContractAddress).initChallenge(_updater);
+    Stakers(stakersContractAddress).initChallenge(_updater);
     id2staker[_id] = _updater;
     emit UpdateEvent(_id, _updater);
   }
 
   function challenged(uint256 _id) external onlyIfStakersAddressValid {
-    StakersInterface(stakersContractAddress).lierChallenge(id2staker[_id]); // will revert if _updater was not in challengable state
+    Stakers(stakersContractAddress).lierChallenge(id2staker[_id]); // will revert if _updater was not in challengable state
     emit ChallengeEvent(_id, id2staker[_id]);
   }
 
