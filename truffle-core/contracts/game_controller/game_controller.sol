@@ -1,7 +1,7 @@
 pragma solidity ^ 0.5.0;
 
 import "./GameControllerInterface.sol";
-import "../stakers/StakersInterface.sol";
+import "./StakersInterface.sol";
 
 // TODOs:
 // 1. Restricted window updates is still missing
