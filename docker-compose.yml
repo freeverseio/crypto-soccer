@@ -1,0 +1,18 @@
+version: '3'
+services:
+  horizon:
+    build: 
+      context: .
+      dockerfile: Dockerfile.horizon
+    ports:
+      - "4000:4000"
+  gosoccer:
+    build: 
+      context: .
+      dockerfile: Dockerfile.gosoccer
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
