@@ -11,8 +11,7 @@ func TestCreateTeam(t *testing.T) {
 		t.Error(err)
 	}
 
-	id := 1
-	err = CreateTeam(id, "Barca")
+	err = CreateTeam(1, "Barca")
 	if err != nil {
 		t.Error(err)
 	}
