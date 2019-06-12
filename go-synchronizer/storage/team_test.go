@@ -21,7 +21,20 @@ func TestCreateTeam(t *testing.T) {
 		t.Error(err)
 	}
 
-	if(rows.Next()){
-		t.Error("I can get a line of empty db")
+	if(!rows.Next()){
+		t.Error("team not created")
+	}
+
+	var id int
+	var name string
+	err = rows.Scan(&id, &name)
+	if err != nil {
+		t.Error(err)
+	}
+	if id != 1 {
+		t.Error("wrong id:", id)
+	}
+	if name != "Barca" {
+		t.Error("wrong name:", name)
 	}
 }
