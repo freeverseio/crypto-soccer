@@ -19,10 +19,10 @@ func TestNewAssets(t *testing.T) {
 		log.Fatalf("Failed to instantiate a Token contract: %v", err)
 	}
 
-	count, err := assets.CountTeams(nil)
+	_, err = assets.CountTeams(nil)
 	if err != nil {
 		log.Fatalf("Failed to retrieve token name: %v", err)
 	}
 
-	t.Error("number of teams : ", count)
+	// t.Error("number of teams : ", count)
 }

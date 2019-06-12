@@ -5,15 +5,17 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	url := "ffff"
-	err := Init(url)
-	if err == nil {
-		t.Error("I can connect with " + url)
+	if db != nil {
+		t.Error("db variable is not nil")
 	}
 
-	url = "postgres://freeverse:freeverse@localhost/cryptosoccer"
-	err = Init(url)
+	url := "postgres://freeverse:freeverse@localhost/cryptosoccer"
+	err := Init(url)
 	if err != nil {
 		t.Error(err)
+	}
+
+	if db == nil {
+		t.Error("db variable is not initialized")
 	}
 }
