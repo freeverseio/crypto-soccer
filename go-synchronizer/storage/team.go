@@ -14,3 +14,14 @@ func CreateTeam(id int, name string) error {
 
 	return nil;
 }
+
+func CountTeams() (int, error) {
+	count := 0
+	row := db.QueryRow("SELECT COUNT(*) FROM teams;")
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
