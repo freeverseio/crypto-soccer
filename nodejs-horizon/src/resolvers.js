@@ -99,8 +99,14 @@ function Resolvers({
     initBlock: (id) => leagues.methods.getInitBlock(id).call(),
     step: (id) => leagues.methods.getStep(id).call(),
     nTeams: (id) => leagues.methods.getNTeams(id).call(),
-    scores: id => {
-      return {home: 4, visitor: 3}
+    scores: async (id) => {
+      const result = await leagues.methods.getScores(id).call();
+      let scores = [];
+      for (let i=0 ; i < result.length ; i++) {
+        const score = await leagues.methods.decodeScore(result[i]).call();
+        scores.push({home: Number(score.home), visitor: Number(score.visitor)})
+      }
+      return scores;
     }
   };
 }
