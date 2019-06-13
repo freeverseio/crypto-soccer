@@ -186,15 +186,15 @@ describe('assets resolvers', () => {
         it('step', async () => {
             await resolvers.League.step(0).should.be.rejected;
             const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
-            const initBLock = await resolvers.League.step(id).should.be.fulfilled;
-            initBLock.should.be.equal('20');
+            const result = await resolvers.League.step(id).should.be.fulfilled;
+            result.should.be.equal('20');
         });
 
-        it('step', async () => {
+        it('nTeams', async () => {
             await resolvers.League.nTeams(0).should.be.rejected;
             const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
-            const initBLock = await resolvers.League.nTeams(id).should.be.fulfilled;
-            initBLock.should.be.equal('2');
+            const result = await resolvers.League.nTeams(id).should.be.fulfilled;
+            result.should.be.equal('2');
         });
     });
 });
