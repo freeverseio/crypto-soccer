@@ -1,5 +1,22 @@
 package storage
 
+import (
+    "database/sql"
+    _ "github.com/lib/pq"
+)
+
+var db *sql.DB
+
+func Init(url string) error {
+	var err error
+	db, err = sql.Open("postgres", url)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type Team struct {  
 	ID    string  `db:"id"` 
 	Name  string  `db:"name"`
@@ -15,8 +32,8 @@ func CreateTeam(id int, name string) error {
 	return nil;
 }
 
-func CountTeams() (int, error) {
-	count := 0
+func CountTeams() (uint64, error) {
+	var count uint64
 	row := db.QueryRow("SELECT COUNT(*) FROM teams;")
 	err := row.Scan(&count)
 	if err != nil {

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	log "github.com/sirupsen/logrus"
+	_ "github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	_ "github.com/freeverseio/crypto-soccer/go-synchronizer/process"
+	_ "github.com/sirupsen/logrus"
 )
 
 func main() {
-	connStr := "user=postgres dbname=cryptosoccer"
-	err := storage.Init(connStr)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// connStr := "user=postgres dbname=cryptosoccer"
+	// err := storage.Init(connStr)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 }
