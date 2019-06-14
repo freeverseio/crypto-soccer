@@ -119,8 +119,8 @@ def test2():
 
     # receive the first action! Every time it arrives to the Client, it acumulates it
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
-
 
     # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
     # From verse 0 to 26:

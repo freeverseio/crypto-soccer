@@ -168,6 +168,13 @@ class LeagueClient(League):
     def writeDataToChallengeInitStates(self, dataToChallengeInitStates):
         self.dataToChallengeInitStates = dataToChallengeInitStates
 
+# The VerseCommit basically stores the merkle roots of all actions corresponding to a league starting at that moment
+# The Merkle Roots are computed from the leafs:
+#
+#  leafs = [ [leagueIdx0, allActionsInLeagueIdx0], ..., ]
+#
+#  where allActionsInLeagueIdx0 = [action0, action1, action2,...]
+
 class VerseCommit:
     def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
         self.actionsMerkleRoots = actionsMerkleRoots
@@ -181,6 +188,11 @@ class VerseCommitClient(VerseCommit):
 
 
 # The Accumulator is responsible for receving user actions and committing them in the correct verse.
+# An action is a struct:
+#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,NPLAYERS_PER_TEAM], "tactics": 3}
+#       where "tactics" is an int < 16. For example, tactics = 1 means (4,4,2).
+#
+# The buffer is an array that maintains:  buffer[leagueIdx] = [action0, action1, ...]
 class ActionsAccumulator():
     def __init__(self):
         self.buffer                     = {}
@@ -272,6 +284,10 @@ class Storage(Counter):
         )
 
 
+    # note that values = actionsAtSelectedMatchday, formated so that is has the form
+    # {idx: actionsAtSelectedMatchday}, where idx is the leaf idx.
+    # so it should happen that both things coincide.
+
     def challengeMatchdayStates(self,
             leagueIdx,
             selectedMatchday,
@@ -283,6 +299,11 @@ class Storage(Counter):
         assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
+
+        assert len(merkleProofDataForMatchday.values.values()) == 1, "We should have data from 1 single league"
+        for leafIdx in merkleProofDataForMatchday.values.keys():
+            actions = merkleProofDataForMatchday.values.get(leafIdx)
+        pylio.serialHash(actions[1]) ==  pylio.serialHash(actionsAtSelectedMatchday)
 
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
@@ -1005,7 +1026,8 @@ class Storage(Counter):
 
     # The CLIENT:
     # - computes all games of the league,
-    # - stores both the pre-hash and the hashed data
+    # - in particular, all DataAtMatchdays => for every matchday: all teams states, tactics, teamOrders.
+    # - stores both the pre-hash and the hashed DataAtMatchdays
     # - returns the hashed data so that it can then be send to the BC
     def updateLeagueInClient(self, leagueIdx, ADDR):
         self.assertIsClient()
