@@ -22,3 +22,7 @@ func (m *MemoryStorage) TeamAdd(ID uint64, name string) error {
 func (m *MemoryStorage) TeamCount() (uint64,error) {
 	return uint64(len(m.teams)),nil
 }
+
+func (m *MemoryStorage) GetTeam() (Team, error) {
+
+}
