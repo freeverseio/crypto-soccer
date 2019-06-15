@@ -24,5 +24,5 @@ func (m *MemoryStorage) TeamCount() (uint64,error) {
 }
 
 func (m *MemoryStorage) GetTeam() (Team, error) {
-
+	return Team{}, nil
 }
