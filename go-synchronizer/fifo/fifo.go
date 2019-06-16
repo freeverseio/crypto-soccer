@@ -1,16 +1,23 @@
 package fifo
 
+type Msg struct {
+
+}
+
 type Fifo struct {
+	fifo chan Msg
 }
 
-func FifoNew() *Fifo {
-	return &Fifo{}
+func FifoNew(bufferSize int) *Fifo {
+	return &Fifo{
+		fifo : make(chan Msg, bufferSize),
+	}
 }
 
-func (m *Fifo) push() error {
-	return nil
+func (m *Fifo) Push(msg Msg) {
+	m.fifo <- msg
 }
 
-func (m* Fifo) pop() error {
-	return nil
+func (m* Fifo) Pop() Msg {
+	return <-m.fifo
 }
