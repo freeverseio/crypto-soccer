@@ -2,7 +2,7 @@ package process
 
 import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/cryptosoccer/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 )
 
 type BackgroundProcess struct {
