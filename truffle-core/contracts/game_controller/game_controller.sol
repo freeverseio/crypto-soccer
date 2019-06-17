@@ -10,34 +10,18 @@ import "./Stakers.sol";
 
 contract GameController is GameControllerInterface, Stakers {
 
-  string constant ERR_NO_STAKERS         = "err-no-stakers-contract-set";
   string constant ERR_WINDOW_NOT_STARTED = "err-window-not-started";
   string constant ERR_WINDOW_FINISHED    = "err-window-finished";
   string constant ERR_WINDOW_RESTRICTED  = "err-window-restricted";
 
-  address constant kNullAddress = address(0x0);
   uint16 public constant kWindowBlocks = 100;
   uint16 public constant kWindowBlocksRestricted = 66;
-
-  address owner;
 
   mapping (uint256 => address) public id2staker;
 
   event UpdateEvent(uint256 id, address staker);
   event ChallengeEvent(uint256 id, address staker);
 
-  // ----------------- modifiers -----------------------
-
-  modifier onlyOwner {
-    require(msg.sender == owner,
-            "Only owner can call this function.");
-    _;
-  }
-
-  // ----------------- public functions -----------------------
-  constructor(address _game) public Stakers(_game) {
-    owner = msg.sender;
-  }
 
   // ----------------- internal/protected functions -----------------------
   function updated(uint256 _id, uint256 _windowStart, address _updater) external {
