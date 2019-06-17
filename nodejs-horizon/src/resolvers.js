@@ -17,6 +17,13 @@ function Resolvers({
     getPlayer: (_, { id }) => id,
     countLeagues: () => leagues.methods.leaguesCount().call(),
     getLeague: (_, { id }) => id,
+    allLeagues: async () => {
+      const count = await leagues.methods.leaguesCount().call();
+      let ids = [];
+      for (let i = 0; i < count; i++)
+        ids.push(i);
+      return ids;
+    }
   };
 
   this.Mutation = {
@@ -92,6 +99,15 @@ function Resolvers({
     initBlock: (id) => leagues.methods.getInitBlock(id).call(),
     step: (id) => leagues.methods.getStep(id).call(),
     nTeams: (id) => leagues.methods.getNTeams(id).call(),
+    scores: async (id) => {
+      const result = await leagues.methods.getScores(id).call();
+      let scores = [];
+      for (let i=0 ; i < result.length ; i++) {
+        const score = await leagues.methods.decodeScore(result[i]).call();
+        scores.push({home: Number(score.home), visitor: Number(score.visitor)})
+      }
+      return scores;
+    }
   };
 }
 

@@ -40,7 +40,8 @@ contract("stakers", (accounts) => {
     let stakers;
 
     beforeEach(async () => {
-        stakers = await Stakers.new(game, {from : game});
+        stakers = await Stakers.new({from:game});
+        stakers.setGameContractAddress(game, {from:game})
     });
 
     it("the happy path", async () => {

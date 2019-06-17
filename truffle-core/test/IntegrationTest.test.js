@@ -9,7 +9,6 @@ const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
 const Cronos = artifacts.require('Cronos');
 const GameController = artifacts.require('GameController');
-const Stakers = artifacts.require("Stakers")
 
 const UNENROLLED       = 0;
 const ENROLLING        = 1;
@@ -34,25 +33,24 @@ contract('IntegrationTest', (accounts) => {
     const onion0 = web3.utils.keccak256("hel24"); // finishes 2
     const onion1 = web3.utils.keccak256(onion0);  // finishes 0
     const onion2 = web3.utils.keccak256(onion1);  // finishes b
-    const onion3 = web3.utils.keccak256(onion2);  // finishes 
+    const onion3 = web3.utils.keccak256(onion2);  // finishes
 
     beforeEach(async () => {
         state = await State.new().should.be.fulfilled;
         assets = await Assets.new(state.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
-        cronos = await Cronos.new().should.be.fulfilled;        
-        gameController = await GameController.new().should.be.fulfilled;
-        stakers = await Stakers.new(gameController.address);
-        stake = await stakers.REQUIRED_STAKE();
+        cronos = await Cronos.new().should.be.fulfilled;
+        controller = await GameController.new(leagues.address).should.be.fulfilled;
+        await controller.setGameContractAddress(leagues.address).should.be.fulfilled;
+        stake = await controller.REQUIRED_STAKE();
 
-        await gameController.setStakersContractAddress(stakers.address);
-        await leagues.setStakersContract(gameController.address).should.be.fulfilled;
+        await leagues.setStakersContract(controller.address).should.be.fulfilled;
 
-        await stakers.enroll(onion2,{from:bob, value:stake});
-        await stakers.enroll(onion3,{from:alice, value:stake});
-        await stakers.enroll(onion3,{from:carol, value:stake});
-        await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber());
+        await controller.enroll(onion2,{from:bob, value:stake});
+        await controller.enroll(onion3,{from:alice, value:stake});
+        await controller.enroll(onion3,{from:carol, value:stake});
+        await jumpSeconds((await controller.MINENROLL_SECS()).toNumber());
     });
 
     // we use the values in the blockchain to generate the team status
@@ -203,8 +201,8 @@ contract('IntegrationTest', (accounts) => {
         verified.should.be.equal(false);
 
         console.log("challenging");
-        console.log("State Bob: " + await stakers.state(bob,0));
-        console.log("State Alice: " + await stakers.state(alice,0));
+        console.log("State Bob: " + await controller.state(bob,0));
+        console.log("State Alice: " + await controller.state(alice,0));
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
@@ -259,7 +257,7 @@ contract('IntegrationTest', (accounts) => {
 
         console.log("bob challenged");
 
-        await stakers.resolveChallenge(onion1, {from: bob}).should.be.fulfilled;
+        await controller.resolveChallenge(onion1, {from: bob}).should.be.fulfilled;
         console.log("bob reveal the secret");
 
         // A nicer UPDATER now tells the truth:
@@ -305,9 +303,9 @@ contract('IntegrationTest', (accounts) => {
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(true);
 
-        await jumpSeconds((await stakers.MAXIDLE_SECS()).toNumber());
-        // console.log("alice state : " + await stakers.state(alice,0));
-        await stakers.slash(alice, {from: bob}).should.be.fulfilled;
+        await jumpSeconds((await controller.MAXIDLE_SECS()).toNumber());
+        // console.log("alice state : " + await controller.state(alice,0));
+        await controller.slash(alice, {from: bob}).should.be.fulfilled;
         console.log("Alice slashed");
     });
 

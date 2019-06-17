@@ -52,13 +52,25 @@ describe('assets resolvers', () => {
         });
 
         it('get all teams', async () => {
-            const teams = await resolvers.Query.allTeams().should.be.fulfilled;
+            let teams = await resolvers.Query.allTeams().should.be.fulfilled;
+            teams.length.should.be.equal(0);
+            await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+            teams = await resolvers.Query.allTeams().should.be.fulfilled;
+            teams.length.should.be.equal(1);
         });
 
         it('countLeagues', async () => {
             const count = await resolvers.Query.countLeagues().should.be.fulfilled;
             count.should.be.equal('0');
         });
+
+        it('all leagues', async () => {
+            let leagues = await resolvers.Query.allLeagues().should.be.fulfilled;
+            leagues.length.should.be.equal(0);
+            await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            leagues = await resolvers.Query.allLeagues().should.be.fulfilled;
+            leagues.length.should.be.equal(1);
+        })
     });
 
     describe('Mutation', () => {
@@ -174,15 +186,15 @@ describe('assets resolvers', () => {
         it('step', async () => {
             await resolvers.League.step(0).should.be.rejected;
             const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
-            const initBLock = await resolvers.League.step(id).should.be.fulfilled;
-            initBLock.should.be.equal('20');
+            const result = await resolvers.League.step(id).should.be.fulfilled;
+            result.should.be.equal('20');
         });
 
-        it('step', async () => {
+        it('nTeams', async () => {
             await resolvers.League.nTeams(0).should.be.rejected;
             const id = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
-            const initBLock = await resolvers.League.nTeams(id).should.be.fulfilled;
-            initBLock.should.be.equal('2');
+            const result = await resolvers.League.nTeams(id).should.be.fulfilled;
+            result.should.be.equal('2');
         });
     });
 });

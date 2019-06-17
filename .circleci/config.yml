@@ -24,7 +24,7 @@ jobs:
           command: cd truffle-core && npm install
       - run:
           name: Compile truffle-core
-          command: cd truffle-core && ./node_modules/.bin/truffle build
+          command: cd truffle-core && ./node_modules/.bin/truffle compile
       - run:
           name: Test truffle-core
           command: cd truffle-core && ./node_modules/.bin/truffle test
@@ -40,5 +40,14 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+      - run:
+          name: Setup reactjs-frontend
+          command: cd reactjs-frontend && npm install
+      - run:
+          name: Test reactjs-frontend
+          command: cd reactjs-frontend && npm test
+      - run:
+          name: Build reactjs-frontend
+          command: cd reactjs-frontend && npm run build
 
 

@@ -8,6 +8,7 @@ const typeDefs = gql`
     getPlayer(id: ID!): Player
     countLeagues: String!
     getLeague(id: ID!): League
+    allLeagues: [League!]
   }
 
   type Mutation {
@@ -30,11 +31,17 @@ const typeDefs = gql`
     players: [Player!]
   }
 
+  type Score {
+    home: Int!
+    visitor: Int!
+  }
+
   type League {
     id: ID!
     initBlock: Int!
     step: Int!
     nTeams: Int!
+    scores: [Score!]
   }
   
   type Player {
