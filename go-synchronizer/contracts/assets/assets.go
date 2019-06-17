@@ -28,7 +28,7 @@ var (
 )
 
 // AssetsABI is the input ABI used to generate the binding from.
-const AssetsABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"NUM_SKILLS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"PLAYERS_PER_TEAM\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"playerState\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"teamName\",\"type\":\"string\"},{\"indexed\":false,\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"TeamCreation\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCreationTimestamp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCurrentHistory\",\"outputs\":[{\"name\":\"currentLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInCurrentLeague\",\"type\":\"uint8\"},{\"name\":\"prevLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInPrevLeague\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"playerId0\",\"type\":\"uint256\"},{\"name\":\"playerId1\",\"type\":\"uint256\"}],\"name\":\"exchangePlayersTeams\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"createTeam\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"posInLeague\",\"type\":\"uint8\"}],\"name\":\"signToLeague\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"name\",\"type\":\"string\"}],\"name\":\"getTeamOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"countTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamName\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"posInTeam\",\"type\":\"uint8\"}],\"name\":\"getPlayerIdFromTeamIdAndPos\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamPlayerIds\",\"outputs\":[{\"name\":\"playerIds\",\"type\":\"uint256[11]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"playerId\",\"type\":\"uint256\"}],\"name\":\"getPlayerState\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+const AssetsABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"NUM_SKILLS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"PLAYERS_PER_TEAM\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"playerState\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"TeamCreated\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCreationTimestamp\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCurrentHistory\",\"outputs\":[{\"name\":\"currentLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInCurrentLeague\",\"type\":\"uint8\"},{\"name\":\"prevLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInPrevLeague\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"playerId0\",\"type\":\"uint256\"},{\"name\":\"playerId1\",\"type\":\"uint256\"}],\"name\":\"exchangePlayersTeams\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"createTeam\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"posInLeague\",\"type\":\"uint8\"}],\"name\":\"signToLeague\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"name\",\"type\":\"string\"}],\"name\":\"getTeamOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"countTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamName\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"posInTeam\",\"type\":\"uint8\"}],\"name\":\"getPlayerIdFromTeamIdAndPos\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamPlayerIds\",\"outputs\":[{\"name\":\"playerIds\",\"type\":\"uint256[11]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"playerId\",\"type\":\"uint256\"}],\"name\":\"getPlayerState\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
 
 // Assets is an auto generated Go binding around an Ethereum contract.
 type Assets struct {
@@ -513,9 +513,9 @@ func (_Assets *AssetsTransactorSession) SignToLeague(teamId *big.Int, leagueId *
 	return _Assets.Contract.SignToLeague(&_Assets.TransactOpts, teamId, leagueId, posInLeague)
 }
 
-// AssetsTeamCreationIterator is returned from FilterTeamCreation and is used to iterate over the raw logs and unpacked data for TeamCreation events raised by the Assets contract.
-type AssetsTeamCreationIterator struct {
-	Event *AssetsTeamCreation // Event containing the contract specifics and raw log
+// AssetsTeamCreatedIterator is returned from FilterTeamCreated and is used to iterate over the raw logs and unpacked data for TeamCreated events raised by the Assets contract.
+type AssetsTeamCreatedIterator struct {
+	Event *AssetsTeamCreated // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -529,7 +529,7 @@ type AssetsTeamCreationIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AssetsTeamCreationIterator) Next() bool {
+func (it *AssetsTeamCreatedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -538,7 +538,7 @@ func (it *AssetsTeamCreationIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AssetsTeamCreation)
+			it.Event = new(AssetsTeamCreated)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -553,7 +553,7 @@ func (it *AssetsTeamCreationIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AssetsTeamCreation)
+		it.Event = new(AssetsTeamCreated)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -569,42 +569,41 @@ func (it *AssetsTeamCreationIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AssetsTeamCreationIterator) Error() error {
+func (it *AssetsTeamCreatedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AssetsTeamCreationIterator) Close() error {
+func (it *AssetsTeamCreatedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// AssetsTeamCreation represents a TeamCreation event raised by the Assets contract.
-type AssetsTeamCreation struct {
-	TeamName string
-	TeamId   *big.Int
-	Raw      types.Log // Blockchain specific contextual infos
+// AssetsTeamCreated represents a TeamCreated event raised by the Assets contract.
+type AssetsTeamCreated struct {
+	TeamId *big.Int
+	Raw    types.Log // Blockchain specific contextual infos
 }
 
-// FilterTeamCreation is a free log retrieval operation binding the contract event 0x46d7278a8c77d35e56c1a7bf3699d639520893a20903fe88510aca1341b283a0.
+// FilterTeamCreated is a free log retrieval operation binding the contract event 0x015c069c0e6438bd2d98e0c7b6526d4f7596120b3a6ac20fd43f2aa00450b813.
 //
-// Solidity: event TeamCreation(string teamName, uint256 teamId)
-func (_Assets *AssetsFilterer) FilterTeamCreation(opts *bind.FilterOpts) (*AssetsTeamCreationIterator, error) {
+// Solidity: event TeamCreated(uint256 teamId)
+func (_Assets *AssetsFilterer) FilterTeamCreated(opts *bind.FilterOpts) (*AssetsTeamCreatedIterator, error) {
 
-	logs, sub, err := _Assets.contract.FilterLogs(opts, "TeamCreation")
+	logs, sub, err := _Assets.contract.FilterLogs(opts, "TeamCreated")
 	if err != nil {
 		return nil, err
 	}
-	return &AssetsTeamCreationIterator{contract: _Assets.contract, event: "TeamCreation", logs: logs, sub: sub}, nil
+	return &AssetsTeamCreatedIterator{contract: _Assets.contract, event: "TeamCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchTeamCreation is a free log subscription operation binding the contract event 0x46d7278a8c77d35e56c1a7bf3699d639520893a20903fe88510aca1341b283a0.
+// WatchTeamCreated is a free log subscription operation binding the contract event 0x015c069c0e6438bd2d98e0c7b6526d4f7596120b3a6ac20fd43f2aa00450b813.
 //
-// Solidity: event TeamCreation(string teamName, uint256 teamId)
-func (_Assets *AssetsFilterer) WatchTeamCreation(opts *bind.WatchOpts, sink chan<- *AssetsTeamCreation) (event.Subscription, error) {
+// Solidity: event TeamCreated(uint256 teamId)
+func (_Assets *AssetsFilterer) WatchTeamCreated(opts *bind.WatchOpts, sink chan<- *AssetsTeamCreated) (event.Subscription, error) {
 
-	logs, sub, err := _Assets.contract.WatchLogs(opts, "TeamCreation")
+	logs, sub, err := _Assets.contract.WatchLogs(opts, "TeamCreated")
 	if err != nil {
 		return nil, err
 	}
@@ -614,8 +613,8 @@ func (_Assets *AssetsFilterer) WatchTeamCreation(opts *bind.WatchOpts, sink chan
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AssetsTeamCreation)
-				if err := _Assets.contract.UnpackLog(event, "TeamCreation", log); err != nil {
+				event := new(AssetsTeamCreated)
+				if err := _Assets.contract.UnpackLog(event, "TeamCreated", log); err != nil {
 					return err
 				}
 				event.Raw = log
