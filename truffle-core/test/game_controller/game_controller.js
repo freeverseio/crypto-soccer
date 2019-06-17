@@ -8,13 +8,14 @@ const ENROLLING        = 1;
 const ENROLLED         = 4;
 const ERR_BADSTATE     = "err-state"
 
+const ERR_NOGAME              = "err-nogame"
 const ERR_NO_STAKERS          = "err-no-stakers-contract-set";
 const ERR_WINDOW_NOT_STARTED  = "err-window-not-started";
 const ERR_WINDOW_FINISHED     = "err-window-finished";
 const ERR_WINDOW_RESTRICTED   = "err-window-restricted";
 
 contract('game_controller', (accounts) => {
-    const [owner, bob, alice] = accounts
+    const [owner, game, bob, alice] = accounts
 
     const onion0 = web3.utils.keccak256("hel24"); // finishes 2
     const onion1 = web3.utils.keccak256(onion0);  // finishes 0
@@ -22,57 +23,52 @@ contract('game_controller', (accounts) => {
     const onion3 = web3.utils.keccak256(onion2);  // finishes 1
 
     let controller
-    let stakers
 
     beforeEach(async () => {
-        controller = await GameController.new()
-        stakers = await Stakers.new(controller.address, {from:owner});
-        stake = await stakers.REQUIRED_STAKE()
+        controller = await GameController.new({from:owner})
+        stake = await controller.REQUIRED_STAKE()
 
         await truffleAssert.passes(
-          stakers.enroll(onion3,{from:bob, value:stake}),
+          controller.enroll(onion3,{from:bob, value:stake}),
           "failed to enroll"
         );
-         assert.equal(ENROLLING,await stakers.state(bob,0));
+         assert.equal(ENROLLING,await controller.state(bob,0));
     });
 
-    it("Tests invalid stakers address", async () => {
+    it("Tests can't update/challenge without game address", async () => {
         await truffleAssert.reverts(
           controller.updated(1, 0, bob),
-          ERR_NO_STAKERS,
+          ERR_NOGAME,
           "Stakers address is not valid so it should revert"
         )
         await truffleAssert.reverts(
           controller.challenged(1),
-          ERR_NO_STAKERS,
+          ERR_NOGAME,
           "Stakers address is not valid so it should revert"
         )
     })
 
-    it("Tests setting stakers address", async () => {
+    it("Tests setting game address", async () => {
         await truffleAssert.reverts(
-          controller.setStakersContractAddress(stakers.address, {from:bob})
-        )
-        await truffleAssert.passes(
-          controller.setStakersContractAddress(stakers.address, {from:owner})
+          controller.setGameContractAddress(game, {from:bob})
         )
         await truffleAssert.reverts(
-          controller.setStakersContractAddress("0x0000000000000000000000000000000000000000", {from:owner})
+          controller.setGameContractAddress("0x0000000000000000000000000000000000000000", {from:owner})
         )
+
+        controller.setGameContractAddress(game, {from:owner})
+
         assert.equal(
-          await controller.getStakersContractAddress(),
-          stakers.address,
+          await controller.getGameContractAddress(),
+          game,
           "Stakers contract address differs from expected"
         )
     })
 
     it("Tests updated and challenged", async () => {
+        controller.setGameContractAddress(game, {from:owner})
         const restrictedPeriod = (await controller.kWindowBlocksRestricted()).toNumber()
         const windowLength = (await controller.kWindowBlocks()).toNumber()
-
-        await truffleAssert.passes(
-          controller.setStakersContractAddress(stakers.address, {from:owner})
-        )
 
         latestBlock = await web3.eth.getBlock('latest')
         leagueStartBlock = latestBlock.number
@@ -90,8 +86,8 @@ contract('game_controller', (accounts) => {
         //   "League updated before league duration"
         // )
 
-        await jumpSeconds((await stakers.MINENROLL_SECS()).toNumber())
-        assert.equal(ENROLLED,await stakers.state(bob,0));
+        await jumpSeconds((await controller.MINENROLL_SECS()).toNumber())
+        assert.equal(ENROLLED,await controller.state(bob,0));
 
         // jump beyond restricted period
         await jumpBlocks(leagueDuration + restrictedPeriod + 1)
@@ -106,7 +102,7 @@ contract('game_controller', (accounts) => {
           "window should not be ended"
         )
         await truffleAssert.passes(
-          controller.updated(leagueId, windowStart, bob),
+          controller.updated(leagueId, windowStart, bob, {from:game}),
           "Failed updating league after league duration"
         )
         // await truffleAssert.reverts(
@@ -115,11 +111,11 @@ contract('game_controller', (accounts) => {
         //   "Was able to update before window start"
         // )
         await truffleAssert.passes(
-          controller.challenged(leagueId),
+          controller.challenged(leagueId, {from:game}),
           "Failed to challenge"
         )
         await truffleAssert.reverts(
-          controller.challenged(leagueId),
+          controller.challenged(leagueId, {from:game}),
           ERR_BADSTATE,
           "Alice was challenged without being an updater"
         )
