@@ -21,7 +21,7 @@ func AssetsMockNew() *AssetsMock {
 }
 
 	func (m *AssetsMock) CountTeams(opts *bind.CallOpts) (*big.Int, error) {
-		return big.NewInt(0), nil
+		return big.NewInt(1), nil
 	}
 
 func assert(t *testing.T,err error) {
