@@ -1,11 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "./StakersInterface.sol";
-
-contract Stakers is StakersInterface {
+contract Stakers {
 
     // constants ---------------------------------------------------------------
 
+    string constant ERR_NOGAME    = "err-nogame";
     string constant ERR_BADSTATE  = "err-state";
     string constant ERR_BADHASH   = "err-hash";
     string constant ERR_BADHFIN   = "err-hashfin";
@@ -43,25 +42,34 @@ contract Stakers is StakersInterface {
     // contract state  ---------------------------------------------------------------
 
     mapping(address=>Staker) public stakers;
-    address                  public game;
     address                  public owner;
+    address                  game;
 
     // constructor and state automata -----------------------------------------------
 
-    constructor(address _game) public {
-        game = _game;
+    constructor() public {
         owner = msg.sender;
     }
 
+    function setGameContractAddress(address _address) public {
+        require (_address != address(0x0), ERR_NOGAME);
+        require(msg.sender==owner,ERR_BADSENDER);
+        game = _address;
+    }
+
+    function getGameContractAddress() public view returns (address) {
+        return game;
+    }
+
     function updateParams(
-        uint256 requiered_stake, 
+        uint256 requiered_stake,
         uint256 minenroll_secs,
         uint256 maxidle_secs,
         uint256 minunroll_secs,
         uint256 maxchall_secs
     ) external {
         require(msg.sender==owner,ERR_BADSENDER);
-        
+
         REQUIRED_STAKE = requiered_stake;
         MINENROLL_SECS = minenroll_secs;
         MAXIDLE_SECS = maxidle_secs;
@@ -179,7 +187,8 @@ contract Stakers is StakersInterface {
 
     // game functions  ---------------------------------------------------
 
-    function initChallenge(address _staker) external {
+    function initChallenge(address _staker) public {
+        require (game != address(0x0),ERR_NOGAME);
         require(msg.sender == game,ERR_BADSENDER);
 
         State st = state(_staker,block.timestamp);
@@ -190,7 +199,8 @@ contract Stakers is StakersInterface {
         require(state(_staker,block.timestamp)==State.CHALLENGE_TT,ERR_POSTCOND);
     }
 
-    function lierChallenge(address _staker) external {
+    function lierChallenge(address _staker) public {
+        require (game != address(0x0),ERR_NOGAME);
         require(msg.sender == game,ERR_BADSENDER);
 
         State st = state(_staker,block.timestamp);
