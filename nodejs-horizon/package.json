@@ -17,6 +17,7 @@
     "web3": "1.0.0-beta.36"
   },
   "devDependencies": {
+    "apollo-server-testing": "^2.6.3",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bn": "^0.1.1",
