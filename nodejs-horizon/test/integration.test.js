@@ -1,0 +1,51 @@
+const ganache = require('ganache-cli');
+const BN = require('bn.js');
+require('chai')
+    .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
+    .should();
+const genesis = require('./Genesis');
+const Resolvers = require('../src/resolvers');
+const typeDefs = require('../src/schema');
+const { ApolloServer } = require('apollo-server');
+const { createTestClient } = require('apollo-server-testing');
+
+const identity = {
+    address: '0x3Abf1775944E2B2C15c05D044632831f0Dfc9130',
+    privateKey: '0x0a69684608770d018143dd70dc5dc5b6beadc366b87e45fcb567fc09407e7fe5'
+};
+
+// we preset the balance of our identities to 100 ether
+const provider = ganache.provider({
+    accounts: [{ secretKey: identity.privateKey, balance: '100000000000000000000000' }]
+});
+
+describe('assets resolvers', () => {
+    let query = null;
+    let mutate = null;
+
+    beforeEach(async () => {
+        // deploy contracts
+        const { states, assets, leagues } = await genesis(provider, identity.address).should.be.fulfilled;
+
+        const resolvers = new Resolvers({
+            states,
+            assets,
+            leagues,
+            from: identity.address
+        });
+        await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
+        const server = new ApolloServer({ typeDefs, resolvers });
+        const testClient = createTestClient(server);
+        query = testClient.query;
+        mutate = testClient.mutate;
+    });
+
+    describe('Query', () => {
+        it('Query', async () => {
+            const res = await query({ query: `{allTeams {id}}`, variables: { id: 1 } }).should.be.fulfilled;
+            res.data.allTeams.length.should.be.equal(1);
+            res.data.allTeams[0].id.should.be.equal('1');
+        });
+    });
+}); 
