@@ -35,6 +35,12 @@ jobs:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
       - run:
+          name: Compile go-synchronizer
+          command: cd go-synchronizer && go build
+      - run:
+          name: Test go-synchronizer
+          command: cd go-synchronizer && go test ./...
+      - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
       - run:

@@ -1,0 +1,44 @@
+package storage
+
+import (
+    "database/sql"
+    _ "github.com/lib/pq"
+)
+
+var db *sql.DB
+
+func Init(url string) error {
+	var err error
+	db, err = sql.Open("postgres", url)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type Team struct {  
+	ID    string  `db:"id"` 
+	Name  string  `db:"name"`
+}
+
+func CreateTeam(id int, name string) error {
+	//  TODO: check for db is initialized
+	_, err := db.Query("INSERT INTO teams (id, name) VALUES ($1, $2);", id, name)
+	if err != nil {
+	  	return err
+	}
+
+	return nil;
+}
+
+func CountTeams() (uint64, error) {
+	var count uint64
+	row := db.QueryRow("SELECT COUNT(*) FROM teams;")
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
