@@ -50,10 +50,10 @@ def printTeam(teamIdx, ST_CLIENT):
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
     for shirtNum in range(NPLAYERS_PER_TEAM):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-        playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx)
-        playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
-        assert ST_CLIENT.areLatestSkills(playerState, playerChallengeData), "Player state not correctly in sync"
-        hash += printPlayer(playerState)
+        playerSkills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx)
+        playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerSkills.getPlayerIdx())
+        assert ST_CLIENT.areLatestSkills(playerSkills, playerChallengeData), "Player state not correctly in sync"
+        hash += printPlayer(ST_CLIENT.skillsToLastWrittenState(playerSkills))
     return hash
 
 def isValidOrdering(playerOrders):
@@ -88,25 +88,25 @@ def getTeamsInMatch(matchday, match, nTeams):
     return team1, team2
 
 # mockup
-def playMatch(initPlayerStates1, initPlayerStates2, tactics1, tactics2, teamOrders1, teamOrders2, MatchSeed):
-    hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerStates1)+serialize2str(tactics1)+serialize2str(teamOrders1))
-    hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerStates2)+serialize2str(tactics2)+serialize2str(teamOrders2))
+def playMatch(initPlayerSkills1, initPlayerSkills2, tactics1, tactics2, teamOrders1, teamOrders2, MatchSeed):
+    hash1 = intHash(str(MatchSeed)+serialize2str(initPlayerSkills1)+serialize2str(tactics1)+serialize2str(teamOrders1))
+    hash2 = intHash(str(MatchSeed)+serialize2str(initPlayerSkills2)+serialize2str(tactics2)+serialize2str(teamOrders2))
     return hash1 % 4, hash2 % 4
 
 # mockup: the rating of a team is just the sum of all skills
-def computeTeamRating(playerStates):
-    return sum([sum(thisPlayerState.getSkills()) for thisPlayerState in playerStates])
+def computeTeamRating(playerSkills):
+    return sum([sum(thisPlayerSkills.getSkills()) for thisPlayerSkills in playerSkills])
 
 
-def addFixedPointsToAllPlayers(playerStates, points):
-    for playerState in playerStates:
+def addFixedPointsToAllPlayers(playerSkills, points):
+    for playerState in playerSkills:
         playerState.setSkills(playerState.getSkills() + points)
 
 
 # given the result, it computes the evolution points won per team, and applies them to their players
-def updatePlayerStatesAfterMatch(playerStates1, playerStates2, goals1, goals2):
-    ps1 = duplicate(playerStates1)
-    ps2 = duplicate(playerStates2)
+def updatePlayerSkillsAfterMatch(playerSkills1, playerSkills2, goals1, goals2):
+    ps1 = duplicate(playerSkills1)
+    ps2 = duplicate(playerSkills2)
 
     if goals1 == goals2:
         return ps1, ps2
@@ -133,18 +133,18 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
 
 # plays all games in a given matchday, using the provided input for how the teams
 # were right at the beginning of that matchday
-def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdaySeed):
-    nTeams = len(prevStates)
+def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
+    nTeams = len(prevSkills)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
-    statesAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
+    skillsAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
 
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
 
         goals1, goals2 = playMatch(
-            prevStates[team1],
-            prevStates[team2],
+            prevSkills[team1],
+            prevSkills[team2],
             tactics[team1],
             tactics[team2],
             teamOrders[team1],
@@ -152,14 +152,14 @@ def computeStatesAtMatchday(matchday, prevStates, tactics, teamOrders, matchdayS
             matchdaySeed
         )
         scores[match] = [goals1, goals2]
-        statesAtMatchday[team1], statesAtMatchday[team2] = \
-            updatePlayerStatesAfterMatch(
-                    prevStates[team1],
-                    prevStates[team2],
+        skillsAtMatchday[team1], skillsAtMatchday[team2] = \
+            updatePlayerSkillsAfterMatch(
+                    prevSkills[team1],
+                    prevSkills[team2],
                     goals1,
                     goals2
                 )
-    return statesAtMatchday, scores
+    return skillsAtMatchday, scores
 
 # checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):
@@ -225,7 +225,7 @@ def flatten(statesPerTeam):
     flatStates = []
     for statesTeam in statesPerTeam:
         for statePlayer in statesTeam:
-            flatStates.append(statePlayer)
+            flatStates.append(MinimalPlayerState(statePlayer)) # select only skills and playerIdx
     return flatStates
 
 
@@ -235,6 +235,7 @@ def certifyPlayerState(playerState, ST, ST_CLIENT):
     # As always we first derive the latest skills (from the last league played):
     playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerState.getPlayerIdx())
     # ...and then we update with whatever sales took place afterwards
+    # TONI TODO -- update with skills!
     playerChallengeDataUpdated = ST_CLIENT.updateChallengeDataAfterLastLeaguePlayed(playerChallengeData)
     assert ST.areLatestSkills(playerState, playerChallengeDataUpdated), "Computed player state by CLIENT is not recognized by BC.."
 
