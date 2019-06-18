@@ -20,7 +20,6 @@ func waitForInterrupt() {
 		done <- true
 	}()
 
-	log.Info("ctrl + c to interrupt")
 	<-done
 }
 
@@ -32,6 +31,7 @@ func main() {
 	log.Info("Start to process events ...")
 	process.Start()
 
+	log.Info("Press 'ctrl + c' to interrupt")
 	waitForInterrupt()
 
 	log.Info("Stop to process events ...")
