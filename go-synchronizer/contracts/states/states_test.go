@@ -1,4 +1,4 @@
-package assets
+package states
 
 import (
 	"log"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -21,23 +20,17 @@ func TestSimulatedBackend(t *testing.T) {
 	alloc[auth.From] = core.GenesisAccount{Balance: big.NewInt(1000000000)}
 	blockchain := backends.NewSimulatedBackend(alloc, gasLimit)
 
-	statesContractAddress := common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e")
 	//Deploy contract
-	_, _, contract, err := DeployAssets(
+	address, _, _, err := DeployStates(
 		auth,
 		blockchain,
-		statesContractAddress,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// commit all pending transactions
 	blockchain.Commit()
 
-	count, err := contract.CountTeams(nil)
-	if err != nil {
-		log.Fatalf("Failed to count teams: %v", err)
-	}
-	if count.Int64() != 0 {
-		t.Fatal("number of teams is not 0: ", count)
-	}
+	log.Fatal(address)
 }
