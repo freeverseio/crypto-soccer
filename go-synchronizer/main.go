@@ -37,11 +37,5 @@ func main() {
 	log.Info("Stop to process events ...")
 	process.StopAndJoin()
 
-	// connStr := "user=postgres dbname=cryptosoccer"
-	// err := storage.Init(connStr)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	log.Info("Exiting ...")
+	log.Info("... exiting")
 }
