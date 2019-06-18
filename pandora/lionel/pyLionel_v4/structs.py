@@ -1081,3 +1081,4 @@ class Storage(Counter):
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
+

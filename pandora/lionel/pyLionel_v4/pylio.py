@@ -33,6 +33,9 @@ def serialHash(obj):
 
 # ------------ Functions to print structs ------------
 
+def printPlayerFromSkills(ST_CLIENT, playerSkills):
+    return printPlayer(ST_CLIENT.skillsToLastWrittenState(playerSkills))
+
 # Simple player print
 def printPlayer(playerState):
     toPrint =  "PlayerIdx: %s\n" % str(playerState.getPlayerIdx())
@@ -53,7 +56,7 @@ def printTeam(teamIdx, ST_CLIENT):
         playerSkills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerSkills.getPlayerIdx())
         assert ST_CLIENT.areLatestSkills(playerSkills, playerChallengeData), "Player state not correctly in sync"
-        hash += printPlayer(ST_CLIENT.skillsToLastWrittenState(playerSkills))
+        hash += printPlayerFromSkills(ST_CLIENT, playerSkills)
     return hash
 
 def isValidOrdering(playerOrders):

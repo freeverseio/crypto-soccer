@@ -39,12 +39,13 @@ def test1():
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print("\n\nplayers 2 and 24 before sale:\n")
-    hash1 = printPlayer(ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
+
+    hash1 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print("\n")
-    hash2 = printPlayer(ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
+    hash2 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
 
     advanceNBlocks(10, ST, ST_CLIENT)
 
@@ -58,9 +59,9 @@ def test1():
     )
 
     print("\n\nplayers 2 and 24 after sale:\n")
-    hash3 = printPlayer(ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
+    hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
     print("\n")
-    hash4 = printPlayer(ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
+    hash4 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -466,7 +467,7 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 221)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
