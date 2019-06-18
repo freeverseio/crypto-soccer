@@ -1,28 +1,41 @@
 package main
 
 import (
-	_ "github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	_ "github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/fifo"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	log "github.com/sirupsen/logrus"
 )
 
+func waitForInterrupt() {
+	sigs := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigs
+		done <- true
+	}()
+
+	<-done
+}
+
 func main() {
-	log.Info("Start ...")
+	log.Info("Setup the synchronizer ...")
 
-	bufferSize := 1000;
+	process := process.BackgroundProcessNew()
 
-	log.Info("Creating the fifo with buffer size ", bufferSize)
+	log.Info("Start to process events ...")
+	process.Start()
 
-	fifo := fifo.FifoNew(bufferSize)
+	log.Info("Press 'ctrl + c' to interrupt")
+	waitForInterrupt()
 
-	log.Info(fifo)
-	
-	// connStr := "user=postgres dbname=cryptosoccer"
-	// err := storage.Init(connStr)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	log.Info("Stop to process events ...")
+	process.StopAndJoin()
 
-	log.Info("Exiting ...")
+	log.Info("... exiting")
 }
