@@ -29,7 +29,7 @@ func main() {
 
 	process := process.BackgroundProcessNew()
 
-	// log.Info("Start to process events ...")
+	log.Info("Start to process events ...")
 	process.Start()
 
 	waitForInterrupt()
