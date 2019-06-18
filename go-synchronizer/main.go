@@ -5,31 +5,42 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/lib/pq"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/postgres"
 	log "github.com/sirupsen/logrus"
 )
 
 var ethereumClient = "https://devnet.busyverse.com/web3"
 var assetsContractAddress = "0x05Fdd4d2340bcA823802849c75F385561278c3aB"
+var postgresUrl = "user=postgres dbname=cryptosoccer"
 
 func main() {
 	log.Info("Setup ...")
-	log.Info("Dial the Ethereum client ", ethereumClient)
+
+	log.Info("Dial the Ethereum client: ", ethereumClient)
 	conn, err := ethclient.Dial(ethereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Assets bindings to ", assetsContractAddress)
+	log.Info("Creating Assets bindings to: ", assetsContractAddress)
 	assetsContract, err := assets.NewAssets(common.HexToAddress(assetsContractAddress), conn)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(assetsContract)
+	log.Info("Connecting to DBMS: ", postgresUrl)
+	storage, err := postgres.New(postgresUrl)
+	if err != nil {
+		log.Fatalf("Failed to connect to DBMS: %v", err)
+	}
+
+	process := process.BackgroundProcessNew(assetsContract, storage)
 
 	log.Info("Start to process events ...")
 	process.Start()
