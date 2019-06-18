@@ -107,8 +107,9 @@ class PlayerState(MinimalPlayerState):
 
 # teamIdx = 0 is the null team
 class Team():
-    def __init__(self, name):
+    def __init__(self, name, nowInMonthsUnixTime):
         self.name = name
+        self.monthOfTeamCreationInUnixTime = nowInMonthsUnixTime
         self.playerIdxs             = np.zeros(NPLAYERS_PER_TEAM, int)
         self.currentLeagueIdx       = 0
         self.teamPosInCurrentLeague = 0
@@ -255,7 +256,7 @@ class Storage(Counter):
         self.isClient = isClient
 
         # an array of Team structs, the first entry being the null team
-        self.teams = [Team("")]
+        self.teams = [Team("",0)]
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.
@@ -411,11 +412,11 @@ class Storage(Counter):
 
     # Given a seed, returns a balanced player.
     # It only deals with skills & age, not playerIdx.
-    def getPlayerStateFromSeed(self, seed):
+    def getPlayerStateFromSeed(self, seed, monthOfTeamCreationInUnixTime):
         newPlayerState = PlayerState()
         np.random.seed(seed)
-        years = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE)
-        newPlayerState.setMonth(years * 12)
+        monthsWhenTeamWasCreated = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE) * 12
+        newPlayerState.setMonth(monthOfTeamCreationInUnixTime-monthsWhenTeamWasCreated)
         skills = np.random.randint(0, AVG_SKILL - 1, N_SKILLS)
         excess = int((AVG_SKILL * N_SKILLS - skills.sum()) / N_SKILLS)
         skills += excess
@@ -427,7 +428,10 @@ class Storage(Counter):
         # Disregard his current team, just look at the team at moment of birth to build skills
         teamIdx, shirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx, forceAtBirth=True)
         seed = self.getPlayerSeedFromTeamAndShirtNum(self.teams[teamIdx].name, shirtNum)
-        playerState = pylio.duplicate(self.getPlayerStateFromSeed(seed))
+        playerState = pylio.duplicate(self.getPlayerStateFromSeed(
+            seed,
+            self.teams[teamIdx].monthOfTeamCreationInUnixTime
+        ))
         # Once the skills have been added, complete the rest of the player data
         playerState.setPlayerIdx(playerIdx)
         playerState.setCurrentTeamIdx(teamIdx)
@@ -637,7 +641,8 @@ class Storage(Counter):
     def createTeam(self, teamName, ownerAddr):
         assert pylio.intHash(teamName) not in self.teamNameHashToOwnerAddr, "You cannot create to teams with equal name!"
         teamIdx = len(self.teams)
-        self.teams.append(Team(teamName))
+        nowInMonthsUnixTime = 602
+        self.teams.append(Team(teamName, nowInMonthsUnixTime))
         self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
         return teamIdx
 
