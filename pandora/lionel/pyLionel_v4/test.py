@@ -389,10 +389,6 @@ def test2():
             advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
             ST_CLIENT.accumulateAction(action)
 
-        # dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-        # initStatesHash = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
-        # dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
-
         initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
 
         ST.updateLeague(

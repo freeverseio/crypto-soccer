@@ -749,6 +749,7 @@ class Storage(Counter):
     def createLeagueClient(self, verseInit, verseStep, usersInitData):
         self.assertIsClient()
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
+        assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
         self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
@@ -1034,7 +1035,8 @@ class Storage(Counter):
         assert self.hasLeagueFinished(leagueIdx), "cannot update a league that is not finished"
         assert not self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has already been updated"
         dataAtMatchdays, scores = self.computeAllMatchdayStates(leagueIdx)
-        initStatesHash          = pylio.serialHash(self.getInitPlayerStates(leagueIdx))
+        initStatesHash          = pylio.serialHash(self.leagues[leagueIdx].initPlayerStates)
+        assert initStatesHash == pylio.serialHash(self.getInitPlayerStates(leagueIdx)), "InitStates do not match at end of league compared to start of league"
         dataAtMatchdayHashes, lastDayTree = self.prepareHashesForDataAtMatchdays(dataAtMatchdays)
 
         self.updateLeague(
