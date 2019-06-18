@@ -21,16 +21,20 @@ func TestSimulatedBackend(t *testing.T) {
 	blockchain := backends.NewSimulatedBackend(alloc, gasLimit)
 
 	//Deploy contract
-	address, _, _, err := DeployStates(
+	_, _, contract, err := DeployStates(
 		auth,
 		blockchain,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// commit all pending transactions
 	blockchain.Commit()
 
-	log.Fatal(address)
+	isValid, err := contract.IsValidPlayerState(nil, big.NewInt(0))
+	if err != nil {
+		log.Fatal("Failed to call isValidPlayerState", err)
+	}
+	if isValid {
+		t.Fatal("invalid state is valid")
+	}
 }

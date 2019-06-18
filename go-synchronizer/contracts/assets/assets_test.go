@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-func TestSimulatedBackend(t *testing.T) {
+func TestDeplyAssets(t *testing.T) {
 	//Setup simulated block chain
 	var gasLimit uint64 = 8000029
 	key, _ := crypto.GenerateKey()
