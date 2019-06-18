@@ -5,26 +5,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Process(assetsContract Assets, sto storage.Storage){
-	log.Info("Process: called")
+func Process(assetsContract Assets, sto storage.Storage) {
+	log.Debug("Process: called")
 
+	log.Debug("Process: scanning the blockchain")
 	countTeams, err := assetsContract.CountTeams(nil)
 	if err != nil {
 		log.Fatalf("Failed to retrieve token name: %v", err)
 	}
 
+	log.Debug("Process: act on local storage")
 	for i := 0; i < int(countTeams.Uint64()); i++ {
-		sto.TeamAdd(uint64(i), "name")
+		err = sto.TeamAdd(uint64(i), "name")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-
-	// contractTeams, err := assetsContract.CountTeams(nil)
-	// if err != nil {
-	// 	log.Fatalf("Failed to retrieve token name: %v", err)
-	// }
-	// dbTeams, err := sto.TeamCount()
-	// for i:=contractTeams;i<dbTeams;i++ {
-	// 	teamName := fmt.Sptintf("team-%v",i)
-	// 	assert(t,sto.TeamAdd(i,teamName))
-	// }
-
 }
