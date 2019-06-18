@@ -12,10 +12,11 @@ type BackgroundProcess struct {
 	stopped        chan (bool)
 }
 
-func BackgroundProcessNew() *BackgroundProcess {
+func BackgroundProcessNew(assetsContract *assets.Assets) *BackgroundProcess {
 	return &BackgroundProcess{
-		queryStop: make(chan (bool)),
-		stopped:   make(chan (bool)),
+		assetsContract: assetsContract,
+		queryStop:      make(chan (bool)),
+		stopped:        make(chan (bool)),
 	}
 }
 

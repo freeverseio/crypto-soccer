@@ -1,11 +1,11 @@
 package process
 
-import(
+import (
 	"testing"
 )
 
 func TestBackgroundProcessNew(t *testing.T) {
-	process := BackgroundProcessNew()
+	process := BackgroundProcessNew(nil)
 	if process == nil {
 		t.Fatal("create background process returned nil")
 	}
