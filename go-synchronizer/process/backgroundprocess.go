@@ -29,7 +29,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				// log.Info("tick")
+				Process(b.assetsContract, b.storage)
 			}
 		}
 		b.stopped <- true

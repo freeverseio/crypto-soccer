@@ -20,7 +20,7 @@ var assetsContractAddress = "0x05Fdd4d2340bcA823802849c75F385561278c3aB"
 var postgresUrl = "user=postgres dbname=cryptosoccer"
 
 func main() {
-	log.Info("Setup ...")
+	log.Info("Starting ...")
 
 	log.Info("Dial the Ethereum client: ", ethereumClient)
 	conn, err := ethclient.Dial(ethereumClient)
