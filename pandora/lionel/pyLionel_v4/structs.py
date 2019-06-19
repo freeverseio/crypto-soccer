@@ -309,8 +309,8 @@ class Storage(Counter):
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
 
-    def commit(self, actionsHash):
-        self.VerseCommits.append(VerseCommit(actionsHash, self.currentBlock))
+    def commit(self, actionsRoot):
+        self.VerseCommits.append(VerseCommit(actionsRoot, self.currentBlock))
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
         assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
@@ -356,11 +356,12 @@ class Storage(Counter):
                 "Incorrect provided: dataAtPrevMatchday"
 
         actionsAtSelectedMatchday = merkleProofDataForMatchday.leaf[1]
-        if not actionsAtSelectedMatchday == 0:
-            for action in actionsAtSelectedMatchday:
-                teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
-                dataAtPrevMatchday.tacticsAtMatchday[teamPosInLeague] = action["tactics"]
-                dataAtPrevMatchday.teamOrdersAtMatchday[teamPosInLeague] = action["teamOrder"]
+        self.updateTactics(
+            dataAtPrevMatchday.tacticsAtMatchday,
+            dataAtPrevMatchday.teamOrdersAtMatchday,
+            actionsAtSelectedMatchday,
+            usersInitData
+        )
 
         dataAtPrevMatchday.skillsAtMatchday, scores = pylio.computeStatesAtMatchday(
             selectedMatchday,
@@ -387,7 +388,7 @@ class Storage(Counter):
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
         # Otherwise, read what's written in the playerState
-        # playerIdx = 0 andt teamdIdx = 0 are the null player and teams
+        # playerIdx = 0 and teamdIdx = 0 are the null player and teams
             self.assertTeamIdx(teamIdx)
             isPlayerIdxAssigned = self.teams[teamIdx].playerIdxs[shirtNum] != 0
             if isPlayerIdxAssigned:
@@ -502,7 +503,7 @@ class Storage(Counter):
             for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].leaf
-                assert playerSkills.getPlayerIdx() == playerIdx, "This data does not contain the required player"
+                assert playerSkills.getPlayerIdx() == playerIdx, "The playerIdx provided does not agree with what the BC expects"
                 # it makes sure that the state matches what the BC says about that player
                 if not self.areLatestSkills(dataToChallengeInitSkills[teamPosInLeague][shirtNum]):
                     return None
@@ -728,6 +729,14 @@ class Storage(Counter):
         lastWrittenPlayerState = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerSkills.getPlayerIdx())
         return self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
 
+    def updateTactics(self, tactics, teamOrders, actions, usersInitData):
+        if actions == 0:
+            return
+        for action in actions:
+            teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
+            tactics[teamPosInLeague] = action["tactics"]
+            teamOrders[teamPosInLeague] = action["teamOrder"]
+
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -838,7 +847,7 @@ class Storage(Counter):
         # TODO: make this less terribly slow
         leagueIdxs = []
         nLeagues = len(self.leagues)
-        for leagueIdx  in range(1,nLeagues): # bypass the first (dummy) league
+        for leagueIdx in range(1,nLeagues): # bypass the first (dummy) league
             if verse in self.getVersesForLeague(leagueIdx):
                 leagueIdxs.append(leagueIdx)
         return leagueIdxs
@@ -854,6 +863,9 @@ class Storage(Counter):
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
         leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
         leagueIdxAndActionsArray = []
+        # Builds two quantities.
+        #   - leagueIdxAndActionsArray, used to get the Merkle game
+        #   - self.leagues[leagueIdx].actionsPerMatchday to store the pre-hashes
         for leagueIdx in leaguesPlayingInThisVerse:
             if leagueIdx in self.Accumulator.buffer:
                 leagueIdxAndActionsArray.append([leagueIdx, self.Accumulator.buffer[leagueIdx]])
@@ -861,7 +873,6 @@ class Storage(Counter):
             else:
                 leagueIdxAndActionsArray.append([leagueIdx, 0])
                 self.leagues[leagueIdx].actionsPerMatchday.append(0)
-
 
         if leagueIdxAndActionsArray:
             tree = MerkleTree(leagueIdxAndActionsArray)
@@ -927,7 +938,8 @@ class Storage(Counter):
 
         skillsAtMatchday = initPlayerSkills
         for matchday in range(nMatchdays):
-            self.updateTacticsToMatchday(leagueIdx, tactics, teamOrders, matchday)
+            actionsInThisMatchday = pylio.duplicate(self.leagues[leagueIdx].actionsPerMatchday[matchday])
+            self.updateTactics(tactics, teamOrders, actionsInThisMatchday, self.leagues[leagueIdx].usersInitData)
             skillsAtMatchday, scores[matchday] = pylio.computeStatesAtMatchday(
                 matchday,
                 pylio.duplicate(skillsAtMatchday),
@@ -939,27 +951,14 @@ class Storage(Counter):
 
         return dataAtMatchdays, scores
 
-    def updateTacticsToMatchday(self, leagueIdx, tactics, teamOrders, matchday):
-        # TODO: check if this is reapeated in the update tested in a challenge
-        self.assertIsClient()
-        actionsInThisMatchday = pylio.duplicate(self.leagues[leagueIdx].actionsPerMatchday[matchday])
-        if actionsInThisMatchday == 0:
-            return
-        for action in actionsInThisMatchday:
-            teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], self.leagues[leagueIdx].usersInitData)
-            tactics[teamPosInLeague] = action["tactics"]
-            teamOrders[teamPosInLeague] = action["teamOrder"]
-
     # Data needed to challenge the init states of a league. If the player has never played before,
     # it's easy, otherwise, it needs to prove that his state is in the final states of a previous league...
+    # In all cases it returns an array [N_PLAyERS, nTeams] where each entry is a MerkleProof
     def prepareDataToChallengeLeagueInitSkills(self, leagueIdx):
         self.assertIsClient()
         thisLeague = pylio.duplicate(self.leagues[leagueIdx])
         nTeams = len(thisLeague.usersInitData["teamIdxs"])
         dataToChallengeInitSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
-        # dimensions: [team, nPlayersInTeam]
-        #   if that a given player is virtual, then it contains just its state
-        #   if not, it contains all states of prev league's team
         for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
             for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
                 if playerIdx == 0: # if never written in teams.playerIdxs array
@@ -980,8 +979,8 @@ class Storage(Counter):
         if prevLeagueIdx == 0:
             return MerkleProof([], 0, self.getPlayerSkillsAtEndOfLastLeague(playerIdx), 0)
         else:
-            skillsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
-            playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAtEndOfPrevLeague[teamPosInPrevLeague])
+            skillsAllTeamsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
+            playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAllTeamsAtEndOfPrevLeague[teamPosInPrevLeague])
             idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
 
             lastDayTree = self.leagues[prevLeagueIdx].lastDayTree

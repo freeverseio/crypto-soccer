@@ -120,6 +120,7 @@ def test2():
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
     action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
+    ST_CLIENT.accumulateAction(action01)
 
     # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
     # From verse 0 to 26:
@@ -465,7 +466,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 752)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 779)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
