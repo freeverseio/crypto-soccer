@@ -507,7 +507,7 @@ class Storage(Counter):
                 # it makes sure that the state matches what the BC says about that player
                 if not self.areLatestSkills(dataToChallengeInitSkills[teamPosInLeague][shirtNum]):
                     return None
-                initPlayerSkills[teamPosInLeague][playerPosInLeague] = playerSkills
+                initPlayerSkills[teamPosInLeague][shirtNum] = playerSkills
             teamPosInLeague += 1
         return pylio.duplicate(initPlayerSkills)
 
@@ -1069,7 +1069,7 @@ class Storage(Counter):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerState = self.getCurrentPlayerState(playerIdx)
-                initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
+                initPlayerStates[teamPosInLeague][shirtNum] = playerState
             teamPosInLeague += 1
         return initPlayerStates
 
