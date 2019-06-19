@@ -32,7 +32,10 @@ func TestScanTeamCreatedEmplyContract(t *testing.T) {
 	}
 	blockchain.Commit()
 
-	events := scanTeamCreated(contract)
+	events, err := scanTeamCreated(contract)
+	if err != nil {
+		t.Fatal("Scanning error: ", err)
+	}
 	if len(events) != 0 {
 		t.Fatalf("Scanning empty Assets contract returned %v events", len(events))
 	}
@@ -69,8 +72,12 @@ func TestScanTeamCreated1TeamCreated(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error creating team: ", err)
 	}
+	blockchain.Commit()
 
-	events := scanTeamCreated(contract)
+	events, err := scanTeamCreated(contract)
+	if err != nil {
+		t.Fatal("Scanning error: ", err)
+	}
 	if len(events) != 1 {
 		t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
 	}
