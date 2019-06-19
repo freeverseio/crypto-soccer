@@ -415,12 +415,13 @@ class Storage(Counter):
             # if player has been sold before playing any league, it'll conserve skills at birth,
             # but have different metadata in the other fields
             playerState = pylio.duplicate(self.playerIdxToPlayerState[playerIdx])
-            self.copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
-            return playerState
+            return self.copySkillsAndAgeFromTo(playerStateAtBirth, playerState)
 
     def copySkillsAndAgeFromTo(self, playerStateOrig, playerStateDest):
-        playerStateDest.setSkills(pylio.duplicate(playerStateOrig.getSkills()))
-        playerStateDest.setMonth(pylio.duplicate(playerStateOrig.getMonth()))
+        newPlayerState = pylio.duplicate(playerStateDest)
+        newPlayerState.setSkills(pylio.duplicate(playerStateOrig.getSkills()))
+        newPlayerState.setMonth(pylio.duplicate(playerStateOrig.getMonth()))
+        return newPlayerState
 
     # the skills of a player are determined by concat of teamName and shirtNum
     def getPlayerSeedFromTeamAndShirtNum(self, teamName, shirtNum):
@@ -712,7 +713,7 @@ class Storage(Counter):
 
     def certifyPlayerState(self, playerState, neededHashes, depth):
         # check that the skills inside playerState match the end of last league:
-        playerSkills = pylio.duplicate(MinimalPlayerState(playerState))
+        playerSkills = MinimalPlayerState(playerState)
         skillsMerkleProof = MerkleProof(neededHashes, depth, playerSkills, 0)
         assert self.areLatestSkills(skillsMerkleProof), "Computed player state by CLIENT is not recognized by BC.."
         # evolve skills to last written state in the BC
@@ -724,8 +725,7 @@ class Storage(Counter):
     # So we start with whatever state is currently written, and insert the skills from end of last league
     def skillsToLastWrittenState(self, playerSkills):
         lastWrittenPlayerState = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerSkills.getPlayerIdx())
-        self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
-        return lastWrittenPlayerState
+        return self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
 
 
     # ------------------------------------------------------------------------
@@ -747,10 +747,9 @@ class Storage(Counter):
     #toni. delete?
     def getCurrentPlayerState(self, playerIdx):
         self.assertIsClient()
-        currentSkills = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
+        currentSkills = pylio.duplicate(self.getPlayerSkillsAtEndOfLastLeague(playerIdx))
         lastBCState = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx))
-        self.copySkillsAndAgeFromTo(currentSkills, lastBCState)
-        return lastBCState
+        return self.copySkillsAndAgeFromTo(currentSkills, lastBCState)
 
     def getPlayerSkillsAtEndOfLastLeague(self, playerIdx):
         self.assertIsClient()
