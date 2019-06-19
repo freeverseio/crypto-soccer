@@ -317,9 +317,12 @@ def test2():
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    #TONI: player1State = ST_CLIENT.getCurrentPlayerState(1)
-    dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
+    # playerState = ST_CLIENT.getCurrentPlayerState(1)
+    # dataToChallengePlayerSkills = ST_CLIENT.computeDataToChallengePlayerSkills(1)
+    # ST.certifyPlayerState(playerState, dataToChallengePlayerSkills.neededHashes, dataToChallengePlayerSkills.depth)
+    # assert ST.areLatestSkills(dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player

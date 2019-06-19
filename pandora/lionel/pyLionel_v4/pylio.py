@@ -239,5 +239,13 @@ def verifyMerkleProof(root, merkleProof, hashFunction):
     values = {merkleProof.leafIdx: merkleProof.leaf}
     return verify(root, merkleProof.depth, values, merkleProof.neededHashes, hashFunction)
 
+# ------------
 
+# The CLIENT retrieves its last full player state, and sends a TX to the BC to make sure it can be certified
+# To do so, that TX includes the merkleProof that the player skills were part of a previous league last matchday hash.
+def assertPlayerStateInClientIsCertifiable(playerIdx, ST, ST_CLIENT):
+    playerState = ST_CLIENT.getCurrentPlayerState(playerIdx)
+    dataToChallengePlayerSkills = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx)
+    assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills.neededHashes, dataToChallengePlayerSkills.depth),\
+        "Current player state in CLIENT is not certifiable by BC.."
 

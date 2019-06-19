@@ -710,6 +710,22 @@ class Storage(Counter):
 
         return pylio.serialHash(updatedData)
 
+    def certifyPlayerState(self, playerState, neededHashes, depth):
+        # check that the skills inside playerState match the end of last league:
+        playerSkills = pylio.duplicate(MinimalPlayerState(playerState))
+        skillsMerkleProof = MerkleProof(neededHashes, depth, playerSkills, 0)
+        assert self.areLatestSkills(skillsMerkleProof), "Computed player state by CLIENT is not recognized by BC.."
+        # evolve skills to last written state in the BC
+        currentStateCertified = self.skillsToLastWrittenState(playerSkills)
+        return pylio.areEqualStructs(playerState, currentStateCertified)
+
+    # If we start from the state at the end of last played league, then only the skills remain unchanged.
+    # In general, the player can have been sold many times up to the current time.
+    # So we start with whatever state is currently written, and insert the skills from end of last league
+    def skillsToLastWrittenState(self, playerSkills):
+        lastWrittenPlayerState = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerSkills.getPlayerIdx())
+        self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
+        return lastWrittenPlayerState
 
 
     # ------------------------------------------------------------------------
@@ -728,12 +744,13 @@ class Storage(Counter):
         assert len(selectedSkills) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
         return selectedSkills[0]
 
+    #toni. delete?
     def getCurrentPlayerState(self, playerIdx):
         self.assertIsClient()
-        prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-        currentSkills = self.getPlayerSkillsAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
+        currentSkills = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
         lastBCState = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx))
-        return self.copySkillsAndAgeFromTo(currentSkills, lastBCState)
+        self.copySkillsAndAgeFromTo(currentSkills, lastBCState)
+        return lastBCState
 
     def getPlayerSkillsAtEndOfLastLeague(self, playerIdx):
         self.assertIsClient()
@@ -1010,14 +1027,6 @@ class Storage(Counter):
         dataAtMatchdayHashes.append(lastDayTree.root)
         return dataAtMatchdayHashes, lastDayTree
 
-    # If we start from the state at the end of last played league, then only the skills remain unchanged.
-    # In general, the player can have been sold many times up to the current time.
-    # So we start with whatever state is currently written, and insert the skills from end of last league
-    def skillsToLastWrittenState(self, playerSkills):
-        self.assertIsClient()
-        lastWrittenPlayerState = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerSkills.getPlayerIdx())
-        self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
-        return lastWrittenPlayerState
 
     # The CLIENT:
     # - computes all games of the league,
