@@ -616,8 +616,11 @@ class Storage(Counter):
                 return True
         return False
 
-
+    # Creates the league in the BC, storing only the hash of usersInitData
+    # It signs teams in League, which allows the BC to now that they're busy
+    # without 'seeing' the pre-hash usersInitData
     def createLeague(self, verseInit, verseStep, usersInitData):
+        assert verseInit > self.currentVerse, "League cannot start in the past"
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
         assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
@@ -744,7 +747,6 @@ class Storage(Counter):
         assert len(selectedSkills) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
         return selectedSkills[0]
 
-    #toni. delete?
     def getCurrentPlayerState(self, playerIdx):
         self.assertIsClient()
         currentSkills = pylio.duplicate(self.getPlayerSkillsAtEndOfLastLeague(playerIdx))
@@ -791,7 +793,7 @@ class Storage(Counter):
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
         assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
-        self.leagues.append( LeagueClient(verseInit, verseStep, usersInitData) )
+        self.leagues.append(LeagueClient(verseInit, verseStep, usersInitData))
         self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
         self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
         self.leagues[leagueIdx].writeDataToChallengeInitSkills(self.prepareDataToChallengeLeagueInitSkills(leagueIdx))
@@ -1066,10 +1068,7 @@ class Storage(Counter):
         for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                playerSkills = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
-                playerState = self.skillsToLastWrittenState(playerSkills)
-                if not self.isPlayerVirtual(playerIdx):
-                    assert self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx).currentTeamIdx == teamIdx, "Confusion in team for this playerIdx"
+                playerState = self.getCurrentPlayerState(playerIdx)
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState
             teamPosInLeague += 1
         return initPlayerStates
