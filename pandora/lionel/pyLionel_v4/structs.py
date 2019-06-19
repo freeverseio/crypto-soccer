@@ -168,19 +168,19 @@ class LeagueClient(League):
         self.dataToChallengeInitSkills = None
 
     def updateDataAtMatchday(self, dataAtMatchdays, scores):
-        self.dataAtMatchdays   = dataAtMatchdays
-        self.scores             = scores
+        self.dataAtMatchdays   = pylio.duplicate(dataAtMatchdays)
+        self.scores             = pylio.duplicate(scores)
 
     def writeInitState(self, initPlayerStates):
-        self.initPlayerStates = initPlayerStates
+        self.initPlayerStates = pylio.duplicate(initPlayerStates)
 
     def writeDataToChallengeInitSkills(self, dataToChallengeInitSkills):
-        self.dataToChallengeInitSkills = dataToChallengeInitSkills
+        self.dataToChallengeInitSkills = pylio.duplicate(dataToChallengeInitSkills)
 
     def getInitPlayerSkills(self):
         initSkills = []
         for team in self.initPlayerStates:
-            initSkills.append([MinimalPlayerState(state) for state in team])
+            initSkills.append([pylio.duplicate(MinimalPlayerState(state)) for state in team])
         return initSkills
 
 
@@ -500,14 +500,6 @@ class Storage(Counter):
             teamPosInLeague += 1
         return initPlayerSkills
 
-    # TODO: use this at some point to get current player state
-    def evolvePlayerStateSinceLastLeague(self, playerState):
-        if self.isPlayerVirtual(playerState.playerIdx):
-            return playerState
-        latestPlayerState = pylio.duplicate(self.playerIdxToPlayerState[playerState.playerIdx])
-        self.copySkillsAndAgeFromTo(playerState, latestPlayerState)
-        return latestPlayerState
-
     def getTeamPosInLeague(self, teamIdx, leagueUsersInitData):
         for tPos, tIdx in enumerate(leagueUsersInitData["teamIdxs"]):
             if teamIdx == tIdx:
@@ -673,9 +665,9 @@ class Storage(Counter):
             return dataToChallengePlayerState
         else:
             assert len(dataToChallengePlayerState.values)==1, "You should need only one item in the data2challenge"
-            playerState = list(dataToChallengePlayerState.values.values())[0]
-            assert playerState.getPlayerIdx() == playerIdx, "This data does not contain the required player"
-            return playerState
+            playerSkills = list(dataToChallengePlayerState.values.values())[0]
+            assert playerSkills.getPlayerIdx() == playerIdx, "This data does not contain the required player"
+            return playerSkills
 
     def getOwnerAddrFromTeamIdx(self, teamIdx):
         return self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx].name)]
@@ -740,13 +732,15 @@ class Storage(Counter):
         self.assertIsClient()
         self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
         self.leagues[leagueIdx].lastDayTree = lastDayTree
+        self.leagues[leagueIdx].initSkillsHash == pylio.serialHash(self.leagues[leagueIdx].getInitPlayerSkills())
+
         # the last matchday gives the final skills used to update all players:
         # After the end of the league, there could be other things, like sales, so we need to update
         # those (while keeping the skills as of last league's end)
         for skillsAtEndOfLeaguePerTeam in dataAtMatchdays[-1].skillsAtMatchday:
             for playerSkills in skillsAtEndOfLeaguePerTeam:
-                stateUpdatedAfterLeague = self.updateChallengeDataAfterLastLeaguePlayed(playerSkills)
-                self.playerIdxToPlayerState[playerSkills.getPlayerIdx()] = stateUpdatedAfterLeague
+                self.playerIdxToPlayerState[playerSkills.getPlayerIdx()] = \
+                    pylio.duplicate(self.skillsToLastWrittenState(playerSkills))
 
     def getPrevMatchdayData(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
@@ -1055,10 +1049,11 @@ class Storage(Counter):
             initSkillsHash,
             dataAtMatchdayHashes,
             scores,
-            ADDR,
+            ADDR
         )
         # and additionally, stores the league pre-hash data, and updates every player involved
         self.storePreHashDataInClientAtEndOfLeague(leagueIdx, dataAtMatchdays, lastDayTree, scores)
+        assert initSkillsHash == pylio.serialHash(self.leagues[leagueIdx].getInitPlayerSkills()), "InitSkillsHash changed unintentionally"
         assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
         return initSkillsHash, dataAtMatchdayHashes, scores
 
@@ -1074,8 +1069,10 @@ class Storage(Counter):
         for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                playerState = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
-                playerState = self.evolvePlayerStateSinceLastLeague(playerState)
+                playerSkills = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
+                # playerState2 = self.evolvePlayerStateSinceLastLeague(playerSkills)
+                #toni
+                playerState = self.skillsToLastWrittenState(playerSkills)
                 if not self.isPlayerVirtual(playerIdx):
                     assert self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx).currentTeamIdx == teamIdx, "Confusion in team for this playerIdx"
                 initPlayerStates[teamPosInLeague][playerPosInLeague] = playerState

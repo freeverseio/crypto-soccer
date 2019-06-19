@@ -283,6 +283,8 @@ def test2():
     assert ST.hasLeagueFinished(leagueIdx), "League should be finished by now"
 
     initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+    print(initSkillsHash)
+    print(pylio.serialHash(ST_CLIENT.leagues[leagueIdx].getInitPlayerSkills()))
 
     ST.updateLeague(
         leagueIdx,
@@ -468,7 +470,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 221)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 985)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
