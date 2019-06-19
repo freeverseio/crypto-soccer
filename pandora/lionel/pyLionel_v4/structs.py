@@ -239,11 +239,35 @@ class DataAtMatchday():
 
 # Simple struct that stores the data needed to proof that a certain leaf belongs to a Merkle tree
 # "Values" is just the pair [ leafIdx, leafValue ]
-class MerkleProofDataForMatchday():
-    def __init__(self, merkleProof, values, depth):
-        self.merkleProof    = pylio.duplicate(merkleProof)
-        self.values         = pylio.duplicate(values)
+class MerkleProof():
+    def __init__(self, neededHashes, depth, leaf, leafIdx):
+        self.neededHashes   = pylio.duplicate(neededHashes)
         self.depth          = pylio.duplicate(depth)
+        self.leaf           = pylio.duplicate(leaf)
+        self.leafIdx        = pylio.duplicate(leafIdx)
+
+# Simple struct that stores a tree
+class MerkleTree():
+    def __init__(self, leafs):
+        self.tree    = None
+        self.root    = None
+        self.depth   = None
+        self.makeTree(pylio.duplicate(leafs), pylio.serialHash)
+
+    def makeTree(self, leafs, hashFunction):
+        tree, depth = make_tree(leafs, hashFunction)
+        self.tree  = tree
+        self.root  = root(tree)
+        self.depth = depth
+
+    # Merkle proof: given a tree, and its leafs,
+    # it creates the hashes required to prove that a given idx in the leave belongs to the tree.
+    # it returns the neededHashes
+    def prepareProofForLeaf(self, leaf, leafIdx):
+        neededHashes = proof(self.tree, [leafIdx])
+        return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
+
+
 
 # The MAIN CLASS that manages all BC & CLIENT storage
 class Storage(Counter):
@@ -309,27 +333,18 @@ class Storage(Counter):
             selectedMatchday,
             dataAtPrevMatchday,
             usersInitData,
-            actionsAtSelectedMatchday,
             merkleProofDataForMatchday
         ):
         assert self.leagues[leagueIdx].hasLeagueBeenUpdated(), "League has not been updated yet, no need to challenge"
         assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
-
-        assert len(merkleProofDataForMatchday.values.values()) == 1, "We should have data from 1 single league"
-        for leafIdx in merkleProofDataForMatchday.values.keys():
-            actions = merkleProofDataForMatchday.values.get(leafIdx)
-        pylio.serialHash(actions[1]) ==  pylio.serialHash(actionsAtSelectedMatchday)
-
+        assert merkleProofDataForMatchday.leaf[0] == leagueIdx, "Deverr: The actions do not belong to this league"
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
-        assert verify(
+        assert pylio.verifyMerkleProof(
             self.VerseCommits[verse].actionsMerkleRoots,
-            merkleProofDataForMatchday.depth,
-            merkleProofDataForMatchday.values,
-            merkleProofDataForMatchday.merkleProof,
+            merkleProofDataForMatchday,
             pylio.serialHash,
-            debug_print=False
         ), "Actions are not part of the corresponding commit"
 
         if selectedMatchday == 0:
@@ -340,6 +355,7 @@ class Storage(Counter):
             assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
+        actionsAtSelectedMatchday = merkleProofDataForMatchday.leaf[1]
         if not actionsAtSelectedMatchday == 0:
             for action in actionsAtSelectedMatchday:
                 teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
@@ -722,6 +738,13 @@ class Storage(Counter):
         assert len(selectedSkills) == 1, "PlayerIdx not found in previous league final states, or too many with same playerIdx"
         return selectedSkills[0]
 
+    def getCurrentPlayerState(self, playerIdx):
+        self.assertIsClient()
+        prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
+        currentSkills = self.getPlayerSkillsAtEndOfLeague(prevLeagueIdx, teamPosInPrevLeague, playerIdx)
+        lastBCState = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx))
+        return self.copySkillsAndAgeFromTo(currentSkills, lastBCState)
+
     def getPlayerSkillsAtEndOfLastLeague(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
@@ -835,8 +858,8 @@ class Storage(Counter):
 
 
         if leagueIdxAndActionsArray:
-            tree, depth = make_tree(pylio.duplicate(leagueIdxAndActionsArray), pylio.serialHash)
-            rootTree    = root(tree)
+            tree = MerkleTree(leagueIdxAndActionsArray)
+            rootTree    = tree.root
         else:
             tree        = 0
             rootTree    = 0
@@ -854,11 +877,11 @@ class Storage(Counter):
     # - receives those actions (pre-hash)
     # - knows the MerkleRoot of that verse
     # ...to prove that the actions were included in that Merkle proof verse
-    def getMerkleProof(self, leagueIdx, selectedMatchday):
+    def getMerkleProofForMatchday(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         if not self.Accumulator.commitedActions[verse]:
-            return MerkleProofDataForMatchday(0,0,0)
+            return MerkleProof(0, 0, 0, 0)
 
         for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
             if action[0] == leagueIdx:
@@ -867,9 +890,15 @@ class Storage(Counter):
 
         # get the needed hashes and the "values". The latter are simply the corresponding
         # leaf (=actionsThisLeagueAtSelectedMatchday) formated so that is has the form {idx: actionsAtSelectedMatchday}.
-        neededHashes, values = pylio.prepareProofForIdxs([idx], tree, self.Accumulator.commitedActions[verse])
-        assert verify(self.VerseCommits[verse].actionsMerkleRoots, get_depth(tree), values, neededHashes, pylio.serialHash), "Generated Merkle proof will not work"
-        return MerkleProofDataForMatchday(neededHashes, values, get_depth(tree))
+        merkleProof = tree.prepareProofForLeaf(action, idx)
+
+        assert pylio.verifyMerkleProof(
+            self.VerseCommits[verse].actionsMerkleRoots,
+            merkleProof,
+            pylio.serialHash
+        ), "Generated Merkle proof will not work"
+
+        return merkleProof
 
 
     def computeAllMatchdayStates(self, leagueIdx):
@@ -963,7 +992,7 @@ class Storage(Counter):
                 neededHashes,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
-            return MerkleProofDataForMatchday(neededHashes, values, get_depth(lastDayTree))
+            return MerkleProof(neededHashes, values, get_depth(lastDayTree))
 
     # Given all states of players in a team, returns the state corresponding to
     # the required playerIdx, as well as its position in the team.

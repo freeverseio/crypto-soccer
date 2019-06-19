@@ -212,17 +212,6 @@ def getRandomElement(arr, seed):
     return arr[intHash(serialize2str(seed)) % nElems]
 
 
-
-# Merkle proof: given a tree, and its leafs,
-# it creates the hashes required to prove that a given idx in the leave belongs to the tree.
-# "values" is just the pair [ leafIdx, leafValue ]
-def prepareProofForIdxs(idxsToProve, tree, leafs):
-    neededHashes = proof(tree, idxsToProve)
-    values = {}
-    for leafIdx in idxsToProve:
-        values[leafIdx] = leafs[leafIdx]
-    return neededHashes, values
-
 # returns an 1D-array from a 2D-array
 def flatten(statesPerTeam):
     flatStates = []
@@ -240,7 +229,10 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
     # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProof(leagueIdx, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getMerkleProofForMatchday(leagueIdx, selectedMatchday)
+
+    assert pylio.areEqualStructs(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday], merkleProofDataForMatchday.leaf[1]),\
+        "The Merkle Proof does not contain the correct pre-hash actions for that day"
 
     # ...finally, it does the challenge. If successful, it will reset() the leauge update
     ST.challengeMatchdayStates(
@@ -248,6 +240,13 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT
         selectedMatchday,
         dataAtPrevMatchday,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
-        duplicate(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday]),
         merkleProofDataForMatchday
     )
+
+def verifyMerkleProof(root, merkleProof, hashFunction):
+    # the current library requires the leaf & leafIdx to be formatted inside 'values' as follows:
+    values = {merkleProof.leafIdx: merkleProof.leaf}
+    return verify(root, merkleProof.depth, values, merkleProof.neededHashes, hashFunction)
+
+
+

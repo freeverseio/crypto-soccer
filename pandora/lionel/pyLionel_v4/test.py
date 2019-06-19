@@ -317,9 +317,10 @@ def test2():
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1State = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(1)
+    player1Skills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(1)
+    #TONI: player1State = ST_CLIENT.getCurrentPlayerState(1)
     dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    assert ST.areLatestSkills(player1Skills, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
