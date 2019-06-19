@@ -170,7 +170,7 @@ def areEqualStructs(st1, st2):
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
-    return  [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+    return arrayDims(NPLAYERS_PER_TEAM, nTeams)
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
@@ -249,3 +249,5 @@ def assertPlayerStateInClientIsCertifiable(playerIdx, ST, ST_CLIENT):
     assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills.neededHashes, dataToChallengePlayerSkills.depth),\
         "Current player state in CLIENT is not certifiable by BC.."
 
+def arrayDims(dim1, dim2):
+    return [[None for d1 in range(dim1)] for d2 in range(dim2)]

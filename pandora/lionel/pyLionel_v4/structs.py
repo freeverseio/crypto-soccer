@@ -497,7 +497,7 @@ class Storage(Counter):
     def verifyInitSkillsMerkleProofs(self, usersInitData, dataToChallengeInitSkills):
         nTeams = len(usersInitData["teamIdxs"])
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
-        initPlayerSkills = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+        initPlayerSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         teamPosInLeague = 0
         for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
@@ -958,7 +958,7 @@ class Storage(Counter):
         self.assertIsClient()
         thisLeague = pylio.duplicate(self.leagues[leagueIdx])
         nTeams = len(thisLeague.usersInitData["teamIdxs"])
-        dataToChallengeInitSkills = [[None for player in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+        dataToChallengeInitSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         # dimensions: [team, nPlayersInTeam]
         #   if that a given player is virtual, then it contains just its state
         #   if not, it contains all states of prev league's team
@@ -1063,7 +1063,7 @@ class Storage(Counter):
         usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
         nTeams = len(usersInitData["teamIdxs"])
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
-        initPlayerStates = [[None for playerPosInLeague in range(NPLAYERS_PER_TEAM)] for team in range(nTeams)]
+        initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         teamPosInLeague = 0
         for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
