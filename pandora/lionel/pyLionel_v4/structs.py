@@ -962,9 +962,10 @@ class Storage(Counter):
         #   if not, it contains all states of prev league's team
         for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
             for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
-                correctPlayerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                if playerIdx != 0:
-                    assert playerIdx == correctPlayerIdx, "The function getPlayerIdxFromTeamIdxAndShirt is not working correctly"
+                if playerIdx == 0: # if never written in teams.playerIdxs array
+                    correctPlayerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                else:
+                    correctPlayerIdx = playerIdx
                 dataToChallengeInitSkills[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(correctPlayerIdx)
         return dataToChallengeInitSkills
 
