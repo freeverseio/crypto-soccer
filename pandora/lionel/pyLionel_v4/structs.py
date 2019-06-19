@@ -498,8 +498,7 @@ class Storage(Counter):
         nTeams = len(usersInitData["teamIdxs"])
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
         initPlayerSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
-        teamPosInLeague = 0
-        for teamIdx in usersInitData["teamIdxs"]:
+        for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
             for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].leaf
@@ -508,7 +507,6 @@ class Storage(Counter):
                 if not self.areLatestSkills(dataToChallengeInitSkills[teamPosInLeague][shirtNum]):
                     return None
                 initPlayerSkills[teamPosInLeague][shirtNum] = playerSkills
-            teamPosInLeague += 1
         return pylio.duplicate(initPlayerSkills)
 
     def getTeamPosInLeague(self, teamIdx, leagueUsersInitData):
@@ -1064,12 +1062,10 @@ class Storage(Counter):
         nTeams = len(usersInitData["teamIdxs"])
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
         initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
-        teamPosInLeague = 0
-        for teamIdx in usersInitData["teamIdxs"]:
+        for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
             for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerState = self.getCurrentPlayerState(playerIdx)
                 initPlayerStates[teamPosInLeague][shirtNum] = playerState
-            teamPosInLeague += 1
         return initPlayerStates
 
