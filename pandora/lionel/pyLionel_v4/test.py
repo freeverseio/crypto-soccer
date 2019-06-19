@@ -31,9 +31,7 @@ def test1():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State                = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(1)
-    dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
 
     print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
     hash0 = printTeam(teamIdx1, ST_CLIENT)
@@ -466,7 +464,7 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 353)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
