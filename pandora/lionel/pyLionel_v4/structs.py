@@ -499,8 +499,8 @@ class Storage(Counter):
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
         initPlayerSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         teamPosInLeague = 0
-        for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
-            for shirtNum, playerPosInLeague in enumerate(teamOrder):
+        for teamIdx in usersInitData["teamIdxs"]:
+            for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].leaf
                 assert playerSkills.getPlayerIdx() == playerIdx, "This data does not contain the required player"
@@ -1065,8 +1065,8 @@ class Storage(Counter):
         # an array of size [nTeams][NPLAYERS_PER_TEAM]
         initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         teamPosInLeague = 0
-        for teamIdx, teamOrder in zip(usersInitData["teamIdxs"], usersInitData["teamOrders"]):
-            for shirtNum, playerPosInLeague in enumerate(teamOrder):
+        for teamIdx in usersInitData["teamIdxs"]:
+            for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerState = self.getCurrentPlayerState(playerIdx)
                 initPlayerStates[teamPosInLeague][shirtNum] = playerState
