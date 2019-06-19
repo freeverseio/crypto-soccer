@@ -168,7 +168,7 @@ class LeagueClient(League):
         self.dataToChallengeInitSkills = None
 
     def updateDataAtMatchday(self, dataAtMatchdays, scores):
-        self.dataAtMatchdays   = pylio.duplicate(dataAtMatchdays)
+        self.dataAtMatchdays    = pylio.duplicate(dataAtMatchdays)
         self.scores             = pylio.duplicate(scores)
 
     def writeInitState(self, initPlayerStates):
@@ -934,21 +934,21 @@ class Storage(Counter):
         return dataToChallengeInitSkills
 
     # This function uses CLIENT data to return what is needed to then be able to challenge the player skills.
-    # If it has already played leagues, it returns the states of all teams at last matchday.
-    # If not, then the birth skills with, possibly, extra sales.
-    # note: statesAtEndOfPrevLeague does not take into account possible evolution/sales after the league
-    # note: yes, it returns either a playerState, or a matrix of playerStates (teams x players in team)
+    # If it has already played leagues, it returns the playerSkills and the MerkleProof that it belongs to last leagues' matchday.
+    # If not, then the birth skills.
+    # note: skillsAtEndOfPrevLeague does not obviously take into account possible evolution/sales after the league
+    # note: yes, it returns either a playerSkills, or a MerkleProof
     def computeDataToChallengePlayerSkills(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
-            return MinimalPlayerState(self.getPlayerSkillsAtEndOfLastLeague(playerIdx))
+            return self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
         else:
-            statesAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
-            playerState, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, statesAtEndOfPrevLeague[teamPosInPrevLeague])
+            skillsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
+            playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAtEndOfPrevLeague[teamPosInPrevLeague])
 
             idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
-            leafs = pylio.flatten(self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday)
+            leafs = pylio.flatten(skillsAtEndOfPrevLeague)
             lastDayTree = self.leagues[prevLeagueIdx].lastDayTree
 
             neededHashes, values = pylio.prepareProofForIdxs(
@@ -1006,31 +1006,6 @@ class Storage(Counter):
         self.copySkillsAndAgeFromTo(playerSkills, lastWrittenPlayerState)
         return lastWrittenPlayerState
 
-    def updateChallengeDataAfterLastLeaguePlayed(self, playerChallengeData):
-        # The playerChallengeData is build from the last league's skills, and hence,
-        # does not contain the latest changes after league (sales, etc).
-        # The latter (sales, etc) are written in the BC (and the CLIENT, of course), directly
-        # in each playerState.
-        # So this function retrieves whatever is written in the BC, and replace the skills by those from the last league.
-        # Note that if the player is still virtual, it's not in the BC, so we skip updating anything
-        #   (in particular, it was never sold)
-        # Finally, note that playerChallengeData can be either:
-        #   - an array:  states[team][players] which describe the states at end of last leagues
-        #   - or just a playerState, in case there were no previous leagues.
-
-        self.assertIsClient()
-        if type(playerChallengeData) == type([]):  # it is an array
-            # start from the data provided (so as to avoid updating virtual players)
-            updatedStatesAfterPrevLeague = duplicate(playerChallengeData)
-            for team, statesPerTeam in enumerate(playerChallengeData):
-                for player, playerSkills in enumerate(statesPerTeam):
-                    updatedStatesAfterPrevLeague[team][player] = self.skillsToLastWrittenState(playerSkills)
-        else:
-            updatedStatesAfterPrevLeague = self.skillsToLastWrittenState(playerChallengeData)
-
-        return updatedStatesAfterPrevLeague
-
-
     # The CLIENT:
     # - computes all games of the league,
     # - in particular, all DataAtMatchdays => for every matchday: all teams states, tactics, teamOrders.
@@ -1070,8 +1045,6 @@ class Storage(Counter):
             for shirtNum, playerPosInLeague in enumerate(teamOrder):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = self.getPlayerSkillsAtEndOfLastLeague(playerIdx)
-                # playerState2 = self.evolvePlayerStateSinceLastLeague(playerSkills)
-                #toni
                 playerState = self.skillsToLastWrittenState(playerSkills)
                 if not self.isPlayerVirtual(playerIdx):
                     assert self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx).currentTeamIdx == teamIdx, "Confusion in team for this playerIdx"
