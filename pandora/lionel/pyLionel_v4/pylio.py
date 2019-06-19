@@ -55,7 +55,7 @@ def printTeam(teamIdx, ST_CLIENT):
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
         playerSkills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerSkills.getPlayerIdx())
-        assert ST_CLIENT.areLatestSkills(playerSkills, playerChallengeData), "Player state not correctly in sync"
+        assert ST_CLIENT.areLatestSkills(playerChallengeData), "Player state not correctly in sync"
         hash += printPlayerFromSkills(ST_CLIENT, playerSkills)
     return hash
 
@@ -167,15 +167,6 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
 # checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):
     return serialHash(st1) == serialHash(st2)
-
-
-# the dataToChallenge should contain only one entry, which is the value of the first leaf.
-# we just check that this leaf is the actual playerState we're testing
-def isPlayerStateInsideDataToChallenge(playerState, dataToChallengePlayerState):
-    return areEqualStructs(
-        playerState,
-        list(dataToChallengePlayerState.values.values())[0]
-    )
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):

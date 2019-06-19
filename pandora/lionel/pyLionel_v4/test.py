@@ -317,10 +317,9 @@ def test2():
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1Skills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(1)
     #TONI: player1State = ST_CLIENT.getCurrentPlayerState(1)
     dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(player1Skills, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    assert ST.areLatestSkills(dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
@@ -348,9 +347,8 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
-        playerState = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1)
         dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx1)
-        assert ST.areLatestSkills(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+        assert ST.areLatestSkills(dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
 
     lastTeamIdx = 1
     nTeamsPerLeague = 8
@@ -470,8 +468,8 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 985)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 353)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
