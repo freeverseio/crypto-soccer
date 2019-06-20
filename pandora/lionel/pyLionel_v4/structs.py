@@ -557,6 +557,8 @@ class Storage(Counter):
             self.leagues[leagueIdx].resetUpdater()
             return
 
+        # We now know that the initSkills were correct. We just check that
+        # the updater had not provided exactly the same correct skills!
         if pylio.serialHash(initSkills) == self.leagues[leagueIdx].initSkillsHash:
             print("Challenger failed to prove that initStates were wrong")
         else:
