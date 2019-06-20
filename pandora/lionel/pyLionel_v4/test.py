@@ -155,9 +155,15 @@ def test2():
 
     pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed),\
                     "You challenged a league not yet updated")
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueNotInVerse(leagueIdx), \
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
                     "You challenged a league not yet updated")
     ST.updateLeaguesSuperRoot(verse, superRoot, ADDR1)
+    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE)
+
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
+                     "A league should not be there, but you couldnt prove it")
+    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE)
 
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)

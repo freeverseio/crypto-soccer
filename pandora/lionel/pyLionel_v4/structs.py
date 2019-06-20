@@ -779,10 +779,48 @@ class Storage(Counter):
             willSucceed
         )
 
-    def challengeAllLeaguesRootsLeagueNotInVerse(self, leagueIdx):
-        assert leagueIdx <= len(self.leagues), "league does not exist"
+
+    def isLeagueIdxInVerseCommit(self, verse, leagueIdx):
+        isLeagueIdxInCommit = False
+        for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
+            if leaguePair[0] == leagueIdx:
+                isLeagueIdxInCommit = True
+                break
+        return isLeagueIdxInCommit
+
+    def challengeAllLeaguesRootsLeagueMissing(self, verse, leagueIdx):
+        # the order of these asserts matters
+        assert self.isVerseUpdated(verse), "verse has not been updated yet!"
+        assert leagueIdx < len(self.leagues), "league does not exist"
         assert self.hasLeagueBeenUpdated(leagueIdx), "league has not been updated yet!"
+        assert self.leagues[leagueIdx].verseFinal() == verse, "the league you declare has no reason to be in this verse"
+        assert not self.isLeagueIdxInVerseCommit(verse, leagueIdx), "league is already in commit, nothing to challenge"
+        print("Successfully shown that league was missing in commit")
+
+    def challengeAllLeaguesRootsLeagueExceeding(self, verse, leagueIdx):
+        # the order of these asserts matters
+        assert self.isVerseUpdated(verse), "verse has not been updated yet!"
+        assert self.isLeagueIdxInVerseCommit(verse, leagueIdx), "league is not in commit, nothing to challenge"
+        if leagueIdx >= len(self.leagues):
+            print("league does not exist")
+            return
+        if not self.hasLeagueFinished(leagueIdx):
+            print("league has not finished")
+            return
+        if self.leagues[leagueIdx].verseFinal() != verse:
+            print("league final verse is not this one")
+            return
+        print("Successfully shown that league should not be in commit")
+
+    # typeOfIssue =  0, if missing, 0 if should not be there
+    def challengeAllLeaguesRootsLeagueIdxs(self, verse, leagueIdx, typeOfIssue):
+        assert typeOfIssue == 0 or typeOfIssue == 1, "only 0 or 1 allowed"
+        if typeOfIssue == 0:
+            self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
+        else:
+            self.challengeAllLeaguesRootsLeagueExceeding(verse, leagueIdx)
         return True
+
 
 
 

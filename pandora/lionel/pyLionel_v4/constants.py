@@ -7,6 +7,9 @@ from os.path import isfile, join, exists
 
 CHALLENGING_PERIOD_BLKS = 60
 
+MISSING = 0
+SHOULDNOTBE = 1
+
 AVG_SKILL = 50
 NPLAYERS_PER_TEAM = 16
 MAX_NTEAMS_PER_LEAGUE = 10

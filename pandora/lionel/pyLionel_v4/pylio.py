@@ -258,4 +258,5 @@ def shouldFail(f, msg):
     try:
         f(0)
     except AssertionError as error:
-        print(msg + "...with internal error: " + str(error))
+        print("Expected fail:")
+        print("..." + msg + "...with internal error: " + str(error))
