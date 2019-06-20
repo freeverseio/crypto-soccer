@@ -184,23 +184,17 @@ class LeagueClient(League):
         return initSkills
 
 
-# The VerseCommit basically stores the merkle roots of all actions corresponding to a league starting at that moment
+# The VerseActionsCommit basically stores the merkle roots of all actions corresponding to a league starting at that moment
 # The Merkle Roots are computed from the leafs:
 #
 #  leafs = [ [leagueIdx0, allActionsInLeagueIdx0], ..., ]
 #
 #  where allActionsInLeagueIdx0 = [action0, action1, action2,...]
 
-class VerseCommit:
+class VerseActionsCommit:
     def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
         self.actionsMerkleRoots = actionsMerkleRoots
         self.blockNum = blockNum
-
-
-class VerseCommitClient(VerseCommit):
-    def __init__(self):
-        VerseCommit.__init__(self)
-        self.actions = 0
 
 
 # The Accumulator is responsible for receving user actions and committing them in the correct verse.
@@ -294,7 +288,8 @@ class Storage(Counter):
         self.leagues = [League(0,0,0)]
 
         self.blocksBetweenVerses = 360
-        self.VerseCommits = [VerseCommit()]
+        self.VerseActionsCommits = [VerseActionsCommit()]
+        # self.VerseNumToLeagueCommits = {}
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
@@ -304,13 +299,13 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
 
     def lastVerseBlock(self):
-        return self.VerseCommits[-1].blockNum
+        return self.VerseActionsCommits[-1].blockNum
 
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
 
     def commit(self, actionsRoot):
-        self.VerseCommits.append(VerseCommit(actionsRoot, self.currentBlock))
+        self.VerseActionsCommits.append(VerseActionsCommit(actionsRoot, self.currentBlock))
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
         assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
@@ -343,7 +338,7 @@ class Storage(Counter):
 
         # Validate that the provided actions where in the verse MerkleRoot
         assert pylio.verifyMerkleProof(
-            self.VerseCommits[verse].actionsMerkleRoots,
+            self.VerseActionsCommits[verse].actionsMerkleRoots,
             merkleProofDataForMatchday,
             pylio.serialHash,
         ), "Actions are not part of the corresponding commit"
@@ -481,7 +476,7 @@ class Storage(Counter):
         return not playerIdx in self.playerIdxToPlayerState
 
     def verse2blockNum(self, verse):
-        return self.VerseCommits[verse].blockNum
+        return self.VerseActionsCommits[verse].blockNum
 
     def getLastPlayedLeagueIdx(self, playerIdx):
         # if player state has never been written, it played all leagues with current team (obtained from formula)
@@ -703,7 +698,7 @@ class Storage(Counter):
         return pylio.intHash('salt' + str(blockNum))
 
     def getSeedForVerse(self, verse):
-        return self.getBlockHash(self.VerseCommits[verse].blockNum)
+        return self.getBlockHash(self.VerseActionsCommits[verse].blockNum)
 
 
     # From the states at a given matchday, we just need to store the hash... of the skills,
@@ -918,7 +913,7 @@ class Storage(Counter):
         merkleProof = tree.prepareProofForLeaf(action, idx)
 
         assert pylio.verifyMerkleProof(
-            self.VerseCommits[verse].actionsMerkleRoots,
+            self.VerseActionsCommits[verse].actionsMerkleRoots,
             merkleProof,
             pylio.serialHash
         ), "Generated Merkle proof will not work"
