@@ -145,7 +145,14 @@ def test2():
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
-    assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
+
+    # anna
+    assert not ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as not-yet updated"
+    verseFinal = ST.leagues[leagueIdx].verseFinal()
+    assert not ST.challengeAllLeaguesRootsMissingLeague(leagueIdx), "You challenged a league not yet updated"
+    ST.updateLeaguesSuperRoot(verseFinal, "randomroot", ADDR3)
+    assert ST.challengeAllLeaguesRootsMissingLeague(leagueIdx), "You challenged a league not yet updated"
+
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)
     initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
@@ -323,6 +330,10 @@ def test2():
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
     # corresponds to the player bought from team4, in the exchange done above.
     printTeam(teamIdx1, ST_CLIENT)
+
+
+
+
 
     # create many teams, and leagues, and mess it all.
     advanceNVerses(1000, ST, ST_CLIENT)

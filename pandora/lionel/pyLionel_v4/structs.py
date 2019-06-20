@@ -139,8 +139,6 @@ class League():
         nMatchdays = 2 * (self.nTeams - 1)
         return self.verseInit + (nMatchdays-1)*self.verseStep
 
-    def hasLeagueBeenUpdated(self):
-        return self.blockLastUpdate != 0
 
     def resetUpdater(self):
         self.blockLastUpdate = 0
@@ -261,7 +259,24 @@ class MerkleTree():
         neededHashes = proof(self.tree, [leafIdx])
         return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
 
+class LeaguesCommitInVerse():
+    def __init__(self, superRoot, ownerAddr):
+        self.superRoot = pylio.duplicate(superRoot)
+        self.superRootOwner = ownerAddr
+        self.allLeaguesRoots = None
+        self.allLeaguesRootsOwner = None
+        self.allLeaguesRootsSuperRoot = None
+        self.allLeaguesRootsWillSucceed = None
+        self.dataAtMatchdaysHashes = None
 
+    # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
+    def challengeSuperRoot(self, allLeaguesRoots, ownerAddr, willSucceed):
+        self.allLeaguesRoots            = allLeaguesRoots
+        self.allLeaguesRootsOwner       = ownerAddr
+        self.allLeaguesRootsWillSucceed = willSucceed
+        tree = MerkleTree(allLeaguesRoots)
+        self.allLeaguesRootsSuperRoot = tree.root
+#toni
 
 # The MAIN CLASS that manages all BC & CLIENT storage
 class Storage(Counter):
@@ -289,7 +304,7 @@ class Storage(Counter):
 
         self.blocksBetweenVerses = 360
         self.VerseActionsCommits = [VerseActionsCommit()]
-        # self.VerseNumToLeagueCommits = {}
+        self.verseToLeagueCommits = {}
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
@@ -306,6 +321,18 @@ class Storage(Counter):
 
     def commit(self, actionsRoot):
         self.VerseActionsCommits.append(VerseActionsCommit(actionsRoot, self.currentBlock))
+
+    def hasLeagueBeenUpdated(self, leagueIdx):
+        verse = self.leagues[leagueIdx].verseFinal()
+        return self.isVerseUpdated(verse)
+
+    def isVerseUpdated(self, verse):
+        return (verse in self.verseToLeagueCommits)
+
+    def updateLeaguesSuperRoot(self, verse, superRoot, addr):
+        assert not self.isVerseUpdated(verse), "Verse Leagues already updated"
+        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr)
+
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
         assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
@@ -742,6 +769,16 @@ class Storage(Counter):
             teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
+
+#toni
+    def challengeAllLeaguesRootsMissingLeague(self, leagueIdx):
+        assert leagueIdx <= len(self.leagues), "league does not exist"
+        if not self.hasLeagueBeenUpdated(leagueIdx):
+            print("league has not been updated yet")
+            return False
+        return True
+
+
 
 
     # ------------------------------------------------------------------------
