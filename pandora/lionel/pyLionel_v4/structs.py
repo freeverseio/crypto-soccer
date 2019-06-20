@@ -167,7 +167,7 @@ class LeagueClient(League):
         self.actionsPerMatchday = []
         self.dataToChallengeInitSkills = None
 
-    def updateDataAtMatchday(self, dataAtMatchdays, scores):
+    def storeDataAtMatchdays(self, dataAtMatchdays, scores):
         self.dataAtMatchdays    = pylio.duplicate(dataAtMatchdays)
         self.scores             = pylio.duplicate(scores)
 
@@ -349,8 +349,11 @@ class Storage(Counter):
 
         if selectedMatchday == 0:
             assert pylio.serialHash(dataAtPrevMatchday.skillsAtMatchday) == self.leagues[leagueIdx].initSkillsHash, "Incorrect provided: prevMatchdayStates"
-            assert pylio.serialHash(dataAtPrevMatchday.tacticsAtMatchday) == pylio.serialHash(usersInitData["tactics"]), "Incorrect provided: prevMatchdayStates"
-            assert pylio.serialHash(dataAtPrevMatchday.teamOrdersAtMatchday) == pylio.serialHash(usersInitData["teamOrders"]), "Incorrect provided: prevMatchdayStates"
+            # initialize tactics and teams as written in league creation:
+            assert dataAtPrevMatchday.tacticsAtMatchday == 0, "Incorrect provided: prevMatchdayStates"
+            assert dataAtPrevMatchday.teamOrdersAtMatchday == 0, "Incorrect provided: prevMatchdayStates"
+            dataAtPrevMatchday.tacticsAtMatchday = usersInitData["tactics"]
+            dataAtPrevMatchday.teamOrdersAtMatchday = usersInitData["teamOrders"]
         else:
             assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
@@ -768,9 +771,8 @@ class Storage(Counter):
     # Stores the data, pre-hash, in the CLIENT
     def storePreHashDataInClientAtEndOfLeague(self, leagueIdx, dataAtMatchdays, lastDayTree, scores):
         self.assertIsClient()
-        self.leagues[leagueIdx].updateDataAtMatchday(dataAtMatchdays, scores)
+        self.leagues[leagueIdx].storeDataAtMatchdays(dataAtMatchdays, scores)
         self.leagues[leagueIdx].lastDayTree = lastDayTree
-        self.leagues[leagueIdx].initSkillsHash == pylio.serialHash(self.leagues[leagueIdx].getInitPlayerSkills())
 
         # the last matchday gives the final skills used to update all players:
         # After the end of the league, there could be other things, like sales, so we need to update
@@ -785,8 +787,8 @@ class Storage(Counter):
         if selectedMatchday == 0:
             return DataAtMatchday(
                 self.leagues[leagueIdx].getInitPlayerSkills(),
-                self.leagues[leagueIdx].usersInitData["tactics"],
-                self.leagues[leagueIdx].usersInitData["teamOrders"]
+                0,
+                0
             )
         else:
             return pylio.duplicate(self.leagues[leagueIdx].dataAtMatchdays[selectedMatchday-1])
@@ -894,7 +896,7 @@ class Storage(Counter):
     # - receives those actions (pre-hash)
     # - knows the MerkleRoot of that verse
     # ...to prove that the actions were included in that Merkle proof verse
-    def getMerkleProofForMatchday(self, leagueIdx, selectedMatchday):
+    def getActionsMerkleProofForMatchday(self, leagueIdx, selectedMatchday):
         self.assertIsClient()
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
         if not self.Accumulator.commitedActions[verse]:
@@ -903,10 +905,8 @@ class Storage(Counter):
         for idx, action in enumerate(self.Accumulator.commitedActions[verse]):
             if action[0] == leagueIdx:
                 break
-        tree = self.Accumulator.commitedTrees[verse]
 
-        # get the needed hashes and the "values". The latter are simply the corresponding
-        # leaf (=actionsThisLeagueAtSelectedMatchday) formated so that is has the form {idx: actionsAtSelectedMatchday}.
+        tree = self.Accumulator.commitedTrees[verse]
         merkleProof = tree.prepareProofForLeaf(action, idx)
 
         assert pylio.verifyMerkleProof(

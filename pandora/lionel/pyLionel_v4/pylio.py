@@ -220,10 +220,12 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
     # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
-    merkleProofDataForMatchday = ST_CLIENT.getMerkleProofForMatchday(leagueIdx, selectedMatchday)
+    merkleProofDataForMatchday = ST_CLIENT.getActionsMerkleProofForMatchday(leagueIdx, selectedMatchday)
 
-    assert pylio.areEqualStructs(ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday], merkleProofDataForMatchday.leaf[1]),\
-        "The Merkle Proof does not contain the correct pre-hash actions for that day"
+    assert pylio.areEqualStructs(
+        ST_CLIENT.leagues[leagueIdx].actionsPerMatchday[selectedMatchday],
+        merkleProofDataForMatchday.leaf[1]
+    ), "The Merkle Proof does not contain the correct pre-hash actions for that day"
 
     # ...finally, it does the challenge. If successful, it will reset() the leauge update
     ST.challengeMatchdayStates(
