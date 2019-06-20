@@ -254,3 +254,8 @@ def assertPlayerStateInClientIsCertifiable(playerIdx, ST, ST_CLIENT):
 def arrayDims(dim1, dim2):
     return [[None for d1 in range(dim1)] for d2 in range(dim2)]
 
+def shouldFail(f, msg):
+    try:
+        f(0)
+    except AssertionError as error:
+        print(msg + "...with internal error: " + str(error))

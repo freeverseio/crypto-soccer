@@ -145,13 +145,19 @@ def test2():
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
+    assert not ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as not-yet updated"
 
     # anna
-    assert not ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as not-yet updated"
-    verseFinal = ST.leagues[leagueIdx].verseFinal()
-    assert not ST.challengeAllLeaguesRootsMissingLeague(leagueIdx), "You challenged a league not yet updated"
-    ST.updateLeaguesSuperRoot(verseFinal, "randomroot", ADDR3)
-    assert ST.challengeAllLeaguesRootsMissingLeague(leagueIdx), "You challenged a league not yet updated"
+    verse = ST.leagues[leagueIdx].verseFinal()
+    superRoot = "rndstring"
+    allLeaguesRoots = [[1, "rn1"], [2, "rn2"]]
+    willSucceed = True
+
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed),\
+                    "You challenged a league not yet updated")
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueNotInVerse(leagueIdx), \
+                    "You challenged a league not yet updated")
+    ST.updateLeaguesSuperRoot(verse, superRoot, ADDR1)
 
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)

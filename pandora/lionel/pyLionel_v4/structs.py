@@ -771,11 +771,17 @@ class Storage(Counter):
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
 #toni
-    def challengeAllLeaguesRootsMissingLeague(self, leagueIdx):
+    def challengeSuperRoot(self, verse, allLeaguesRoots, addr, willSucceed):
+        assert self.isVerseUpdated(verse), "league has not been updated yet"
+        self.verseToLeagueCommits[verse].challengeSuperRoot(
+            allLeaguesRoots,
+            addr,
+            willSucceed
+        )
+
+    def challengeAllLeaguesRootsLeagueNotInVerse(self, leagueIdx):
         assert leagueIdx <= len(self.leagues), "league does not exist"
-        if not self.hasLeagueBeenUpdated(leagueIdx):
-            print("league has not been updated yet")
-            return False
+        assert self.hasLeagueBeenUpdated(leagueIdx), "league has not been updated yet!"
         return True
 
 
