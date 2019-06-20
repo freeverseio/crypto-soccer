@@ -341,12 +341,18 @@ class Storage(Counter):
         assert merkleProofDataForMatchday.leaf[0] == leagueIdx, "Deverr: The actions do not belong to this league"
         verse = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
+        # Validate that the provided actions where in the verse MerkleRoot
         assert pylio.verifyMerkleProof(
             self.VerseCommits[verse].actionsMerkleRoots,
             merkleProofDataForMatchday,
             pylio.serialHash,
         ), "Actions are not part of the corresponding commit"
 
+        # Validate "dataAtPrevMatchday"
+        # - if day =0, validate only that skills coincide with initSkillsHash,
+        #              and initialize tactics and orders from usersInitData
+        # - if day!=0, validate that the entire hash of dataAtPrevMatchday coincides with
+        #               the hashes that the updater provided
         if selectedMatchday == 0:
             assert pylio.serialHash(dataAtPrevMatchday.skillsAtMatchday) == self.leagues[leagueIdx].initSkillsHash, "Incorrect provided: prevMatchdayStates"
             # initialize tactics and teams as written in league creation:
