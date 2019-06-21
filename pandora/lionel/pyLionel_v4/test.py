@@ -152,6 +152,7 @@ def test2():
     superRoot = "rndstring"
     allLeaguesRoots = [[1, "rn1"], [2, "rn2"]]
     willSucceed = True
+    matchdayHashes = ["day1", "day2"]
 
     pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed),\
                     "You challenged a league not yet updated")
@@ -170,8 +171,8 @@ def test2():
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
     assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 1, MISSING), "League should have been included, but couldnt prove it"
     allLeaguesRoots = [[1, "rn1"]]
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have.")
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
-    matchdayHashes = ["day1", "day2"]
     assert ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have."
 
 

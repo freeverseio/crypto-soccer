@@ -255,8 +255,12 @@ def arrayDims(dim1, dim2):
     return [[None for d1 in range(dim1)] for d2 in range(dim2)]
 
 def shouldFail(f, msg):
+    itFailed = False
     try:
         f(0)
     except AssertionError as error:
         print("Expected fail:")
         print("..." + msg + "...with internal error: " + str(error))
+        itFailed = True
+    assert itFailed, "We should have failed, but did not"
+
