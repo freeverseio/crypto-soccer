@@ -157,13 +157,19 @@ def test2():
                     "You challenged a league not yet updated")
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
                     "You challenged a league not yet updated")
+    assert ST.isVerseUpdated(verse) == UPDT_NONE, "Wrong verse update status"
     ST.updateLeaguesSuperRoot(verse, superRoot, ADDR1)
+    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
     assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE)
-
+    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
                      "A league should not be there, but you couldnt prove it")
-    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE)
+    allLeaguesRoots = [[3, "rn1"]]
+    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 1, MISSING), "League should have been included, but couldnt prove it"
+    allLeaguesRoots = [[1, "rn1"]]
 
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)

@@ -7,8 +7,15 @@ from os.path import isfile, join, exists
 
 CHALLENGING_PERIOD_BLKS = 60
 
+# Challenging a verse where a league was not included (MISSING) or included incorrectly (SHOULDNOTBE)
 MISSING = 0
 SHOULDNOTBE = 1
+
+# Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
+UPDT_NONE       = 0 # no update at all
+UPDT_SUPER      = 1 # only superRoot, but nothing else
+UPDT_ALLLGS     = 2 # allLeaguesRoot, but nothing else
+UPDT_MATCHDAYS  = 3 # matchdayHashes provided
 
 AVG_SKILL = 50
 NPLAYERS_PER_TEAM = 16

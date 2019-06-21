@@ -261,13 +261,14 @@ class MerkleTree():
 
 class LeaguesCommitInVerse():
     def __init__(self, superRoot, ownerAddr):
-        self.superRoot = pylio.duplicate(superRoot)
-        self.superRootOwner = ownerAddr
-        self.allLeaguesRoots = None
-        self.allLeaguesRootsOwner = None
-        self.allLeaguesRootsSuperRoot = None
-        self.allLeaguesRootsWillSucceed = None
-        self.dataAtMatchdaysHashes = None
+        self.superRoot                      = pylio.duplicate(superRoot)
+        self.superRootOwner                 = ownerAddr
+        self.allLeaguesRoots                = None
+        self.allLeaguesRootsOwner           = None
+        self.allLeaguesRootsSuperRoot       = None
+        self.allLeaguesRootsWillSucceed     = None
+        self.dataAtMatchdaysHashes          = None
+        self.dataAtMatchdaysHashesOwner     = None
 
     # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
     def challengeSuperRoot(self, allLeaguesRoots, ownerAddr, willSucceed):
@@ -276,6 +277,14 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed = willSucceed
         tree = MerkleTree(allLeaguesRoots)
         self.allLeaguesRootsSuperRoot = tree.root
+
+    def slashAllLeaguesRoots(self):
+        self.allLeaguesRoots            = None
+        self.allLeaguesRootsOwner       = None
+        self.allLeaguesRootsWillSucceed = None
+        self.allLeaguesRootsSuperRoot   = None
+
+
 #toni
 
 # The MAIN CLASS that manages all BC & CLIENT storage
@@ -327,10 +336,18 @@ class Storage(Counter):
         return self.isVerseUpdated(verse)
 
     def isVerseUpdated(self, verse):
-        return (verse in self.verseToLeagueCommits)
+        if not (verse in self.verseToLeagueCommits):
+            return UPDT_NONE
+        elif self.verseToLeagueCommits[verse].dataAtMatchdaysHashesOwner:
+            return UPDT_MATCHDAYS
+        elif self.verseToLeagueCommits[verse].allLeaguesRootsOwner:
+            return UPDT_ALLLGS
+        else:
+            return UPDT_SUPER
+
 
     def updateLeaguesSuperRoot(self, verse, superRoot, addr):
-        assert not self.isVerseUpdated(verse), "Verse Leagues already updated"
+        assert self.isVerseUpdated(verse) == UPDT_NONE, "Verse Leagues already updated"
         self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr)
 
 
@@ -772,7 +789,7 @@ class Storage(Counter):
 
 #toni
     def challengeSuperRoot(self, verse, allLeaguesRoots, addr, willSucceed):
-        assert self.isVerseUpdated(verse), "league has not been updated yet"
+        assert self.isVerseUpdated(verse) == UPDT_SUPER, "league has not been updated yet"
         self.verseToLeagueCommits[verse].challengeSuperRoot(
             allLeaguesRoots,
             addr,
@@ -790,7 +807,6 @@ class Storage(Counter):
 
     def challengeAllLeaguesRootsLeagueMissing(self, verse, leagueIdx):
         # the order of these asserts matters
-        assert self.isVerseUpdated(verse), "verse has not been updated yet!"
         assert leagueIdx < len(self.leagues), "league does not exist"
         assert self.hasLeagueBeenUpdated(leagueIdx), "league has not been updated yet!"
         assert self.leagues[leagueIdx].verseFinal() == verse, "the league you declare has no reason to be in this verse"
@@ -799,7 +815,6 @@ class Storage(Counter):
 
     def challengeAllLeaguesRootsLeagueExceeding(self, verse, leagueIdx):
         # the order of these asserts matters
-        assert self.isVerseUpdated(verse), "verse has not been updated yet!"
         assert self.isLeagueIdxInVerseCommit(verse, leagueIdx), "league is not in commit, nothing to challenge"
         if leagueIdx >= len(self.leagues):
             print("league does not exist")
@@ -814,11 +829,13 @@ class Storage(Counter):
 
     # typeOfIssue =  0, if missing, 0 if should not be there
     def challengeAllLeaguesRootsLeagueIdxs(self, verse, leagueIdx, typeOfIssue):
+        assert (self.isVerseUpdated(verse) == UPDT_ALLLGS) or (self.isVerseUpdated(verse) == UPDT_MATCHDAYS), "verse has not been updated yet!"
         assert typeOfIssue == 0 or typeOfIssue == 1, "only 0 or 1 allowed"
         if typeOfIssue == 0:
             self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
         else:
             self.challengeAllLeaguesRootsLeagueExceeding(verse, leagueIdx)
+        self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
         return True
 
 
