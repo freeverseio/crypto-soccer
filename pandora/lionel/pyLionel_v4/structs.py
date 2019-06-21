@@ -284,7 +284,8 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed = None
         self.allLeaguesRootsSuperRoot   = None
 
-    def challengeAllLeaguesRootsHash(self, matchdayHashes, addr):
+    def challengeAllLeaguesRootsHash(self, leagueIdx, matchdayHashes, addr):
+        self.dataAtMatchdaysLeagueIdx   = leagueIdx
         self.dataAtMatchdaysHashes      = matchdayHashes
         self.dataAtMatchdaysHashesOwner = addr
 #toni
@@ -847,7 +848,7 @@ class Storage(Counter):
         leagueHash = self.getLeagueHashFromVerseCommit(verse, leagueIdx)
         assert leagueHash != 0, "You cannot challenge a league that is not part of the verse commit"
         assert pylio.serialHash(matchdayHashes) != leagueHash, "Your data coincides with the updater. Nothing to challenge."
-        self.verseToLeagueCommits[verse].challengeAllLeaguesRootsHash(matchdayHashes, addr)
+        self.verseToLeagueCommits[verse].challengeAllLeaguesRootsHash(leagueIdx, matchdayHashes, addr)
         return True
 
 
