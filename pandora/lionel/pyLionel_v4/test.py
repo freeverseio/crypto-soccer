@@ -170,6 +170,9 @@ def test2():
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
     assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 1, MISSING), "League should have been included, but couldnt prove it"
     allLeaguesRoots = [[1, "rn1"]]
+    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+    matchdayHashes = ["day1", "day2"]
+    assert ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have."
 
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)
