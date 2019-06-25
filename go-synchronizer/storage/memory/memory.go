@@ -1,7 +1,9 @@
 package memory
 
+import "errors"
+
 type Team struct {
-	name string
+	Name string
 }
 
 type MemoryStorage struct {
@@ -9,8 +11,8 @@ type MemoryStorage struct {
 }
 
 func New() *MemoryStorage {
-	return &MemoryStorage {
-		teams : make(map[uint64]Team),
+	return &MemoryStorage{
+		teams: make(map[uint64]Team),
 	}
 }
 
@@ -19,10 +21,14 @@ func (m *MemoryStorage) TeamAdd(ID uint64, name string) error {
 	return nil
 }
 
-func (m *MemoryStorage) TeamCount() (uint64,error) {
-	return uint64(len(m.teams)),nil
+func (m *MemoryStorage) TeamCount() (uint64, error) {
+	return uint64(len(m.teams)), nil
 }
 
-func (m *MemoryStorage) GetTeam() (Team, error) {
-	return Team{}, nil
+func (m *MemoryStorage) GetTeam(id uint64) (Team, error) {
+	team := m.teams[id]
+	if team.Name == "" {
+		return team, errors.New("unexistent team")
+	}
+	return team, nil
 }
