@@ -102,8 +102,8 @@ contract Assets {
         _teamNameHashToOwner[nameHash] = owner;
         uint256[PLAYERS_PER_TEAM] memory playerIds;
         teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
-        uint256 teamId = teams.length - 1;
-        emit TeamCreated(teamId, name);
+        uint256 id = teams.length - 1;
+        emit TeamCreated(id, name);
     }
 
     function signToLeague(
