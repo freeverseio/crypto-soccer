@@ -155,7 +155,13 @@ contract Assets {
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        if (_isVirtual(playerId)) {
+        if (_isVirtual(playerId))
+            return generateVirtualPlayerState(playerId);
+        else
+            return _playerIdToState[playerId];
+    }
+
+    function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
             uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
@@ -177,9 +183,6 @@ contract Assets {
                 0, // prevShirtNumInLeague,
                 0 // lastSaleBloc
             );
-        }
-        else
-            return _playerIdToState[playerId];
     }
 
     function _setPlayerState(uint256 state) internal {

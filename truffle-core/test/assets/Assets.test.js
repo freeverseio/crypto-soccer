@@ -16,6 +16,15 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('generate virtual player state', async () => {
+        await assets.generateVirtualPlayerState(0).should.be.rejected;
+        await assets.generateVirtualPlayerState(1).should.be.rejected;
+        await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
+        const state = await assets.generateVirtualPlayerState(1).should.be.fulfilled;
+        state.should.be.bignumber.equal('487675240753122215029560239672487374398202269892501296702901553784210587648'); 
+        await assets.generateVirtualPlayerState(12).should.be.rejected;
+    });
+    
     it('compute seed', async () => {
         const seed = await assets.computeSeed("ciao", 55).should.be.fulfilled;
         seed.should.be.bignumber.equal('70784264222015847647364792903196777080414493477200674456068616512110552463457');
