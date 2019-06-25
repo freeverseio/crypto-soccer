@@ -12,6 +12,9 @@ func TestTeamAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if team.Id != 1 {
+		t.Fatalf("Expected 0 result %v", team.Id)
+	}
 	if team.Name != "ciao" {
 		t.Fatalf("Expected ciao result %v", team.Name)
 	}

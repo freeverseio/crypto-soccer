@@ -16,8 +16,8 @@ func New() *MemoryStorage {
 	}
 }
 
-func (m *MemoryStorage) TeamAdd(ID uint64, name string) error {
-	m.teams[ID] = storage.Team{name}
+func (m *MemoryStorage) TeamAdd(id uint64, name string) error {
+	m.teams[id] = storage.Team{id, name}
 	return nil
 }
 

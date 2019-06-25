@@ -1,6 +1,7 @@
 package storage
 
 type Team struct {
+	Id   uint64
 	Name string
 }
 

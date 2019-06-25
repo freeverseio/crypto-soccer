@@ -46,6 +46,9 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if team.Id != 1 {
+		t.Fatalf("Expected 1 result %v", team.Id)
+	}
 	if team.Name != "Barca" {
 		t.Fatalf("Expected Barca result %v", team.Name)
 	}
@@ -53,12 +56,18 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if team.Id != 2 {
+		t.Fatalf("Expected 2 result %v", team.Id)
+	}
 	if team.Name != "Madrid" {
 		t.Fatalf("Expected Madrid result %v", team.Name)
 	}
 	team, err = storage.GetTeam(3)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if team.Id != 3 {
+		t.Fatalf("Expected 3 result %v", team.Id)
 	}
 	if team.Name != "Venezia" {
 		t.Fatalf("Expected Venezia result %v", team.Name)
