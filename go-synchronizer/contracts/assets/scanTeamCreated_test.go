@@ -1,24 +1,15 @@
 package assets
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind/backends"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
 func TestScanTeamCreatedEmplyContract(t *testing.T) {
-	//Setup simulated block chain
-	var gasLimit uint64 = 8000029
-	key, _ := crypto.GenerateKey()
-	auth := bind.NewKeyedTransactor(key)
-	alloc := make(core.GenesisAlloc)
-	alloc[auth.From] = core.GenesisAccount{Balance: big.NewInt(1000000000)}
-	blockchain := backends.NewSimulatedBackend(alloc, gasLimit)
+	blockchain, auth := testutils.InitBlockchain()
 
 	statesContractAddress := common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e")
 	//Deploy contract
@@ -42,13 +33,7 @@ func TestScanTeamCreatedEmplyContract(t *testing.T) {
 }
 
 func TestScanTeamCreated1TeamCreated(t *testing.T) {
-	//Setup simulated block chain
-	var gasLimit uint64 = 8000029
-	key, _ := crypto.GenerateKey()
-	auth := bind.NewKeyedTransactor(key)
-	alloc := make(core.GenesisAlloc)
-	alloc[auth.From] = core.GenesisAccount{Balance: big.NewInt(1000000000)}
-	blockchain := backends.NewSimulatedBackend(alloc, gasLimit)
+	blockchain, auth := testutils.InitBlockchain()
 
 	statesContractAddress := common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e")
 	//Deploy contract
