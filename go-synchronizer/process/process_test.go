@@ -9,9 +9,9 @@ import (
 
 func TestSyncTeamWithNoTeam(t *testing.T) {
 	storage := memory.New()
-	blockchain := testutils.CryptosoccerNew(t)
+	blockchain := testutils.DefaultSimulatedBlockchain()
 
-	Process(blockchain.AssetsContract, storage)
+	Process(blockchain.Assets, storage)
 
 	count, err := storage.TeamCount()
 	if err != nil {
@@ -24,13 +24,17 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 
 func TestSyncTeams(t *testing.T) {
 	storage := memory.New()
-	blockchain := testutils.CryptosoccerNew(t)
-	blockchain.AssetsContract.CreateTeam(blockchain.Opts, "Barca", blockchain.Opts.From)
-	blockchain.AssetsContract.CreateTeam(blockchain.Opts, "Madrid", blockchain.Opts.From)
-	blockchain.AssetsContract.CreateTeam(blockchain.Opts, "Venezia", blockchain.Opts.From)
-	blockchain.Commit()
+	blockchain := testutils.DefaultSimulatedBlockchain()
 
-	err := Process(blockchain.AssetsContract, storage)
+	alice := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	bob := blockchain.CreateAccountWithBalance("1000000000000000000")   // 1 eth
+	carol := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
+
+	blockchain.CreateTeam("Barca", alice)
+	blockchain.CreateTeam("Madrid", bob)
+	blockchain.CreateTeam("Venezia", carol)
+
+	err := Process(blockchain.Assets, storage)
 	if err != nil {
 		t.Fatal(err)
 	}

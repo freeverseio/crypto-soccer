@@ -6,29 +6,22 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
-func TestEmplyContract(t *testing.T) {
-	cryptosoccer := testutils.CryptosoccerNew(t)
-	events, err := ScanTeamCreated(cryptosoccer.AssetsContract)
-	if err != nil {
-		t.Fatal("Scanning error: ", err)
-	}
+func TestEmptyContract(t *testing.T) {
+	blockchain := testutils.DefaultSimulatedBlockchain()
+	events, err := ScanTeamCreated(blockchain.Assets)
+	testutils.AssertNoErr(err)
 	if len(events) != 0 {
 		t.Fatalf("Scanning empty Assets contract returned %v events", len(events))
 	}
 }
 
 func TestCreateTeam(t *testing.T) {
-	cryptosoccer := testutils.CryptosoccerNew(t)
-	_, err := cryptosoccer.AssetsContract.CreateTeam(cryptosoccer.Opts, "Barca", cryptosoccer.Opts.From)
-	if err != nil {
-		t.Fatal("Error creating team: ", err)
-	}
-	cryptosoccer.Commit()
+	blockchain := testutils.DefaultSimulatedBlockchain()
+	alice := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	blockchain.CreateTeam("Barca", alice)
 
-	events, err := ScanTeamCreated(cryptosoccer.AssetsContract)
-	if err != nil {
-		t.Fatal("Scanning error: ", err)
-	}
+	events, err := ScanTeamCreated(blockchain.Assets)
+	testutils.AssertNoErr(err)
 	if len(events) != 1 {
 		t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
 	}

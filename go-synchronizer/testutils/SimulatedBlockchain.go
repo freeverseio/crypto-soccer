@@ -1,4 +1,4 @@
-package assets
+package testutils
 
 import (
 	"context"
@@ -12,6 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 )
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -28,11 +31,12 @@ func CommonAddressFromPrivateKey(privateKey *ecdsa.PrivateKey) common.Address {
 }
 
 type SimulatedBlockchain struct {
-	Backend          *backends.SimulatedBackend
-	Ops              *bind.TransactOpts
-	PrivateKey       *ecdsa.PrivateKey
-	playerStatesAddr common.Address
-	assets           *Assets
+	Backend       *backends.SimulatedBackend
+	Ops           *bind.TransactOpts
+	PrivateKey    *ecdsa.PrivateKey
+	statesAddress common.Address
+	Assets        *assets.Assets
+	States        *states.States
 }
 
 func NewSimulatedBlockchain(genesisGasLimit uint64, genesisBalanceWei string) *SimulatedBlockchain {
@@ -45,7 +49,8 @@ func NewSimulatedBlockchain(genesisGasLimit uint64, genesisBalanceWei string) *S
 		map[common.Address]core.GenesisAccount{auth.From: {Balance: genesisBalance}},
 		genesisGasLimit,
 	)
-	return &SimulatedBlockchain{blockchain, auth, genesisPrivateKey, common.Address{}, nil}
+
+	return &SimulatedBlockchain{blockchain, auth, genesisPrivateKey, common.Address{}, nil, nil}
 }
 func (blockchain *SimulatedBlockchain) Commit() {
 	blockchain.Backend.Commit()
@@ -75,48 +80,53 @@ func (blockchain *SimulatedBlockchain) CreateAccountWithBalance(wei string) *ecd
 	blockchain.Commit()
 	return privateKey
 }
-func (blockchain *SimulatedBlockchain) DeployAssets(owner *ecdsa.PrivateKey) {
-	blockchain.playerStatesAddr = common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e")
-	//Deploy contract
-	_, _, contract, err := DeployAssets(
+func (blockchain *SimulatedBlockchain) deployStates(owner *ecdsa.PrivateKey) {
+	address, _, contract, err := states.DeployStates(
 		bind.NewKeyedTransactor(owner),
 		blockchain.Backend,
-		blockchain.playerStatesAddr,
+	)
+	AssertNoErr(err, "DeployStates failed")
+	blockchain.Commit()
+	blockchain.States = contract
+	blockchain.statesAddress = address
+}
+func (blockchain *SimulatedBlockchain) deployAssets(owner *ecdsa.PrivateKey) {
+	_, _, contract, err := assets.DeployAssets(
+		bind.NewKeyedTransactor(owner),
+		blockchain.Backend,
+		blockchain.statesAddress,
 	)
 	AssertNoErr(err, "DeployAssets failed")
 	blockchain.Commit()
-	blockchain.assets = contract
+	blockchain.Assets = contract
+}
+func (blockchain *SimulatedBlockchain) DeployContracts(owner *ecdsa.PrivateKey) {
+	blockchain.deployStates(owner)
+	blockchain.deployAssets(owner)
 }
 func (blockchain *SimulatedBlockchain) CreateTeam(name string, from *ecdsa.PrivateKey) {
 	auth := bind.NewKeyedTransactor(from)
-	_, err := blockchain.assets.CreateTeam(
+	_, err := blockchain.Assets.CreateTeam(
 		&bind.TransactOpts{
 			From:   auth.From,
 			Signer: auth.Signer,
 		},
 		name,
-		blockchain.playerStatesAddr)
+		blockchain.statesAddress)
 	AssertNoErr(err, "Error creating Team")
 	blockchain.Commit()
 }
 func (blockchain *SimulatedBlockchain) CountTeams() *big.Int {
-	count, err := blockchain.assets.CountTeams(nil)
+	count, err := blockchain.Assets.CountTeams(nil)
 	AssertNoErr(err, "Error calling CountTeams")
 	blockchain.Commit()
 	return count
 }
-func (blockchain *SimulatedBlockchain) ScanTeamCreated() []AssetsTeamCreated {
-	events, err := blockchain.assets.ScanTeamCreated()
-	AssertNoErr(err, "Error calling ScanTeamCreatedTeam")
-	blockchain.Commit()
-	return events
-}
-
 func DefaultSimulatedBlockchain() *SimulatedBlockchain {
 	genesisGasLimit := uint64(8000029)
 	genesisBalance := "1000000000000000000000" // 1000 eth in wei
 	blockchain := NewSimulatedBlockchain(genesisGasLimit, genesisBalance)
-	bob := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
-	blockchain.DeployAssets(bob)
+	owner := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	blockchain.DeployContracts(owner)
 	return blockchain
 }
