@@ -22,7 +22,7 @@ contract('Game', (accounts) => {
 
     const createTeam = async (name, owner) => {
         let receipt = await assets.createTeam(name, owner).should.be.fulfilled;
-        const teamId = receipt.logs[0].args.teamId.toNumber()
+        const teamId = receipt.logs[0].args.id.toNumber()
         return teamId;
     }
 

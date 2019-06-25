@@ -309,7 +309,7 @@ contract('Assets', (accounts) => {
         const receipt = await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
         const count = await assets.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        const teamId = receipt.logs[0].args.teamId.toNumber();
+        const teamId = receipt.logs[0].args.id.toNumber();
         teamId.should.be.equal(1);
         teamName = await assets.getTeamName(teamId).should.be.fulfilled;
         teamName.should.be.equal("Barca",accounts[1]);
