@@ -3,7 +3,6 @@ package assets
 import (
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
@@ -47,13 +46,7 @@ func TestScanTeamCreated1TeamCreated(t *testing.T) {
 	}
 	blockchain.Commit()
 
-	tr := bind.TransactOpts{
-		From:   auth.From,
-		Signer: auth.Signer,
-		// GasLimit: big.NewInt(3141592),
-	}
-
-	_, err = contract.CreateTeam(&tr, "Barca", common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e"))
+	_, err = contract.CreateTeam(auth, "Barca", common.HexToAddress("0x83a909262608c650bd9b0ae06e29d90d0f67ac5e"))
 	if err != nil {
 		t.Fatal("Error creating team: ", err)
 	}
