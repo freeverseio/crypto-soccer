@@ -23,7 +23,7 @@ func TestScanTeamCreated1TeamCreated(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error creating team: ", err)
 	}
-	cryptosoccer.Backend.Commit()
+	cryptosoccer.Commit()
 
 	events, err := ScanTeamCreated(cryptosoccer.AssetsContract)
 	if err != nil {

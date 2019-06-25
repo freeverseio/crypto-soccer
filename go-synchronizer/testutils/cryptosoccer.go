@@ -54,3 +54,7 @@ func CryptosoccerNew(t *testing.T) *Cryptosoccer {
 		AssetsContract: assetsContract,
 	}
 }
+
+func (b *Cryptosoccer) Commit() {
+	b.Backend.Commit()
+}
