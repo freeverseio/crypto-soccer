@@ -6,7 +6,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
-func TestScanTeamCreatedEmplyContract(t *testing.T) {
+func TestEmplyContract(t *testing.T) {
 	cryptosoccer := testutils.CryptosoccerNew(t)
 	events, err := ScanTeamCreated(cryptosoccer.AssetsContract)
 	if err != nil {
@@ -17,7 +17,7 @@ func TestScanTeamCreatedEmplyContract(t *testing.T) {
 	}
 }
 
-func TestScanTeamCreated1TeamCreated(t *testing.T) {
+func TestCreateTeam(t *testing.T) {
 	cryptosoccer := testutils.CryptosoccerNew(t)
 	_, err := cryptosoccer.AssetsContract.CreateTeam(cryptosoccer.Opts, "Barca", cryptosoccer.Opts.From)
 	if err != nil {
