@@ -135,19 +135,11 @@ contract Assets {
         return teams[teamId].name;
     }
 
-    // TODO: name of the function carries information stored in the name of the params
-    // TODO: getPlayerId(uint256 teamId, uint8 posInTeam) already gives all the info
-    function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
-        require(_teamExists(teamId), "unexistent team");
-        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
-        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
-    }
-
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
         require(_teamExists(teamId), "invalid team id");
         for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
             if (teams[teamId].playerIds[pos] == 0) // virtual player
-                playerIds[pos] = getPlayerIdFromTeamIdAndPos(teamId, pos);
+                playerIds[pos] = generateVirtualPlayerId(teamId, pos);
             else
                 playerIds[pos] = teams[teamId].playerIds[pos];
         }
@@ -159,6 +151,12 @@ contract Assets {
             return generateVirtualPlayerState(playerId);
         else
             return _playerIdToState[playerId];
+    }
+
+    function generateVirtualPlayerId(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
+        require(_teamExists(teamId), "unexistent team");
+        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
+        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
     }
 
     function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
