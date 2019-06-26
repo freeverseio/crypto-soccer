@@ -2,7 +2,7 @@ version: '3'
 services:
   postgres:
     build: 
-      context: ./postgres/.
+      context: ../postgres/.
     ports:
       - "5432:5432"
   postgraphile:
