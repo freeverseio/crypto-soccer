@@ -1,0 +1,14 @@
+version: '3'
+services:
+  postgres:
+    build: 
+      context: ./postgres/.
+    ports:
+      - "5432:5432"
+  postgraphile:
+    image: graphile/postgraphile
+    depends_on:
+      - postgres
+    command: ["postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--enhance-graphiql", "--dynamic-json"]
+    ports:
+      - "5000:5000"
