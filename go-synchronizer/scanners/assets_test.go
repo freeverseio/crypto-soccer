@@ -28,6 +28,7 @@ func TestCreateTeam(t *testing.T) {
 }
 
 /*
+// Before executing this test run scanners/run_ganache.sh
 func TestGanache(t *testing.T) {
 	ganache := testutils.NewGanache()
 	bob := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
@@ -39,16 +40,15 @@ func TestGanache(t *testing.T) {
 	if blocknum == 0 {
 		t.Fatalf("Block number should not be zero")
 	}
-	fmt.Println("block:", blocknum)
 	ganache.DeployContracts(bob)
 
-	alice := ganache.CreateAccountWithBalance("40000000000000000000") // 400 eth
+	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	ganache.CreateTeam("Barca", alice)
 
-	//events, err := ScanTeamCreated(ganache.Assets, nil)
-	//testutils.AssertNoErr(err)
-	//if len(events) != 1 {
-	//	t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
-	//}
+	events, err := ScanTeamCreated(ganache.Assets, nil)
+	testutils.AssertNoErr(err)
+	if len(events) != 1 {
+		t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
+	}
 }
 */

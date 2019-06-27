@@ -55,9 +55,9 @@ func (ganache *Ganache) TransferWei(wei *big.Int, from *ecdsa.PrivateKey, to com
 	gasLimit := uint64(21000)
 	gasPrice, err := ganache.client.SuggestGasPrice(context.Background())
 	if err != nil {
-		fmt.Println("TransferWei: Failed obtaining suggested gas price, using 100")
+		fmt.Println("TransferWei: Failed obtaining suggested gas price, using 2GWei")
 		gasPrice := new(big.Int)
-		gasPrice.SetString("100", 10)
+		gasPrice.SetString("2000000000", 10)
 	}
 	var data []byte
 	tx := types.NewTransaction(nonce, to, wei, gasLimit, gasPrice, data)
@@ -104,9 +104,9 @@ func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
 	auth := bind.NewKeyedTransactor(from)
 	_, err := ganache.Assets.CreateTeam(
 		&bind.TransactOpts{
-			From:     auth.From,
-			Signer:   auth.Signer,
-			GasLimit: uint64(2000000000),
+			From:   auth.From,
+			Signer: auth.Signer,
+			//GasLimit: uint64(2000000000),
 		},
 		name,
 		ganache.statesAddress)
