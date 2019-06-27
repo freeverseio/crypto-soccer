@@ -58,6 +58,7 @@ func (b *Sqlite3) TeamCount() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer rows.Close()
 	rows.Next()
 	var count uint64
 	rows.Scan(&count)
@@ -70,6 +71,7 @@ func (b *Sqlite3) GetTeam(id uint64) (storage.Team, error) {
 	if err != nil {
 		return team, err
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return team, errors.New("unexistent team")
 	}
@@ -82,6 +84,7 @@ func (b *Sqlite3) GetBlockNumber() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return nil, nil
 	}
