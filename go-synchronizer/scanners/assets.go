@@ -9,7 +9,7 @@ func ScanTeamCreated(assetsContract *assets.Assets, opts *bind.FilterOpts) ([]as
 	if opts == nil {
 		opts = &bind.FilterOpts{Start: 0}
 	}
-	iter, err := assetsContract.FilterTeamCreated(&bind.FilterOpts{Start: 0})
+	iter, err := assetsContract.FilterTeamCreated(opts)
 	if err != nil {
 		return nil, err
 	}

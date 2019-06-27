@@ -3,6 +3,7 @@ package scanners
 import (
 	"testing"
 
+	//	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
@@ -50,5 +51,12 @@ func TestGanache(t *testing.T) {
 	if len(events) != 1 {
 		t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
 	}
+
+	events2, err2 := ScanTeamCreated(ganache.Assets, &bind.FilterOpts{Start: uint64(ganache.GetLastBlockNumber() + 1)})
+	testutils.AssertNoErr(err2)
+	if len(events2) != 0 {
+		t.Fatalf("No new events should have been received, but got %v", len(events2))
+	}
+
 }
 */
