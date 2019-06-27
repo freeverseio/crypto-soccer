@@ -6,6 +6,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/memory"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/sqlite3"
 
 	_ "github.com/lib/pq"
 )
@@ -38,8 +39,11 @@ func suite(t *testing.T, storage storage.Storage) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if blockNumber != nil {
-			t.Fatalf("Expected nil result %v", blockNumber)
+		if blockNumber == nil {
+			t.Fatalf("Expected not nil")
+		}
+		if blockNumber.Int64() != -1 {
+			t.Fatalf("Expected -1 result %v", blockNumber)
 		}
 
 		err = storage.SetBlockNumber(big.NewInt(3))
@@ -59,6 +63,14 @@ func suite(t *testing.T, storage storage.Storage) {
 
 func TestMemory(t *testing.T) {
 	storage := memory.New()
+	suite(t, storage)
+}
+
+func TestSqlite3(t *testing.T) {
+	storage, err := sqlite3.New("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	suite(t, storage)
 }
 

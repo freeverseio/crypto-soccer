@@ -15,7 +15,7 @@ type MemoryStorage struct {
 func New() *MemoryStorage {
 	return &MemoryStorage{
 		teams:       make(map[uint64]storage.Team),
-		blockNumber: nil,
+		blockNumber: big.NewInt(-1),
 	}
 }
 
