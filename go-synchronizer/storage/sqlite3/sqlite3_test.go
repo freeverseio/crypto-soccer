@@ -8,14 +8,14 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	_, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	_, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestGetBlockNumber(t *testing.T) {
-	storage, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestGetBlockNumber(t *testing.T) {
 }
 
 func TestSetBlockNumber(t *testing.T) {
-	storage, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestSetBlockNumber(t *testing.T) {
 }
 
 func TestTeamCount(t *testing.T) {
-	storage, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestTeamCount(t *testing.T) {
 }
 
 func TestTeamAdd(t *testing.T) {
-	storage, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestTeamAdd(t *testing.T) {
 }
 
 func TestGetTeam(t *testing.T) {
-	storage, err := sqlite3.New("../../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

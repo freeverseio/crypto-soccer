@@ -67,7 +67,7 @@ func TestMemory(t *testing.T) {
 }
 
 func TestSqlite3(t *testing.T) {
-	storage, err := sqlite3.New("../../postgres/sql/00_schema.sql")
+	storage, err := sqlite3.New("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
