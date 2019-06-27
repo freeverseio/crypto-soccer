@@ -11,7 +11,7 @@ func Process(assetsContract *assets.Assets, sto storage.Storage) error {
 	log.Debug("Process: called")
 
 	log.Debug("Process: scanning the blockchain")
-	events, err := scanners.ScanTeamCreated(assetsContract)
+	events, err := scanners.ScanTeamCreated(assetsContract, nil)
 	if err != nil {
 		return err
 	}
