@@ -6,10 +6,12 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/memory"
+
+	_ "github.com/lib/pq"
 )
 
 func suite(t *testing.T, storage storage.Storage) {
-	t.Run("A=1", func(t *testing.T) {
+	t.Run("GetTeam", func(t *testing.T) {
 		err := storage.TeamAdd(1, "ciao")
 		if err != nil {
 			t.Fatal(err)
@@ -19,7 +21,7 @@ func suite(t *testing.T, storage storage.Storage) {
 			t.Fatal(err)
 		}
 		if team.Id != 1 {
-			t.Fatalf("Expected 0 result %v", team.Id)
+			t.Fatalf("Expected 1 result %v", team.Id)
 		}
 		if team.Name != "ciao" {
 			t.Fatalf("Expected ciao result %v", team.Name)
@@ -59,3 +61,11 @@ func TestMemory(t *testing.T) {
 	storage := memory.New()
 	suite(t, storage)
 }
+
+// func TestPostgres(t *testing.T) {
+// 	storage, err := postgres.New("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	suite(t, storage)
+// }

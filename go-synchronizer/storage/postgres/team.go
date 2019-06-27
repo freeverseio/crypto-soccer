@@ -1,5 +1,7 @@
 package postgres
 
+import "github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+
 func (b *PostgresStorage) TeamAdd(ID uint64, name string) error {
 	//  TODO: check for db is initialized
 	_, err := b.db.Query("INSERT INTO teams (id, name) VALUES ($1, $2);", ID, name)
@@ -19,4 +21,8 @@ func (b *PostgresStorage) TeamCount() (uint64, error) {
 	}
 
 	return count, nil
+}
+
+func (b *PostgresStorage) GetTeam(id uint64) (storage.Team, error) {
+	return storage.Team{}, nil
 }

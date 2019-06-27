@@ -1,6 +1,9 @@
 package postgres
 
-import "database/sql"
+import (
+	"database/sql"
+	"math/big"
+)
 
 type PostgresStorage struct {
 	db *sql.DB
@@ -15,4 +18,12 @@ func New(url string) (*PostgresStorage, error) {
 	}
 
 	return storage, nil
+}
+
+func (b *PostgresStorage) GetBlockNumber() (*big.Int, error) {
+	return big.NewInt(0), nil
+}
+
+func (b *PostgresStorage) SetBlockNumber(value *big.Int) error {
+	return nil
 }
