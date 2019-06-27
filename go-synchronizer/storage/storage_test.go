@@ -39,8 +39,11 @@ func suite(t *testing.T, storage storage.Storage) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if blockNumber != nil {
-			t.Fatalf("Expected nil result %v", blockNumber)
+		if blockNumber == nil {
+			t.Fatalf("Expected not nil")
+		}
+		if blockNumber.Int64() != -1 {
+			t.Fatalf("Expected -1 result %v", blockNumber)
 		}
 
 		err = storage.SetBlockNumber(big.NewInt(3))
