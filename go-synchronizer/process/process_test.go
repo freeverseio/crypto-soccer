@@ -3,12 +3,15 @@ package process
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/memory"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/sqlite3"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
 func TestSyncTeamWithNoTeam(t *testing.T) {
-	storage := memory.New()
+	storage, err := sqlite3.New("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	blockchain := testutils.DefaultSimulatedBlockchain()
 
 	Process(blockchain.Assets, storage)
@@ -23,7 +26,10 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 }
 
 func TestSyncTeams(t *testing.T) {
-	storage := memory.New()
+	storage, err := sqlite3.New("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	blockchain := testutils.DefaultSimulatedBlockchain()
 
 	alice := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
@@ -34,7 +40,7 @@ func TestSyncTeams(t *testing.T) {
 	blockchain.CreateTeam("Madrid", bob)
 	blockchain.CreateTeam("Venezia", carol)
 
-	err := Process(blockchain.Assets, storage)
+	err = Process(blockchain.Assets, storage)
 	if err != nil {
 		t.Fatal(err)
 	}
