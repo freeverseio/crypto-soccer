@@ -2,17 +2,20 @@ package memory
 
 import (
 	"errors"
+	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
 type MemoryStorage struct {
-	teams map[uint64]storage.Team
+	teams       map[uint64]storage.Team
+	blockNumber *big.Int
 }
 
 func New() *MemoryStorage {
 	return &MemoryStorage{
-		teams: make(map[uint64]storage.Team),
+		teams:       make(map[uint64]storage.Team),
+		blockNumber: nil,
 	}
 }
 
@@ -31,4 +34,13 @@ func (m *MemoryStorage) GetTeam(id uint64) (storage.Team, error) {
 		return team, errors.New("unexistent team")
 	}
 	return team, nil
+}
+
+func (m *MemoryStorage) GetBlockNumber() (*big.Int, error) {
+	return m.blockNumber, nil
+}
+
+func (m *MemoryStorage) SetBlockNumber(value *big.Int) error {
+	m.blockNumber = value
+	return nil
 }
