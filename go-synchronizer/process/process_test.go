@@ -3,12 +3,12 @@ package process
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/sqlite3"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
 func TestSyncTeamWithNoTeam(t *testing.T) {
-	storage, err := sqlite3.New("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 }
 
 func TestSyncTeams(t *testing.T) {
-	storage, err := sqlite3.New("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

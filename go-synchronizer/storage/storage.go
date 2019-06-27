@@ -7,6 +7,8 @@ import (
 	"log"
 	"math/big"
 	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Team struct {

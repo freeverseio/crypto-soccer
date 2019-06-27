@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/postgres"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	log.Info("Connecting to DBMS: ", postgresUrl)
-	storage, err := postgres.New(postgresUrl)
+	storage, err := storage.NewPostgres(postgresUrl)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}

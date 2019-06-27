@@ -7,12 +7,12 @@ import (
 
 type BackgroundProcess struct {
 	assetsContract *assets.Assets
-	storage        storage.Storage
+	storage        *storage.Storage
 	queryStop      chan (bool)
 	stopped        chan (bool)
 }
 
-func BackgroundProcessNew(assetsContract *assets.Assets, storage storage.Storage) *BackgroundProcess {
+func BackgroundProcessNew(assetsContract *assets.Assets, storage *storage.Storage) *BackgroundProcess {
 	return &BackgroundProcess{
 		assetsContract: assetsContract,
 		storage:        storage,
