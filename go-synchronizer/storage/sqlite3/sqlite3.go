@@ -13,7 +13,7 @@ type Sqlite3 struct {
 func New() (*Sqlite3, error) {
 	var err error
 	storage := Sqlite3{}
-	storage.db, err = sql.Open("sqlite3", "./nraboy.db")
+	storage.db, err = sql.Open("sqlite3", "file:test.db?cache=shared&mode=memory")
 	if err != nil {
 		return nil, err
 	}
