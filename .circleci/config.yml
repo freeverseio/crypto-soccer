@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: asiniscalchi/freeverse_develop
+      - image: asiniscalchi/freeverse_develop:ganache
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -47,7 +47,6 @@ jobs:
             # run ganache in the background
             ./run_ganache.sh &
             go test
-            killall ganache-cli
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
