@@ -110,10 +110,28 @@ func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
 		},
 		name,
 		ganache.statesAddress)
-	AssertNoErr(err, "Error creating Team")
+	AssertNoErr(err, "Error creating Team ", name)
+}
+func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int64 {
+	playerId, err := ganache.Assets.GenerateVirtualPlayerId(
+		&bind.CallOpts{},
+		teamId,
+		posInTeam,
+	)
+	AssertNoErr(err, "Error getting virtual player id in pos ", posInTeam, " for team ", teamId)
+	return playerId.Int64()
+}
+func (ganache *Ganache) GetVirtualPlayerIds(teamId *big.Int) (playerIds [11]int64) {
+	for i := 0; i < len(playerIds); i++ {
+		playerIds[i] = ganache.getVirtualPlayerId(teamId, uint8(i))
+	}
+	return
 }
 func (ganache *Ganache) CountTeams() *big.Int {
 	count, err := ganache.Assets.CountTeams(nil)
 	AssertNoErr(err, "Error calling CountTeams")
 	return count
+}
+func PrintTeamCreated(event assets.AssetsTeamCreated, ganache *Ganache) {
+	fmt.Println("team name:", event.Name, "team id:", event.Id.Int64(), "player ids: ", ganache.GetVirtualPlayerIds(event.Id))
 }
