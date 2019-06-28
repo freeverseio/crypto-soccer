@@ -47,7 +47,8 @@ jobs:
             # run ganache in the background
             ./run_ganache.sh &
             # wait until ganache is up and running
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            #while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            sleep 5
             go test
       - run:
           name: Compile goSoccer
