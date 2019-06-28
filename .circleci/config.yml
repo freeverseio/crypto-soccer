@@ -47,7 +47,6 @@ jobs:
             # run ganache in the background
             ./run_ganache.sh &
             go test
-            killall ganache-cli
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
