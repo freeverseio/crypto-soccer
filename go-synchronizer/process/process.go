@@ -19,7 +19,11 @@ func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
 	log.Debug("Process: act on local storage")
 	for i := 0; i < len(events); i++ {
 		event := events[i]
-		err = sto.TeamAdd(event.Id.Uint64(), event.Name)
+		name, err := assetsContract.GetTeamName(nil, event.Id)
+		if err != nil {
+			return err
+		}
+		err = sto.TeamAdd(event.Id.Uint64(), name)
 		if err != nil {
 			return err
 		}

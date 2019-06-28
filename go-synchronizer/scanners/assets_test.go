@@ -51,10 +51,6 @@ func TestGanache(t *testing.T) {
 	if len(events) != 1 {
 		t.Fatalf("Scanning Assets contract with 1 team returned %v events", len(events))
 	}
-
-	if events[0].Name != "Barca" {
-		t.Fatalf("Expected team name Barca, actual %v", events[0].Name)
-	}
 	testutils.PrintTeamCreated(events[0], ganache)
 
 	events2, err2 := ScanTeamCreated(ganache.Assets, &bind.FilterOpts{Start: uint64(ganache.GetLastBlockNumber() + 1)})

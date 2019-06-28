@@ -5,7 +5,7 @@ import "../state/PlayerState.sol";
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets {
-    event TeamCreated (uint256 id, string name);
+    event TeamCreated (uint256 id);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -103,7 +103,7 @@ contract Assets {
         uint256[PLAYERS_PER_TEAM] memory playerIds;
         teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
         uint256 id = teams.length - 1;
-        emit TeamCreated(id, name);
+        emit TeamCreated(id);
     }
 
     function signToLeague(

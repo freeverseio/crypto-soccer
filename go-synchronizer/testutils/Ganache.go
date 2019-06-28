@@ -144,5 +144,5 @@ func (ganache *Ganache) CountTeams() *big.Int {
 	return count
 }
 func PrintTeamCreated(event assets.AssetsTeamCreated, ganache *Ganache) {
-	fmt.Println("team name:", event.Name, "team id:", event.Id.Int64(), "players: ", ganache.GetVirtualPlayers(event.Id))
+	fmt.Println("team id:", event.Id.Int64(), "players: ", ganache.GetVirtualPlayers(event.Id))
 }
