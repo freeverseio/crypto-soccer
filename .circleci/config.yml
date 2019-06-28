@@ -39,7 +39,15 @@ jobs:
           command: cd go-synchronizer && go build
       - run:
           name: Test go-synchronizer
-          command: cd go-synchronizer && go test ./...
+          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/scanners`
+      - run:
+          name: Test go-synchronizer.scanners
+          command: |
+            cd go-synchronizer/scanners
+            # run ganache in the background
+            ./run_ganache.sh &
+            go test
+            killall ganache-cli
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build

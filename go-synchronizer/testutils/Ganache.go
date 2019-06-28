@@ -121,9 +121,20 @@ func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int
 	AssertNoErr(err, "Error getting virtual player id in pos ", posInTeam, " for team ", teamId)
 	return playerId.Int64()
 }
-func (ganache *Ganache) GetVirtualPlayerIds(teamId *big.Int) (playerIds [11]int64) {
-	for i := 0; i < len(playerIds); i++ {
-		playerIds[i] = ganache.getVirtualPlayerId(teamId, uint8(i))
+func (ganache *Ganache) getVirtualPlayerState(playerId int64) *big.Int {
+	playerState, err := ganache.Assets.GenerateVirtualPlayerState(
+		&bind.CallOpts{},
+		big.NewInt(playerId),
+	)
+	AssertNoErr(err, "Error getting virtual player state for id ", playerId)
+	return playerState
+}
+func (ganache *Ganache) GetVirtualPlayers(teamId *big.Int) (players map[int64]*big.Int) {
+	players = make(map[int64]*big.Int)
+	for i := 0; i < 11; i++ {
+		playerId := ganache.getVirtualPlayerId(teamId, uint8(i))
+		playerState := ganache.getVirtualPlayerState(playerId)
+		players[playerId] = playerState
 	}
 	return
 }
@@ -133,5 +144,5 @@ func (ganache *Ganache) CountTeams() *big.Int {
 	return count
 }
 func PrintTeamCreated(event assets.AssetsTeamCreated, ganache *Ganache) {
-	fmt.Println("team name:", event.Name, "team id:", event.Id.Int64(), "player ids: ", ganache.GetVirtualPlayerIds(event.Id))
+	fmt.Println("team name:", event.Name, "team id:", event.Id.Int64(), "players: ", ganache.GetVirtualPlayers(event.Id))
 }
