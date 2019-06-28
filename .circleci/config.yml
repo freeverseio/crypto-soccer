@@ -46,6 +46,7 @@ jobs:
             cd go-synchronizer/scanners
             # run ganache in the background
             ./run_ganache.sh &
+            sleep 5
             go test
       - run:
           name: Compile goSoccer
