@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Process(assetsContract *assets.Assets, sto storage.Storage) error {
+func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
 	log.Debug("Process: called")
 
 	log.Debug("Process: scanning the blockchain")
