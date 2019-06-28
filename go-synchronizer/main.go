@@ -1,12 +1,14 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -18,22 +20,31 @@ var assetsContractAddress = "0x05Fdd4d2340bcA823802849c75F385561278c3aB"
 var postgresUrl = "user=postgres dbname=cryptosoccer"
 
 func main() {
-	log.Info("Starting ...")
+	configFile := flag.String("config", "./config.json", "configuration file")
+	flag.Parse()
 
-	log.Info("Dial the Ethereum client: ", ethereumClient)
+	log.Info("Starting ...")
+	log.Info("Parsing configuration file: ", *configFile)
+	config, err := config.New(*configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config.Print()
+
+	log.Info("Dial the Ethereum client: ", config.EthereumClient)
 	conn, err := ethclient.Dial(ethereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Assets bindings to: ", assetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(assetsContractAddress), conn)
+	log.Info("Creating Assets bindings to: ", config.AssetsContractAddress)
+	assetsContract, err := assets.NewAssets(common.HexToAddress(config.AssetsContractAddress), conn)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Connecting to DBMS: ", postgresUrl)
-	storage, err := storage.NewPostgres(postgresUrl)
+	log.Info("Connecting to DBMS: ", config.PostgresUrl)
+	storage, err := storage.NewPostgres(config.PostgresUrl)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
