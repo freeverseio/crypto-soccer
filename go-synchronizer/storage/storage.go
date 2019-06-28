@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"io/ioutil"
-	"log"
 	"math/big"
 	"os"
 
@@ -40,21 +39,21 @@ func NewSqlite3(schemaFile string) (*Storage, error) {
 		return nil, err
 	}
 	if err := storage.db.Ping(); err != nil {
-		log.Fatalf("could not ping DB... %v", err)
+		return nil, err
 	}
 	file, err := os.Open(schemaFile)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer file.Close()
 
 	script, err := ioutil.ReadAll(file)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	_, err = storage.db.Exec(string(script))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return &storage, nil
 }

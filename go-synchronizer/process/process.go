@@ -8,15 +8,15 @@ import (
 )
 
 func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
-	log.Debug("Process: called")
+	log.Trace("Process: called")
 
-	log.Debug("Process: scanning the blockchain")
+	log.Trace("Process: scanning the blockchain")
 	events, err := scanners.ScanTeamCreated(assetsContract, nil)
 	if err != nil {
 		return err
 	}
 
-	log.Debug("Process: act on local storage")
+	log.Trace("Process: act on local storage")
 	for i := 0; i < len(events); i++ {
 		event := events[i]
 		name, err := assetsContract.GetTeamName(nil, event.Id)
@@ -27,6 +27,7 @@ func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
 		if err != nil {
 			return err
 		}
+		log.Debugf("Team Created: id = %v, name = %v", event.Id.String(), name)
 	}
 
 	return nil

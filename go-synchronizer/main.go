@@ -20,6 +20,8 @@ func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	flag.Parse()
 
+	log.SetLevel(log.DebugLevel)
+
 	log.Info("Starting ...")
 	log.Info("Parsing configuration file: ", *configFile)
 	config, err := config.New(*configFile)
