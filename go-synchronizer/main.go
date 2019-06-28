@@ -15,12 +15,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ethereumClient = "https://devnet.busyverse.com/web3"
-var assetsContractAddress = "0x05Fdd4d2340bcA823802849c75F385561278c3aB"
-var postgresUrl = "user=postgres dbname=cryptosoccer"
-
 func main() {
 	configFile := flag.String("config", "./config.json", "configuration file")
+	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	flag.Parse()
 
 	log.Info("Starting ...")
@@ -32,7 +29,7 @@ func main() {
 	config.Print()
 
 	log.Info("Dial the Ethereum client: ", config.EthereumClient)
-	conn, err := ethclient.Dial(ethereumClient)
+	conn, err := ethclient.Dial(config.EthereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -43,13 +40,19 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Connecting to DBMS: ", config.PostgresUrl)
-	storage, err := storage.NewPostgres(config.PostgresUrl)
+	var sto *storage.Storage
+	if *inMemoryDatabase {
+		log.Warning("Using in memory DBMS (no persistence)")
+		sto, err = storage.NewSqlite3("./sql/00_schema.sql")
+	} else {
+		log.Info("Connecting to DBMS: ", config.PostgresUrl)
+		sto, err = storage.NewPostgres(config.PostgresUrl)
+	}
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(assetsContract, storage)
+	process := process.BackgroundProcessNew(assetsContract, sto)
 
 	log.Info("Start to process events ...")
 	process.Start()
