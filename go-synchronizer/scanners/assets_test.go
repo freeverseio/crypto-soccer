@@ -4,7 +4,7 @@ import (
 	//"fmt"
 	"testing"
 
-	//"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
 
@@ -29,7 +29,6 @@ func TestCreateTeam(t *testing.T) {
 	}
 }
 
-/*
 // Before executing this test run scanners/run_ganache.sh
 func TestGanache(t *testing.T) {
 	ganache := testutils.NewGanache()
@@ -73,4 +72,3 @@ func TestGanache(t *testing.T) {
 
 	testutils.PrintTeamCreated(events3[0], ganache)
 }
-*/
