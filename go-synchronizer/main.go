@@ -5,8 +5,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	_ "github.com/lib/pq"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
