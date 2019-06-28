@@ -176,21 +176,6 @@ def test2():
     assert ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have."
 
 
-    # CLIENT computes the data needed to update league (and stores it in the CLIENT)
-    initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
-
-    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the skillsAtMatchday!:
-    dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
-    dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
-
-    ST.updateLeague(
-        leagueIdx,
-        initSkillsHash,
-        dataAtMatchdayHashesLie,
-        scores,
-        ADDR2,
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
     # A CHALLENGER tries to prove that the UPDATER lied with skillsAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)

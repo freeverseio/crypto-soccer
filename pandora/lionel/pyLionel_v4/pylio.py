@@ -181,6 +181,7 @@ def advanceToBlock(n, ST, ST_CLIENT):
     assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
     if verseWasCrossedBC:
         ST_CLIENT.syncActions(ST)
+        ST_CLIENT.syncLeagueCommits(ST)
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
