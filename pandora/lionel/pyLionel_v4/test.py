@@ -210,6 +210,27 @@ def test2():
     assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
 
 
+    # A Challenger provides a lie at initskills
+    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
+    dataToChallengeLeagueLie.initSkillsHash += 1
+
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeagueLie.initSkillsHash,
+        dataToChallengeLeagueLie.dataAtMatchdayHashes,
+        dataToChallengeLeagueLie.scores,
+        ADDR3
+    )
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.challengeInitSkills(
+        verse,
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
+    )
+    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    # toni
 
 
 

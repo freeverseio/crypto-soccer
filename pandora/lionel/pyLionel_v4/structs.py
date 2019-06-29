@@ -595,9 +595,13 @@ class Storage(Counter):
             ), "Provided Merkle proof is invalid"
 
 
-    def challengeInitSkills(self, leagueIdx, usersInitData, dataToChallengeInitSkills):
+    def challengeInitSkills(self, verse, leagueIdx, usersInitData, dataToChallengeInitSkills):
+        assert (self.isVerseUpdated(verse) == UPDT_MATCHDAYS)
+        leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
+        assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
-        assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
+        # TODO: re-put next line
+        # assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         initSkills = self.verifyInitSkillsMerkleProofs(usersInitData, dataToChallengeInitSkills)
@@ -609,11 +613,11 @@ class Storage(Counter):
 
         # We now know that the initSkills were correct. We just check that
         # the updater had not provided exactly the same correct skills!
-        if pylio.serialHash(initSkills) == self.leagues[leagueIdx].initSkillsHash:
+        if pylio.serialHash(initSkills) == self.verseToLeagueCommits[verse].initSkillsHash:
             print("Challenger failed to prove that initStates were wrong")
         else:
             print("Challenger Wins: initStates provided by updater are invalid")
-            self.leagues[leagueIdx].resetUpdater()
+            self.verseToLeagueCommits[verse].slashOneLeagueData()
 
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
