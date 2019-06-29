@@ -265,10 +265,9 @@ class LeaguesCommitInVerse():
         self.dataAtMatchdaysHashesOwner     = None
 
     # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
-    def challengeSuperRoot(self, allLeaguesRoots, ownerAddr, willSucceed):
+    def challengeSuperRoot(self, allLeaguesRoots, ownerAddr):
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
-        self.allLeaguesRootsWillSucceed = willSucceed
         tree = MerkleTree(allLeaguesRoots)
         self.allLeaguesRootsSuperRoot = tree.root
 
@@ -278,11 +277,12 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed = None
         self.allLeaguesRootsSuperRoot   = None
 
-    def challengeAllLeaguesRootsHash(self, leagueIdx, matchdayHashes, addr):
+    def writeAllLeaguesRoots(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
         self.dataAtMatchdaysLeagueIdx   = leagueIdx
-        self.dataAtMatchdaysHashes      = matchdayHashes
+        self.initSkillsHash             = initSkillsHash
+        self.dataAtMatchdayHashes       = dataAtMatchdayHashes
+        self.scores                     = scores
         self.dataAtMatchdaysHashesOwner = addr
-#toni
 
 # The MAIN CLASS that manages all BC & CLIENT storage
 class Storage(Counter):
@@ -787,13 +787,13 @@ class Storage(Counter):
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
-#toni
-    def challengeSuperRoot(self, verse, allLeaguesRoots, addr, willSucceed):
+    def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
         assert self.isVerseUpdated(verse) == UPDT_SUPER, "league has not been updated yet"
+        assert pylio.serialHash(allLeaguesRoots) != self.verseToLeagueCommits[verse].superRoot, \
+            "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
         self.verseToLeagueCommits[verse].challengeSuperRoot(
             allLeaguesRoots,
             addr,
-            willSucceed
         )
 
     def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
@@ -840,15 +840,20 @@ class Storage(Counter):
         self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
         return True
 
-    def challengeAllLeaguesRootsHash(self, verse, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
+    def challengeAllLeaguesRoots(self, verse, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
         assert (self.isVerseUpdated(verse) == UPDT_ALLLGS)
         leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(initSkillsHash, dataAtMatchdayHashes, scores) != leagueRoot, \
             "Your data coincides with the updater. Nothing to challenge."
         # toni: compete this when there is a lie
-        self.verseToLeagueCommits[verse].challengeAllLeaguesRootsHash(leagueIdx, matchdayHashes, addr)
-        return True
+        self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
+            leagueIdx,
+            initSkillsHash,
+            dataAtMatchdayHashes,
+            scores,
+            addr
+        )
 
     def computeLeagueRoot(self, initSkillsHash, dataAtMatchdayHashes, scores):
         leagueStruct = LeagueStructForHashing(initSkillsHash, dataAtMatchdayHashes, scores)

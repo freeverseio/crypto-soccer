@@ -149,18 +149,23 @@ def test2():
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
     assert ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as updated, when the sync process should have done it"
 
-    # anna
     verse = ST.leagues[leagueIdx].verseFinal()
-    allLeaguesRoots = [[1, "rn1"], [2, "rn2"]]
-    willSucceed = True
-    matchdayHashes = ["day1", "day2"]
 
+    # Since the entire verse was updated faithfully, any challenge to it will fail.
+    # First check that the status is correct
     assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
+    # Try to challenge an All-leagues-roots before any was provided... should fail:
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
                     "You challenged all league roots, not yet provided before")
 
+    # Try to challenge by providing a correct All-leagues-roots... should fail
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2), \
+        "You were able to challenge a superroot by providing compatible allLeaguesRoots")
+
+    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
+    allLeaguesRootsLie[0][1] += 1
+    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
 
     assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
@@ -169,19 +174,16 @@ def test2():
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
                      "A league should not be there, but you couldnt prove it")
 
+    # A Challenger provides a lie in initSkills
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-
-    pylio.shouldFail(lambda x:
-        ST.challengeAllLeaguesRootsHash(
-            verse,
-            leagueIdx,
-            dataToChallengeLeague.initSkillsHash,
-            dataToChallengeLeague.dataAtMatchdayHashes,
-            dataToChallengeLeague.scores,
-            ADDR3
-        ), "challengeAllLeaguesRootsHash successful when it should not"
-
-     )
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeague.initSkillsHash+1,
+        dataToChallengeLeague.dataAtMatchdayHashes,
+        dataToChallengeLeague.scores,
+        ADDR3
+    )
 
     # A CHALLENGER tries to prove that the UPDATER lied with skillsAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
