@@ -254,7 +254,7 @@ class MerkleTree():
         return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
 
 class LeaguesCommitInVerse():
-    def __init__(self, superRoot, ownerAddr):
+    def __init__(self, superRoot, ownerAddr, blocknum):
         self.superRoot                      = pylio.duplicate(superRoot)
         self.superRootOwner                 = ownerAddr
         self.allLeaguesRoots                = None
@@ -263,13 +263,15 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed     = None
         self.dataAtMatchdaysHashes          = None
         self.dataAtMatchdaysHashesOwner     = None
+        self.lastWriteBlocknum              = blocknum
 
     # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
-    def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr):
+    def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr, blocknum):
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
         tree = MerkleTree(allLeaguesRoots)
-        self.allLeaguesRootsSuperRoot = tree.root
+        self.allLeaguesRootsSuperRoot   = tree.root
+        self.lastWriteBlocknum          = blocknum
 
     def slashAllLeaguesRoots(self):
         self.allLeaguesRoots            = None
@@ -277,12 +279,13 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed = None
         self.allLeaguesRootsSuperRoot   = None
 
-    def writeOneLeagueData(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
+    def writeOneLeagueData(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr, blocknum):
         self.dataAtMatchdaysLeagueIdx   = leagueIdx
         self.initSkillsHash             = initSkillsHash
         self.dataAtMatchdayHashes       = dataAtMatchdayHashes
         self.scores                     = scores
         self.dataAtMatchdaysHashesOwner = addr
+        self.lastWriteBlocknum          = blocknum
 
     def slashOneLeagueData(self):
         self.dataAtMatchdaysLeagueIdx   = None
@@ -356,7 +359,7 @@ class Storage(Counter):
 
     def updateLeaguesSuperRoot(self, verse, superRoot, addr):
         assert self.isVerseUpdated(verse) == UPDT_NONE, "Verse Leagues already updated"
-        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr)
+        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr,self.currentBlock)
 
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
@@ -808,6 +811,7 @@ class Storage(Counter):
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
             allLeaguesRoots,
             addr,
+            self.currentBlock
         )
 
     def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
@@ -866,7 +870,8 @@ class Storage(Counter):
             initSkillsHash,
             dataAtMatchdayHashes,
             scores,
-            addr
+            addr,
+            self.currentBlock
         )
 
     def computeLeagueRoot(self, initSkillsHash, dataAtMatchdayHashes, scores):

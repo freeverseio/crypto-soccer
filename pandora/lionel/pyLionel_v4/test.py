@@ -258,7 +258,8 @@ def test2():
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
     assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
 
-
+    # at this point we basically know that the provided data that challenge AllLeagueRoots is correct,
+    # and hence, we should slash the AllLeagueRoots updater, and believe the superRoot.
 
 
 
