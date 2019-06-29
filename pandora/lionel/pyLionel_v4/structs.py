@@ -265,7 +265,7 @@ class LeaguesCommitInVerse():
         self.dataAtMatchdaysHashesOwner     = None
 
     # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
-    def challengeSuperRoot(self, allLeaguesRoots, ownerAddr):
+    def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr):
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
         tree = MerkleTree(allLeaguesRoots)
@@ -277,12 +277,20 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsWillSucceed = None
         self.allLeaguesRootsSuperRoot   = None
 
-    def writeAllLeaguesRoots(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
+    def writeOneLeagueData(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
         self.dataAtMatchdaysLeagueIdx   = leagueIdx
         self.initSkillsHash             = initSkillsHash
         self.dataAtMatchdayHashes       = dataAtMatchdayHashes
         self.scores                     = scores
         self.dataAtMatchdaysHashesOwner = addr
+
+    def slashOneLeagueData(self):
+        self.dataAtMatchdaysLeagueIdx   = None
+        self.initSkillsHash             = None
+        self.dataAtMatchdayHashes       = None
+        self.scores                     = None
+        self.dataAtMatchdaysHashesOwner = None
+
 
 # The MAIN CLASS that manages all BC & CLIENT storage
 class Storage(Counter):
@@ -423,16 +431,17 @@ class Storage(Counter):
 
         dataAtMatchdayHash = self.prepareOneMatchdayHash(dataAtPrevMatchday)
 
-        if not dataAtMatchdayHash == self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday]:
+        if not dataAtMatchdayHash == self.verseToLeagueCommits[finalVerse].dataAtMatchdayHashes[selectedMatchday]:
             print("Challenger Wins: skillsAtMatchday provided by updater are invalid")
-            self.leagues[leagueIdx].resetUpdater()
+            self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
             return
 
         if not (self.leagues[leagueIdx].scores[selectedMatchday] == scores).all():
             print("Challenger Wins: scores provided by updater are invalid")
-            self.leagues[leagueIdx].resetUpdater()
+            self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
             return
 
+        self.verseToLeagueCommits[finalVerse].resetAllLeaguesRoots()
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
 
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
@@ -793,7 +802,7 @@ class Storage(Counter):
         assert self.isVerseUpdated(verse) == UPDT_SUPER, "league has not been updated yet"
         assert pylio.serialHash(allLeaguesRoots) != self.verseToLeagueCommits[verse].superRoot, \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
-        self.verseToLeagueCommits[verse].challengeSuperRoot(
+        self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
             allLeaguesRoots,
             addr,
         )
@@ -849,7 +858,7 @@ class Storage(Counter):
         assert self.computeLeagueRoot(initSkillsHash, dataAtMatchdayHashes, scores) != leagueRoot, \
             "Your data coincides with the updater. Nothing to challenge."
         # toni: compete this when there is a lie
-        self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
+        self.verseToLeagueCommits[verse].writeOneLeagueData(
             leagueIdx,
             initSkillsHash,
             dataAtMatchdayHashes,

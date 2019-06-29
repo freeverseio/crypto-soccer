@@ -177,7 +177,7 @@ def test2():
     # A Challenger provides a lie at matchday 0, 1 and initskills, and scores
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
     dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.initSkillsHash += 1
+    # dataToChallengeLeagueLie.initSkillsHash += 1
     dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
     dataToChallengeLeagueLie.dataAtMatchdayHashes[1] += 1
     dataToChallengeLeagueLie.scores[0][0][0] += 1
@@ -197,8 +197,9 @@ def test2():
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
 
     selectedMatchday = 0
-    TODO: this should fail because data at matchday does not rely on good initskills hash
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+
     # Since it must succeed, the league is 'reset', without any update
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
