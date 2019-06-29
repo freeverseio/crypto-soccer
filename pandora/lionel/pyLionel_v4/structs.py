@@ -123,11 +123,11 @@ class Team():
         self.teamPosInPrevLeague    = 0
 
 class DataToChallengeLeague():
-    def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores, leagueHash):
+    def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores, leagueRoot):
         self.initSkillsHash         = initSkillsHash
         self.dataAtMatchdayHashes   = dataAtMatchdayHashes
         self.scores                 = scores
-        self.leagueHash             = leagueHash
+        self.leagueRoot             = leagueRoot
 
 
 class League():
@@ -796,16 +796,16 @@ class Storage(Counter):
             willSucceed
         )
 
-    def getLeagueHashFromVerseCommit(self, verse, leagueIdx):
-        leagueHash = 0
+    def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
+        leagueRoot = 0
         for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
             if leaguePair[0] == leagueIdx:
-                leagueHash = leaguePair[1]
+                leagueRoot = leaguePair[1]
                 break
-        return leagueHash
+        return leagueRoot
 
     def isLeagueIdxInVerseCommit(self, verse, leagueIdx):
-        return self.getLeagueHashFromVerseCommit(verse, leagueIdx) != 0
+        return self.getLeagueRootFromVerseCommit(verse, leagueIdx) != 0
 
     def challengeAllLeaguesRootsLeagueMissing(self, verse, leagueIdx):
         # the order of these asserts matters
@@ -833,21 +833,26 @@ class Storage(Counter):
     def challengeAllLeaguesRootsLeagueIdxs(self, verse, leagueIdx, typeOfIssue):
         assert (self.isVerseUpdated(verse) == UPDT_ALLLGS) or (self.isVerseUpdated(verse) == UPDT_MATCHDAYS), "verse has not been updated yet!"
         assert typeOfIssue == 0 or typeOfIssue == 1, "only 0 or 1 allowed"
-        if typeOfIssue == 0:
+        if typeOfIssue == MISSING:
             self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
         else:
             self.challengeAllLeaguesRootsLeagueExceeding(verse, leagueIdx)
         self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
         return True
 
-    def challengeAllLeaguesRootsHash(self, verse, leagueIdx, matchdayHashes, addr):
+    def challengeAllLeaguesRootsHash(self, verse, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
         assert (self.isVerseUpdated(verse) == UPDT_ALLLGS)
-        leagueHash = self.getLeagueHashFromVerseCommit(verse, leagueIdx)
-        assert leagueHash != 0, "You cannot challenge a league that is not part of the verse commit"
-        assert pylio.serialHash(matchdayHashes) != leagueHash, "Your data coincides with the updater. Nothing to challenge."
+        leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
+        assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
+        assert self.computeLeagueRoot(initSkillsHash, dataAtMatchdayHashes, scores) != leagueRoot, \
+            "Your data coincides with the updater. Nothing to challenge."
+        # toni: compete this when there is a lie
         self.verseToLeagueCommits[verse].challengeAllLeaguesRootsHash(leagueIdx, matchdayHashes, addr)
         return True
 
+    def computeLeagueRoot(self, initSkillsHash, dataAtMatchdayHashes, scores):
+        leagueStruct = LeagueStructForHashing(initSkillsHash, dataAtMatchdayHashes, scores)
+        return pylio.serialHash(leagueStruct)
 
 
     # ------------------------------------------------------------------------
@@ -1136,10 +1141,6 @@ class Storage(Counter):
         dataAtMatchdayHashes.append(lastDayTree.root)
         return dataAtMatchdayHashes, lastDayTree
 
-    def getLeagueHash(self, initSkillsHash, dataAtMatchdayHashes, scores):
-        self.assertIsClient()
-        leagueStruct = LeagueStructForHashing(initSkillsHash, dataAtMatchdayHashes, scores)
-        return pylio.serialHash(leagueStruct)
 
 
     # The CLIENT:
@@ -1155,13 +1156,13 @@ class Storage(Counter):
         initSkillsHash          = pylio.serialHash(self.leagues[leagueIdx].getInitPlayerSkills())
         dataAtMatchdayHashes, lastDayTree = self.prepareHashesForDataAtMatchdays(dataAtMatchdays)
         # Create a serialize these 4 data so that we can hash
-        leagueHash = self.getLeagueHash(initSkillsHash, dataAtMatchdayHashes, scores)
+        leagueRoot = self.computeLeagueRoot(initSkillsHash, dataAtMatchdayHashes, scores)
 
         dataToChallengeLeague = DataToChallengeLeague(
             initSkillsHash,
             dataAtMatchdayHashes,
             scores,
-            leagueHash
+            leagueRoot
         )
 
         self.leagues[leagueIdx].writeDataToChallengeLeague(dataToChallengeLeague)
@@ -1173,7 +1174,7 @@ class Storage(Counter):
         # return initSkillsHash, dataAtMatchdayHashes, scores
 
     def hasLeagueBeenUpdatedByClient(self, leagueIdx):
-        return self.leagues[leagueIdx].dataToChallengeLeague.leagueHash != 0
+        return self.leagues[leagueIdx].dataToChallengeLeague.leagueRoot != 0
 
 
     # returns states of all teams at start of a league. These include skills from previous league, and possible
@@ -1203,12 +1204,39 @@ class Storage(Counter):
         else:
             return self.leaguesFinishingInVerse[verse]
 
+    def computeLeagueHashesForVerse(self, verse):
+        self.assertIsClient()
+        leagueIdxsForThisCommit = self.getLeaguesFinishingInVerse(verse)
+        if len(leagueIdxsForThisCommit) == 0:
+            return 0, []
+        allLeaguesRoots = []
+        for leagueIdx in leagueIdxsForThisCommit:
+            allLeaguesRoots.append(
+                [
+                    leagueIdx,
+                    self.leagues[leagueIdx].dataToChallengeLeague.leagueRoot
+                ]
+            )
+        superRoot = pylio.serialHash(allLeaguesRoots)
+        return superRoot, allLeaguesRoots
+
+    def updateAllLeaguesForVerseInClient(self, verse):
+        self.assertIsClient()
+        leagueIdxsForThisCommit = self.getLeaguesFinishingInVerse(verse)
+        if len(leagueIdxsForThisCommit) > 0:
+            for leagueIdx in leagueIdxsForThisCommit:
+                self.updateLeagueInClient(leagueIdx)
+        return leagueIdxsForThisCommit
 
     def syncLeagueCommits(self, ST):
         self.assertIsClient()
-        leagueIdxsForThisCommit = self.getLeaguesFinishingInVerse(self.currentVerse)
-        for leagueIdx in leagueIdxsForThisCommit:
-            # CLIENT computes the data needed to update league (and stores it in the CLIENT)
-            #toni
-            self.updateLeagueInClient(leagueIdx)
-            2
+        leagueIdxsForThisCommit = self.updateAllLeaguesForVerseInClient(self.currentVerse)
+        if len(leagueIdxsForThisCommit) == 0:
+            return
+        superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
+        self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
+        ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
+
+
+
+

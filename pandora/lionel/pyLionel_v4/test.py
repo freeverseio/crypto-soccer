@@ -142,40 +142,46 @@ def test2():
     advanceToBlock(ST.nextVerseBlock()-5, ST, ST_CLIENT)
     ST_CLIENT.accumulateAction(action1)
 
+    assert not ST.hasLeagueFinished(leagueIdx), "League detected as finished when it is still being played"
+    assert not ST.hasLeagueBeenUpdated(leagueIdx), "League was updated too early, before finishing"
     # Move beyond league end
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
-    assert not ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as not-yet updated"
+    assert ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as updated, when the sync process should have done it"
 
     # anna
     verse = ST.leagues[leagueIdx].verseFinal()
-    superRoot = "rndstring"
     allLeaguesRoots = [[1, "rn1"], [2, "rn2"]]
     willSucceed = True
     matchdayHashes = ["day1", "day2"]
 
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed),\
-                    "You challenged a league not yet updated")
+    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
-                    "You challenged a league not yet updated")
-    assert ST.isVerseUpdated(verse) == UPDT_NONE, "Wrong verse update status"
-    ST.updateLeaguesSuperRoot(verse, superRoot, ADDR1)
-    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
+                    "You challenged all league roots, not yet provided before")
+
+    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
+
     assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
-    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE)
-    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
+                     "A claim that a league should not be was incorrectly successful")
+    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
                      "A league should not be there, but you couldnt prove it")
-    allLeaguesRoots = [[3, "rn1"]]
-    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
-    assert ST.challengeAllLeaguesRootsLeagueIdxs(verse, 1, MISSING), "League should have been included, but couldnt prove it"
-    allLeaguesRoots = [[1, "rn1"]]
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have.")
-    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2, willSucceed)
-    assert ST.challengeAllLeaguesRootsHash(verse, 1, matchdayHashes, ADDR3), "Challenge of a hash was not accepted, but it should have."
 
+    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
 
+    pylio.shouldFail(lambda x:
+        ST.challengeAllLeaguesRootsHash(
+            verse,
+            leagueIdx,
+            dataToChallengeLeague.initSkillsHash,
+            dataToChallengeLeague.dataAtMatchdayHashes,
+            dataToChallengeLeague.scores,
+            ADDR3
+        ), "challengeAllLeaguesRootsHash successful when it should not"
+
+     )
 
     # A CHALLENGER tries to prove that the UPDATER lied with skillsAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
