@@ -344,21 +344,52 @@ class Storage(Counter):
 
     def hasLeagueBeenUpdated(self, leagueIdx):
         verse = self.leagues[leagueIdx].verseFinal()
-        return self.isVerseUpdated(verse)
+        verseStatus, isVerseSettled = self.getVerseUpdateStatus(verse)
+        return verseStatus != UPDT_NONE
 
-    def isVerseUpdated(self, verse):
-        if not (verse in self.verseToLeagueCommits):
-            return UPDT_NONE
-        elif self.verseToLeagueCommits[verse].dataAtMatchdaysHashesOwner:
-            return UPDT_MATCHDAYS
-        elif self.verseToLeagueCommits[verse].allLeaguesRootsOwner:
-            return UPDT_ALLLGS
-        else:
-            return UPDT_SUPER
 
+    def wasLastWriteUnchallenged(self, verse):
+        return (self.verseToLeagueCommits[verse].lastWriteBlocknum - self.currentBlock) > CHALLENGING_PERIOD_BLKS
+
+    def haveTwoPeriodsPassed(self, verse):
+        return (self.verseToLeagueCommits[verse].lastWriteBlocknum - self.currentBlock) > 2*CHALLENGING_PERIOD_BLKS
+
+    def isVerseSettled(self, verse, verseStatus):
+        if verseStatus == UPDT_NONE:
+            return False
+
+        # this check would fail if no update is provided yet
+        if self.haveTwoPeriodsPassed(verse):
+            return True
+
+        if verseStatus == UPDT_SUPER and self.wasLastWriteUnchallenged(verse):
+            return True
+
+        return False
+
+
+    def getVerseUpdateStatus(self, verse):
+        verseStatus = UPDT_NONE
+        if (verse in self.verseToLeagueCommits):
+            if self.verseToLeagueCommits[verse].dataAtMatchdaysHashesOwner:
+                if self.wasLastWriteUnchallenged(verse):
+                    verseStatus = UPDT_SUPER
+                else:
+                    verseStatus = UPDT_MATCHDAYS
+            elif self.verseToLeagueCommits[verse].allLeaguesRootsOwner:
+                verseStatus = UPDT_ALLLGS
+            else:
+                verseStatus = UPDT_SUPER
+
+        return verseStatus, self.isVerseSettled(verse, verseStatus)
+
+    def assertCanChallengeStatus(self, verse, status):
+        verseStatus, isVerseSettled = self.getVerseUpdateStatus(verse)
+        assert not isVerseSettled, "Verse Settled already, cannot challenge it"
+        assert verseStatus == status, "Verse not ready to challenge this status"
 
     def updateLeaguesSuperRoot(self, verse, superRoot, addr):
-        assert self.isVerseUpdated(verse) == UPDT_NONE, "Verse Leagues already updated"
+        self.assertCanChallengeStatus(verse, UPDT_NONE)
         self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr,self.currentBlock)
 
 
@@ -598,7 +629,7 @@ class Storage(Counter):
 
 
     def challengeInitSkills(self, verse, leagueIdx, usersInitData, dataToChallengeInitSkills):
-        assert (self.isVerseUpdated(verse) == UPDT_MATCHDAYS)
+        self.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
         leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
@@ -805,7 +836,7 @@ class Storage(Counter):
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
     def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
-        assert self.isVerseUpdated(verse) == UPDT_SUPER, "league has not been updated yet"
+        self.assertCanChallengeStatus(verse, UPDT_SUPER)
         assert pylio.serialHash(allLeaguesRoots) != self.verseToLeagueCommits[verse].superRoot, \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
@@ -849,7 +880,9 @@ class Storage(Counter):
 
     # typeOfIssue =  0, if missing, 0 if should not be there
     def challengeAllLeaguesRootsLeagueIdxs(self, verse, leagueIdx, typeOfIssue):
-        assert (self.isVerseUpdated(verse) == UPDT_ALLLGS) or (self.isVerseUpdated(verse) == UPDT_MATCHDAYS), "verse has not been updated yet!"
+        verseStatus, isVerseSettled = self.getVerseUpdateStatus(verse)
+        assert not isVerseSettled, "League already settled, cannot challenge"
+        assert (verseStatus == UPDT_ALLLGS) or (verseStatus == UPDT_MATCHDAYS), "verse has not been updated yet!"
         assert typeOfIssue == 0 or typeOfIssue == 1, "only 0 or 1 allowed"
         if typeOfIssue == MISSING:
             self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
@@ -859,7 +892,7 @@ class Storage(Counter):
         return True
 
     def challengeAllLeaguesRoots(self, verse, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr):
-        assert (self.isVerseUpdated(verse) == UPDT_ALLLGS)
+        self.assertCanChallengeStatus(verse, UPDT_ALLLGS)
         leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(initSkillsHash, dataAtMatchdayHashes, scores) != leagueRoot, \

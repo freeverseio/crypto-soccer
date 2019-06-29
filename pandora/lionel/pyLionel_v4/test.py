@@ -153,7 +153,7 @@ def test2():
 
     # Since the entire verse was updated faithfully, any challenge to it will fail.
     # First check that the status is correct
-    assert ST.isVerseUpdated(verse) == UPDT_SUPER, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
     # Try to challenge an All-leagues-roots before any was provided... should fail:
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
                     "You challenged all league roots, not yet provided before")
@@ -168,10 +168,10 @@ def test2():
     allLeaguesRootsLie[0][1] += 1
     ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
 
-    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
                      "A claim that a league should not be was incorrectly successful")
-    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
                      "A league should not be there, but you couldnt prove it")
 
@@ -188,10 +188,10 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
     # A Challenger provides a lie at matchday 1
     dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
@@ -205,10 +205,10 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
     selectedMatchday = 1
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
 
     # A Challenger provides a lie at initskills
@@ -223,14 +223,14 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
     ST.challengeInitSkills(
         verse,
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
     # A Challenger provides the truth
     ST.challengeAllLeaguesRoots(
@@ -241,7 +241,7 @@ def test2():
         dataToChallengeLeague.scores,
         ADDR3
     )
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
 
     # every further challenge fails
     ST.challengeInitSkills(
@@ -250,13 +250,13 @@ def test2():
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
     selectedMatchday = 1
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
 
     # at this point we basically know that the provided data that challenge AllLeagueRoots is correct,
     # and hence, we should slash the AllLeagueRoots updater, and believe the superRoot.
