@@ -174,14 +174,10 @@ def test2():
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
                      "A league should not be there, but you couldnt prove it")
 
-    # A Challenger provides a lie at matchday 0, 1 and initskills, and scores
+    # A Challenger provides a lie at matchday 0
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
     dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    # dataToChallengeLeagueLie.initSkillsHash += 1
     dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
-    dataToChallengeLeagueLie.dataAtMatchdayHashes[1] += 1
-    dataToChallengeLeagueLie.scores[0][0][0] += 1
-    dataToChallengeLeagueLie.scores[1][0][1] += 1
 
     ST.challengeAllLeaguesRoots(
         verse,
@@ -192,15 +188,31 @@ def test2():
         ADDR3
     )
     assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
-
-    # A CHALLENGER tries to prove that the UPDATER lied with skillsAtMatchday for matchday 0
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
     assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
 
-    # Since it must succeed, the league is 'reset', without any update
+    # A Challenger provides a lie at matchday 1
+    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
+    dataToChallengeLeagueLie.dataAtMatchdayHashes[1] += 1
+
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeagueLie.initSkillsHash,
+        dataToChallengeLeagueLie.dataAtMatchdayHashes,
+        dataToChallengeLeagueLie.scores,
+        ADDR3
+    )
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    selectedMatchday = 1
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
+
+
+
+
+
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
 
 

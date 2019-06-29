@@ -401,8 +401,8 @@ class Storage(Counter):
         #              and initialize tactics and orders from usersInitData
         # - if day!=0, validate that the entire hash of dataAtPrevMatchday coincides with
         #               the hashes that the updater provided
+        finalVerse = self.leagues[leagueIdx].verseFinal()
         if selectedMatchday == 0:
-            finalVerse = self.leagues[leagueIdx].verseFinal()
             assert pylio.serialHash(dataAtPrevMatchday.skillsAtMatchday) == self.verseToLeagueCommits[finalVerse].initSkillsHash, "Incorrect provided: prevMatchdayStates"
             # initialize tactics and teams as written in league creation:
             assert dataAtPrevMatchday.tacticsAtMatchday == 0, "Incorrect provided: prevMatchdayStates"
@@ -410,7 +410,7 @@ class Storage(Counter):
             dataAtPrevMatchday.tacticsAtMatchday = usersInitData["tactics"]
             dataAtPrevMatchday.teamOrdersAtMatchday = usersInitData["teamOrders"]
         else:
-            assert self.leagues[leagueIdx].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
+            assert self.verseToLeagueCommits[finalVerse].dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
         actionsAtSelectedMatchday = merkleProofDataForMatchday.leaf[1]
