@@ -348,40 +348,36 @@ class Storage(Counter):
         return verseStatus != UPDT_NONE
 
 
-    def wasLastWriteUnchallenged(self, verse):
-        return (self.verseToLeagueCommits[verse].lastWriteBlocknum - self.currentBlock) > CHALLENGING_PERIOD_BLKS
-
-    def haveTwoPeriodsPassed(self, verse):
-        return (self.verseToLeagueCommits[verse].lastWriteBlocknum - self.currentBlock) > 2*CHALLENGING_PERIOD_BLKS
-
-    def isVerseSettled(self, verse, verseStatus):
-        if verseStatus == UPDT_NONE:
-            return False
-
-        # this check would fail if no update is provided yet
-        if self.haveTwoPeriodsPassed(verse):
-            return True
-
-        if verseStatus == UPDT_SUPER and self.wasLastWriteUnchallenged(verse):
-            return True
-
-        return False
-
+    def haveNPeriodsPassed(self, verse, nPeriods):
+        return (self.currentBlock - self.verseToLeagueCommits[verse].lastWriteBlocknum) > nPeriods*CHALLENGING_PERIOD_BLKS
 
     def getVerseUpdateStatus(self, verse):
-        verseStatus = UPDT_NONE
-        if (verse in self.verseToLeagueCommits):
-            if self.verseToLeagueCommits[verse].dataAtMatchdaysHashesOwner:
-                if self.wasLastWriteUnchallenged(verse):
-                    verseStatus = UPDT_SUPER
-                else:
-                    verseStatus = UPDT_MATCHDAYS
-            elif self.verseToLeagueCommits[verse].allLeaguesRootsOwner:
-                verseStatus = UPDT_ALLLGS
-            else:
-                verseStatus = UPDT_SUPER
+        if not (verse in self.verseToLeagueCommits):
+            verseStatus     = UPDT_NONE
+            isVerseSettled  = False
+            return verseStatus, isVerseSettled
 
-        return verseStatus, self.isVerseSettled(verse, verseStatus)
+        if not self.verseToLeagueCommits[verse].allLeaguesRootsOwner:
+            verseStatus     = UPDT_SUPER
+            isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
+            return verseStatus, isVerseSettled
+
+        if self.verseToLeagueCommits[verse].dataAtMatchdaysHashesOwner:
+            if self.haveNPeriodsPassed(verse, 2):
+                verseStatus     = UPDT_SUPER
+                isVerseSettled  = True
+            elif self.haveNPeriodsPassed(verse, 1):
+                verseStatus     = UPDT_SUPER
+                isVerseSettled  = False
+            else:
+                verseStatus     = UPDT_MATCHDAYS
+                isVerseSettled  = False
+            return verseStatus, isVerseSettled
+
+        # the was a challenge to the superoot, but noone challenged it
+        verseStatus     = UPDT_ALLLGS
+        isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
+        return verseStatus, isVerseSettled
 
     def assertCanChallengeStatus(self, verse, status):
         verseStatus, isVerseSettled = self.getVerseUpdateStatus(verse)

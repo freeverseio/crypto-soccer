@@ -258,8 +258,17 @@ def test2():
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
 
-    # at this point we basically know that the provided data that challenge AllLeagueRoots is correct,
-    # and hence, we should slash the AllLeagueRoots updater, and believe the superRoot.
+    # at this point we basically know that the provided Matchdays data is wrong.
+    # to prove it, some time passes, and the status changes
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+    # note that we can still challenge again the superoot.
+    # if we wait a bit longer, it'll settle too
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS, ST, ST_CLIENT)
+    pylio.shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPER), \
+        "league not detected as settled")
+
+
 
 
 
