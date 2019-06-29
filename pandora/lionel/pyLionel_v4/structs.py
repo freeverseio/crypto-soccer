@@ -436,12 +436,11 @@ class Storage(Counter):
             self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
             return
 
-        if not (self.leagues[leagueIdx].scores[selectedMatchday] == scores).all():
+        if not (scores == self.verseToLeagueCommits[finalVerse].scores[selectedMatchday]).all():
             print("Challenger Wins: scores provided by updater are invalid")
             self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
             return
 
-        self.verseToLeagueCommits[finalVerse].resetAllLeaguesRoots()
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
 
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):

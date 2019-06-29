@@ -163,6 +163,7 @@ def test2():
     pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2), \
         "You were able to challenge a superroot by providing compatible allLeaguesRoots")
 
+    # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
     allLeaguesRootsLie[0][1] += 1
     ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
@@ -230,7 +231,39 @@ def test2():
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
     assert ST.isVerseUpdated(verse) == UPDT_ALLLGS, "Wrong verse update status"
-    # toni
+
+    # A Challenger provides the truth
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeague.initSkillsHash,
+        dataToChallengeLeague.dataAtMatchdayHashes,
+        dataToChallengeLeague.scores,
+        ADDR3
+    )
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+
+    # every further challenge fails
+    ST.challengeInitSkills(
+        verse,
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
+    )
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    selectedMatchday = 0
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+    selectedMatchday = 1
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Wrong verse update status"
+
+
+
+
+
+
+
 
 
 
