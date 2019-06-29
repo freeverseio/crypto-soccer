@@ -214,9 +214,10 @@ def flatten(statesPerTeam):
 
 
 # It uses the CLIENT data to submit a challenge to the BC
-def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT):
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Cannot challenge a league that has not been updated"
-    assert not ST.isFullyVerified(leagueIdx), "Cannot challenge a league after challenging period is over"
+def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT):
+    assert ST.isVerseUpdated(verse) == UPDT_MATCHDAYS, "Incorrect update status for challengeLeagueAtSelectedMatchday to start"
+    leagueRoot = ST.getLeagueRootFromVerseCommit(verse, leagueIdx)
+    assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
 
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
