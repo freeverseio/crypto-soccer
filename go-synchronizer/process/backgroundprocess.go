@@ -1,6 +1,8 @@
 package process
 
 import (
+	"time"
+
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
@@ -30,6 +32,7 @@ func (b *BackgroundProcess) Start() {
 				break L
 			default:
 				Process(b.assetsContract, b.storage)
+				time.Sleep(2 * time.Second)
 			}
 		}
 		b.stopped <- true

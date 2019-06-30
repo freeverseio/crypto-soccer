@@ -8,7 +8,7 @@ import (
 )
 
 func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
-	log.Trace("Process: called")
+	log.Info("Syncing ...")
 
 	log.Trace("Process: scanning the blockchain")
 	events, err := scanners.ScanTeamCreated(assetsContract, nil)

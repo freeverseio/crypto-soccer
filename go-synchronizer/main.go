@@ -18,9 +18,12 @@ import (
 func main() {
 	configFile := flag.String("config", "./config.json", "configuration file")
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
+	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
 
-	log.SetLevel(log.DebugLevel)
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	log.Info("Starting ...")
 	log.Info("Parsing configuration file: ", *configFile)
