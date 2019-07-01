@@ -44,7 +44,7 @@ jobs:
           name: Test go-synchronizer.scanners
           command: |
             # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh
+            ./go-synchronizer/testutils/run_ganache.sh &
             # wait until ganache is up and running
             echo waiting for ganache
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
@@ -57,7 +57,7 @@ jobs:
           name: Test go-synchronizer.process
           command: |
             # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh
+            ./go-synchronizer/testutils/run_ganache.sh &
             # wait until ganache is up and running
             echo waiting for ganache
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
