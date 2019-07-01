@@ -262,15 +262,85 @@ def test2():
     # to prove it, some time passes, and the status changes
     advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
-    # note that we can still challenge again the superoot.
-    # if we wait a bit longer, it'll settle too
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_ALLLGS, "We should be able to slash AllLeagues, but not detected"
+    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeague.initSkillsHash,
+        dataToChallengeLeague.dataAtMatchdayHashes,
+        dataToChallengeLeague.scores,
+        ADDR3
+    )
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_ALLLGS, "We should be able to slash AllLeagues, but not detected"
+    assert not isVerseSettled, "Verse incorrectly detected as settled"
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS, ST, ST_CLIENT)
-    pylio.shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPER), \
-        "league not detected as settled")
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert isVerseSettled, "Verse incorrectly detected as not yet settled"
+    pylio.shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPER),\
+                     "League is settled, but not detected")
 
 
 
 
+    # ------------ New league
+
+    verseInit = ST.currentVerse + 2
+    # Create league in BC and CLIENT. The latter stores things pre-hash too
+    leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
+    leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
+
+    assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
+    assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
+
+    verse = ST.leagues[leagueIdx].verseFinal()
+
+    advanceToBlock(ST_CLIENT.getBlockForVerse(verse), ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+    ST.verseToLeagueCommits[verse]
+
+    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2), \
+        "You were able to challenge a superroot by providing compatible allLeaguesRoots")
+
+    # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
+    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
+    allLeaguesRootsLie[0][1] += 1
+    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
+                     "A claim that a league should not be was incorrectly successful")
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
+                     "A league should not be there, but you couldnt prove it")
+
+    # A Challenger provides a lie at matchday 0
+    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
+    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
+    dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
+
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeagueLie.initSkillsHash,
+        dataToChallengeLeagueLie.dataAtMatchdayHashes,
+        dataToChallengeLeagueLie.scores,
+        ADDR3
+    )
+
+
+
+
+
+    print("TONIDONE")
 
 
 

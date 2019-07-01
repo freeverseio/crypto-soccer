@@ -238,6 +238,7 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST
         merkleProofDataForMatchday
     )
 
+
 def verifyMerkleProof(root, merkleProof, hashFunction):
     # the current library requires the leaf & leafIdx to be formatted inside 'values' as follows:
     values = {merkleProof.leafIdx: merkleProof.leaf}

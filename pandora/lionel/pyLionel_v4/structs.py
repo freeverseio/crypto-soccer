@@ -283,6 +283,12 @@ class LeaguesCommitInVerse():
         self.allLeaguesRoots            = None
         self.allLeaguesRootsOwner       = None
         self.allLeaguesRootsSuperRoot   = None
+        if self.OneLeagueDataOwner:
+            self.dataAtMatchdaysLeagueIdx   = None
+            self.initSkillsHash             = None
+            self.dataAtMatchdayHashes       = None
+            self.scores                     = None
+            self.OneLeagueDataOwner         = None
 
     def writeOneLeagueData(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr, blocknum):
         self.dataAtMatchdaysLeagueIdx   = leagueIdx
@@ -391,25 +397,21 @@ class Storage(Counter):
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
-        # Now that there is no ALLLGS, continue one level up, to superoot
-        if self.verseToLeagueCommits[verse].superRootOwner:
-            # the was a challenge to the superoot, but noone challenged it
-            verseStatus     = UPDT_SUPER
-            isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
-            return verseStatus, isVerseSettled, needsSlash
-
-        # if we get here, it means that the verse was once updated, but the superRoot
-        #     was eventually slashed
-        verseStatus     = UPDT_NONE
-        isVerseSettled  = False
+        verseStatus     = UPDT_SUPER
+        isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
         return verseStatus, isVerseSettled, needsSlash
-
-
 
     def assertCanChallengeStatus(self, verse, status):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert not isVerseSettled, "Verse Settled already, cannot challenge it"
         assert verseStatus == status, "Verse not ready to challenge this status"
+        return needsSlash
+
+    def slashThisUpdater(self, verse, needsSlash):
+        if needsSlash == UPDT_ALLLGS:
+            print("Slashing an AllLeagues updater")
+            self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
+        assert False, "Unknown slash requirement"
 
     def updateLeaguesSuperRoot(self, verse, superRoot, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
@@ -664,7 +666,6 @@ class Storage(Counter):
         # if None is returned, it means that at least one player had incorrect challenge data
         if not initSkills:
             print("Challenger Wins: initSkills provided by updater are invalid")
-            self.leagues[leagueIdx].resetUpdater()
             return
 
         # We now know that the initSkills were correct. We just check that
@@ -783,8 +784,9 @@ class Storage(Counter):
     def isFullyVerified(self, leagueIdx):
         if self.leagues[leagueIdx].isGenesisLeague():
             return True
-        return self.hasLeagueBeenUpdated(leagueIdx) and \
-               (self.currentBlock > self.leagues[leagueIdx].blockLastUpdate + CHALLENGING_PERIOD_BLKS)
+        verse = self.leagues[leagueIdx].verseFinal()
+        verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
+        return isVerseSettled
 
     def getPlayerSkillsFromChallengeData(self, playerIdx, dataToChallengePlayerState):
         # dataToChallengePlayerState is either:
@@ -859,7 +861,9 @@ class Storage(Counter):
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
     def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
-        self.assertCanChallengeStatus(verse, UPDT_SUPER)
+        needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
+        if needsSlash == UPDT_ALLLGS:
+            self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
         assert pylio.serialHash(allLeaguesRoots) != self.verseToLeagueCommits[verse].superRoot, \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
@@ -1182,7 +1186,7 @@ class Storage(Counter):
             merkleProof = lastDayTree.prepareProofForLeaf(playerSkills, idxInFlattenedSkills)
 
             assert pylio.verifyMerkleProof(
-                self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1],
+                self.leagues[prevLeagueIdx].dataToChallengeLeague.dataAtMatchdayHashes[-1],
                 merkleProof,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
@@ -1317,6 +1321,7 @@ class Storage(Counter):
         self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
         ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
 
-
+    def getBlockForVerse(self, verse):
+        return verse*self.blocksBetweenVerses
 
 
