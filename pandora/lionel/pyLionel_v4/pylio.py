@@ -197,6 +197,10 @@ def advanceNVerses(nVerses, ST, ST_CLIENT):
     nBlocks = nVerses*ST.blocksBetweenVerses
     advanceNBlocks(nBlocks, ST, ST_CLIENT)
 
+def advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT):
+    verseFinal = ST.leagues[leagueIdx].verseFinal()
+    while ST.currentVerse < verseFinal:
+        advanceNBlocks(1, ST, ST_CLIENT)
 
 # ------------------------------------------------
 

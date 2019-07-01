@@ -301,40 +301,22 @@ def test2():
     assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
     verse = ST.leagues[leagueIdx].verseFinal()
-
-    advanceToBlock(ST_CLIENT.getBlockForVerse(verse), ST, ST_CLIENT)
+    ST_CLIENT.forceSuperRootLie = True
+    advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
+    ST_CLIENT.forceSuperRootLie = False
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
-    ST.verseToLeagueCommits[verse]
-
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2), \
-        "You were able to challenge a superroot by providing compatible allLeaguesRoots")
-
-    # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
-    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-    allLeaguesRootsLie[0][1] += 1
-    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
-
+    assert ST.verseToLeagueCommits[verse].superRoot != superRoot, "Updater should have lied in superroot, but didnt"
+    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
-                     "A claim that a league should not be was incorrectly successful")
-    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
-                     "A league should not be there, but you couldnt prove it")
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
+    assert not isVerseSettled, "Verse incorrectly detected as settled"
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_SUPER, "Verse incorrectly reporting slash not needed"
+    assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
-    # A Challenger provides a lie at matchday 0
-    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
-
-    ST.challengeAllLeaguesRoots(
-        verse,
-        leagueIdx,
-        dataToChallengeLeagueLie.initSkillsHash,
-        dataToChallengeLeagueLie.dataAtMatchdayHashes,
-        dataToChallengeLeagueLie.scores,
-        ADDR3
-    )
 
 
 

@@ -324,6 +324,7 @@ class Storage(Counter):
 
         if isClient:
             self.leaguesFinishingInVerse = {}
+            self.forceSuperRootLie = False
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
@@ -379,7 +380,7 @@ class Storage(Counter):
             if self.haveNPeriodsPassed(verse, 1):
                 verseStatus     = UPDT_ALLLGS
                 needsSlash      = UPDT_SUPER
-                isVerseSettled  = False
+                isVerseSettled  = True
             else:
                 verseStatus     = UPDT_ALLLGS
                 isVerseSettled  = False
@@ -1306,6 +1307,8 @@ class Storage(Counter):
         if len(leagueIdxsForThisCommit) == 0:
             return
         superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
+        if self.forceSuperRootLie:
+            superRoot += 1
         self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
         ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
 
