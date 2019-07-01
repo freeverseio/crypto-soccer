@@ -5,6 +5,11 @@ services:
       context: ./go-synchronizer/sql/.
     ports:
       - "5432:5432"
+  synchronizer:
+    build: 
+      context: ./go-synchronizer/.
+    depends_on:
+      - postgres
   postgraphile:
     image: graphile/postgraphile
     depends_on:
