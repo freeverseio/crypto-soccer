@@ -288,25 +288,25 @@ def test2():
                      "League is settled, but not detected")
 
 
-
-
-    # ------------ New league
-
+    # Create a New League To Test that SuperRoot lies can be caught too
     verseInit = ST.currentVerse + 2
-    # Create league in BC and CLIENT. The latter stores things pre-hash too
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
-
     assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
     assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
+    # Advance to end of league and submit a lie
     verse = ST.leagues[leagueIdx].verseFinal()
     ST_CLIENT.forceSuperRootLie = True
     advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
     ST_CLIENT.forceSuperRootLie = False
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+
+    # Check that a lie can be caught by comparing with local computation
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     assert ST.verseToLeagueCommits[verse].superRoot != superRoot, "Updater should have lied in superroot, but didnt"
+
+    # Submit a challenge and check its time evolution after waiting....
     ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
