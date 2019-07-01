@@ -39,23 +39,33 @@ jobs:
           command: cd go-synchronizer && go build
       - run:
           name: Test go-synchronizer
-          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/scanners`
+          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/scanners github.com/freeverseio/crypto-soccer/go-synchronizer/process`
       - run:
           name: Test go-synchronizer.scanners
           command: |
-            cd go-synchronizer/scanners
             # run ganache in the background
-            ./run_ganache.sh &
+            ./go-synchronizer/test_utils/run_ganache.sh &
             # wait until ganache is up and running
-            if [ -z "`command -v lsof`" ]; then
-              echo sleeping for 5s
-              sleep 5
-            else
-              echo waiting for ganache
-              while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-              echo ganache is running
-            fi
+            echo waiting for ganache
+            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            echo ganache is running
+            cd go-synchronizer/scanners
             go test
+            PID=grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+            kill -9 $PID
+      - run:
+          name: Test go-synchronizer.process
+          command: |
+            # run ganache in the background
+            ./go-synchronizer/test_utils/run_ganache.sh &
+            # wait until ganache is up and running
+            echo waiting for ganache
+            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            echo ganache is running
+            cd go-synchronizer/process
+            go test
+            PID=grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+            kill -9 $PID
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
