@@ -18,6 +18,7 @@ import (
 func main() {
 	configFile := flag.String("config", "./config.json", "configuration file")
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
 
@@ -50,8 +51,8 @@ func main() {
 		log.Warning("Using in memory DBMS (no persistence)")
 		sto, err = storage.NewSqlite3("./sql/00_schema.sql")
 	} else {
-		log.Info("Connecting to DBMS: ", config.PostgresUrl)
-		sto, err = storage.NewPostgres(config.PostgresUrl)
+		log.Info("Connecting to DBMS: ", *postgresURL)
+		sto, err = storage.NewPostgres(*postgresURL)
 	}
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
