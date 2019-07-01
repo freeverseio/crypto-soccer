@@ -51,8 +51,8 @@ jobs:
             echo ganache is running
             cd go-synchronizer/scanners
             go test
-            PID=`grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
-            kill -9 $PID
+            #PID=`grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+            #kill -9 $PID
       - run:
           name: Test go-synchronizer.process
           command: |
@@ -64,8 +64,8 @@ jobs:
             echo ganache is running
             cd go-synchronizer/process
             go test
-            PID=`grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
-            kill -9 $PID
+            #PID=`grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+            #kill -9 $PID
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
