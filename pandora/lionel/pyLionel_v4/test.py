@@ -312,111 +312,22 @@ def test2():
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
     assert not isVerseSettled, "Verse incorrectly detected as settled"
+
+    # We do not wait enough and try a sell/buy action is attempted
+    pylio.shouldFail(lambda x:
+        ST.exchangePlayers(
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1), ADDR1,
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6), ADDR3
+        ), "Player sell/buy was allowed but previous league was not settled yet"
+     )
+
+    # We now wait enough
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_SUPER, "Verse incorrectly reporting slash not needed"
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
-
-
-
-
-
-    print("TONIDONE")
-
-
-
-
-
-
-    assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful challenge"
-
-
-    # More lies: the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not updated"
-    initSkillsHashLie = duplicate(initSkillsHash)+1
-
-    ST.updateLeague(
-        leagueIdx,
-        initSkillsHashLie,
-        dataAtMatchdayHashes,
-        scores,
-        ADDR2,
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
-
-    # A CHALLENGER proves that the UPDATER lied with the initHash
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
-
-    # ...first it gathers the data needed to challenge the init states
-    ST.challengeInitSkills(
-        leagueIdx,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
-    assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
-
-
-    # Finally, some truth: a nicer UPDATER now tells the truth:
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    ST.updateLeague(
-        leagueIdx,
-        initSkillsHash,
-        dataAtMatchdayHashes,
-        scores,
-        ADDR2,
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
-
-    # ...and the CHALLENGER fails to prove anything
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    ST.challengeInitSkills(
-        leagueIdx,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
-
-    # We do not wait enough and try to create another league with these teams.
-    # It fails to do so because teams are still busy
-    advanceNBlocks(2, ST, ST_CLIENT)
-    assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
-    verseInit = ST.currentVerse + 30
-    usersInitData = {
-        "teamIdxs": [teamIdx1, teamIdx3, teamIdx2, teamIdx4],
-        "teamOrders": [DEFAULT_ORDER, DEFAULT_ORDER, REVERSE_ORDER, REVERSE_ORDER],
-        "tactics": [TACTICS["433"], TACTICS["442"], TACTICS["433"], TACTICS["442"]]
-    }
-    try:
-        leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
-        itFailed = False
-    except:
-        itFailed = True
-
-    assert itFailed, "League was created but previous league was not fully verified yet"
-
-
-    # We do not wait enough and try to:
-    #   sell/buy action is attempted, but fails because league is not full verified
-    try:
-        ST.exchangePlayers(
-            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1), ADDR1,
-            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6), ADDR3
-        )
-        itFailed = False
-    except:
-        itFailed = True
-
-    assert itFailed, "Player sell/buy was allowed but previous league was not fully verified yet"
-
-
-    # after waiting enough, the league gets fully verified and the new league can be created
-    # ...with a player exchange just before the creation
-    advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    assert ST.isFullyVerified(leagueIdx), "League not detected as already fully verified"
-
+    # Now, we can sell-buy players
     playerIdx1 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1)
     playerIdx2 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6)
 
@@ -428,18 +339,55 @@ def test2():
         playerIdx1, ADDR1,
         playerIdx2, ADDR3
     )
-    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4,6), "Exchange did not register properly in BC"
-    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1,1), "Exchange did not register properly in BC"
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
+
+
+
 
     # After the player exchange... we create another league
+    verseInit = ST.currentVerse + 2
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
-
     assert leagueIdx == leagueIdx_client, "Leagues in client not in sync with BC"
 
-    # At the end of league, an UPDATER updates telling the truth:
-    advanceNVerses(1000, ST, ST_CLIENT)
-    assert ST.hasLeagueFinished(leagueIdx), "League should be finished by now"
+    # At the end of league until, to the challenging period
+    advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
+    verse = ST_CLIENT.leagues[leagueIdx].verseFinal()
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert not isVerseSettled, "Verse incorrectly detected as settled"
+
+    # Try to challenge by providing a correct All-leagues-roots... should fail
+    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
+    allLeaguesRootsLie[0][1] += 1
+    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+
+    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
+    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
+    dataToChallengeLeagueLie.initSkillsHash += 1
+
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeagueLie.initSkillsHash,
+        dataToChallengeLeagueLie.dataAtMatchdayHashes,
+        dataToChallengeLeagueLie.scores,
+        ADDR3
+    )
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+
+    ST.challengeInitSkills(
+        verse,
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
+    )
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+    print("TONIDONE")
+
+
 
     initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
     print(initSkillsHash)

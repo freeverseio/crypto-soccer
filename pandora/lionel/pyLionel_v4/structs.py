@@ -635,6 +635,7 @@ class Storage(Counter):
                 MinimalPlayerState(self.getPlayerStateBeforePlayingAnyLeague(playerIdx))
             )
         else:
+            # TODO: this requires a huge merkle proof now!
             return pylio.verifyMerkleProof(
                 self.leagues[prevLeagueIdx].dataAtMatchdayHashes[-1],
                 merkleProof,
