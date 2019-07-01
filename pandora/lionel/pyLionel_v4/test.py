@@ -188,7 +188,7 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
@@ -205,7 +205,7 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
@@ -223,7 +223,7 @@ def test2():
         dataToChallengeLeagueLie.scores,
         ADDR3
     )
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     ST.challengeInitSkills(
         verse,
         leagueIdx,
@@ -241,7 +241,7 @@ def test2():
         dataToChallengeLeague.scores,
         ADDR3
     )
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
     # every further challenge fails
     ST.challengeInitSkills(
@@ -250,13 +250,13 @@ def test2():
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_MATCHDAYS)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
     # at this point we basically know that the provided Matchdays data is wrong.
     # to prove it, some time passes, and the status changes
