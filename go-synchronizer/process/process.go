@@ -13,60 +13,83 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Process(assetsContract *assets.Assets, sto *storage.Storage, client *ethclient.Client) error {
-	log.Info("Syncing ...")
+type EventProcessor struct {
+	client *ethclient.Client
+	db     *storage.Storage
+	assets *assets.Assets
+}
 
+// *****************************************************************************
+// public
+// *****************************************************************************
+
+// NewEventProcessor creates a new struct for scanning and storing crypto soccer events
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets) *EventProcessor {
+	return &EventProcessor{client, db, assets}
+}
+
+// Process processes all scanned events and stores them into the database db
+func (p *EventProcessor) Process() error {
+	log.Info("Syncing ...")
 	log.Trace("Process: scanning the blockchain")
 
-	storedLastBlockNumber := big.NewInt(0)
-	clientLastBlockNumber := big.NewInt(0)
-	var events []assets.AssetsTeamCreated
-	var err error
+	start, end := p.nextRange()
 
-	if storedLastBlockNumber, err = sto.GetBlockNumber(); err != nil {
-		return err
+	if start > end {
+		log.Debug("No new blocks to search for events")
+		return nil
 	}
-
-	if client != nil {
-		if header, err := client.HeaderByNumber(context.Background(), nil); err != nil {
-			return err
-		} else {
-			clientLastBlockNumber = header.Number
-		}
-	} else {
-		clientLastBlockNumber = big.NewInt(storedLastBlockNumber.Int64() + 1)
-	}
-
-	end := clientLastBlockNumber.Uint64()
 
 	opts := &bind.FilterOpts{
-		Start:   storedLastBlockNumber.Uint64(),
+		Start:   start,
 		End:     &end,
 		Context: context.Background(),
 	}
 
-	if events, err = scanners.ScanTeamCreated(assetsContract, opts); err != nil {
+	// scan TeamCreated events in range [start, end]
+	if events, err := scanners.ScanTeamCreated(p.assets, opts); err != nil {
 		return err
+	} else {
+		p.db.SetBlockNumber(big.NewInt(int64(end + 1)))
+		p.storeTeamCreated(events)
 	}
 
-	//fmt.Println("Scanning from: ", storedLastBlockNumber.Uint64(), " to ", clientLastBlockNumber.Uint64())
+	return nil
+}
 
-	sto.SetBlockNumber(big.NewInt(clientLastBlockNumber.Int64() + 1))
+// *****************************************************************************
+// private
+// *****************************************************************************
 
-	log.Trace("Process: act on local storage")
-	for i := 0; i < len(events); i++ {
-		event := events[i]
-		name, err := assetsContract.GetTeamName(nil, event.Id)
-		if err != nil {
-			return err
-		}
-		//fmt.Println("TeamAdd", event.Id.Uint64(), name)
-		err = sto.TeamAdd(event.Id.Uint64(), name)
-		if err != nil {
-			return err
-		}
-		log.Debugf("Team Created: id = %v, name = %v", event.Id.String(), name)
+func (p *EventProcessor) nextRange() (uint64, uint64) {
+	return p.dbLastBlockNumber(), p.clientLastBlockNumber()
+}
+func (p *EventProcessor) clientLastBlockNumber() uint64 {
+	if p.client == nil {
+		return 0
 	}
-
+	header, err := p.client.HeaderByNumber(context.Background(), nil)
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+	return header.Number.Uint64()
+}
+func (p *EventProcessor) dbLastBlockNumber() uint64 {
+	storedLastBlockNumber, err := p.db.GetBlockNumber()
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+	return storedLastBlockNumber.Uint64()
+}
+func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
+	for _, event := range events {
+		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
+			return err
+		} else if err := p.db.TeamAdd(event.Id.Uint64(), name); err != nil {
+			return err
+		}
+	}
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 type BackgroundProcess struct {
 	assetsContract *assets.Assets
 	storage        *storage.Storage
+	eventProcessor *EventProcessor
 	queryStop      chan (bool)
 	stopped        chan (bool)
 }
@@ -18,6 +19,7 @@ func BackgroundProcessNew(assetsContract *assets.Assets, storage *storage.Storag
 	return &BackgroundProcess{
 		assetsContract: assetsContract,
 		storage:        storage,
+		eventProcessor: NewEventProcessor(nil, storage, assetsContract),
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
 	}
@@ -31,7 +33,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				Process(b.assetsContract, b.storage, nil)
+				b.eventProcessor.Process()
 				time.Sleep(2 * time.Second)
 			}
 		}

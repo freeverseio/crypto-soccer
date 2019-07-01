@@ -14,7 +14,8 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 	}
 	blockchain := testutils.DefaultSimulatedBlockchain()
 
-	Process(blockchain.Assets, storage, nil)
+	p := NewEventProcessor(nil, storage, blockchain.Assets)
+	p.Process()
 
 	count, err := storage.TeamCount()
 	if err != nil {
@@ -43,7 +44,9 @@ func TestSyncTeams(t *testing.T) {
 	ganache.CreateTeam("B", bob)
 	ganache.CreateTeam("C", carol)
 
-	if err := Process(ganache.Assets, storage, ganache.Client); err != nil {
+	p := NewEventProcessor(ganache.Client, storage, ganache.Assets)
+
+	if err := p.Process(); err != nil {
 		t.Fatal(err)
 	} else {
 		if count, err := storage.TeamCount(); err != nil {
@@ -76,7 +79,7 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	ganache.CreateTeam("D", alice)
-	if err := Process(ganache.Assets, storage, ganache.Client); err != nil {
+	if err := p.Process(); err != nil {
 		t.Fatal(err)
 	} else {
 		if count, err := storage.TeamCount(); err != nil {
