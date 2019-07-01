@@ -31,7 +31,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				Process(b.assetsContract, b.storage)
+				Process(b.assetsContract, b.storage, nil)
 				time.Sleep(2 * time.Second)
 			}
 		}

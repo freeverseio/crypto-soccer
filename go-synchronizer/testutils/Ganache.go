@@ -17,7 +17,7 @@ import (
 )
 
 type Ganache struct {
-	client        *ethclient.Client
+	Client        *ethclient.Client
 	statesAddress common.Address
 	Assets        *assets.Assets
 	States        *states.States
@@ -46,14 +46,14 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 func (ganache *Ganache) GetNonce(from *ecdsa.PrivateKey) uint64 {
 	publicKey := from.Public()
 	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
-	nonce, err := ganache.client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(*publicKeyECDSA))
+	nonce, err := ganache.Client.PendingNonceAt(context.Background(), crypto.PubkeyToAddress(*publicKeyECDSA))
 	AssertNoErr(err, "Failed obtaining pending nonce")
 	return nonce
 }
 func (ganache *Ganache) TransferWei(wei *big.Int, from *ecdsa.PrivateKey, to common.Address) (*types.Transaction, error) {
 	nonce := ganache.GetNonce(from)
 	gasLimit := uint64(21000)
-	gasPrice, err := ganache.client.SuggestGasPrice(context.Background())
+	gasPrice, err := ganache.Client.SuggestGasPrice(context.Background())
 	if err != nil {
 		fmt.Println("TransferWei: Failed obtaining suggested gas price, using 2GWei")
 		gasPrice := new(big.Int)
@@ -61,27 +61,27 @@ func (ganache *Ganache) TransferWei(wei *big.Int, from *ecdsa.PrivateKey, to com
 	}
 	var data []byte
 	tx := types.NewTransaction(nonce, to, wei, gasLimit, gasPrice, data)
-	chainID, err := ganache.client.NetworkID(context.Background())
+	chainID, err := ganache.Client.NetworkID(context.Background())
 	AssertNoErr(err, "TransferWei: Failed obtaining chainID")
 	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainID), from)
-	err = ganache.client.SendTransaction(context.Background(), signedTx)
+	err = ganache.Client.SendTransaction(context.Background(), signedTx)
 	return signedTx, err
 }
 func (ganache *Ganache) GetLastBlockNumber() int64 {
-	header, err := ganache.client.HeaderByNumber(context.Background(), nil)
+	header, err := ganache.Client.HeaderByNumber(context.Background(), nil)
 	AssertNoErr(err, "Failed GetLastBlockNumber")
 	return header.Number.Int64()
 }
 func (ganache *Ganache) GetBalance(address common.Address) *big.Int {
 	lastBlock := big.NewInt(ganache.GetLastBlockNumber())
-	balance, err := ganache.client.BalanceAt(context.Background(), address, lastBlock)
+	balance, err := ganache.Client.BalanceAt(context.Background(), address, lastBlock)
 	AssertNoErr(err, "Failed GetBalance")
 	return balance
 }
 func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
 	address, _, contract, err := states.DeployStates(
 		bind.NewKeyedTransactor(owner),
-		ganache.client,
+		ganache.Client,
 	)
 	AssertNoErr(err, "DeployStates failed")
 	ganache.States = contract
@@ -90,7 +90,7 @@ func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
 func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
 	_, _, contract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
-		ganache.client,
+		ganache.Client,
 		ganache.statesAddress,
 	)
 	AssertNoErr(err, "DeployAssets failed")

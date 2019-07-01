@@ -13,6 +13,6 @@ ganache-cli \
 --gasLimit 200000000000 \
 --gasPrice ${GASPRICE} \
 --verbose \
---account="0xf1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5,10000000000000000000000"
+--account="0xf1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5,10000000000000000000000" > /dev/null
 
 #--db ${DATABASE} \
