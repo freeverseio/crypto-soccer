@@ -13,25 +13,13 @@ class Counter():
         self.currentBlock = 0
         self.currentVerse = 0
 
-    def advanceNBlocks(self, deltaN):
-        self.advanceToBlock(self.currentBlock + deltaN)
-
-    def advanceToBlock(self, n):
-        assert n > self.currentBlock, "Cannot advance... to a block in the past!"
+    def incrementBlock(self):
         verseWasCrossed = False
-        if self.currentBlock < self.nextVerseBlock() <= n:
-            self.advanceNVerses(1)
+        if self.currentBlock == self.nextVerseBlock():
+            self.currentVerse += 1
             verseWasCrossed = True
-        self.currentBlock = n
+        self.currentBlock += 1
         return verseWasCrossed
-
-
-    def advanceNVerses(self, n):
-        self.currentVerse += n
-
-    def advanceToVerse(self, n):
-        assert n >= self.currentVerse, "Cannot advance... to a verse in the past!"
-        self.currentVerse = n
 
 class LeagueStructForHashing():
     def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):

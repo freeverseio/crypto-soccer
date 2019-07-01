@@ -176,12 +176,15 @@ def createEmptyPlayerStatesForAllTeams(nTeams):
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
 # advances both BC and CLIENT, and commits the userActions if it goes through a verse
 def advanceToBlock(n, ST, ST_CLIENT):
-    verseWasCrossedBC       = ST.advanceToBlock(n)
-    verseWasCrossedCLIENT   = ST_CLIENT.advanceToBlock(n)
-    assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
-    if verseWasCrossedBC:
-        ST_CLIENT.syncActions(ST)
-        ST_CLIENT.syncLeagueCommits(ST)
+    nBlocksToAdvance = n - ST.currentBlock
+    assert nBlocksToAdvance > 0, "cannot advance less than 1 block"
+    for block in range(nBlocksToAdvance):
+        verseWasCrossedBC = ST.incrementBlock()
+        verseWasCrossedCLIENT = ST_CLIENT.incrementBlock()
+        assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
+        if verseWasCrossedBC:
+            ST_CLIENT.syncActions(ST)
+            ST_CLIENT.syncLeagueCommits(ST)
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -191,8 +194,8 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
     )
 
 def advanceNVerses(nVerses, ST, ST_CLIENT):
-    for verse in range(nVerses):
-        advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+    nBlocks = nVerses*ST.blocksBetweenVerses
+    advanceNBlocks(nBlocks, ST, ST_CLIENT)
 
 
 # ------------------------------------------------

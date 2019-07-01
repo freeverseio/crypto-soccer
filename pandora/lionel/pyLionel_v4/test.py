@@ -145,7 +145,7 @@ def test2():
     assert not ST.hasLeagueFinished(leagueIdx), "League detected as finished when it is still being played"
     assert not ST.hasLeagueBeenUpdated(leagueIdx), "League was updated too early, before finishing"
     # Move beyond league end
-    advanceNVerses(1, ST, ST_CLIENT)
+    advanceToBlock(ST.nextVerseBlock()+1, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
     assert ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as updated, when the sync process should have done it"
 
@@ -647,7 +647,7 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 842)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
