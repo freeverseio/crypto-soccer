@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: asiniscalchi/freeverse_develop
+      - image: asiniscalchi/freeverse_develop:1
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -39,7 +39,23 @@ jobs:
           command: cd go-synchronizer && go build
       - run:
           name: Test go-synchronizer
-          command: cd go-synchronizer && go test ./...
+          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/scanners`
+      - run:
+          name: Test go-synchronizer.scanners
+          command: |
+            cd go-synchronizer/scanners
+            # run ganache in the background
+            ./run_ganache.sh &
+            # wait until ganache is up and running
+            if [ -z "`command -v lsof`" ]; then
+              echo sleeping for 5s
+              sleep 5
+            else
+              echo waiting for ganache
+              while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+              echo ganache is running
+            fi
+            go test
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build

@@ -5,7 +5,7 @@ import "../state/PlayerState.sol";
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets {
-    event TeamCreated (uint256 teamId);
+    event TeamCreated (uint256 id);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -102,8 +102,8 @@ contract Assets {
         _teamNameHashToOwner[nameHash] = owner;
         uint256[PLAYERS_PER_TEAM] memory playerIds;
         teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
-        uint256 teamId = teams.length - 1;
-        emit TeamCreated(teamId);
+        uint256 id = teams.length - 1;
+        emit TeamCreated(id);
     }
 
     function signToLeague(
@@ -135,19 +135,11 @@ contract Assets {
         return teams[teamId].name;
     }
 
-    // TODO: name of the function carries information stored in the name of the params
-    // TODO: getPlayerId(uint256 teamId, uint8 posInTeam) already gives all the info
-    function getPlayerIdFromTeamIdAndPos(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
-        require(_teamExists(teamId), "unexistent team");
-        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
-        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
-    }
-
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
         require(_teamExists(teamId), "invalid team id");
         for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
             if (teams[teamId].playerIds[pos] == 0) // virtual player
-                playerIds[pos] = getPlayerIdFromTeamIdAndPos(teamId, pos);
+                playerIds[pos] = generateVirtualPlayerId(teamId, pos);
             else
                 playerIds[pos] = teams[teamId].playerIds[pos];
         }
@@ -155,7 +147,19 @@ contract Assets {
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
         require(_playerExists(playerId), "unexistent player");
-        if (_isVirtual(playerId)) {
+        if (_isVirtual(playerId))
+            return generateVirtualPlayerState(playerId);
+        else
+            return _playerIdToState[playerId];
+    }
+
+    function generateVirtualPlayerId(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
+        require(_teamExists(teamId), "unexistent team");
+        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
+        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
+    }
+
+    function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
             uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
@@ -177,9 +181,6 @@ contract Assets {
                 0, // prevShirtNumInLeague,
                 0 // lastSaleBloc
             );
-        }
-        else
-            return _playerIdToState[playerId];
     }
 
     function _setPlayerState(uint256 state) internal {

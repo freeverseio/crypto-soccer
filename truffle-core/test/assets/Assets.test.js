@@ -16,6 +16,14 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
 
+    it('generate virtual player state', async () => {
+        await assets.generateVirtualPlayerState(0).should.be.rejected;
+        await assets.generateVirtualPlayerState(1).should.be.rejected;
+        await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
+        await assets.generateVirtualPlayerState(1).should.be.fulfilled;
+        await assets.generateVirtualPlayerState(12).should.be.rejected;
+    });
+    
     it('compute seed', async () => {
         const seed = await assets.computeSeed("ciao", 55).should.be.fulfilled;
         seed.should.be.bignumber.equal('70784264222015847647364792903196777080414493477200674456068616512110552463457');
@@ -309,19 +317,19 @@ contract('Assets', (accounts) => {
         const receipt = await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
         const count = await assets.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
-        const teamId = receipt.logs[0].args.teamId.toNumber();
+        const teamId = receipt.logs[0].args.id.toNumber();
         teamId.should.be.equal(1);
         teamName = await assets.getTeamName(teamId).should.be.fulfilled;
         teamName.should.be.equal("Barca",accounts[1]);
     });
 
     it('get playersId from teamId and pos in team', async () => {
-        await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=0).should.be.rejected;
+        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.rejected;
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
-        await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=11).should.be.rejected;
-        let playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=0).should.be.fulfilled;
+        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=11).should.be.rejected;
+        let playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.fulfilled;
         playerId.toNumber().should.be.equal(1);
-        playerId = await assets.getPlayerIdFromTeamIdAndPos(teamId = 1, posInTeam=10).should.be.fulfilled;
+        playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=10).should.be.fulfilled;
         playerId.toNumber().should.be.equal(11);
     });
 

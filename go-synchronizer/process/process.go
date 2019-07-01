@@ -1,24 +1,34 @@
 package process
 
 import (
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/scanners"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-func Process(assetsContract Assets, sto storage.Storage) {
-	log.Debug("Process: called")
+func Process(assetsContract *assets.Assets, sto *storage.Storage) error {
+	log.Info("Syncing ...")
 
-	log.Debug("Process: scanning the blockchain")
-	countTeams, err := assetsContract.CountTeams(nil)
+	log.Trace("Process: scanning the blockchain")
+	events, err := scanners.ScanTeamCreated(assetsContract, nil)
 	if err != nil {
-		log.Fatalf("Failed to retrieve token name: %v", err)
+		return err
 	}
 
-	log.Debug("Process: act on local storage")
-	for i := 0; i < int(countTeams.Uint64()); i++ {
-		err = sto.TeamAdd(uint64(i), "name")
+	log.Trace("Process: act on local storage")
+	for i := 0; i < len(events); i++ {
+		event := events[i]
+		name, err := assetsContract.GetTeamName(nil, event.Id)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
+		err = sto.TeamAdd(event.Id.Uint64(), name)
+		if err != nil {
+			return err
+		}
+		log.Debugf("Team Created: id = %v, name = %v", event.Id.String(), name)
 	}
+
+	return nil
 }

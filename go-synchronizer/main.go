@@ -1,46 +1,64 @@
 package main
 
 import (
+	"flag"
 	"os"
 	"os/signal"
 	"syscall"
 
-	_ "github.com/lib/pq"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage/postgres"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
-var ethereumClient = "https://devnet.busyverse.com/web3"
-var assetsContractAddress = "0x05Fdd4d2340bcA823802849c75F385561278c3aB"
-var postgresUrl = "user=postgres dbname=cryptosoccer"
-
 func main() {
+	configFile := flag.String("config", "./config.json", "configuration file")
+	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "postgres url")
+	debug := flag.Bool("debug", false, "print debug logs")
+	flag.Parse()
+
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
 	log.Info("Starting ...")
+	log.Info("Parsing configuration file: ", *configFile)
+	config, err := config.New(*configFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config.Print()
 
-	log.Info("Dial the Ethereum client: ", ethereumClient)
-	conn, err := ethclient.Dial(ethereumClient)
+	log.Info("Dial the Ethereum client: ", config.EthereumClient)
+	conn, err := ethclient.Dial(config.EthereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Assets bindings to: ", assetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(assetsContractAddress), conn)
+	log.Info("Creating Assets bindings to: ", config.AssetsContractAddress)
+	assetsContract, err := assets.NewAssets(common.HexToAddress(config.AssetsContractAddress), conn)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Connecting to DBMS: ", postgresUrl)
-	storage, err := postgres.New(postgresUrl)
+	var sto *storage.Storage
+	if *inMemoryDatabase {
+		log.Warning("Using in memory DBMS (no persistence)")
+		sto, err = storage.NewSqlite3("./sql/00_schema.sql")
+	} else {
+		log.Info("Connecting to DBMS: ", *postgresURL)
+		sto, err = storage.NewPostgres(*postgresURL)
+	}
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(assetsContract, storage)
+	process := process.BackgroundProcessNew(assetsContract, sto)
 
 	log.Info("Start to process events ...")
 	process.Start()

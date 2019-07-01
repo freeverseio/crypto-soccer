@@ -8,7 +8,7 @@ BUILD_DIR=${MY_DIR}/build
 cd ${MY_DIR}
 
 contracts=()
-for dir in assets core game_controller stakers state; do
+for dir in assets core game_controller state; do
   for file in ${dir}/*.sol
   do
       contracts+=(${file})

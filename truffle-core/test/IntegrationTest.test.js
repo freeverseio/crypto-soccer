@@ -91,11 +91,11 @@ contract('IntegrationTest', (accounts) => {
 
     it('play a league', async () => {
         let receipt = await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;
-        const teamIdx1 = receipt.logs[0].args.teamId.toNumber();
+        const teamIdx1 = receipt.logs[0].args.id.toNumber();
         teamIdx1.should.be.equal(1);
 
         receipt = await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
-        const teamIdx2 = receipt.logs[0].args.teamId.toNumber();
+        const teamIdx2 = receipt.logs[0].args.id.toNumber();
         teamIdx2.should.be.equal(2);
 
         await advanceToBlock(100);

@@ -1,0 +1,37 @@
+package config
+
+import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type Config struct {
+	EthereumClient        string `json:"ethereumClient`
+	AssetsContractAddress string `json:"assetsContractAddress`
+}
+
+func New(configFile string) (*Config, error) {
+	jsonFile, err := os.Open(configFile)
+	if err != nil {
+		return nil, err
+	}
+	defer jsonFile.Close()
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+	var config Config
+	err = json.Unmarshal(byteValue, &config)
+	if err != nil {
+		return nil, err
+	}
+	return &config, nil
+}
+
+func (b *Config) Print() {
+	log.Info("config | ethereumClient         : ", b.EthereumClient)
+	log.Info("config | assetsContractAddress  : ", b.AssetsContractAddress)
+}
