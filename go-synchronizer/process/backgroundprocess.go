@@ -3,11 +3,13 @@ package process
 import (
 	"time"
 
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
 type BackgroundProcess struct {
+	client         *ethclient.Client
 	assetsContract *assets.Assets
 	storage        *storage.Storage
 	eventProcessor *EventProcessor
@@ -15,8 +17,9 @@ type BackgroundProcess struct {
 	stopped        chan (bool)
 }
 
-func BackgroundProcessNew(assetsContract *assets.Assets, storage *storage.Storage) *BackgroundProcess {
+func BackgroundProcessNew(client *ethclient.Client, assetsContract *assets.Assets, storage *storage.Storage) *BackgroundProcess {
 	return &BackgroundProcess{
+		client:         client,
 		assetsContract: assetsContract,
 		storage:        storage,
 		eventProcessor: NewEventProcessor(nil, storage, assetsContract),

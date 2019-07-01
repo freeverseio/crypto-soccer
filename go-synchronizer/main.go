@@ -35,13 +35,13 @@ func main() {
 	config.Print()
 
 	log.Info("Dial the Ethereum client: ", config.EthereumClient)
-	conn, err := ethclient.Dial(config.EthereumClient)
+	client, err := ethclient.Dial(config.EthereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
 	log.Info("Creating Assets bindings to: ", config.AssetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(config.AssetsContractAddress), conn)
+	assetsContract, err := assets.NewAssets(common.HexToAddress(config.AssetsContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -58,15 +58,15 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(assetsContract, sto)
+	process := process.BackgroundProcessNew(client, assetsContract, sto)
 
-	log.Info("Start to process events ...")
+	log.Info("Start processing events ...")
 	process.Start()
 
 	log.Info("Press 'ctrl + c' to interrupt")
 	waitForInterrupt()
 
-	log.Info("Stop to process events ...")
+	log.Info("Stop processing events ...")
 	process.StopAndJoin()
 
 	log.Info("... exiting")
