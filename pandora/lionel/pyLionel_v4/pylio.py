@@ -195,6 +195,8 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
 
 def advanceNVerses(nVerses, ST, ST_CLIENT):
     nBlocks = nVerses*ST.blocksBetweenVerses
+    if nBlocks == 0:
+        return
     advanceNBlocks(nBlocks, ST, ST_CLIENT)
 
 def advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT):
