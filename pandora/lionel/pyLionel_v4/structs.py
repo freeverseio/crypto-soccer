@@ -1349,9 +1349,10 @@ class Storage(Counter):
         if len(leagueIdxsForThisCommit) == 0:
             return
         superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
+        self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
+        # only lie (if forced) in the BC, not locally
         if self.forceSuperRootLie:
             superRoot += 1
-        self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
         ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
 
     def getBlockForVerse(self, verse):

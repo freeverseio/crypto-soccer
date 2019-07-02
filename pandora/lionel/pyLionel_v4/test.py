@@ -424,15 +424,14 @@ def test2():
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
 
-
-    print("TONIDONE")
-
-
-
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
     # corresponds to the player bought from team4, in the exchange done above.
     printTeam(teamIdx1, ST_CLIENT)
+
+
+    print("TONIDONE")
+
 
 
 
