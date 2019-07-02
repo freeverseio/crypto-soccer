@@ -261,15 +261,9 @@ class LeaguesCommitInVerse():
         self.initSkillsHash                 = None
         self.dataAtMatchdayHashes           = None
         self.scores                         = None
-        self.OneLeagueDataOwner             = None
+        self.oneLeagueDataOwner             = None
         # Common to every update:
         self.lastWriteBlocknum              = blocknum
-
-    def getSettledSuperRoot(self):
-        if self.allLeaguesRootsOwner:
-            return self.allLeaguesRootsSuperRoot
-        else:
-            return self.superRoot
 
     # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
     def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr, blocknum):
@@ -282,19 +276,19 @@ class LeaguesCommitInVerse():
         self.allLeaguesRoots            = None
         self.allLeaguesRootsOwner       = None
         self.allLeaguesRootsSuperRoot   = None
-        if self.OneLeagueDataOwner:
+        if self.oneLeagueDataOwner:
             self.dataAtMatchdaysLeagueIdx   = None
             self.initSkillsHash             = None
             self.dataAtMatchdayHashes       = None
             self.scores                     = None
-            self.OneLeagueDataOwner         = None
+            self.oneLeagueDataOwner         = None
 
     def writeOneLeagueData(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, addr, blocknum):
         self.dataAtMatchdaysLeagueIdx   = leagueIdx
         self.initSkillsHash             = initSkillsHash
         self.dataAtMatchdayHashes       = dataAtMatchdayHashes
         self.scores                     = scores
-        self.OneLeagueDataOwner         = addr
+        self.oneLeagueDataOwner         = addr
         self.lastWriteBlocknum          = blocknum
 
     def slashOneLeagueData(self):
@@ -302,7 +296,7 @@ class LeaguesCommitInVerse():
         self.initSkillsHash             = None
         self.dataAtMatchdayHashes       = None
         self.scores                     = None
-        self.OneLeagueDataOwner         = None
+        self.oneLeagueDataOwner         = None
 
 
 # The MAIN CLASS that manages all BC & CLIENT storage
@@ -362,6 +356,17 @@ class Storage(Counter):
     def haveNPeriodsPassed(self, verse, nPeriods):
         return (self.currentBlock - self.verseToLeagueCommits[verse].lastWriteBlocknum) > nPeriods*CHALLENGING_PERIOD_BLKS
 
+
+    def getVerseSettledSuperRoot(self, verse):
+        verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
+        assert isVerseSettled, "Asking for a settled superRoot of a not-settled verse"
+        if verseStatus == UPDT_ALLLGS:
+            return self.verseToLeagueCommits[verse].allLeaguesRootsSuperRoot
+        if verseStatus == UPDT_SUPER:
+            return self.verseToLeagueCommits[verse].superRoot
+        assert False, "We should never be in this verse state"
+
+
     def getVerseUpdateStatus(self, verse):
         needsSlash = UPDT_NONE
 
@@ -372,7 +377,7 @@ class Storage(Counter):
             return verseStatus, isVerseSettled, needsSlash
 
         # Start from the bottom
-        if self.verseToLeagueCommits[verse].OneLeagueDataOwner:
+        if self.verseToLeagueCommits[verse].oneLeagueDataOwner:
             if self.haveNPeriodsPassed(verse, 2):
                 verseStatus     = UPDT_SUPER
                 needsSlash      = UPDT_ALLLGS
@@ -656,7 +661,7 @@ class Storage(Counter):
             if not isDataInAllLeagueRoots:
                 return False
             leagueFinalVerse = self.leagues[prevLeagueIdx].verseFinal()
-            belongsToCorrectSuperRoot = pylio.serialHash(dataToChallengeInitSkills.allLeagueRoots) == self.verseToLeagueCommits[leagueFinalVerse].getSettledSuperRoot()
+            belongsToCorrectSuperRoot = pylio.serialHash(dataToChallengeInitSkills.allLeagueRoots) == self.getVerseSettledSuperRoot(leagueFinalVerse)
             if not belongsToCorrectSuperRoot:
                 return False
 

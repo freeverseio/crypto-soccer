@@ -430,13 +430,6 @@ def test2():
     printTeam(teamIdx1, ST_CLIENT)
 
 
-    print("TONIDONE")
-
-
-
-
-
-
     # create many teams, and leagues, and mess it all.
     advanceNVerses(1000, ST, ST_CLIENT)
     nTeams      = 200
@@ -458,6 +451,7 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
+        print(p)
         pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
 
     lastTeamIdx = 1
