@@ -90,6 +90,24 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if err := p.db.TeamAdd(event.Id.Uint64(), name); err != nil {
 			return err
 		}
+		if players, err := p.getVirtualPlayers(event.Id); err != nil {
+			return err
+		} else {
+			log.Println("team id:", event.Id.Int64(), "players: ", players)
+		}
 	}
 	return nil
+}
+func (p *EventProcessor) getVirtualPlayers(teamId *big.Int) (map[int64]*big.Int, error) {
+	players := make(map[int64]*big.Int)
+	for i := 0; i < 11; i++ {
+		if playerId, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
+			return players, err
+		} else if playerState, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, playerId); err != nil {
+			return players, err
+		} else {
+			players[playerId.Int64()] = playerState
+		}
+	}
+	return players, nil
 }
