@@ -7,5 +7,13 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5432/onboarding</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="Django default" uuid="a0b3d42c-2ab1-4ba2-b65f-87a172026888">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <remarks>$PROJECT_DIR$/Onboarding/settings.py</remarks>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://127.0.0.1:5432/onboarding</jdbc-url>
+    </data-source>
   </component>
 </project>

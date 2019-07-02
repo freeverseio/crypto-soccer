@@ -75,7 +75,9 @@ class UserViewTest(TestCase):
                                          format="json")
 
         user = User.objects.get()
-        change_user = {'password': 'new_password'}
+        change_user = {'name': user.name,
+                       'password': 'new_password',
+                       'counter': user.get_counter()}
         response = self.client.put(reverse('info',
                                            kwargs={'pk': user.id}),
                                    change_user,

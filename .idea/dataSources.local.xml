@@ -10,5 +10,12 @@
       <user-name>postgres</user-name>
       <introspection-schemas>@:@</introspection-schemas>
     </data-source>
+    <data-source name="Django default" uuid="a0b3d42c-2ab1-4ba2-b65f-87a172026888">
+      <database-info product="PostgreSQL" version="10.9 (Ubuntu 10.9-0ubuntu0.18.04.1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.2.5" dbms="POSTGRES" exact-version="10.9" exact-driver-version="42.2">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
+      <user-name>server</user-name>
+    </data-source>
   </component>
 </project>
