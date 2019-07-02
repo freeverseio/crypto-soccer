@@ -49,10 +49,11 @@ func (p *EventProcessor) Process() error {
 	if events, err := p.scanTeamCreated(opts); err != nil {
 		return err
 	} else {
-		p.db.SetBlockNumber(big.NewInt(int64(end + 1)))
 		p.storeTeamCreated(events)
 	}
 
+	// update the store block in the database
+	p.db.SetBlockNumber(big.NewInt(int64(end + 1)))
 	return nil
 }
 
