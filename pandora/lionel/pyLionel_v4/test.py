@@ -421,34 +421,12 @@ def test2():
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
 
 
-    print("TONIDONE")
-
-
-
-
-
-    # A challenger fails to prove anything is wrong with init states...
-    ST.challengeInitSkills(
-        leagueIdx,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills )
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
-
-    # ...or with matchday 0...
-    # challegeLeagueAtSelectedMatchday(leagueIdx)
-    selectedMatchday = 0
-    challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
-
-    # ...or with matchday 4...
-    selectedMatchday = 5
-    challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT)
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
-
-
     # We make sure that we can inquire the state of any player after these leagues and player sales:
     pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
+
+
+    print("TONIDONE")
+
 
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states

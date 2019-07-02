@@ -258,7 +258,7 @@ def verifyMerkleProof(root, merkleProof, hashFunction):
 def assertPlayerStateInClientIsCertifiable(playerIdx, ST, ST_CLIENT):
     playerState = ST_CLIENT.getCurrentPlayerState(playerIdx)
     dataToChallengePlayerSkills = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx)
-    assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills.neededHashes, dataToChallengePlayerSkills.depth),\
+    assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills),\
         "Current player state in CLIENT is not certifiable by BC.."
 
 def arrayDims(dim1, dim2):

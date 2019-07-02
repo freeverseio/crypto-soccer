@@ -851,11 +851,16 @@ class Storage(Counter):
 
         return pylio.serialHash(updatedData)
 
-    def certifyPlayerState(self, playerState, neededHashes, depth):
+    def certifyPlayerState(self, playerState, dataToChallengePlayerSkills):
         # check that the skills inside playerState match the end of last league:
         playerSkills = MinimalPlayerState(playerState)
-        skillsMerkleProof = MerkleProof(neededHashes, depth, playerSkills, 0)
-        assert self.areLatestSkills(skillsMerkleProof), "Computed player state by CLIENT is not recognized by BC.."
+        dataToChallengePlayerSkills.merkleProof = MerkleProof(
+            dataToChallengePlayerSkills.merkleProof.neededHashes,
+            dataToChallengePlayerSkills.merkleProof.depth,
+            playerSkills,
+            0
+        )
+        assert self.areLatestSkills(dataToChallengePlayerSkills), "Computed player state by CLIENT is not recognized by BC.."
         # evolve skills to last written state in the BC
         currentStateCertified = self.skillsToLastWrittenState(playerSkills)
         return pylio.areEqualStructs(playerState, currentStateCertified)
