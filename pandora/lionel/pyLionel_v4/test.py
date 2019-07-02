@@ -384,7 +384,7 @@ def test2():
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     print("TONIDONE")
 
 
