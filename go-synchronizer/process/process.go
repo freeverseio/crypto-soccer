@@ -8,7 +8,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/scanners"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -47,7 +46,7 @@ func (p *EventProcessor) Process() error {
 	}
 
 	// scan TeamCreated events in range [start, end]
-	if events, err := scanners.ScanTeamCreated(p.assets, opts); err != nil {
+	if events, err := p.scanTeamCreated(opts); err != nil {
 		return err
 	} else {
 		p.db.SetBlockNumber(big.NewInt(int64(end + 1)))
@@ -97,6 +96,23 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		}
 	}
 	return nil
+}
+
+func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.AssetsTeamCreated, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterTeamCreated(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsTeamCreated{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
 }
 func (p *EventProcessor) getVirtualPlayers(teamId *big.Int) (map[int64]*big.Int, error) {
 	players := make(map[int64]*big.Int)
