@@ -14,7 +14,7 @@ INSERT INTO params (name, value) VALUES ('block_number', '-1');
 
 CREATE TABLE players (
     id INT,
-    name TEXT,
+    state TEXT,
     team INT REFERENCES teams(id),
     PRIMARY KEY(id)
 );
