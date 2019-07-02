@@ -357,13 +357,14 @@ def test2():
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
-    # Try to challenge by providing a correct All-leagues-roots... should fail
+    # Try to challenge by providing a false ALL-LEAGUES
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
     allLeaguesRootsLie[0][1] += 1
     ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
+    # Try to challenge by providing a false ONE-LEAGUE...
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
     dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
     dataToChallengeLeagueLie.initSkillsHash += 1
@@ -378,6 +379,7 @@ def test2():
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
+    # We successfully challenge the ONE-LEAGUE, and return to ALL-LEAGUES
     ST.challengeInitSkills(
         verse,
         leagueIdx,
@@ -385,22 +387,44 @@ def test2():
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+
+    # We now successfully challenge the false ALL-LEAGUES
+    ST.challengeAllLeaguesRoots(
+        verse,
+        leagueIdx,
+        dataToChallengeLeague.initSkillsHash,
+        dataToChallengeLeague.dataAtMatchdayHashes,
+        dataToChallengeLeague.scores,
+        ADDR3
+    )
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+
+    # We fail to prove that anything was wrong
+    ST.challengeInitSkills(
+        verse,
+        leagueIdx,
+        ST_CLIENT.leagues[leagueIdx].usersInitData,
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
+    )
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+
+    # it also fails at proving that any matchday is wrong
+    selectedMatchday = 0
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    selectedMatchday = 1
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+
+    # finally, after a CHLL_PERIOD, it shows that it is back to the superRoot
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+
+
     print("TONIDONE")
 
 
 
-    initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
-    print(initSkillsHash)
-    print(pylio.serialHash(ST_CLIENT.leagues[leagueIdx].getInitPlayerSkills()))
-
-    ST.updateLeague(
-        leagueIdx,
-        initSkillsHash,
-        dataAtMatchdayHashes,
-        scores,
-        ADDR2,
-    )
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
 
     # A challenger fails to prove anything is wrong with init states...
