@@ -41,3 +41,37 @@ func TestPlayerAdd(t *testing.T) {
 		t.Fatalf("Expected 1 result %v", count)
 	}
 }
+
+func TestGetPlayer(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	player, err := sto.GetPlayer(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if player != nil {
+		t.Fatal("expected nil player")
+	}
+	id := uint64(3)
+	state := big.NewInt(43524)
+	player = &storage.Player{id, state}
+	err = sto.PlayerAdd(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	player, err = sto.GetPlayer(3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if player == nil {
+		t.Fatal("expected player")
+	}
+	if player.Id != id {
+		t.Fatalf("expected %v got %v", id, player.Id)
+	}
+	if player.State.Cmp(state) != 0 {
+		t.Fatalf("Expected %v got %v", state, player.State)
+	}
+}
