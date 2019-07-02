@@ -39,19 +39,7 @@ jobs:
           command: cd go-synchronizer && go build
       - run:
           name: Test go-synchronizer
-          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/scanners github.com/freeverseio/crypto-soccer/go-synchronizer/process`
-      - run:
-          name: Test go-synchronizer.scanners
-          command: |
-            # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh &
-            # wait until ganache is up and running
-            echo waiting for ganache
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            echo ganache is running
-            cd go-synchronizer/scanners
-            go test
-            #echo ganache PID `grep "ganache-cli" | tr -s ' ' | cut -d ' ' -f 2`
+          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
       - run:
           name: Test go-synchronizer.process
           command: |
