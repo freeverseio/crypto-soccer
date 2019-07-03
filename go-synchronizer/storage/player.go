@@ -1,12 +1,8 @@
 package storage
 
-import (
-	"math/big"
-)
-
 type Player struct {
 	Id    uint64
-	State *big.Int
+	State string
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -22,7 +18,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 }
 
 func (b *Storage) PlayerAdd(player *Player) error {
-	_, err := b.db.Exec("INSERT INTO players (id, state) VALUES ($1, $2);", player.Id, player.State.Uint64())
+	_, err := b.db.Exec("INSERT INTO players (id, state) VALUES ($1, $2);", player.Id, player.State)
 	if err != nil {
 		return err
 	}
@@ -40,9 +36,6 @@ func (b *Storage) GetPlayer(id uint64) (*Player, error) {
 	if !rows.Next() {
 		return nil, nil
 	}
-	var state string
-	rows.Scan(&player.Id, &state)
-	player.State = big.NewInt(0)
-	player.State.SetString(state, 10)
+	rows.Scan(&player.Id, &player.State)
 	return &player, nil
 }

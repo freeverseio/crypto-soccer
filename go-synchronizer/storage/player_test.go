@@ -1,7 +1,7 @@
 package storage_test
 
 import (
-	"math/big"
+	"strings"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -28,7 +28,7 @@ func TestPlayerAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player := storage.Player{3, big.NewInt(43524)}
+	player := storage.Player{3, "43524"}
 	err = sto.PlayerAdd(&player)
 	if err != nil {
 		t.Fatal(err)
@@ -55,7 +55,7 @@ func TestGetPlayer(t *testing.T) {
 		t.Fatal("expected nil player")
 	}
 	id := uint64(3)
-	state := big.NewInt(43524)
+	state := "43524"
 	player = &storage.Player{id, state}
 	err = sto.PlayerAdd(player)
 	if err != nil {
@@ -71,7 +71,7 @@ func TestGetPlayer(t *testing.T) {
 	if player.Id != id {
 		t.Fatalf("expected %v got %v", id, player.Id)
 	}
-	if player.State.Cmp(state) != 0 {
+	if strings.Compare(state, player.State) != 0 {
 		t.Fatalf("Expected %v got %v", state, player.State)
 	}
 }
