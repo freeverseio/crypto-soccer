@@ -2,18 +2,18 @@ package storage
 
 import "math/big"
 
-func (b *Storage) GetBlockNumber() (*big.Int, error) {
+func (b *Storage) GetBlockNumber() (uint64, error) {
 	rows, err := b.db.Query("SELECT value FROM params WHERE (name == 'block_number');")
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return 0, nil
 	}
-	var number int64
+	var number uint64
 	rows.Scan(&number)
-	return big.NewInt(number), nil
+	return number, nil
 }
 
 func (b *Storage) SetBlockNumber(value *big.Int) error {

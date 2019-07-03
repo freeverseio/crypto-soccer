@@ -81,7 +81,7 @@ func (p *EventProcessor) dbLastBlockNumber() uint64 {
 		log.Println(err)
 		return 0
 	}
-	return storedLastBlockNumber.Uint64()
+	return storedLastBlockNumber
 }
 func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 	for _, event := range events {

@@ -16,8 +16,8 @@ func TestGetBlockNumber(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if number.Int64() != -1 {
-		t.Fatalf("Expected -1 result %v", number)
+	if number != 0 {
+		t.Fatalf("Expected 0 result %v", number)
 	}
 }
 
@@ -34,7 +34,7 @@ func TestSetBlockNumber(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if number.Int64() != 3 {
+	if number != 3 {
 		t.Fatalf("Expected 3 result %v", number)
 	}
 }
