@@ -1,15 +1,13 @@
 package storage
 
-import "errors"
-
 type Team struct {
 	Id   uint64
 	Name string
 }
 
-func (b *Storage) TeamAdd(ID uint64, name string) error {
+func (b *Storage) TeamAdd(team *Team) error {
 	//  TODO: check for db is initialized
-	_, err := b.db.Exec("INSERT INTO teams (id, name) VALUES ($1, $2);", ID, name)
+	_, err := b.db.Exec("INSERT INTO teams (id, name) VALUES ($1, $2);", team.Id, team.Name)
 	if err != nil {
 		return err
 	}
@@ -29,16 +27,16 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) GetTeam(id uint64) (Team, error) {
+func (b *Storage) GetTeam(id uint64) (*Team, error) {
 	team := Team{}
 	rows, err := b.db.Query("SELECT id, name FROM teams WHERE (id == $1);", id)
 	if err != nil {
-		return team, err
+		return nil, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return team, errors.New("unexistent team")
+		return nil, nil
 	}
 	rows.Scan(&team.Id, &team.Name)
-	return team, nil
+	return &team, nil
 }

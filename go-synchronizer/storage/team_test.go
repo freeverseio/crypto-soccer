@@ -21,15 +21,15 @@ func TestTeamCount(t *testing.T) {
 }
 
 func TestTeamAdd(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = storage.TeamAdd(3, "ciao")
+	err = sto.TeamAdd(&storage.Team{3, "ciao"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := storage.TeamCount()
+	count, err := sto.TeamCount()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,19 +39,19 @@ func TestTeamAdd(t *testing.T) {
 }
 
 func TestGetTeam(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = storage.GetTeam(1)
-	if err == nil {
-		t.Fatal("getting team of unexistent team")
+	_, err = sto.GetTeam(1)
+	if err != nil {
+		t.Fatal("Expecting nil")
 	}
-	err = storage.TeamAdd(3, "ciao")
+	err = sto.TeamAdd(&storage.Team{3, "ciao"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	team, err := storage.GetTeam(3)
+	team, err := sto.GetTeam(3)
 	if err != nil {
 		t.Fatal(err)
 	}

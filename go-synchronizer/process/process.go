@@ -87,7 +87,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
-		} else if err := p.db.TeamAdd(event.Id.Uint64(), name); err != nil {
+		} else if err := p.db.TeamAdd(&storage.Team{event.Id.Uint64(), name}); err != nil {
 			return err
 		}
 		if err := p.storeVirtualPlayers(event.Id); err != nil {
