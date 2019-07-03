@@ -8,7 +8,7 @@ import Main from './views/main';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css';
 
-const url = "http://192.168.10.231:4000/"
+const url = "http://localhost:5000/graphql/"
 
 const client = new ApolloClient({
   uri: url
@@ -19,7 +19,7 @@ const App = () => (
     <ApolloProvider client={client}>
       <div className="App">
         <Header url={url} />
-        {/* <Main {...this.state} /> */}
+        <Main />
       </div>
     </ApolloProvider>
   </HashRouter>
