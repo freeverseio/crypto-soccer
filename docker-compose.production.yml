@@ -8,6 +8,7 @@ services:
   synchronizer:
     build: 
       context: ./go-synchronizer/.
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
   postgraphile:
