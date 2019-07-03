@@ -39,17 +39,16 @@ func (p *EventProcessor) Process() error {
 	if err != nil {
 		return err
 	}
+	if start >= end {
+		log.Info("...")
+		return nil
+	}
 
 	log.WithFields(log.Fields{
 		"start": start,
 		"end":   end,
 	}).Info("Syncing ...")
 	log.Trace("Process: scanning the blockchain")
-
-	if start >= end {
-		log.Info("No new blocks to search for events")
-		return nil
-	}
 
 	opts := &bind.FilterOpts{
 		Start:   start,
