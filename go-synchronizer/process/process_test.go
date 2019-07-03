@@ -121,7 +121,7 @@ func TestSyncTeams(t *testing.T) {
 		for i, player := range expected {
 			if result, err := storage.GetPlayer(uint64(i + 1)); err != nil {
 				t.Fatal(err)
-			} else if result.State.String() != player {
+			} else if result.State != player {
 				//t.Fatalf("Expecting player state to be %v actual %v", player, result.State.String())
 			}
 		}
