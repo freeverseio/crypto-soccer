@@ -34,7 +34,7 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) GetTeam(id uint64) (*Team, error) {
 	team := Team{}
-	rows, err := b.db.Query("SELECT id, name FROM teams WHERE (id == $1);", id)
+	rows, err := b.db.Query("SELECT id, name FROM teams WHERE (id = $1);", id)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 package storage
 
 func (b *Storage) GetBlockNumber() (uint64, error) {
-	rows, err := b.db.Query("SELECT value FROM params WHERE (name == 'block_number');")
+	rows, err := b.db.Query("SELECT value FROM params WHERE (name = 'block_number');")
 	if err != nil {
 		return 0, err
 	}
@@ -15,7 +15,7 @@ func (b *Storage) GetBlockNumber() (uint64, error) {
 }
 
 func (b *Storage) SetBlockNumber(value uint64) error {
-	_, err := b.db.Exec("UPDATE params SET value = $1 WHERE (name == 'block_number');", value)
+	_, err := b.db.Exec("UPDATE params SET value = $1 WHERE (name = 'block_number');", value)
 	if err != nil {
 		return err
 	}

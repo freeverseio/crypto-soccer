@@ -18,7 +18,7 @@ import (
 func main() {
 	configFile := flag.String("config", "./config.json", "configuration file")
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
 

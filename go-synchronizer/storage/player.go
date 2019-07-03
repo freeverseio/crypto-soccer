@@ -33,7 +33,7 @@ func (b *Storage) PlayerAdd(player *Player) error {
 
 func (b *Storage) GetPlayer(id uint64) (*Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT id, state FROM players WHERE (id == $1);", id)
+	rows, err := b.db.Query("SELECT id, state FROM players WHERE (id = $1);", id)
 	if err != nil {
 		return nil, err
 	}
