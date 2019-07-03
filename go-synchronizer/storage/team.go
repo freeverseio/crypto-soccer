@@ -1,5 +1,9 @@
 package storage
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 type Team struct {
 	Id   uint64
 	Name string
@@ -7,6 +11,7 @@ type Team struct {
 
 func (b *Storage) TeamAdd(team *Team) error {
 	//  TODO: check for db is initialized
+	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
 	_, err := b.db.Exec("INSERT INTO teams (id, name) VALUES ($1, $2);", team.Id, team.Name)
 	if err != nil {
 		return err

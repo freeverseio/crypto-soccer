@@ -1,5 +1,9 @@
 package storage
 
+import (
+	log "github.com/sirupsen/logrus"
+)
+
 type Player struct {
 	Id    uint64
 	State string
@@ -18,6 +22,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 }
 
 func (b *Storage) PlayerAdd(player *Player) error {
+	log.Infof("(DBMS) Adding player %v %v", player.Id, player.State)
 	_, err := b.db.Exec("INSERT INTO players (id, state) VALUES ($1, $2);", player.Id, player.State)
 	if err != nil {
 		return err
