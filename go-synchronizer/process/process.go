@@ -31,21 +31,22 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *as
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	log.Info("Syncing ...")
-	log.Trace("Process: scanning the blockchain")
-
 	start, err := p.dbLastBlockNumber()
 	if err != nil {
 		return err
 	}
-
 	end, err := p.clientLastBlockNumber()
 	if err != nil {
 		return err
 	}
 
-	if start > end {
-		log.Info("No new blocks to search for events")
+	log.WithFields(log.Fields{
+		"end":   end,
+		"start": start,
+	}).Info("Syncing ...")
+	log.Trace("Process: scanning the blockchain")
+
+	if start >= end {
 		return nil
 	}
 
@@ -54,7 +55,6 @@ func (p *EventProcessor) Process() error {
 		End:     &end,
 		Context: context.Background(),
 	}
-	log.Infof("Scanning range %v - %v", opts.Start, *opts.End)
 
 	// scan TeamCreated events in range [start, end]
 	if events, err := p.scanTeamCreated(opts); err != nil {
