@@ -41,12 +41,13 @@ func (p *EventProcessor) Process() error {
 	}
 
 	log.WithFields(log.Fields{
-		"end":   end,
 		"start": start,
+		"end":   end,
 	}).Info("Syncing ...")
 	log.Trace("Process: scanning the blockchain")
 
 	if start >= end {
+		log.Info("No new blocks to search for events")
 		return nil
 	}
 
@@ -64,7 +65,7 @@ func (p *EventProcessor) Process() error {
 	}
 
 	// update the store block in the database
-	p.db.SetBlockNumber(end)
+	p.db.SetBlockNumber(end + 1)
 	return nil
 }
 
