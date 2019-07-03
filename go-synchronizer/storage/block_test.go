@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -26,7 +25,7 @@ func TestSetBlockNumber(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = storage.SetBlockNumber(big.NewInt(3))
+	err = storage.SetBlockNumber(3)
 	if err != nil {
 		t.Fatal(err)
 	}

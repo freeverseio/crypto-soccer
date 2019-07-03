@@ -6,12 +6,10 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type BackgroundProcess struct {
-	client         *ethclient.Client
-	assetsContract *assets.Assets
-	storage        *storage.Storage
 	eventProcessor *EventProcessor
 	queryStop      chan (bool)
 	stopped        chan (bool)
@@ -19,10 +17,7 @@ type BackgroundProcess struct {
 
 func BackgroundProcessNew(client *ethclient.Client, assetsContract *assets.Assets, storage *storage.Storage) *BackgroundProcess {
 	return &BackgroundProcess{
-		client:         client,
-		assetsContract: assetsContract,
-		storage:        storage,
-		eventProcessor: NewEventProcessor(nil, storage, assetsContract),
+		eventProcessor: NewEventProcessor(client, storage, assetsContract),
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
 	}
@@ -36,7 +31,10 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				b.eventProcessor.Process()
+				err := b.eventProcessor.Process()
+				if err != nil {
+					log.Error(err)
+				}
 				time.Sleep(2 * time.Second)
 			}
 		}

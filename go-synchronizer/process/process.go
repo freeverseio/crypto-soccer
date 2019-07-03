@@ -2,6 +2,8 @@ package process
 
 import (
 	"context"
+	"errors"
+
 	//"fmt"
 	"math/big"
 
@@ -32,10 +34,18 @@ func (p *EventProcessor) Process() error {
 	log.Info("Syncing ...")
 	log.Trace("Process: scanning the blockchain")
 
-	start, end := p.nextRange()
+	start, err := p.dbLastBlockNumber()
+	if err != nil {
+		return err
+	}
+
+	end, err := p.clientLastBlockNumber()
+	if err != nil {
+		return err
+	}
 
 	if start > end {
-		log.Debug("No new blocks to search for events")
+		log.Info("No new blocks to search for events")
 		return nil
 	}
 
@@ -44,6 +54,7 @@ func (p *EventProcessor) Process() error {
 		End:     &end,
 		Context: context.Background(),
 	}
+	log.Infof("Scanning range %v - %v", opts.Start, *opts.End)
 
 	// scan TeamCreated events in range [start, end]
 	if events, err := p.scanTeamCreated(opts); err != nil {
@@ -53,35 +64,29 @@ func (p *EventProcessor) Process() error {
 	}
 
 	// update the store block in the database
-	p.db.SetBlockNumber(big.NewInt(int64(end + 1)))
+	p.db.SetBlockNumber(end)
 	return nil
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
-
-func (p *EventProcessor) nextRange() (uint64, uint64) {
-	return p.dbLastBlockNumber(), p.clientLastBlockNumber()
-}
-func (p *EventProcessor) clientLastBlockNumber() uint64 {
+func (p *EventProcessor) clientLastBlockNumber() (uint64, error) {
 	if p.client == nil {
-		return 0
+		return 0, errors.New("nil client")
 	}
 	header, err := p.client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		log.Println(err)
-		return 0
+		return 0, err
 	}
-	return header.Number.Uint64()
+	return header.Number.Uint64(), nil
 }
-func (p *EventProcessor) dbLastBlockNumber() uint64 {
+func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
 	storedLastBlockNumber, err := p.db.GetBlockNumber()
 	if err != nil {
-		log.Println(err)
-		return 0
+		return 0, err
 	}
-	return storedLastBlockNumber
+	return storedLastBlockNumber, nil
 }
 func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 	for _, event := range events {

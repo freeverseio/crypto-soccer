@@ -1,7 +1,5 @@
 package storage
 
-import "math/big"
-
 func (b *Storage) GetBlockNumber() (uint64, error) {
 	rows, err := b.db.Query("SELECT value FROM params WHERE (name == 'block_number');")
 	if err != nil {
@@ -16,8 +14,8 @@ func (b *Storage) GetBlockNumber() (uint64, error) {
 	return number, nil
 }
 
-func (b *Storage) SetBlockNumber(value *big.Int) error {
-	_, err := b.db.Exec("UPDATE params SET value = $1 WHERE (name == 'block_number');", value.Uint64())
+func (b *Storage) SetBlockNumber(value uint64) error {
+	_, err := b.db.Exec("UPDATE params SET value = $1 WHERE (name == 'block_number');", value)
 	if err != nil {
 		return err
 	}
