@@ -2,8 +2,6 @@ package process
 
 import (
 	"context"
-	"errors"
-
 	//"fmt"
 	"math/big"
 
@@ -31,18 +29,7 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *as
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	start, err := p.dbLastBlockNumber()
-	if err != nil {
-		return err
-	}
-	end, err := p.clientLastBlockNumber()
-	if err != nil {
-		return err
-	}
-	if start >= end {
-		log.Info("...")
-		return nil
-	}
+	start, end := p.nextRange()
 
 	log.WithFields(log.Fields{
 		"start": start,
@@ -71,22 +58,29 @@ func (p *EventProcessor) Process() error {
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) clientLastBlockNumber() (uint64, error) {
+func (p *EventProcessor) nextRange() (uint64, uint64) {
+	return p.dbLastBlockNumber(), p.clientLastBlockNumber()
+}
+
+func (p *EventProcessor) clientLastBlockNumber() uint64 {
 	if p.client == nil {
-		return 0, errors.New("nil client")
+		log.Warn("Client is nil. Returning 0 as last block.")
+		return 0
 	}
 	header, err := p.client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		return 0, err
+		log.Warn("Could not get blockchain last block")
+		return 0
 	}
-	return header.Number.Uint64(), nil
+	return header.Number.Uint64()
 }
-func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
+func (p *EventProcessor) dbLastBlockNumber() uint64 {
 	storedLastBlockNumber, err := p.db.GetBlockNumber()
 	if err != nil {
-		return 0, err
+		log.Warn("Could not get database last block")
+		return 0
 	}
-	return storedLastBlockNumber, nil
+	return storedLastBlockNumber
 }
 func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 	for _, event := range events {
