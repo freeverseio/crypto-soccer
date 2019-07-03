@@ -90,15 +90,12 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if err := p.db.TeamAdd(event.Id.Uint64(), name); err != nil {
 			return err
 		}
-		if players, err := p.getVirtualPlayers(event.Id); err != nil {
+		if err := p.storeVirtualPlayers(event.Id); err != nil {
 			return err
-		} else {
-			log.Println("team id:", event.Id.Int64(), "players: ", players)
 		}
 	}
 	return nil
 }
-
 func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.AssetsTeamCreated, error) {
 	if opts == nil {
 		opts = &bind.FilterOpts{Start: 0}
@@ -115,16 +112,21 @@ func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.Assets
 	}
 	return events, nil
 }
-func (p *EventProcessor) getVirtualPlayers(teamId *big.Int) (map[int64]*big.Int, error) {
-	players := make(map[int64]*big.Int)
+func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 	for i := 0; i < 11; i++ {
-		if playerId, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
-			return players, err
-		} else if playerState, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, playerId); err != nil {
-			return players, err
+		if id, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
+			return err
+		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
+			return err
 		} else {
-			players[playerId.Int64()] = playerState
+			p.db.PlayerAdd(&storage.Player{id.Uint64(), state})
+			log.Println("virtual player before storage:", id.Uint64(), state.String())
+			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
+				log.Fatal(err)
+			} else {
+				log.Println("virtual player stored:", stored.Id, stored.State.String())
+			}
 		}
 	}
-	return players, nil
+	return nil
 }
