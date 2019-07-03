@@ -14,7 +14,8 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 	}
 	blockchain := testutils.DefaultSimulatedBlockchain()
 
-	Process(blockchain.Assets, storage)
+	p := NewEventProcessor(nil, storage, blockchain.Assets)
+	p.Process()
 
 	count, err := storage.TeamCount()
 	if err != nil {
@@ -30,56 +31,88 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	blockchain := testutils.DefaultSimulatedBlockchain()
+	ganache := testutils.NewGanache()
 
-	alice := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
-	bob := blockchain.CreateAccountWithBalance("1000000000000000000")   // 1 eth
-	carol := blockchain.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	ganache.DeployContracts(owner)
 
-	blockchain.CreateTeam("Barca", alice)
-	blockchain.CreateTeam("Madrid", bob)
-	blockchain.CreateTeam("Venezia", carol)
+	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
+	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 
-	err = Process(blockchain.Assets, storage)
-	if err != nil {
+	ganache.CreateTeam("A", alice)
+	ganache.CreateTeam("B", bob)
+	ganache.CreateTeam("C", carol)
+
+	p := NewEventProcessor(ganache.Client, storage, ganache.Assets)
+
+	if err := p.Process(); err != nil {
 		t.Fatal(err)
+	} else {
+		if count, err := storage.TeamCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 3 {
+			t.Fatalf("Expected 3 actual %v", count)
+		}
 	}
 
-	count, err := storage.TeamCount()
-	if err != nil {
+	if team, err := storage.GetTeam(1); err != nil {
 		t.Fatal(err)
-	}
-	if count != 3 {
-		t.Fatalf("Expected 3 received %v", count)
-	}
-	team, err := storage.GetTeam(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if team.Id != 1 {
+	} else if team.Id != 1 {
 		t.Fatalf("Expected 1 result %v", team.Id)
+	} else if team.Name != "A" {
+		t.Fatalf("Expected A result %v", team.Name)
 	}
-	if team.Name != "Barca" {
-		t.Fatalf("Expected Barca result %v", team.Name)
-	}
-	team, err = storage.GetTeam(2)
-	if err != nil {
+	if team, err := storage.GetTeam(2); err != nil {
 		t.Fatal(err)
-	}
-	if team.Id != 2 {
+	} else if team.Id != 2 {
 		t.Fatalf("Expected 2 result %v", team.Id)
+	} else if team.Name != "B" {
+		t.Fatalf("Expected B result %v", team.Name)
 	}
-	if team.Name != "Madrid" {
-		t.Fatalf("Expected Madrid result %v", team.Name)
-	}
-	team, err = storage.GetTeam(3)
-	if err != nil {
+	if team, err := storage.GetTeam(3); err != nil {
 		t.Fatal(err)
-	}
-	if team.Id != 3 {
+	} else if team.Id != 3 {
 		t.Fatalf("Expected 3 result %v", team.Id)
+	} else if team.Name != "C" {
+		t.Fatalf("Expected C result %v", team.Name)
 	}
-	if team.Name != "Venezia" {
-		t.Fatalf("Expected Venezia result %v", team.Name)
+
+	if count, err := storage.PlayerCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 33 {
+		t.Fatalf("Expected 33 players actual %v", count)
+	} else {
+		for i := 1; i <= 33; i++ {
+			if result, err := storage.GetPlayer(uint64(i)); err != nil {
+				t.Fatal(err)
+			} else if result.State == "0" || result.Id != uint64(i) {
+				t.Fatalf("Expecting player %v state to be non 0 actual %v", i, result)
+			}
+		}
+	}
+
+	ganache.CreateTeam("D", alice)
+	if err := p.Process(); err != nil {
+		t.Fatal(err)
+	} else {
+		if count, err := storage.TeamCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 4 {
+			t.Fatalf("Expected 4 actual %v", count)
+		}
+	}
+	if team, err := storage.GetTeam(4); err != nil {
+		t.Fatal(err)
+	} else if team.Id != 4 {
+		t.Fatalf("Expected 4 result %v", team.Id)
+	} else if team.Name != "D" {
+		t.Fatalf("Expected D result %v", team.Name)
+	}
+
+	if count, err := storage.PlayerCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 44 {
+		t.Fatalf("Expected 44 players actual %v", count)
 	}
 }

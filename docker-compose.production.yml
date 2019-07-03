@@ -8,12 +8,13 @@ services:
   synchronizer:
     build: 
       context: ./go-synchronizer/.
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
   postgraphile:
     image: graphile/postgraphile
     depends_on:
       - postgres
-    command: ["postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    command: ["postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
     ports:
       - "5000:5000"

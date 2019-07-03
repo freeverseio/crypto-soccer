@@ -10,11 +10,11 @@ CREATE TABLE params (
     PRIMARY KEY(name)
 );
 
-INSERT INTO params (name, value) VALUES ('block_number', '-1');
+INSERT INTO params (name, value) VALUES ('block_number', '0');
 
--- CREATE TABLE players (
---     id INT,
---     name TEXT,
---     team INT REFERENCES teams(id),
---     PRIMARY KEY(id)
--- );
+CREATE TABLE players (
+    id INT,
+    state TEXT,
+    team INT REFERENCES teams(id),
+    PRIMARY KEY(id)
+);
