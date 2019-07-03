@@ -120,11 +120,10 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 			return err
 		} else {
 			p.db.PlayerAdd(&storage.Player{id.Uint64(), state.String()})
-			log.Println("virtual player before storage:", id.Uint64(), state.String())
 			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
 				log.Fatal(err)
-			} else {
-				log.Println("virtual player stored:", stored.Id, stored.State)
+			} else if stored.State != state.String() {
+				log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
 			}
 		}
 	}
