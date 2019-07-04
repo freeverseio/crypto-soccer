@@ -15,6 +15,11 @@ INSERT INTO params (name, value) VALUES ('block_number', '0');
 CREATE TABLE players (
     id INT,
     state TEXT,
-    team INT REFERENCES teams(id),
+    defence INT NOT NULL DEFAULT 0,
+    speed INT NOT NULL DEFAULT 0,
+    pass INT NOT NULL DEFAULT 0,
+    shoot INT NOT NULL DEFAULT 0,
+    endurance INT NOT NULL DEFAULT 0,
+    teamId INT REFERENCES teams(id),
     PRIMARY KEY(id)
 );

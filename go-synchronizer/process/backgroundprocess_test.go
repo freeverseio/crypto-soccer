@@ -5,7 +5,7 @@ import (
 )
 
 func TestBackgroundProcessNew(t *testing.T) {
-	process := BackgroundProcessNew(nil, nil, nil)
+	process := BackgroundProcessNew(nil, nil, nil, nil)
 	if process == nil {
 		t.Fatal("create background process returned nil")
 	}
