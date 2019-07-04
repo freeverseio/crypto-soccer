@@ -64,10 +64,12 @@ func (p *EventProcessor) nextRange() *bind.FilterOpts {
 		// the block number that is stored in the db
 		// was already scanned. We are interested in
 		// the next block
-		if start == math.MaxUint64 {
-			panic("Block range overflow")
+		if start < math.MaxUint64 {
+			start += 1
+		} else {
+			log.Error("Block range overflow")
+			return nil
 		}
-		start += 1
 	}
 	end := p.clientLastBlockNumber()
 	if start > end {
