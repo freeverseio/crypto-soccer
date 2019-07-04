@@ -55,7 +55,7 @@ func (p *EventProcessor) Process() error {
 		p.storeTeamCreated(events)
 	}
 
-	// update the store block in the database
+	// store the next block we are interested in in the database
 	p.db.SetBlockNumber(end + 1)
 	return nil
 }
