@@ -20,8 +20,17 @@ class Teams extends PureComponent {
   allTeamsList {
     id
     name
+    playersByTeamidList {
+        id
+      defence
+      speed
+      pass
+      shoot
+      endurance
+      teamid
   }
 }
+                    }
          `}
                 >
                     {({ loading, error, data }) => {

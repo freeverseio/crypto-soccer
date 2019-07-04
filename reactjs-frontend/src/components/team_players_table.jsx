@@ -11,22 +11,23 @@ class TeamPlayersTable extends PureComponent {
         const { active } = this.state;
 
         const players = () => {
+            console.log(team)
             if (!team)
                 return <Table.Row />
 
             return (
-                team.players.map(player => (
-                    <Table.Row key={player.index}>
+                team.map(player => (
+                    <Table.Row key={player.teamId}>
                         <Table.Cell>
-                            <Label ribbon>{player.name}</Label>
+                            <Label ribbon>{player.id}</Label>
                         </Table.Cell>
-                        <Table.Cell>{player.skills[0]}</Table.Cell>
-                        <Table.Cell>{player.skills[1]}</Table.Cell>
-                        <Table.Cell>{player.skills[2]}</Table.Cell>
-                        <Table.Cell>{player.skills[3]}</Table.Cell>
-                        <Table.Cell>{player.skills[4]}</Table.Cell>
-                        <Table.Cell>{player.skills[5]}</Table.Cell>
-                        <Table.Cell>{roleNames[player.skills[6]]}</Table.Cell>
+                        <Table.Cell>TODO</Table.Cell>
+                        <Table.Cell>{player.defence}</Table.Cell>
+                        <Table.Cell>{player.speed}</Table.Cell>
+                        <Table.Cell>{player.pass}</Table.Cell>
+                        <Table.Cell>{player.shoot}</Table.Cell>
+                        <Table.Cell>{player.endurance}</Table.Cell>
+                        <Table.Cell>TODO</Table.Cell>
                     </Table.Row>
                 ))
             )
