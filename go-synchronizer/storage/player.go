@@ -6,6 +6,7 @@ import (
 
 type Player struct {
 	Id        uint64
+	TeamId    uint64
 	State     string
 	Defence   uint64
 	Speed     uint64
@@ -28,8 +29,9 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerAdd(player *Player) error {
 	log.Infof("(DBMS) Adding player %v %v", player.Id, player.State)
-	_, err := b.db.Exec("INSERT INTO players (id, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := b.db.Exec("INSERT INTO players (id, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		player.Id,
+		player.TeamId,
 		player.State,
 		player.Defence,
 		player.Speed,

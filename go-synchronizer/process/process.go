@@ -121,6 +121,7 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 			var player storage.Player
 			player.Id = id.Uint64()
 			player.State = state.String()
+			player.TeamId = teamId.Uint64()
 			p.db.PlayerAdd(&player)
 			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
 				log.Fatal(err)

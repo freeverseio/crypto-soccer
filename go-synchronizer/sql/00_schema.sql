@@ -20,6 +20,6 @@ CREATE TABLE players (
     pass INT NOT NULL DEFAULT 0,
     shoot INT NOT NULL DEFAULT 0,
     endurance INT NOT NULL DEFAULT 0,
-    team INT REFERENCES teams(id),
+    teamId INT REFERENCES teams(id),
     PRIMARY KEY(id)
 );
