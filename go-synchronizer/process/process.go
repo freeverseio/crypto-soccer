@@ -29,24 +29,17 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *as
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	start, end := p.nextRange()
+	opts := p.nextRange()
 
-	if start > end {
+	if opts == nil {
 		log.Info("No new blocks to search for events")
 		return nil
 	}
 
 	log.WithFields(log.Fields{
-		"start": start,
-		"end":   end,
+		"start": opts.Start,
+		"end":   *opts.End,
 	}).Info("Syncing ...")
-	log.Trace("Process: scanning the blockchain")
-
-	opts := &bind.FilterOpts{
-		Start:   start,
-		End:     &end,
-		Context: context.Background(),
-	}
 
 	// scan TeamCreated events in range [start, end]
 	if events, err := p.scanTeamCreated(opts); err != nil {
@@ -55,16 +48,32 @@ func (p *EventProcessor) Process() error {
 		p.storeTeamCreated(events)
 	}
 
-	// store the next block we are interested in in the database
-	p.db.SetBlockNumber(end + 1)
+	// store the last block that was scanned
+	p.db.SetBlockNumber(*opts.End)
 	return nil
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) nextRange() (uint64, uint64) {
-	return p.dbLastBlockNumber(), p.clientLastBlockNumber()
+func (p *EventProcessor) nextRange() *bind.FilterOpts {
+	start := p.dbLastBlockNumber()
+	if start != 0 {
+		// unless this is the very first execution,
+		// the block number that is stored in the db
+		// was already scanned. We are interested in
+		// the next block
+		start += 1
+	}
+	end := p.clientLastBlockNumber()
+	if start > end {
+		return nil
+	}
+	return &bind.FilterOpts{
+		Start:   start,
+		End:     &end,
+		Context: context.Background(),
+	}
 }
 
 func (p *EventProcessor) clientLastBlockNumber() uint64 {
