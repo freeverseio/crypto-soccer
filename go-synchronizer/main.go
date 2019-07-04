@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
@@ -46,6 +47,12 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
+	log.Info("Creating States bindings to: ", config.StatesContractAddress)
+	statesContract, err := states.NewStates(common.HexToAddress(config.StatesContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
@@ -58,7 +65,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(client, assetsContract, sto)
+	process := process.BackgroundProcessNew(client, assetsContract, statesContract, sto)
 
 	log.Info("Start processing events ...")
 	process.Start()

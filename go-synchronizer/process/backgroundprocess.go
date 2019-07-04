@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,9 +16,14 @@ type BackgroundProcess struct {
 	stopped        chan (bool)
 }
 
-func BackgroundProcessNew(client *ethclient.Client, assetsContract *assets.Assets, storage *storage.Storage) *BackgroundProcess {
+func BackgroundProcessNew(
+	client *ethclient.Client,
+	assetsContract *assets.Assets,
+	statesContract *states.States,
+	storage *storage.Storage,
+) *BackgroundProcess {
 	return &BackgroundProcess{
-		eventProcessor: NewEventProcessor(client, storage, assetsContract),
+		eventProcessor: NewEventProcessor(client, storage, assetsContract, statesContract),
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
 	}
