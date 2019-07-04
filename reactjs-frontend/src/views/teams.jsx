@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import ApolloClient, { gql } from "apollo-boost";
-import { ApolloProvider, Query } from "react-apollo";
+import { gql } from "apollo-boost";
+import { Query } from "react-apollo";
 
 import { Segment, Divider } from 'semantic-ui-react'
 import TeamCreator from '../components/team_creator';
@@ -8,7 +8,7 @@ import TeamList from '../components/team_list';
 
 class Teams extends PureComponent {
     render() {
-        const { testingFacade, teams } = this.props;
+        const { testingFacade  } = this.props;
 
         return (
             <Segment>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { HashRouter } from 'react-router-dom';
-import ApolloClient, { gql } from "apollo-boost";
-import { ApolloProvider, Query } from "react-apollo";
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
 import Header from './views/header';
 import Main from './views/main';
 // import logo from './logo.svg';

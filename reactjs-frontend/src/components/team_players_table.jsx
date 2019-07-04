@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Label, Table, Accordion, Icon } from 'semantic-ui-react'
 
-const roleNames = ['Goalkeeper','Defender','Midfielder','Forward'];
+// const roleNames = ['Goalkeeper','Defender','Midfielder','Forward'];
 
 class TeamPlayersTable extends PureComponent {
     state = { active: false };
