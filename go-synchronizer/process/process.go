@@ -143,15 +143,25 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
 			return err
 		} else {
-			var player storage.Player
-			player.Id = id.Uint64()
-			player.State = state.String()
-			player.TeamId = teamId.Uint64()
-			p.db.PlayerAdd(&player)
-			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
-				log.Fatal(err)
-			} else if stored.State != state.String() {
-				log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
+			if skills, err := p.states.GetSkillsVec(&bind.CallOpts{}, state); err != nil {
+				return err
+			} else {
+				player := storage.Player{
+					Id:        id.Uint64(),
+					TeamId:    teamId.Uint64(),
+					State:     state.String(),
+					Defence:   uint64(skills[0]),
+					Speed:     uint64(skills[1]),
+					Pass:      uint64(skills[2]),
+					Shoot:     uint64(skills[3]),
+					Endurance: uint64(skills[4]),
+				}
+				p.db.PlayerAdd(&player)
+				if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
+					log.Fatal(err)
+				} else if stored.State != state.String() {
+					log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
+				}
 			}
 		}
 	}
