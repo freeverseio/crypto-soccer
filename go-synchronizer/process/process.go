@@ -31,6 +31,11 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *as
 func (p *EventProcessor) Process() error {
 	start, end := p.nextRange()
 
+	if start > end {
+		log.Info("No new blocks to search for events")
+		return nil
+	}
+
 	log.WithFields(log.Fields{
 		"start": start,
 		"end":   end,
