@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -16,6 +17,7 @@ type EventProcessor struct {
 	client *ethclient.Client
 	db     *storage.Storage
 	assets *assets.Assets
+	state  *states.States
 }
 
 // *****************************************************************************
@@ -23,8 +25,8 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets) *EventProcessor {
-	return &EventProcessor{client, db, assets}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States) *EventProcessor {
+	return &EventProcessor{client, db, assets, states}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -118,7 +120,11 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
 			return err
 		} else {
-			p.db.PlayerAdd(&storage.Player{id.Uint64(), state.String()})
+			var player storage.Player
+			player.Id = id.Uint64()
+			player.State = state.String()
+			player.TeamId = teamId.Uint64()
+			p.db.PlayerAdd(&player)
 			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
 				log.Fatal(err)
 			} else if stored.State != state.String() {

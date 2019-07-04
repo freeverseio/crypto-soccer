@@ -11,6 +11,7 @@ import (
 type Config struct {
 	EthereumClient        string `json:"ethereumClient`
 	AssetsContractAddress string `json:"assetsContractAddress`
+	StatesContractAddress string `json:"statesContractAddress`
 }
 
 func New(configFile string) (*Config, error) {
@@ -34,4 +35,5 @@ func New(configFile string) (*Config, error) {
 func (b *Config) Print() {
 	log.Info("config | ethereumClient         : ", b.EthereumClient)
 	log.Info("config | assetsContractAddress  : ", b.AssetsContractAddress)
+	log.Info("config | statesContractAddress  : ", b.StatesContractAddress)
 }

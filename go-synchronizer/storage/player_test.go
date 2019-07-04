@@ -28,7 +28,9 @@ func TestPlayerAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player := storage.Player{3, "43524"}
+	var player storage.Player
+	player.Id = 3
+	player.State = "43524"
 	err = sto.PlayerAdd(&player)
 	if err != nil {
 		t.Fatal(err)
@@ -56,8 +58,10 @@ func TestGetPlayer(t *testing.T) {
 	}
 	id := uint64(3)
 	state := "43524"
-	player = &storage.Player{id, state}
-	err = sto.PlayerAdd(player)
+	var player2 storage.Player
+	player2.Id = 3
+	player2.State = "43524"
+	err = sto.PlayerAdd(&player2)
 	if err != nil {
 		t.Fatal(err)
 	}
