@@ -18,7 +18,7 @@ type EventProcessor struct {
 	client *ethclient.Client
 	db     *storage.Storage
 	assets *assets.Assets
-	state  *states.States
+	states *states.States
 }
 
 // *****************************************************************************
@@ -48,7 +48,10 @@ func (p *EventProcessor) Process() error {
 	if events, err := p.scanTeamCreated(opts); err != nil {
 		return err
 	} else {
-		p.storeTeamCreated(events)
+		err = p.storeTeamCreated(events)
+		if err != nil {
+			return err
+		}
 	}
 
 	// store the last block that was scanned

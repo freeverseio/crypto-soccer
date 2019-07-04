@@ -1,40 +1,52 @@
 import React from 'react';
-import ApolloClient, { gql } from "apollo-boost";
-import { ApolloProvider, Query } from "react-apollo";
+import { HashRouter } from 'react-router-dom';
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
+import Header from './views/header';
+import Main from './views/main';
 // import logo from './logo.svg';
+import 'semantic-ui-css/semantic.min.css';
 import './App.css';
 
+const url = "http://localhost:5000/graphql"
+
 const client = new ApolloClient({
-  uri: "http://192.168.10.231:4000/"
+  uri: url
 });
 
 const App = () => (
-  <ApolloProvider client={client}>
-    <div>
-      <h2>My first Apollo app</h2>
-      <Query
-        query={gql`
-          {
-            allTeams {
-              id
-              name
-            }
-          }
-        `}
-      >
-        {({ loading, error, data }) => {
-          if (loading) return <p>Loading...</p>;
-          if (error) return <p>Error :(</p>;
+  <HashRouter>
+    <ApolloProvider client={client}>
+      <div className="App">
+        <Header url={url} />
+        <Main />
+      </div>
+    </ApolloProvider>
+  </HashRouter>
+    // {/* <div>
+    //   <h2>My first Apollo app</h2>
+    //   <Query
+    //     query={gql`
+    //       {
+    //         allTeams {
+    //           id
+    //           name
+    //         }
+    //       }
+    //     `}
+    //   >
+    //     {({ loading, error, data }) => {
+    //       if (loading) return <p>Loading...</p>;
+    //       if (error) return <p>Error :(</p>;
 
-          return data.allTeams.map(({ id, name }) => (
-            <div key={id}>
-              <p>{id}: {name}</p>
-            </div>
-          ));
-        }}
-      </Query>
-    </div>
-  </ApolloProvider>
+    //       return data.allTeams.map(({ id, name }) => (
+    //         <div key={id}>
+    //           <p>{id}: {name}</p>
+    //         </div>
+    //       ));
+    //     }}
+    //   </Query>
+    //   </div> */}
 );
 
 // function App() {
