@@ -5,14 +5,14 @@ import TeamPlayerTable from '../components/team_players_table';
 export default props => {
     const { teams } = props;
 
-    const cardList = teams.map(team => (
-        <Item key={team.index}>
+    const cardList = teams.map(({id, name}) => (
+        <Item key={id}>
             <Item.Image size='tiny' src='https://upload.wikimedia.org/wikipedia/it/0/07/Fc_barcelona.png' />
             <Item.Content>
-                <Item.Header as='a'>{team.name}</Item.Header>
+                <Item.Header as='a'>{name}</Item.Header>
                 <Item.Meta>TODO Description</Item.Meta>
                 <Item.Description>
-                    <TeamPlayerTable team={team} />
+                    {/* <TeamPlayerTable team={team} /> */}
                 </Item.Description>
             </Item.Content>
         </Item>

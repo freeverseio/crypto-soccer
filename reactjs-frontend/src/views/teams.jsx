@@ -14,7 +14,7 @@ class Teams extends PureComponent {
             <Segment>
                 <TeamCreator contract={testingFacade} />
                 <Divider />
-                <Query
+                <Query pollInterval={500}
                     query={gql`
            {
   allTeamsList {

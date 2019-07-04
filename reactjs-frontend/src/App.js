@@ -8,7 +8,7 @@ import Main from './views/main';
 import 'semantic-ui-css/semantic.min.css';
 import './App.css';
 
-const url = "http://localhost:5000/graphql/"
+const url = "http://localhost:5000/graphql"
 
 const client = new ApolloClient({
   uri: url
