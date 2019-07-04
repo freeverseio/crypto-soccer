@@ -3,6 +3,7 @@ package process
 import (
 	"context"
 	//"fmt"
+	"math"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -63,6 +64,9 @@ func (p *EventProcessor) nextRange() *bind.FilterOpts {
 		// the block number that is stored in the db
 		// was already scanned. We are interested in
 		// the next block
+		if start == math.MaxUint64 {
+			panic("Block range overflow")
+		}
 		start += 1
 	}
 	end := p.clientLastBlockNumber()
