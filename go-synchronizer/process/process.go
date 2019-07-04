@@ -118,7 +118,10 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
 			return err
 		} else {
-			p.db.PlayerAdd(&storage.Player{id.Uint64(), state.String()})
+			var player storage.Player
+			player.Id = id.Uint64()
+			player.State = state.String()
+			p.db.PlayerAdd(&player)
 			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
 				log.Fatal(err)
 			} else if stored.State != state.String() {
