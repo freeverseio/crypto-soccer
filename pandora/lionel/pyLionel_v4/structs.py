@@ -22,17 +22,10 @@ class Counter():
         return verseWasCrossed
 
 class DataToChallengePlayerSkills():
-    def __init__(self, merkleProof, leagueData, allLeagueRoots):
-        self.merkleProof    = merkleProof
-        self.leagueData     = leagueData
-        self.allLeagueRoots = allLeagueRoots
-
-class LeagueStructForHashing():
-    def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):
-        self.initSkillsHash         = initSkillsHash
-        self.dataAtMatchdayHashes   = dataAtMatchdayHashes
-        self.scores                 = scores
-
+    def __init__(self, merkleProofStates, merkleProofLeague, merkleProofAllLeagues):
+        self.merkleProofStates      = merkleProofStates
+        self.merkleProofLeague      = merkleProofLeague
+        self.merkleProofAllLeagues  = merkleProofAllLeagues
 
 class MinimalPlayerState():
     def __init__(self, playerState = None):
@@ -269,7 +262,8 @@ class LeaguesCommitInVerse():
     def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr, blocknum):
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
-        self.allLeaguesRootsSuperRoot   = pylio.serialHash(allLeaguesRoots)
+        tree = MerkleTree(allLeaguesRoots)
+        self.allLeaguesRootsSuperRoot   = tree.root
         self.lastWriteBlocknum          = blocknum
 
     def slashAllLeaguesRoots(self):
@@ -624,7 +618,7 @@ class Storage(Counter):
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
             for shirtNum in range(NPLAYERS_PER_TEAM):
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].merkleProof.leaf
+                playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].merkleProofStates.leaf
                 assert playerSkills.getPlayerIdx() == playerIdx, "The playerIdx provided does not agree with what the BC expects"
                 # it makes sure that the state matches what the BC says about that player
                 if not self.areLatestSkills(dataToChallengeInitSkills[teamPosInLeague][shirtNum]):
@@ -638,11 +632,11 @@ class Storage(Counter):
                 return tPos
         assert False, "Team not found in league"
 
-    def areLatestSkills(self, dataToChallengeInitSkills):
+    def areLatestSkills(self, dataToChallengeLatestSkills):
         # If player has never played a league, we can compute the playerSkills directly in the BC
         # It basically is equal to the birth skills, with ,potentially, a few team changes via sales.
         # If not, we can just compare the hash of the dataToChallengePlayerState with the stored hash in the prev league
-        playerSkills = dataToChallengeInitSkills.merkleProof.leaf
+        playerSkills = dataToChallengeLatestSkills.merkleProofStates.leaf
         playerIdx = playerSkills.getPlayerIdx()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
@@ -651,25 +645,37 @@ class Storage(Counter):
                 MinimalPlayerState(self.getPlayerStateBeforePlayingAnyLeague(playerIdx))
             )
         else:
-            # tonitoni
-            leagueRoot = self.computeLeagueRoot(
-                dataToChallengeInitSkills.leagueData.initSkillsHash,
-                dataToChallengeInitSkills.leagueData.dataAtMatchdayHashes,
-                dataToChallengeInitSkills.leagueData.scores
-            )
-            isDataInAllLeagueRoots = [prevLeagueIdx, leagueRoot] in dataToChallengeInitSkills.allLeagueRoots
-            if not isDataInAllLeagueRoots:
-                return False
+            # First verify that the data provided match with the prevLeague SuperRoot:
+            #   OneLeagueData
+            #   => leads to leagueRoot which is included in the provided allLeagueRoots
+            #   => which leads to a superRoot which matchs the one provided in the verse update
             leagueFinalVerse = self.leagues[prevLeagueIdx].verseFinal()
-            belongsToCorrectSuperRoot = pylio.serialHash(dataToChallengeInitSkills.allLeagueRoots) == self.getVerseSettledSuperRoot(leagueFinalVerse)
-            if not belongsToCorrectSuperRoot:
+            commitSuperRoot = self.getVerseSettledSuperRoot(leagueFinalVerse)
+            if not pylio.verifyMerkleProof(
+                commitSuperRoot,
+                dataToChallengeLatestSkills.merkleProofAllLeagues,
+                pylio.serialHash
+            ):
+                print("LeagueRoot not part of SuperRoot MerkleTree")
                 return False
 
-            return pylio.verifyMerkleProof(
-                dataToChallengeInitSkills.leagueData.dataAtMatchdayHashes[-1],
-                dataToChallengeInitSkills.merkleProof,
+            if not pylio.verifyMerkleProof(
+                dataToChallengeLatestSkills.merkleProofAllLeagues.leaf[1],
+                dataToChallengeLatestSkills.merkleProofLeague,
                 pylio.serialHash
-            )
+            ):
+                print("LeagueData not part of League MerkleTree")
+                return False
+
+            if not pylio.verifyMerkleProof(
+                dataToChallengeLatestSkills.merkleProofLeague.leaf,
+                dataToChallengeLatestSkills.merkleProofStates,
+                pylio.serialHash
+            ):
+                print("LeagueStates not part of LeagueData MerkleTree")
+                return False
+            return True
+
 
 
     def challengeInitSkills(self, verse, leagueIdx, usersInitData, dataToChallengeInitSkills):
@@ -860,8 +866,8 @@ class Storage(Counter):
         # check that the skills inside playerState match the end of last league:
         playerSkills = MinimalPlayerState(playerState)
         dataToChallengePlayerSkills.merkleProof = MerkleProof(
-            dataToChallengePlayerSkills.merkleProof.neededHashes,
-            dataToChallengePlayerSkills.merkleProof.depth,
+            dataToChallengePlayerSkills.merkleProofStates.neededHashes,
+            dataToChallengePlayerSkills.merkleProofStates.depth,
             playerSkills,
             0
         )
@@ -889,7 +895,8 @@ class Storage(Counter):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
         if needsSlash == UPDT_ALLLGS:
             self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
-        assert pylio.serialHash(allLeaguesRoots) != self.verseToLeagueCommits[verse].superRoot, \
+        tree = MerkleTree(allLeaguesRoots)
+        assert tree.root != self.verseToLeagueCommits[verse].superRoot, \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
             allLeaguesRoots,
@@ -897,16 +904,24 @@ class Storage(Counter):
             self.currentBlock
         )
 
-    def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
-        leagueRoot = 0
+    def getLeaguePosInVerseCommit(self, verse, leagueIdx):
         for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
             if leaguePair[0] == leagueIdx:
-                leagueRoot = leaguePair[1]
-                break
-        return leagueRoot
+                return leaguePair
+        assert False, "league not found in verse!"
+
+    def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
+        for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
+            if leaguePair[0] == leagueIdx:
+                return leaguePair[1]
+        assert False, "league not found in verse!"
+
 
     def isLeagueIdxInVerseCommit(self, verse, leagueIdx):
-        return self.getLeagueRootFromVerseCommit(verse, leagueIdx) != 0
+        for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
+            if leaguePair[0] == leagueIdx:
+                return True
+        return False
 
     def challengeAllLeaguesRootsLeagueMissing(self, verse, leagueIdx):
         # the order of these asserts matters
@@ -959,9 +974,17 @@ class Storage(Counter):
             self.currentBlock
         )
 
+    def flattenLeagueData(self, initSkillsHash, dataAtMatchdayHashes, scores):
+        leafs = [initSkillsHash]
+        for hash in dataAtMatchdayHashes:
+            leafs.append(hash)
+        for score in scores:
+            leafs.append(score)
+        return leafs
+
     def computeLeagueRoot(self, initSkillsHash, dataAtMatchdayHashes, scores):
-        leagueStruct = LeagueStructForHashing(initSkillsHash, dataAtMatchdayHashes, scores)
-        return pylio.serialHash(leagueStruct)
+        leagueTree = MerkleTree(self.flattenLeagueData(initSkillsHash, dataAtMatchdayHashes, scores))
+        return leagueTree.root
 
 
     # ------------------------------------------------------------------------
@@ -1201,31 +1224,68 @@ class Storage(Counter):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         # get league data, and allleagueroots
-        self.verseToLeagueCommits
         if prevLeagueIdx == 0:
-            merkleProof = MerkleProof([], 0, self.getPlayerSkillsAtEndOfLastLeague(playerIdx), 0)
-            return DataToChallengePlayerSkills(merkleProof, 0, 0)
+            merkleProofStates = MerkleProof([], 0, self.getPlayerSkillsAtEndOfLastLeague(playerIdx), 0)
+            return DataToChallengePlayerSkills(merkleProofStates, 0, 0)
         else:
+            # to check that skills are part of last league's last day,
+            # we first
+
             skillsAllTeamsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
             playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAllTeamsAtEndOfPrevLeague[teamPosInPrevLeague])
             idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
 
             lastDayTree = self.leagues[prevLeagueIdx].lastDayTree
-            merkleProof = lastDayTree.prepareProofForLeaf(playerSkills, idxInFlattenedSkills)
+            merkleProofStates = lastDayTree.prepareProofForLeaf(playerSkills, idxInFlattenedSkills)
 
             assert pylio.verifyMerkleProof(
                 self.leagues[prevLeagueIdx].dataToChallengeLeague.dataAtMatchdayHashes[-1],
-                merkleProof,
+                merkleProofStates,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
 
             leagueData = self.leagues[prevLeagueIdx].dataToChallengeLeague
-            thisLeaguesFinalVerse = self.leagues[prevLeagueIdx].verseFinal()
-            superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(thisLeaguesFinalVerse)
+            leafs = self.flattenLeagueData(
+                leagueData.initSkillsHash,
+                leagueData.dataAtMatchdayHashes,
+                leagueData.scores
+            )
+            treeLeague = MerkleTree(leafs)
+            idxInFlattenedLeagueData = len(leagueData.dataAtMatchdayHashes)
+
+            merkleProofLeague = treeLeague.prepareProofForLeaf(
+                self.leagues[prevLeagueIdx].dataToChallengeLeague.dataAtMatchdayHashes[-1],
+                idxInFlattenedLeagueData
+            )
+
+            assert pylio.verifyMerkleProof(
+                leagueData.leagueRoot,
+                merkleProofLeague,
+                pylio.serialHash
+            ), "Generated Merkle proof will not work"
+
+            verse = self.leagues[prevLeagueIdx].verseFinal()
+            superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(verse)
+
+            treeAllLeagues = MerkleTree(allLeaguesRoots)
+            leaguePosInVerse = self.getLeaguePosInVerse(verse, prevLeagueIdx)
+
+            merkleProofAllLeagues = treeAllLeagues.prepareProofForLeaf(
+                [prevLeagueIdx, treeLeague.root],
+                leaguePosInVerse
+            )
+            assert treeAllLeagues.root == superRoot == self.verseToLeagueCommits[verse].superRoot
+
+            assert pylio.verifyMerkleProof(
+                self.verseToLeagueCommits[verse].superRoot,
+                merkleProofAllLeagues,
+                pylio.serialHash
+            ), "Generated Merkle proof will not work"
+
             return DataToChallengePlayerSkills(
-                merkleProof,
-                leagueData,
-                allLeaguesRoots
+                merkleProofStates,
+                merkleProofLeague,
+                merkleProofAllLeagues
             )
 
 
@@ -1318,7 +1378,16 @@ class Storage(Counter):
         else:
             self.leaguesFinishingInVerse[verse].append(leagueIdx)
 
+    def getLeaguePosInVerse(self, verse, leagueIdx):
+        self.assertIsClient()
+        leaguesFinishingInVerse = self.getLeaguesFinishingInVerse(verse)
+        for leaguePos, finishingLeagueIdx in enumerate(leaguesFinishingInVerse):
+            if finishingLeagueIdx == leagueIdx:
+                return leaguePos
+        assert False, "league not found in verse!"
+
     def getLeaguesFinishingInVerse(self, verse):
+        self.assertIsClient()
         if not verse in self.leaguesFinishingInVerse:
             return []
         else:
@@ -1337,7 +1406,8 @@ class Storage(Counter):
                     self.leagues[leagueIdx].dataToChallengeLeague.leagueRoot
                 ]
             )
-        superRoot = pylio.serialHash(allLeaguesRoots)
+        tree = MerkleTree(allLeaguesRoots)
+        superRoot = tree.root
         return superRoot, allLeaguesRoots
 
     def updateAllLeaguesForVerseInClient(self, verse):
@@ -1357,7 +1427,7 @@ class Storage(Counter):
         self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
         # only lie (if forced) in the BC, not locally
         if self.forceSuperRootLie:
-            superRoot += 1
+            superRoot *= 2
         ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
 
     def getBlockForVerse(self, verse):

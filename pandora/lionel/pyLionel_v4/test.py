@@ -342,9 +342,7 @@ def test2():
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
 
-
-
-
+    #           -----  LEAGUE 2 ------
     # After the player exchange... we create another league
     verseInit = ST.currentVerse + 2
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
@@ -562,7 +560,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 141)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 81)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
