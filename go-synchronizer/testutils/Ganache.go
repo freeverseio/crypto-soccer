@@ -20,6 +20,7 @@ import (
 
 type Ganache struct {
 	Client        *ethclient.Client
+	time          *Testutils
 	statesAddress common.Address
 	engineAddress common.Address
 	Assets        *assets.Assets
@@ -34,14 +35,34 @@ func NewGanache() *Ganache {
 	creatorPrivateKey, err := crypto.HexToECDSA("f1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5")
 	AssertNoErr(err, "Failed converting private key to ECSDA")
 
+	// deploy time.go to fake block transactions and be able to advance blocknumber in ganache
+	_, _, time, err := DeployTestutils(
+		bind.NewKeyedTransactor(creatorPrivateKey),
+		client,
+	)
+	AssertNoErr(err, "DeployTime failed")
+
 	return &Ganache{
 		client,
+		time,
 		common.Address{},
 		common.Address{},
 		nil,
 		nil,
 		nil,
 		creatorPrivateKey,
+	}
+}
+func (ganache *Ganache) Advance(blockCount int) {
+	for i := 0; i < blockCount; i++ {
+		auth := bind.NewKeyedTransactor(ganache.Owner)
+		_, err := ganache.time.Increase(
+			&bind.TransactOpts{
+				From:   auth.From,
+				Signer: auth.Signer,
+				//GasLimit: uint64(2000000000),
+			})
+		AssertNoErr(err, "Error in Advance()")
 	}
 }
 func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
