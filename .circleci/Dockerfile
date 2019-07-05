@@ -2,6 +2,7 @@ FROM circleci/node:10.16.0
 RUN sudo apt-get update
 RUN sudo apt-get dist-upgrade
 RUN sudo apt-get install lsof
+RUN sudo apt-get install python3 python3-pip
 RUN sudo wget https://dl.google.com/go/go1.12.2.linux-amd64.tar.gz
 RUN sudo tar -xvf go1.12.2.linux-amd64.tar.gz
 RUN sudo mv go /usr/local
