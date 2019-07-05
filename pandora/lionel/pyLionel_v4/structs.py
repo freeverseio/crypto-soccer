@@ -1223,14 +1223,18 @@ class Storage(Counter):
     def computeDataToChallengePlayerSkills(self, playerIdx):
         self.assertIsClient()
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
-        # get league data, and allleagueroots
         if prevLeagueIdx == 0:
             merkleProofStates = MerkleProof([], 0, self.getPlayerSkillsAtEndOfLastLeague(playerIdx), 0)
             return DataToChallengePlayerSkills(merkleProofStates, 0, 0)
         else:
-            # to check that skills are part of last league's last day,
-            # we first
-
+            # construct merkle proofs for:
+            # - leagues states in prevLeague last day's hash
+            # - prevLeague data in prevLeague root
+            # - prevLeague root in verse superRoot
+            # For each proof, we need the idx in the tree.
+            # For each proof we double check that it'd pass it in the BC
+            #
+            # ----- leagues states in prevLeague last day's hash ------
             skillsAllTeamsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
             playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAllTeamsAtEndOfPrevLeague[teamPosInPrevLeague])
             idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
@@ -1244,6 +1248,7 @@ class Storage(Counter):
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
 
+            # ----- prevLeague data in prevLeague root ------
             leagueData = self.leagues[prevLeagueIdx].dataToChallengeLeague
             leafs = self.flattenLeagueData(
                 leagueData.initSkillsHash,
@@ -1264,6 +1269,7 @@ class Storage(Counter):
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
 
+            # ----- prevLeague root in verse superRoot ------
             verse = self.leagues[prevLeagueIdx].verseFinal()
             superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(verse)
 
@@ -1274,6 +1280,8 @@ class Storage(Counter):
                 [prevLeagueIdx, treeLeague.root],
                 leaguePosInVerse
             )
+
+            # triple check:
             assert treeAllLeagues.root == superRoot == self.verseToLeagueCommits[verse].superRoot
 
             assert pylio.verifyMerkleProof(
