@@ -171,9 +171,40 @@ func (ganache *Ganache) GetVirtualPlayers(teamId *big.Int) (players map[int64]*b
 	}
 	return
 }
+func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
+	leagueId := ganache.CountLeagues()
+	initBlock := big.NewInt(ganache.GetLastBlockNumber())
+	step := big.NewInt(1)
+	var tactics [][3]uint8 // {[3]uint8{4, 4, 2}, [3]uint8{4, 3, 3}},
+	var teamIdsBig []*big.Int
+	for _, teamId := range teamIds {
+		teamIdsBig = append(teamIdsBig, big.NewInt(teamId))
+		if teamId%3 == 0 {
+			tactics = append(tactics, [3]uint8{3, 4, 3})
+		} else if teamId%2 == 0 {
+			tactics = append(tactics, [3]uint8{4, 3, 3})
+		} else {
+			tactics = append(tactics, [3]uint8{4, 4, 2})
+		}
+	}
+	auth := bind.NewKeyedTransactor(from)
+	tx, err := ganache.Leagues.Create(
+		&bind.TransactOpts{
+			From:   auth.From,
+			Signer: auth.Signer,
+			//GasLimit: uint64(2000000000),
+		}, leagueId, initBlock, step, teamIdsBig, tactics)
+	_ = tx
+	AssertNoErr(err)
+}
 func (ganache *Ganache) CountTeams() *big.Int {
 	count, err := ganache.Assets.CountTeams(nil)
 	AssertNoErr(err, "Error calling CountTeams")
+	return count
+}
+func (ganache *Ganache) CountLeagues() *big.Int {
+	count, err := ganache.Leagues.LeaguesCount(nil)
+	AssertNoErr(err)
 	return count
 }
 func PrintTeamCreated(event assets.AssetsTeamCreated, ganache *Ganache) {

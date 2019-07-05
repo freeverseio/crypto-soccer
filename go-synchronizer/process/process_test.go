@@ -115,4 +115,6 @@ func TestSyncTeams(t *testing.T) {
 	} else if count != 44 {
 		t.Fatalf("Expected 44 players actual %v", count)
 	}
+
+	ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)
 }
