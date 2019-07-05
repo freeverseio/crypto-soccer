@@ -22,3 +22,11 @@ class User(models.Model):
 
     def __str__(self):
         return "{}".format(self.name)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'password': self.password,
+            'counter': self.counter
+        }

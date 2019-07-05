@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from django.urls import reverse
 from .models import *
+from django.contrib.auth.models import User as AuthUser
 
 # Create your tests here.
 
@@ -29,62 +30,6 @@ class UserViewTest(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
 
-    def test_api_can_create_a_user_with_good_data(self):
-        self.user_data = {'name': 'pepe',
-                          'password': '1234567890',
-                          'counter': 0}
-        self.response = self.client.post(reverse('create'),
-                                         self.user_data,
-                                         format="json")
-
-        self.assertEqual(self.response.status_code,
-                         status.HTTP_201_CREATED)
-
-    def test_api_not_create_a_user_with_bad_data(self):
-        self.user_data = {'name': 'pepe',
-                          'counter': 0}
-        self.response = self.client.post(reverse('create'),
-                                         self.user_data,
-                                         format="json")
-
-        self.assertEqual(self.response.status_code,
-                         status.HTTP_400_BAD_REQUEST)
-
-    def test_api_can_get_a_user(self):
-        self.user_data = {'name': 'pepe',
-                          'password': '1234567890',
-                          'counter': 0}
-        self.response = self.client.post(reverse('create'),
-                                         self.user_data,
-                                         format="json")
-
-        user = User.objects.get()
-        response = self.client.get(reverse('info',
-                                           kwargs={'pk': user.id}),
-                                   format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response, user)
-
-    def test_api_can_update_user(self):
-        self.user_data = {'name': 'pepe',
-                          'password': '1234567890',
-                          'counter': 0}
-        self.response = self.client.post(reverse('create'),
-                                         self.user_data,
-                                         format="json")
-
-        user = User.objects.get()
-        change_user = {'name': user.name,
-                       'password': 'new_password',
-                       'counter': user.get_counter()}
-        response = self.client.put(reverse('info',
-                                           kwargs={'pk': user.id}),
-                                   change_user,
-                                   format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_api_can_delete_user(self):
         self.user_data = {'name': 'pepe',
                           'password': '1234567890',
@@ -100,3 +45,158 @@ class UserViewTest(TestCase):
                                       follow=True)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+class UserAPITest(TestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+
+    def test_can_create_user_with_good_data(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.response = self.client.post(reverse('create_user'),
+                                         self.user_data,
+                                         format="json")
+        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+
+    def test_not_create_a_user_with_bad_data(self):
+        self.user_data = {'name': 'pepe'}
+
+        self.response = self.client.post(reverse('create_user'),
+                                         self.user_data,
+                                         format="json")
+
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+    def test_user_already_exists(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.response = self.client.post(reverse('create_user'),
+                                         self.user_data,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_409_CONFLICT)
+
+    def test_login_with_good_password(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.response = self.client.post(reverse('login'),
+                                         self.user_data,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_200_OK)
+
+    def test_login_with_bad_password(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.user_data_wrong = {'name': 'pepe',
+                                'password': '1'}
+        self.response = self.client.post(reverse('login'),
+                                         self.user_data_wrong,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_401_UNAUTHORIZED)
+
+    def test_login_with_bad_data(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890'}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.user_data_wrong = {'name': 'pepe'}
+        self.response = self.client.post(reverse('login'),
+                                         self.user_data_wrong,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+    def test_login_nonexistent_user(self):
+        self.user_data_nonexistent = {'name': 'pepe',
+                                      'password': '1'}
+        self.response = self.client.post(reverse('login'),
+                                         self.user_data_nonexistent,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_reset_password_with_good_data(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.user_data_new = {'name': 'pepe',
+                              'password': '1234567890',
+                              "email": "prova@prova.prova",
+                              'new_password': 'new_password'}
+        self.response = self.client.post(reverse('reset_password'),
+                                         self.user_data_new,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_200_OK)
+
+        user = AuthUser.objects.get()
+        self.assertEqual(user.password, self.user_data_new['new_password'])
+
+    def test_reset_password_with_bad_data(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.user_data_new = {'name': 'pepe',
+                              'new_password': 'new_password'}
+        self.response = self.client.post(reverse('reset_password'),
+                                         self.user_data_new,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+        user = AuthUser.objects.get()
+        self.assertNotEqual(user.password, self.user_data_new['new_password'])
+
+    def test_reset_password_with_wrong_credentials(self):
+        self.user_data = {'name': 'pepe',
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
+        self.client.post(reverse('create_user'),
+                         self.user_data,
+                         format="json")
+        self.user_data_new = {'name': 'pepe',
+                              'password': '1',
+                              "email": "prova@prova.prova",
+                              'new_password': 'new_password'}
+        self.response = self.client.post(reverse('reset_password'),
+                                         self.user_data_new,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_401_UNAUTHORIZED)
+
+        user = AuthUser.objects.get()
+        self.assertNotEqual(user.password, self.user_data_new['new_password'])
+
+    def test_reset_password_with_nonexistent_user(self):
+        self.user_data_new = {'name': 'pepe',
+                              'password': '1234567890',
+                              'new_password': 'new_password'}
+        self.response = self.client.post(reverse('reset_password'),
+                                         self.user_data_new,
+                                         format="json")
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_404_NOT_FOUND)
