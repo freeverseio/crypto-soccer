@@ -891,10 +891,17 @@ class Storage(Counter):
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
+    def assertLeaguesSorted(self, allLeaguesRoots):
+        prevIdx = -1
+        for leaguePair in allLeaguesRoots:
+            assert leaguePair[0] > prevIdx, "allLeaguesRoots not sorted"
+            prevIdx = leaguePair[0]
+
     def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
         if needsSlash == UPDT_ALLLGS:
             self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
+        self.assertLeaguesSorted(allLeaguesRoots)
         tree = MerkleTree(allLeaguesRoots)
         assert tree.root != self.verseToLeagueCommits[verse].superRoot, \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
