@@ -7,6 +7,7 @@ from .serializers import *
 from .models import *
 from django.contrib.auth.models import User as AuthUser
 import json
+import re
 
 
 # Create your views here.
@@ -38,7 +39,18 @@ def create_user(request):
     response = JsonResponse({'result': 'user created'})
 
     if not ('name' in req_data.keys()) \
-            or not ('password' in req_data.keys()):
+            or not ('password' in req_data.keys()) \
+            or not ('email' in req_data.keys()):
+        return respond_to_bad_request(response)
+
+    # Regex expression for validating email
+    pattern = re.compile(
+        r"(^[-!#$%&'*+/=?^_`{}|~0-9A-Z]+(\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*"  # dot-atom
+        r'|^"([\001-\010\013\014\016-\037!#-\[\]-\177]|\\[\001-011\013\014\016-\177])*"'  # quoted-string
+        r')@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?$', re.IGNORECASE)
+
+    if not pattern.match(req_data['email']):
+        print('email format wrong')
         return respond_to_bad_request(response)
 
     try:
@@ -48,7 +60,9 @@ def create_user(request):
         return response
 
     except ObjectDoesNotExist:
-        AuthUser.objects.create(username=req_data['name'], password=req_data['password'])
+        AuthUser.objects.create(username=req_data['name'],
+                                password=req_data['password'],
+                                email=req_data['email'])
         response.status_code = 201
         return response
 

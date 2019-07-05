@@ -53,7 +53,8 @@ class UserAPITest(TestCase):
 
     def test_can_create_user_with_good_data(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.response = self.client.post(reverse('create_user'),
                                          self.user_data,
                                          format="json")
@@ -71,7 +72,8 @@ class UserAPITest(TestCase):
 
     def test_user_already_exists(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
@@ -83,7 +85,8 @@ class UserAPITest(TestCase):
 
     def test_login_with_good_password(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
@@ -95,7 +98,8 @@ class UserAPITest(TestCase):
 
     def test_login_with_bad_password(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
@@ -131,12 +135,14 @@ class UserAPITest(TestCase):
 
     def test_reset_password_with_good_data(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
         self.user_data_new = {'name': 'pepe',
                               'password': '1234567890',
+                              "email": "prova@prova.prova",
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
                                          self.user_data_new,
@@ -149,7 +155,8 @@ class UserAPITest(TestCase):
 
     def test_reset_password_with_bad_data(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
@@ -166,12 +173,14 @@ class UserAPITest(TestCase):
 
     def test_reset_password_with_wrong_credentials(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
         self.user_data_new = {'name': 'pepe',
                               'password': '1',
+                              "email": "prova@prova.prova",
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
                                          self.user_data_new,
