@@ -67,5 +67,8 @@ jobs:
       - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
+      - run:
+          name: Test Centauri
+          command: cd django-centauri && python3 manage.py test
 
 
