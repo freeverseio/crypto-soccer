@@ -46,7 +46,6 @@ func (p *EventProcessor) Process() error {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	// scan TeamCreated events in range [start, end]
 	if events, err := p.scanTeamCreated(opts); err != nil {
 		return err
 	} else {
@@ -54,6 +53,16 @@ func (p *EventProcessor) Process() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if p.leagues != nil {
+		if events, err := p.scanLeagueCreated(opts); err != nil {
+			return err
+		} else {
+			log.Info("found leagues:", len(events))
+		}
+	} else {
+		log.Warn("Contract leagues not set. Skipping scanning for leagues")
 	}
 
 	// store the last block that was scanned
@@ -132,6 +141,22 @@ func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.Assets
 	}
 
 	events := []assets.AssetsTeamCreated{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+func (p *EventProcessor) scanLeagueCreated(opts *bind.FilterOpts) ([]leagues.LeaguesLeagueCreated, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.leagues.FilterLeagueCreated(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []leagues.LeaguesLeagueCreated{}
 
 	for iter.Next() {
 		events = append(events, *(iter.Event))
