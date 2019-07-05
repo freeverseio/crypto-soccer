@@ -1,7 +1,7 @@
 package process
 
 import (
-	"fmt"
+	//"fmt"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -118,5 +118,6 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)
+	p.Process()
 	ganache.Advance(150) // advance 150 blocks
 }
