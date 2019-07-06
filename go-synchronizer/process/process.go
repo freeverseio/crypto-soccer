@@ -37,7 +37,7 @@ func (p *EventProcessor) Process() error {
 	opts := p.nextRange()
 
 	if opts == nil {
-		log.Info("No new blocks to search for events")
+		log.Info("No new blocks to scan.")
 		return nil
 	}
 
