@@ -118,6 +118,6 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)
+	ganache.Advance(3) // advance 3 blocks
 	p.Process()
-	ganache.Advance(150) // advance 150 blocks
 }

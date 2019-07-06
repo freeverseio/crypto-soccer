@@ -59,7 +59,9 @@ func (p *EventProcessor) Process() error {
 		if events, err := p.scanLeagueCreated(opts); err != nil {
 			return err
 		} else {
-			log.Info("found leagues:", len(events))
+			for _, event := range events {
+				log.Info("Found league ", event.Id.Int64(), " finished: ", p.hasLeagueFinished(event.Id), " updated: ", p.isLeagueUpdated(event.Id))
+			}
 		}
 	} else {
 		log.Warn("Contract leagues not set. Skipping scanning for leagues")
@@ -147,22 +149,6 @@ func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.Assets
 	}
 	return events, nil
 }
-func (p *EventProcessor) scanLeagueCreated(opts *bind.FilterOpts) ([]leagues.LeaguesLeagueCreated, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterLeagueCreated(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesLeagueCreated{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
 func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 	for i := 0; i < 11; i++ {
 		if id, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
@@ -193,4 +179,36 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 		}
 	}
 	return nil
+}
+func (p *EventProcessor) scanLeagueCreated(opts *bind.FilterOpts) ([]leagues.LeaguesLeagueCreated, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.leagues.FilterLeagueCreated(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []leagues.LeaguesLeagueCreated{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+func (p *EventProcessor) isLeagueUpdated(leagueId *big.Int) bool {
+	result, err := p.leagues.IsUpdated(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return result
+}
+func (p *EventProcessor) hasLeagueFinished(leagueId *big.Int) bool {
+	result, err := p.leagues.HasFinished(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return result
 }
