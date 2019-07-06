@@ -114,7 +114,6 @@ class DataToChallengeLeague():
         self.initSkillsHash         = initSkillsHash
         self.dataAtMatchdayHashes   = dataAtMatchdayHashes
         self.scores                 = scores
-        self.leagueRoot             = leagueRoot
 
 
 class League():
@@ -1271,7 +1270,7 @@ class Storage(Counter):
             )
 
             assert pylio.verifyMerkleProof(
-                leagueData.leagueRoot,
+                treeLeague.root,
                 merkleProofLeague,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
@@ -1369,7 +1368,7 @@ class Storage(Counter):
         # return initSkillsHash, dataAtMatchdayHashes, scores
 
     def hasLeagueBeenUpdatedByClient(self, leagueIdx):
-        return self.leagues[leagueIdx].dataToChallengeLeague.leagueRoot != 0
+        return self.leagues[leagueIdx].dataToChallengeLeague.initSkillsHash != 0
 
 
     # returns states of all teams at start of a league. These include skills from previous league, and possible
@@ -1408,6 +1407,13 @@ class Storage(Counter):
         else:
             return self.leaguesFinishingInVerse[verse]
 
+    def computeLeagueRootFromLeagueIdx(self, leagueIdx):
+        return self.computeLeagueRoot(
+            self.leagues[leagueIdx].dataToChallengeLeague.initSkillsHash,
+            self.leagues[leagueIdx].dataToChallengeLeague.dataAtMatchdayHashes,
+            self.leagues[leagueIdx].dataToChallengeLeague.scores
+        )
+
     def computeLeagueHashesForVerse(self, verse):
         self.assertIsClient()
         leagueIdxsForThisCommit = self.getLeaguesFinishingInVerse(verse)
@@ -1418,7 +1424,7 @@ class Storage(Counter):
             allLeaguesRoots.append(
                 [
                     leagueIdx,
-                    self.leagues[leagueIdx].dataToChallengeLeague.leagueRoot
+                    self.computeLeagueRootFromLeagueIdx(leagueIdx)
                 ]
             )
         tree = MerkleTree(allLeaguesRoots)
