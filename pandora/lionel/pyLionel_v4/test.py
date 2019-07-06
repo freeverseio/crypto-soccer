@@ -188,7 +188,7 @@ def test2():
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 0
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
     # A Challenger provides a lie at matchday 1
@@ -203,7 +203,7 @@ def test2():
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
 
@@ -242,10 +242,10 @@ def test2():
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 0
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
     # at this point we basically know that the provided Matchdays data is wrong.
@@ -390,10 +390,10 @@ def test2():
 
     # it also fails at proving that any matchday is wrong
     selectedMatchday = 0
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
-    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
+    challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
     # finally, after a CHLL_PERIOD, it shows that it is back to the superRoot
