@@ -249,6 +249,7 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsOwner           = None
         self.allLeaguesRootsSuperRoot       = None
         # OneLeagueData provided:
+        self.leagueIdx                      = None
         self.dataToChallengeLeague          = None
         self.oneLeagueDataOwner             = None
         # Common to every update:
@@ -272,12 +273,14 @@ class LeaguesCommitInVerse():
             self.scores                     = None
             self.oneLeagueDataOwner         = None
 
-    def writeOneLeagueData(self, dataToChallengeLeague, addr, blocknum):
+    def writeOneLeagueData(self, leagueIdx, dataToChallengeLeague, addr, blocknum):
+        self.leagueIdx                  = leagueIdx
         self.dataToChallengeLeague      = dataToChallengeLeague
         self.oneLeagueDataOwner         = addr
         self.lastWriteBlocknum          = blocknum
 
     def slashOneLeagueData(self):
+        self.leagueIdx                  = None
         self.dataToChallengeLeague      = None
         self.oneLeagueDataOwner         = None
 
@@ -667,13 +670,12 @@ class Storage(Counter):
 
 
 
-    def challengeInitSkills(self, verse, leagueIdx, usersInitData, dataToChallengeInitSkills):
+    def challengeInitSkills(self, verse, usersInitData, dataToChallengeInitSkills):
         self.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+        leagueIdx = self.verseToLeagueCommits[verse].leagueIdx
         leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
-        # TODO: re-put next line
-        # assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
         assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         # it first makes sure that the provided initSkills are certified as the last ones.
@@ -962,6 +964,7 @@ class Storage(Counter):
             "Your data coincides with the updater. Nothing to challenge."
         # toni: compete this when there is a lie
         self.verseToLeagueCommits[verse].writeOneLeagueData(
+            leagueIdx,
             dataToChallengeLeague,
             addr,
             self.currentBlock
