@@ -263,10 +263,11 @@ class LeaguesCommitInVerse():
         self.allLeaguesRootsSuperRoot   = tree.root
         self.lastWriteBlocknum          = blocknum
 
-    def slashAllLeaguesRoots(self):
+    def slashAllLeaguesRoots(self, blocknum):
         self.allLeaguesRoots            = None
         self.allLeaguesRootsOwner       = None
         self.allLeaguesRootsSuperRoot   = None
+        self.lastWriteBlocknum          = blocknum
         if self.oneLeagueDataOwner:
             self.initSkillsHash             = None
             self.dataAtMatchdayHashes       = None
@@ -279,10 +280,11 @@ class LeaguesCommitInVerse():
         self.oneLeagueDataOwner         = addr
         self.lastWriteBlocknum          = blocknum
 
-    def slashOneLeagueData(self):
+    def slashOneLeagueData(self, blocknum):
         self.leagueIdx                  = None
         self.dataToChallengeLeague      = None
         self.oneLeagueDataOwner         = None
+        self.lastWriteBlocknum          = blocknum
 
 
 # The MAIN CLASS that manages all BC & CLIENT storage
@@ -401,7 +403,7 @@ class Storage(Counter):
     def slashThisUpdater(self, verse, needsSlash):
         if needsSlash == UPDT_ALLLGS:
             print("Slashing an AllLeagues updater")
-            self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
+            self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
         assert False, "Unknown slash requirement"
 
     def updateLeaguesSuperRoot(self, verse, superRoot, addr):
@@ -483,12 +485,12 @@ class Storage(Counter):
 
         if not dataAtMatchdayHash == self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday]:
             print("Challenger Wins: skillsAtMatchday provided by updater are invalid")
-            self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
+            self.verseToLeagueCommits[finalVerse].slashOneLeagueData(self.currentBlock)
             return
 
         if not (scores == self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.scores[selectedMatchday]).all():
             print("Challenger Wins: scores provided by updater are invalid")
-            self.verseToLeagueCommits[finalVerse].slashOneLeagueData()
+            self.verseToLeagueCommits[finalVerse].slashOneLeagueData(self.currentBlock)
             return
 
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
@@ -691,7 +693,7 @@ class Storage(Counter):
             print("Challenger failed to prove that initStates were wrong")
         else:
             print("Challenger Wins: initStates provided by updater are invalid")
-            self.verseToLeagueCommits[verse].slashOneLeagueData()
+            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
 
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
@@ -891,7 +893,7 @@ class Storage(Counter):
     def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
         if needsSlash == UPDT_ALLLGS:
-            self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
+            self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
         self.assertLeaguesSorted(allLeaguesRoots)
         tree = MerkleTree(allLeaguesRoots)
         assert tree.root != self.verseToLeagueCommits[verse].superRoot, \
@@ -953,7 +955,7 @@ class Storage(Counter):
             self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
         else:
             self.challengeAllLeaguesRootsLeagueExceeding(verse, leagueIdx)
-        self.verseToLeagueCommits[verse].slashAllLeaguesRoots()
+        self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
         return True
 
     def challengeAllLeaguesRoots(self, verse, leagueIdx, dataToChallengeLeague, addr):

@@ -436,6 +436,7 @@ def test2():
     lastTeamIdx = 1
     nTeamsPerLeague = 8
 
+    # Create Lots of Leagues for testing:
     leaguesTested = []
     for l in range(nLeagues):
         verseInit = ST.currentVerse + 7
@@ -449,19 +450,26 @@ def test2():
         leagueIdx_client = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
         leaguesTested.append(leagueIdx)
 
-        if l==0:
-            firstLeagueIdx = duplicate(leagueIdx)
-
         assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
         assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
         advanceNVerses(intHash(str(l))%2 , ST, ST_CLIENT) # advance either 1 or 0 verses
 
+    # We will loop for leagues so that we first always lie:
+    #   - first: challenge the superRoot with lie
+    #   - second: challenge the allLeagues with lie
+    # Then catch the last lie with a challengeInitSkills
+    # And then always tell the truth
+    # We keep a list of leagues that already went down to the challengeInitskills to know
+    # that we now need to tell the truth.
     leaguesTestedAtLevel3 = []
     advanceNVerses(250, ST, ST_CLIENT)
     for extraVerse in range(45):
-        print("extraVerse: ", extraVerse)
         advanceNVerses(2, ST, ST_CLIENT)
         for leagueIdx in leaguesTested:
+            if (ST.isLeagueSettled(leagueIdx) and verseStatus != UPDT_SUPER):
+                print("League settled incorrectly!! ", leagueIdx)
+                assert False
+
             if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
                 print("challenging league...", leagueIdx)
                 verse = ST.leagues[leagueIdx].verseFinal()
@@ -513,46 +521,40 @@ def test2():
                         ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
                     leaguesTestedAtLevel3.append(thisLeagueIdx)
 
-    for extraVerse in range(1000):
-        print("extraVerse: ", extraVerse)
-        advanceNVerses(2, ST, ST_CLIENT)
+
+    # Now go through every league and verse, and always tell the truth in all challenges.
+    # Since the superRoot was true in all cases, we should end up in SuperRoot state at the very end.
+    for extraVerse in range(2000):
         for leagueIdx in leaguesTested:
+            verse = ST.leagues[leagueIdx].verseFinal()
+            verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+            assert not (ST.isLeagueSettled(leagueIdx) and verseStatus != UPDT_SUPER), "Someone hacked the game"
             if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
                 print("challenging league...", leagueIdx)
-                verse = ST.leagues[leagueIdx].verseFinal()
-                verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
                 if verseStatus == UPDT_ALLLGS:
                     print("challenging league... superRoot", leagueIdx)
                     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-                    try:
-                        ST.challengeAllLeaguesRoots(
-                            verse,
-                            leagueIdx,
-                            dataToChallengeLeague,
-                            ADDR3
-                        )
-                    except:
-                        pass
-                if verseStatus == UPDT_ONELEAGUE:
+                    ST.challengeAllLeaguesRoots(
+                        verse,
+                        leagueIdx,
+                        dataToChallengeLeague,
+                        ADDR3
+                    )
+                elif verseStatus == UPDT_ONELEAGUE:
                     thisLeagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
                     print("challenging league... initSkills", thisLeagueIdx)
-                    try:
-                        ST.challengeInitSkills(
-                            verse,
-                            ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
-                            duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
-                        )
-                    except:
-                        pass
+                    ST.challengeInitSkills(
+                        verse,
+                        ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
+                        duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
+                    )
+        advanceNVerses(2, ST, ST_CLIENT)
 
-
-
-
+    # Wait for everything to settle and check we're in the SuperRoot state in all such leagues
     advanceNVerses(2000, ST, ST_CLIENT)
     for leagueIdx in leaguesTested:
         verse = ST.leagues[leagueIdx].verseFinal()
         verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
-        print(verse)
         assert isVerseSettled
         assert verseStatus == UPDT_SUPER, "league should be back to Super..."
 
@@ -638,7 +640,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 2)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 788)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
