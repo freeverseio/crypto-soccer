@@ -98,5 +98,6 @@ workflows:
       - go-synchronizer
       - go-soccer
       - reactjs-frontend
+      - django-centauri
 
 
