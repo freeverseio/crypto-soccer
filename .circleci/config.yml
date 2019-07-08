@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: asiniscalchi/freeverse_develop:1
+      - image: asiniscalchi/freeverse_circleci:alpine
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
