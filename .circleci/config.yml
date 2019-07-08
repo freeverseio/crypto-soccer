@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build_core:
+  truffle_core:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
@@ -72,6 +72,7 @@ jobs:
     docker:
      - image: asiniscalchi/freeverse_circleci:alpine
     steps:
+      - checkout
       - run:
           name: Setup reactjs-frontend
           command: cd reactjs-frontend && npm install
@@ -86,7 +87,7 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_core
+      - truffle_core
       - go-synchronizer
       - go-soccer
       - reactjs-frontend
