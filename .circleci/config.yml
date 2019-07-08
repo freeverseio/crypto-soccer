@@ -107,12 +107,12 @@ workflows:
       - reactjs-frontend
       - django-centauri
       - deploy:
-        requires:
-          - truffle_core
-          - go-synchronizer
-          - go-soccer
-          - reactjs-frontend
-          - django-centauri
+          requires:
+            - truffle_core
+            - go-synchronizer
+            - go-soccer
+            - reactjs-frontend
+            - django-centauri
 
 
 
