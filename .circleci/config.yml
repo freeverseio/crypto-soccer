@@ -64,7 +64,7 @@ jobs:
 
   reactjs-frontend:
     docker:
-     - image: asiniscalchi/freeverse_circleci:alpine
+      - image: asiniscalchi/freeverse_circleci:alpine
     steps:
       - checkout
       - run:
@@ -79,7 +79,7 @@ jobs:
 
   django-centauri:
     docker:
-     - image: asiniscalchi/freeverse_circleci:alpine
+      - image: asiniscalchi/freeverse_circleci:alpine
     steps:
       - checkout
       - run:
@@ -88,6 +88,9 @@ jobs:
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test
+
+  deploy:
+      - image: asiniscalchi/freeverse_circleci:alpine
 
 
 workflows:
@@ -99,5 +102,13 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
+      - deploy
+        requires:
+          - truffle_core
+          - go-synchronizer
+          - go-soccer
+          - reactjs-frontend
+          - django-centauri
+
 
 
