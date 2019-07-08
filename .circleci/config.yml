@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
-            - run:
+      - run:
           name: Build Centauri
           command: cd django-centauri && pip3 install django && pip3 install djangorestframework
       - run:
