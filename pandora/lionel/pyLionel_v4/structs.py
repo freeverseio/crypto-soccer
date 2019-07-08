@@ -902,11 +902,11 @@ class Storage(Counter):
             self.currentBlock
         )
 
-    def getLeaguePosInVerseCommit(self, verse, leagueIdx):
-        for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
-            if leaguePair[0] == leagueIdx:
-                return leaguePair
-        assert False, "league not found in verse!"
+    # def getLeaguePosInVerseCommit(self, verse, leagueIdx):
+    #     for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
+    #         if leaguePair[0] == leagueIdx:
+    #             return leaguePair
+    #     assert False, "league not found in verse!"
 
     def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
         for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
@@ -962,7 +962,6 @@ class Storage(Counter):
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(dataToChallengeLeague) != leagueRoot, \
             "Your data coincides with the updater. Nothing to challenge."
-        # toni: compete this when there is a lie
         self.verseToLeagueCommits[verse].writeOneLeagueData(
             leagueIdx,
             dataToChallengeLeague,
@@ -981,6 +980,12 @@ class Storage(Counter):
     def computeLeagueRoot(self, dataToChallengeLeague):
         leagueTree = MerkleTree(self.flattenLeagueData(dataToChallengeLeague))
         return leagueTree.root
+
+    def isLeagueSettled(self, leagueIdx):
+        verse = self.leagues[leagueIdx].verseFinal()
+        verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
+        return isVerseSettled
+
 
 
     # ------------------------------------------------------------------------

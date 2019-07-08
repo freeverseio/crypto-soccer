@@ -5,7 +5,7 @@ import datetime
 from os import listdir, makedirs
 from os.path import isfile, join, exists
 
-CHALLENGING_PERIOD_BLKS = 60
+CHALLENGING_PERIOD_BLKS = 1000
 
 # Challenging a verse where a league was not included (MISSING) or included incorrectly (SHOULDNOTBE)
 MISSING = 0

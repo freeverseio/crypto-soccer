@@ -436,6 +436,7 @@ def test2():
     lastTeamIdx = 1
     nTeamsPerLeague = 8
 
+    leaguesTested = []
     for l in range(nLeagues):
         verseInit = ST.currentVerse + 7
         usersInitData = {
@@ -446,6 +447,7 @@ def test2():
         lastTeamIdx += nTeamsPerLeague
         leagueIdx = ST.createLeague(verseInit, verseStep, usersInitData)
         leagueIdx_client = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
+        leaguesTested.append(leagueIdx)
 
         if l==0:
             firstLeagueIdx = duplicate(leagueIdx)
@@ -454,10 +456,113 @@ def test2():
         assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
         advanceNVerses(intHash(str(l))%2 , ST, ST_CLIENT) # advance either 1 or 0 verses
 
-    # advanceNVerses(1000, ST, ST_CLIENT)
+    leaguesTestedAtLevel3 = []
+    advanceNVerses(250, ST, ST_CLIENT)
+    for extraVerse in range(45):
+        print("extraVerse: ", extraVerse)
+        advanceNVerses(2, ST, ST_CLIENT)
+        for leagueIdx in leaguesTested:
+            if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
+                print("challenging league...", leagueIdx)
+                verse = ST.leagues[leagueIdx].verseFinal()
+                verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+                if verseStatus == UPDT_SUPER:
+                    print("challenging league... superRoot", leagueIdx)
+                    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+                    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
+                    for leagueRoot in allLeaguesRootsLie:
+                        leagueRoot[1] += 1
+                    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+                    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+                elif verseStatus == UPDT_ALLLGS:
+                    if leagueIdx in leaguesTestedAtLevel3:
+                        print("challenging league... allLeagues with truth: ", leagueIdx)
+                        dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
+                        ST.challengeAllLeaguesRoots(
+                            verse,
+                            leagueIdx,
+                            dataToChallengeLeague,
+                            ADDR3
+                        )
+                        ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+                    else:
+                        print("challenging league... allLeagues with lie: ", leagueIdx)
+                        dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
+                        dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
+                        dataToChallengeLeagueLie.initSkillsHash += 1
+                        dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
+                        ST.challengeAllLeaguesRoots(
+                            verse,
+                            leagueIdx,
+                            dataToChallengeLeagueLie,
+                            ADDR3
+                        )
+                        ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+
+                elif verseStatus == UPDT_ONELEAGUE:
+                    thisLeagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
+                    print("challenging league... initSkills", thisLeagueIdx)
+                    ST.challengeInitSkills(
+                        verse,
+                        ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
+                        duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
+                    )
+                    if thisLeagueIdx in leaguesTestedAtLevel3:
+                        ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+                    else:
+                        ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
+                    leaguesTestedAtLevel3.append(thisLeagueIdx)
+
+    for extraVerse in range(1000):
+        print("extraVerse: ", extraVerse)
+        advanceNVerses(2, ST, ST_CLIENT)
+        for leagueIdx in leaguesTested:
+            if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
+                print("challenging league...", leagueIdx)
+                verse = ST.leagues[leagueIdx].verseFinal()
+                verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+                if verseStatus == UPDT_ALLLGS:
+                    print("challenging league... superRoot", leagueIdx)
+                    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
+                    try:
+                        ST.challengeAllLeaguesRoots(
+                            verse,
+                            leagueIdx,
+                            dataToChallengeLeague,
+                            ADDR3
+                        )
+                    except:
+                        pass
+                if verseStatus == UPDT_ONELEAGUE:
+                    thisLeagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
+                    print("challenging league... initSkills", thisLeagueIdx)
+                    try:
+                        ST.challengeInitSkills(
+                            verse,
+                            ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
+                            duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
+                        )
+                    except:
+                        pass
+
+
+
+
+    advanceNVerses(2000, ST, ST_CLIENT)
+    for leagueIdx in leaguesTested:
+        verse = ST.leagues[leagueIdx].verseFinal()
+        verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+        print(verse)
+        assert isVerseSettled
+        assert verseStatus == UPDT_SUPER, "league should be back to Super..."
+
+
+
+    #
     # nActionsPerLoop = 3
     # for l in range(nLeagues):
-    #     advanceNVerses(intHash(str(l))%27 , ST, ST_CLIENT) # advance any number of verses between 0, 27
+    #     print(l)
+    #     advanceNVerses(intHash(str(l))%2 , ST, ST_CLIENT) # advance any number of verses between 0,...
     #     leagueIdx = firstLeagueIdx + l
     #     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
     #     assert ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as already updated"
@@ -472,16 +577,7 @@ def test2():
     #         }
     #         advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
     #         ST_CLIENT.accumulateAction(action)
-    #
-    #
-    #     # anna A challenger fails to prove anything is wrong with the superRoot...
-    #     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    #     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-    #     allLeaguesRootsLie[0][1] += 1
-    #     ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
-    #     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-    #     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
-    #     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
+
     #
     #     # ...or for any of the total number of matchdays
     #     nDays = len( ST.leagues[leagueIdx].dataAtMatchdayHashes)-1 # the last one is the merkle root
@@ -542,7 +638,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 955)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 2)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
