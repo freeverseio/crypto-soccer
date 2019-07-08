@@ -744,6 +744,8 @@ class Storage(Counter):
         self.playerIdxToPlayerState[playerIdx1] = pylio.duplicate(state1)
         self.playerIdxToPlayerState[playerIdx2] = pylio.duplicate(state2)
 
+        print("players exchanged successfully")
+
     def isPlayerBusy(self, playerIdx1):
         return self.areTeamsBusyInPrevLeagues(
             [self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)[0]])
