@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from .serializers import *
 from .models import *
 from django.contrib.auth.models import User as AuthUser
+from django.http import HttpResponse
+from django.template import Context, loader
 import json
 import re
 

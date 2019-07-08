@@ -25,6 +25,17 @@ class UserModelTest(TestCase):
         print('test user can count successful')
 
 
+class MiscellaneousViewTest(TestCase):
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+
+    def test_t_and_c_page(self):
+        response = self.client.get(reverse('terms_and_conditions'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
 class UserViewTest(TestCase):
 
     def setUp(self) -> None:

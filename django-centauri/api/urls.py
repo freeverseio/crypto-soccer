@@ -1,5 +1,6 @@
 from django.conf.urls import url
 from django.urls import path
+from django.views.generic.base import TemplateView
 from rest_framework.urlpatterns import format_suffix_patterns
 from .views import *
 
@@ -11,6 +12,9 @@ urlpatterns = {
         InfoView.as_view(),
         name='info'),
 
+    path('terms-and-conditions',
+         TemplateView.as_view(template_name='T&C.html'),
+         name='terms_and_conditions'),
     path('users/get',
          get_users,
          name='get_users'),
