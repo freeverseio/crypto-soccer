@@ -24,12 +24,6 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
-      - run:
-          name: Build Centauri
-          command: cd django-centauri && pip3 install django && pip3 install djangorestframework
-      - run:
-          name: Test Centauri
-          command: cd django-centauri && python3 manage.py test
 
   go-synchronizer:
     docker:
@@ -82,6 +76,19 @@ jobs:
       - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
+
+  django-centauri:
+    docker:
+     - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      - run:
+          name: Build Centauri
+          command: cd django-centauri && pip3 install django && pip3 install djangorestframework
+      - run:
+          name: Test Centauri
+          command: cd django-centauri && python3 manage.py test
+
 
 workflows:
   version: 2
