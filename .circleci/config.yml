@@ -4,21 +4,11 @@
 #
 version: 2
 jobs:
-  build:
-    working_directory: ~/repo
-
+  truffle_core:
     docker:
-      # specify the version you desire here
       - image: asiniscalchi/freeverse_circleci:alpine
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
     steps:
       - checkout
-
       - run: 
           name: Set up truffle-core
           command: cd truffle-core && npm install
@@ -34,6 +24,12 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
+
+  go-synchronizer:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
       - run:
           name: Compile go-synchronizer
           command: cd go-synchronizer && go build
@@ -53,12 +49,24 @@ jobs:
             cd go-synchronizer/process
             go test
             #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+
+  go-soccer:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
       - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+
+  reactjs-frontend:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
       - run:
           name: Setup reactjs-frontend
           command: cd reactjs-frontend && npm install
@@ -68,11 +76,43 @@ jobs:
       - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
+
+  django-centauri:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
       - run:
           name: Build Centauri
           command: cd django-centauri && pip3 install django && pip3 install djangorestframework
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test
+
+  deploy:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      
+
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - truffle_core
+      - go-synchronizer
+      - go-soccer
+      - reactjs-frontend
+      - django-centauri
+      - deploy:
+          requires:
+            - truffle_core
+            - go-synchronizer
+            - go-soccer
+            - reactjs-frontend
+            - django-centauri
+
 
 
