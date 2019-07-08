@@ -18,13 +18,6 @@ jobs:
       - run:
           name: Test truffle-core
           command: cd truffle-core && ./node_modules/.bin/truffle test
-      - run:
-          name: Setup nodejs-horizon
-          command: cd nodejs-horizon && npm install
-      - run:
-          name: Test nodejs-horizon
-          command: cd nodejs-horizon && npm test
-
   go-synchronizer:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -49,7 +42,6 @@ jobs:
             cd go-synchronizer/process
             go test
             #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
-
   go-soccer:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -61,7 +53,6 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
-
   reactjs-frontend:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -76,7 +67,6 @@ jobs:
       - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
-
   django-centauri:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -88,15 +78,11 @@ jobs:
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test
-
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
       - checkout
-      
-
-
 workflows:
   version: 2
   build_and_test:
