@@ -6,17 +6,9 @@ version: 2
 jobs:
   build_core:
     docker:
-      # specify the version you desire here
       - image: asiniscalchi/freeverse_circleci:alpine
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
     steps:
       - checkout
-
       - run: 
           name: Set up truffle-core
           command: cd truffle-core && npm install
@@ -32,16 +24,7 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
-          - run:
-          name: Setup reactjs-frontend
-          command: cd reactjs-frontend && npm install
-      - run:
-          name: Test reactjs-frontend
-          command: cd reactjs-frontend && npm test
-      - run:
-          name: Build reactjs-frontend
-          command: cd reactjs-frontend && npm run build
-      - run:
+            - run:
           name: Build Centauri
           command: cd django-centauri && pip3 install django && pip3 install djangorestframework
       - run:
@@ -78,12 +61,26 @@ jobs:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
       - checkout
-  - run:
+      - run:
           name: Compile goSoccer
           command: cd go-soccer && go build
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+
+  reactjs-frontend:
+    docker:
+     - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - run:
+          name: Setup reactjs-frontend
+          command: cd reactjs-frontend && npm install
+      - run:
+          name: Test reactjs-frontend
+          command: cd reactjs-frontend && npm test
+      - run:
+          name: Build reactjs-frontend
+          command: cd reactjs-frontend && npm run build
 
 workflows:
   version: 2
@@ -92,6 +89,6 @@ workflows:
       - build_core
       - go-synchronizer
       - go-soccer
-    #   - test
+      - reactjs-frontend
 
 
