@@ -9,7 +9,7 @@ jobs:
 
     docker:
       # specify the version you desire here
-      - image: asiniscalchi/freeverse_develop:1
+      - image: asiniscalchi/freeverse_circleci:alpine
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -48,6 +48,7 @@ jobs:
             # wait until ganache is up and running
             echo waiting for ganache
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            sleep 1
             echo ganache is running
             cd go-synchronizer/process
             go test
@@ -67,5 +68,11 @@ jobs:
       - run:
           name: Build reactjs-frontend
           command: cd reactjs-frontend && npm run build
+      - run:
+          name: Build Centauri
+          command: cd django-centauri && pip3 install django && pip3 install djangorestframework
+      - run:
+          name: Test Centauri
+          command: cd django-centauri && python3 manage.py test
 
 
