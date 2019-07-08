@@ -90,7 +90,11 @@ jobs:
           command: cd django-centauri && python3 manage.py test
 
   deploy:
+    docker:
       - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      
 
 
 workflows:
