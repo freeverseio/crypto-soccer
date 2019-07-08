@@ -6,8 +6,11 @@ from django.http import JsonResponse
 from .serializers import *
 from .models import *
 from django.contrib.auth.models import User as AuthUser
-from django.http import HttpResponse
-from django.template import Context, loader
+from django.core.mail import send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
+from .tokens import account_activation_token
 import json
 import re
 
@@ -62,10 +65,44 @@ def create_user(request):
         return response
 
     except ObjectDoesNotExist:
-        AuthUser.objects.create(username=req_data['name'],
-                                password=req_data['password'],
-                                email=req_data['email'])
+        user = AuthUser.objects.create(username=req_data['name'],
+                                       password=req_data['password'],
+                                       email=req_data['email'],
+                                       is_active=False)
+        send_validation_email(request, user)
         response.status_code = 201
+        return response
+
+
+def send_validation_email(request, user):
+    validation_url = 'http://' + get_current_site(request).domain \
+                     + '/validate-account/' + urlsafe_base64_encode(force_bytes(user.id)) \
+                     + '/' + account_activation_token.make_token(user)
+    send_mail('Freeverse.io account verification',
+              'Please click the following link in order to activate your account: ' + validation_url,
+              'no-reply@freeverse.io',
+              [user.email.format()])
+    return validation_url
+
+
+@csrf_exempt
+def activate_user(request, uidb64, token):
+    response = JsonResponse({'result': 'account validated'})
+
+    try:
+        id = force_text(urlsafe_base64_decode(uidb64))
+        user = AuthUser.objects.get(id=id)
+    except(TypeError, ValueError, OverflowError, ObjectDoesNotExist):
+        user = None
+
+    if (user is not None) and (account_activation_token.check_token(user, token)):
+        user.is_active = True
+        user.save()
+        response.status_code = 200
+        return response
+    else:
+        response.content = '{"result": "bad request"}'
+        response.status_code = 400
         return response
 
 
@@ -81,8 +118,12 @@ def login(request):
 
     try:
         existing_user = AuthUser.objects.get(username=req_data['name'])
-        if existing_user.password == req_data['password']:
+        if existing_user.password == req_data['password'] and existing_user.is_active:
             response.status_code = 200
+            return response
+        elif not existing_user.is_active:
+            response.content = '{"result": "account not validated"}'
+            response.status_code = 403
             return response
         else:
             response.content = '{"result": "wrong password"}'
@@ -108,10 +149,14 @@ def reset_password(request):
 
     try:
         existing_user = AuthUser.objects.get(username=req_data['name'])
-        if existing_user.password == req_data['password']:
+        if existing_user.password == req_data['password']  and existing_user.is_active:
             existing_user.password = req_data['new_password']
             existing_user.save()
             response.status_code = 200
+            return response
+        elif not existing_user.is_active:
+            response.content = '{"result": "account not validated"}'
+            response.status_code = 403
             return response
         else:
             response.content = '{"result": "wrong password"}'
