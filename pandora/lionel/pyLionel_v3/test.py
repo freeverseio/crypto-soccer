@@ -31,20 +31,19 @@ def test1():
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    player1State                = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
-    dataToChallengePlayerState  = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
 
     print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
     hash0 = printTeam(teamIdx1, ST_CLIENT)
 
     print("\n\nplayers 2 and 24 before sale:\n")
-    hash1 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(2))
+
+    hash1 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
 
     assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print("\n")
-    hash2 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(24))
+    hash2 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
 
     advanceNBlocks(10, ST, ST_CLIENT)
 
@@ -58,9 +57,9 @@ def test1():
     )
 
     print("\n\nplayers 2 and 24 after sale:\n")
-    hash3 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(2))
+    hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
     print("\n")
-    hash4 = printPlayer(ST_CLIENT.getPlayerStateAtEndOfLastLeague(24))
+    hash4 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
     hashSum         = hash0+hash1+hash2+hash3+hash4
     return hashSum
 
@@ -73,7 +72,7 @@ def test2():
     ST          = Storage(isClient = False)
     ST_CLIENT   = Storage(isClient = True)
 
-    # The accumulator is responsible for receving user actions and committing them in the correct verse.
+    # The accumulator is responsible for receiving user actions and committing them in the correct verse.
     ST_CLIENT.addAccumulator()
 
     # Note that every 'advance' we do will check if some user actions need to be commited
@@ -119,8 +118,9 @@ def test2():
 
     # receive the first action! Every time it arrives to the Client, it acumulates it
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
-
+    ST_CLIENT.accumulateAction(action01)
 
     # Advance to just before matchday 2, which starts at verse 3 + 24 = 27
     # From verse 0 to 26:
@@ -148,22 +148,22 @@ def test2():
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not-yet updated"
 
     # CLIENT computes the data needed to update league (and stores it in the CLIENT)
-    initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+    initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
 
-    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the statesAtMatchday!:
+    # ...and the CLIENT, acting as an UPDATER, submits to the BC... a lie in the skillsAtMatchday!:
     dataAtMatchdayHashesLie     = duplicate(dataAtMatchdayHashes)
     dataAtMatchdayHashesLie[0] += 1  # he lies about matchday 0 only
 
     ST.updateLeague(
         leagueIdx,
-        initStatesHash,
+        initSkillsHash,
         dataAtMatchdayHashesLie,
         scores,
         ADDR2,
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
-    # A CHALLENGER tries to prove that the UPDATER lied with statesAtMatchday for matchday 0
+    # A CHALLENGER tries to prove that the UPDATER lied with skillsAtMatchday for matchday 0
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
 
     selectedMatchday = 0
@@ -175,11 +175,11 @@ def test2():
     # More lies: the CLIENT, acting as an UPDATER, submits to the BC... a lie in the initStates!:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as not updated"
-    initStatesHashLie = duplicate(initStatesHash)+1
+    initSkillsHashLie = duplicate(initSkillsHash)+1
 
     ST.updateLeague(
         leagueIdx,
-        initStatesHashLie,
+        initSkillsHashLie,
         dataAtMatchdayHashes,
         scores,
         ADDR2,
@@ -191,10 +191,10 @@ def test2():
     assert not ST.isFullyVerified(leagueIdx), "League not detected as not-yet fully verified"
 
     # ...first it gathers the data needed to challenge the init states
-    ST.challengeInitStates(
+    ST.challengeInitSkills(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
     assert not ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not reset after successful initHash challenge"
 
@@ -203,7 +203,7 @@ def test2():
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
     ST.updateLeague(
         leagueIdx,
-        initStatesHash,
+        initSkillsHash,
         dataAtMatchdayHashes,
         scores,
         ADDR2,
@@ -212,10 +212,10 @@ def test2():
 
     # ...and the CHALLENGER fails to prove anything
     advanceNBlocks(CHALLENGING_PERIOD_BLKS - 5, ST, ST_CLIENT)
-    ST.challengeInitStates(
+    ST.challengeInitSkills(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
+        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as updated"
 
@@ -281,11 +281,13 @@ def test2():
     advanceNVerses(1000, ST, ST_CLIENT)
     assert ST.hasLeagueFinished(leagueIdx), "League should be finished by now"
 
-    initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+    initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+    print(initSkillsHash)
+    print(pylio.serialHash(ST_CLIENT.leagues[leagueIdx].getInitPlayerSkills()))
 
     ST.updateLeague(
         leagueIdx,
-        initStatesHash,
+        initSkillsHash,
         dataAtMatchdayHashes,
         scores,
         ADDR2,
@@ -294,10 +296,10 @@ def test2():
 
 
     # A challenger fails to prove anything is wrong with init states...
-    ST.challengeInitStates(
+    ST.challengeInitSkills(
         leagueIdx,
         ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates )
+        duplicate( ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills )
     )
     assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
@@ -314,9 +316,8 @@ def test2():
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    player1State = ST_CLIENT.getPlayerStateAtEndOfLastLeague(1)
-    dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(1)
-    assert ST.areLatestSkills(player1State, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
+
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
@@ -344,9 +345,7 @@ def test2():
             playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
             playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
         )
-        playerState = ST_CLIENT.getPlayerStateAtEndOfLastLeague(playerIdx1)
-        dataToChallengePlayerState = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx1)
-        assert ST.areLatestSkills(playerState, dataToChallengePlayerState), "Computed player state by CLIENT is not recognized by BC.."
+        pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
 
     lastTeamIdx = 1
     nTeamsPerLeague = 8
@@ -389,15 +388,11 @@ def test2():
             advanceNVerses(intHash(str(l+a+14))%2, ST, ST_CLIENT) # advance either 0 or 1 verse.
             ST_CLIENT.accumulateAction(action)
 
-        # dataAtMatchdays, scores = ST_CLIENT.computeAllMatchdayStates(leagueIdx)
-        # initStatesHash = serialHash(ST_CLIENT.getInitPlayerStates(leagueIdx))
-        # dataAtMatchdayHashes, lastDayTree = ST_CLIENT.prepareHashesForDataAtMatchdays(dataAtMatchdays)
-
-        initStatesHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
+        initSkillsHash, dataAtMatchdayHashes, scores = ST_CLIENT.updateLeagueInClient(leagueIdx, ADDR2)
 
         ST.updateLeague(
             leagueIdx,
-            initStatesHash,
+            initSkillsHash,
             dataAtMatchdayHashes,
             scores,
             ADDR2,
@@ -405,10 +400,10 @@ def test2():
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "League not detected as already updated"
 
         # A challenger fails to prove anything is wrong with init states...
-        ST.challengeInitStates(
+        ST.challengeInitSkills(
             leagueIdx,
             ST_CLIENT.leagues[leagueIdx].usersInitData,
-            duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitStates)
+            duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
         )
         assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Challenger was successful when he should not be"
 
@@ -470,8 +465,8 @@ def runTest(name, result, expected):
 
 
 success = True
-# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 9207)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 640)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 779)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")

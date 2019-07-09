@@ -176,11 +176,15 @@ def createEmptyPlayerStatesForAllTeams(nTeams):
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
 # advances both BC and CLIENT, and commits the userActions if it goes through a verse
 def advanceToBlock(n, ST, ST_CLIENT):
-    verseWasCrossedBC       = ST.advanceToBlock(n)
-    verseWasCrossedCLIENT   = ST_CLIENT.advanceToBlock(n)
-    assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
-    if verseWasCrossedBC:
-        ST_CLIENT.syncActions(ST)
+    nBlocksToAdvance = n - ST.currentBlock
+    assert nBlocksToAdvance > 0, "cannot advance less than 1 block"
+    for block in range(nBlocksToAdvance):
+        verseWasCrossedBC = ST.incrementBlock()
+        verseWasCrossedCLIENT = ST_CLIENT.incrementBlock()
+        assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
+        if verseWasCrossedBC:
+            ST_CLIENT.syncActions(ST)
+            ST_CLIENT.syncLeagueCommits(ST)
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -190,9 +194,15 @@ def advanceNBlocks(deltaN, ST, ST_CLIENT):
     )
 
 def advanceNVerses(nVerses, ST, ST_CLIENT):
-    for verse in range(nVerses):
-        advanceToBlock(ST.nextVerseBlock(), ST, ST_CLIENT)
+    nBlocks = nVerses*ST.blocksBetweenVerses
+    if nBlocks == 0:
+        return
+    advanceNBlocks(nBlocks, ST, ST_CLIENT)
 
+def advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT):
+    verseFinal = ST.leagues[leagueIdx].verseFinal()
+    while ST.currentVerse < verseFinal:
+        advanceNBlocks(1, ST, ST_CLIENT)
 
 # ------------------------------------------------
 
@@ -213,9 +223,11 @@ def flatten(statesPerTeam):
 
 
 # It uses the CLIENT data to submit a challenge to the BC
-def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT):
-    assert ST.leagues[leagueIdx].hasLeagueBeenUpdated(), "Cannot challenge a league that has not been updated"
-    assert not ST.isFullyVerified(leagueIdx), "Cannot challenge a league after challenging period is over"
+def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT):
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    leagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
+    leagueRoot = ST.getLeagueRootFromVerseCommit(verse, leagueIdx)
+    assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
 
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
@@ -236,6 +248,7 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, leagueIdx, ST, ST_CLIENT
         merkleProofDataForMatchday
     )
 
+
 def verifyMerkleProof(root, merkleProof, hashFunction):
     # the current library requires the leaf & leafIdx to be formatted inside 'values' as follows:
     values = {merkleProof.leafIdx: merkleProof.leaf}
@@ -248,8 +261,19 @@ def verifyMerkleProof(root, merkleProof, hashFunction):
 def assertPlayerStateInClientIsCertifiable(playerIdx, ST, ST_CLIENT):
     playerState = ST_CLIENT.getCurrentPlayerState(playerIdx)
     dataToChallengePlayerSkills = ST_CLIENT.computeDataToChallengePlayerSkills(playerIdx)
-    assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills.neededHashes, dataToChallengePlayerSkills.depth),\
+    assert ST.certifyPlayerState(playerState, dataToChallengePlayerSkills),\
         "Current player state in CLIENT is not certifiable by BC.."
 
 def arrayDims(dim1, dim2):
     return [[None for d1 in range(dim1)] for d2 in range(dim2)]
+
+def shouldFail(f, msg):
+    itFailed = False
+    try:
+        f(0)
+    except AssertionError as error:
+        print("Expected fail:")
+        print("..." + msg + "...with internal error: " + str(error))
+        itFailed = True
+    assert itFailed, "We should have failed, but did not"
+
