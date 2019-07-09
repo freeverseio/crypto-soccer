@@ -112,6 +112,11 @@ workflows:
       - reactjs-frontend
       - django-centauri
       - dockerization:
+          filters:
+            branches:
+              only:
+                - dev
+                - ci
           requires:
             - go-synchronizer
             - django-centauri
