@@ -74,7 +74,7 @@ jobs:
       - checkout
       - run:
           name: Build Centauri
-          command: cd django-centauri && pip3 install django && pip3 install djangorestframework
+          command: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test

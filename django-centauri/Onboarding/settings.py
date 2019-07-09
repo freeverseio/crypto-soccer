@@ -127,3 +127,9 @@ STATIC_URL = '/static/'
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'no-reply@freeverse.io'
+EMAIL_HOST_PASSWORD = ')j51[f{p|@K5/iY'
+EMAIL_PORT = 587
