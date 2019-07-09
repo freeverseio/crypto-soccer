@@ -78,7 +78,7 @@ jobs:
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test
-  docker-django-centauri:
+  dockerization:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
@@ -87,17 +87,13 @@ jobs:
           docker_layer_caching: true # (3)
       - run:
           name: Create Docker Centauri
-          command: cd django-centauri && docker build -t freeverseio/centauri:$CIRCLE_SHA1 .
-  docker-go-synchronizer:
-    docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
-    steps:
-      - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
+          command: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run:
-          name: Create Docker Centauri
-          command: cd go-synchronizer && docker build -t freeverseio/synchronizer:$CIRCLE_SHA1 .
+          name: Create Docker Synchronizer
+          command: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
+      - run: 
+          name: Upload Docker Centauri
+          command: 
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -112,25 +108,15 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
-      - docker-go-synchronizer:
-          # filters:
-            # branches:
-              # only: dev
+      - dockerization:
           requires:
             - go-synchronizer
-      - docker-django-centauri:
-          # filters:
-            # branches:
-              # only: dev
-          requires:
             - django-centauri
       - deploy:
           requires:
+            - dockerization
             - truffle_core
-            - docker-go-synchronizer
             - go-soccer
             - reactjs-frontend
-            - docker-django-centauri
-
 
 
