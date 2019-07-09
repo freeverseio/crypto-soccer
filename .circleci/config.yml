@@ -121,7 +121,8 @@ workflows:
             - go-synchronizer
             - django-centauri
       - deploy:
-          branches:
+          filters:
+           branches:
               only:
                 - dev
           requires:
