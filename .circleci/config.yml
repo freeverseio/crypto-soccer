@@ -121,6 +121,9 @@ workflows:
             - go-synchronizer
             - django-centauri
       - deploy:
+          branches:
+              only:
+                - dev
           requires:
             - dockerization
             - truffle_core
