@@ -6,8 +6,7 @@ services:
     ports:
       - "5432:5432"
   synchronizer:
-    build: 
-      context: ./go-synchronizer/.
+          image: freeverseio/synchronizer:$
     command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
