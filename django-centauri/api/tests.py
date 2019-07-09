@@ -4,7 +4,9 @@ from rest_framework import status
 from django.urls import reverse
 from .models import *
 from django.contrib.auth.models import User as AuthUser
-
+from django.test.utils import override_settings
+from django.core import mail
+from rest_framework.test import RequestsClient
 # Create your tests here.
 
 
@@ -30,7 +32,7 @@ class MiscellaneousViewTest(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
 
-    def test_t_and_c_page(self):
+    def test_terms_and_conditions_page(self):
         response = self.client.get(reverse('terms_and_conditions'))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -58,9 +60,12 @@ class UserViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class UserAPITest(TestCase):
     def setUp(self) -> None:
+        self.body_to_remove = 'Please click the following link in order to activate your account: '
         self.client = APIClient()
+        self.req_client = RequestsClient()
 
     def test_can_create_user_with_good_data(self):
         self.user_data = {'name': 'pepe',
@@ -69,7 +74,9 @@ class UserAPITest(TestCase):
         self.response = self.client.post(reverse('create_user'),
                                          self.user_data,
                                          format="json")
-        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(self.response.status_code,
+                         status.HTTP_201_CREATED)
 
     def test_not_create_a_user_with_bad_data(self):
         self.user_data = {'name': 'pepe'}
@@ -78,6 +85,7 @@ class UserAPITest(TestCase):
                                          self.user_data,
                                          format="json")
 
+        self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(self.response.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
@@ -91,6 +99,9 @@ class UserAPITest(TestCase):
         self.response = self.client.post(reverse('create_user'),
                                          self.user_data,
                                          format="json")
+
+        # Second mail shouldn't be sent
+        self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(self.response.status_code,
                          status.HTTP_409_CONFLICT)
 
@@ -101,6 +112,10 @@ class UserAPITest(TestCase):
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.response = self.client.post(reverse('login'),
                                          self.user_data,
                                          format="json")
@@ -114,6 +129,10 @@ class UserAPITest(TestCase):
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.user_data_wrong = {'name': 'pepe',
                                 'password': '1'}
         self.response = self.client.post(reverse('login'),
@@ -124,10 +143,15 @@ class UserAPITest(TestCase):
 
     def test_login_with_bad_data(self):
         self.user_data = {'name': 'pepe',
-                          'password': '1234567890'}
+                          'password': '1234567890',
+                          "email": "prova@prova.prova"}
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.user_data_wrong = {'name': 'pepe'}
         self.response = self.client.post(reverse('login'),
                                          self.user_data_wrong,
@@ -151,6 +175,10 @@ class UserAPITest(TestCase):
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.user_data_new = {'name': 'pepe',
                               'password': '1234567890',
                               "email": "prova@prova.prova",
@@ -171,6 +199,10 @@ class UserAPITest(TestCase):
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.user_data_new = {'name': 'pepe',
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
@@ -189,6 +221,10 @@ class UserAPITest(TestCase):
         self.client.post(reverse('create_user'),
                          self.user_data,
                          format="json")
+
+        act_response_status = self.validate_account()
+        self.assertEqual(act_response_status, status.HTTP_200_OK)
+
         self.user_data_new = {'name': 'pepe',
                               'password': '1',
                               "email": "prova@prova.prova",
@@ -211,3 +247,10 @@ class UserAPITest(TestCase):
                                          format="json")
         self.assertEqual(self.response.status_code,
                          status.HTTP_404_NOT_FOUND)
+
+    def validate_account(self):
+        self.assertEqual(len(mail.outbox), 1)
+        url = mail.outbox[0].body.replace(self.body_to_remove, '')
+        act_response = self.req_client.get(url)
+
+        return act_response.status_code
