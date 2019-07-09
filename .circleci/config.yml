@@ -87,7 +87,7 @@ jobs:
           docker_layer_caching: true # (3)
       - run:
           name: Create Docker Centauri
-          command: cd django-centauri && docker build .
+          command: cd django-centauri && docker build -t freeverseio/centauri:$CIRCLE_SHA1 .
   docker-go-synchronizer:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -97,7 +97,7 @@ jobs:
           docker_layer_caching: true # (3)
       - run:
           name: Create Docker Centauri
-          command: cd go-synchronizer && docker build .
+          command: cd go-synchronizer && docker build -t freeverseio/synchronizer:$CIRCLE_SHA1 .
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -113,9 +113,15 @@ workflows:
       - reactjs-frontend
       - django-centauri
       - docker-go-synchronizer:
+          # filters:
+            # branches:
+              # only: dev
           requires:
             - go-synchronizer
       - docker-django-centauri:
+          # filters:
+            # branches:
+              # only: dev
           requires:
             - django-centauri
       - deploy:
