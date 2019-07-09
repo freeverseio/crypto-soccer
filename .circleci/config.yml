@@ -78,6 +78,16 @@ jobs:
       - run:
           name: Test Centauri
           command: cd django-centauri && python3 manage.py test
+  docker-django-centauri:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run:
+          name: Create Docker Centauri
+          command: cd django-centauri && docker build .
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -92,13 +102,16 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
+      - docker-django-centauri:
+          requires:
+            - django-centauri
       - deploy:
           requires:
             - truffle_core
             - go-synchronizer
             - go-soccer
             - reactjs-frontend
-            - django-centauri
+            - docker-django-centauri
 
 
 
