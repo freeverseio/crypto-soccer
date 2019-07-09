@@ -1,7 +1,7 @@
 FROM alpine:3.10
 RUN apk update
 RUN apk upgrade
-RUN apk add --no-cache nodejs nodejs-npm go lsof python3 python git alpine-sdk openssh
+RUN apk add --no-cache nodejs nodejs-npm go lsof python3 python git alpine-sdk openssh docker
 RUN npm install -g ganache-cli
 # RUN sudo apt-get -y install lsof
 # RUN sudo apt-get -y install python3.6 
