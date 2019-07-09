@@ -91,9 +91,12 @@ jobs:
       - run:
           name: Create Docker Synchronizer
           command: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
+      - run:
+          name: Login into Docker Hub
+          command: docker login -u freeverseio -p fwq4rq2453r4236q3tq34gwthtj
       - run: 
           name: Upload Docker Centauri
-          command: 
+          command: docker push freeverseio/centauri:dev
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
