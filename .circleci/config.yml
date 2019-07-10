@@ -106,7 +106,7 @@ jobs:
             - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - run: 
           name: deploy
-          command: ssh -o StrictHostKeyChecking=no -v $DROPLET_USER@$DROPLET_IP "./deploy.sh"
+          command: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
 workflows:
   version: 2
   build_and_test:
