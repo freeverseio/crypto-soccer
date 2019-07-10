@@ -101,6 +101,9 @@ jobs:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - checkout
 workflows:
   version: 2
