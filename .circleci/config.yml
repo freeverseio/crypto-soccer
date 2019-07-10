@@ -92,11 +92,21 @@ jobs:
           name: Create Docker Synchronizer
           command: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
       - run:
+          name: Create Docker Postgres
+          command: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
           name: Upload Docker Centauri
           command: docker push freeverseio/centauri:dev
+      - run: 
+          name: Upload Docker Synchronizer
+          command: docker push freeverseio/synchronizer:dev
+      - run: 
+          name: Upload Docker Postgres
+          command: docker push freeverseio/postgres:dev
+
   deploy:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
