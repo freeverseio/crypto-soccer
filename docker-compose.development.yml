@@ -4,24 +4,22 @@ services:
     image: freeverseio/centauri:dev
     ports: 
       - "8000:8000"
-
-  # postgres:
-  #   build: 
-  #     context: ./go-synchronizer/sql/.
-  #   ports:
-  #     - "5432:5432"
-  # synchronizer:
-  #         image: freeverseio/synchronizer:$
-  #   command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
-  #   depends_on:
-  #     - postgres
-  # horizon:
-  #   image: graphile/postgraphile
-  #   depends_on:
-  #     - postgres
-  #   command: ["postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
-  #   ports:
-  #     - "5000:5000"
+  postgres:
+    image: freeverseio/postgres:dev
+    ports:
+      - "5432:5432"
+  synchronizer:
+    image: freeverseio/synchronizer:dev
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
+    depends_on:
+      - postgres
+  horizon:
+    image: graphile/postgraphile
+    depends_on:
+      - postgres
+    command: ["postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    ports:
+      - "5000:5000"
   # # frontend:
   #   build:
   #     context: ./reactjs-frontend/.
