@@ -93,7 +93,7 @@ jobs:
           command: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
       - run:
           name: Login into Docker Hub
-          command: docker login -u freeverseio -p fwq4rq2453r4236q3tq34gwthtj
+          command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
           name: Upload Docker Centauri
           command: docker push freeverseio/centauri:dev
