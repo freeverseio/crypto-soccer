@@ -6,8 +6,6 @@ services:
       - "8000:8000"
   postgres:
     image: freeverseio/postgres:dev
-    ports:
-      - "5432:5432"
   synchronizer:
     image: freeverseio/synchronizer:dev
     command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
