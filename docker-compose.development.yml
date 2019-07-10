@@ -15,7 +15,7 @@ services:
     image: graphile/postgraphile
     depends_on:
       - postgres
-    command: ["sleep 3", "&&", "postgraphile", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    command: ["postgraphile", "--retryOnInitFail", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
     ports:
       - "5000:5000"
   # # frontend:
