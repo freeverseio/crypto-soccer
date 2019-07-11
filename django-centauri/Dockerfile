@@ -7,6 +7,8 @@ COPY . .
 #RUN pip install --no-cache-dir -r requirements.txt
 RUN pip3 install --no-cache-dir django
 RUN pip3 install --no-cache-dir djangorestframework
+RUN python3 manage.py makemigrations
+RUN python3 manage.py migrate
 #COPY . .
 
 #CMD [ "python", "./your-daemon-or-script.py" ]
