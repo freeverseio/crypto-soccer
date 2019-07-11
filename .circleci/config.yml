@@ -117,7 +117,7 @@ jobs:
       - checkout
       - run: 
           name: upload docker-compose config
-          command: scp -o StrictHostKeyChecking=no ./.deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
+          command: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
       - run: 
           name: deploy
           command: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
