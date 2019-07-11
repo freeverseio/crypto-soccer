@@ -3,21 +3,24 @@ package process
 import (
 	"context"
 	//"fmt"
+	"math"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type EventProcessor struct {
-	client *ethclient.Client
-	db     *storage.Storage
-	assets *assets.Assets
-	states *states.States
+	client  *ethclient.Client
+	db      *storage.Storage
+	assets  *assets.Assets
+	states  *states.States
+	leagues *leagues.Leagues
 }
 
 // *****************************************************************************
@@ -25,27 +28,24 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States) *EventProcessor {
-	return &EventProcessor{client, db, assets, states}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States, leagues *leagues.Leagues) *EventProcessor {
+	return &EventProcessor{client, db, assets, states, leagues}
 }
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	start, end := p.nextRange()
+	opts := p.nextRange()
 
-	log.WithFields(log.Fields{
-		"start": start,
-		"end":   end,
-	}).Info("Syncing ...")
-	log.Trace("Process: scanning the blockchain")
-
-	opts := &bind.FilterOpts{
-		Start:   start,
-		End:     &end,
-		Context: context.Background(),
+	if opts == nil {
+		log.Info("No new blocks to scan.")
+		return nil
 	}
 
-	// scan TeamCreated events in range [start, end]
+	log.WithFields(log.Fields{
+		"start": opts.Start,
+		"end":   *opts.End,
+	}).Info("Syncing ...")
+
 	if events, err := p.scanTeamCreated(opts); err != nil {
 		return err
 	} else {
@@ -55,16 +55,54 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
-	// update the store block in the database
-	p.db.SetBlockNumber(end + 1)
+	if p.leagues != nil {
+		if events, err := p.scanLeagueCreated(opts); err != nil {
+			return err
+		} else {
+			for _, event := range events {
+				log.Info(
+					"Found league ", event.Id.Int64(),
+					"\n\tdays: ", p.getLeagueDaysCount(event.Id),
+					"\n\tfinished: ", p.hasLeagueFinished(event.Id),
+					"\n\tupdated: ", p.isLeagueUpdated(event.Id),
+				)
+			}
+		}
+	} else {
+		log.Warn("Contract leagues not set. Skipping scanning for leagues")
+	}
+
+	// store the last block that was scanned
+	p.db.SetBlockNumber(*opts.End)
 	return nil
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) nextRange() (uint64, uint64) {
-	return p.dbLastBlockNumber(), p.clientLastBlockNumber()
+func (p *EventProcessor) nextRange() *bind.FilterOpts {
+	start := p.dbLastBlockNumber()
+	if start != 0 {
+		// unless this is the very first execution,
+		// the block number that is stored in the db
+		// was already scanned. We are interested in
+		// the next block
+		if start < math.MaxUint64 {
+			start += 1
+		} else {
+			log.Error("Block range overflow")
+			return nil
+		}
+	}
+	end := p.clientLastBlockNumber()
+	if start > end {
+		return nil
+	}
+	return &bind.FilterOpts{
+		Start:   start,
+		End:     &end,
+		Context: context.Background(),
+	}
 }
 
 func (p *EventProcessor) clientLastBlockNumber() uint64 {
@@ -123,17 +161,67 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
 			return err
 		} else {
-			var player storage.Player
-			player.Id = id.Uint64()
-			player.State = state.String()
-			player.TeamId = teamId.Uint64()
-			p.db.PlayerAdd(&player)
-			if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
-				log.Fatal(err)
-			} else if stored.State != state.String() {
-				log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
+			if skills, err := p.states.GetSkillsVec(&bind.CallOpts{}, state); err != nil {
+				return err
+			} else {
+				player := storage.Player{
+					Id:        id.Uint64(),
+					TeamId:    teamId.Uint64(),
+					State:     state.String(),
+					Defence:   uint64(skills[0]),
+					Speed:     uint64(skills[1]),
+					Pass:      uint64(skills[2]),
+					Shoot:     uint64(skills[3]),
+					Endurance: uint64(skills[4]),
+				}
+				p.db.PlayerAdd(&player)
+				if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
+					log.Fatal(err)
+				} else if stored.State != state.String() {
+					log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
+				}
 			}
 		}
 	}
 	return nil
+}
+func (p *EventProcessor) scanLeagueCreated(opts *bind.FilterOpts) ([]leagues.LeaguesLeagueCreated, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.leagues.FilterLeagueCreated(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []leagues.LeaguesLeagueCreated{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+func (p *EventProcessor) isLeagueUpdated(leagueId *big.Int) bool {
+	result, err := p.leagues.IsUpdated(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return result
+}
+func (p *EventProcessor) hasLeagueFinished(leagueId *big.Int) bool {
+	result, err := p.leagues.HasFinished(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	return result
+}
+func (p *EventProcessor) getLeagueDaysCount(leagueId *big.Int) int64 {
+	result, err := p.leagues.CountLeagueDays(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return 0
+	}
+	return result.Int64()
 }

@@ -14,6 +14,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 )
 
@@ -35,8 +37,10 @@ type SimulatedBlockchain struct {
 	Ops           *bind.TransactOpts
 	PrivateKey    *ecdsa.PrivateKey
 	statesAddress common.Address
+	engineAddress common.Address
 	Assets        *assets.Assets
 	States        *states.States
+	Leagues       *leagues.Leagues
 }
 
 func NewSimulatedBlockchain(genesisGasLimit uint64, genesisBalanceWei string) *SimulatedBlockchain {
@@ -50,7 +54,16 @@ func NewSimulatedBlockchain(genesisGasLimit uint64, genesisBalanceWei string) *S
 		genesisGasLimit,
 	)
 
-	return &SimulatedBlockchain{blockchain, auth, genesisPrivateKey, common.Address{}, nil, nil}
+	return &SimulatedBlockchain{
+		blockchain,
+		auth,
+		genesisPrivateKey,
+		common.Address{},
+		common.Address{},
+		nil,
+		nil,
+		nil,
+	}
 }
 func (blockchain *SimulatedBlockchain) Commit() {
 	blockchain.Backend.Commit()
@@ -90,6 +103,15 @@ func (blockchain *SimulatedBlockchain) deployStates(owner *ecdsa.PrivateKey) {
 	blockchain.States = contract
 	blockchain.statesAddress = address
 }
+func (blockchain *SimulatedBlockchain) deployEngine(owner *ecdsa.PrivateKey) {
+	address, _, contract, err := engine.DeployEngine(
+		bind.NewKeyedTransactor(owner),
+		blockchain.Backend,
+	)
+	AssertNoErr(err, "DeployEngine failed")
+	_ = contract
+	blockchain.engineAddress = address
+}
 func (blockchain *SimulatedBlockchain) deployAssets(owner *ecdsa.PrivateKey) {
 	_, _, contract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
@@ -100,9 +122,22 @@ func (blockchain *SimulatedBlockchain) deployAssets(owner *ecdsa.PrivateKey) {
 	blockchain.Commit()
 	blockchain.Assets = contract
 }
+func (blockchain *SimulatedBlockchain) deployLeagues(owner *ecdsa.PrivateKey) {
+	_, _, contract, err := leagues.DeployLeagues(
+		bind.NewKeyedTransactor(owner),
+		blockchain.Backend,
+		blockchain.engineAddress,
+		blockchain.statesAddress,
+	)
+	AssertNoErr(err, "DeployLeagues failed")
+	blockchain.Commit()
+	blockchain.Leagues = contract
+}
 func (blockchain *SimulatedBlockchain) DeployContracts(owner *ecdsa.PrivateKey) {
 	blockchain.deployStates(owner)
+	blockchain.deployEngine(owner)
 	blockchain.deployAssets(owner)
+	blockchain.deployLeagues(owner)
 }
 func (blockchain *SimulatedBlockchain) CreateTeam(name string, from *ecdsa.PrivateKey) {
 	auth := bind.NewKeyedTransactor(from)

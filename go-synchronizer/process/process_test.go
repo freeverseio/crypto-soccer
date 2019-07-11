@@ -1,6 +1,7 @@
 package process
 
 import (
+	//"fmt"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -14,7 +15,7 @@ func TestSyncTeamWithNoTeam(t *testing.T) {
 	}
 	blockchain := testutils.DefaultSimulatedBlockchain()
 
-	p := NewEventProcessor(nil, storage, blockchain.Assets, blockchain.States)
+	p := NewEventProcessor(nil, storage, blockchain.Assets, blockchain.States, blockchain.Leagues)
 	p.Process()
 
 	count, err := storage.TeamCount()
@@ -44,7 +45,7 @@ func TestSyncTeams(t *testing.T) {
 	ganache.CreateTeam("B", bob)
 	ganache.CreateTeam("C", carol)
 
-	p := NewEventProcessor(ganache.Client, storage, ganache.Assets, ganache.States)
+	p := NewEventProcessor(ganache.Client, storage, ganache.Assets, ganache.States, ganache.Leagues)
 
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
@@ -115,4 +116,8 @@ func TestSyncTeams(t *testing.T) {
 	} else if count != 44 {
 		t.Fatalf("Expected 44 players actual %v", count)
 	}
+
+	ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)
+	ganache.Advance(3) // advance 3 blocks
+	p.Process()
 }

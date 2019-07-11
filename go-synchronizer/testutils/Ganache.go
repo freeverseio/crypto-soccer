@@ -13,14 +13,19 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 )
 
 type Ganache struct {
 	Client        *ethclient.Client
+	time          *Testutils
 	statesAddress common.Address
+	engineAddress common.Address
 	Assets        *assets.Assets
 	States        *states.States
+	Leagues       *leagues.Leagues
 	Owner         *ecdsa.PrivateKey
 }
 
@@ -30,7 +35,35 @@ func NewGanache() *Ganache {
 	creatorPrivateKey, err := crypto.HexToECDSA("f1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5")
 	AssertNoErr(err, "Failed converting private key to ECSDA")
 
-	return &Ganache{client, common.Address{}, nil, nil, creatorPrivateKey} //common.BytesToAddress(common.Hex2Bytes(account))}
+	// deploy time.go to fake block transactions and be able to advance blocknumber in ganache
+	_, _, time, err := DeployTestutils(
+		bind.NewKeyedTransactor(creatorPrivateKey),
+		client,
+	)
+	AssertNoErr(err, "DeployTime failed")
+
+	return &Ganache{
+		client,
+		time,
+		common.Address{},
+		common.Address{},
+		nil,
+		nil,
+		nil,
+		creatorPrivateKey,
+	}
+}
+func (ganache *Ganache) Advance(blockCount int) {
+	for i := 0; i < blockCount; i++ {
+		auth := bind.NewKeyedTransactor(ganache.Owner)
+		_, err := ganache.time.Increase(
+			&bind.TransactOpts{
+				From:   auth.From,
+				Signer: auth.Signer,
+				//GasLimit: uint64(2000000000),
+			})
+		AssertNoErr(err, "Error in Advance()")
+	}
 }
 func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 	value := new(big.Int)
@@ -87,6 +120,15 @@ func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
 	ganache.States = contract
 	ganache.statesAddress = address
 }
+func (ganache *Ganache) deployEngine(owner *ecdsa.PrivateKey) {
+	address, _, contract, err := engine.DeployEngine(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployEngine failed")
+	_ = contract
+	ganache.engineAddress = address
+}
 func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
 	_, _, contract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
@@ -96,9 +138,21 @@ func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
 	AssertNoErr(err, "DeployAssets failed")
 	ganache.Assets = contract
 }
+func (ganache *Ganache) deployLeagues(owner *ecdsa.PrivateKey) {
+	_, _, contract, err := leagues.DeployLeagues(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+		ganache.engineAddress,
+		ganache.statesAddress,
+	)
+	AssertNoErr(err, "DeployStates failed")
+	ganache.Leagues = contract
+}
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.deployStates(owner)
+	ganache.deployEngine(owner)
 	ganache.deployAssets(owner)
+	ganache.deployLeagues(owner)
 }
 func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
 	auth := bind.NewKeyedTransactor(from)
@@ -138,9 +192,40 @@ func (ganache *Ganache) GetVirtualPlayers(teamId *big.Int) (players map[int64]*b
 	}
 	return
 }
+func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
+	leagueId := ganache.CountLeagues()
+	initBlock := big.NewInt(ganache.GetLastBlockNumber())
+	step := big.NewInt(1)
+	var tactics [][3]uint8 // {[3]uint8{4, 4, 2}, [3]uint8{4, 3, 3}},
+	var teamIdsBig []*big.Int
+	for _, teamId := range teamIds {
+		teamIdsBig = append(teamIdsBig, big.NewInt(teamId))
+		if teamId%3 == 0 {
+			tactics = append(tactics, [3]uint8{3, 4, 3})
+		} else if teamId%2 == 0 {
+			tactics = append(tactics, [3]uint8{4, 3, 3})
+		} else {
+			tactics = append(tactics, [3]uint8{4, 4, 2})
+		}
+	}
+	auth := bind.NewKeyedTransactor(from)
+	tx, err := ganache.Leagues.Create(
+		&bind.TransactOpts{
+			From:   auth.From,
+			Signer: auth.Signer,
+			//GasLimit: uint64(2000000000),
+		}, leagueId, initBlock, step, teamIdsBig, tactics)
+	_ = tx
+	AssertNoErr(err)
+}
 func (ganache *Ganache) CountTeams() *big.Int {
 	count, err := ganache.Assets.CountTeams(nil)
 	AssertNoErr(err, "Error calling CountTeams")
+	return count
+}
+func (ganache *Ganache) CountLeagues() *big.Int {
+	count, err := ganache.Leagues.LeaguesCount(nil)
+	AssertNoErr(err)
 	return count
 }
 func PrintTeamCreated(event assets.AssetsTeamCreated, ganache *Ganache) {

@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -65,7 +66,9 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(client, assetsContract, statesContract, sto)
+	var leaguesContract *leagues.Leagues // TODO
+	leaguesContract = nil
+	process := process.BackgroundProcessNew(client, assetsContract, statesContract, leaguesContract, sto)
 
 	log.Info("Start processing events ...")
 	process.Start()
