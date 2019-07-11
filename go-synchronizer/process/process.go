@@ -60,7 +60,12 @@ func (p *EventProcessor) Process() error {
 			return err
 		} else {
 			for _, event := range events {
-				log.Info("Found league ", event.Id.Int64(), " finished: ", p.hasLeagueFinished(event.Id), " updated: ", p.isLeagueUpdated(event.Id))
+				log.Info(
+					"Found league ", event.Id.Int64(),
+					"\n\tdays: ", p.getLeagueDaysCount(event.Id),
+					"\n\tfinished: ", p.hasLeagueFinished(event.Id),
+					"\n\tupdated: ", p.isLeagueUpdated(event.Id),
+				)
 			}
 		}
 	} else {
@@ -211,4 +216,12 @@ func (p *EventProcessor) hasLeagueFinished(leagueId *big.Int) bool {
 		return false
 	}
 	return result
+}
+func (p *EventProcessor) getLeagueDaysCount(leagueId *big.Int) int64 {
+	result, err := p.leagues.CountLeagueDays(nil, leagueId)
+	if err != nil {
+		log.Fatal(err)
+		return 0
+	}
+	return result.Int64()
 }
