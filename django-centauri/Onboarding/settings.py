@@ -126,7 +126,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = True
+
+# TODO This should be reactivated when we have an https server
+#CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 
 EMAIL_USE_TLS = True
