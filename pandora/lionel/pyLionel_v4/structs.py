@@ -66,7 +66,6 @@ class PlayerState(MinimalPlayerState):
         self.currentShirtNum         = 0
         self.prevLeagueIdx          = 0
         self.prevTeamPosInLeague    = 0
-        self.prevShirtNumInLeague   = 0
         self.lastSaleBlocknum        = 0
 
     def setCurrentTeamIdx(self, currentTeamIdx):
