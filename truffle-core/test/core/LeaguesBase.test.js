@@ -6,15 +6,39 @@ const Leagues = artifacts.require('LeaguesBaseMock');
 
 contract('LeaguesBase', (accounts) => {
     let leagues = null;
+    const PLAYERS_PER_TEAM = 25;
+    const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
+    const reverseOrder = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => PLAYERS_PER_TEAM-i-1) // [24,23,...0]
+    const tactic442 = 1;
+    const tactic433 = 2;
+
     const initBlock = 1;
     const step = 1;
-    const teamIds = [1, 2];
-    const tactics = [[4,4,3], [4,5,2]];
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
     });
 
+    it('add team to non-created league', async () => {
+        // order2 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.rejected;
+    });
+        
+    it('add team to league', async () => {
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.fulfilled;
+    });
+    
     it('unexistent league', async () => {
         // leagueId = 0 is dummy
         await leagues.getInitBlock(id = 1).should.be.rejected;
@@ -34,7 +58,7 @@ contract('LeaguesBase', (accounts) => {
 
     it('check leagueId and LeagueCount for league with 2 teams', async () => {
         const receipt = await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
-        const leagueId = receipt.logs[0].args.id.toNumber();
+        const leagueId = receipt.logs[0].args.leagueId.toNumber();
         leagueId.should.be.equal(1);
         const count = await leagues.leaguesCount().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
@@ -66,7 +90,7 @@ contract('LeaguesBase', (accounts) => {
         const count = await leagues.getNTeams(id = 1).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
-return;
+    return;
     it('hash users init data', async () => {
         const hash = await leagues.hashUsersInitData(teamIds, tactics).should.be.fulfilled;
         hash.should.be.equal('0xf8a82ba6630ed0305c4d7718ec5f87567f404ebffc7ddd22a344831368bf4537');

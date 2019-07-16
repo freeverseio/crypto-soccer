@@ -1,21 +1,23 @@
 pragma solidity ^0.5.0;
 
 contract LeaguesBase {
-    event LeagueCreated(uint256 id);
+    event LeagueCreated(uint256 leagueId);
+    uint8 constant public PLAYERS_PER_TEAM = 25;
 
     struct League {
-        uint256 nTeams;
-        // init block of the league
+        uint8 nTeams;
+       // init block of the league
         uint256 initBlock;
         // step blocks of the league
         uint256 step;
         bytes32 usersInitDataHash;
+        uint8 nTeamsSigned;
     }
 
     League[] private _leagues;
 
     constructor() public {
-        _leagues.push(League(0,0,0,0));
+        _leagues.push(League(0,0,0,0,0));
     }
 
     function leaguesCount() public view returns (uint256) {
@@ -33,36 +35,45 @@ contract LeaguesBase {
         require(step > 0, "invalid block step");
         require(nTeams % 2 == 0, "odd teams count");
         require(nTeams > 0, "cannot create leagues with no teams");
-        _leagues.push(League(nTeams, initBlock, step, 0));
-        uint256 id = _leagues.length - 1;
-        emit LeagueCreated(id);
+        _leagues.push(League(nTeams, initBlock, step, 0, 0));
+        emit LeagueCreated(leaguesCount());
     }
 
-    function getUsersInitDataHash(uint256 id) public view returns (bytes32) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].usersInitDataHash;
+    function getUsersInitDataHash(uint256 leagueId) public view returns (bytes32) {
+        require(_exists(leagueId), "unexistent league");
+        return _leagues[leagueId].usersInitDataHash;
     }
 
-    function getInitBlock(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].initBlock;
+    function getInitBlock(uint256 leagueId) public view returns (uint256) {
+        require(_exists(leagueId), "unexistent league");
+        return _leagues[leagueId].initBlock;
     }
 
-    function getStep(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].step;
+    function getStep(uint256 leagueId) public view returns (uint256) {
+        require(_exists(leagueId), "unexistent league");
+        return _leagues[leagueId].step;
     }
 
-    function getNTeams(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
-        return _leagues[id].nTeams;
+    function getNTeams(uint256 leagueId) public view returns (uint256) {
+        require(_exists(leagueId), "unexistent league");
+        return _leagues[leagueId].nTeams;
     }
 
     function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
         return keccak256(abi.encode(teamIds, tactics));
     }
 
-    function _exists(uint256 id) internal view returns (bool) {
-        return id <= leaguesCount();
+    function signTeamInLeague(uint256 leagueId, uint256 teamIdx, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) public {
+        _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
+            _leagues[leagueId].usersInitDataHash, 
+            teamIdx, 
+            teamOrder, 
+            teamTactics
+        )); 
+        _leagues[leagueId].nTeamsSigned++;
+    }
+
+    function _exists(uint256 leagueId) internal view returns (bool) {
+        return leagueId <= leaguesCount();
     }
 }
