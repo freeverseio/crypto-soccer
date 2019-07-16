@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from django.http import JsonResponse
 from .serializers import *
 from .models import *
@@ -13,6 +13,8 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from django.contrib.auth.hashers import check_password, make_password
 from .tokens import account_activation_token
+from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
 import json
 import re
 
@@ -34,6 +36,7 @@ class InfoView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET'])
+@permission_classes((AllowAny,))
 def get_users(request):
     data = list(AuthUser.objects.all().values())
     return JsonResponse(data, safe=False)
@@ -41,6 +44,7 @@ def get_users(request):
 
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes((AllowAny,))
 def create_user(request):
     req_data = json.loads(request.body.decode('utf-8'))
     response = JsonResponse({'result': 'user created'})
@@ -88,6 +92,7 @@ def send_validation_email(request, user):
 
 
 @csrf_exempt
+@permission_classes((AllowAny,))
 def activate_user(request, uidb64, token):
     response = JsonResponse({'result': 'account validated'})
 
@@ -118,6 +123,7 @@ def send_validation_success_email(user):
 
 @api_view(['POST'])
 @csrf_exempt
+@permission_classes((AllowAny,))
 def login(request):
     req_data = json.loads(request.body.decode('utf-8'))
     response = JsonResponse({'result': 'login successful'})
@@ -129,6 +135,8 @@ def login(request):
     try:
         existing_user = AuthUser.objects.get(username=req_data['name'])
         if check_password(req_data['password'], existing_user.password) and existing_user.is_active:
+            token, was_created = Token.objects.get_or_create(user=existing_user)
+            response.content = '{"result": "login successful", "token": "' + token.key + '"}'
             response.status_code = 200
             return response
         elif not existing_user.is_active:
@@ -152,13 +160,11 @@ def reset_password(request):
     req_data = json.loads(request.body.decode('utf-8'))
     response = JsonResponse({'result': 'reset successful'})
 
-    if not ('name' in req_data.keys()) \
-            or not ('password' in req_data.keys()) \
-            or not ('new_password' in req_data.keys()):
+    if not ('password' in req_data.keys()) or not ('new_password' in req_data.keys()):
         return respond_to_bad_request(response)
 
     try:
-        existing_user = AuthUser.objects.get(username=req_data['name'])
+        existing_user = AuthUser.objects.get(username=request.user.username)
         if check_password(req_data['password'], existing_user.password) and existing_user.is_active:
             existing_user.password = make_password(req_data['new_password'])
             existing_user.save()
@@ -180,6 +186,7 @@ def reset_password(request):
 
 
 @csrf_exempt
+@permission_classes((AllowAny,))
 def forgot_password(request):
     req_data = json.loads(request.body.decode('utf-8'))
     response = JsonResponse({'result': 'sent email'})
