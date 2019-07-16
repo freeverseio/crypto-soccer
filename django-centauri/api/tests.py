@@ -8,24 +8,8 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.test.utils import override_settings
 from django.core import mail
 from rest_framework.test import RequestsClient
+import json
 # Create your tests here.
-
-
-class UserModelTest(TestCase):
-
-    def setUp(self) -> None:
-        self.user = User(name='pepe',
-                         password='123456789')
-
-    def test_user_can_count(self):
-
-        old_count = self.user.get_counter()
-
-        self.user.add_to_counter(2)
-        new_count = self.user.get_counter()
-
-        self.assertNotEqual(old_count, new_count)
-
 
 class MiscellaneousViewTest(TestCase):
 
@@ -36,28 +20,6 @@ class MiscellaneousViewTest(TestCase):
         response = self.client.get(reverse('terms_and_conditions'))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-class UserViewTest(TestCase):
-
-    def setUp(self) -> None:
-        self.client = APIClient()
-
-    def test_api_can_delete_user(self):
-        self.user_data = {'name': 'pepe',
-                          'password': '1234567890',
-                          'counter': 0}
-        self.response = self.client.post(reverse('create'),
-                                         self.user_data,
-                                         format="json")
-
-        user = User.objects.get()
-        response = self.client.delete(reverse('info',
-                                              kwargs={'pk': user.id}),
-                                      format='json',
-                                      follow=True)
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
@@ -179,13 +141,14 @@ class UserAPITest(TestCase):
         act_response_status = self.validate_account()
         self.assertEqual(act_response_status, status.HTTP_200_OK)
 
-        self.user_data_new = {'name': 'pepe',
-                              'password': '1234567890',
-                              "email": "prova@prova.prova",
+        token = self.create_user_token(self.user_data)
+
+        self.user_data_new = {'password': '1234567890',
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
                                          self.user_data_new,
-                                         format="json")
+                                         format="json",
+                                         **{'HTTP_AUTHORIZATION': 'Token ' + token})
         self.assertEqual(self.response.status_code,
                          status.HTTP_200_OK)
 
@@ -203,11 +166,14 @@ class UserAPITest(TestCase):
         act_response_status = self.validate_account()
         self.assertEqual(act_response_status, status.HTTP_200_OK)
 
+        token = self.create_user_token(self.user_data)
+
         self.user_data_new = {'name': 'pepe',
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
                                          self.user_data_new,
-                                         format="json")
+                                         format="json",
+                                         **{'HTTP_AUTHORIZATION': 'Token ' + token})
         self.assertEqual(self.response.status_code,
                          status.HTTP_400_BAD_REQUEST)
 
@@ -225,13 +191,14 @@ class UserAPITest(TestCase):
         act_response_status = self.validate_account()
         self.assertEqual(act_response_status, status.HTTP_200_OK)
 
-        self.user_data_new = {'name': 'pepe',
-                              'password': '1',
-                              "email": "prova@prova.prova",
+        token = self.create_user_token(self.user_data)
+
+        self.user_data_new = {'password': '1',
                               'new_password': 'new_password'}
         self.response = self.client.post(reverse('reset_password'),
                                          self.user_data_new,
-                                         format="json")
+                                         format="json",
+                                         **{'HTTP_AUTHORIZATION': 'Token ' + token})
         self.assertEqual(self.response.status_code,
                          status.HTTP_401_UNAUTHORIZED)
 
@@ -246,7 +213,7 @@ class UserAPITest(TestCase):
                                          self.user_data_new,
                                          format="json")
         self.assertEqual(self.response.status_code,
-                         status.HTTP_404_NOT_FOUND)
+                         status.HTTP_401_UNAUTHORIZED)
 
     def test_forgot_password_email_was_sent_good_data(self):
         self.user_data = {'name': 'pepe',
@@ -306,6 +273,12 @@ class UserAPITest(TestCase):
                                            format='json')
         self.assertEqual(forgot_response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(len(mail.outbox), 0)
+
+    def create_user_token(self, user_data):
+        response = self.client.post(reverse('login'),
+                                    user_data,
+                                    format='json')
+        return json.loads(response.content.decode("utf-8"))["token"]
 
     def validate_account(self):
         self.assertEqual(len(mail.outbox), 1)
