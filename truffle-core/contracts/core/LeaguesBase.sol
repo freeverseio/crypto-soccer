@@ -18,20 +18,21 @@ contract LeaguesBase {
         _leagues.push(League(0,0,0,0));
     }
 
-    function leaguesCount() external view returns (uint256) {
+    function leaguesCount() public view returns (uint256) {
         return _leagues.length - 1;
     }
 
     function create(
+        uint8 nTeams,
         uint256 initBlock, 
-        uint256 step,
-        uint8 nTeams
+        uint256 step
     ) 
         public 
     {
         require(initBlock > 0, "invalid init block");
         require(step > 0, "invalid block step");
         require(nTeams % 2 == 0, "odd teams count");
+        require(nTeams > 0, "cannot create leagues with no teams");
         _leagues.push(League(nTeams, initBlock, step, 0));
         uint256 id = _leagues.length - 1;
         emit LeagueCreated(id);
@@ -62,6 +63,6 @@ contract LeaguesBase {
     }
 
     function _exists(uint256 id) internal view returns (bool) {
-        return _leagues[id].initBlock != 0;
+        return id <= leaguesCount();
     }
 }
