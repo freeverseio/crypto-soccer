@@ -59,11 +59,8 @@ contract LeaguesBase {
         return _leagues[leagueId].nTeams;
     }
 
-    function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
-        return keccak256(abi.encode(teamIds, tactics));
-    }
-
     function signTeamInLeague(uint256 leagueId, uint256 teamIdx, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) public {
+        require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
         _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
             _leagues[leagueId].usersInitDataHash, 
             teamIdx, 

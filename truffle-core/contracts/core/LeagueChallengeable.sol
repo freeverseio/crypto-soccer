@@ -23,7 +23,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
+        // require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
         uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
         if (getIsLie(id)) // TODO: remove
             resetUpdater(id); // TODO: remove
@@ -48,7 +48,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
+        // require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
         require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
         if (leagueDay == 0)
             require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");

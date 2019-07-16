@@ -39,6 +39,14 @@ contract('LeaguesBase', (accounts) => {
         ).should.be.fulfilled;
     });
     
+    it('add too many teams to league', async () => {
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.signTeamInLeague(leagueId = 1, teamId = 1, order, tactic442).should.be.fulfilled;
+        await leagues.signTeamInLeague(leagueId = 1, teamId = 2, order, tactic442).should.be.fulfilled;
+        await leagues.signTeamInLeague(leagueId = 1, teamId = 3, order, tactic442).should.be.rejected;
+    });
+    
+
     it('unexistent league', async () => {
         // leagueId = 0 is dummy
         await leagues.getInitBlock(id = 1).should.be.rejected;
@@ -90,12 +98,14 @@ contract('LeaguesBase', (accounts) => {
         const count = await leagues.getNTeams(id = 1).should.be.fulfilled;
         count.toNumber().should.be.equal(2);
     });
-    return;
+
     it('hash users init data', async () => {
-        const hash = await leagues.hashUsersInitData(teamIds, tactics).should.be.fulfilled;
-        hash.should.be.equal('0xf8a82ba6630ed0305c4d7718ec5f87567f404ebffc7ddd22a344831368bf4537');
-        await leagues.create(id, initBlock, step, teamIds, tactics).should.be.fulfilled;
-        const usersInitDataHash = await leagues.getUsersInitDataHash(id).should.be.fulfilled;
-        usersInitDataHash.should.be.equal(hash);
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        let usersInitDataHash = await leagues.getUsersInitDataHash(leagueId = 1).should.be.fulfilled;
+        usersInitDataHash = web3.utils.hexToNumber(usersInitDataHash)
+        usersInitDataHash.should.be.equal(0);
+        await leagues.signTeamInLeague(leagueId = 1, teamId = 1, order, tactic442).should.be.fulfilled;
+        usersInitDataHash = await leagues.getUsersInitDataHash(leagueId = 1).should.be.fulfilled;
+        usersInitDataHash.should.be.equal('0x7e22cf54171452bfaf39fbc0c4cbf6d4adf7cb4c955d799207e3e7056d187921');
     });
 });
