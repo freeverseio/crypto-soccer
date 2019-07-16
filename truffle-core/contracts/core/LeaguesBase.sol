@@ -50,10 +50,6 @@ contract LeaguesBase {
             usersInitDataHash
         );
         _leaguesCount++;
-        for (uint256 i=0 ; i<teamIds.length ; i++)
-            _leagueToTeams[id].push(teamIds[i]);
-        for (uint256 i=0 ; i<tactics.length ; i++)
-            _leagueToTactics[id].push(tactics[i]);
         emit LeagueCreated(id);
     }
 
@@ -75,22 +71,6 @@ contract LeaguesBase {
     function getNTeams(uint256 id) public view returns (uint256) {
         require(_exists(id), "unexistent league");
         return _leagues[id].nTeams;
-    }
-
-    function getTeams(uint256 id) external view returns (uint256[] memory) {
-        require(_exists(id), "unexistent league");
-        return _leagueToTeams[id];
-    }
-
-    function getTactics(uint256 id) external view returns (uint8[] memory) {
-        require(_exists(id), "unexistent league");
-        uint8[] memory tactics = new uint8[](_leagueToTactics[id].length*3);
-        for (uint256 i=0 ; i < _leagueToTactics[id].length ; i++) {
-            tactics[3*i] = _leagueToTactics[id][i][0];
-            tactics[3*i + 1] = _leagueToTactics[id][i][1];
-            tactics[3*i + 2] = _leagueToTactics[id][i][2];
-        }
-        return tactics;
     }
 
     function hashUsersInitData(uint256[] memory teamIds, uint8[3][] memory tactics) public pure returns (bytes32) {
