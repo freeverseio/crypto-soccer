@@ -13,7 +13,7 @@ contract('PlayerState', (accounts) => {
     beforeEach(async () => {
         instance = await PlayerState.new().should.be.fulfilled;
     });
-
+    
     it('create player state', async () => {
         const state = await instance.playerStateCreate(
             defence = '16383',
@@ -80,6 +80,8 @@ contract('PlayerState', (accounts) => {
         result.toNumber().should.be.equal(endurance);
         result = await instance.getCurrentTeamId(playerState).should.be.fulfilled;
         result.should.be.bignumber.equal('42');
+        result = await instance.getCurrentShirtNum(playerState).should.be.fulfilled;
+        result.should.be.bignumber.equal('3');
     });
 
     it('player state evolve', async () => {

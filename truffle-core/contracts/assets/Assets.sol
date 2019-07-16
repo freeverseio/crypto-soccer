@@ -21,7 +21,7 @@ contract Assets {
         uint256 creationTimestamp; // timestamp as seconds since unix epoch
     }
 
-    uint8 constant public PLAYERS_PER_TEAM = 11;
+    uint8 constant public PLAYERS_PER_TEAM = 25;
     uint8 constant internal BITS_PER_SKILL = 14;
     uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
