@@ -6,7 +6,8 @@ require('chai')
 
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
- 
+const PLAYERS_PER_TEAM = 25;
+
 contract('Assets', (accounts) => {
     let assets = null;
     let playerStateLib = null;
@@ -21,7 +22,7 @@ contract('Assets', (accounts) => {
         await assets.generateVirtualPlayerState(1).should.be.rejected;
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         await assets.generateVirtualPlayerState(1).should.be.fulfilled;
-        await assets.generateVirtualPlayerState(12).should.be.rejected;
+        await assets.generateVirtualPlayerState(PLAYERS_PER_TEAM+1).should.be.rejected;
     });
     
     it('compute seed', async () => {
@@ -52,17 +53,17 @@ contract('Assets', (accounts) => {
     it('get playerIds of the team', async () => {
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
         let playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
-        playerIds.length.should.be.equal(11);
-        for (let pos = 0; pos < 11 ; pos++) 
+        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+        for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
 
         await assets.createTeam(name = "Madrid",accounts[1]).should.be.fulfilled;
-        await assets.exchangePlayersTeams(playerId0 = 11, playerId1 = 14).should.be.fulfilled;
+        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
         playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
-        playerIds.length.should.be.equal(11);
-        for (let pos = 0; pos < 10 ; pos++) 
+        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+        for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-        playerIds[10].should.be.bignumber.equal('14');
+        playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal((PLAYERS_PER_TEAM+3).toString());
     });
 
     it('add team with different owner than the sender', async () => {
@@ -186,7 +187,7 @@ contract('Assets', (accounts) => {
     it('exchange players team', async () => {
         await assets.createTeam("Barca",accounts[1]).should.be.fulfilled;
         await assets.createTeam("Madrid",accounts[1]).should.be.fulfilled;
-        await assets.exchangePlayersTeams(playerId0 = 8, playerId1 = 19).should.be.fulfilled;
+        await assets.exchangePlayersTeams(playerId0 = 8, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
         const statePlayer0 = await assets.getPlayerState(playerId0).should.be.fulfilled;
         const teamPlayer0 = await playerStateLib.getCurrentTeamId(statePlayer0).should.be.fulfilled;
         teamPlayer0.should.be.bignumber.equal('2');
@@ -326,11 +327,12 @@ contract('Assets', (accounts) => {
     it('get playersId from teamId and pos in team', async () => {
         await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.rejected;
         await assets.createTeam(name = "Barca",accounts[1]).should.be.fulfilled;
-        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=11).should.be.rejected;
+        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM).should.be.rejected;
         let playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.fulfilled;
         playerId.toNumber().should.be.equal(1);
-        playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=10).should.be.fulfilled;
-        playerId.toNumber().should.be.equal(11);
+        playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM-1).should.be.fulfilled;
+        playerId.toNumber().should.be.equal(PLAYERS_PER_TEAM);
+
     });
 
     it('sign team to league', async () => {

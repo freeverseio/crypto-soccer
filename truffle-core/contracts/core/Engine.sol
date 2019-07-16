@@ -4,7 +4,7 @@ import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {
-    uint8 private constant MAX_PLAYERS      = 11;   // Max num of players allowed in a team
+    uint8 private constant MAX_PLAYERS      = 25;   // Max num of players allowed in a team
     uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
     uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of rounds played in each match
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
@@ -38,8 +38,8 @@ contract Engine is PlayerState {
         pure
         returns (uint8 home, uint8 visitor) 
     {
-        require(state0.length == MAX_PLAYERS, "Team 0 needs 11 players");
-        require(state1.length == MAX_PLAYERS, "Team 1 needs 11 players");
+        require(state0.length == MAX_PLAYERS, "Team 0 needs 25 players");
+        require(state1.length == MAX_PLAYERS, "Team 1 needs 25 players");
         require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0: sum is not correct");
         require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1: sum is not correct");
         require(tactic0[0] > 0 && tactic0[1] > 0 && tactic0[2] > 0, "wrong tactic for team 0: all should be >0");

@@ -19,7 +19,7 @@ contract('LeaguesComputer', (accounts) => {
         [5, 4, 1]   // Team 1
     ];
     let leagueState = null;
-    const nPlayers = 11;
+    const nPlayers = 25;
 
     const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
         const playerStateTemp = await teamStateLib.playerStateCreate(

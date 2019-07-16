@@ -8,7 +8,7 @@ contract LeaguesComputer is LeaguesScore {
     LeagueState private _leagueState;
     Engine private _engine;
 
-    uint8 constant PLAYERS_PER_TEAM = 11;
+    uint8 constant PLAYERS_PER_TEAM = 25;
 
     constructor(address engine, address leagueState) public {
         _engine = Engine(engine);

@@ -6,6 +6,7 @@ const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
+const PLAYERS_PER_TEAM = 25;
 
 contract('Game', (accounts) => {
     let engine = null;
