@@ -12,44 +12,28 @@ contract LeaguesBase {
         bytes32 usersInitDataHash;
     }
 
-    // TODO: remove cause local db will store it
-    mapping(uint256 => uint256[]) private _leagueToTeams;
+    League[] private _leagues;
 
-    // TODO: remove cause local db will store it
-    mapping(uint256 => uint8[3][]) private _leagueToTactics;
-
-    mapping(uint256 => League) private _leagues;
-    uint256 private _leaguesCount;
-
+    constructor() public {
+        _leagues.push(League(0,0,0,0));
+    }
 
     function leaguesCount() external view returns (uint256) {
-        return _leaguesCount;
+        return _leagues.length - 1;
     }
 
     function create(
-        uint256 id, 
         uint256 initBlock, 
-        uint256 step, 
-        uint256[] memory teamIds,
-        uint8[3][] memory tactics
+        uint256 step,
+        uint8 nTeams
     ) 
         public 
     {
         require(initBlock > 0, "invalid init block");
         require(step > 0, "invalid block step");
-        require(teamIds.length > 1, "minimum 2 teams per league");
-        require(teamIds.length % 2 == 0, "odd teams count");
-        require(teamIds.length == tactics.length, "nTeams and nTactics mismatch");
-        require(!_exists(id), "league already created");
-        uint256 nTeams = teamIds.length;
-        bytes32 usersInitDataHash = hashUsersInitData(teamIds, tactics);
-        _leagues[id] = League(
-            nTeams,
-            initBlock, 
-            step,
-            usersInitDataHash
-        );
-        _leaguesCount++;
+        require(nTeams % 2 == 0, "odd teams count");
+        _leagues.push(League(nTeams, initBlock, step, 0));
+        uint256 id = _leagues.length - 1;
         emit LeagueCreated(id);
     }
 
