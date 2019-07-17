@@ -1,8 +1,11 @@
 pragma solidity ^0.5.0;
 
+import "../assets/Assets.sol";
+
 contract LeaguesBase {
     event LeagueCreated(uint256 leagueId);
     uint8 constant public PLAYERS_PER_TEAM = 25;
+    Assets private _assets;
 
     struct League {
         uint8 nTeams;
@@ -18,6 +21,10 @@ contract LeaguesBase {
 
     constructor() public {
         _leagues.push(League(0,0,0,0,0));
+    }
+
+    function setAssetsContract(address assetsContract) public  {
+        _assets = Assets(assetsContract);
     }
 
     function leaguesCount() public view returns (uint256) {

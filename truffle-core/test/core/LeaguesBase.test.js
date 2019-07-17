@@ -3,9 +3,13 @@ require('chai')
     .should();
 
 const Leagues = artifacts.require('LeaguesBaseMock');
+const Assets = artifacts.require('Assets');
+const PlayerStateLib = artifacts.require('PlayerState');
 
 contract('LeaguesBase', (accounts) => {
     let leagues = null;
+    let assets = null;
+    let playerStateLib = null;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
     const reverseOrder = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => PLAYERS_PER_TEAM-i-1) // [24,23,...0]
@@ -16,7 +20,10 @@ contract('LeaguesBase', (accounts) => {
     const step = 1;
 
     beforeEach(async () => {
+        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
+        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
         leagues = await Leagues.new().should.be.fulfilled;
+        await leagues.setAssetsContract(assets.address).should.be.fulfilled;
     });
 
     it('add team to non-created league', async () => {
