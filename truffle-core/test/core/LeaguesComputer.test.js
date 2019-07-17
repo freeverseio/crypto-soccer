@@ -23,6 +23,10 @@ contract('LeaguesComputer', (accounts) => {
     let teamStateAll1 = null;
     let teamStateAll50 = null;
     let leagueState = null;
+    const tactics = [
+        [4, 4, 2],  // Team 0
+        [5, 4, 1]   // Team 1
+    ];
 
     const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
         const playerStateTemp = await teamStateLib.playerStateCreate(
@@ -73,7 +77,6 @@ contract('LeaguesComputer', (accounts) => {
         valid = await states.isValidTeamState(result.newVisitorState).should.be.fulfilled;
         valid.should.be.equal(true);
     });
-    return;
 
     it('Engine contract', async () => {
         const address = await leagues.getEngineContract().should.be.fulfilled;
