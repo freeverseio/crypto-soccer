@@ -10,6 +10,7 @@ const League = artifacts.require('LeagueChallengeable');
 const Cronos = artifacts.require('Cronos');
 
 contract('LeagueChallengeable', (accounts) => {
+    return;
     let league = null;
     let crosos = null;
     const id = 0;
