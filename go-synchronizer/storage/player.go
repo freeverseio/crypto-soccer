@@ -87,7 +87,7 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 
 func (b *Storage) GetPlayerState(id uint64) (PlayerState, error) {
 	playerState := PlayerState{}
-	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance FROM players_history WHERE (playerId = $1);", id)
+	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance FROM players_history WHERE (playerId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
 	if err != nil {
 		return playerState, err
 	}

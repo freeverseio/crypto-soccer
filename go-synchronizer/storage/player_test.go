@@ -59,6 +59,25 @@ func TestGetPlayerState(t *testing.T) {
 	if result != playerState {
 		t.Fatalf("Expected %v got %v", playerState, result)
 	}
+	playerState.BlockNumber = "35"
+	playerState.Defence = 4
+	playerState.Endurance = 5
+	playerState.Pass = 6
+	playerState.Shoot = 7
+	playerState.Speed = 99
+	playerState.State = "23"
+	playerState.TeamId = 99
+	err = sto.PlayerStateAdd(1, playerState)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = sto.GetPlayerState(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != playerState {
+		t.Fatalf("Expected %v got %v", playerState, result)
+	}
 }
 
 func TestPlayerAdd(t *testing.T) {
