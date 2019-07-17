@@ -21,10 +21,10 @@ contract('LeagueChallengeable', (accounts) => {
     const leagueId = 1;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
-    const tactic442 = 1;
-
+    const tactic442 = 0;
+    const tactic541 = 1;
+    const tactics = [tactic442, tactic541];
     const teamIds = [1, 2];
-    const tactics = [[4, 4, 3], [4, 5, 2]];
     let challengePeriod = null;
 
     beforeEach(async () => {
@@ -45,20 +45,6 @@ contract('LeagueChallengeable', (accounts) => {
     });
 
     
-    it('challenge init state with wrong user init data', async () => {
-        await leagues.updateLeague(
-            leagueId, 
-            initStateHash = '0x54564', 
-            dayStateHashes = ['0x24353', '0x5434432'],
-            scores = ['0x12', '0x3'],
-            isLie = false
-        ).should.be.fulfilled;
-        await leagues.challengeInitStates(leagueId, [3, 4], tactics, []).should.be.rejected;
-        // await leagues.challengeInitStates(leagueId, teamIds, [[4, 4, 2], [4, 4, 2]], []).should.be.rejected;
-    });
-
-    return;
-    
     const advanceToBlock = async (block) => {
         let current = await web3.eth.getBlockNumber().should.be.fulfilled;
         while (current.toString() < block) {
@@ -68,6 +54,7 @@ contract('LeagueChallengeable', (accounts) => {
         // console.log("current block: " + current);
     }
  
+
     it('challenge period', async () => {
         challengePeriod.should.be.equal(60);
     });
@@ -124,12 +111,14 @@ contract('LeagueChallengeable', (accounts) => {
             initStateHash = '0x54564', 
             dayStateHashes = ['0x24353', '0x5434432'],
             scores = ['0x12', '0x3'],
-            isLie = false
+            isLie = true
         ).should.be.fulfilled;
-        await leagues.challengeInitStates(leagueId, teamIds, tactics, dataToChallengeInitStates = []).should.be.fulfilled;
+        const receipt = await leagues.challengeInitStates(leagueId, teamIds, tactics, dataToChallengeInitStates = []).should.be.fulfilled;
+        receipt.logs[0].args.challengeSucceeded.should.be.equal(true);
     });
 
-    it('challenge init state with wrong user init data', async () => {
+
+    it('challenge init state when league was correctly updated', async () => {
         await leagues.updateLeague(
             leagueId, 
             initStateHash = '0x54564', 
@@ -137,9 +126,12 @@ contract('LeagueChallengeable', (accounts) => {
             scores = ['0x12', '0x3'],
             isLie = false
         ).should.be.fulfilled;
-        await leagues.challengeInitStates(leagueId, [3, 4], tactics, []).should.be.rejected;
-        // await leagues.challengeInitStates(leagueId, teamIds, [[4, 4, 2], [4, 4, 2]], []).should.be.rejected;
+        let receipt = await leagues.challengeInitStates(leagueId, [3, 4], tactics, []).should.be.fulfilled;
+        receipt.logs[0].args.challengeSucceeded.should.be.equal(false);
+        receipt = await leagues.challengeInitStates(leagueId, teamIds, tactics, []).should.be.fulfilled;
+        receipt.logs[0].args.challengeSucceeded.should.be.equal(false);
     });
+
 
     // it('update tactics with no new tactics', async () => {
     //     const tactics = await leagues.updateTacticsToBlockNum(

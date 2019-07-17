@@ -28,22 +28,27 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     function challengeInitStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[3][] memory tactics,
+        uint8[] memory tactics,
         uint256[] memory dataToChallengeInitStates
     )
         public
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
+        bool challengeSucceeded = didUpdaterLie(id);
+        if (challengeSucceeded) {
+            resetUpdater(id); 
+        }
+        emit ChallengeFinished(challengeSucceeded);
+
+        // TODO: implement lionel4 !
         // require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
-        uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
-        if (initPlayerStates.length == 0) // challenger wins
-            resetUpdater(id);
-        else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
-            resetUpdater(id);
+        // uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
+        // return; // TODO: remove
+        // if (initPlayerStates.length == 0) // challenger wins
+        //     resetUpdater(id);
+        // else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
+            // resetUpdater(id);
     }
 
     function challengeMatchdayStates(
@@ -77,15 +82,20 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             usersAlongDataBlocks);
         (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
 
-        if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
-            resetUpdater(id);
+        bool challengeSucceeded = didUpdaterLie(id);
+        if (challengeSucceeded) {
+            resetUpdater(id); 
+        }
+        emit ChallengeFinished(challengeSucceeded);
 
-        if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
-            resetUpdater(id);
+        // // TODO: implement in lionel4
+
+        // if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
+        //     resetUpdater(id);
+
+        // if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
+        //     resetUpdater(id);
     }
 
     function _updateTacticsToBlockNum(
@@ -114,7 +124,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     function getInitPlayerStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[3][] memory tactics,
+        uint8[] memory tactics,
         uint256[] memory dataToChallengeInitStates
     )
         public
