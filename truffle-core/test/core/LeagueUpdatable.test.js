@@ -4,8 +4,9 @@ require('chai')
 
 
 const Assets = artifacts.require('Assets');
-const PlayerStateLib = artifacts.require('PlayerState');
-const Leagues = artifacts.require('LeagueUpdatableMock');
+const Leagues = artifacts.require('Leagues');
+const Engine = artifacts.require('Engine');
+const State = artifacts.require('LeagueState');
 const GameController = artifacts.require('GameControllerDummy');
 
 contract('LeaguesUpdatable', (accounts) => {
@@ -21,9 +22,10 @@ contract('LeaguesUpdatable', (accounts) => {
     const step = 1;
 
     beforeEach(async () => {
-        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
-        leagues = await Leagues.new().should.be.fulfilled;
+        state = await State.new().should.be.fulfilled;
+        assets = await Assets.new(state.address).should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
+        leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         gameControllerDummy = await GameController.new().should.be.fulfilled;
         await leagues.setStakersContract(gameControllerDummy.address).should.be.fulfilled;
         await leagues.setAssetsContract(assets.address).should.be.fulfilled;
