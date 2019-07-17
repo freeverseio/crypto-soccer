@@ -36,7 +36,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 leagueId,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint8[3][] memory tactics
+        uint8[] memory tactics
     )
         public
         view
@@ -109,7 +109,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint8[3][] memory tactics,
+        uint8[] memory tactics,
         uint256 seed
     )
         internal
@@ -141,7 +141,7 @@ contract LeaguesComputer is LeaguesScore {
     function _computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
-        uint8[3][] memory tactics,
+        uint8[] memory tactics,
         uint256 seed
     )
         internal

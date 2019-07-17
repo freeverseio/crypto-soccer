@@ -12,6 +12,18 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
 
     constructor(address engine, address leagueState) LeaguesComputer(engine, leagueState) public {
     }
+    
+    function hashUsersInitData(
+        uint256[] memory teamIds, 
+        uint8[3][] memory tactics, 
+        uint8[PLAYERS_PER_TEAM][] memory teamOrders
+    ) 
+    public 
+    pure 
+    returns (bytes32 hash) {
+        return hash;
+    } 
+    
 
     function challengeInitStates(
         uint256 id,
@@ -37,9 +49,9 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     function challengeMatchdayStates(
         uint256 id,
         uint256[] memory usersInitDataTeamIds,
-        uint8[3][] memory usersInitDataTactics,
+        uint8[] memory usersInitDataTactics,
         uint256[] memory usersAlongDataTeamIds,
-        uint8[3][] memory usersAlongDataTactics,
+        uint8[] memory usersAlongDataTactics,
         uint256[] memory usersAlongDataBlocks,
         uint256 leagueDay,
         uint256[] memory prevMatchdayStates
@@ -56,7 +68,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
             require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
         uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
-        uint8[3][] memory tactics = _updateTacticsToBlockNum(
+        uint8[] memory tactics = _updateTacticsToBlockNum(
             usersInitDataTeamIds,
             usersInitDataTactics,
             matchdayBlock,
@@ -78,15 +90,15 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
 
     function _updateTacticsToBlockNum(
         uint256[] memory usersInitDataTeamIds,
-        uint8[3][] memory usersInitDataTactics,
+        uint8[] memory usersInitDataTactics,
         uint256 blockNum,
         uint256[] memory usersAlongDataTeamIds,
-        uint8[3][] memory usersAlongDataTactics,
+        uint8[] memory usersAlongDataTactics,
         uint256[] memory usersAlongDataBlocks
     )
         internal
         pure
-        returns (uint8[3][] memory)
+        returns (uint8[] memory)
     {
         for (uint256 i = 0 ; i < usersAlongDataTeamIds.length ; i++){
             if (usersAlongDataBlocks[i] <= blockNum){

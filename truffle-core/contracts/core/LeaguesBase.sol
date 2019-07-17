@@ -82,4 +82,5 @@ contract LeaguesBase {
     function _exists(uint256 leagueId) internal view returns (bool) {
         return leagueId <= leaguesCount();
     }
+    
 }

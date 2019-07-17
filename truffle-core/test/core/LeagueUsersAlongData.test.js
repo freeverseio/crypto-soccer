@@ -18,7 +18,8 @@ contract('LeagueUsersAlongData', (accounts) => {
     const leagueId = 1;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
-    const tactic442 = 1;
+    const tactic442 = 0;
+    const tactic541 = 1;
 
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
@@ -44,14 +45,14 @@ contract('LeagueUsersAlongData', (accounts) => {
     });
 
     it('update unexistent league', async () => {
-        await leagues.updateUsersAlongDataHash(thisLeagueId = 2, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.rejected;
+        await leagues.updateUsersAlongDataHash(thisLeagueId = 2, teamIds = [0], tactic = [tactic442], block = [3]).should.be.rejected;
     })
 
     it('update finished league', async () => {
         // first league, created at block = 1, has clearly finished, so it should not admit an update of tactics
         let finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
         finished.should.be.equal(true);
-        await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.rejected;
+        await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [tactic442], block = [3]).should.be.rejected;
     });
 
     
@@ -60,16 +61,18 @@ contract('LeagueUsersAlongData', (accounts) => {
         await leagues.create(nTeams = 2, thisBlockInit = currentBlock-1, thisStep = 300).should.be.fulfilled;
         finished = await leagues.hasFinished(thisLeagueId = 2).should.be.fulfilled;
         finished.should.be.equal(false);
-        await leagues.updateUsersAlongDataHash(thisLeagueId = 2, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
+        await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [tactic442], block = [3]).should.be.rejected;
+        await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [tactic442], block = [3]).should.be.rejected;
+        await leagues.updateUsersAlongDataHash(thisLeagueId = 2, teamIds = [0], tactic = [tactic442], block = [3]).should.be.fulfilled;
     });
 
     it('compute user along data hash', async () => {
-        let hash = await leagues.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
-        hash.should.be.equal('0x23f31280f69accf85f4ed1f35b9b7c8120241435f7f1c7005d1a397e09035c4b');
-        hash = await leagues.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [2]).should.be.fulfilled;
-        hash.should.be.equal('0x94cc21c8dfb0a81fb883059124ef97d417f42f86c1caa0c248ae05eda99ff245');
-        hash = await leagues.computeUsersAlongDataHash(teamIds = [0, 1], tactic = [[4, 4, 2], [4, 4, 2]], block = [2, 4]).should.be.fulfilled;
-        hash.should.be.equal('0xb854db7f540d4de46dd8e42fdaf48fed19057ae2e0e60e8be3c460647ceae2d6');
+        let hash = await leagues.computeUsersAlongDataHash(teamIds = [0], tactic = [tactic442], block = [3]).should.be.fulfilled;
+        hash.should.be.equal('0xe962042d5dd1b0f1e2739622bbf6d76c2642bff7a104ac8c986507c4d6c1115d');
+        hash = await leagues.computeUsersAlongDataHash(teamIds = [0], tactic = [tactic442], block = [2]).should.be.fulfilled;
+        hash.should.be.equal('0xff496e08a30e0406970dcb66bf9f6ada8a180c31ceba28262332b01aa1921c70');
+        hash = await leagues.computeUsersAlongDataHash(teamIds = [0, 1], tactic = [tactic442, tactic442], block = [2, 4]).should.be.fulfilled;
+        hash.should.be.equal('0xb2c41e13c3b1e9eab924b357e919d04aea5f7a2a57a3b6a74f1f4da700cc5000');
     });
 
 
@@ -83,6 +86,6 @@ contract('LeagueUsersAlongData', (accounts) => {
     //     ).should.be.fulfilled;
     //     const finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
     //     finished.should.be.equal(false);
-    //     await leagues.updateUsersAlongDataHash(leagueId, teamIdx = [1, 3], tactic = [[4, 4, 2], [4, 4, 2]]).should.be.rejected;
+    //     await leagues.updateUsersAlongDataHash(leagueId, teamIdx = [1, 3], tactic = [tactic442, tactic442]).should.be.rejected;
     // });
 }) 
