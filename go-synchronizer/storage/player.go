@@ -77,6 +77,7 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 		return player, nil
 	}
 	rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime)
+	rows.Close()
 	player.State, err = b.GetPlayerState(id)
 	if err != nil {
 		return player, err
