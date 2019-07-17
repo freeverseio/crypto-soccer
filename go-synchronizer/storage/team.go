@@ -20,6 +20,38 @@ type Team struct {
 	State             TeamState
 }
 
+func (b *Storage) TeamStateAdd(id uint64, teamState TeamState) error {
+	log.Infof("(DBMS) Adding team state %v", teamState)
+	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+		id,
+		teamState.BlockNumber,
+		teamState.CurrentLeagueId,
+		teamState.Owner,
+		teamState.PosInCurrentLeagueId,
+		teamState.PosInPrevLeagueId,
+		teamState.PrevLeagueId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
+	teamState := TeamState{}
+	rows, err := b.db.Query("SELECT blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId FROM teams_history WHERE (teamId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
+	if err != nil {
+		return teamState, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return teamState, nil
+	}
+	rows.Scan(&teamState.BlockNumber, &teamState.CurrentLeagueId, &teamState.Owner, &teamState.PosInCurrentLeagueId, &teamState.PosInPrevLeagueId, &teamState.PrevLeagueId)
+
+	return teamState, nil
+}
+
 func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
