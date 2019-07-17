@@ -33,7 +33,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) PlayerAdd(player *Player) error {
+func (b *Storage) PlayerAdd(player Player) error {
 	log.Infof("(DBMS) Adding player state %v", player)
 	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime) VALUES ($1, $2);",
 		player.Id,
@@ -42,12 +42,12 @@ func (b *Storage) PlayerAdd(player *Player) error {
 		return err
 	}
 
-	err = b.PlayerStateAdd(&player.State)
+	err = b.PlayerStateAdd(player.State)
 
 	return nil
 }
 
-func (b *Storage) PlayerStateAdd(playerState *PlayerState) error {
+func (b *Storage) PlayerStateAdd(playerState PlayerState) error {
 	log.Infof("(DBMS) Adding player state %v", playerState)
 	_, err := b.db.Exec("INSERT INTO players_history (playerId, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		playerState.Id,
@@ -65,16 +65,16 @@ func (b *Storage) PlayerStateAdd(playerState *PlayerState) error {
 	return nil
 }
 
-func (b *Storage) GetPlayer(id uint64) (*Player, error) {
+func (b *Storage) GetPlayer(id uint64) (Player, error) {
 	player := Player{}
 	rows, err := b.db.Query("SELECT id, monthOfBirthInUnixTime FROM players WHERE (id = $1);", id)
 	if err != nil {
-		return nil, err
+		return player, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return player, nil
 	}
 	rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime)
-	return &player, nil
+	return player, nil
 }

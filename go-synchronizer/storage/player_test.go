@@ -31,7 +31,7 @@ func TestPlayerAdd(t *testing.T) {
 	var player storage.Player
 	player.Id = 3
 	player.MonthOfBirthInUnixTime = "43524"
-	err = sto.PlayerAdd(&player)
+	err = sto.PlayerAdd(player)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,25 +53,19 @@ func TestGetPlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player != nil {
-		t.Fatal("expected nil player")
-	}
 	id := uint64(3)
 	birth := "43524"
 	var player2 storage.Player
 	player2.Id = 3
 	player2.MonthOfBirthInUnixTime = birth
 	// player2.State = "43524"
-	err = sto.PlayerAdd(&player2)
+	err = sto.PlayerAdd(player2)
 	if err != nil {
 		t.Fatal(err)
 	}
 	player, err = sto.GetPlayer(3)
 	if err != nil {
 		t.Fatal(err)
-	}
-	if player == nil {
-		t.Fatal("expected player")
 	}
 	if player.Id != id {
 		t.Fatalf("expected %v got %v", id, player.Id)
