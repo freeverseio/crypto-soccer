@@ -2,14 +2,15 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Leagues = artifacts.require('LeaguesBaseMock');
 const Assets = artifacts.require('Assets');
-const PlayerStateLib = artifacts.require('PlayerState');
+const Leagues = artifacts.require('Leagues');
+const Engine = artifacts.require('Engine');
+const State = artifacts.require('LeagueState');
 
 contract('LeaguesBase', (accounts) => {
     let leagues = null;
     let assets = null;
-    let playerStateLib = null;
+    let state = null;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
     const tactic442 = 1;
@@ -20,9 +21,10 @@ contract('LeaguesBase', (accounts) => {
     const step = 1;
 
     beforeEach(async () => {
-        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
-        leagues = await Leagues.new().should.be.fulfilled;
+        state = await State.new().should.be.fulfilled;
+        assets = await Assets.new(state.address).should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
+        leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         await leagues.setAssetsContract(assets.address).should.be.fulfilled;
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         await assets.createTeam(name = "Mardid", accounts[2]).should.be.fulfilled;
@@ -47,7 +49,6 @@ contract('LeaguesBase', (accounts) => {
             tactic442
         ).should.be.rejected;
     });
-
     
     it('add created team to created league', async () => {
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
@@ -69,6 +70,30 @@ contract('LeaguesBase', (accounts) => {
         ).should.be.fulfilled;
         await leagues.signTeamInLeague(
             leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.rejected;
+    });
+
+    it('add created team to league and then, quickly, to another one', async () => {
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 2,
+            teamId = 2,
+            order,
+            tactic442
+        ).should.be.fulfilled;
+        // this one should fail because league is not verified
+        await leagues.signTeamInLeague(
+            leagueId = 2,
             teamId = 1,
             order,
             tactic442

@@ -130,8 +130,20 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     }
 
     function isVerified(uint256 id) public view returns (bool) {
+        if (id == 0) return true;
         if (!isUpdated(id))
             return false;
         return block.number > getLastChallengeBlock(id);
     }
+    
+    function signTeamInLeague(
+        uint256 leagueId, 
+        uint256 teamId, 
+        uint8[PLAYERS_PER_TEAM] memory teamOrder, 
+        uint8 teamTactics
+    ) public {
+        require(isVerified(_assets.getCurrentLeagueId(teamId)), "team cannot sign a league because still in a non-verified league");
+        _signTeamInLeague(leagueId, teamId, teamOrder, teamTactics);        
+    }
+        
 }

@@ -5,7 +5,7 @@ import "../assets/Assets.sol";
 contract LeaguesBase {
     event LeagueCreated(uint256 leagueId);
     uint8 constant public PLAYERS_PER_TEAM = 25;
-    Assets private _assets;
+    Assets internal _assets;
 
     struct League {
         uint8 nTeams;
@@ -66,7 +66,8 @@ contract LeaguesBase {
         return _leagues[leagueId].nTeams;
     }
 
-    function signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) public {
+    function _signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) internal {
+        // warning: the callee should first verify that the teams are not already involved in un-verified leagues
         require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
         // changes prevLeague for team, etc. Will fail if team does not exist:
         _assets.signToLeague(teamId, leagueId, _leagues[leagueId].nTeamsSigned);

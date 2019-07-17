@@ -46,6 +46,11 @@ contract Assets {
         return teams[teamId].creationTimestamp;
     }
 
+    function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
+        require(_teamExists(teamId), "invalid team id");
+        return teams[teamId].currentLeagueId;
+    }
+
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
