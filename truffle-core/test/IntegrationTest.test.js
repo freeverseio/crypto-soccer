@@ -221,7 +221,7 @@ contract('IntegrationTest', (accounts) => {
         console.log("challenging");
         console.log("State Bob: " + await controller.state(bob,0));
         console.log("State Alice: " + await controller.state(alice,0));
-        return;
+
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
@@ -234,6 +234,8 @@ contract('IntegrationTest', (accounts) => {
             {from: alice}
 
         ).should.be.fulfilled;
+        
+        console.log("toni")
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
         console.log("challenged");

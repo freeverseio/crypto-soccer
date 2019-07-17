@@ -65,31 +65,35 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        // require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
-        require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
-        if (leagueDay == 0)
-            require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
-        else
-            require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
-
-        uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
-        uint8[] memory tactics = _updateTacticsToBlockNum(
-            usersInitDataTeamIds,
-            usersInitDataTactics,
-            matchdayBlock,
-            usersAlongDataTeamIds,
-            usersAlongDataTactics,
-            usersAlongDataBlocks);
-        (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
-
-
+        
+        
         bool challengeSucceeded = didUpdaterLie(id);
         if (challengeSucceeded) {
             resetUpdater(id); 
         }
         emit ChallengeFinished(challengeSucceeded);
 
+
         // // TODO: implement in lionel4
+
+        // require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
+        // require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
+        // if (leagueDay == 0)
+        //     require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
+        // else
+        //     require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
+
+        // uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
+        // uint8[] memory tactics = _updateTacticsToBlockNum(
+        //     usersInitDataTeamIds,
+        //     usersInitDataTactics,
+        //     matchdayBlock,
+        //     usersAlongDataTeamIds,
+        //     usersAlongDataTactics,
+        //     usersAlongDataBlocks);
+        // (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
+
+
 
         // if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
         //     resetUpdater(id);
