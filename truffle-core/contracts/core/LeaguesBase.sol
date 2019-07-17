@@ -66,11 +66,13 @@ contract LeaguesBase {
         return _leagues[leagueId].nTeams;
     }
 
-    function signTeamInLeague(uint256 leagueId, uint256 teamIdx, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) public {
+    function signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) public {
         require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
+        // changes prevLeague for team, etc. Will fail if team does not exist:
+        _assets.signToLeague(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
         _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
             _leagues[leagueId].usersInitDataHash, 
-            teamIdx, 
+            teamId, 
             teamOrder, 
             teamTactics
         )); 

@@ -24,10 +24,12 @@ contract('LeaguesBase', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
         leagues = await Leagues.new().should.be.fulfilled;
         await leagues.setAssetsContract(assets.address).should.be.fulfilled;
+        await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
+        await assets.createTeam(name = "Mardid", accounts[2]).should.be.fulfilled;
     });
 
-    it('add team to non-created league', async () => {
-        // order2 = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]
+    
+    it('add a created team to non-created league', async () => {
         await leagues.signTeamInLeague(
             leagueId = 1,
             teamId = 1,
@@ -35,8 +37,19 @@ contract('LeaguesBase', (accounts) => {
             tactic442
         ).should.be.rejected;
     });
-        
-    it('add team to league', async () => {
+
+    it('add a non-created team to a created league', async () => {
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 3,
+            order,
+            tactic442
+        ).should.be.rejected;
+    });
+
+    
+    it('add created team to created league', async () => {
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
         await leagues.signTeamInLeague(
             leagueId = 1,
@@ -45,7 +58,23 @@ contract('LeaguesBase', (accounts) => {
             tactic442
         ).should.be.fulfilled;
     });
-    
+
+    it('add created team twice to created league', async () => {
+        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.fulfilled;
+        await leagues.signTeamInLeague(
+            leagueId = 1,
+            teamId = 1,
+            order,
+            tactic442
+        ).should.be.rejected;
+    });
+
     it('add too many teams to league', async () => {
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
         await leagues.signTeamInLeague(leagueId = 1, teamId = 1, order, tactic442).should.be.fulfilled;

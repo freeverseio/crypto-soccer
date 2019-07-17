@@ -114,6 +114,7 @@ contract Assets {
     public
     {
         require(_teamExists(teamId), "invalid team id");
+        require(teams[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
         teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
         teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
         teams[teamId].currentLeagueId = leagueId;
