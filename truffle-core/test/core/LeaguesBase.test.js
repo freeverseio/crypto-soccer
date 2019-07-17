@@ -12,9 +12,9 @@ contract('LeaguesBase', (accounts) => {
     let playerStateLib = null;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
-    const reverseOrder = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => PLAYERS_PER_TEAM-i-1) // [24,23,...0]
     const tactic442 = 1;
-    const tactic433 = 2;
+    // const reverseOrder = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => PLAYERS_PER_TEAM-i-1) // [24,23,...0]
+    // const tactic433 = 2;
 
     const initBlock = 1;
     const step = 1;
