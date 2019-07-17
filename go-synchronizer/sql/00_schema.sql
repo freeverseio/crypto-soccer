@@ -34,7 +34,7 @@ CREATE TABLE players_history (
     playerId INT NOT NULL REFERENCES players(id),
     blockNumber TEXT NOT NULL,
     teamId INT NOT NULL REFERENCES teams(id),
-    state TEXT,
+    state TEXT NOT NULL,
     defence INT NOT NULL DEFAULT 0,
     speed INT NOT NULL DEFAULT 0,
     pass INT NOT NULL DEFAULT 0,

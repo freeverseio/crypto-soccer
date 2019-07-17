@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -23,6 +22,45 @@ func TestPlayerCount(t *testing.T) {
 	}
 }
 
+func TestPlayerStateAdd(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var playerState storage.PlayerState
+	err = sto.PlayerStateAdd(1, playerState)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetPlayerState(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var playerState storage.PlayerState
+	playerState.BlockNumber = "33"
+	playerState.Defence = 4
+	playerState.Endurance = 5
+	playerState.Pass = 6
+	playerState.Shoot = 7
+	playerState.Speed = 8
+	playerState.State = "23"
+	playerState.TeamId = 99
+	err = sto.PlayerStateAdd(1, playerState)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := sto.GetPlayerState(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != playerState {
+		t.Fatalf("Expected %v got %v", playerState, result)
+	}
+}
+
 func TestPlayerAdd(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
@@ -30,7 +68,6 @@ func TestPlayerAdd(t *testing.T) {
 	}
 	var player storage.Player
 	player.Id = 3
-	player.MonthOfBirthInUnixTime = "43524"
 	err = sto.PlayerAdd(player)
 	if err != nil {
 		t.Fatal(err)
@@ -53,11 +90,10 @@ func TestGetPlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := uint64(3)
-	birth := "43524"
 	var player2 storage.Player
 	player2.Id = 3
-	player2.MonthOfBirthInUnixTime = birth
+	player2.MonthOfBirthInUnixTime = "4534"
+	player2.State.Defence = 4
 	// player2.State = "43524"
 	err = sto.PlayerAdd(player2)
 	if err != nil {
@@ -67,10 +103,7 @@ func TestGetPlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.Id != id {
-		t.Fatalf("expected %v got %v", id, player.Id)
-	}
-	if strings.Compare(birth, player.MonthOfBirthInUnixTime) != 0 {
-		t.Fatalf("Expected %v got %v", birth, player.State)
+	if player2 != player {
+		t.Fatalf("Expected %v got %v", player2, player)
 	}
 }
