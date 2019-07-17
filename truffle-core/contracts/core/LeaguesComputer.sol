@@ -28,10 +28,6 @@ contract LeaguesComputer is LeaguesScore {
         return keccak256(abi.encode(state));
     }
 
-    function hashTactics(uint256[3][] memory tactics) public pure returns (bytes32) {
-        return keccak256(abi.encode(tactics));
-    }
-
     function computeDay(
         uint256 leagueId,
         uint256 leagueDay, 

@@ -19,14 +19,12 @@ contract('LeaguesComputer', (accounts) => {
     const leagueId = 1;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
-    const tactic442 = 1;
+    const tactic442 = 0;
+    const tactic541 = 1;
+    const tactics = [tactic442, tactic541];
     let teamStateAll1 = null;
     let teamStateAll50 = null;
     let leagueState = null;
-    const tactics = [
-        [4, 4, 2],  // Team 0
-        [5, 4, 1]   // Team 1
-    ];
 
     const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
         const playerStateTemp = await teamStateLib.playerStateCreate(
@@ -78,8 +76,6 @@ contract('LeaguesComputer', (accounts) => {
         valid.should.be.equal(true);
     });
     
-    return;
-
     it('Engine contract', async () => {
         const address = await leagues.getEngineContract().should.be.fulfilled;
         address.should.be.equal(engine.address);
@@ -142,20 +138,6 @@ contract('LeaguesComputer', (accounts) => {
         points = await leagues.computePoints(teamStateAll50, teamStateAll50, 1, 2).should.be.fulfilled;
         points.homePoints.toNumber().should.be.equal(0);
         points.visitorPoints.toNumber().should.be.equal(5);
-    });
-
-    it('hash tactics', async () => {
-        const hash0 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
-        const hash1 = await leagues.hashTactics([[4, 4, 2]]).should.be.fulfilled;
-        hash1.should.be.equal(hash0);
-        const hash2 = await leagues.hashTactics([[3, 4, 2]]).should.be.fulfilled;
-        hash2.should.be.not.equal(hash0);
-        const hash3 = await leagues.hashTactics([[4, 5, 2]]).should.be.fulfilled;
-        hash3.should.be.not.equal(hash0);
-        const hash4 = await leagues.hashTactics([[4, 4, 3]]).should.be.fulfilled;
-        hash4.should.be.not.equal(hash0);
-        const hash5 = await leagues.hashTactics([[4, 4, 2], [4, 4, 2]]).should.be.fulfilled;
-        hash5.should.be.not.equal(hash0);
     });
 
     it('hash init state', async () => {
