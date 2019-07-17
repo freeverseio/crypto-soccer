@@ -12,8 +12,8 @@ contract('Engine', (accounts) => {
     let engine = null;
     let teamStateLib = null;
     const seed = 610106;
-    const tactic0 = [4, 4, 2];
-    const tactic1 = [4, 5, 1];
+    const tactic0 = 0; // 442
+    const tactic1 = 1; // 541
     const nPlayers = 25;
 
     const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
@@ -162,13 +162,10 @@ contract('Engine', (accounts) => {
     });
 
     it('play match with wrong tactic', async () => {
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,1], tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,3], tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,1]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,3]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,5,0]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,0,5]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [0,5,5]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 6, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 7, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 8).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 9).should.be.rejected;
     });
 
 

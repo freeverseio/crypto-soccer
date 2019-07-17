@@ -171,7 +171,7 @@ contract('IntegrationTest', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = [...tactics];
+        const tacticsDay0 = [...usersInitData.tactics];
         const initPlayerStatesDay0 = [...initPlayerStates];
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
         const scoresDay0 = [...result.scores];
