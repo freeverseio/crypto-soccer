@@ -25,7 +25,10 @@ func TestTeamAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = sto.TeamAdd(&storage.Team{3, "ciao", "4235345342"})
+	var team storage.Team
+	team.Id = 3
+	team.Name = "ciao"
+	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,15 +50,18 @@ func TestGetTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal("Expecting nil")
 	}
-	err = sto.TeamAdd(&storage.Team{3, "ciao", "3434"})
+	var team storage.Team
+	team.Id = 3
+	team.Name = "ciao"
+	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
 	}
-	team, err := sto.GetTeam(3)
+	result, err := sto.GetTeam(3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if team.Name != "ciao" {
-		t.Fatalf("Expected ciao result %v", team.Name)
+	if result != team {
+		t.Fatalf("Expected %v got %v", team, result)
 	}
 }
