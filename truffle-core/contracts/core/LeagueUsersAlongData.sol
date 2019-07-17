@@ -13,9 +13,10 @@ contract LeagueUsersAlongData is LeaguesScheduler {
     function updateUsersAlongDataHash(uint256 id, uint256[] memory teamIds, uint8[3][] memory tactics, uint256[] memory blocks) public {
         require(_exists(id), "unexistent league");
         require(!hasFinished(id), "finished league");
-        bytes32 usersAlongDataHash = _usersAlongDataHash[id];
-        usersAlongDataHash = _computeUsersAlongDataHash(usersAlongDataHash, teamIds, tactics, blocks);
-        _usersAlongDataHash[id] = usersAlongDataHash;
+        // TODO: do this well with lionel4
+        // bytes32 usersAlongDataHash = _usersAlongDataHash[id];
+        // usersAlongDataHash = _computeUsersAlongDataHash(usersAlongDataHash, teamIds, tactics, blocks);
+        _usersAlongDataHash[id] = keccak256(abi.encode("TODO"));
     }
 
     function computeUsersAlongDataHash(uint256[] memory teamIds, uint8[3][] memory tactics, uint256[] memory blocks) public pure returns (bytes32) {

@@ -12,6 +12,7 @@ contract('LeagueUsersAlongData', (accounts) => {
     let leagues = null;
     let assets = null;
     let playerStateLib = null;
+    let receipt = null;
     const initBlock = 1;
     const step = 1;
     const leagueId = 1;
@@ -27,11 +28,12 @@ contract('LeagueUsersAlongData', (accounts) => {
         await leagues.setAssetsContract(assets.address).should.be.fulfilled;
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         await assets.createTeam(name = "Mardid", accounts[2]).should.be.fulfilled;
-        await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
+        receipt = await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
         await leagues.signTeamInLeague(leagueId, teamId = 1, order, tactic442).should.be.fulfilled;
         await leagues.signTeamInLeague(leagueId, teamId = 2, order, tactic442).should.be.fulfilled;
     });
 
+        
     it('initial hash of unexistent league', async () => {
         await leagues.getUsersAlongDataHash(thisLeagueId = 3).should.be.rejected;
     });
@@ -46,27 +48,19 @@ contract('LeagueUsersAlongData', (accounts) => {
     })
 
     it('update finished league', async () => {
-        const finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
+        // first league, created at block = 1, has clearly finished, so it should not admit an update of tactics
+        let finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
         finished.should.be.equal(true);
         await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.rejected;
     });
+
     
-    return; // TODO: continue only when doing lionel4 properly
-    
-    it('update', async () => {
-        await leagues.create(
-            leagueId = 0, 
-            initBlock = 1, 
-            step = 100000, 
-            teamIds = [1, 2], 
-            tactics = [[4, 4, 3], [4, 4, 3]]
-        ).should.be.fulfilled;
-        const finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
+    it('update unfinished league', async () => {
+        const currentBlock = receipt.receipt.blockNumber;
+        await leagues.create(nTeams = 2, thisBlockInit = currentBlock-1, thisStep = 300).should.be.fulfilled;
+        finished = await leagues.hasFinished(thisLeagueId = 2).should.be.fulfilled;
         finished.should.be.equal(false);
-        await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
-        const hash = await leagues.computeUsersAlongDataHash(teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
-        const usersAlongDataHash = await leagues.getUsersAlongDataHash(leagueId).should.be.fulfilled;
-        hash.should.be.equal(usersAlongDataHash);
+        await leagues.updateUsersAlongDataHash(thisLeagueId = 2, teamIds = [0], tactic = [[4, 4, 2]], block = [3]).should.be.fulfilled;
     });
 
     it('compute user along data hash', async () => {
