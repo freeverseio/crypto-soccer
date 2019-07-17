@@ -5,6 +5,12 @@ import (
 )
 
 type Player struct {
+	Id                     uint64
+	MonthOfBirthInUnixTime string
+	State                  PlayerState
+}
+
+type PlayerState struct {
 	Id        uint64
 	TeamId    uint64
 	State     string
@@ -28,16 +34,30 @@ func (b *Storage) PlayerCount() (uint64, error) {
 }
 
 func (b *Storage) PlayerAdd(player *Player) error {
-	log.Infof("(DBMS) Adding player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (id, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+	log.Infof("(DBMS) Adding player state %v", player)
+	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime) VALUES ($1, $2);",
 		player.Id,
-		player.TeamId,
-		player.State,
-		player.Defence,
-		player.Speed,
-		player.Shoot,
-		player.Pass,
-		player.Endurance)
+		player.MonthOfBirthInUnixTime)
+	if err != nil {
+		return err
+	}
+
+	err = b.PlayerStateAdd(&player.State)
+
+	return nil
+}
+
+func (b *Storage) PlayerStateAdd(playerState *PlayerState) error {
+	log.Infof("(DBMS) Adding player state %v", playerState)
+	_, err := b.db.Exec("INSERT INTO players_history (playerId, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+		playerState.Id,
+		playerState.TeamId,
+		playerState.State,
+		playerState.Defence,
+		playerState.Speed,
+		playerState.Shoot,
+		playerState.Pass,
+		playerState.Endurance)
 	if err != nil {
 		return err
 	}
@@ -47,7 +67,7 @@ func (b *Storage) PlayerAdd(player *Player) error {
 
 func (b *Storage) GetPlayer(id uint64) (*Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT id, state FROM players WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT id, monthOfBirthInUnixTime FROM players WHERE (id = $1);", id)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +75,6 @@ func (b *Storage) GetPlayer(id uint64) (*Player, error) {
 	if !rows.Next() {
 		return nil, nil
 	}
-	rows.Scan(&player.Id, &player.State)
+	rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime)
 	return &player, nil
 }

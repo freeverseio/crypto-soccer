@@ -5,14 +5,15 @@ import (
 )
 
 type Team struct {
-	Id   uint64
-	Name string
+	Id                uint64
+	Name              string
+	CreationTimestamp string
 }
 
 func (b *Storage) TeamAdd(team *Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
-	_, err := b.db.Exec("INSERT INTO teams (id, name) VALUES ($1, $2);", team.Id, team.Name)
+	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp) VALUES ($1, $2, $3);", team.Id, team.Name, team.CreationTimestamp)
 	if err != nil {
 		return err
 	}

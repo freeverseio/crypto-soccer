@@ -25,7 +25,7 @@ func TestTeamAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = sto.TeamAdd(&storage.Team{3, "ciao"})
+	err = sto.TeamAdd(&storage.Team{3, "ciao", "4235345342"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestGetTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal("Expecting nil")
 	}
-	err = sto.TeamAdd(&storage.Team{3, "ciao"})
+	err = sto.TeamAdd(&storage.Team{3, "ciao", "3434"})
 	if err != nil {
 		t.Fatal(err)
 	}
