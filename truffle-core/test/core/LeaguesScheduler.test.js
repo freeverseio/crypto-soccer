@@ -16,7 +16,7 @@ contract('LeaguesScheduler', (accounts) => {
     const leagueId = 1;
     const PLAYERS_PER_TEAM = 25;
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
-    const tactic442 = 1;
+    const tactic442 = 0;
 
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;

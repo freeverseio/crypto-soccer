@@ -6,19 +6,25 @@ const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 const State = artifacts.require('LeagueState');
-const PLAYERS_PER_TEAM = 25;
 
 contract('Game', (accounts) => {
     let engine = null;
     let state = null;
     let leagues = null;
     let cronos = null;
+    const initBlock = 1;
+    const step = 1;
+    const leagueId = 1;
+    const PLAYERS_PER_TEAM = 25;
+    const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
+    const tactic442 = 0;
 
     beforeEach(async () => {
         state = await State.new().should.be.fulfilled;
         assets = await Assets.new(state.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
+        await leagues.setAssetsContract(assets.address).should.be.fulfilled;
     });
 
     const createTeam = async (name, owner) => {
@@ -71,13 +77,15 @@ contract('Game', (accounts) => {
         const veniceId = await createTeam("Venice", accounts[0]).should.be.fulfilled;
         const juventusId = await createTeam("Juventus", accounts[0]).should.be.fulfilled;
 
-        const initBlock = 1;
-        const step = 1;
-        const leagueId = 0;
+        const tactics = [tactic442, tactic442, tactic442, tactic442, tactic442, tactic442];
+        
         const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
-        const tactics = [[4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2], [4, 4, 2]];
-        await leagues.create(leagueId, initBlock, step, teamIds, tactics).should.be.fulfilled;
 
+        await leagues.create(nTeams = 6, initBlock, step).should.be.fulfilled;
+        for (var team = 0; team < 6; team++) {
+            await leagues.signTeamInLeague(leagueId, teamIds[team], order, tactics[team]).should.be.fulfilled;
+        }
+        
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
         const madridState = await generateTeamState(madridId).should.be.fulfilled;
         const sevillaState = await generateTeamState(sevillaId).should.be.fulfilled;
