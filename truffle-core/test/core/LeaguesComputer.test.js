@@ -57,8 +57,6 @@ contract('LeaguesComputer', (accounts) => {
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         await assets.createTeam(name = "Mardid", accounts[2]).should.be.fulfilled;
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
-        await leagues.signTeamInLeague(leagueId, teamId = 1, order, tactic442).should.be.fulfilled;
-        await leagues.signTeamInLeague(leagueId, teamId = 2, order, tactic442).should.be.fulfilled;
         
         leagueState = await states.leagueStateCreate().should.be.fulfilled;
         leagueState = await states.leagueStateAppend(leagueState, teamStateAll1).should.be.fulfilled;
