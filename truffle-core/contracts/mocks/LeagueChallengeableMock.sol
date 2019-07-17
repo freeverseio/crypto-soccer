@@ -18,10 +18,10 @@ contract LeagueChallengeableMock is LeagueChallengeable {
         pure 
         returns (uint8[] memory) 
     {
-        uint8[] memory tactics = _updateTacticsToBlockNum(usersInitDataTeamIds, usersInitDataTactics, blockNum, usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks);
-        uint8[] memory result = new uint8[](tactics.length * 3);
-        for (uint256 i = 0 ; i < tactics.length ; i++){
-            result[i] = tactics[i];
+        uint8[] memory tacticsIds = _updateTacticsToBlockNum(usersInitDataTeamIds, usersInitDataTactics, blockNum, usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks);
+        uint8[] memory result = new uint8[](tacticsIds.length * 3);
+        for (uint256 i = 0 ; i < tacticsIds.length ; i++){
+            result[i] = tacticsIds[i];
         }
         return result;
     }

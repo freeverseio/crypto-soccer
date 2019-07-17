@@ -77,13 +77,13 @@ contract('Game', (accounts) => {
         const veniceId = await createTeam("Venice", accounts[0]).should.be.fulfilled;
         const juventusId = await createTeam("Juventus", accounts[0]).should.be.fulfilled;
 
-        const tactics = [tactic442, tactic442, tactic442, tactic442, tactic442, tactic442];
+        const tacticsIds = [tactic442, tactic442, tactic442, tactic442, tactic442, tactic442];
         
         const teamIds = [barcelonaId, madridId, sevillaId, bilbaoId, veniceId, juventusId];
 
         await leagues.create(nTeams = 6, initBlock, step).should.be.fulfilled;
         for (var team = 0; team < 6; team++) {
-            await leagues.signTeamInLeague(leagueId, teamIds[team], order, tactics[team]).should.be.fulfilled;
+            await leagues.signTeamInLeague(leagueId, teamIds[team], order, tacticsIds[team]).should.be.fulfilled;
         }
         
         const barcelonaState = await generateTeamState(barcelonaId).should.be.fulfilled;
@@ -118,7 +118,7 @@ contract('Game', (accounts) => {
         let initDayState = initLeagueState;
         for (leagueDay = 0; leagueDay < leagueDays.toNumber(); leagueDay++) {
             // compute result for league day
-            const result = await leagues.computeDay(leagueId, leagueDay, initDayState, tactics).should.be.fulfilled;
+            const result = await leagues.computeDay(leagueId, leagueDay, initDayState, tacticsIds).should.be.fulfilled;
             const dayScores = result.scores;
             const finalDayState = result.finalLeagueState;
 

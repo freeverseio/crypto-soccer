@@ -23,7 +23,7 @@ contract('LeagueChallengeable', (accounts) => {
     const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
     const tactic442 = 0;
     const tactic541 = 1;
-    const tactics = [tactic442, tactic541];
+    const tacticsIds = [tactic442, tactic541];
     const teamIds = [1, 2];
     let challengePeriod = null;
 
@@ -113,7 +113,7 @@ contract('LeagueChallengeable', (accounts) => {
             scores = ['0x12', '0x3'],
             isLie = true
         ).should.be.fulfilled;
-        const receipt = await leagues.challengeInitStates(leagueId, teamIds, tactics, dataToChallengeInitStates = []).should.be.fulfilled;
+        const receipt = await leagues.challengeInitStates(leagueId, teamIds, tacticsIds, dataToChallengeInitStates = []).should.be.fulfilled;
         receipt.logs[0].args.challengeSucceeded.should.be.equal(true);
     });
 
@@ -126,15 +126,15 @@ contract('LeagueChallengeable', (accounts) => {
             scores = ['0x12', '0x3'],
             isLie = false
         ).should.be.fulfilled;
-        let receipt = await leagues.challengeInitStates(leagueId, [3, 4], tactics, []).should.be.fulfilled;
+        let receipt = await leagues.challengeInitStates(leagueId, [3, 4], tacticsIds, []).should.be.fulfilled;
         receipt.logs[0].args.challengeSucceeded.should.be.equal(false);
-        receipt = await leagues.challengeInitStates(leagueId, teamIds, tactics, []).should.be.fulfilled;
+        receipt = await leagues.challengeInitStates(leagueId, teamIds, tacticsIds, []).should.be.fulfilled;
         receipt.logs[0].args.challengeSucceeded.should.be.equal(false);
     });
 
 
-    // it('update tactics with no new tactics', async () => {
-    //     const tactics = await leagues.updateTacticsToBlockNum(
+    // it('update tacticsIds with no new tacticsIds', async () => {
+    //     const tacticsIds = await leagues.updateTacticsToBlockNum(
     //         usersInitDataTeamIds = [1],
     //         userInitDataTactics = [[4,4,2]],
     //         blockNum = [10],
@@ -142,14 +142,14 @@ contract('LeagueChallengeable', (accounts) => {
     //         usersAlongDataTactics = [],
     //         usersAlongDataBlocks = []
     //     ).should.be.fulfilled;
-    //     tactics.length.should.be.equal(3);
-    //     tactics[0].toNumber().should.be.equal(4);
-    //     tactics[1].toNumber().should.be.equal(4);
-    //     tactics[2].toNumber().should.be.equal(2);
+    //     tacticsIds.length.should.be.equal(3);
+    //     tacticsIds[0].toNumber().should.be.equal(4);
+    //     tacticsIds[1].toNumber().should.be.equal(4);
+    //     tacticsIds[2].toNumber().should.be.equal(2);
     // });
 
-    // it('update tactics new tactics', async () => {
-    //     const tactics = await leagues.updateTacticsToBlockNum(
+    // it('update tacticsIds new tacticsIds', async () => {
+    //     const tacticsIds = await leagues.updateTacticsToBlockNum(
     //         usersInitDataTeamIds = [1, 5],
     //         userInitDataTactics = [[4, 4, 2], [5, 5, 0]],
     //         blockNum = [10],
@@ -157,12 +157,12 @@ contract('LeagueChallengeable', (accounts) => {
     //         usersAlongDataTactics = [[5, 3, 2], [4, 4, 2], [1, 8, 1]],
     //         usersAlongDataBlocks = [1, 8, 10]
     //     ).should.be.fulfilled;
-    //     tactics.length.should.be.equal(6);
-    //     tactics[0].toNumber().should.be.equal(5);
-    //     tactics[1].toNumber().should.be.equal(3);
-    //     tactics[2].toNumber().should.be.equal(2);
-    //     tactics[3].toNumber().should.be.equal(4);
-    //     tactics[4].toNumber().should.be.equal(4);
-    //     tactics[5].toNumber().should.be.equal(2);
+    //     tacticsIds.length.should.be.equal(6);
+    //     tacticsIds[0].toNumber().should.be.equal(5);
+    //     tacticsIds[1].toNumber().should.be.equal(3);
+    //     tacticsIds[2].toNumber().should.be.equal(2);
+    //     tacticsIds[3].toNumber().should.be.equal(4);
+    //     tacticsIds[4].toNumber().should.be.equal(4);
+    //     tacticsIds[5].toNumber().should.be.equal(2);
     // });
 })

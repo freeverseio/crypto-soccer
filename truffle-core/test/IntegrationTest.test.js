@@ -115,7 +115,7 @@ contract('IntegrationTest', (accounts) => {
         const usersInitData = {
             teamIdxs: [teamIdx1, teamIdx2],
             teamOrders: [order, order],
-            tactics: [tactic442, tactic433]
+            tacticsIds: [tactic442, tactic433]
         };
 
         let leagueIdx = 1;
@@ -126,7 +126,7 @@ contract('IntegrationTest', (accounts) => {
                 leagueIdx, 
                 usersInitData.teamIdxs[team], 
                 usersInitData.teamOrders[team], 
-                usersInitData.tactics[team]
+                usersInitData.tacticsIds[team]
             ).should.be.fulfilled;
         }
 
@@ -144,12 +144,12 @@ contract('IntegrationTest', (accounts) => {
         currentBlock = await web3.eth.getBlockNumber();
         usersAlongData = {
             teamIdxsWithinLeague: [teamIdx1, teamIdx2],
-            tactics: [tactic433, tactic442],
+            tacticsIds: [tactic433, tactic442],
             blocks: [currentBlock, currentBlock]
         };
 
-        // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tactics, usersAlongData.blocks).should.be.fulfilled;
+        // Submit data to change tacticsIds
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tacticsIds, usersAlongData.blocks).should.be.fulfilled;
 
         // Move beyond league end
         await advanceNBlocks(blockStep).should.be.fulfilled;
@@ -171,14 +171,14 @@ contract('IntegrationTest', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = [...usersInitData.tactics];
+        const tacticsDay0 = [...usersInitData.tacticsIds];
         const initPlayerStatesDay0 = [...initPlayerStates];
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
         const scoresDay0 = [...result.scores];
         const finalPlayerStatesDay0 = [...result.finalLeagueState];
         // day 1
         leagueDay = 1;
-        const tacticsDay1 = [...usersAlongData.tactics];
+        const tacticsDay1 = [...usersAlongData.tacticsIds];
         const initPlayerStatesDay1 = [...finalPlayerStatesDay0];
         result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
         const scoresDay1 = [...result.scores];
@@ -225,9 +225,9 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0,
@@ -270,7 +270,7 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeInitStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             dataToChallengeInitStates, {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
@@ -301,9 +301,9 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0, {from: carol}
@@ -314,9 +314,9 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 1,
             prevMatchdayStates = initPlayerStatesDay1, {from: carol}

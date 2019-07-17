@@ -49,7 +49,7 @@ contract('LeagueUsersAlongData', (accounts) => {
     })
 
     it('update finished league', async () => {
-        // first league, created at block = 1, has clearly finished, so it should not admit an update of tactics
+        // first league, created at block = 1, has clearly finished, so it should not admit an update of tacticsIds
         let finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
         finished.should.be.equal(true);
         await leagues.updateUsersAlongDataHash(leagueId, teamIds = [0], tactic = [tactic442], block = [3]).should.be.rejected;
@@ -82,7 +82,7 @@ contract('LeagueUsersAlongData', (accounts) => {
     //         initBlock = 1, 
     //         step = 100000, 
     //         teamIds = [1, 2], 
-    //         tactics = [[4, 4, 3], [4, 4, 3]]
+    //         tacticsIds = [[4, 4, 3], [4, 4, 3]]
     //     ).should.be.fulfilled;
     //     const finished = await leagues.hasFinished(leagueId).should.be.fulfilled;
     //     finished.should.be.equal(false);

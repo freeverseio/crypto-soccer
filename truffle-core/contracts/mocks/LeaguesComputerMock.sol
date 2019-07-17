@@ -39,27 +39,27 @@ contract LeaguesComputerMock is LeaguesComputer {
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initleagueState, 
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256 seed
     )
         public
         view
         returns (uint16[] memory scores, uint256[] memory finalleagueState)
     {
-        return _computeDayWithSeed(id, leagueDay, initleagueState, tactics, seed);
+        return _computeDayWithSeed(id, leagueDay, initleagueState, tacticsIds, seed);
     }
 
     function computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256 seed
     )
         public
         view
         returns (uint16 score, uint256[] memory newHomeState, uint256[] memory newVisitorState)
     {
-        return _computeMatch(homeTeamState, visitorTeamState, tactics, seed);
+        return _computeMatch(homeTeamState, visitorTeamState, tacticsIds, seed);
     }
 
 }

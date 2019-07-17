@@ -32,7 +32,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 leagueId,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint8[] memory tactics
+        uint8[] memory tacticsIds
     )
         public
         view
@@ -43,7 +43,7 @@ contract LeaguesComputer is LeaguesScore {
             leagueId,
             leagueDay,
             initLeagueState,
-            tactics,
+            tacticsIds,
             seed
         );
     } 
@@ -105,7 +105,7 @@ contract LeaguesComputer is LeaguesScore {
         uint256 id,
         uint256 leagueDay, 
         uint256[] memory initLeagueState, 
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256 seed
     )
         internal
@@ -124,7 +124,7 @@ contract LeaguesComputer is LeaguesScore {
             uint256[] memory updatedVisitorState) = _computeMatch(
                 homeTeamState,
                 visitorTeamState, 
-                tactics, 
+                tacticsIds, 
                 seed
             );
             scores = scoresAppend(scores, score);
@@ -137,7 +137,7 @@ contract LeaguesComputer is LeaguesScore {
     function _computeMatch(
         uint256[] memory homeTeamState,
         uint256[] memory visitorTeamState,
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256 seed
     )
         internal
@@ -148,8 +148,8 @@ contract LeaguesComputer is LeaguesScore {
             seed, 
             homeTeamState, 
             visitorTeamState, 
-            tactics[0], 
-            tactics[1]
+            tacticsIds[0], 
+            tacticsIds[1]
         );
         score = encodeScore(homeGoals, visitorGoals);
         (newHomeState, newVisitorState) = _evolveTeams(
@@ -163,7 +163,7 @@ contract LeaguesComputer is LeaguesScore {
     // function computeAllMatchleagueStates(
     //     uint256 id, 
     //     uint256[] memory initleagueState, 
-    //     uint256[3][] memory tactics // TODO: optimize data type
+    //     uint256[3][] memory tacticsIds // TODO: optimize data type
     // )
     //     public 
     //     view 
@@ -173,7 +173,7 @@ contract LeaguesComputer is LeaguesScore {
     //     for(uint256 day = 0 ; day < nLeagueDays ; day++)
     //     {
     //         bytes32 seed = getMatchDayBlockHash(id, day);
-    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initleagueState, tactics, seed);
+    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initleagueState, tacticsIds, seed);
     //         // scores = addToTournamentScores(scores, dayScores);
     //     }
     // }

@@ -13,22 +13,10 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     constructor(address engine, address leagueState) LeaguesComputer(engine, leagueState) public {
     }
     
-    function hashUsersInitData(
-        uint256[] memory teamIds, 
-        uint8[3][] memory tactics, 
-        uint8[PLAYERS_PER_TEAM][] memory teamOrders
-    ) 
-    public 
-    pure 
-    returns (bytes32 hash) {
-        return hash;
-    } 
-    
-
     function challengeInitStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256[] memory dataToChallengeInitStates
     )
         public
@@ -42,8 +30,8 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         emit ChallengeFinished(challengeSucceeded);
 
         // TODO: implement lionel4 !
-        // require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
-        // uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
+        // require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tacticsIds), "incorrect user init data");
+        // uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tacticsIds, dataToChallengeInitStates);
         // return; // TODO: remove
         // if (initPlayerStates.length == 0) // challenger wins
         //     resetUpdater(id);
@@ -84,14 +72,14 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         //     require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
         // uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
-        // uint8[] memory tactics = _updateTacticsToBlockNum(
+        // uint8[] memory tacticsIds = _updateTacticsToBlockNum(
         //     usersInitDataTeamIds,
         //     usersInitDataTactics,
         //     matchdayBlock,
         //     usersAlongDataTeamIds,
         //     usersAlongDataTactics,
         //     usersAlongDataBlocks);
-        // (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
+        // (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tacticsIds);
 
 
 
@@ -128,7 +116,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     function getInitPlayerStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[] memory tactics,
+        uint8[] memory tacticsIds,
         uint256[] memory dataToChallengeInitStates
     )
         public
