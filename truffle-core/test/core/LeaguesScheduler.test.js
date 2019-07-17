@@ -19,8 +19,6 @@ contract('LeaguesScheduler', (accounts) => {
     const tactic442 = 1;
 
     beforeEach(async () => {
-        const teamIds = [1, 2];
-        const tactics = [[4, 4, 3], [4, 4, 3]];
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
