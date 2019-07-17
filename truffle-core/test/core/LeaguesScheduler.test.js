@@ -2,15 +2,15 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-const Engine = artifacts.require('Engine');
-const Leagues = artifacts.require('LeaguesScheduler');
-const Assets = artifacts.require('Assets');
-const PlayerStateLib = artifacts.require('PlayerState');
-
+    const Assets = artifacts.require('Assets');
+    const Leagues = artifacts.require('Leagues');
+    const Engine = artifacts.require('Engine');
+    const State = artifacts.require('LeagueState');
+    
 contract('LeaguesScheduler', (accounts) => {
     let leagues = null;
     let assets = null;
-    let playerStateLib = null;
+    let state = null;
     const initBlock = 1;
     const step = 1;
     const leagueId = 1;
@@ -19,10 +19,10 @@ contract('LeaguesScheduler', (accounts) => {
     const tactic442 = 0;
 
     beforeEach(async () => {
-        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
+        state = await State.new().should.be.fulfilled;
+        assets = await Assets.new(state.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
-        leagues = await Leagues.new().should.be.fulfilled;
+        leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
         await leagues.setAssetsContract(assets.address).should.be.fulfilled;
         await assets.createTeam(name = "Barca", accounts[1]).should.be.fulfilled;
         await assets.createTeam(name = "Mardid", accounts[2]).should.be.fulfilled;
