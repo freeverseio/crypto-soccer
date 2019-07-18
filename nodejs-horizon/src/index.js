@@ -66,9 +66,9 @@ function main() {
     pgPool,
     "public", // PostgreSQL schema to use
     {
-      retryOnInitFail: true,
       disableDefaultMutations: true,
-      dynamicJson: true
+      dynamicJson: true,
+      simpleCollections: "both"
     }
   )
     .then(result => {
