@@ -250,7 +250,7 @@ class LeaguesCommitInVerse():
         self.subVerse                       = None
         self.allLeaguesRoots                = None
         self.allLeaguesRootsOwner           = None
-        self.allLeaguesRootsSuperRoot       = None
+        self.allLeaguesRootsSuperRoots      = None
         # OneLeagueData provided:
         self.posInSubVerse                  = None
         self.dataToChallengeLeague          = None
@@ -258,12 +258,11 @@ class LeaguesCommitInVerse():
         # Common to every update:
         self.lastWriteBlocknum              = blocknum
 
-    def writeAllLeaguesRoots(self, subVerse, allLeaguesRoots, ownerAddr, blocknum):
+    def writeAllLeaguesRoots(self, subVerse, allLeaguesRoots, allLeaguesRootsSuperRoots, ownerAddr, blocknum):
         self.subVerse         = subVerse
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
-        tree = MerkleTree(allLeaguesRoots)
-        self.allLeaguesRootsSuperRoot   = tree.root
+        self.allLeaguesRootsSuperRoots  = allLeaguesRootsSuperRoots
         self.lastWriteBlocknum          = blocknum
 
     def slashAllLeaguesRoots(self, blocknum):
@@ -353,9 +352,9 @@ class Storage(Counter):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert isVerseSettled, "Asking for a settled superRoot of a not-settled verse"
         if verseStatus == UPDT_ALLLGS:
-            return self.verseToLeagueCommits[verse].allLeaguesRootsSuperRoot
+            return self.verseToLeagueCommits[verse].allLeaguesRootsSuperRoots
         if verseStatus == UPDT_SUPER:
-            return self.verseToLeagueCommits[verse].superRoot
+            return self.verseToLeagueCommits[verse].superRoots
         assert False, "We should never be in this verse state"
 
 
@@ -698,6 +697,7 @@ class Storage(Counter):
 
         posInSubVerse = self.verseToLeagueCommits[verse].posInSubVerse
         leagueIdx = self.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
+
         leagueRoot = self.verseToLeagueCommits[verse].allLeaguesRoots[posInSubVerse]
 
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
@@ -927,16 +927,20 @@ class Storage(Counter):
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
 
-    def challengeSuperRoot(self, verse, subVerse, allLeaguesRoots, addr):
+    def challengeSuperRoot(self, verse, subVerse, allLeaguesRoots, allLeaguesRootsSuperRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
         if needsSlash == UPDT_ALLLGS:
             self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
-        tree = MerkleTree(allLeaguesRoots)
-        assert tree.root != self.verseToLeagueCommits[verse].superRoots[subVerse], \
+        assert allLeaguesRootsSuperRoots[subVerse] != self.verseToLeagueCommits[verse].superRoots[subVerse], \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
+
+        tree = MerkleTree(allLeaguesRoots)
+        assert allLeaguesRootsSuperRoots[subVerse] == tree.root, "Provided data for all leagues is inconsistent with itself"
+
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
             subVerse,
             allLeaguesRoots,
+            allLeaguesRootsSuperRoots,
             addr,
             self.currentBlock
         )

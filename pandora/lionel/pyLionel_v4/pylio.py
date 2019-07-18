@@ -277,3 +277,14 @@ def shouldFail(f, msg):
         itFailed = True
     assert itFailed, "We should have failed, but did not"
 
+def createLieSuperRoot(superRoots, allLeaguesRoots, factor):
+    superRootsLie = duplicate(superRoots)
+    allLeaguesRootsLie = duplicate(allLeaguesRoots)
+
+    for s, supers in enumerate(superRootsLie):
+        for l, leagues in enumerate(allLeaguesRootsLie[s]):
+            allLeaguesRootsLie[s][l] *= factor
+        tree = MerkleTree(allLeaguesRootsLie[s])
+        superRootsLie[s] = tree.root
+
+    return superRootsLie, allLeaguesRootsLie
