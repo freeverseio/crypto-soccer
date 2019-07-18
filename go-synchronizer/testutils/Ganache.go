@@ -55,13 +55,7 @@ func NewGanache() *Ganache {
 }
 func (ganache *Ganache) Advance(blockCount int) {
 	for i := 0; i < blockCount; i++ {
-		auth := bind.NewKeyedTransactor(ganache.Owner)
-		_, err := ganache.time.Increase(
-			&bind.TransactOpts{
-				From:   auth.From,
-				Signer: auth.Signer,
-				//GasLimit: uint64(2000000000),
-			})
+		_, err := ganache.time.Increase(bind.NewKeyedTransactor(ganache.Owner))
 		AssertNoErr(err, "Error in Advance()")
 	}
 }
@@ -77,9 +71,7 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 	return privateKey
 }
 func (ganache *Ganache) Public(addr *ecdsa.PrivateKey) common.Address {
-	publicKey := addr.Public()
-	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
-	return crypto.PubkeyToAddress(*publicKeyECDSA)
+	return crypto.PubkeyToAddress(addr.PublicKey)
 }
 func (ganache *Ganache) GetNonce(from *ecdsa.PrivateKey) uint64 {
 	publicKey := from.Public()
@@ -160,13 +152,8 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.deployLeagues(owner)
 }
 func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
-	auth := bind.NewKeyedTransactor(from)
 	_, err := ganache.Assets.CreateTeam(
-		&bind.TransactOpts{
-			From:   auth.From,
-			Signer: auth.Signer,
-			//GasLimit: uint64(2000000000),
-		},
+		bind.NewKeyedTransactor(from),
 		name,
 		ganache.statesAddress)
 	AssertNoErr(err, "Error creating Team ", name)
@@ -213,13 +200,14 @@ func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
 			tactics = append(tactics, [3]uint8{4, 4, 2})
 		}
 	}
-	auth := bind.NewKeyedTransactor(from)
 	tx, err := ganache.Leagues.Create(
-		&bind.TransactOpts{
-			From:   auth.From,
-			Signer: auth.Signer,
-			//GasLimit: uint64(2000000000),
-		}, leagueId, initBlock, step, teamIdsBig, tactics)
+		bind.NewKeyedTransactor(from),
+		leagueId,
+		initBlock,
+		step,
+		teamIdsBig,
+		tactics,
+	)
 	_ = tx
 	AssertNoErr(err)
 }

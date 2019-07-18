@@ -1,7 +1,7 @@
 package process
 
 import (
-	//"fmt"
+	"fmt"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -57,6 +57,10 @@ func TestSyncTeams(t *testing.T) {
 		}
 	}
 
+	fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
+	fmt.Println("alice: ", ganache.Public(alice).Hex())
+	fmt.Println("bob: ", ganache.Public(bob).Hex())
+	fmt.Println("carol: ", ganache.Public(carol).Hex())
 	// tema A
 	if team, err := storage.GetTeam(1); err != nil {
 		t.Fatal(err)
@@ -68,7 +72,8 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	} else if state.Owner != ganache.Public(alice).Hex() {
 		t.Fatalf("Expecting team A to belong to Alice %v : %v", state.Owner, ganache.Public(alice).Hex())
-	}*/
+	}
+	*/
 	// team B
 	if team, err := storage.GetTeam(2); err != nil {
 		t.Fatal(err)
