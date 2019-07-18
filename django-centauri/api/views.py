@@ -143,7 +143,11 @@ def login(request):
         existing_user = AuthUser.objects.get(username=req_data['name'])
         if check_password(req_data['password'], existing_user.password) and existing_user.is_active:
             token, was_created = Token.objects.get_or_create(user=existing_user)
-            response.content = '{"result": "login successful", "token": "' + token.key + '"}'
+            response.content = '{' \
+                               '"result": "login successful", ' \
+                               '"token": "' + token.key + '", ' \
+                               '"public_key": "' + existing_user.profile.public_key + \
+                               '"}'
             response.status_code = 200
             return response
         elif not existing_user.is_active:
