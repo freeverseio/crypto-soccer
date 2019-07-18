@@ -53,6 +53,23 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+  nodejs-horizon:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      - run: 
+          name: Set up truffle-core
+          command: cd truffle-core && npm install
+      - run:
+          name: Compile truffle-core
+          command: cd truffle-core && ./node_modules/.bin/truffle compile
+      - run:
+          name: Setup nodejs-horizon
+          command: cd nodejs-horizon && npm install
+      - run:
+          name: Test nodejs-horizon
+          command: cd nodejs-horizon && npm test
   reactjs-frontend:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -130,6 +147,7 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
+      - nodejs-horizon
       - dockerization:
           filters:
             branches:
