@@ -2,10 +2,10 @@ require('chai')
     .use(require('chai-as-promised'))
     .should();
 
-    const Assets = artifacts.require('Assets');
-    const Leagues = artifacts.require('Leagues');
-    const Engine = artifacts.require('Engine');
-    const State = artifacts.require('LeagueState');
+const Assets = artifacts.require('Assets');
+const Leagues = artifacts.require('Leagues');
+const Engine = artifacts.require('Engine');
+const State = artifacts.require('LeagueState');
     
 contract('LeaguesScheduler', (accounts) => {
     let leagues = null;

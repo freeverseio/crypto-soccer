@@ -235,7 +235,6 @@ contract('IntegrationTest', (accounts) => {
 
         ).should.be.fulfilled;
         
-        console.log("toni")
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
         console.log("challenged");
