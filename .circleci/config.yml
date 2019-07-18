@@ -112,6 +112,9 @@ jobs:
           name: Create Docker Postgres
           command: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
       - run:
+          name: Create Docker Horizon
+          command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
@@ -120,6 +123,9 @@ jobs:
       - run: 
           name: Upload Docker Synchronizer
           command: docker push freeverseio/synchronizer:dev
+      - run: 
+          name: Upload Docker Horizon
+          command: docker push freeverseio/horizon:dev
       - run: 
           name: Upload Docker Postgres
           command: docker push freeverseio/postgres:dev
@@ -157,6 +163,7 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
+            - nodejs-horizon
       - deploy:
           filters:
            branches:
