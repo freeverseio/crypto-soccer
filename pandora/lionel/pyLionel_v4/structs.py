@@ -247,19 +247,19 @@ class LeaguesCommitInVerse():
         self.superRoots                     = pylio.duplicate(superRoots)
         self.superRootOwner                 = ownerAddr
         # AllLeaguesRoots provided:
-        self.allLeaguesSubVerse             = None
+        self.subVerse                       = None
         self.allLeaguesRoots                = None
         self.allLeaguesRootsOwner           = None
         self.allLeaguesRootsSuperRoot       = None
         # OneLeagueData provided:
-        self.leagueIdx                      = None
+        self.posInSubVerse                  = None
         self.dataToChallengeLeague          = None
         self.oneLeagueDataOwner             = None
         # Common to every update:
         self.lastWriteBlocknum              = blocknum
 
     def writeAllLeaguesRoots(self, subVerse, allLeaguesRoots, ownerAddr, blocknum):
-        self.allLeaguesSubVerse         = subVerse
+        self.subVerse         = subVerse
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
         tree = MerkleTree(allLeaguesRoots)
@@ -277,8 +277,8 @@ class LeaguesCommitInVerse():
             self.scores                     = None
             self.oneLeagueDataOwner         = None
 
-    def writeOneLeagueData(self, leagueIdx, dataToChallengeLeague, addr, blocknum):
-        self.leagueIdx                  = leagueIdx
+    def writeOneLeagueData(self, posInSubVerse, dataToChallengeLeague, addr, blocknum):
+        self.posInSubVerse              = posInSubVerse
         self.dataToChallengeLeague      = dataToChallengeLeague
         self.oneLeagueDataOwner         = addr
         self.lastWriteBlocknum          = blocknum
@@ -445,12 +445,15 @@ class Storage(Counter):
     # so it should happen that both things coincide.
 
     def challengeMatchdayStates(self,
-            leagueIdx,
+            verse,
             selectedMatchday,
             dataAtPrevMatchday,
             usersInitData,
             merkleProofDataForMatchday
         ):
+        posInSubVerse = self.verseToLeagueCommits[verse].posInSubVerse
+        leagueIdx = self.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
+
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
         # TODO: re-put isFullyVerified in next line
         # assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
@@ -470,16 +473,15 @@ class Storage(Counter):
         #              and initialize tactics and orders from usersInitData
         # - if day!=0, validate that the entire hash of dataAtPrevMatchday coincides with
         #               the hashes that the updater provided
-        finalVerse = self.leagues[leagueIdx].verseFinal()
         if selectedMatchday == 0:
-            assert pylio.serialHash(dataAtPrevMatchday.skillsAtMatchday) == self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.initSkillsHash, "Incorrect provided: prevMatchdayStates"
+            assert pylio.serialHash(dataAtPrevMatchday.skillsAtMatchday) == self.verseToLeagueCommits[verse].dataToChallengeLeague.initSkillsHash, "Incorrect provided: prevMatchdayStates"
             # initialize tactics and teams as written in league creation:
             assert dataAtPrevMatchday.tacticsAtMatchday == 0, "Incorrect provided: prevMatchdayStates"
             assert dataAtPrevMatchday.teamOrdersAtMatchday == 0, "Incorrect provided: prevMatchdayStates"
             dataAtPrevMatchday.tacticsAtMatchday = usersInitData["tactics"]
             dataAtPrevMatchday.teamOrdersAtMatchday = usersInitData["teamOrders"]
         else:
-            assert self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
+            assert self.verseToLeagueCommits[verse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday-1] == self.prepareOneMatchdayHash(dataAtPrevMatchday),\
                 "Incorrect provided: dataAtPrevMatchday"
 
         actionsAtSelectedMatchday = merkleProofDataForMatchday.leaf[1]
@@ -500,14 +502,14 @@ class Storage(Counter):
 
         dataAtMatchdayHash = self.prepareOneMatchdayHash(dataAtPrevMatchday)
 
-        if not dataAtMatchdayHash == self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday]:
+        if not dataAtMatchdayHash == self.verseToLeagueCommits[verse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday]:
             print("Challenger Wins: skillsAtMatchday provided by updater are invalid")
-            self.verseToLeagueCommits[finalVerse].slashOneLeagueData(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
             return
 
-        if not (scores == self.verseToLeagueCommits[finalVerse].dataToChallengeLeague.scores[selectedMatchday]).all():
+        if not (scores == self.verseToLeagueCommits[verse].dataToChallengeLeague.scores[selectedMatchday]).all():
             print("Challenger Wins: scores provided by updater are invalid")
-            self.verseToLeagueCommits[finalVerse].slashOneLeagueData(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
             return
 
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
@@ -691,8 +693,11 @@ class Storage(Counter):
 
     def challengeInitSkills(self, verse, usersInitData, dataToChallengeInitSkills):
         self.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
-        leagueIdx = self.verseToLeagueCommits[verse].leagueIdx
-        leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
+
+        posInSubVerse = self.verseToLeagueCommits[verse].posInSubVerse
+        leagueIdx = self.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
+        leagueRoot = self.verseToLeagueCommits[verse].allLeaguesRoots[posInSubVerse]
+
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
         assert self.computeUsersInitDataHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
@@ -940,6 +945,15 @@ class Storage(Counter):
     #             return leaguePair
     #     assert False, "league not found in verse!"
 
+    def getPosInSubverse(self, verse, leagueIdx):
+        challengedSubVerse = self.verseToLeagueCommits[verse].subVerse
+        nLeagues, nSubVerses, leagueIdxsInVerse = self.getSubVerseData(verse)
+        return self.getLeaguesInSubVerse(leagueIdxsInVerse, challengedSubVerse).index(leagueIdx)
+
+    def getLeagueIdxFromPosInSubverse(self, verse, posInSubVerse):
+        challengedSubVerse = self.verseToLeagueCommits[verse].subVerse
+        return self.verseToFinishingLeagueIdxs[verse][challengedSubVerse * SUPERROOTS_PER_VERSE + posInSubVerse]
+
     def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
         for leaguePair in self.verseToLeagueCommits[verse].allLeaguesRoots:
             if leaguePair[0] == leagueIdx:
@@ -953,14 +967,14 @@ class Storage(Counter):
                 return True
         return False
 
-    def challengeAllLeaguesRoots(self, verse, leagueIdx, dataToChallengeLeague, addr):
+    def challengeAllLeaguesRoots(self, verse, posInSubVerse, dataToChallengeLeague, addr):
         self.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-        leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
+        leagueRoot = self.verseToLeagueCommits[verse].allLeaguesRoots[posInSubVerse]
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(dataToChallengeLeague) != leagueRoot, \
             "Your data coincides with the updater. Nothing to challenge."
         self.verseToLeagueCommits[verse].writeOneLeagueData(
-            leagueIdx,
+            posInSubVerse,
             dataToChallengeLeague,
             addr,
             self.currentBlock
@@ -983,6 +997,23 @@ class Storage(Counter):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         return isVerseSettled
 
+    def getLeaguesInSubVerse(self, leagueIdxsInVerse, subVerse):
+        firstLeague = subVerse * SUPERROOTS_PER_VERSE
+        lastLeague = (subVerse + 1) * SUPERROOTS_PER_VERSE - 1
+        lastLeague = min(len(leagueIdxsInVerse), lastLeague - 1)
+        return leagueIdxsInVerse[firstLeague:lastLeague]
+
+    def getSubVerseData(self, verse):
+        leagueIdxsInVerse = self.getLeaguesFinishingInVerse(verse)
+        nLeagues = len(leagueIdxsInVerse)
+        nSubVerses = math.ceil(nLeagues/SUPERROOTS_PER_VERSE)
+        return nLeagues, nSubVerses, leagueIdxsInVerse
+
+    def getLeagueSubVerse(self, verse, leagueIdx):
+        posInVerse = self.getLeaguePosInVerse(verse, leagueIdx)
+        subVerse = math.floor(posInVerse / SUPERROOTS_PER_VERSE)
+        posInSubVerse = posInVerse - subVerse * SUPERROOTS_PER_VERSE
+        return subVerse, posInSubVerse
 
 
     # ------------------------------------------------------------------------
@@ -1268,21 +1299,20 @@ class Storage(Counter):
 
             # ----- prevLeague root in verse superRoot ------
             verse = self.leagues[prevLeagueIdx].verseFinal()
-            superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(verse)
-
-            treeAllLeagues = MerkleTree(allLeaguesRoots)
-            leaguePosInVerse = self.getLeaguePosInVerse(verse, prevLeagueIdx)
+            subVerse, posInSubVerse = self.getLeagueSubVerse(verse, prevLeagueIdx)
+            superRoots, allLeaguesRoots = self.computeLeagueHashesForVerse(verse)
+            treeAllLeagues = MerkleTree(allLeaguesRoots[subVerse])
 
             merkleProofAllLeagues = treeAllLeagues.prepareProofForLeaf(
                 [prevLeagueIdx, treeLeague.root],
-                leaguePosInVerse
+                posInSubVerse
             )
 
             # triple check:
-            assert treeAllLeagues.root == superRoot == self.verseToLeagueCommits[verse].superRoot
+            assert treeAllLeagues.root == superRoots[subVerse] == self.verseToLeagueCommits[verse].superRoots[subVerse]
 
             assert pylio.verifyMerkleProof(
-                self.verseToLeagueCommits[verse].superRoot,
+                self.verseToLeagueCommits[verse].superRoots[subVerse],
                 merkleProofAllLeagues,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
@@ -1392,19 +1422,6 @@ class Storage(Counter):
             self.leagues[leagueIdx].dataToChallengeLeague
         )
 
-    def getLeaguesInSubVerse(self, leagueIdxsInVerse, subVerse):
-        self.assertIsClient()
-        firstLeague = subVerse * SUPERROOTS_PER_VERSE
-        lastLeague = (subVerse + 1) * SUPERROOTS_PER_VERSE - 1
-        lastLeague = min(len(leagueIdxsInVerse), lastLeague - 1)
-        return leagueIdxsInVerse[firstLeague:lastLeague]
-
-    def getSubVerseData(self, verse):
-        self.assertIsClient()
-        leagueIdxsInVerse = self.getLeaguesFinishingInVerse(verse)
-        nLeagues = len(leagueIdxsInVerse)
-        nSubVerses = math.ceil(nLeagues/SUPERROOTS_PER_VERSE)
-        return nLeagues, nSubVerses, leagueIdxsInVerse
 
     def computeLeagueHashesForVerse(self, verse):
         self.assertIsClient()

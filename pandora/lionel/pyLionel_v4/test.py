@@ -47,7 +47,7 @@ def finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, doExchanges):
                     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
                     ST.challengeAllLeaguesRoots(
                         verse,
-                        leagueIdx,
+                        ST.getPosInSubverse(verse, leagueIdx),
                         dataToChallengeLeague,
                         ADDR3
                     )
@@ -83,9 +83,10 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                     print("challenging league... superRoot", leagueIdx)
                     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
                     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-                    for leagueRoot in allLeaguesRootsLie:
-                        leagueRoot[1] += 1
-                    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+                    posInSubverse = 1 # toni
+                    for leagueRoot in allLeaguesRootsLie[subVerse]:
+                        leagueRoot[subVerse][posInSubVerse] += 1
+                    ST.challengeSuperRoot(verse, allLeaguesRootsLie[subVerse], ADDR2)
                     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
                 elif verseStatus == UPDT_ALLLGS:
                     if leagueIdx in leaguesTestedAtLevel3:
@@ -93,7 +94,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                         dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
                         ST.challengeAllLeaguesRoots(
                             verse,
-                            leagueIdx,
+                            ST.getPosInSubverse(verse, leagueIdx),
                             dataToChallengeLeague,
                             ADDR3
                         )
@@ -106,7 +107,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                         dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
                         ST.challengeAllLeaguesRoots(
                             verse,
-                            leagueIdx,
+                            ST.getPosInSubverse(verse, leagueIdx),
                             dataToChallengeLeagueLie,
                             ADDR3
                         )
@@ -273,21 +274,17 @@ def test2():
     # Try to challenge by providing a correct All-leagues-roots... should fail
     superRoots, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     ST_CLIENT.getSubVerseData(verse)
-    subverse = 0
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subverse, allLeaguesRoots[subverse], ADDR2), \
+    subVerse = 0
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, allLeaguesRoots[subVerse], ADDR2), \
         "You were able to challenge a superroot by providing compatible allLeaguesRoots")
 
     # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
+    posInSubVerse = 0
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-    allLeaguesRootsLie[subverse] *= 2
-    ST.challengeSuperRoot(verse, subverse, allLeaguesRootsLie[subverse], ADDR2)
+    allLeaguesRootsLie[subVerse][posInSubVerse] *= 2
+    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], ADDR2)
 
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \
-                     "A claim that a league should not be was incorrectly successful")
-    ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, MISSING),\
-                     "A league should not be there, but you couldnt prove it")
 
     # A Challenger provides a lie at matchday 0
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
@@ -296,7 +293,7 @@ def test2():
 
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
         ADDR3
     )
@@ -311,7 +308,7 @@ def test2():
 
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
         ADDR3
     )
@@ -327,7 +324,7 @@ def test2():
 
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
         ADDR3
     )
@@ -342,7 +339,7 @@ def test2():
     # A Challenger provides the truth
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
         ADDR3
     )
@@ -368,12 +365,12 @@ def test2():
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_ALLLGS, "We should be able to slash AllLeagues, but not detected"
-    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], ADDR2)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
         ADDR3
     )
@@ -409,7 +406,7 @@ def test2():
     assert ST.verseToLeagueCommits[verse].superRoot != superRoot, "Updater should have lied in superroot, but didnt"
 
     # Submit a challenge and check its time evolution after waiting....
-    ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2)
+    ST.challengeSuperRoot(verse, allLeaguesRoots[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
@@ -460,8 +457,8 @@ def test2():
     # Try to challenge by providing a false ALL-LEAGUES
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-    allLeaguesRootsLie[0][1] += 1
-    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+    allLeaguesRootsLie[subVerse][posInSubVerse] += 1
+    ST.challengeSuperRoot(verse, allLeaguesRootsLie[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
     # Try to challenge by providing a false ONE-LEAGUE...
@@ -471,7 +468,7 @@ def test2():
 
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
         ADDR3
     )
@@ -488,7 +485,7 @@ def test2():
     # We now successfully challenge the false ALL-LEAGUES
     ST.challengeAllLeaguesRoots(
         verse,
-        leagueIdx,
+        ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
         ADDR3
     )
