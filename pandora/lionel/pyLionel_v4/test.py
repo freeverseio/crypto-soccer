@@ -86,7 +86,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                     posInSubverse = 1 # toni
                     for leagueRoot in allLeaguesRootsLie[subVerse]:
                         leagueRoot[subVerse][posInSubVerse] += 1
-                    ST.challengeSuperRoot(verse, allLeaguesRootsLie[subVerse], ADDR2)
+                    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], ADDR2)
                     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
                 elif verseStatus == UPDT_ALLLGS:
                     if leagueIdx in leaguesTestedAtLevel3:
@@ -402,11 +402,11 @@ def test2():
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
 
     # Check that a lie can be caught by comparing with local computation
-    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    assert ST.verseToLeagueCommits[verse].superRoot != superRoot, "Updater should have lied in superroot, but didnt"
+    superRoots, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    assert not pylio.areEqualStructs(ST.verseToLeagueCommits[verse].superRoots, superRoots), "Updater should have lied in superroot, but didnt"
 
     # Submit a challenge and check its time evolution after waiting....
-    ST.challengeSuperRoot(verse, allLeaguesRoots[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, allLeaguesRoots[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
@@ -458,7 +458,7 @@ def test2():
     superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
     allLeaguesRootsLie[subVerse][posInSubVerse] += 1
-    ST.challengeSuperRoot(verse, allLeaguesRootsLie[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
 
     # Try to challenge by providing a false ONE-LEAGUE...
