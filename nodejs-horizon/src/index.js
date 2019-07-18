@@ -1,4 +1,6 @@
-const { ApolloServer, PubSub } = require('apollo-server');
+const { ApolloServer, makeExecutableSchema, mergeSchemas } = require('apollo-server');
+const { makeSchemaAndPlugin } = require("postgraphile-apollo-server");
+const pg = require("pg");
 const typeDefs = require('./schema');
 const Resolvers = require('./resolvers');
 const Web3 = require('web3');
@@ -47,21 +49,68 @@ const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress)
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
 
-const resolvers = new Resolvers({
-  states,
-  assets,
-  leagues,
-  from: address
+const pgPool = new pg.Pool({
+  connectionString: 'postgres://freeverse:freeverse@localhost:5432/cryptosoccer'
 });
 
-// const pubsub = new PubSub();
-const server = new ApolloServer({ typeDefs, resolvers });
+makeSchemaAndPlugin(
+  pgPool,
+  "public", // PostgreSQL schema to use
+  {
+    retryOnInitFail: true,
+    disableDefaultMutations: true,
+    dynamicJson: true
+  }
+)
+  .then(result => {
+    const { schema, plugin } = result;
 
-// This `listen` method launches a web-server.  Existing apps
-// can utilize middleware options, which we'll discuss later.
-server.listen().then(({ url }) => {
-  console.log(`🚀  Server ready at ${url}`);
-});
+    const resolvers = new Resolvers({
+      states,
+      assets,
+      leagues,
+      from: address
+    });
+
+    const mutations = makeExecutableSchema({
+      typeDefs: typeDefs,
+      resolvers: resolvers
+    });
+    const mergedSchema = mergeSchemas({
+      schemas: [schema, mutations]
+    });
+
+    console.log(mergedSchema);
+
+    const server = new ApolloServer({
+      schema: mergedSchema,
+      // plugins: [plugin]
+    });
+
+    server.listen().then(({ url }) => {
+      console.log(`🚀  Server ready at ${url}`);
+    });
+  })
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
+
+// const resolvers = new Resolvers({
+//   states,
+//   assets,
+//   leagues,
+//   from: address
+// });
+
+// // const pubsub = new PubSub();
+// const server = new ApolloServer({ typeDefs, resolvers });
+
+// // This `listen` method launches a web-server.  Existing apps
+// // can utilize middleware options, which we'll discuss later.
+// server.listen().then(({ url }) => {
+//   console.log(`🚀  Server ready at ${url}`);
+// });
 
 /*
 --------------------------------
