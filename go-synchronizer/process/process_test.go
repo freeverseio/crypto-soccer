@@ -87,7 +87,7 @@ func TestSyncTeams(t *testing.T) {
 		for i := 1; i <= 33; i++ {
 			if result, err := storage.GetPlayer(uint64(i)); err != nil {
 				t.Fatal(err)
-			} else if result.State == "0" || result.Id != uint64(i) {
+			} else if result.State.TeamId == uint64(0) || result.Id != uint64(i) {
 				t.Fatalf("Expecting player %v state to be non 0 actual %v", i, result)
 			}
 		}

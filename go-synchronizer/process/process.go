@@ -129,7 +129,19 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
-		} else if err := p.db.TeamAdd(&storage.Team{event.Id.Uint64(), name}); err != nil {
+		} else if err := p.db.TeamAdd(storage.Team{
+			event.Id.Uint64(),
+			name,
+			"0", // TODO: creationTimeStamp
+			storage.TeamState{
+				BlockNumber:          "0",     // TODO: string
+				Owner:                "owner", // TODO: string
+				CurrentLeagueId:      0,       // TODO: uint64
+				PosInCurrentLeagueId: 0,       // TODO: uint64
+				PrevLeagueId:         0,       // TODO: uint64
+				PosInPrevLeagueId:    0,       // TODO: uint64
+			},
+		}); err != nil {
 			return err
 		}
 		if err := p.storeVirtualPlayers(event.Id); err != nil {
@@ -165,21 +177,19 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 				return err
 			} else {
 				player := storage.Player{
-					Id:        id.Uint64(),
-					TeamId:    teamId.Uint64(),
-					State:     state.String(),
-					Defence:   uint64(skills[0]),
-					Speed:     uint64(skills[1]),
-					Pass:      uint64(skills[2]),
-					Shoot:     uint64(skills[3]),
-					Endurance: uint64(skills[4]),
+					Id:                     id.Uint64(),
+					MonthOfBirthInUnixTime: "0", // TODO
+					State: storage.PlayerState{
+						TeamId:    teamId.Uint64(),
+						State:     state.String(),
+						Defence:   uint64(skills[0]),
+						Speed:     uint64(skills[1]),
+						Pass:      uint64(skills[2]),
+						Shoot:     uint64(skills[3]),
+						Endurance: uint64(skills[4]),
+					},
 				}
-				p.db.PlayerAdd(&player)
-				if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
-					log.Fatal(err)
-				} else if stored.State != state.String() {
-					log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
-				}
+				p.db.PlayerAdd(player)
 			}
 		}
 	}
