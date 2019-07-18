@@ -39,7 +39,7 @@ describe('assets resolvers', () => {
         });
 
         it('createLeague', async () => {
-            const result = await resolvers.Mutation.createLeague(_, { initBlock: 10, step: 20, teamIds: [1, 2], tactics: [[4, 4, 2], [4, 4, 2]] }).should.be.fulfilled;
+            const result = await resolvers.Mutation.createLeague(_, { nTeams: 4, initBlock: 10, step: 20 }).should.be.fulfilled;
             result.should.be.equal(true);
         });
     });

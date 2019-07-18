@@ -14,22 +14,16 @@ function Resolvers({
       await assets.methods.createTeam(name, owner).send({ from: from, gas });
       return true;
     },
-    createLeague: async (_, { initBlock, step, teamIds, tactics }) => {
-      const count = await leagues.methods.leaguesCount().call();
-      const id = count;
+    createLeague: async (_, { nTeams, initBlock, step }) => {
       const gas = await leagues.methods.create(
-        id,
+        nTeams,
         initBlock,
-        step,
-        teamIds,
-        tactics
+        step
       ).estimateGas();
       await leagues.methods.create(
-        id,
+        nTeams,
         initBlock,
-        step,
-        teamIds,
-        tactics
+        step
       ).send({ from, gas });
       return true;
     },

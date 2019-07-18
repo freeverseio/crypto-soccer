@@ -8,10 +8,9 @@ const typeDefs = gql`
   type Mutation {
     createTeam(name: String!, owner: String!): Boolean,
     createLeague(
+      nTeams: Int!
       initBlock: Int!
       step: Int!
-      teamIds: [ID!]!
-      tactics: [[Int!]!]
     ): Boolean
   }`;
 
