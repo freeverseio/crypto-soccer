@@ -225,10 +225,10 @@ def flatten(statesPerTeam):
 # It uses the CLIENT data to submit a challenge to the BC
 def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT):
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
-    leagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
-    leagueRoot = ST.getLeagueRootFromVerseCommit(verse, leagueIdx)
+    posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
+    leagueRoot = ST.verseToLeagueCommits[verse].allLeaguesRoots[posInSubVerse]
     assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
-
+    leagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
     # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
@@ -241,7 +241,7 @@ def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT):
 
     # ...finally, it does the challenge. If successful, it will reset() the leauge update
     ST.challengeMatchdayStates(
-        leagueIdx,
+        verse,
         selectedMatchday,
         dataAtPrevMatchday,
         duplicate(ST_CLIENT.leagues[leagueIdx].usersInitData),
