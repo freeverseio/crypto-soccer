@@ -317,8 +317,9 @@ class Storage(Counter):
         self.VerseActionsCommits = [VerseActionsCommit()]
         self.verseToLeagueCommits = {}
 
+        self.verseToFinishingLeagueIdxs = {}
+
         if isClient:
-            self.leaguesFinishingInVerse = {}
             self.forceSuperRootLie = False
 
     def assertIsClient(self):
@@ -773,6 +774,13 @@ class Storage(Counter):
                 return True
         return False
 
+
+    def addLeagueToVerse(self, leagueIdx, verse):
+        if verse in self.verseToFinishingLeagueIdxs:
+            self.verseToFinishingLeagueIdxs[verse].append(leagueIdx)
+        else:
+            self.verseToFinishingLeagueIdxs[verse] = [leagueIdx]
+
     # Creates the league in the BC, storing only the hash of usersInitData
     # It signs teams in League, which allows the BC to now that they're busy
     # without 'seeing' the pre-hash usersInitData
@@ -783,6 +791,7 @@ class Storage(Counter):
         assert nTeams % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
         self.leagues.append(League(verseInit, verseStep, nTeams))
+        self.addLeagueToVerse(leagueIdx, self.leagues[leagueIdx].verseFinal())
         self.signTeamsInLeague(usersInitData, leagueIdx)
         return leagueIdx
 
@@ -1079,9 +1088,9 @@ class Storage(Counter):
         leagueIdx = len(self.leagues)
         self.leagues.append(LeagueClient(verseInit, verseStep, usersInitData))
         self.signTeamsInLeague(usersInitData, leagueIdx)
+        self.addLeagueToVerse(leagueIdx, self.leagues[leagueIdx].verseFinal())
         self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
         self.leagues[leagueIdx].writeDataToChallengeInitSkills(self.prepareDataToChallengeLeagueInitSkills(leagueIdx))
-        self.appendToLeaguesFinishingInVerse(self.leagues[leagueIdx].verseFinal(), leagueIdx)
         return leagueIdx
 
     def addAccumulator(self):
@@ -1403,12 +1412,6 @@ class Storage(Counter):
                 initPlayerStates[teamPosInLeague][shirtNum] = playerState
         return initPlayerStates
 
-    def appendToLeaguesFinishingInVerse(self, verse, leagueIdx):
-        if not verse in self.leaguesFinishingInVerse:
-            self.leaguesFinishingInVerse[verse] = [leagueIdx]
-        else:
-            self.leaguesFinishingInVerse[verse].append(leagueIdx)
-
     def getLeaguePosInVerse(self, verse, leagueIdx):
         self.assertIsClient()
         leaguesFinishingInVerse = self.getLeaguesFinishingInVerse(verse)
@@ -1418,11 +1421,10 @@ class Storage(Counter):
         assert False, "league not found in verse!"
 
     def getLeaguesFinishingInVerse(self, verse):
-        self.assertIsClient()
-        if not verse in self.leaguesFinishingInVerse:
+        if not verse in self.verseToFinishingLeagueIdxs:
             return []
         else:
-            return self.leaguesFinishingInVerse[verse]
+            return self.verseToFinishingLeagueIdxs[verse]
 
     def computeLeagueRootFromLeagueIdx(self, leagueIdx):
         return self.computeLeagueRoot(
