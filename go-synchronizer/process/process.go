@@ -5,6 +5,7 @@ import (
 	//"fmt"
 	"math"
 	"math/big"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -129,17 +130,19 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
+		} else if owner, err := p.assets.GetTeamOwner(nil, name); err != nil {
+			return err
 		} else if err := p.db.TeamAdd(storage.Team{
 			event.Id.Uint64(),
 			name,
 			"0", // TODO: creationTimeStamp
 			storage.TeamState{
-				BlockNumber:          "0",     // TODO: string
-				Owner:                "owner", // TODO: string
-				CurrentLeagueId:      0,       // TODO: uint64
-				PosInCurrentLeagueId: 0,       // TODO: uint64
-				PrevLeagueId:         0,       // TODO: uint64
-				PosInPrevLeagueId:    0,       // TODO: uint64
+				BlockNumber:          strconv.FormatUint(event.Raw.BlockNumber, 10),
+				Owner:                owner.Hex(),
+				CurrentLeagueId:      0, // TODO: uint64
+				PosInCurrentLeagueId: 0, // TODO: uint64
+				PrevLeagueId:         0, // TODO: uint64
+				PosInPrevLeagueId:    0, // TODO: uint64
 			},
 		}); err != nil {
 			return err

@@ -57,27 +57,42 @@ func TestSyncTeams(t *testing.T) {
 		}
 	}
 
+	// tema A
 	if team, err := storage.GetTeam(1); err != nil {
 		t.Fatal(err)
 	} else if team.Id != 1 {
 		t.Fatalf("Expected 1 result %v", team.Id)
 	} else if team.Name != "A" {
 		t.Fatalf("Expected A result %v", team.Name)
-	}
+	} /* else if state, err := storage.GetTeamState(1); err != nil {
+		t.Fatal(err)
+	} else if state.Owner != ganache.Public(alice).Hex() {
+		t.Fatalf("Expecting team A to belong to Alice %v : %v", state.Owner, ganache.Public(alice).Hex())
+	}*/
+	// team B
 	if team, err := storage.GetTeam(2); err != nil {
 		t.Fatal(err)
 	} else if team.Id != 2 {
 		t.Fatalf("Expected 2 result %v", team.Id)
 	} else if team.Name != "B" {
 		t.Fatalf("Expected B result %v", team.Name)
-	}
+	} /* else if state, err := storage.GetTeamState(2); err != nil {
+		t.Fatal(err)
+	} else if state.Owner != ganache.Public(bob).Hex() {
+		t.Fatalf("Expecting team B to belong to Bob %v : %v", state.Owner, ganache.Public(bob).Hex())
+	}*/
+	// team C
 	if team, err := storage.GetTeam(3); err != nil {
 		t.Fatal(err)
 	} else if team.Id != 3 {
 		t.Fatalf("Expected 3 result %v", team.Id)
 	} else if team.Name != "C" {
 		t.Fatalf("Expected C result %v", team.Name)
-	}
+	} /* else if state, err := storage.GetTeamState(3); err != nil {
+		t.Fatal(err)
+	} else if state.Owner != ganache.Public(carol).Hex() {
+		t.Fatalf("Expecting team A to belong to Carol %v : %v", state.Owner, ganache.Public(carol).Hex())
+	}*/
 
 	if count, err := storage.PlayerCount(); err != nil {
 		t.Fatal(err)

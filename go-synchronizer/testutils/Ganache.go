@@ -76,6 +76,11 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 
 	return privateKey
 }
+func (ganache *Ganache) Public(addr *ecdsa.PrivateKey) common.Address {
+	publicKey := addr.Public()
+	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
+	return crypto.PubkeyToAddress(*publicKeyECDSA)
+}
 func (ganache *Ganache) GetNonce(from *ecdsa.PrivateKey) uint64 {
 	publicKey := from.Public()
 	publicKeyECDSA, _ := publicKey.(*ecdsa.PublicKey)
