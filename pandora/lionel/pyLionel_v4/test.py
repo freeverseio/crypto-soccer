@@ -269,18 +269,18 @@ def test2():
     # First check that the status is correct
     ST.assertCanChallengeStatus(verse, UPDT_SUPER)
     # Try to challenge an All-leagues-roots before any was provided... should fail:
-    pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, leagueIdx, MISSING), \
-                    "You challenged all league roots, not yet provided before")
 
     # Try to challenge by providing a correct All-leagues-roots... should fail
-    superRoot, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, allLeaguesRoots, ADDR2), \
+    superRoots, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    ST_CLIENT.getSubVerseData(verse)
+    subverse = 0
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subverse, allLeaguesRoots[subverse], ADDR2), \
         "You were able to challenge a superroot by providing compatible allLeaguesRoots")
 
     # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
     allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-    allLeaguesRootsLie[0][1] += 1
-    ST.challengeSuperRoot(verse, allLeaguesRootsLie, ADDR2)
+    allLeaguesRootsLie[subverse] *= 2
+    ST.challengeSuperRoot(verse, subverse, allLeaguesRootsLie[subverse], ADDR2)
 
     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
     pylio.shouldFail(lambda x: ST.challengeAllLeaguesRootsLeagueIdxs(verse, 2, SHOULDNOTBE), \

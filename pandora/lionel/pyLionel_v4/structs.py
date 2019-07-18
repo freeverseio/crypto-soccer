@@ -242,11 +242,12 @@ class MerkleTree():
         return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
 
 class LeaguesCommitInVerse():
-    def __init__(self, superRoot, ownerAddr, blocknum):
+    def __init__(self, superRoots, ownerAddr, blocknum):
         # SuperRoot provided:
-        self.superRoot                      = pylio.duplicate(superRoot)
+        self.superRoots                     = pylio.duplicate(superRoots)
         self.superRootOwner                 = ownerAddr
         # AllLeaguesRoots provided:
+        self.allLeaguesSubVerse             = None
         self.allLeaguesRoots                = None
         self.allLeaguesRootsOwner           = None
         self.allLeaguesRootsSuperRoot       = None
@@ -257,8 +258,8 @@ class LeaguesCommitInVerse():
         # Common to every update:
         self.lastWriteBlocknum              = blocknum
 
-    # allLeaguesRoots = [ [leagueIdx, leagueRoot], [ , ],  ... ]
-    def writeAllLeaguesRoots(self, allLeaguesRoots, ownerAddr, blocknum):
+    def writeAllLeaguesRoots(self, subVerse, allLeaguesRoots, ownerAddr, blocknum):
+        self.allLeaguesSubVerse         = subVerse
         self.allLeaguesRoots            = allLeaguesRoots
         self.allLeaguesRootsOwner       = ownerAddr
         tree = MerkleTree(allLeaguesRoots)
@@ -409,9 +410,9 @@ class Storage(Counter):
             self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
         assert False, "Unknown slash requirement"
 
-    def updateLeaguesSuperRoot(self, verse, superRoot, addr):
+    def updateLeaguesSuperRoots(self, verse, superRoots, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
-        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoot, addr,self.currentBlock)
+        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoots, addr,self.currentBlock)
 
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
@@ -918,21 +919,16 @@ class Storage(Counter):
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
-    def assertLeaguesSorted(self, allLeaguesRoots):
-        prevIdx = -1
-        for leaguePair in allLeaguesRoots:
-            assert leaguePair[0] > prevIdx, "allLeaguesRoots not sorted"
-            prevIdx = leaguePair[0]
 
-    def challengeSuperRoot(self, verse, allLeaguesRoots, addr):
+    def challengeSuperRoot(self, verse, subVerse, allLeaguesRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPER)
         if needsSlash == UPDT_ALLLGS:
             self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
-        self.assertLeaguesSorted(allLeaguesRoots)
         tree = MerkleTree(allLeaguesRoots)
-        assert tree.root != self.verseToLeagueCommits[verse].superRoot, \
+        assert tree.root != self.verseToLeagueCommits[verse].superRoots[subVerse], \
             "The allLeaguesRoots provided lead to the same superRoot as already provided by updated"
         self.verseToLeagueCommits[verse].writeAllLeaguesRoots(
+            subVerse,
             allLeaguesRoots,
             addr,
             self.currentBlock
@@ -956,41 +952,6 @@ class Storage(Counter):
             if leaguePair[0] == leagueIdx:
                 return True
         return False
-
-    def challengeAllLeaguesRootsLeagueMissing(self, verse, leagueIdx):
-        # the order of these asserts matters
-        assert leagueIdx < len(self.leagues), "league does not exist"
-        assert self.hasLeagueBeenUpdated(leagueIdx), "league has not been updated yet!"
-        assert self.leagues[leagueIdx].verseFinal() == verse, "the league you declare has no reason to be in this verse"
-        assert not self.isLeagueIdxInVerseCommit(verse, leagueIdx), "league is already in commit, nothing to challenge"
-        print("Successfully shown that league was missing in commit")
-
-    def challengeAllLeaguesRootsLeagueExceeding(self, verse, leagueIdx):
-        # the order of these asserts matters
-        assert self.isLeagueIdxInVerseCommit(verse, leagueIdx), "league is not in commit, nothing to challenge"
-        if leagueIdx >= len(self.leagues):
-            print("league does not exist")
-            return
-        if not self.hasLeagueFinished(leagueIdx):
-            print("league has not finished")
-            return
-        if self.leagues[leagueIdx].verseFinal() != verse:
-            print("league final verse is not this one")
-            return
-        print("Successfully shown that league should not be in commit")
-
-    # typeOfIssue =  0, if missing, 0 if should not be there
-    def challengeAllLeaguesRootsLeagueIdxs(self, verse, leagueIdx, typeOfIssue):
-        verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
-        assert not isVerseSettled, "League already settled, cannot challenge"
-        assert (verseStatus == UPDT_ALLLGS) or (verseStatus == UPDT_ONELEAGUE), "verse has not been updated yet!"
-        assert typeOfIssue == 0 or typeOfIssue == 1, "only 0 or 1 allowed"
-        if typeOfIssue == MISSING:
-            self.challengeAllLeaguesRootsLeagueMissing(verse, leagueIdx)
-        else:
-            self.challengeAllLeaguesRootsLeagueExceeding(verse, leagueIdx)
-        self.verseToLeagueCommits[verse].slashAllLeaguesRoots(self.currentBlock)
-        return True
 
     def challengeAllLeaguesRoots(self, verse, leagueIdx, dataToChallengeLeague, addr):
         self.assertCanChallengeStatus(verse, UPDT_ALLLGS)
@@ -1431,19 +1392,38 @@ class Storage(Counter):
             self.leagues[leagueIdx].dataToChallengeLeague
         )
 
+    def getLeaguesInSubVerse(self, leagueIdxsInVerse, subVerse):
+        self.assertIsClient()
+        firstLeague = subVerse * SUPERROOTS_PER_VERSE
+        lastLeague = (subVerse + 1) * SUPERROOTS_PER_VERSE - 1
+        lastLeague = min(len(leagueIdxsInVerse), lastLeague - 1)
+        return leagueIdxsInVerse[firstLeague:lastLeague]
+
+    def getSubVerseData(self, verse):
+        self.assertIsClient()
+        leagueIdxsInVerse = self.getLeaguesFinishingInVerse(verse)
+        nLeagues = len(leagueIdxsInVerse)
+        nSubVerses = math.ceil(nLeagues/SUPERROOTS_PER_VERSE)
+        return nLeagues, nSubVerses, leagueIdxsInVerse
+
     def computeLeagueHashesForVerse(self, verse):
         self.assertIsClient()
-        leagueIdxsForThisCommit = self.getLeaguesFinishingInVerse(verse)
-        if len(leagueIdxsForThisCommit) == 0:
-            return 0, []
+        nLeagues, nSubVerses, leagueIdxsInVerse = self.getSubVerseData(verse)
+        superRoots = []
         allLeaguesRoots = []
-        for leagueIdx in leagueIdxsForThisCommit:
-            allLeaguesRoots.append(
-                [
-                    leagueIdx,
-                    self.computeLeagueRootFromLeagueIdx(leagueIdx)
-                ]
-            )
+
+        for subVerse in range(nSubVerses):
+            leagueIdxsInSubVerse = self.getLeaguesInSubVerse(leagueIdxsInVerse, subVerse)
+            thisSuperRoot, thisAllLeaguesRoots = self.computeHashesForSubverse(leagueIdxsInSubVerse)
+            superRoots.append(thisSuperRoot)
+            allLeaguesRoots.append(thisAllLeaguesRoots)
+        return superRoots, allLeaguesRoots
+
+
+    def computeHashesForSubverse(self,leagueIdxsInVerse):
+        allLeaguesRoots = []
+        for leagueIdx in leagueIdxsInVerse:
+            allLeaguesRoots.append(self.computeLeagueRootFromLeagueIdx(leagueIdx))
         tree = MerkleTree(allLeaguesRoots)
         superRoot = tree.root
         return superRoot, allLeaguesRoots
@@ -1461,10 +1441,11 @@ class Storage(Counter):
         leagueIdxsForThisCommit = self.updateAllLeaguesForVerseInClient(self.currentVerse)
         if len(leagueIdxsForThisCommit) == 0:
             return
-        superRoot, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
-        self.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
+        superRoots, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
+        self.updateLeaguesSuperRoots(self.currentVerse, superRoots, ADDR1)
         # only lie (if forced) in the BC, not locally
         if self.forceSuperRootLie:
-            superRoot *= 2
-        ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
+            for superRoot in superRoots:
+                superRoot *= 2
+        ST.updateLeaguesSuperRoots(self.currentVerse, superRoots, ADDR1)
 
