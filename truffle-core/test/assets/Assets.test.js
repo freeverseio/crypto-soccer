@@ -345,4 +345,9 @@ contract('Assets', (accounts) => {
         currentHistory.prevLeagueId.should.be.bignumber.equal('0');
         currentHistory.posInPrevLeague.should.be.bignumber.equal('0');
     });
+
+    it('sign team to league twice should fail', async () => {
+        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
+        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.rejected;
+    });
 });

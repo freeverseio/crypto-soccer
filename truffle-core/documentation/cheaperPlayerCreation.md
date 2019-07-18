@@ -170,7 +170,7 @@ TODOs:
 - update scaling2 now that we don't have playerNames!!!! no mapping....
 - structs, logica become updater/challenger, freeze while participating....
 - refactoring playGame 'in a txt file' now that it will use data from outside.
-- introduce tactics (442) between games (see scaling.md)
+- introduce tacticsIds (442) between games (see scaling.md)
 - API for: think about evolvePlayer or evolveTeam
 	- when playing a game
 	- when time passes:
