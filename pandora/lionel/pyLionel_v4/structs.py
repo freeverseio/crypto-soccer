@@ -349,7 +349,7 @@ class Storage(Counter):
         return (self.currentBlock - self.verseToLeagueCommits[verse].lastWriteBlocknum) > nPeriods*CHALLENGING_PERIOD_BLKS
 
 
-    def getVerseSettledSuperRoot(self, verse):
+    def getVerseSettledSuperRoots(self, verse):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert isVerseSettled, "Asking for a settled superRoot of a not-settled verse"
         if verseStatus == UPDT_ALLLGS:
@@ -663,9 +663,11 @@ class Storage(Counter):
             #   => leads to leagueRoot which is included in the provided allLeagueRoots
             #   => which leads to a superRoot which matchs the one provided in the verse update
             leagueFinalVerse = self.leagues[prevLeagueIdx].verseFinal()
-            commitSuperRoot = self.getVerseSettledSuperRoot(leagueFinalVerse)
+            commitSuperRoots = self.getVerseSettledSuperRoots(leagueFinalVerse)
+            subVerse, posInSubVerse = self.getLeagueSubVerse(leagueFinalVerse, prevLeagueIdx)
+
             if not pylio.verifyMerkleProof(
-                commitSuperRoot,
+                commitSuperRoots[subVerse],
                 dataToChallengeLatestSkills.merkleProofAllLeagues,
                 pylio.serialHash
             ):
@@ -673,7 +675,7 @@ class Storage(Counter):
                 return False
 
             if not pylio.verifyMerkleProof(
-                dataToChallengeLatestSkills.merkleProofAllLeagues.leaf[1],
+                dataToChallengeLatestSkills.merkleProofAllLeagues.leaf,
                 dataToChallengeLatestSkills.merkleProofLeague,
                 pylio.serialHash
             ):
@@ -1015,6 +1017,19 @@ class Storage(Counter):
         posInSubVerse = posInVerse - subVerse * SUPERROOTS_PER_VERSE
         return subVerse, posInSubVerse
 
+    def getLeaguePosInVerse(self, verse, leagueIdx):
+        leaguesFinishingInVerse = self.getLeaguesFinishingInVerse(verse)
+        for leaguePos, finishingLeagueIdx in enumerate(leaguesFinishingInVerse):
+            if finishingLeagueIdx == leagueIdx:
+                return leaguePos
+        assert False, "league not found in verse!"
+
+
+    def getLeaguesFinishingInVerse(self, verse):
+        if not verse in self.verseToFinishingLeagueIdxs:
+            return []
+        else:
+            return self.verseToFinishingLeagueIdxs[verse]
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -1403,21 +1418,9 @@ class Storage(Counter):
                 initPlayerStates[teamPosInLeague][shirtNum] = playerState
         return initPlayerStates
 
-    def getLeaguePosInVerse(self, verse, leagueIdx):
-        self.assertIsClient()
-        leaguesFinishingInVerse = self.getLeaguesFinishingInVerse(verse)
-        for leaguePos, finishingLeagueIdx in enumerate(leaguesFinishingInVerse):
-            if finishingLeagueIdx == leagueIdx:
-                return leaguePos
-        assert False, "league not found in verse!"
-
-    def getLeaguesFinishingInVerse(self, verse):
-        if not verse in self.verseToFinishingLeagueIdxs:
-            return []
-        else:
-            return self.verseToFinishingLeagueIdxs[verse]
 
     def computeLeagueRootFromLeagueIdx(self, leagueIdx):
+        self.assertIsClient()
         return self.computeLeagueRoot(
             self.leagues[leagueIdx].dataToChallengeLeague
         )
@@ -1461,8 +1464,9 @@ class Storage(Counter):
         superRoots, allLeaguesRoots = self.computeLeagueHashesForVerse(self.currentVerse)
         self.updateLeaguesSuperRoots(self.currentVerse, superRoots, ADDR1)
         # only lie (if forced) in the BC, not locally
+        superRootsFinal = pylio.duplicate(superRoots)
         if self.forceSuperRootLie:
-            for superRoot in superRoots:
-                superRoot *= 2
-        ST.updateLeaguesSuperRoots(self.currentVerse, superRoots, ADDR1)
+            for s, superRoot in enumerate(superRootsFinal):
+                superRootsFinal[s] = superRootsFinal[s] * 2
+        ST.updateLeaguesSuperRoots(self.currentVerse, superRootsFinal, ADDR1)
 
