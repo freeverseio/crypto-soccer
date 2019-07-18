@@ -15,6 +15,7 @@ const version = require('../package.json').version;
 program
   .version(version)
   .option('-c, --config <path>', 'set config path. defaults to config.json')
+  .option('-d, --databaseUrl <url>', 'set the database url')
   .parse(process.argv);
 
 let configFile = "../";
@@ -22,6 +23,7 @@ if (typeof program.config !== 'undefined')
   configFile += program.config;
 else
   configFile += "config.json";
+const databaseUrl = program.databaseUrl;
 
 console.log("Configuration file: " + configFile);
 const config = require(configFile);
@@ -35,6 +37,7 @@ const {
 } = config;
 
 console.log("--------------------------------------------------------");
+console.log("databaseUrl       : ", databaseUrl);
 console.log("providerUrl       : ", providerUrl);
 console.log("account           : ", address);
 console.log("🔥  account p.k.  : ", privateKey);
@@ -50,7 +53,7 @@ const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
 
 const pgPool = new pg.Pool({
-  connectionString: 'postgres://freeverse:freeverse@localhost:5432/cryptosoccer'
+  connectionString: databaseUrl
 });
 
 makeSchemaAndPlugin(
