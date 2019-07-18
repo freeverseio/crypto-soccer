@@ -1304,7 +1304,7 @@ class Storage(Counter):
             treeAllLeagues = MerkleTree(allLeaguesRoots[subVerse])
 
             merkleProofAllLeagues = treeAllLeagues.prepareProofForLeaf(
-                [prevLeagueIdx, treeLeague.root],
+                treeLeague.root,
                 posInSubVerse
             )
 
