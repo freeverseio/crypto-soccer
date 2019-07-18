@@ -52,7 +52,7 @@ def finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, doExchanges):
                         ADDR3
                     )
                 elif verseStatus == UPDT_ONELEAGUE:
-                    thisLeagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
+                    thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
                     print("challenging league... initSkills", thisLeagueIdx)
                     ST.challengeInitSkills(
                         verse,
@@ -82,11 +82,9 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                 if verseStatus == UPDT_SUPER:
                     print("challenging league... superRoot", leagueIdx)
                     superRoots, allLeaguesRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-                    allLeaguesRootsLie = pylio.duplicate(allLeaguesRoots)
-                    posInSubverse = 1 # toni
-                    for leagueRoot in allLeaguesRootsLie[subVerse]:
-                        leagueRoot[subVerse][posInSubVerse] += 1
-                    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], superRoots, ADDR2)
+                    superRootsLie, allLeaguesRootsLie = pylio.createLieSuperRoot(superRoots, allLeaguesRoots, 12)
+                    subVerse = 0
+                    ST.challengeSuperRoot(verse, subVerse, allLeaguesRootsLie[subVerse], superRootsLie, ADDR2)
                     ST.assertCanChallengeStatus(verse, UPDT_ALLLGS)
                 elif verseStatus == UPDT_ALLLGS:
                     if leagueIdx in leaguesTestedAtLevel3:
@@ -114,7 +112,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                         ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
                 elif verseStatus == UPDT_ONELEAGUE:
-                    thisLeagueIdx = ST.verseToLeagueCommits[verse].leagueIdx
+                    thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
                     print("challenging league... initSkills", thisLeagueIdx)
                     ST.challengeInitSkills(
                         verse,
@@ -645,7 +643,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 685)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 176)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
