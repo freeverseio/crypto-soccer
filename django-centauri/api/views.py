@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.utils import IntegrityError
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
@@ -51,7 +52,8 @@ def create_user(request):
 
     if not ('name' in req_data.keys()) \
             or not ('password' in req_data.keys()) \
-            or not ('email' in req_data.keys()):
+            or not ('email' in req_data.keys()) \
+            or not ('public_key' in req_data.keys()):
         return respond_to_bad_request(response)
 
     # Regex expression for validating email
@@ -70,11 +72,16 @@ def create_user(request):
         response.status_code = 409
         return response
 
-    except ObjectDoesNotExist:
+    except AuthUser.DoesNotExist:
         user = AuthUser.objects.create(username=req_data['name'],
                                        password=make_password(req_data['password']),
                                        email=req_data['email'],
                                        is_active=False)
+
+        existing_profile = Profile.objects.get(user=user)
+        existing_profile.public_key = req_data['public_key']
+        existing_profile.save()
+
         send_validation_email(request, user)
         response.status_code = 201
         return response
@@ -99,7 +106,7 @@ def activate_user(request, uidb64, token):
     try:
         id = force_text(urlsafe_base64_decode(uidb64))
         user = AuthUser.objects.get(id=id)
-    except(TypeError, ValueError, OverflowError, ObjectDoesNotExist):
+    except(TypeError, ValueError, OverflowError, AuthUser.DoesNotExist):
         user = None
 
     if (user is not None) and (account_activation_token.check_token(user, token)):
@@ -148,7 +155,7 @@ def login(request):
             response.status_code = 401
             return response
 
-    except ObjectDoesNotExist:
+    except AuthUser.DoesNotExist:
         response.content = '{"result": "User does not exist"}'
         response.status_code = 404
         return response
@@ -179,7 +186,7 @@ def reset_password(request):
             response.status_code = 401
             return response
 
-    except ObjectDoesNotExist:
+    except AuthUser.DoesNotExist:
         response.content = '{"result": "User does not exist"}'
         response.status_code = 404
         return response
@@ -205,7 +212,7 @@ def forgot_password(request):
             response.status_code = 403
             return response
         return response
-    except ObjectDoesNotExist:
+    except AuthUser.DoesNotExist:
         response.content = '{"result": "User does not exist"}'
         response.status_code = 404
         return response
@@ -213,8 +220,8 @@ def forgot_password(request):
 
 def send_password_reset_mail(request, user):
     reset_url = 'http://' + get_current_site(request).domain \
-                     + '/user/reset-forgot/' + urlsafe_base64_encode(force_bytes(user.id)) \
-                     + '/' + default_token_generator.make_token(user)
+                + '/user/reset-forgot/' + urlsafe_base64_encode(force_bytes(user.id)) \
+                + '/' + default_token_generator.make_token(user)
     send_mail('Freeverse.io account password reset',
               'Please click the following link in order reset your password: ' + reset_url,
               'no-reply@freeverse.io',
