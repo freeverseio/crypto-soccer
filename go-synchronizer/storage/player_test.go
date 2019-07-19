@@ -40,7 +40,7 @@ func TestGetPlayerState(t *testing.T) {
 		t.Fatal(err)
 	}
 	var playerState storage.PlayerState
-	playerState.BlockNumber = "33"
+	playerState.BlockNumber = 33
 	playerState.Defence = 4
 	playerState.Endurance = 5
 	playerState.Pass = 6
@@ -59,7 +59,7 @@ func TestGetPlayerState(t *testing.T) {
 	if result != playerState {
 		t.Fatalf("Expected %v got %v", playerState, result)
 	}
-	playerState.BlockNumber = "35"
+	playerState.BlockNumber = 35
 	playerState.Defence = 4
 	playerState.Endurance = 5
 	playerState.Pass = 6

@@ -12,7 +12,7 @@ type Player struct {
 
 type PlayerState struct {
 	TeamId      uint64
-	BlockNumber string
+	BlockNumber uint64
 	State       string
 	Defence     uint64
 	Speed       uint64
