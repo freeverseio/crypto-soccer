@@ -277,13 +277,12 @@ def test2():
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     ST_CLIENT.getSubVerseData(verse)
     subVerse = 0
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], superRoots, ADDR2), \
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2), \
         "You were able to challenge a superroot by providing compatible leagueRoots")
 
     # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
-    posInSubVerse = 0
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 2)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], superRootsLie, ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
 
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
 
@@ -368,7 +367,7 @@ def test2():
     assert needsSlash == UPDT_LGROOTS, "We should be able to slash AllLeagues, but not detected"
 
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 3)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], superRootsLie, ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
     ST.challengeleagueRoots(

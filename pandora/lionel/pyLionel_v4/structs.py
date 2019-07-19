@@ -975,29 +975,23 @@ class Storage(Counter):
 
 
 
-    def challengeSuperRoot(self, verse, subVerse, leagueRoots, leagueRootsSuperRoots, addr):
+    def challengeSuperRoot(self, verse, subVerse, leagueRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
         if needsSlash == UPDT_LGROOTS:
             self.verseToLeagueCommits[verse].slashLeagueRoots(self.currentBlock)
-        assert leagueRootsSuperRoots[subVerse] != self.verseToLeagueCommits[verse].superRoots[subVerse], \
-            "The leagueRoots provided lead to the same superRoot as already provided by updated"
 
         tree = MerkleTree(leagueRoots)
-        assert leagueRootsSuperRoots[subVerse] == tree.root, "Provided data for all leagues is inconsistent with itself"
+        assert tree.root != self.verseToLeagueCommits[verse].superRoots[subVerse], \
+            "The leagueRoots provided lead to the same superRoot as already provided by updated"
+
 
         self.verseToLeagueCommits[verse].writeLeagueRoots(
             subVerse,
             leagueRoots,
-            leagueRootsSuperRoots,
             addr,
             self.currentBlock
         )
 
-    # def getLeaguePosInVerseCommit(self, verse, leagueIdx):
-    #     for leaguePair in self.verseToLeagueCommits[verse].leagueRoots:
-    #         if leaguePair[0] == leagueIdx:
-    #             return leaguePair
-    #     assert False, "league not found in verse!"
 
     def getPosInSubverse(self, verse, leagueIdx):
         challengedSubVerse = self.verseToLeagueCommits[verse].subVerse
