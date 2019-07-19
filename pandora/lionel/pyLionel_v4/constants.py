@@ -13,9 +13,10 @@ SHOULDNOTBE = 1
 
 # Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
 UPDT_NONE       = 0 # no update at all
-UPDT_SUPER      = 1 # only superRoot, but nothing else
-UPDT_ALLLGS     = 2 # allLeaguesRoot, but nothing else
-UPDT_ONELEAGUE  = 3 # matchdayHashes provided
+UPDT_VERSE      = 1 # only verseRoot, but nothing else
+UPDT_SUPROOTS   = 2 # only superRoot, but nothing else
+UPDT_LGROOTS    = 3 # allLeaguesRoot, but nothing else
+UPDT_ONELEAGUE  = 4 # matchdayHashes provided
 
 AVG_SKILL = 50
 NPLAYERS_PER_TEAM = 16
