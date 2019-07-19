@@ -1,5 +1,5 @@
 {
     "ethereumClient": "https://devnet.busyverse.com/web3",
-    "assetsContractAddress": "0xbB625cAEBce5f7c6d6C1eecb4BD4322598D7D905",
-    "statesContractAddress": "0xDfD826E6483612De1cA4974418103A9f048B97fD"
+    "assetsContractAddress": "0xA783483b8ee8F108dC4c8D7F5DF079Ea5f31c6d1",
+    "statesContractAddress": "0x0d2d0817b154a4EEF7E3623Dd130833fd9A8aB3E"
 }

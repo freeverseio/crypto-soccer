@@ -5,8 +5,10 @@ import (
 	//"fmt"
 	"math"
 	"math/big"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
@@ -16,11 +18,12 @@ import (
 )
 
 type EventProcessor struct {
-	client  *ethclient.Client
-	db      *storage.Storage
-	assets  *assets.Assets
-	states  *states.States
-	leagues *leagues.Leagues
+	usesGanache bool
+	client      *ethclient.Client
+	db          *storage.Storage
+	assets      *assets.Assets
+	states      *states.States
+	leagues     *leagues.Leagues
 }
 
 // *****************************************************************************
@@ -29,7 +32,12 @@ type EventProcessor struct {
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
 func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States, leagues *leagues.Leagues) *EventProcessor {
-	return &EventProcessor{client, db, assets, states, leagues}
+	return &EventProcessor{false, client, db, assets, states, leagues}
+}
+
+// NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States, leagues *leagues.Leagues) *EventProcessor {
+	return &EventProcessor{true, client, db, assets, states, leagues}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -125,11 +133,37 @@ func (p *EventProcessor) dbLastBlockNumber() uint64 {
 	}
 	return storedLastBlockNumber
 }
+func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
+	if p.usesGanache {
+		return eventRaw.BlockNumber, eventRaw.BlockNumber, nil
+	}
+	block, err := p.client.BlockByHash(context.Background(), eventRaw.BlockHash)
+	if err != nil {
+		return 0, 0, err
+	}
+	return block.Time(), eventRaw.BlockNumber, nil
+}
 func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
-		} else if err := p.db.TeamAdd(&storage.Team{event.Id.Uint64(), name}); err != nil {
+		} else if owner, err := p.assets.GetTeamOwner(nil, name); err != nil {
+			return err
+		} else if blockTime, blockNumber, err := p.getTimeOfEvent(event.Raw); err != nil {
+			return err
+		} else if err := p.db.TeamAdd(storage.Team{
+			event.Id.Uint64(),
+			name,
+			strconv.FormatUint(blockTime, 10),
+			storage.TeamState{
+				BlockNumber:          blockNumber,
+				Owner:                owner.Hex(),
+				CurrentLeagueId:      0, // TODO: uint64
+				PosInCurrentLeagueId: 0, // TODO: uint64
+				PrevLeagueId:         0, // TODO: uint64
+				PosInPrevLeagueId:    0, // TODO: uint64
+			},
+		}); err != nil {
 			return err
 		}
 		if err := p.storeVirtualPlayers(event.Id); err != nil {
@@ -165,21 +199,19 @@ func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 				return err
 			} else {
 				player := storage.Player{
-					Id:        id.Uint64(),
-					TeamId:    teamId.Uint64(),
-					State:     state.String(),
-					Defence:   uint64(skills[0]),
-					Speed:     uint64(skills[1]),
-					Pass:      uint64(skills[2]),
-					Shoot:     uint64(skills[3]),
-					Endurance: uint64(skills[4]),
+					Id:                     id.Uint64(),
+					MonthOfBirthInUnixTime: "0", // TODO
+					State: storage.PlayerState{
+						TeamId:    teamId.Uint64(),
+						State:     state.String(),
+						Defence:   uint64(skills[0]),
+						Speed:     uint64(skills[1]),
+						Pass:      uint64(skills[2]),
+						Shoot:     uint64(skills[3]),
+						Endurance: uint64(skills[4]),
+					},
 				}
-				p.db.PlayerAdd(&player)
-				if stored, err := p.db.GetPlayer(id.Uint64()); err != nil {
-					log.Fatal(err)
-				} else if stored.State != state.String() {
-					log.Fatal("Mismatch while storing virtual player. State before storage:", state.String(), " vs state after storage:", stored.Id, stored.State)
-				}
+				p.db.PlayerAdd(player)
 			}
 		}
 	}
