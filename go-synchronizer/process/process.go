@@ -161,7 +161,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if err := p.db.TeamStateAdd(
 			event.Id.Uint64(),
 			storage.TeamState{
-				BlockNumber:          strconv.FormatUint(blockNumber, 10),
+				BlockNumber:          blockNumber,
 				Owner:                owner.Hex(),
 				CurrentLeagueId:      0, // TODO: uint64
 				PosInCurrentLeagueId: 0, // TODO: uint64

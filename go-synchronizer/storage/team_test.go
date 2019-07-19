@@ -25,7 +25,7 @@ func TestGetTeamState(t *testing.T) {
 		t.Fatal(err)
 	}
 	var teamState storage.TeamState
-	teamState.BlockNumber = "33"
+	teamState.BlockNumber = 33
 	teamState.CurrentLeagueId = 3
 	teamState.Owner = "44"
 	teamState.PosInCurrentLeagueId = 4
@@ -42,7 +42,7 @@ func TestGetTeamState(t *testing.T) {
 	if result != teamState {
 		t.Fatalf("Expected %v got %v", teamState, result)
 	}
-	teamState.BlockNumber = "35"
+	teamState.BlockNumber = 35
 	teamState.CurrentLeagueId = 3
 	teamState.Owner = "44"
 	teamState.PosInCurrentLeagueId = 4
@@ -93,6 +93,24 @@ func TestTeamAdd(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("Expected 1 result %v", count)
+	}
+}
+
+func TestTeamAddSameTimeTwice(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var team storage.Team
+	team.Id = 3
+	team.Name = "ciao"
+	err = sto.TeamAdd(team)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.TeamAdd(team)
+	if err == nil {
+		t.Fatal("No error creating 2 teams with same id")
 	}
 }
 

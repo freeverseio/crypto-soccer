@@ -40,7 +40,7 @@ func TestGetPlayerState(t *testing.T) {
 		t.Fatal(err)
 	}
 	var playerState storage.PlayerState
-	playerState.BlockNumber = "33"
+	playerState.BlockNumber = 33
 	playerState.Defence = 4
 	playerState.Endurance = 5
 	playerState.Pass = 6
@@ -59,7 +59,7 @@ func TestGetPlayerState(t *testing.T) {
 	if result != playerState {
 		t.Fatalf("Expected %v got %v", playerState, result)
 	}
-	playerState.BlockNumber = "35"
+	playerState.BlockNumber = 35
 	playerState.Defence = 4
 	playerState.Endurance = 5
 	playerState.Pass = 6
@@ -97,6 +97,23 @@ func TestPlayerAdd(t *testing.T) {
 	}
 	if count != 1 {
 		t.Fatalf("Expected 1 result %v", count)
+	}
+}
+
+func TestPlayerAddTwiceSameTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var player storage.Player
+	player.Id = 3
+	err = sto.PlayerAdd(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.PlayerAdd(player)
+	if err == nil {
+		t.Fatal("No error adding the same player twice")
 	}
 }
 

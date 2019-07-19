@@ -5,7 +5,7 @@ import (
 )
 
 type TeamState struct {
-	BlockNumber          string
+	BlockNumber          uint64
 	Owner                string
 	CurrentLeagueId      uint64
 	PosInCurrentLeagueId uint64
@@ -56,6 +56,11 @@ func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
 	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp) VALUES ($1, $2, $3);", team.Id, team.Name, team.CreationTimestamp)
+	if err != nil {
+		return err
+	}
+
+	err = b.TeamStateAdd(team.Id, team.State)
 	if err != nil {
 		return err
 	}

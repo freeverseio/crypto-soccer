@@ -12,7 +12,7 @@ type Player struct {
 
 type PlayerState struct {
 	TeamId      uint64
-	BlockNumber string
+	BlockNumber uint64
 	State       string
 	Defence     uint64
 	Speed       uint64
@@ -43,6 +43,9 @@ func (b *Storage) PlayerAdd(player Player) error {
 	}
 
 	err = b.PlayerStateAdd(player.Id, player.State)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
