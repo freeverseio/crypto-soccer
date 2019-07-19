@@ -1,0 +1,31 @@
+version: '3'
+services:
+  centauri:
+    build:
+      context: ../django-centauri/.
+    ports: 
+      - "8000:8000"
+  postgres:
+    build:
+      context: ../go-synchronizer/sql/.
+  synchronizer:
+    build:
+      context: ../go-synchronizer/.
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
+    depends_on:
+      - postgres
+  horizon:
+    build:
+      context: ../nodejs-horizon/.
+    depends_on:
+      - postgres
+    command: ["postgraphile", "--retry-on-init-fail", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    ports:
+      - "5000:5000"
+  # # frontend:
+  #   build:
+  #     context: ./reactjs-frontend/.
+  #   depends_on:
+  #     - horizon
+  #   ports:
+  #     - "3000:3000"
