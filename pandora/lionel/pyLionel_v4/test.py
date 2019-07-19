@@ -266,8 +266,12 @@ def test2():
 
     # Since the entire verse was updated faithfully, any challenge to it will fail.
     # First check that the status is correct
-    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
-    # Try to challenge an All-leagues-roots before any was provided... should fail:
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
+
+    # Challenge with a lie
+    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    ST.challengeVerseRoot(verse, superRoots, ADDR2)
+
 
     # Try to challenge by providing a correct All-leagues-roots... should fail
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)

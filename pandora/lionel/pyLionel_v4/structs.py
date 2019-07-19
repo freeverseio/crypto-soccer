@@ -242,10 +242,11 @@ class MerkleTree():
         return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
 
 class LeaguesCommitInVerse():
-    def __init__(self, verseRoot, blocknum):
+    def __init__(self, verseRoot, addr, blocknum):
         # SuperRoot provided:
         self.verseRoot                      = pylio.duplicate(verseRoot)
-        self.lastWriteBlocknum              = blocknum
+        self.verseRootAddr                  = pylio.duplicate(addr)
+        self.lastWriteBlocknum              = pylio.duplicate(blocknum)
 
         self.initSuperRoots()
         self.initLeagueRoots()
@@ -441,7 +442,7 @@ class Storage(Counter):
 
     def updateVerseRoot(self, verse, verseRoot, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
-        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(verseRoot, addr,self.currentBlock)
+        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(verseRoot, addr, self.currentBlock)
 
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
@@ -955,6 +956,23 @@ class Storage(Counter):
             teamPosInLeague = self.getTeamPosInLeague(action["teamIdx"], usersInitData)
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
+
+    def challengeVerseRoot(self, verse, superRoots, addr):
+        needsSlash = self.assertCanChallengeStatus(verse, UPDT_VERSE)
+        if needsSlash == UPDT_SUPROOTS:
+            self.verseToLeagueCommits[verse].slashSuperRoots(self.currentBlock)
+        tree = MerkleTree(superRoots)
+
+        assert tree.root != self.verseToLeagueCommits[verse].verseRoot, \
+            "The superRoots provided lead to the same verseRoot as already provided by updater"
+
+        self.verseToLeagueCommits[verse].writeSuperRoots(
+            superRoots,
+            tree.root,
+            addr,
+            self.currentBlock
+        )
+
 
 
     def challengeSuperRoot(self, verse, subVerse, leagueRoots, leagueRootsSuperRoots, addr):
@@ -1496,12 +1514,12 @@ class Storage(Counter):
         if len(leagueIdxsForThisCommit) == 0:
             return
         superRoots, leagueRoots = self.computeLeagueHashesForVerse(self.currentVerse)
-        verseRoot = MerkleTree(superRoots)
-        self.updateLeaguesSuperRoots(self.currentVerse, superRoots, ADDR1)
+        tree = MerkleTree(superRoots)
+        verseRoot = tree.root
+        self.updateVerseRoot(self.currentVerse, verseRoot, ADDR1)
         # only lie (if forced) in the BC, not locally
-        superRootsFinal = pylio.duplicate(superRoots)
+        verseRootFinal = pylio.duplicate(superRoots)
         if self.forceSuperRootLie:
-            for s, superRoot in enumerate(superRootsFinal):
-                superRootsFinal[s] = superRootsFinal[s] * 2
-        ST.updateLeaguesSuperRoots(self.currentVerse, superRootsFinal, ADDR1)
+            verseRootFinal = verseRootFinal * 2
+        ST.updateVerseRoot(self.currentVerse, verseRootFinal, ADDR1)
 
