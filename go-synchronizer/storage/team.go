@@ -60,6 +60,11 @@ func (b *Storage) TeamAdd(team Team) error {
 		return err
 	}
 
+	err = b.TeamStateAdd(team.Id, team.State)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

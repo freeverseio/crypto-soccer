@@ -43,6 +43,9 @@ func (b *Storage) PlayerAdd(player Player) error {
 	}
 
 	err = b.PlayerStateAdd(player.Id, player.State)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
