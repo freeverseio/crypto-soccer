@@ -155,11 +155,6 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 			event.Id.Uint64(),
 			name,
 			strconv.FormatUint(blockTime, 10),
-			storage.TeamState{},
-		}); err != nil {
-			return err
-		} else if err := p.db.TeamStateAdd(
-			event.Id.Uint64(),
 			storage.TeamState{
 				BlockNumber:          blockNumber,
 				Owner:                owner.Hex(),
@@ -168,7 +163,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 				PrevLeagueId:         0, // TODO: uint64
 				PosInPrevLeagueId:    0, // TODO: uint64
 			},
-		); err != nil {
+		}); err != nil {
 			return err
 		}
 		if err := p.storeVirtualPlayers(event.Id); err != nil {
