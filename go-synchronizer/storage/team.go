@@ -5,7 +5,7 @@ import (
 )
 
 type TeamState struct {
-	BlockNumber          string
+	BlockNumber          uint64
 	Owner                string
 	CurrentLeagueId      uint64
 	PosInCurrentLeagueId uint64

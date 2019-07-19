@@ -5,7 +5,6 @@ import (
 	//"fmt"
 	"math"
 	"math/big"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -142,7 +141,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if err := p.db.TeamStateAdd(
 			event.Id.Uint64(),
 			storage.TeamState{
-				BlockNumber:          strconv.FormatUint(event.Raw.BlockNumber, 10),
+				BlockNumber:          event.Raw.BlockNumber,
 				Owner:                owner.Hex(),
 				CurrentLeagueId:      0, // TODO: uint64
 				PosInCurrentLeagueId: 0, // TODO: uint64

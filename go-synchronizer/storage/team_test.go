@@ -25,7 +25,7 @@ func TestGetTeamState(t *testing.T) {
 		t.Fatal(err)
 	}
 	var teamState storage.TeamState
-	teamState.BlockNumber = "33"
+	teamState.BlockNumber = 33
 	teamState.CurrentLeagueId = 3
 	teamState.Owner = "44"
 	teamState.PosInCurrentLeagueId = 4
@@ -42,7 +42,7 @@ func TestGetTeamState(t *testing.T) {
 	if result != teamState {
 		t.Fatalf("Expected %v got %v", teamState, result)
 	}
-	teamState.BlockNumber = "35"
+	teamState.BlockNumber = 35
 	teamState.CurrentLeagueId = 3
 	teamState.Owner = "44"
 	teamState.PosInCurrentLeagueId = 4
