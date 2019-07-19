@@ -14,14 +14,16 @@ services:
     command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
+    ports:
+      - "5432:5432"
   horizon:
     build:
       context: ../nodejs-horizon/.
     depends_on:
       - postgres
-    command: ["postgraphile", "--retry-on-init-fail", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
-      - "5000:5000"
+      - "4000:4000"
   # # frontend:
   #   build:
   #     context: ./reactjs-frontend/.
