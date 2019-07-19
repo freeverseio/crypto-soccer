@@ -226,7 +226,7 @@ def flatten(statesPerTeam):
 def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT):
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
-    leagueRoot = ST.verseToLeagueCommits[verse].allLeaguesRoots[posInSubVerse]
+    leagueRoot = ST.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
     assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
     leagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
@@ -277,14 +277,14 @@ def shouldFail(f, msg):
         itFailed = True
     assert itFailed, "We should have failed, but did not"
 
-def createLieSuperRoot(superRoots, allLeaguesRoots, factor):
+def createLieSuperRoot(superRoots, leagueRoots, factor):
     superRootsLie = duplicate(superRoots)
-    allLeaguesRootsLie = duplicate(allLeaguesRoots)
+    leagueRootsLie = duplicate(leagueRoots)
 
     for s, supers in enumerate(superRootsLie):
-        for l, leagues in enumerate(allLeaguesRootsLie[s]):
-            allLeaguesRootsLie[s][l] *= factor
-        tree = MerkleTree(allLeaguesRootsLie[s])
+        for l, leagues in enumerate(leagueRootsLie[s]):
+            leagueRootsLie[s][l] *= factor
+        tree = MerkleTree(leagueRootsLie[s])
         superRootsLie[s] = tree.root
 
-    return superRootsLie, allLeaguesRootsLie
+    return superRootsLie, leagueRootsLie
