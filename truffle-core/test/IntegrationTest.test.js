@@ -21,6 +21,13 @@ const CHALLENGE_TT_RES = 7;
 const SLASHABLE        = 8;
 const SLASHED          = 9
 
+const PLAYERS_PER_TEAM = 25;
+const order = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
+const tactic442 = 0;
+const tactic511 = 1;
+const tactic433 = 2;
+
+
 contract('IntegrationTest', (accounts) => {
     const [owner, bob, alice, carol] = accounts
 
@@ -29,6 +36,7 @@ contract('IntegrationTest', (accounts) => {
     let leagues = null;
     let cronos = null;
     let stake = null;
+    let currentBlock = null;
 
     const onion0 = web3.utils.keccak256("hel24"); // finishes 2
     const onion1 = web3.utils.keccak256(onion0);  // finishes 0
@@ -40,6 +48,7 @@ contract('IntegrationTest', (accounts) => {
         assets = await Assets.new(state.address).should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         leagues = await Leagues.new(engine.address, state.address).should.be.fulfilled;
+        await leagues.setAssetsContract(assets.address).should.be.fulfilled;
         cronos = await Cronos.new().should.be.fulfilled;
         controller = await GameController.new(leagues.address).should.be.fulfilled;
         await controller.setGameContractAddress(leagues.address).should.be.fulfilled;
@@ -98,40 +107,49 @@ contract('IntegrationTest', (accounts) => {
         const teamIdx2 = receipt.logs[0].args.id.toNumber();
         teamIdx2.should.be.equal(2);
 
-        await advanceToBlock(100);
+        currentBlock = await web3.eth.getBlockNumber();
 
-        const blockInit = 190;
-        const blockStep = 10;
+        let blockInit = currentBlock + 90;
+        let blockStep = 10;
 
         const usersInitData = {
             teamIdxs: [teamIdx1, teamIdx2],
-            // teamOrders: [DEFAULT_ORDER, REVERSE_ORDER],
-            tactics: [[4, 4, 2], [4, 3, 3]]
+            teamOrders: [order, order],
+            tacticsIds: [tactic442, tactic433]
         };
 
-        leagueIdx = 0;
-        await leagues.create(leagueIdx, blockInit, blockStep, usersInitData.teamIdxs, usersInitData.tactics).should.be.fulfilled;
+        let leagueIdx = 1;
+        
+        await leagues.create(nTeams = 2, blockInit, blockStep).should.be.fulfilled;
+        for (var team = 0; team < 2; team++) {
+            await leagues.signTeamInLeague(
+                leagueIdx, 
+                usersInitData.teamIdxs[team], 
+                usersInitData.teamOrders[team], 
+                usersInitData.tacticsIds[team]
+            ).should.be.fulfilled;
+        }
 
         const startBlock = await leagues.getInitBlock(leagueIdx).should.be.fulfilled;
         startBlock.toNumber().should.be.equal(blockInit);
 
         // Advance to matchday 2
-        await advanceToBlock(blockInit + blockStep - 5);
+        await advanceToBlock(blockInit + blockStep/2);
         const started = await leagues.hasStarted(leagueIdx).should.be.fulfilled;
         started.should.be.equal(true);
         let finished = await leagues.hasFinished(leagueIdx).should.be.fulfilled;
         finished.should.be.equal(false);
 
         // Note that we could specify only for 1 of the teams if we wanted.
-        const currentBlock = await web3.eth.getBlockNumber();
+        currentBlock = await web3.eth.getBlockNumber();
         usersAlongData = {
             teamIdxsWithinLeague: [teamIdx1, teamIdx2],
-            tactics: [[4, 3, 3], [4, 4, 2]],
+            tacticsIds: [tactic433, tactic442],
             blocks: [currentBlock, currentBlock]
         };
 
-        // Submit data to change tactics
-        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tactics, usersAlongData.blocks).should.be.fulfilled;
+        // Submit data to change tacticsIds
+        await leagues.updateUsersAlongDataHash(leagueIdx, usersAlongData.teamIdxsWithinLeague, usersAlongData.tacticsIds, usersAlongData.blocks).should.be.fulfilled;
 
         // Move beyond league end
         await advanceNBlocks(blockStep).should.be.fulfilled;
@@ -153,14 +171,14 @@ contract('IntegrationTest', (accounts) => {
 
         // day 0
         let leagueDay = 0;
-        const tacticsDay0 = [...usersInitData.tactics];
+        const tacticsDay0 = [...usersInitData.tacticsIds];
         const initPlayerStatesDay0 = [...initPlayerStates];
         let result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay0, tacticsDay0).should.be.fulfilled;
         const scoresDay0 = [...result.scores];
         const finalPlayerStatesDay0 = [...result.finalLeagueState];
         // day 1
         leagueDay = 1;
-        const tacticsDay1 = [...usersAlongData.tactics];
+        const tacticsDay1 = [...usersAlongData.tacticsIds];
         const initPlayerStatesDay1 = [...finalPlayerStatesDay0];
         result = await leagues.computeDay(leagueIdx, leagueDay, initPlayerStatesDay1, tacticsDay1).should.be.fulfilled;
         const scoresDay1 = [...result.scores];
@@ -203,18 +221,20 @@ contract('IntegrationTest', (accounts) => {
         console.log("challenging");
         console.log("State Bob: " + await controller.state(bob,0));
         console.log("State Alice: " + await controller.state(alice,0));
+
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0,
             {from: alice}
 
         ).should.be.fulfilled;
+        
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
         updated.should.be.equal(false);
         console.log("challenged");
@@ -249,7 +269,7 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeInitStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             dataToChallengeInitStates, {from: bob}
         ).should.be.fulfilled;
         updated = await leagues.isUpdated(leagueIdx).should.be.fulfilled;
@@ -280,9 +300,9 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 0,
             prevMatchdayStates = initPlayerStatesDay0, {from: carol}
@@ -293,9 +313,9 @@ contract('IntegrationTest', (accounts) => {
         await leagues.challengeMatchdayStates(
             leagueIdx,
             usersInitData.teamIdxs,
-            usersInitData.tactics,
+            usersInitData.tacticsIds,
             usersAlongData.teamIdxsWithinLeague,
-            usersAlongData.tactics,
+            usersAlongData.tacticsIds,
             usersAlongData.blocks,
             selectedMatchday = 1,
             prevMatchdayStates = initPlayerStatesDay1, {from: carol}

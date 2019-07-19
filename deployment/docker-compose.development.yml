@@ -12,12 +12,12 @@ services:
     depends_on:
       - postgres
   horizon:
-    image: graphile/postgraphile
+    image: freeverseio/horizon:dev
     depends_on:
       - postgres
-    command: ["postgraphile", "--retry-on-init-fail", "--connection", "postgres://freeverse:freeverse@postgres:5432/cryptosoccer", "--cors", "--simple-collections", "only", "--enhance-graphiql", "--dynamic-json", "--disable-default-mutations"]
+    command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
-      - "5000:5000"
+      - "4000:4000"
   # # frontend:
   #   build:
   #     context: ./reactjs-frontend/.

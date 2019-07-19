@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'api',
 ]
 
@@ -53,6 +54,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+    ],
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 ROOT_URLCONF = 'Onboarding.urls'
 
@@ -126,7 +136,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = True
+
+# TODO This should be reactivated when we have an https server
+#CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 
 EMAIL_USE_TLS = True

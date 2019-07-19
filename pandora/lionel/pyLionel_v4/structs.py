@@ -66,7 +66,6 @@ class PlayerState(MinimalPlayerState):
         self.currentShirtNum         = 0
         self.prevLeagueIdx          = 0
         self.prevTeamPosInLeague    = 0
-        self.prevShirtNumInLeague   = 0
         self.lastSaleBlocknum        = 0
 
     def setCurrentTeamIdx(self, currentTeamIdx):
@@ -117,13 +116,15 @@ class DataToChallengeLeague():
 
 
 class League():
-    def __init__(self, verseInit, verseStep, usersInitData):
-        nTeams = len(usersInitData["teamIdxs"]) if verseInit != 0 else 0
-        nMatches = nTeams*(nTeams-1)
+    def __init__(self, verseInit, verseStep, nTeams):
         self.nTeams             = nTeams
         self.verseInit          = verseInit
         self.verseStep          = verseStep
-        self.usersInitDataHash  = pylio.serialHash(usersInitData)
+        self.usersInitDataHash  = 0
+
+    # simulates what would happen when users sign up, one by one
+    def signTeamInLeague(self, teamIdx, teamOrders, tactics):
+        self.usersInitDataHash = pylio.serialHash([self.usersInitDataHash, teamIdx, teamOrders, tactics])
 
     def isGenesisLeague(self):
         return self.verseInit == 0
@@ -134,7 +135,8 @@ class League():
 
 class LeagueClient(League):
     def __init__(self, verseInit, verseStep, usersInitData):
-        League.__init__(self, verseInit, verseStep, usersInitData)
+        nTeams = len(usersInitData["teamIdxs"])
+        League.__init__(self, verseInit, verseStep, nTeams)
         self.usersInitData      = usersInitData
         self.initPlayerStates   = None
         self.lastDayTree        = None
@@ -423,6 +425,19 @@ class Storage(Counter):
         )
 
 
+
+    def computeUsersInitDataHash(self, usersInitData):
+        hash = 0
+        nTeams = len(usersInitData["teamIdxs"])
+        assert (nTeams == len(usersInitData["teamOrders"]), "init data not consistent")
+        assert (nTeams == len(usersInitData["tactics"]), "init data not consistent")
+        for team in range(nTeams):
+            teamIdx = usersInitData["teamIdxs"][team]
+            teamOrders = usersInitData["teamOrders"][team]
+            tactics = usersInitData["tactics"][team]
+            hash = pylio.serialHash([hash, teamIdx, teamOrders, tactics])
+        return hash
+
     # note that values = actionsAtSelectedMatchday, formated so that is has the form
     # {idx: actionsAtSelectedMatchday}, where idx is the leaf idx.
     # so it should happen that both things coincide.
@@ -437,7 +452,7 @@ class Storage(Counter):
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
         # TODO: re-put isFullyVerified in next line
         # assert not self.isFullyVerified(leagueIdx), "You cannot challenge after the challenging period"
-        assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
+        assert self.computeUsersInitDataHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
         assert merkleProofDataForMatchday.leaf[0] == leagueIdx, "Deverr: The actions do not belong to this league"
         verseActions = self.leagues[leagueIdx].verseInit + selectedMatchday * self.leagues[leagueIdx].verseStep
 
@@ -678,7 +693,7 @@ class Storage(Counter):
         leagueRoot = self.getLeagueRootFromVerseCommit(verse, leagueIdx)
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.hasLeagueBeenUpdated(leagueIdx), "League has not been updated yet, no need to challenge"
-        assert pylio.serialHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
+        assert self.computeUsersInitDataHash(usersInitData) == self.leagues[leagueIdx].usersInitDataHash, "Incorrect provided: usersInitData"
 
         # it first makes sure that the provided initSkills are certified as the last ones.
         initSkills = self.verifyInitSkills(usersInitData, dataToChallengeInitSkills)
@@ -764,22 +779,30 @@ class Storage(Counter):
     def createLeague(self, verseInit, verseStep, usersInitData):
         assert verseInit > self.currentVerse, "League cannot start in the past"
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
-        assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
+        nTeams = len(usersInitData["teamIdxs"])
+        assert nTeams % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
-        self.leagues.append(League(verseInit, verseStep, usersInitData))
-        self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        self.leagues.append(League(verseInit, verseStep, nTeams))
+        self.signTeamsInLeague(usersInitData, leagueIdx)
         return leagueIdx
 
 
 
-    def signTeamsInLeague(self, teamIdxs, leagueIdx):
-        for teamPosInLeague, teamIdx in enumerate(teamIdxs):
+    def signTeamsInLeague(self, usersInitData, leagueIdx):
+        nTeams = len(usersInitData["teamIdxs"])
+        assert(nTeams == len(usersInitData["teamOrders"]), "init data not consistent")
+        assert(nTeams == len(usersInitData["tactics"]), "init data not consistent")
+        for team in range(nTeams):
+            teamIdx     = usersInitData["teamIdxs"][team]
+            teamOrders  = usersInitData["teamOrders"][team]
+            tactics     = usersInitData["tactics"][team]
+            self.leagues[leagueIdx].signTeamInLeague(teamIdx, teamOrders, tactics)
+
             self.teams[teamIdx].prevLeagueIdx             = pylio.duplicate(self.teams[teamIdx].currentLeagueIdx)
             self.teams[teamIdx].teamPosInPrevLeague       = pylio.duplicate(self.teams[teamIdx].teamPosInCurrentLeague)
 
             self.teams[teamIdx].currentLeagueIdx          = leagueIdx
-            self.teams[teamIdx].teamPosInCurrentLeague    = teamPosInLeague
-
+            self.teams[teamIdx].teamPosInCurrentLeague    = team
 
     # Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
     # e.g. teamName = "Barcelona5443"
@@ -1051,10 +1074,11 @@ class Storage(Counter):
     def createLeagueClient(self, verseInit, verseStep, usersInitData):
         self.assertIsClient()
         assert not self.areTeamsBusyInPrevLeagues(usersInitData["teamIdxs"]), "League cannot create: some teams involved in prev leagues"
-        assert len(usersInitData["teamIdxs"]) % 2 == 0, "Currently we only support leagues with even nTeams"
+        nTeams = len(usersInitData["teamIdxs"])
+        assert nTeams % 2 == 0, "Currently we only support leagues with even nTeams"
         leagueIdx = len(self.leagues)
         self.leagues.append(LeagueClient(verseInit, verseStep, usersInitData))
-        self.signTeamsInLeague(usersInitData["teamIdxs"], leagueIdx)
+        self.signTeamsInLeague(usersInitData, leagueIdx)
         self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
         self.leagues[leagueIdx].writeDataToChallengeInitSkills(self.prepareDataToChallengeLeagueInitSkills(leagueIdx))
         self.appendToLeaguesFinishingInVerse(self.leagues[leagueIdx].verseFinal(), leagueIdx)
@@ -1441,8 +1465,4 @@ class Storage(Counter):
         if self.forceSuperRootLie:
             superRoot *= 2
         ST.updateLeaguesSuperRoot(self.currentVerse, superRoot, ADDR1)
-
-    def getBlockForVerse(self, verse):
-        return verse*self.blocksBetweenVerses
-
 

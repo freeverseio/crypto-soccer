@@ -1,25 +1,31 @@
-const { ApolloServer, PubSub } = require('apollo-server');
-const typeDefs = require('./schema');
-const Resolvers = require('./resolvers');
-const Web3 = require('web3');
-const playerStateJSON = require('../../truffle-core/build/contracts/PlayerState.json');
-const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
-const leaguesJSON = require('../../truffle-core/build/contracts/Leagues.json');
+const {
+  ApolloServer,
+  makeExecutableSchema,
+  mergeSchemas
+} = require("apollo-server");
+const { makeSchemaAndPlugin } = require("postgraphile-apollo-server");
+const pg = require("pg");
+const typeDefs = require("./schema");
+const Resolvers = require("./resolvers");
+const Web3 = require("web3");
+const playerStateJSON = require("../contracts/PlayerState.json");
+const assetsJSON = require("../contracts/Assets.json");
+const leaguesJSON = require("../contracts/Leagues.json");
 const HDWalletProvider = require("truffle-hdwallet-provider");
-const program = require('commander');
-const version = require('../package.json').version;
+const program = require("commander");
+const version = require("../package.json").version;
 
 // Parsing command line arguments
 program
   .version(version)
-  .option('-c, --config <path>', 'set config path. defaults to config.json')
+  .option("-c, --config <path>", "set config path. defaults to config.json")
+  .option("-d, --databaseUrl <url>", "set the database url")
   .parse(process.argv);
 
 let configFile = "../";
-if (typeof program.config !== 'undefined')
-  configFile += program.config;
-else
-  configFile += "config.json";
+if (typeof program.config !== "undefined") configFile += program.config;
+else configFile += "config.json";
+const databaseUrl = program.databaseUrl;
 
 console.log("Configuration file: " + configFile);
 const config = require(configFile);
@@ -33,6 +39,7 @@ const {
 } = config;
 
 console.log("--------------------------------------------------------");
+console.log("databaseUrl       : ", databaseUrl);
 console.log("providerUrl       : ", providerUrl);
 console.log("account           : ", address);
 console.log("🔥  account p.k.  : ", privateKey);
@@ -43,48 +50,59 @@ console.log("leagues address   : ", leaguesContractAddress);
 console.log("--------------------------------------------------------");
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
-const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress);
+const states = new web3.eth.Contract(
+  playerStateJSON.abi,
+  statesContractAddress
+);
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
 
-const resolvers = new Resolvers({
-  states,
-  assets,
-  leagues,
-  from: address
+const pgPool = new pg.Pool({
+  connectionString: databaseUrl
 });
 
-// const pubsub = new PubSub();
-const server = new ApolloServer({ typeDefs, resolvers });
+function main() {
+  makeSchemaAndPlugin(
+    pgPool,
+    "public", // PostgreSQL schema to use
+    {
+      disableDefaultMutations: true,
+      dynamicJson: true,
+      simpleCollections: "both"
+    }
+  )
+    .then(result => {
+      const { schema, plugin } = result;
 
-// This `listen` method launches a web-server.  Existing apps
-// can utilize middleware options, which we'll discuss later.
-server.listen().then(({ url }) => {
-  console.log(`🚀  Server ready at ${url}`);
-});
+      const resolvers = new Resolvers({
+        states,
+        assets,
+        leagues,
+        from: address
+      });
 
-/*
---------------------------------
-Assets:         0xf60DAC49d2E0C7b3091A0423693757CEEeB642e5
-States:         0xD5165DDd523F5dB1b20552fD949f149C363F417d
-Engine:         0xe917715Db02C7355c06f2450042F2B25f5FEc77a
-GameController: 0xC54CeBFeF6d3fed158C264f0a2dD6B46c89c0bbD
-Leagues:        0xceA8d1CdB4518ca453039Cb4829518ff71DACE08
-Stakers:        0x6c27FD6573DbCe335c6ee1480DFBC6FD4A0602b6
---------------------------------
-*/
+      const mutations = makeExecutableSchema({
+        typeDefs: typeDefs,
+        resolvers: resolvers
+      });
+      const mergedSchema = mergeSchemas({
+        schemas: [schema, mutations]
+      });
 
+      const server = new ApolloServer({
+        schema: mergedSchema,
+        plugins: [plugin]
+      });
 
-// const TEAM_CREATED = 'TEAM_CREATED';
+      server.listen().then(({ url }) => {
+        console.log(`🚀  Server ready at ${url}`);
+      });
+    })
+    .catch(e => {
+      console.error(e);
+      setTimeout(main, 3000);
+    });
+}
 
-// const server = new GraphQLServer({ typeDefs, resolvers, context: { pubsub } });
-
-// assetsContract.events.TeamCreation()
-//   .on('data', (event) => {
-//     pubsub.publish(TEAM_CREATED, { teamCreated: event.returnValues.teamId.toString() });
-//   })
-//   .on('changed', (event) => {
-//     // remove event from local database
-//   })
-//   .on('error', console.error);
+main();
 

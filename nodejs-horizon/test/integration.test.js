@@ -40,12 +40,4 @@ describe('assets resolvers', () => {
         query = testClient.query;
         mutate = testClient.mutate;
     });
-
-    describe('Query', () => {
-        it('Query', async () => {
-            const res = await query({ query: `{allTeams {id}}`, variables: { id: 1 } }).should.be.fulfilled;
-            res.data.allTeams.length.should.be.equal(1);
-            res.data.allTeams[0].id.should.be.equal('1');
-        });
-    });
 }); 

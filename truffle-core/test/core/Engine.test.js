@@ -12,9 +12,9 @@ contract('Engine', (accounts) => {
     let engine = null;
     let teamStateLib = null;
     const seed = 610106;
-    const tactic0 = [4, 4, 2];
-    const tactic1 = [4, 5, 1];
-    const nPlayers = 11;
+    const tactic0 = 0; // 442
+    const tactic1 = 1; // 541
+    const nPlayers = 25;
 
     const createTeamStateFromSinglePlayer = async (defence, speed, pass, shoot, endurance, teamStateLib) => {
         const playerStateTemp = await teamStateLib.playerStateCreate(
@@ -155,20 +155,17 @@ contract('Engine', (accounts) => {
         result.globSkills[4].should.be.bignumber.equal("70");
     });
 
-    it('play match with less than 11 players', async () => {
+    it('play match with less than 25 players', async () => {
         const wrongTeam = [0,1,2,3,4,5,6,7,8,9];
         await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
         await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
     });
 
     it('play match with wrong tactic', async () => {
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,1], tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [4,4,3], tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,1]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [4,4,3]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,5,0]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [5,0,5]).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, [0,5,5]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 6, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 7, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 8).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 9).should.be.rejected;
     });
 
 
