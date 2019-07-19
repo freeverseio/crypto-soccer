@@ -55,13 +55,7 @@ func NewGanache() *Ganache {
 }
 func (ganache *Ganache) Advance(blockCount int) {
 	for i := 0; i < blockCount; i++ {
-		auth := bind.NewKeyedTransactor(ganache.Owner)
-		_, err := ganache.time.Increase(
-			&bind.TransactOpts{
-				From:   auth.From,
-				Signer: auth.Signer,
-				//GasLimit: uint64(2000000000),
-			})
+		_, err := ganache.time.Increase(bind.NewKeyedTransactor(ganache.Owner))
 		AssertNoErr(err, "Error in Advance()")
 	}
 }
@@ -70,11 +64,14 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 	value.SetString(wei, 10)
 	privateKey, err := crypto.GenerateKey()
 	AssertNoErr(err, "Failed generating key")
-	toAddress := CommonAddressFromPrivateKey(privateKey)
+	toAddress := ganache.Public(privateKey)
 	_, err = ganache.TransferWei(value, ganache.Owner, toAddress)
 	AssertNoErr(err, "Failed transferring wei")
 
 	return privateKey
+}
+func (ganache *Ganache) Public(addr *ecdsa.PrivateKey) common.Address {
+	return crypto.PubkeyToAddress(addr.PublicKey)
 }
 func (ganache *Ganache) GetNonce(from *ecdsa.PrivateKey) uint64 {
 	publicKey := from.Public()
@@ -119,6 +116,7 @@ func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
 	AssertNoErr(err, "DeployStates failed")
 	ganache.States = contract
 	ganache.statesAddress = address
+	fmt.Println("States deployed at:", address.Hex())
 }
 func (ganache *Ganache) deployEngine(owner *ecdsa.PrivateKey) {
 	address, _, contract, err := engine.DeployEngine(
@@ -128,18 +126,20 @@ func (ganache *Ganache) deployEngine(owner *ecdsa.PrivateKey) {
 	AssertNoErr(err, "DeployEngine failed")
 	_ = contract
 	ganache.engineAddress = address
+	fmt.Println("Engine deployed at:", address.Hex())
 }
 func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
-	_, _, contract, err := assets.DeployAssets(
+	address, _, contract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
 		ganache.Client,
 		ganache.statesAddress,
 	)
 	AssertNoErr(err, "DeployAssets failed")
 	ganache.Assets = contract
+	fmt.Println("Assets deployed at:", address.Hex())
 }
 func (ganache *Ganache) deployLeagues(owner *ecdsa.PrivateKey) {
-	_, _, contract, err := leagues.DeployLeagues(
+	address, _, contract, err := leagues.DeployLeagues(
 		bind.NewKeyedTransactor(owner),
 		ganache.Client,
 		ganache.engineAddress,
@@ -147,6 +147,7 @@ func (ganache *Ganache) deployLeagues(owner *ecdsa.PrivateKey) {
 	)
 	AssertNoErr(err, "DeployStates failed")
 	ganache.Leagues = contract
+	fmt.Println("Leagues deployed at:", address.Hex())
 }
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.deployStates(owner)
@@ -155,15 +156,10 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.deployLeagues(owner)
 }
 func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
-	auth := bind.NewKeyedTransactor(from)
 	_, err := ganache.Assets.CreateTeam(
-		&bind.TransactOpts{
-			From:   auth.From,
-			Signer: auth.Signer,
-			//GasLimit: uint64(2000000000),
-		},
+		bind.NewKeyedTransactor(from),
 		name,
-		ganache.statesAddress)
+		ganache.Public(from))
 	AssertNoErr(err, "Error creating Team ", name)
 }
 func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int64 {
@@ -208,13 +204,14 @@ func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
 			tactics = append(tactics, [3]uint8{4, 4, 2})
 		}
 	}
-	auth := bind.NewKeyedTransactor(from)
 	tx, err := ganache.Leagues.Create(
-		&bind.TransactOpts{
-			From:   auth.From,
-			Signer: auth.Signer,
-			//GasLimit: uint64(2000000000),
-		}, leagueId, initBlock, step, teamIdsBig, tactics)
+		bind.NewKeyedTransactor(from),
+		leagueId,
+		initBlock,
+		step,
+		teamIdsBig,
+		tactics,
+	)
 	_ = tx
 	AssertNoErr(err)
 }

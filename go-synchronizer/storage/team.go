@@ -4,15 +4,63 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Team struct {
-	Id   uint64
-	Name string
+type TeamState struct {
+	BlockNumber          uint64
+	Owner                string
+	CurrentLeagueId      uint64
+	PosInCurrentLeagueId uint64
+	PrevLeagueId         uint64
+	PosInPrevLeagueId    uint64
 }
 
-func (b *Storage) TeamAdd(team *Team) error {
+type Team struct {
+	Id                uint64
+	Name              string
+	CreationTimestamp string
+	State             TeamState
+}
+
+func (b *Storage) TeamStateAdd(id uint64, teamState TeamState) error {
+	log.Infof("(DBMS) Adding team state %v", teamState)
+	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+		id,
+		teamState.BlockNumber,
+		teamState.CurrentLeagueId,
+		teamState.Owner,
+		teamState.PosInCurrentLeagueId,
+		teamState.PosInPrevLeagueId,
+		teamState.PrevLeagueId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
+	teamState := TeamState{}
+	rows, err := b.db.Query("SELECT blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId FROM teams_history WHERE (teamId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
+	if err != nil {
+		return teamState, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return teamState, nil
+	}
+	rows.Scan(&teamState.BlockNumber, &teamState.CurrentLeagueId, &teamState.Owner, &teamState.PosInCurrentLeagueId, &teamState.PosInPrevLeagueId, &teamState.PrevLeagueId)
+
+	return teamState, nil
+}
+
+func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
-	_, err := b.db.Exec("INSERT INTO teams (id, name) VALUES ($1, $2);", team.Id, team.Name)
+	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp) VALUES ($1, $2, $3);", team.Id, team.Name, team.CreationTimestamp)
+	if err != nil {
+		return err
+	}
+
+	err = b.TeamStateAdd(team.Id, team.State)
 	if err != nil {
 		return err
 	}
@@ -32,16 +80,16 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) GetTeam(id uint64) (*Team, error) {
+func (b *Storage) GetTeam(id uint64) (Team, error) {
 	team := Team{}
 	rows, err := b.db.Query("SELECT id, name FROM teams WHERE (id = $1);", id)
 	if err != nil {
-		return nil, err
+		return team, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return team, nil
 	}
 	rows.Scan(&team.Id, &team.Name)
-	return &team, nil
+	return team, nil
 }
