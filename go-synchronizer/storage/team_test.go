@@ -96,6 +96,24 @@ func TestTeamAdd(t *testing.T) {
 	}
 }
 
+func TestTeamAddSameTimeTwice(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var team storage.Team
+	team.Id = 3
+	team.Name = "ciao"
+	err = sto.TeamAdd(team)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.TeamAdd(team)
+	if err == nil {
+		t.Fatal("No error creating 2 teams with same id")
+	}
+}
+
 func TestGetTeam(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {

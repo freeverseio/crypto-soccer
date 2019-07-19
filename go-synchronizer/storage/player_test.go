@@ -100,6 +100,23 @@ func TestPlayerAdd(t *testing.T) {
 	}
 }
 
+func TestPlayerAddTwiceSameTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var player storage.Player
+	player.Id = 3
+	err = sto.PlayerAdd(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.PlayerAdd(player)
+	if err == nil {
+		t.Fatal("No error adding the same player twice")
+	}
+}
+
 func TestGetPlayer(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
