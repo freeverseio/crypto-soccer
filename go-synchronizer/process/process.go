@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
@@ -17,11 +18,12 @@ import (
 )
 
 type EventProcessor struct {
-	client  *ethclient.Client
-	db      *storage.Storage
-	assets  *assets.Assets
-	states  *states.States
-	leagues *leagues.Leagues
+	usesGanache bool
+	client      *ethclient.Client
+	db          *storage.Storage
+	assets      *assets.Assets
+	states      *states.States
+	leagues     *leagues.Leagues
 }
 
 // *****************************************************************************
@@ -30,7 +32,12 @@ type EventProcessor struct {
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
 func NewEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States, leagues *leagues.Leagues) *EventProcessor {
-	return &EventProcessor{client, db, assets, states, leagues}
+	return &EventProcessor{false, client, db, assets, states, leagues}
+}
+
+// NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, assets *assets.Assets, states *states.States, leagues *leagues.Leagues) *EventProcessor {
+	return &EventProcessor{true, client, db, assets, states, leagues}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -126,23 +133,35 @@ func (p *EventProcessor) dbLastBlockNumber() uint64 {
 	}
 	return storedLastBlockNumber
 }
+func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
+	if p.usesGanache {
+		return eventRaw.BlockNumber, eventRaw.BlockNumber, nil
+	}
+	block, err := p.client.BlockByHash(context.Background(), eventRaw.BlockHash)
+	if err != nil {
+		return 0, 0, err
+	}
+	return block.Time(), eventRaw.BlockNumber, nil
+}
 func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
 		} else if owner, err := p.assets.GetTeamOwner(nil, name); err != nil {
 			return err
+		} else if blockTime, blockNumber, err := p.getTimeOfEvent(event.Raw); err != nil {
+			return err
 		} else if err := p.db.TeamAdd(storage.Team{
 			event.Id.Uint64(),
 			name,
-			"0", // TODO: creationTimeStamp
+			strconv.FormatUint(blockTime, 10),
 			storage.TeamState{},
 		}); err != nil {
 			return err
 		} else if err := p.db.TeamStateAdd(
 			event.Id.Uint64(),
 			storage.TeamState{
-				BlockNumber:          strconv.FormatUint(event.Raw.BlockNumber, 10),
+				BlockNumber:          strconv.FormatUint(blockNumber, 10),
 				Owner:                owner.Hex(),
 				CurrentLeagueId:      0, // TODO: uint64
 				PosInCurrentLeagueId: 0, // TODO: uint64

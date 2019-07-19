@@ -45,7 +45,7 @@ func TestSyncTeams(t *testing.T) {
 	ganache.CreateTeam("B", bob)
 	ganache.CreateTeam("C", carol)
 
-	p := NewEventProcessor(ganache.Client, storage, ganache.Assets, ganache.States, ganache.Leagues)
+	p := NewGanacheEventProcessor(ganache.Client, storage, ganache.Assets, ganache.States, ganache.Leagues)
 
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
