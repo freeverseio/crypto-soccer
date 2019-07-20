@@ -12,6 +12,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/lib/pq v1.1.1
 	github.com/mattn/go-sqlite3 v1.10.0
+	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/rs/cors v1.6.0 // indirect

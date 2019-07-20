@@ -51,7 +51,7 @@ func (b *Storage) PlayerAdd(player Player) error {
 		return err
 	}
 
-	err = b.PlayerStateAdd(player.Id, player.State)
+	err = b.playerHistoryAdd(player.Id, player.State)
 	if err != nil {
 		return err
 	}
@@ -61,6 +61,28 @@ func (b *Storage) PlayerAdd(player Player) error {
 
 func (b *Storage) PlayerStateAdd(id uint64, playerState PlayerState) error {
 	log.Infof("(DBMS) Adding player state %v", playerState)
+
+	err := b.playerHistoryAdd(id, playerState)
+	if err != nil {
+		return err
+	}
+
+	_, err = b.db.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8 WHERE id=$9;",
+		playerState.BlockNumber,
+		playerState.TeamId,
+		playerState.State,
+		playerState.Defence,
+		playerState.Speed,
+		playerState.Pass,
+		playerState.Shoot,
+		playerState.Endurance,
+		id,
+	)
+	return err
+}
+
+func (b *Storage) playerHistoryAdd(id uint64, playerState PlayerState) error {
+	log.Infof("(DBMS) Adding player history %v", playerState)
 	_, err := b.db.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 		id,
 		playerState.BlockNumber,
