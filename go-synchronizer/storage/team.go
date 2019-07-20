@@ -55,11 +55,10 @@ func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
 func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v %v", team.Id, team.Name)
-	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		team.Id,
 		team.Name,
 		team.CreationTimestamp,
-		team.State.BlockNumber,
 		team.State.CurrentLeagueId,
 		team.State.Owner,
 		team.State.PosInCurrentLeagueId,

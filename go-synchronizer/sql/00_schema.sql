@@ -10,7 +10,6 @@ CREATE TABLE teams (
     id INT,
     name TEXT NOT NULL,
     creationTimestamp TEXT NOT NULL,
-    blockNumber TEXT NOT NULL,
     owner TEXT NOT NULL,
     currentLeagueId INT NOT NULL,
     posInCurrentLeagueId INT NOT NULL,
