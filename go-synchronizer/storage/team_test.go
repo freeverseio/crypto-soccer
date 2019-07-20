@@ -14,7 +14,7 @@ func TestTeamStateAdd(t *testing.T) {
 	team := storage.Team{
 		4,
 		"pippo",
-		"cavolfiore",
+		54,
 		storage.TeamState{
 			BlockNumber:          5,
 			Owner:                "io",
@@ -139,7 +139,7 @@ func TestGetTeam(t *testing.T) {
 	team := storage.Team{
 		4,
 		"pippo",
-		"cavolfiore",
+		67,
 		storage.TeamState{
 			BlockNumber:          5,
 			Owner:                "io",
