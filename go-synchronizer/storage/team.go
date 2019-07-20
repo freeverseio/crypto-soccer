@@ -18,7 +18,7 @@ type TeamState struct {
 type Team struct {
 	Id                uint64
 	Name              string
-	CreationTimestamp string
+	CreationTimestamp uint64
 	State             TeamState
 }
 
@@ -37,7 +37,7 @@ func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 }
 
 func (b *Storage) teamStateUpdate(id uint64, teamState TeamState) error {
-	log.Infof("(DBMS) - update team state %v", teamState)
+	log.Infof("(DBMS) + update team state %v", teamState)
 
 	_, err := b.db.Exec("UPDATE teams SET blockNumber=$1, currentLeagueId=$2, owner=$3, posInCurrentLeagueId=$4, posInPrevLeagueId=$5, prevLeagueId=$6 WHERE id=$7;",
 		teamState.BlockNumber,
@@ -52,7 +52,7 @@ func (b *Storage) teamStateUpdate(id uint64, teamState TeamState) error {
 }
 
 func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
-	log.Infof("(DBMS) - add team history %v", teamState)
+	log.Infof("(DBMS) + add team history %v", teamState)
 	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		id,
 		teamState.BlockNumber,

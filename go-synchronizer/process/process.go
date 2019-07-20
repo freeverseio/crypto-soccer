@@ -5,7 +5,6 @@ import (
 	//"fmt"
 	"math"
 	"math/big"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -154,7 +153,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if err := p.db.TeamAdd(storage.Team{
 			event.Id.Uint64(),
 			name,
-			strconv.FormatUint(blockTime, 10),
+			blockTime,
 			storage.TeamState{
 				BlockNumber:          blockNumber,
 				Owner:                owner.Hex(),
@@ -189,7 +188,13 @@ func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.Assets
 	return events, nil
 }
 func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
-	for i := 0; i < 11; i++ {
+	// TODO: move to a single run place ...  constructor
+	nPlayersAtCreation, err := p.assets.PLAYERSPERTEAM(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+
+	for i := 0; i < int(nPlayersAtCreation); i++ {
 		if id, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
 			return err
 		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
