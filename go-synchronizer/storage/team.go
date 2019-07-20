@@ -24,7 +24,7 @@ type Team struct {
 }
 
 func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
-	log.Infof("(DBMS) Updating team state %v", teamState)
+	log.Infof("[DBMS] Updating team state %v", teamState)
 
 	err := b.teamStateUpdate(id, teamState)
 	if err != nil {
@@ -38,7 +38,7 @@ func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 }
 
 func (b *Storage) teamStateUpdate(id uint64, teamState TeamState) error {
-	log.Infof("(DBMS) + update team state %v", teamState)
+	log.Infof("[DBMS] + update team state %v", teamState)
 
 	_, err := b.db.Exec("UPDATE teams SET blockNumber=$1, currentLeagueId=$2, owner=$3, posInCurrentLeagueId=$4, posInPrevLeagueId=$5, prevLeagueId=$6, inBlockIndex=$7 WHERE id=$8;",
 		teamState.BlockNumber,
@@ -54,7 +54,7 @@ func (b *Storage) teamStateUpdate(id uint64, teamState TeamState) error {
 }
 
 func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
-	log.Infof("(DBMS) + add team history %v", teamState)
+	log.Infof("[DBMS] + add team history %v", teamState)
 	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		id,
 		teamState.BlockNumber,
@@ -72,25 +72,9 @@ func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 	return nil
 }
 
-/// @TODO: retrive state from teams table
-func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
-	teamState := TeamState{}
-	rows, err := b.db.Query("SELECT blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex FROM teams WHERE id = $1;", id)
-	if err != nil {
-		return teamState, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return teamState, errors.New("Unexistent team")
-	}
-	rows.Scan(&teamState.BlockNumber, &teamState.CurrentLeagueId, &teamState.Owner, &teamState.PosInCurrentLeagueId, &teamState.PosInPrevLeagueId, &teamState.PrevLeagueId, &teamState.InBlockIndex)
-
-	return teamState, nil
-}
-
 func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
-	log.Infof("(DBMS) Adding team %v", team)
+	log.Infof("[DBMS] Adding team %v", team)
 	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 		team.Id,
 		team.Name,
