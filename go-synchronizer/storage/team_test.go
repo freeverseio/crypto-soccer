@@ -49,6 +49,17 @@ func TestTeamStateAdd(t *testing.T) {
 	}
 }
 
+func TestGetUnexistentTeamState(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = sto.GetTeamState(1)
+	if err == nil {
+		t.Fatal("No error on unexistent team")
+	}
+}
+
 func TestGetTeamState(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {

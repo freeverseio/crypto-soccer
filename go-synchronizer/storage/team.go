@@ -68,7 +68,7 @@ func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return teamState, nil
+		return teamState, errors.New("Unexistent team")
 	}
 	rows.Scan(&teamState.BlockNumber, &teamState.CurrentLeagueId, &teamState.Owner, &teamState.PosInCurrentLeagueId, &teamState.PosInPrevLeagueId, &teamState.PrevLeagueId)
 
