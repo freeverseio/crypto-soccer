@@ -35,9 +35,18 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerAdd(player Player) error {
 	log.Infof("(DBMS) Adding player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime) VALUES ($1, $2);",
+	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime, blockNumber, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 		player.Id,
-		player.MonthOfBirthInUnixTime)
+		player.MonthOfBirthInUnixTime,
+		player.State.BlockNumber,
+		player.State.TeamId,
+		player.State.State,
+		player.State.Defence,
+		player.State.Speed,
+		player.State.Pass,
+		player.State.Shoot,
+		player.State.Endurance,
+	)
 	if err != nil {
 		return err
 	}
