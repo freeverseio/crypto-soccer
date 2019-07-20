@@ -7,34 +7,34 @@ CREATE TABLE params (
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
 CREATE TABLE teams (
-    id INT,
+    id BIGINT,
     name TEXT NOT NULL,
-    creationTimestamp TEXT NOT NULL,
-    blockNumber TEXT NOT NULL,
+    creationTimestamp BIGINT NOT NULL,
+    blockNumber BIGINT NOT NULL,
     owner TEXT NOT NULL,
-    currentLeagueId INT NOT NULL,
+    currentLeagueId BIGINT NOT NULL,
     posInCurrentLeagueId INT NOT NULL,
-    prevLeagueId INT NOT NULL,
+    prevLeagueId BIGINT NOT NULL,
     posInPrevLeagueId INT NOT NULL,
     PRIMARY KEY(id)
 );
 
 CREATE TABLE teams_history (
-    teamId INT NOT NULL REFERENCES teams(id),
-    blockNumber TEXT NOT NULL,
+    teamId BIGINT NOT NULL REFERENCES teams(id),
+    blockNumber BIGINT NOT NULL,
     owner TEXT NOT NULL,
-    currentLeagueId INT NOT NULL,
+    currentLeagueId BIGINT NOT NULL,
     posInCurrentLeagueId INT NOT NULL,
-    prevLeagueId INT NOT NULL,
+    prevLeagueId BIGINT NOT NULL,
     posInPrevLeagueId INT NOT NULL,
     PRIMARY KEY(teamId, blockNumber)
 );
 
 CREATE TABLE players (
-    id INT,
+    id BIGINT,
     monthOfBirthInUnixTime TEXT NOT NULL,
-    blockNumber TEXT NOT NULL,
-    teamId INT NOT NULL REFERENCES teams(id),
+    blockNumber BIGINT NOT NULL,
+    teamId BIGINT NOT NULL REFERENCES teams(id),
     state TEXT NOT NULL,
     defence INT NOT NULL,
     speed INT NOT NULL,
@@ -45,9 +45,9 @@ CREATE TABLE players (
 );
 
 CREATE TABLE players_history (
-    playerId INT NOT NULL REFERENCES players(id),
-    blockNumber TEXT NOT NULL,
-    teamId INT NOT NULL REFERENCES teams(id),
+    playerId BIGINT NOT NULL REFERENCES players(id),
+    blockNumber BIGINT NOT NULL,
+    teamId BIGINT NOT NULL REFERENCES teams(id),
     state TEXT NOT NULL,
     defence INT NOT NULL,
     speed INT NOT NULL,
