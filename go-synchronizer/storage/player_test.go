@@ -28,7 +28,7 @@ func TestPlayerStateAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 	var playerState storage.PlayerState
-	err = sto.PlayerStateAdd(1, playerState)
+	err = sto.PlayerStateUpdate(1, playerState)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func TestGetPlayerState(t *testing.T) {
 	}
 	player.State.BlockNumber = 366
 	player.State.Defence = 6
-	err = sto.PlayerStateAdd(player.Id, player.State)
+	err = sto.PlayerStateUpdate(player.Id, player.State)
 	if err != nil {
 		t.Fatal(err)
 	}

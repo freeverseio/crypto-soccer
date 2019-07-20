@@ -63,7 +63,7 @@ func (b *Storage) PlayerAdd(player Player) error {
 	return nil
 }
 
-func (b *Storage) PlayerStateAdd(id uint64, playerState PlayerState) error {
+func (b *Storage) PlayerStateUpdate(id uint64, playerState PlayerState) error {
 	log.Infof("(DBMS) Adding player state %v", playerState)
 
 	err := b.playerStateUpdate(id, playerState)
