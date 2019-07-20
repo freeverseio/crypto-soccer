@@ -123,14 +123,25 @@ func TestGetTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal("Expecting nil")
 	}
-	var team storage.Team
-	team.Id = 3
-	team.Name = "ciao"
+	team := storage.Team{
+		4,
+		"pippo",
+		"cavolfiore",
+		storage.TeamState{
+			BlockNumber:          5,
+			Owner:                "io",
+			CurrentLeagueId:      7,
+			PosInCurrentLeagueId: 4,
+			PrevLeagueId:         2,
+			PosInPrevLeagueId:    1,
+		},
+	}
+
 	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetTeam(3)
+	result, err := sto.GetTeam(team.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
