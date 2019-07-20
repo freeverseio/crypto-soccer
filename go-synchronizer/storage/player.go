@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,14 +13,15 @@ type Player struct {
 }
 
 type PlayerState struct {
-	TeamId      uint64
-	BlockNumber uint64
-	State       string
-	Defence     uint64
-	Speed       uint64
-	Pass        uint64
-	Shoot       uint64
-	Endurance   uint64
+	TeamId       uint64
+	BlockNumber  uint64
+	InBlockIndex uint64
+	State        string
+	Defence      uint64
+	Speed        uint64
+	Pass         uint64
+	Shoot        uint64
+	Endurance    uint64
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -35,7 +38,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerAdd(player Player) error {
 	log.Infof("(DBMS) Adding player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime, blockNumber, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
+	_, err := b.db.Exec("INSERT INTO players (id, monthOfBirthInUnixTime, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		player.Id,
 		player.MonthOfBirthInUnixTime,
 		player.State.BlockNumber,
@@ -46,6 +49,7 @@ func (b *Storage) PlayerAdd(player Player) error {
 		player.State.Pass,
 		player.State.Shoot,
 		player.State.Endurance,
+		player.State.InBlockIndex,
 	)
 	if err != nil {
 		return err
@@ -59,7 +63,7 @@ func (b *Storage) PlayerAdd(player Player) error {
 	return nil
 }
 
-func (b *Storage) PlayerStateAdd(id uint64, playerState PlayerState) error {
+func (b *Storage) PlayerStateUpdate(id uint64, playerState PlayerState) error {
 	log.Infof("(DBMS) Adding player state %v", playerState)
 
 	err := b.playerStateUpdate(id, playerState)
@@ -76,7 +80,7 @@ func (b *Storage) PlayerStateAdd(id uint64, playerState PlayerState) error {
 func (b *Storage) playerStateUpdate(id uint64, playerState PlayerState) error {
 	log.Infof("(DBMS) + update player state %v", playerState)
 
-	_, err := b.db.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8 WHERE id=$9;",
+	_, err := b.db.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8, inBlockIndex=$9 WHERE id=$10;",
 		playerState.BlockNumber,
 		playerState.TeamId,
 		playerState.State,
@@ -85,6 +89,7 @@ func (b *Storage) playerStateUpdate(id uint64, playerState PlayerState) error {
 		playerState.Pass,
 		playerState.Shoot,
 		playerState.Endurance,
+		playerState.InBlockIndex,
 		id,
 	)
 	return err
@@ -92,7 +97,7 @@ func (b *Storage) playerStateUpdate(id uint64, playerState PlayerState) error {
 
 func (b *Storage) playerHistoryAdd(id uint64, playerState PlayerState) error {
 	log.Infof("(DBMS) + add player history %v", playerState)
-	_, err := b.db.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+	_, err := b.db.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 		id,
 		playerState.BlockNumber,
 		playerState.TeamId,
@@ -101,7 +106,9 @@ func (b *Storage) playerHistoryAdd(id uint64, playerState PlayerState) error {
 		playerState.Speed,
 		playerState.Pass,
 		playerState.Shoot,
-		playerState.Endurance)
+		playerState.Endurance,
+		playerState.InBlockIndex,
+	)
 	if err != nil {
 		return err
 	}
@@ -117,7 +124,7 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return player, nil
+		return player, errors.New("Unexistent player")
 	}
 	rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime)
 	rows.Close()
@@ -130,15 +137,15 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 
 func (b *Storage) GetPlayerState(id uint64) (PlayerState, error) {
 	playerState := PlayerState{}
-	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance FROM players_history WHERE (playerId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
+	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex FROM players WHERE id = $1;", id)
 	if err != nil {
 		return playerState, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return playerState, nil
+		return playerState, errors.New("Unexistent player")
 	}
-	rows.Scan(&playerState.BlockNumber, &playerState.TeamId, &playerState.State, &playerState.Defence, &playerState.Speed, &playerState.Pass, &playerState.Shoot, &playerState.Endurance)
+	rows.Scan(&playerState.BlockNumber, &playerState.TeamId, &playerState.State, &playerState.Defence, &playerState.Speed, &playerState.Pass, &playerState.Shoot, &playerState.Endurance, &playerState.InBlockIndex)
 
 	return playerState, nil
 }

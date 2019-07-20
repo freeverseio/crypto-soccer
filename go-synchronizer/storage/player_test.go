@@ -28,7 +28,7 @@ func TestPlayerStateAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 	var playerState storage.PlayerState
-	err = sto.PlayerStateAdd(1, playerState)
+	err = sto.PlayerStateUpdate(1, playerState)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,35 +39,31 @@ func TestGetPlayerState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var playerState storage.PlayerState
-	playerState.BlockNumber = 33
-	playerState.Defence = 4
-	playerState.Endurance = 5
-	playerState.Pass = 6
-	playerState.Shoot = 7
-	playerState.Speed = 8
-	playerState.State = "23"
-	playerState.TeamId = 99
-	err = sto.PlayerStateAdd(1, playerState)
+	var player storage.Player
+	player.Id = 1
+	player.MonthOfBirthInUnixTime = "ff"
+	player.State.BlockNumber = 33
+	player.State.Defence = 4
+	player.State.Endurance = 5
+	player.State.Pass = 6
+	player.State.Shoot = 7
+	player.State.Speed = 8
+	player.State.State = "23"
+	player.State.TeamId = 99
+	err = sto.PlayerAdd(player)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetPlayerState(1)
+	result, err := sto.GetPlayerState(player.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != playerState {
-		t.Fatalf("Expected %v got %v", playerState, result)
+	if result != player.State {
+		t.Fatalf("Expected %v got %v", player.State, result)
 	}
-	playerState.BlockNumber = 35
-	playerState.Defence = 4
-	playerState.Endurance = 5
-	playerState.Pass = 6
-	playerState.Shoot = 7
-	playerState.Speed = 99
-	playerState.State = "23"
-	playerState.TeamId = 99
-	err = sto.PlayerStateAdd(1, playerState)
+	player.State.BlockNumber = 366
+	player.State.Defence = 6
+	err = sto.PlayerStateUpdate(player.Id, player.State)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,8 +71,8 @@ func TestGetPlayerState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != playerState {
-		t.Fatalf("Expected %v got %v", playerState, result)
+	if result != player.State {
+		t.Fatalf("Expected %v got %v", player.State, result)
 	}
 }
 
@@ -123,8 +119,8 @@ func TestGetPlayer(t *testing.T) {
 		t.Fatal(err)
 	}
 	player, err := sto.GetPlayer(1)
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("No error on get unexistent player")
 	}
 	var player2 storage.Player
 	player2.Id = 3
@@ -135,7 +131,7 @@ func TestGetPlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err = sto.GetPlayer(3)
+	player, err = sto.GetPlayer(player2.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
