@@ -47,6 +47,13 @@ func TestTeamStateAdd(t *testing.T) {
 	if team != result {
 		t.Fatalf("Expected %v got %v", team, result)
 	}
+	teamState, err := sto.GetTeamState(team.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if team.State != teamState {
+		t.Fatalf("Expected %v got %v", team.State, teamState)
+	}
 }
 
 func TestGetUnexistentTeamState(t *testing.T) {
@@ -57,48 +64,6 @@ func TestGetUnexistentTeamState(t *testing.T) {
 	_, err = sto.GetTeamState(1)
 	if err == nil {
 		t.Fatal("No error on unexistent team")
-	}
-}
-
-func TestGetTeamState(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var teamState storage.TeamState
-	teamState.BlockNumber = 33
-	teamState.CurrentLeagueId = 3
-	teamState.Owner = "44"
-	teamState.PosInCurrentLeagueId = 4
-	teamState.PosInPrevLeagueId = 7
-	teamState.PrevLeagueId = 9
-	err = sto.TeamStateAdd(1, teamState)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := sto.GetTeamState(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != teamState {
-		t.Fatalf("Expected %v got %v", teamState, result)
-	}
-	teamState.BlockNumber = 35
-	teamState.CurrentLeagueId = 3
-	teamState.Owner = "44"
-	teamState.PosInCurrentLeagueId = 4
-	teamState.PosInPrevLeagueId = 7
-	teamState.PrevLeagueId = 9
-	err = sto.TeamStateAdd(1, teamState)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err = sto.GetTeamState(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != teamState {
-		t.Fatalf("Expected %v got %v", teamState, result)
 	}
 }
 
