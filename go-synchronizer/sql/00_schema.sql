@@ -41,10 +41,10 @@ CREATE TABLE players_history (
     blockNumber TEXT NOT NULL,
     teamId INT NOT NULL REFERENCES teams(id),
     state TEXT NOT NULL,
-    defence INT NOT NULL DEFAULT 0,
-    speed INT NOT NULL DEFAULT 0,
-    pass INT NOT NULL DEFAULT 0,
-    shoot INT NOT NULL DEFAULT 0,
-    endurance INT NOT NULL DEFAULT 0,
+    defence INT NOT NULL,
+    speed INT NOT NULL,
+    pass INT NOT NULL,
+    shoot INT NOT NULL,
+    endurance INT NOT NULL,
     PRIMARY KEY(playerId, blockNumber)
 );
