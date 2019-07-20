@@ -114,14 +114,21 @@ func TestTeamAddSameTimeTwice(t *testing.T) {
 	}
 }
 
-func TestGetTeam(t *testing.T) {
+func TestGetUnexistentTeam(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = sto.GetTeam(1)
+	if err == nil {
+		t.Fatal("Expecting error on unexistent team")
+	}
+}
+
+func TestGetTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
-		t.Fatal("Expecting nil")
+		t.Fatal(err)
 	}
 	team := storage.Team{
 		4,

@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -98,7 +100,7 @@ func (b *Storage) GetTeam(id uint64) (Team, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return team, nil
+		return team, errors.New("Unexistent team")
 	}
 	rows.Scan(
 		&team.Id,
