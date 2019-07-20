@@ -11,11 +11,41 @@ func TestTeamStateAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var teamState storage.TeamState
-	teamState.CurrentLeagueId = 4
-	err = sto.TeamStateAdd(1, teamState)
+	team := storage.Team{
+		4,
+		"pippo",
+		"cavolfiore",
+		storage.TeamState{
+			BlockNumber:          5,
+			Owner:                "io",
+			CurrentLeagueId:      7,
+			PosInCurrentLeagueId: 4,
+			PrevLeagueId:         2,
+			PosInPrevLeagueId:    1,
+		},
+	}
+	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
+	}
+	team.State = storage.TeamState{
+		BlockNumber:          6,
+		Owner:                "tu",
+		CurrentLeagueId:      6,
+		PosInCurrentLeagueId: 3,
+		PrevLeagueId:         1,
+		PosInPrevLeagueId:    0,
+	}
+	err = sto.TeamStateAdd(team.Id, team.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := sto.GetTeam(team.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if team != result {
+		t.Fatalf("Expected %v got %v", team, result)
 	}
 }
 
