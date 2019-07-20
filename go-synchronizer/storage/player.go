@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -122,7 +124,7 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return player, nil
+		return player, errors.New("Unexistent player")
 	}
 	rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime)
 	rows.Close()
@@ -135,13 +137,13 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 
 func (b *Storage) GetPlayerState(id uint64) (PlayerState, error) {
 	playerState := PlayerState{}
-	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex FROM players_history WHERE (playerId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
+	rows, err := b.db.Query("SELECT blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex FROM players WHERE id = $1;", id)
 	if err != nil {
 		return playerState, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return playerState, nil
+		return playerState, errors.New("Unexistent player")
 	}
 	rows.Scan(&playerState.BlockNumber, &playerState.TeamId, &playerState.State, &playerState.Defence, &playerState.Speed, &playerState.Pass, &playerState.Shoot, &playerState.Endurance, &playerState.InBlockIndex)
 
