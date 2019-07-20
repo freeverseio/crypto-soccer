@@ -11,6 +11,7 @@ CREATE TABLE teams (
     name TEXT NOT NULL,
     creationTimestamp BIGINT NOT NULL,
     blockNumber BIGINT NOT NULL,
+    inBlockIndex INT NOT NULL,
     owner TEXT NOT NULL,
     currentLeagueId BIGINT NOT NULL,
     posInCurrentLeagueId INT NOT NULL,
@@ -22,18 +23,20 @@ CREATE TABLE teams (
 CREATE TABLE teams_history (
     teamId BIGINT NOT NULL REFERENCES teams(id),
     blockNumber BIGINT NOT NULL,
+    inBlockIndex INT NOT NULL,
     owner TEXT NOT NULL,
     currentLeagueId BIGINT NOT NULL,
     posInCurrentLeagueId INT NOT NULL,
     prevLeagueId BIGINT NOT NULL,
     posInPrevLeagueId INT NOT NULL,
-    PRIMARY KEY(teamId, blockNumber)
+    PRIMARY KEY(teamId, blockNumber, inBlockIndex)
 );
 
 CREATE TABLE players (
     id BIGINT,
     monthOfBirthInUnixTime TEXT NOT NULL,
     blockNumber BIGINT NOT NULL,
+    inBlockIndex INT NOT NULL,
     teamId BIGINT NOT NULL REFERENCES teams(id),
     state TEXT NOT NULL,
     defence INT NOT NULL,
@@ -47,6 +50,7 @@ CREATE TABLE players (
 CREATE TABLE players_history (
     playerId BIGINT NOT NULL REFERENCES players(id),
     blockNumber BIGINT NOT NULL,
+    inBlockIndex INT NOT NULL,
     teamId BIGINT NOT NULL REFERENCES teams(id),
     state TEXT NOT NULL,
     defence INT NOT NULL,
@@ -54,5 +58,5 @@ CREATE TABLE players_history (
     pass INT NOT NULL,
     shoot INT NOT NULL,
     endurance INT NOT NULL,
-    PRIMARY KEY(playerId, blockNumber)
+    PRIMARY KEY(playerId, blockNumber, inBlockIndex)
 );
