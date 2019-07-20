@@ -11,53 +11,59 @@ func TestTeamStateAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var teamState storage.TeamState
-	teamState.CurrentLeagueId = 4
-	err = sto.TeamStateAdd(1, teamState)
+	team := storage.Team{
+		4,
+		"pippo",
+		"cavolfiore",
+		storage.TeamState{
+			BlockNumber:          5,
+			Owner:                "io",
+			CurrentLeagueId:      7,
+			PosInCurrentLeagueId: 4,
+			PrevLeagueId:         2,
+			PosInPrevLeagueId:    1,
+		},
+	}
+	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
 	}
+	team.State = storage.TeamState{
+		BlockNumber:          6,
+		Owner:                "tu",
+		CurrentLeagueId:      6,
+		PosInCurrentLeagueId: 3,
+		PrevLeagueId:         1,
+		PosInPrevLeagueId:    0,
+	}
+	err = sto.TeamStateUpdate(team.Id, team.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := sto.GetTeam(team.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if team != result {
+		t.Fatalf("Expected %v got %v", team, result)
+	}
+	teamState, err := sto.GetTeamState(team.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if team.State != teamState {
+		t.Fatalf("Expected %v got %v", team.State, teamState)
+	}
 }
 
-func TestGetTeamState(t *testing.T) {
+func TestGetUnexistentTeamState(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var teamState storage.TeamState
-	teamState.BlockNumber = 33
-	teamState.CurrentLeagueId = 3
-	teamState.Owner = "44"
-	teamState.PosInCurrentLeagueId = 4
-	teamState.PosInPrevLeagueId = 7
-	teamState.PrevLeagueId = 9
-	err = sto.TeamStateAdd(1, teamState)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err := sto.GetTeamState(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != teamState {
-		t.Fatalf("Expected %v got %v", teamState, result)
-	}
-	teamState.BlockNumber = 35
-	teamState.CurrentLeagueId = 3
-	teamState.Owner = "44"
-	teamState.PosInCurrentLeagueId = 4
-	teamState.PosInPrevLeagueId = 7
-	teamState.PrevLeagueId = 9
-	err = sto.TeamStateAdd(1, teamState)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result, err = sto.GetTeamState(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != teamState {
-		t.Fatalf("Expected %v got %v", teamState, result)
+	_, err = sto.GetTeamState(1)
+	if err == nil {
+		t.Fatal("No error on unexistent team")
 	}
 }
 
@@ -114,23 +120,41 @@ func TestTeamAddSameTimeTwice(t *testing.T) {
 	}
 }
 
-func TestGetTeam(t *testing.T) {
+func TestGetUnexistentTeam(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = sto.GetTeam(1)
-	if err != nil {
-		t.Fatal("Expecting nil")
+	if err == nil {
+		t.Fatal("Expecting error on unexistent team")
 	}
-	var team storage.Team
-	team.Id = 3
-	team.Name = "ciao"
+}
+
+func TestGetTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	team := storage.Team{
+		4,
+		"pippo",
+		"cavolfiore",
+		storage.TeamState{
+			BlockNumber:          5,
+			Owner:                "io",
+			CurrentLeagueId:      7,
+			PosInCurrentLeagueId: 4,
+			PrevLeagueId:         2,
+			PosInPrevLeagueId:    1,
+		},
+	}
+
 	err = sto.TeamAdd(team)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetTeam(3)
+	result, err := sto.GetTeam(team.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
