@@ -33,6 +33,14 @@ CREATE TABLE teams_history (
 CREATE TABLE players (
     id INT,
     monthOfBirthInUnixTime TEXT NOT NULL,
+    blockNumber TEXT NOT NULL,
+    teamId INT NOT NULL REFERENCES teams(id),
+    state TEXT NOT NULL,
+    defence INT NOT NULL,
+    speed INT NOT NULL,
+    pass INT NOT NULL,
+    shoot INT NOT NULL,
+    endurance INT NOT NULL,
     PRIMARY KEY(id)
 );
 
