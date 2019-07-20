@@ -34,8 +34,8 @@ func New(configFile string) (*Config, error) {
 }
 
 func (b *Config) Print() {
-	log.Info("(CONFIG) ethereumClient          : ", b.EthereumClient)
-	log.Info("(CONFIG) assetsContractAddress   : ", b.AssetsContractAddress)
-	log.Info("(CONFIG) statesContractAddress   : ", b.StatesContractAddress)
-	log.Info("(CONFIG) leaguesContractAddress  : ", b.LeaguesContractAddress)
+	log.Info("[CONFIG] ethereumClient          : ", b.EthereumClient)
+	log.Info("[CONFIG] assetsContractAddress   : ", b.AssetsContractAddress)
+	log.Info("[CONFIG] statesContractAddress   : ", b.StatesContractAddress)
+	log.Info("[CONFIG] leaguesContractAddress  : ", b.LeaguesContractAddress)
 }
