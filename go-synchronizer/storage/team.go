@@ -30,14 +30,15 @@ func (b *Storage) TeamStateAdd(id uint64, teamState TeamState) error {
 		return err
 	}
 
-	// _, err = b.db.Exec("UPDATE INTO teams (blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6);",
-	// 	teamState.BlockNumber,
-	// 	teamState.CurrentLeagueId,
-	// 	teamState.Owner,
-	// 	teamState.PosInCurrentLeagueId,
-	// 	teamState.PosInPrevLeagueId,
-	// 	teamState.PrevLeagueId,
-	// )
+	_, err = b.db.Exec("UPDATE teams SET blockNumber=$1, currentLeagueId=$2, owner=$3, posInCurrentLeagueId=$4, posInPrevLeagueId=$5, prevLeagueId=$6 WHERE id=$7;",
+		teamState.BlockNumber,
+		teamState.CurrentLeagueId,
+		teamState.Owner,
+		teamState.PosInCurrentLeagueId,
+		teamState.PosInPrevLeagueId,
+		teamState.PrevLeagueId,
+		id,
+	)
 	return err
 }
 
