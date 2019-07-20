@@ -24,6 +24,25 @@ type Team struct {
 
 func (b *Storage) TeamStateAdd(id uint64, teamState TeamState) error {
 	log.Infof("(DBMS) Adding team state %v", teamState)
+
+	err := b.teamHistoryAdd(id, teamState)
+	if err != nil {
+		return err
+	}
+
+	// _, err = b.db.Exec("UPDATE INTO teams (blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6);",
+	// 	teamState.BlockNumber,
+	// 	teamState.CurrentLeagueId,
+	// 	teamState.Owner,
+	// 	teamState.PosInCurrentLeagueId,
+	// 	teamState.PosInPrevLeagueId,
+	// 	teamState.PrevLeagueId,
+	// )
+	return err
+}
+
+func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
+	log.Infof("(DBMS) Adding team history %v", teamState)
 	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		id,
 		teamState.BlockNumber,
@@ -72,7 +91,7 @@ func (b *Storage) TeamAdd(team Team) error {
 		return err
 	}
 
-	err = b.TeamStateAdd(team.Id, team.State)
+	err = b.teamHistoryAdd(team.Id, team.State)
 	if err != nil {
 		return err
 	}
