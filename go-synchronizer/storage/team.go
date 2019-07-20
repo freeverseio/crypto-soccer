@@ -58,6 +58,7 @@ func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 	return nil
 }
 
+/// @TODO: retrive state from teams table
 func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
 	teamState := TeamState{}
 	rows, err := b.db.Query("SELECT blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId FROM teams_history WHERE (teamId = $1) ORDER BY blockNumber DESC LIMIT 1 ;", id)
