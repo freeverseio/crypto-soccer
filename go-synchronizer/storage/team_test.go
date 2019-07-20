@@ -36,7 +36,7 @@ func TestTeamStateAdd(t *testing.T) {
 		PrevLeagueId:         1,
 		PosInPrevLeagueId:    0,
 	}
-	err = sto.TeamStateAdd(team.Id, team.State)
+	err = sto.TeamStateUpdate(team.Id, team.State)
 	if err != nil {
 		t.Fatal(err)
 	}
