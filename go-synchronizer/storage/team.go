@@ -72,22 +72,6 @@ func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 	return nil
 }
 
-/// @TODO: retrive state from teams table
-func (b *Storage) GetTeamState(id uint64) (TeamState, error) {
-	teamState := TeamState{}
-	rows, err := b.db.Query("SELECT blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex FROM teams WHERE id = $1;", id)
-	if err != nil {
-		return teamState, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return teamState, errors.New("Unexistent team")
-	}
-	rows.Scan(&teamState.BlockNumber, &teamState.CurrentLeagueId, &teamState.Owner, &teamState.PosInCurrentLeagueId, &teamState.PosInPrevLeagueId, &teamState.PrevLeagueId, &teamState.InBlockIndex)
-
-	return teamState, nil
-}
-
 func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("(DBMS) Adding team %v", team)

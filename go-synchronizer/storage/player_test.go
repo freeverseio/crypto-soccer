@@ -22,7 +22,7 @@ func TestPlayerCount(t *testing.T) {
 	}
 }
 
-func TestPlayerStateAdd(t *testing.T) {
+func TestPlayerStateUpdate(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -34,7 +34,7 @@ func TestPlayerStateAdd(t *testing.T) {
 	}
 }
 
-func TestGetPlayerState(t *testing.T) {
+func TestGetPlayer(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -54,12 +54,12 @@ func TestGetPlayerState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetPlayerState(player.Id)
+	result, err := sto.GetPlayer(player.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != player.State {
-		t.Fatalf("Expected %v got %v", player.State, result)
+	if result != player {
+		t.Fatalf("Expected %v got %v", player, result)
 	}
 	player.State.BlockNumber = 366
 	player.State.Defence = 6
@@ -67,12 +67,12 @@ func TestGetPlayerState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err = sto.GetPlayerState(1)
+	result, err = sto.GetPlayer(player.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result != player.State {
-		t.Fatalf("Expected %v got %v", player.State, result)
+	if result != player {
+		t.Fatalf("Expected %v got %v", player, result)
 	}
 }
 
@@ -110,32 +110,5 @@ func TestPlayerAddTwiceSameTeam(t *testing.T) {
 	err = sto.PlayerAdd(player)
 	if err == nil {
 		t.Fatal("No error adding the same player twice")
-	}
-}
-
-func TestGetPlayer(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	player, err := sto.GetPlayer(1)
-	if err == nil {
-		t.Fatal("No error on get unexistent player")
-	}
-	var player2 storage.Player
-	player2.Id = 3
-	player2.MonthOfBirthInUnixTime = "4534"
-	player2.State.Defence = 4
-	// player2.State = "43524"
-	err = sto.PlayerAdd(player2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	player, err = sto.GetPlayer(player2.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if player2 != player {
-		t.Fatalf("Expected %v got %v", player2, player)
 	}
 }

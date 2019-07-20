@@ -6,7 +6,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
-func TestTeamStateAdd(t *testing.T) {
+func TestTeamStateUpdate(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -46,24 +46,6 @@ func TestTeamStateAdd(t *testing.T) {
 	}
 	if team != result {
 		t.Fatalf("Expected %v got %v", team, result)
-	}
-	teamState, err := sto.GetTeamState(team.Id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if team.State != teamState {
-		t.Fatalf("Expected %v got %v", team.State, teamState)
-	}
-}
-
-func TestGetUnexistentTeamState(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = sto.GetTeamState(1)
-	if err == nil {
-		t.Fatal("No error on unexistent team")
 	}
 }
 
