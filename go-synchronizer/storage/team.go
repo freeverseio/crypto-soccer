@@ -91,7 +91,7 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) GetTeam(id uint64) (Team, error) {
 	team := Team{}
-	rows, err := b.db.Query("SELECT id, name FROM teams WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT id, name, creationTimestamp, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId FROM teams WHERE (id = $1);", id)
 	if err != nil {
 		return team, err
 	}
@@ -99,6 +99,15 @@ func (b *Storage) GetTeam(id uint64) (Team, error) {
 	if !rows.Next() {
 		return team, nil
 	}
-	rows.Scan(&team.Id, &team.Name)
+	rows.Scan(
+		&team.Id,
+		&team.Name,
+		&team.CreationTimestamp,
+		&team.State.CurrentLeagueId,
+		&team.State.Owner,
+		&team.State.PosInCurrentLeagueId,
+		&team.State.PosInPrevLeagueId,
+		&team.State.PrevLeagueId,
+	)
 	return team, nil
 }
