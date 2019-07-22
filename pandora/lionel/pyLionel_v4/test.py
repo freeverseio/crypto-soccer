@@ -460,8 +460,11 @@ def test2():
         playerIdx1, ADDR1,
         playerIdx2, ADDR3
     )
+
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
+    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
+    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
 
     #           -----  LEAGUE 2 ------
     # After the player exchange... we create another league
@@ -564,7 +567,7 @@ def test2():
 
     for t in range(nTeams):
         ST.createTeam("BotTeam"+str(t), ADDR1)
-        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR2)
+        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR1)
 
     for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
@@ -687,7 +690,7 @@ def runTest(name, result, expected):
 
 success = True
 success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 993)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 260)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
