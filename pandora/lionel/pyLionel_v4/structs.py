@@ -22,10 +22,11 @@ class Counter():
         return verseWasCrossed
 
 class DataToChallengePlayerSkills():
-    def __init__(self, merkleProofStates, merkleProofLeague, merkleProofAllLeagues):
+    def __init__(self, merkleProofStates, merkleProofLeague, merkleProofLeagueRoots, merkleProofSuperRoots):
         self.merkleProofStates      = merkleProofStates
         self.merkleProofLeague      = merkleProofLeague
-        self.merkleProofAllLeagues  = merkleProofAllLeagues
+        self.merkleProofLeagueRoots = merkleProofLeagueRoots
+        self.merkleProofSuperRoots  = merkleProofSuperRoots
 
 class MinimalPlayerState():
     def __init__(self, playerState = None):
@@ -332,7 +333,7 @@ class Storage(Counter):
         self.verseToFinishingLeagueIdxs = {}
 
         if isClient:
-            self.forceSuperRootLie = False
+            self.forceVerseRootLie = False
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
@@ -360,13 +361,13 @@ class Storage(Counter):
         return (self.currentBlock - self.verseToLeagueCommits[verse].lastWriteBlocknum) > nPeriods*CHALLENGING_PERIOD_BLKS
 
 
-    def getVerseSettledSuperRoots(self, verse):
+    def getVerseSettledVerseRoot(self, verse):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert isVerseSettled, "Asking for a settled superRoot of a not-settled verse"
-        if verseStatus == UPDT_LGROOTS:
-            return self.verseToLeagueCommits[verse].leagueRootsSuperRoots
+        if verseStatus == UPDT_VERSE:
+            return self.verseToLeagueCommits[verse].verseRoot
         if verseStatus == UPDT_SUPROOTS:
-            return self.verseToLeagueCommits[verse].superRoots
+            return self.verseToLeagueCommits[verse].superRootsVerseRoot
         assert False, "We should never be in this verse state"
 
 
@@ -693,19 +694,26 @@ class Storage(Counter):
             #   => leads to leagueRoot which is included in the provided allLeagueRoots
             #   => which leads to a superRoot which matchs the one provided in the verse update
             leagueFinalVerse = self.leagues[prevLeagueIdx].verseFinal()
-            commitSuperRoots = self.getVerseSettledSuperRoots(leagueFinalVerse)
-            subVerse, posInSubVerse = self.getLeagueSubVerse(leagueFinalVerse, prevLeagueIdx)
+            settledVerseRoot = self.getVerseSettledVerseRoot(leagueFinalVerse)
 
             if not pylio.verifyMerkleProof(
-                commitSuperRoots[subVerse],
-                dataToChallengeLatestSkills.merkleProofAllLeagues,
+                settledVerseRoot,
+                dataToChallengeLatestSkills.merkleProofSuperRoots,
+                pylio.serialHash
+            ):
+                print("SuperRoot not part of VerseRoot MerkleTree")
+                return False
+
+            if not pylio.verifyMerkleProof(
+                dataToChallengeLatestSkills.merkleProofSuperRoots.leaf,
+                dataToChallengeLatestSkills.merkleProofLeagueRoots,
                 pylio.serialHash
             ):
                 print("LeagueRoot not part of SuperRoot MerkleTree")
                 return False
 
             if not pylio.verifyMerkleProof(
-                dataToChallengeLatestSkills.merkleProofAllLeagues.leaf,
+                dataToChallengeLatestSkills.merkleProofLeagueRoots.leaf,
                 dataToChallengeLatestSkills.merkleProofLeague,
                 pylio.serialHash
             ):
@@ -1316,7 +1324,7 @@ class Storage(Counter):
         prevLeagueIdx, teamPosInPrevLeague = self.getLastPlayedLeagueIdx(playerIdx)
         if prevLeagueIdx == 0:
             merkleProofStates = MerkleProof([], 0, self.getPlayerSkillsAtEndOfLastLeague(playerIdx), 0)
-            return DataToChallengePlayerSkills(merkleProofStates, 0, 0)
+            return DataToChallengePlayerSkills(merkleProofStates, 0, 0, 0)
         else:
             # construct merkle proofs for:
             # - leagues states in prevLeague last day's hash
@@ -1361,27 +1369,45 @@ class Storage(Counter):
             # ----- prevLeague root in verse superRoot ------
             verse = self.leagues[prevLeagueIdx].verseFinal()
             subVerse, posInSubVerse = self.getLeagueSubVerse(verse, prevLeagueIdx)
-            superRoots, leagueRoots = self.computeLeagueHashesForVerse(verse)
-            treeAllLeagues = MerkleTree(leagueRoots[subVerse])
 
-            merkleProofAllLeagues = treeAllLeagues.prepareProofForLeaf(
+            superRoots, leagueRoots = self.computeLeagueHashesForVerse(verse)
+
+            treeLeagueRoots = MerkleTree(leagueRoots[posInSubVerse])
+            assert treeLeagueRoots.root == superRoots[subVerse], "Computed leagueRoots inconsistent"
+
+            merkleProofLeagueRoots = treeLeagueRoots.prepareProofForLeaf(
                 treeLeague.root,
                 posInSubVerse
             )
 
-            # triple check:
-            assert treeAllLeagues.root == superRoots[subVerse] == self.verseToLeagueCommits[verse].superRoots[subVerse]
-
             assert pylio.verifyMerkleProof(
-                self.verseToLeagueCommits[verse].superRoots[subVerse],
-                merkleProofAllLeagues,
+                treeLeagueRoots.root,
+                merkleProofLeagueRoots,
                 pylio.serialHash
             ), "Generated Merkle proof will not work"
+
+            # ----- superRoot in VerseRoot ------
+
+            treeSuperRoots = MerkleTree(superRoots)
+            assert treeSuperRoots.root == self.verseToLeagueCommits[verse].verseRoot, "Computed superRoots inconsistent"
+
+            merkleProofSuperRoots = treeSuperRoots.prepareProofForLeaf(
+                treeLeagueRoots.root,
+                subVerse
+            )
+
+            assert pylio.verifyMerkleProof(
+                self.verseToLeagueCommits[verse].verseRoot,
+                merkleProofSuperRoots,
+                pylio.serialHash
+            ), "Generated Merkle proof will not work"
+
 
             return DataToChallengePlayerSkills(
                 merkleProofStates,
                 merkleProofLeague,
-                merkleProofAllLeagues
+                merkleProofLeagueRoots,
+                merkleProofSuperRoots
             )
 
 
@@ -1512,8 +1538,8 @@ class Storage(Counter):
         verseRoot = tree.root
         self.updateVerseRoot(self.currentVerse, verseRoot, ADDR1)
         # only lie (if forced) in the BC, not locally
-        verseRootFinal = pylio.duplicate(superRoots)
-        if self.forceSuperRootLie:
+        verseRootFinal = pylio.duplicate(verseRoot)
+        if self.forceVerseRootLie:
             verseRootFinal = verseRootFinal * 2
         ST.updateVerseRoot(self.currentVerse, verseRootFinal, ADDR1)
 
