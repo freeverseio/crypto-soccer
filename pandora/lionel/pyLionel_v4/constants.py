@@ -7,10 +7,6 @@ from os.path import isfile, join, exists
 
 CHALLENGING_PERIOD_BLKS = 1000
 
-# Challenging a verse where a league was not included (MISSING) or included incorrectly (SHOULDNOTBE)
-MISSING = 0
-SHOULDNOTBE = 1
-
 # Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
 UPDT_NONE       = 0 # no update at all
 UPDT_VERSE      = 1 # only verseRoot, but nothing else
@@ -19,8 +15,8 @@ UPDT_LGROOTS    = 3 # allLeaguesRoot, but nothing else
 UPDT_ONELEAGUE  = 4 # matchdayHashes provided
 
 AVG_SKILL = 50
-NPLAYERS_PER_TEAM = 16
-MAX_NTEAMS_PER_LEAGUE = 10
+NPLAYERS_PER_TEAM_INIT  = 18
+NPLAYERS_PER_TEAM_MAX   = 25
 
 MIN_PLAYER_AGE = 16
 MAX_PLAYER_AGE = 35 # max age at time of creation, of course
@@ -29,6 +25,7 @@ ADDR1 = 0x5eD8Cee6b63b1c6AFce3AD7c92f4fD7E1B8fAd9F
 ADDR2 = 0x01D4950B1Ed0cDAc801973EA8968785148a9E006
 ADDR3 = 0x38aa48A49034c7AF5C6b04b3AF39F2BaAFe9fc3a
 
+UINTMINUS1 = 2**26-1
 
 # defence, speed, pass, shoot, endurance
 DE = 0
@@ -69,14 +66,14 @@ TACTICS = {
 # To test, we will either use two. One is the "I'm ok with the original order", which
 # is just a map from each number to itself; and the extreme "I want the reverse order", where
 # the last created player in the team will act as goalie, then prev-to-last is defender, etc:
-DEFAULT_ORDER = np.arange(NPLAYERS_PER_TEAM)
-REVERSE_ORDER = np.arange(NPLAYERS_PER_TEAM, 0, -1) - 1
+DEFAULT_ORDER = np.arange(NPLAYERS_PER_TEAM_MAX)
+REVERSE_ORDER = np.arange(NPLAYERS_PER_TEAM_MAX, 0, -1) - 1
 
 ORDER1 = np.array([0,5,4,3,2,1])
 ORDER2 = np.array([3,2,1,4,5,0])
 
-ORDER1 = np.append(ORDER1, range(6,NPLAYERS_PER_TEAM))
-ORDER2 = np.append(ORDER2, range(6,NPLAYERS_PER_TEAM))
+ORDER1 = np.append(ORDER1, range(6,NPLAYERS_PER_TEAM_MAX))
+ORDER2 = np.append(ORDER2, range(6,NPLAYERS_PER_TEAM_MAX))
 
 POSSIBLE_ORDERS  = [DEFAULT_ORDER, REVERSE_ORDER, ORDER1, ORDER2]
 POSSIBLE_TACTICS = [TACTICS["433"], TACTICS["442"], TACTICS["433pressing"], TACTICS["442pressing"]]
