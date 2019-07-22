@@ -26,7 +26,7 @@ type Team struct {
 func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 	log.Infof("[DBMS] Updating team state %v", teamState)
 
-	err := b.teamStateUpdate(id, teamState)
+	err := b.teamUpdate(id, teamState)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 	return nil
 }
 
-func (b *Storage) teamStateUpdate(id uint64, teamState TeamState) error {
+func (b *Storage) teamUpdate(id uint64, teamState TeamState) error {
 	log.Infof("[DBMS] + update team state %v", teamState)
 
 	_, err := b.db.Exec("UPDATE teams SET blockNumber=$1, currentLeagueId=$2, owner=$3, posInCurrentLeagueId=$4, posInPrevLeagueId=$5, prevLeagueId=$6, inBlockIndex=$7 WHERE id=$8;",

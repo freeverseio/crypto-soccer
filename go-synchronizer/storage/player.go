@@ -66,7 +66,7 @@ func (b *Storage) PlayerAdd(player Player) error {
 func (b *Storage) PlayerStateUpdate(id uint64, playerState PlayerState) error {
 	log.Infof("[DBMS] Adding player state %v", playerState)
 
-	err := b.playerStateUpdate(id, playerState)
+	err := b.playerUpdate(id, playerState)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (b *Storage) PlayerStateUpdate(id uint64, playerState PlayerState) error {
 	return nil
 }
 
-func (b *Storage) playerStateUpdate(id uint64, playerState PlayerState) error {
+func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
 	log.Infof("[DBMS] + update player state %v", playerState)
 
 	_, err := b.db.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8, inBlockIndex=$9 WHERE id=$10;",
