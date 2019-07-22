@@ -418,9 +418,10 @@ def test2():
 
     # We do not wait enough and try a sell/buy action is attempted
     pylio.shouldFail(lambda x:
-        ST.exchangePlayers(
-            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1), ADDR1,
-            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6), ADDR3
+        exchangePlayers(
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1),
+            ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6),
+            ST, ST_CLIENT
         ), "Player sell/buy was allowed but previous league was not settled yet"
      )
 
@@ -438,14 +439,7 @@ def test2():
     playerIdx1 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1)
     playerIdx2 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6)
 
-    ST.exchangePlayers(
-        playerIdx1, ADDR1,
-        playerIdx2, ADDR3
-    )
-    ST_CLIENT.exchangePlayers(
-        playerIdx1, ADDR1,
-        playerIdx2, ADDR3
-    )
+    exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
 
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
@@ -558,14 +552,7 @@ def test2():
     for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM
         playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM
-        ST.exchangePlayers(
-            playerIdx1, ST.getOwnerAddrFromPlayerIdx(playerIdx1),
-            playerIdx2, ST.getOwnerAddrFromPlayerIdx(playerIdx2)
-        )
-        ST_CLIENT.exchangePlayers(
-            playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
-            playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
-        )
+        exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
         pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
 
     lastTeamIdx = 1
