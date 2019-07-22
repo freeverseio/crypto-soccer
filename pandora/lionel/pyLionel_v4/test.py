@@ -257,8 +257,11 @@ def test2():
 
     assert not ST.hasLeagueFinished(leagueIdx), "League detected as finished when it is still being played"
     assert not ST.hasLeagueBeenUpdated(leagueIdx), "League was updated too early, before finishing"
-    # Move beyond league end
+    # Move beyond league end, and force a lie by the updater:
+    ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(ST.nextVerseBlock()+1, ST, ST_CLIENT)
+    ST_CLIENT.forceVerseRootLie = False
+
     assert ST.hasLeagueFinished(leagueIdx), "League not detected as already finished"
     assert ST.hasLeagueBeenUpdated(leagueIdx), "League not detected as updated, when the sync process should have done it"
 
@@ -396,19 +399,20 @@ def test2():
     assert (leagueIdx == leagueIdx_client), "leagueIdx not in sync BC vs client"
     assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
-    # Advance to end of league and submit a lie
+    # Advance to end of league and submit a truth
     verse = ST.leagues[leagueIdx].verseFinal()
-    ST_CLIENT.forceSuperRootLie = True
     advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
-    ST_CLIENT.forceSuperRootLie = False
-    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
 
     # Check that a lie can be caught by comparing with local computation
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    assert not pylio.areEqualStructs(ST.verseToLeagueCommits[verse].superRoots, superRoots), "Updater should have lied in superroot, but didnt"
+    pylio.shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, ADDR2), "Updater should have lied in superroot, but didnt")
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
 
     # Submit a challenge and check its time evolution after waiting....
-    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], superRoots, ADDR2)
+    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
@@ -425,7 +429,11 @@ def test2():
     # We now wait enough
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
     assert needsSlash == UPDT_SUPROOTS, "Verse incorrectly reporting slash not needed"
+    assert not isVerseSettled, "Verse incorrectly detected as already settled"
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
     # Now, we can sell-buy players
@@ -458,9 +466,10 @@ def test2():
 
     # Try to challenge by providing a false ALL-LEAGUES
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 4)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], superRootsLie, ADDR2)
+    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 5)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
 
     # Try to challenge by providing a false ONE-LEAGUE...
@@ -645,7 +654,7 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
+# success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
 success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 176)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
