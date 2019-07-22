@@ -24,14 +24,7 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                 playerIdx1 = 1 + intHash(str(p+extraVerse)) % 100 * NPLAYERS_PER_TEAM
                 playerIdx2 = 1 + intHash(str(p+extraVerse) + "salt") % 100 * NPLAYERS_PER_TEAM
                 try:
-                    ST.exchangePlayers(
-                        playerIdx1, ST.getOwnerAddrFromPlayerIdx(playerIdx1),
-                        playerIdx2, ST.getOwnerAddrFromPlayerIdx(playerIdx2)
-                    )
-                    ST_CLIENT.exchangePlayers(
-                        playerIdx1, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1),
-                        playerIdx2, ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2)
-                    )
+                    exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
                 except:
                     pass
                 pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
@@ -172,14 +165,7 @@ def test1():
 
     advanceNBlocks(10, ST, ST_CLIENT)
 
-    ST.exchangePlayers(
-        2, ADDR1,
-        24, ADDR2
-    )
-    ST_CLIENT.exchangePlayers(
-        2, ADDR1,
-        24, ADDR2
-    )
+    exchangePlayers(2, 24, ST, ST_CLIENT)
 
     print("\n\nplayers 2 and 24 after sale:\n")
     hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
