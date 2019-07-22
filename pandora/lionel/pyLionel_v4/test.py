@@ -15,9 +15,9 @@ from structs import *
 
 # import __builtin__ as builtin
 
-def finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, doExchanges):
+def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
     # Now go through every league and verse, and always tell the truth in all challenges.
-    # Since the superRoot was true in all cases, we should end up in SuperRoot state at the very end.
+    # Since the verseRoot was true in all cases, we should end up in verseRoot state at the very end.
     for extraVerse in range(2000):
         if doExchanges and extraVerse % 10:
             for p in range(2):
@@ -39,11 +39,17 @@ def finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, doExchanges):
         for leagueIdx in leaguesTested:
             verse = ST.leagues[leagueIdx].verseFinal()
             verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
-            assert not (ST.isLeagueSettled(leagueIdx) and verseStatus != UPDT_SUPROOTS), "Someone hacked the game"
+            assert not ( ST.isLeagueSettled(leagueIdx) and verseStatus != UPDT_VERSE), "Someone hacked the game"
             if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
                 print("challenging league...", leagueIdx)
-                if verseStatus == UPDT_LGROOTS:
+                if verseStatus == UPDT_SUPROOTS:
                     print("challenging league... superRoot", leagueIdx)
+                    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+                    subVerse = 0
+                    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2)
+                    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+                if verseStatus == UPDT_LGROOTS:
+                    print("challenging league... leagueRoot", leagueIdx)
                     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
                     ST.challengeleagueRoots(
                         verse,
@@ -59,7 +65,7 @@ def finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, doExchanges):
                         ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
                         duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
                     )
-        advanceNVerses(2, ST, ST_CLIENT)
+        # advanceNVerses(2, ST, ST_CLIENT)
         return ST, ST_CLIENT
 
 def brutalBlock(ST, ST_CLIENT, leaguesTested):
@@ -73,18 +79,24 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
     leaguesTestedAtLevel3 = []
     advanceNVerses(250, ST, ST_CLIENT)
     for extraVerse in range(45):
-        advanceNVerses(2, ST, ST_CLIENT)
+        advanceNVerses(1, ST, ST_CLIENT)
         for leagueIdx in leaguesTested:
             if ST.hasLeagueFinished(leagueIdx) and (not ST.isLeagueSettled(leagueIdx)):
                 print("challenging league...", leagueIdx)
                 verse = ST.leagues[leagueIdx].verseFinal()
                 verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
-                if verseStatus == UPDT_SUPROOTS:
+                if verseStatus == UPDT_VERSE:
+                    print("challenging league... verseRoot", leagueIdx)
+                    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+                    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 11)
+                    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+                    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+                elif verseStatus == UPDT_SUPROOTS:
                     print("challenging league... superRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
                     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 12)
                     subVerse = 0
-                    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], superRootsLie, ADDR2)
+                    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
                     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
                 elif verseStatus == UPDT_LGROOTS:
                     if leagueIdx in leaguesTestedAtLevel3:
@@ -521,6 +533,18 @@ def test2():
     # finally, after a CHLL_PERIOD, it shows that it is back to the superRoot
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert not isVerseSettled, "Verse incorrectly detected as settled"
+
+    ST.challengeSuperRoot(verse, subVerse, leagueRoots, ADDR3)
+    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert not isVerseSettled, "Verse incorrectly detected as settled"
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
@@ -577,8 +601,14 @@ def test2():
         advanceNVerses(intHash(str(l))%2 , ST, ST_CLIENT) # advance either 1 or 0 verses
 
 
+    # We run a large set of updates, challenges, exchanges, etc.
+    # Only the verseRoot is true. So we may end up in one of the many other states, but false.
     ST, ST_CLIENT = brutalBlock(ST, ST_CLIENT, leaguesTested)
-    ST, ST_CLIENT = finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, True)
+    # We now tell the truth for all leagues. We need to do this in 2 steps, since some leagues
+    # ended up in the last state. That's why we wait for an extra challenging block, and repeat telling truth.
+    ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
+    ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
 
     # Wait for everything to settle and check we're in the SuperRoot state in all such leagues
     advanceNVerses(2000, ST, ST_CLIENT)
@@ -586,11 +616,13 @@ def test2():
         verse = ST.leagues[leagueIdx].verseFinal()
         verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
         assert isVerseSettled
-        assert verseStatus == UPDT_SUPROOTS, "league should be back to Super..."
+        assert verseStatus == UPDT_VERSE, "league should be back to Verse..."
 
 
     ST, ST_CLIENT = brutalBlock(ST, ST_CLIENT, leaguesTested)
-    ST, ST_CLIENT = finalizeBrutalBlock(ST, ST_CLIENT, leaguesTested, False)
+    ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, False)
+    advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
+    ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
 
     # Wait for everything to settle and check we're in the SuperRoot state in all such leagues
     advanceNVerses(2000, ST, ST_CLIENT)
@@ -598,7 +630,7 @@ def test2():
         verse = ST.leagues[leagueIdx].verseFinal()
         verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
         assert isVerseSettled
-        assert verseStatus == UPDT_SUPROOTS, "league should be back to Super..."
+        assert verseStatus == UPDT_VERSE, "league should be back to Verse..."
 
 
 
@@ -655,7 +687,7 @@ def runTest(name, result, expected):
 
 success = True
 # success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 10754)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 176)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 993)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
