@@ -671,7 +671,7 @@ class Storage(Counter):
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
             for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
                 if self.isShirtNumFree(teamIdx, shirtNum):
-                    initPlayerSkills[teamPosInLeague][shirtNum] = 0
+                    initPlayerSkills[teamPosInLeague][shirtNum] = MinimalPlayerState()
                     continue
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].merkleProofStates.leaf
@@ -1313,7 +1313,7 @@ class Storage(Counter):
         for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
             for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
                 if self.isShirtNumFree(teamIdx, shirtNum):
-                    dataToChallengeInitSkills[teamPos][shirtNum] = None
+                    dataToChallengeInitSkills[teamPos][shirtNum] = DataToChallengePlayerSkills(0, 0, 0, 0)
                 elif playerIdx == 0: # if never written in teams.playerIdxs array
                     dataToChallengeInitSkills[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(
                         self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
@@ -1493,9 +1493,12 @@ class Storage(Counter):
         initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
             for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
-                playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                playerState = self.getCurrentPlayerState(playerIdx)
-                initPlayerStates[teamPosInLeague][shirtNum] = playerState
+                if self.isShirtNumFree(teamIdx, shirtNum):
+                    initPlayerStates[teamPosInLeague][shirtNum] = PlayerState()
+                else:
+                    playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                    playerState = self.getCurrentPlayerState(playerIdx)
+                    initPlayerStates[teamPosInLeague][shirtNum] = playerState
         return initPlayerStates
 
 
