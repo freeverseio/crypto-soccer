@@ -140,13 +140,8 @@ def test1():
     ST          = Storage(isClient = False)
     ST_CLIENT   = Storage(isClient = True)
 
-    teamIdx1 = ST.createTeam("Barca", ADDR1)
-    teamIdx2 = ST.createTeam("Madrid", ADDR2)
-
-    teamIdx1_client = ST_CLIENT.createTeam("Barca", ADDR1)
-    teamIdx2_client = ST_CLIENT.createTeam("Madrid", ADDR2)
-
-    assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
+    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
+    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
     pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
@@ -157,8 +152,6 @@ def test1():
     print("\n\nplayers 2 and 24 before sale:\n")
 
     hash1 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(2))
-
-    assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "PlayerStates not in sync BC vs client"
 
     print("\n")
     hash2 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(24))
@@ -190,17 +183,10 @@ def test2():
     advanceToBlock(10, ST, ST_CLIENT)
 
     # Create teams in BC and client
-    teamIdx1 = ST.createTeam("Barca", ADDR1)
-    teamIdx2 = ST.createTeam("Madrid", ADDR2)
-    teamIdx3 = ST.createTeam("Milan", ADDR3)
-    teamIdx4 = ST.createTeam("PSG", ADDR3)
-
-    teamIdx1_client = ST_CLIENT.createTeam("Barca", ADDR1)
-    teamIdx2_client = ST_CLIENT.createTeam("Madrid", ADDR2)
-    teamIdx3_client = ST_CLIENT.createTeam("Milan", ADDR3)
-    teamIdx4_client = ST_CLIENT.createTeam("PSG", ADDR3)
-
-    assert (teamIdx1 == teamIdx1_client) and (teamIdx2 == teamIdx2_client), "TeamIdx not in sync BC vs client"
+    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
+    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
+    teamIdx3 = createTeam("Milan", ADDR3, ST, ST_CLIENT)
+    teamIdx4 = createTeam("PSG", ADDR3, ST, ST_CLIENT)
 
     # advances both BC and CLIENT, and syncs if it goes through a verse
     advanceToBlock(100, ST, ST_CLIENT)
@@ -546,8 +532,7 @@ def test2():
     nPlayers    = 400
 
     for t in range(nTeams):
-        ST.createTeam("BotTeam"+str(t), ADDR1)
-        ST_CLIENT.createTeam("BotTeam"+str(t), ADDR1)
+        createTeam("BotTeam"+str(t), ADDR1, ST, ST_CLIENT)
 
     for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM

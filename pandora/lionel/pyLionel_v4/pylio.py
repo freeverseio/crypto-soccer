@@ -289,6 +289,12 @@ def createLieSuperRoot(superRoots, leagueRoots, factor):
 
     return superRootsLie, leagueRootsLie
 
+def createTeam(teamName, addr, ST, ST_CLIENT):
+    teamIdx1 = ST.createTeam(teamName, addr)
+    teamIdx2 = ST_CLIENT.createTeam(teamName, addr)
+    assert teamIdx1 == teamIdx2, "ST and ST_CLIENT not in sync"
+    return teamIdx1
+
 def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
     addr1 = ST.getOwnerAddrFromPlayerIdx(playerIdx1)
     addr2 = ST.getOwnerAddrFromPlayerIdx(playerIdx2)
