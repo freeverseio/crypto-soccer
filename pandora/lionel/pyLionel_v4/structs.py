@@ -462,8 +462,8 @@ class Storage(Counter):
     def computeUsersInitDataHash(self, usersInitData):
         hash = 0
         nTeams = len(usersInitData["teamIdxs"])
-        assert (nTeams == len(usersInitData["teamOrders"]), "init data not consistent")
-        assert (nTeams == len(usersInitData["tactics"]), "init data not consistent")
+        assert nTeams == len(usersInitData["teamOrders"]), "init data not consistent"
+        assert nTeams == len(usersInitData["tactics"]), "init data not consistent"
         for team in range(nTeams):
             teamIdx = usersInitData["teamIdxs"][team]
             teamOrders = usersInitData["teamOrders"][team]
@@ -846,8 +846,7 @@ class Storage(Counter):
 
     def signTeamsInLeague(self, usersInitData, leagueIdx):
         nTeams = len(usersInitData["teamIdxs"])
-        assert(nTeams == len(usersInitData["teamOrders"]), "init data not consistent")
-        assert(nTeams == len(usersInitData["tactics"]), "init data not consistent")
+        assert nTeams == len(usersInitData["teamOrders"]), "init data not consistent"
         for team in range(nTeams):
             teamIdx     = usersInitData["teamIdxs"][team]
             teamOrders  = usersInitData["teamOrders"][team]
@@ -1009,12 +1008,6 @@ class Storage(Counter):
     def getLeagueIdxFromPosInSubverse(self, verse, posInSubVerse):
         challengedSubVerse = self.verseToLeagueCommits[verse].subVerse
         return self.verseToFinishingLeagueIdxs[verse][challengedSubVerse * SUPERROOTS_PER_VERSE + posInSubVerse]
-
-    def getLeagueRootFromVerseCommit(self, verse, leagueIdx):
-        for leaguePair in self.verseToLeagueCommits[verse].leagueRoots:
-            if leaguePair[0] == leagueIdx:
-                return leaguePair[1]
-        assert False, "league not found in verse!"
 
 
     def isLeagueIdxInVerseCommit(self, verse, leagueIdx):
