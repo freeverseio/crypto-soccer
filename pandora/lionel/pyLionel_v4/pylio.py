@@ -289,7 +289,12 @@ def createLieSuperRoot(superRoots, leagueRoots, factor):
 
     return superRootsLie, leagueRootsLie
 
-def exchangePlayers(playerIdx1, addr1, playerIdx2, addr2, ST, ST_CLIENT):
+def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
+    addr1 = ST.getOwnerAddrFromPlayerIdx(playerIdx1)
+    addr2 = ST.getOwnerAddrFromPlayerIdx(playerIdx2)
+    assert addr1 == ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1), "ST and ST_CLIENT not in sync"
+    assert addr2 == ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2), "ST and ST_CLIENT not in sync"
+
     ST.exchangePlayers(
         playerIdx1, addr1,
         playerIdx2, addr2
@@ -298,4 +303,3 @@ def exchangePlayers(playerIdx1, addr1, playerIdx2, addr2, ST, ST_CLIENT):
         playerIdx1, addr1,
         playerIdx2, addr2
     )
-    return ST, ST_CLIENT
