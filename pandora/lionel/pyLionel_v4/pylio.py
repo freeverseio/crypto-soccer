@@ -288,3 +288,14 @@ def createLieSuperRoot(superRoots, leagueRoots, factor):
         superRootsLie[s] = tree.root
 
     return superRootsLie, leagueRootsLie
+
+def exchangePlayers(playerIdx1, addr1, playerIdx2, addr2, ST, ST_CLIENT):
+    ST.exchangePlayers(
+        playerIdx1, addr1,
+        playerIdx2, addr2
+    )
+    ST_CLIENT.exchangePlayers(
+        playerIdx1, addr1,
+        playerIdx2, addr2
+    )
+    return ST, ST_CLIENT
