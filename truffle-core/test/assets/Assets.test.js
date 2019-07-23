@@ -28,8 +28,8 @@ contract('Assets', (accounts) => {
     });
     
     it('compute seed', async () => {
-        const seed = await assets.computeSeed("ciao", 55).should.be.fulfilled;
-        seed.should.be.bignumber.equal('70784264222015847647364792903196777080414493477200674456068616512110552463457');
+        const seed = await assets.computeSeed(web3.utils.keccak256("ciao"), 55).should.be.fulfilled;
+        seed.should.be.bignumber.equal('34043593120303183903741292954315585295064490957430510451016950480665910064957');
     });
 
     it('get team creation timestamp', async () => {
@@ -42,12 +42,14 @@ contract('Assets', (accounts) => {
     });
 
     it('player birth is generated from team creation timestamp', async () => {
-        await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
+        const name = "Barca"
+        await assets.createTeam(name, ALICE).should.be.fulfilled;
         const teamCreationTimestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
         const playerState = await assets.getPlayerState(5).should.be.fulfilled;
         const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
         const posInTeam = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
-        const seed = await assets.computeSeed("Barca", posInTeam).should.be.fulfilled;
+        const nameHash = web3.utils.keccak256(web3.eth.abi.encodeParameter('string', name))
+        const seed = await assets.computeSeed(nameHash, posInTeam).should.be.fulfilled;
         const computedBirth = await assets.computeBirth(seed, teamCreationTimestamp).should.be.fulfilled;
         playerBirth.should.be.bignumber.equal(computedBirth);
     });
@@ -70,7 +72,7 @@ contract('Assets', (accounts) => {
 
     it('add team with different owner than the sender', async () => {
         await assets.createTeam('Barca', ALICE).should.be.fulfilled;
-        const owner = await assets.getTeamOwner('Barca').should.be.fulfilled;
+        const owner = await assets.getTeamOwner(teamId = 1).should.be.fulfilled;
         owner.should.be.equal(ALICE);
     })
 
@@ -97,11 +99,11 @@ contract('Assets', (accounts) => {
     });
 
     it('get name of invalid team', async () => {
-        await assets.getTeamName(0).should.be.rejected;
+        await assets.getTeamNameHash(teamId = 0).should.be.rejected;
     });
 
     it('get name of unexistent team', async () => {
-        await assets.getTeamName(1).should.be.rejected;
+        await assets.getTeamNameHash(teamId = 1).should.be.rejected;
     });
 
     it('existence of null player', async () => {
@@ -169,7 +171,7 @@ contract('Assets', (accounts) => {
         await assets.createTeam("Barca",ALICE).should.be.fulfilled;
         const state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
         let result = await playerStateLib.getSkills(state).should.be.fulfilled;
-        result.should.be.bignumber.equal('4972233480341569567');
+        result.should.be.bignumber.equal('3819232821366079540');
         result = await playerStateLib.getPlayerId(state).should.be.fulfilled;
         result.should.be.bignumber.equal('1');
         result = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
@@ -246,11 +248,11 @@ contract('Assets', (accounts) => {
         const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
         const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
         skills.length.should.be.equal(numSkills.toNumber());
-        skills[0].should.be.bignumber.equal('78');
-        skills[1].should.be.bignumber.equal('65');
-        skills[2].should.be.bignumber.equal('35');
-        skills[3].should.be.bignumber.equal('35');
-        skills[4].should.be.bignumber.equal('37');
+        skills[0].should.be.bignumber.equal('72');
+        skills[1].should.be.bignumber.equal('71');
+        skills[2].should.be.bignumber.equal('27');
+        skills[3].should.be.bignumber.equal('42');
+        skills[4].should.be.bignumber.equal('38');
         const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
         sum.should.be.equal(250);
     });
@@ -322,8 +324,9 @@ contract('Assets', (accounts) => {
         count.toNumber().should.be.equal(1);
         const teamId = receipt.logs[0].args.id.toNumber();
         teamId.should.be.equal(1);
-        teamName = await assets.getTeamName(teamId).should.be.fulfilled;
-        teamName.should.be.equal("Barca",ALICE);
+        teamName = await assets.getTeamNameHash(teamId).should.be.fulfilled;
+        expected = web3.utils.keccak256(web3.eth.abi.encodeParameter('string', name))
+        teamName.should.be.equal(expected);
     });
 
     it('get playersId from teamId and pos in team', async () => {
@@ -355,10 +358,10 @@ contract('Assets', (accounts) => {
     
     it('transfer team', async () => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-        const currentOwner = await assets.getTeamOwner(name).should.be.fulfilled;
+        const currentOwner = await assets.getTeamOwner(teamId = 1).should.be.fulfilled;
         currentOwner.should.be.equal(ALICE);
         await assets.transferTeam(teamId = 1, BOB).should.be.fulfilled;
-        const newOwner = await assets.getTeamOwner(name).should.be.fulfilled;
+        const newOwner = await assets.getTeamOwner(teamId).should.be.fulfilled;
         newOwner.should.be.equal(BOB);
     });
         
