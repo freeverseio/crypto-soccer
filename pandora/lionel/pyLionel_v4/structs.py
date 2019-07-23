@@ -103,11 +103,16 @@ class Team():
     def __init__(self, name, nowInMonthsUnixTime):
         self.name = name
         self.monthOfTeamCreationInUnixTime = nowInMonthsUnixTime
-        self.playerIdxs             = np.zeros(NPLAYERS_PER_TEAM, int)
+        self.playerIdxs             = np.append(
+            np.zeros(NPLAYERS_PER_TEAM_INIT, int),
+            UINTMINUS1*np.ones(NPLAYERS_PER_TEAM_MAX-NPLAYERS_PER_TEAM_INIT, int)
+        )
+        assert len(self.playerIdxs) == NPLAYERS_PER_TEAM_MAX
         self.currentLeagueIdx       = 0
         self.teamPosInCurrentLeague = 0
         self.prevLeagueIdx          = 0
         self.teamPosInPrevLeague    = 0
+        self.freePlayerSlots        = NPLAYERS_PER_TEAM_MAX - NPLAYERS_PER_TEAM_INIT
 
 class DataToChallengeLeague():
     def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):
@@ -180,7 +185,7 @@ class VerseActionsCommit:
 
 # The Accumulator is responsible for receving user actions and committing them in the correct verse.
 # An action is a struct:
-#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,NPLAYERS_PER_TEAM], "tactics": 3}
+#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,NPLAYERS_PER_TEAM_INIT], "tactics": 3}
 #       where "tactics" is an int < 16. For example, tactics = 1 means (4,4,2).
 #
 # The buffer is an array that maintains:  buffer[leagueIdx] = [action0, action1, ...]
@@ -545,16 +550,21 @@ class Storage(Counter):
 
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
 
+    def isShirtNumFree(self, teamIdx, shirtNum):
+        return self.teams[teamIdx].playerIdxs[shirtNum] == UINTMINUS1
+
     def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
         # Otherwise, read what's written in the playerState
         # playerIdx = 0 and teamdIdx = 0 are the null player and teams
-            self.assertTeamIdx(teamIdx)
-            isPlayerIdxAssigned = self.teams[teamIdx].playerIdxs[shirtNum] != 0
-            if isPlayerIdxAssigned:
-                return self.teams[teamIdx].playerIdxs[shirtNum]
-            else:
-                return 1 + (teamIdx - 1) * NPLAYERS_PER_TEAM + shirtNum
+        self.assertTeamIdx(teamIdx)
+        if self.isShirtNumFree(teamIdx, shirtNum):
+            return UINTMINUS1
+        isPlayerIdxAssigned = self.teams[teamIdx].playerIdxs[shirtNum] != 0
+        if isPlayerIdxAssigned:
+            return self.teams[teamIdx].playerIdxs[shirtNum]
+        else:
+            return 1 + (teamIdx - 1) * NPLAYERS_PER_TEAM_MAX + shirtNum
 
     def assertTeamIdx(self, teamIdx):
         assert teamIdx < len(self.teams), "Team for this playerIdx not created yet!"
@@ -619,8 +629,8 @@ class Storage(Counter):
     # The inverse of the previous relation
     def getTeamIdxAndShirtForPlayerIdx(self, playerIdx, forceAtBirth=False):
         if forceAtBirth or self.isPlayerVirtual(playerIdx):
-            teamIdx = int(1 + (playerIdx - 1) // NPLAYERS_PER_TEAM)
-            shirtNum = int((playerIdx - 1) % NPLAYERS_PER_TEAM)
+            teamIdx = int(1 + (playerIdx - 1) // NPLAYERS_PER_TEAM_MAX)
+            shirtNum = int((playerIdx - 1) % NPLAYERS_PER_TEAM_MAX)
             return teamIdx, shirtNum
         else:
             return self.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx(), \
@@ -657,10 +667,13 @@ class Storage(Counter):
     # It does an extra check to make sure that the dataToChallengeInitSkills matches the previous league final matchday hash
     def verifyInitSkills(self, usersInitData, dataToChallengeInitSkills):
         nTeams = len(usersInitData["teamIdxs"])
-        # an array of size [nTeams][NPLAYERS_PER_TEAM]
+        # an array of size [nTeams][NPLAYERS_PER_TEAM_INIT]
         initPlayerSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for shirtNum in range(NPLAYERS_PER_TEAM):
+            for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+                if self.isShirtNumFree(teamIdx, shirtNum):
+                    initPlayerSkills[teamPosInLeague][shirtNum] = MinimalPlayerState()
+                    continue
                 playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
                 playerSkills = dataToChallengeInitSkills[teamPosInLeague][shirtNum].merkleProofStates.leaf
                 assert playerSkills.getPlayerIdx() == playerIdx, "The playerIdx provided does not agree with what the BC expects"
@@ -761,6 +774,36 @@ class Storage(Counter):
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
 
+    def getFreeShirtNum(self, teamIdx):
+        for shirtNum in range(NPLAYERS_PER_TEAM_MAX-1, -1, -1):
+            if self.isShirtNumFree(teamIdx, shirtNum):
+                return shirtNum
+        assert "Team is already full"
+
+    # does not check ownership
+    def movePlayerToTeam(self, playerIdx, buyerTeamIdx):
+        assert not self.isPlayerBusy(playerIdx), "Player sale failed: player is busy playing a league, wait until it finishes"
+        assert self.teams[buyerTeamIdx].freePlayerSlots > 0, "Buyer team is already full"
+        sellerTeamIdx, sellerShirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx)
+        buyerShirtNum = self.getFreeShirtNum(buyerTeamIdx)
+
+        # get states from BC in memory to do changes, and only write back once at the end
+        state = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx))
+
+        # a player should change his prevLeagueIdx only if the current team played
+        # a last league that started AFTER the last sale
+        if self.getBlockNumForLastLeagueOfTeam(sellerTeamIdx) > state.getLastSaleBlocknum():
+            state.prevLeagueIdx         = self.teams[sellerTeamIdx].currentLeagueIdx
+            state.prevTeamPosInLeague   = self.teams[sellerTeamIdx].teamPosInCurrentLeague
+
+        state.setCurrentTeamIdx(buyerTeamIdx)
+        state.setCurrentShirtNum(buyerShirtNum)
+        state.setLastSaleBlocknum(self.currentBlock)
+
+        self.teams[sellerTeamIdx].playerIdxs[sellerShirtNum] = UINTMINUS1
+        self.teams[buyerTeamIdx].playerIdxs[buyerShirtNum] = playerIdx
+
+        self.playerIdxToPlayerState[playerIdx] = pylio.duplicate(state)
 
 
 
@@ -768,9 +811,6 @@ class Storage(Counter):
     # for the purpose of Lionel, we'll start with a simple exchange, instead
     # of the more convoluted sell, assign, etc.
     def exchangePlayers(self, playerIdx1, address1, playerIdx2, address2):
-        assert not self.isPlayerBusy(playerIdx1), "Player sale failed: player is busy playing a league, wait until it finishes"
-        assert not self.isPlayerBusy(playerIdx2), "Player sale failed: player is busy playing a league, wait until it finishes"
-
         teamIdx1, shirtNum1 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
         teamIdx2, shirtNum2 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
@@ -778,36 +818,10 @@ class Storage(Counter):
         assert self.getOwnerAddrFromTeamIdx(teamIdx1) == address1, "Exchange Failed, owner not correct"
         assert self.getOwnerAddrFromTeamIdx(teamIdx2) == address2, "Exchange Failed, owner not correct"
 
-        # get states from BC in memory to do changes, and only write back once at the end
-        state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
-        state2 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2))
+        self.movePlayerToTeam(playerIdx1, teamIdx2)
+        self.movePlayerToTeam(playerIdx2, teamIdx1)
 
-        # a player should change his prevLeagueIdx only if the current team played
-        # a last league that started AFTER the last sale
-        if self.getBlockNumForLastLeagueOfTeam(teamIdx1) > state1.getLastSaleBlocknum():
-            state1.prevLeagueIdx = self.teams[teamIdx1].currentLeagueIdx
-            state1.prevTeamPosInLeague = self.teams[teamIdx1].teamPosInCurrentLeague
 
-        if self.getBlockNumForLastLeagueOfTeam(teamIdx2) > state2.getLastSaleBlocknum():
-            state2.prevLeagueIdx = self.teams[teamIdx2].currentLeagueIdx
-            state2.prevTeamPosInLeague = self.teams[teamIdx2].teamPosInCurrentLeague
-
-        state1.setCurrentTeamIdx(teamIdx2)
-        state2.setCurrentTeamIdx(teamIdx1)
-
-        state1.setCurrentShirtNum(shirtNum2)
-        state2.setCurrentShirtNum(shirtNum1)
-
-        state1.setLastSaleBlocknum(self.currentBlock)
-        state2.setLastSaleBlocknum(self.currentBlock)
-
-        self.teams[teamIdx1].playerIdxs[shirtNum1] = playerIdx2
-        self.teams[teamIdx2].playerIdxs[shirtNum2] = playerIdx1
-
-        self.playerIdxToPlayerState[playerIdx1] = pylio.duplicate(state1)
-        self.playerIdxToPlayerState[playerIdx2] = pylio.duplicate(state2)
-
-        print("players exchanged successfully")
 
     def isPlayerBusy(self, playerIdx1):
         return self.areTeamsBusyInPrevLeagues(
@@ -1300,11 +1314,14 @@ class Storage(Counter):
         dataToChallengeInitSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPos, teamIdx in enumerate(thisLeague.usersInitData["teamIdxs"]):
             for shirtNum, playerIdx in enumerate(self.teams[teamIdx].playerIdxs):
-                if playerIdx == 0: # if never written in teams.playerIdxs array
-                    correctPlayerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                if self.isShirtNumFree(teamIdx, shirtNum):
+                    dataToChallengeInitSkills[teamPos][shirtNum] = DataToChallengePlayerSkills(0, 0, 0, 0)
+                elif playerIdx == 0: # if never written in teams.playerIdxs array
+                    dataToChallengeInitSkills[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(
+                        self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                    )
                 else:
-                    correctPlayerIdx = playerIdx
-                dataToChallengeInitSkills[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(correctPlayerIdx)
+                    dataToChallengeInitSkills[teamPos][shirtNum] = self.computeDataToChallengePlayerSkills(playerIdx)
         return dataToChallengeInitSkills
 
     # This function uses CLIENT data to return what is needed to then be able to challenge the player skills.
@@ -1329,7 +1346,7 @@ class Storage(Counter):
             # ----- leagues states in prevLeague last day's hash ------
             skillsAllTeamsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
             playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAllTeamsAtEndOfPrevLeague[teamPosInPrevLeague])
-            idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM+playerPosInPrevLeague
+            idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM_MAX+playerPosInPrevLeague
 
             lastDayTree = self.leagues[prevLeagueIdx].lastDayTree
             merkleProofStates = lastDayTree.prepareProofForLeaf(playerSkills, idxInFlattenedSkills)
@@ -1474,13 +1491,16 @@ class Storage(Counter):
         self.assertIsClient()
         usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
         nTeams = len(usersInitData["teamIdxs"])
-        # an array of size [nTeams][NPLAYERS_PER_TEAM]
+        # an array of size [nTeams][NPLAYERS_PER_TEAM_INIT]
         initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for shirtNum in range(NPLAYERS_PER_TEAM):
-                playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
-                playerState = self.getCurrentPlayerState(playerIdx)
-                initPlayerStates[teamPosInLeague][shirtNum] = playerState
+            for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+                if self.isShirtNumFree(teamIdx, shirtNum):
+                    initPlayerStates[teamPosInLeague][shirtNum] = PlayerState()
+                else:
+                    playerIdx = self.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
+                    playerState = self.getCurrentPlayerState(playerIdx)
+                    initPlayerStates[teamPosInLeague][shirtNum] = playerState
         return initPlayerStates
 
 

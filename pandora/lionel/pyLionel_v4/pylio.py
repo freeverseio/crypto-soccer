@@ -51,7 +51,9 @@ def printPlayer(playerState):
 def printTeam(teamIdx, ST_CLIENT):
     hash = 0
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
-    for shirtNum in range(NPLAYERS_PER_TEAM):
+    for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+        if ST_CLIENT.isShirtNumFree(teamIdx, shirtNum):
+            continue
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
         playerSkills = ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx)
         playerChallengeData = ST_CLIENT.computeDataToChallengePlayerSkills(playerSkills.getPlayerIdx())
@@ -60,7 +62,7 @@ def printTeam(teamIdx, ST_CLIENT):
     return hash
 
 def isValidOrdering(playerOrders):
-    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM]
+    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM_INIT]
     return True
 
 def shiftBack(t, nTeams):
@@ -170,7 +172,7 @@ def areEqualStructs(st1, st2):
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
-    return arrayDims(NPLAYERS_PER_TEAM, nTeams)
+    return arrayDims(NPLAYERS_PER_TEAM_MAX, nTeams)
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
@@ -309,3 +311,23 @@ def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
         playerIdx1, addr1,
         playerIdx2, addr2
     )
+
+def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
+    addr1 = ST.getOwnerAddrFromPlayerIdx(playerIdx1)
+    addr2 = ST.getOwnerAddrFromPlayerIdx(playerIdx2)
+    assert addr1 == ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx1), "ST and ST_CLIENT not in sync"
+    assert addr2 == ST_CLIENT.getOwnerAddrFromPlayerIdx(playerIdx2), "ST and ST_CLIENT not in sync"
+
+    ST.exchangePlayers(
+        playerIdx1, addr1,
+        playerIdx2, addr2
+    )
+    ST_CLIENT.exchangePlayers(
+        playerIdx1, addr1,
+        playerIdx2, addr2
+    )
+
+
+def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
+    ST.movePlayerToTeam(playerIdx, teamIdx)
+    ST_CLIENT.movePlayerToTeam(playerIdx, teamIdx)
