@@ -132,8 +132,8 @@ contract('Game', (accounts) => {
                 const visitorTeamId = teamIds[teamsInMatch.visitorIdx.toNumber()];
 
                 // get the names of the teams in the match
-                const homeTeam = await assets.getTeamName(homeTeamId).should.be.fulfilled;
-                const visitorTeam = await assets.getTeamName(visitorTeamId).should.be.fulfilled;
+                const homeTeam = await assets.getTeamNameHash(homeTeamId).should.be.fulfilled;
+                const visitorTeam = await assets.getTeamNameHash(visitorTeamId).should.be.fulfilled;
 
                 // getting the goal of match 
                 const goals = await leagues.decodeScore(dayScores[match]).should.be.fulfilled;
