@@ -89,6 +89,10 @@ class UserAPITest(TestCase):
         self.assertEqual(self.response.status_code,
                          status.HTTP_200_OK)
 
+        response_body = json.loads(self.response.content.decode())
+        self.assertEqual(response_body['result'], 'login successful')
+        self.assertEqual(response_body['public_key'], 'public_key_prova')
+
     def test_login_with_bad_password(self):
         self.user_data = {'name': 'pepe',
                           'password': '1234567890',
