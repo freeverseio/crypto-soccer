@@ -67,6 +67,17 @@ contract Assets {
             teams[teamId].posInPrevLeague);
     }
 
+
+    /// @dev Transfers a team to a new owner. 
+    /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
+    function transferTeam(uint256 teamId, address newOwner) public {
+        _teamExists(teamId);
+        require(newOwner != address(0), "meaningless adress");
+        require(newOwner != getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
+        bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
+        _teamNameHashToOwner[nameHash] = newOwner;
+    }
+
     // TODO: exchange fails on playerId0 & playerId1 of the same team
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
         // TODO: check ownership address
@@ -275,4 +286,5 @@ contract Assets {
     function _intHash(string memory arg) internal pure returns (uint256) {
         return uint256(keccak256(abi.encode(arg)));
     }
+    
 }
