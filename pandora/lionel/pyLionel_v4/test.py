@@ -175,6 +175,15 @@ def test1():
     assert team1 == teamIdx2, "wrong initial assignment"
     assert team2 == teamIdx1, "wrong initial assignment"
 
+    playerIdx3 = 34
+    teamIdx3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert teamIdx3 != teamIdx1, "please pick players from different teams"
+    movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
+    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert team == teamIdx1, "wrong initial assignment"
+
+
+
     print("\n\nplayers 2 and 27 after sale:\n")
     hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1))
     print("\n")
@@ -442,10 +451,17 @@ def test2():
 
     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
 
-    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
-    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
-    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 6), "Exchange did not register properly in BC"
-    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 1), "Exchange did not register properly in BC"
+    playerIdx3 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx3, 2)
+    team3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert team3 == teamIdx3, "some is wrong with team assignments"
+    movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
+    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert team == teamIdx1, "wrong initial assignment"
+
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+    assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
+    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+    assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
 
     #           -----  LEAGUE 2 ------
     # After the player exchange... we create another league
@@ -662,8 +678,8 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 11512)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 322)
+success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 11024)
+success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 170)
 # success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
