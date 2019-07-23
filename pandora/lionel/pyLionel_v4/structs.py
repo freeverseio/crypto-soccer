@@ -112,6 +112,7 @@ class Team():
         self.teamPosInCurrentLeague = 0
         self.prevLeagueIdx          = 0
         self.teamPosInPrevLeague    = 0
+        self.freePlayerSlots        = NPLAYERS_PER_TEAM_MAX - NPLAYERS_PER_TEAM_INIT
 
 class DataToChallengeLeague():
     def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):
@@ -773,6 +774,36 @@ class Storage(Counter):
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
 
+    def getFreeShirtNum(self, teamIdx):
+        for shirtNum in range(NPLAYERS_PER_TEAM_MAX-1, -1, -1):
+            if self.isShirtNumFree(teamIdx, shirtNum):
+                return shirtNum
+        assert "Team is already full"
+
+    # does not check ownership
+    def movePlayerToTeam(self, playerIdx, buyerTeamIdx):
+        assert not self.isPlayerBusy(playerIdx), "Player sale failed: player is busy playing a league, wait until it finishes"
+        assert self.teams[buyerTeamIdx].freePlayerSlots > 0, "Buyer team is already full"
+        sellerTeamIdx, sellerShirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx)
+        buyerShirtNum = self.getFreeShirtNum(buyerTeamIdx)
+
+        # get states from BC in memory to do changes, and only write back once at the end
+        state = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx))
+
+        # a player should change his prevLeagueIdx only if the current team played
+        # a last league that started AFTER the last sale
+        if self.getBlockNumForLastLeagueOfTeam(sellerTeamIdx) > state.getLastSaleBlocknum():
+            state.prevLeagueIdx         = self.teams[sellerTeamIdx].currentLeagueIdx
+            state.prevTeamPosInLeague   = self.teams[sellerTeamIdx].teamPosInCurrentLeague
+
+        state.setCurrentTeamIdx(buyerTeamIdx)
+        state.setCurrentShirtNum(buyerShirtNum)
+        state.setLastSaleBlocknum(self.currentBlock)
+
+        self.teams[sellerTeamIdx].playerIdxs[sellerShirtNum] = UINTMINUS1
+        self.teams[buyerTeamIdx].playerIdxs[buyerShirtNum] = playerIdx
+
+        self.playerIdxToPlayerState[playerIdx] = pylio.duplicate(state)
 
 
 
@@ -780,9 +811,6 @@ class Storage(Counter):
     # for the purpose of Lionel, we'll start with a simple exchange, instead
     # of the more convoluted sell, assign, etc.
     def exchangePlayers(self, playerIdx1, address1, playerIdx2, address2):
-        assert not self.isPlayerBusy(playerIdx1), "Player sale failed: player is busy playing a league, wait until it finishes"
-        assert not self.isPlayerBusy(playerIdx2), "Player sale failed: player is busy playing a league, wait until it finishes"
-
         teamIdx1, shirtNum1 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
         teamIdx2, shirtNum2 = self.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
@@ -790,36 +818,10 @@ class Storage(Counter):
         assert self.getOwnerAddrFromTeamIdx(teamIdx1) == address1, "Exchange Failed, owner not correct"
         assert self.getOwnerAddrFromTeamIdx(teamIdx2) == address2, "Exchange Failed, owner not correct"
 
-        # get states from BC in memory to do changes, and only write back once at the end
-        state1 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx1))
-        state2 = pylio.duplicate(self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx2))
+        self.movePlayerToTeam(playerIdx1, teamIdx2)
+        self.movePlayerToTeam(playerIdx2, teamIdx1)
 
-        # a player should change his prevLeagueIdx only if the current team played
-        # a last league that started AFTER the last sale
-        if self.getBlockNumForLastLeagueOfTeam(teamIdx1) > state1.getLastSaleBlocknum():
-            state1.prevLeagueIdx = self.teams[teamIdx1].currentLeagueIdx
-            state1.prevTeamPosInLeague = self.teams[teamIdx1].teamPosInCurrentLeague
 
-        if self.getBlockNumForLastLeagueOfTeam(teamIdx2) > state2.getLastSaleBlocknum():
-            state2.prevLeagueIdx = self.teams[teamIdx2].currentLeagueIdx
-            state2.prevTeamPosInLeague = self.teams[teamIdx2].teamPosInCurrentLeague
-
-        state1.setCurrentTeamIdx(teamIdx2)
-        state2.setCurrentTeamIdx(teamIdx1)
-
-        state1.setCurrentShirtNum(shirtNum2)
-        state2.setCurrentShirtNum(shirtNum1)
-
-        state1.setLastSaleBlocknum(self.currentBlock)
-        state2.setLastSaleBlocknum(self.currentBlock)
-
-        self.teams[teamIdx1].playerIdxs[shirtNum1] = playerIdx2
-        self.teams[teamIdx2].playerIdxs[shirtNum2] = playerIdx1
-
-        self.playerIdxToPlayerState[playerIdx1] = pylio.duplicate(state1)
-        self.playerIdxToPlayerState[playerIdx2] = pylio.duplicate(state2)
-
-        print("players exchanged successfully")
 
     def isPlayerBusy(self, playerIdx1):
         return self.areTeamsBusyInPrevLeagues(
