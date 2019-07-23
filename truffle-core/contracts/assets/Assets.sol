@@ -12,7 +12,7 @@ contract Assets {
     /// @dev and select his favourite one.
     /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
     struct Team {
-        string name;
+        bytes32 nameHash;
         uint256 currentLeagueId;
         uint8 posInCurrentLeague;
         uint256 prevLeagueId;
@@ -73,9 +73,8 @@ contract Assets {
     function transferTeam(uint256 teamId, address newOwner) public {
         _teamExists(teamId);
         require(newOwner != address(0), "meaningless adress");
-        require(newOwner != getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
-        bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
-        _teamNameHashToOwner[nameHash] = newOwner;
+        require(newOwner != getTeamOwner(teamId), "unable to transfer between the same user");
+        _teamNameHashToOwner[teams[teamId].nameHash] = newOwner;
     }
 
     // TODO: exchange fails on playerId0 & playerId1 of the same team
@@ -117,7 +116,7 @@ contract Assets {
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
         _teamNameHashToOwner[nameHash] = owner;
         uint256[PLAYERS_PER_TEAM] memory playerIds;
-        teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
+        teams.push(Team(nameHash, 0, 0, 0, 0, playerIds, block.timestamp));
         uint256 id = teams.length - 1;
         emit TeamCreated(id);
     }
@@ -138,18 +137,17 @@ contract Assets {
     }
 
     // TODO: exception when not existent team
-    function getTeamOwner(string memory name) public view returns (address) {
-        bytes32 nameHash = keccak256(abi.encode(name));
-        return _teamNameHashToOwner[nameHash];
+    function getTeamOwner(uint256 teamId) public view returns (address) {
+        return _teamNameHashToOwner[teams[teamId].nameHash];
     }
 
     function countTeams() public view returns (uint256){
         return teams.length - 1;
     }
 
-    function getTeamName(uint256 teamId) public view returns (string memory) {
+    function getTeamNameHash(uint256 teamId) public view returns (bytes32) {
         require(_teamExists(teamId), "invalid team id");
-        return teams[teamId].name;
+        return teams[teamId].nameHash;
     }
 
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
@@ -179,8 +177,7 @@ contract Assets {
     function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
             uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
-            string memory teamName = getTeamName(teamId);
-            uint256 seed = _computeSeed(teamName, posInTeam);
+            uint256 seed = _computeSeed(getTeamNameHash(teamId), posInTeam);
             uint16[5] memory skills = _computeSkills(seed);
             uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
             return _playerState.playerStateCreate(
@@ -278,8 +275,8 @@ contract Assets {
     }
 
     /// @return seed
-    function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {
-        return uint256(keccak256(abi.encode(teamName, posInTeam)));
+    function _computeSeed(bytes32 teamNameHash, uint256 posInTeam) internal pure returns (uint256) {
+        return uint256(keccak256(abi.encode(teamNameHash, posInTeam)));
     }
 
     /// @return hashed arg casted to uint256
