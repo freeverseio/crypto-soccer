@@ -161,7 +161,7 @@ contract Assets is AssetsBase {
     //     emit TeamCreated(id);
     // }
 
-    function signToLeague(
+    function updateTeamHistory(
         uint256 teamId,
         uint256 leagueId,
         uint8 posInLeague
@@ -387,7 +387,7 @@ contract Assets is AssetsBase {
         require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
         require(!isBotTeam(teamId), "BotTeams cannot sign a new league");
         // changes prevLeague for team, etc. Will fail if team does not exist:
-        signToLeague(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
+        updateTeamHistory(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
         _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
             _leagues[leagueId].usersInitDataHash, 
             teamId, 
