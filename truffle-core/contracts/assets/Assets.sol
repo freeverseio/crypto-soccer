@@ -56,7 +56,7 @@ contract Assets is AssetsBase {
         }
     }
 
-    function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
+    function getCurrentLeagueId(uint256 teamId) public view returns (uint256) {
         require(_teamExists(teamId), "invalid team id");
         if (isTeamWritten(teamId)) {
             return _teamIdToTeam[teamId].currentLeagueId;
@@ -169,7 +169,7 @@ contract Assets is AssetsBase {
     public
     {
         require(_teamExists(teamId), "invalid team id");
-        require(_teamIdToTeam[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
+        require(getCurrentLeagueId(teamId) != leagueId, "cannot sign to a league twice");
         _teamIdToTeam[teamId].prevLeagueId = _teamIdToTeam[teamId].currentLeagueId;
         _teamIdToTeam[teamId].posInPrevLeague = _teamIdToTeam[teamId].posInCurrentLeague;
         _teamIdToTeam[teamId].currentLeagueId = leagueId;
