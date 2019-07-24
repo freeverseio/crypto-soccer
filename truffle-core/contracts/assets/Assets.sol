@@ -22,13 +22,15 @@ contract Assets is AssetsBase {
         return keccak256(abi.encode(leagueId, posInLeague));
     }
 
+    // teamId = 1, 1, ... (the first team is valid)
+    // leagueId = 1, 2, ...  (the first league is dummy)
     function botTeamIdToLeagueId(uint256 teamId) public pure returns (uint256) {
-        return 1 + teamId / TEAMS_PER_LEAGUE;
+        return 1 + (teamId-1) / TEAMS_PER_LEAGUE;
     }
 
     function botTeamIdToLeagueIdAndPos(uint256 teamId) public pure returns (uint256, uint8) {
         uint256 leagueId = botTeamIdToLeagueId(teamId);
-        uint256 posInLeague = teamId - TEAMS_PER_LEAGUE * (leagueId - 1);
+        uint256 posInLeague = (teamId - 1)  - TEAMS_PER_LEAGUE * (leagueId - 1);
         require(posInLeague < TEAMS_PER_LEAGUE, "Overflow in team to league assignment");
         return (leagueId, uint8(posInLeague));
     }
@@ -46,7 +48,7 @@ contract Assets is AssetsBase {
     }
 
     function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
-        require(_teamExists(teamId), "invalid team id");
+        require(_teamExists(teamId), "invalid team id to get creation timestamp");
         if (isTeamWritten(teamId)) {
             return _teamIdToTeam[teamId].creationTimestamp;
         } else {
@@ -189,7 +191,7 @@ contract Assets is AssetsBase {
     }
 
     function getTeamDNA(uint256 teamId) public view returns (bytes32) {
-        require(_teamExists(teamId), "invalid team id");
+        require(_teamExists(teamId), "invalid team id when getting DNA");
         if (isTeamWritten(teamId)){ 
             return _teamIdToTeam[teamId].dna;
         } else {
@@ -198,7 +200,7 @@ contract Assets is AssetsBase {
     }
 
     function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
-        require(_teamExists(teamId), "invalid team id");
+        require(_teamExists(teamId), "invalid team id when getTeamPlayerIds");
         if (isTeamWritten(teamId)){ 
             for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
                 if (_teamIdToTeam[teamId].playerIds[pos] == 0) // virtual player
@@ -228,6 +230,7 @@ contract Assets is AssetsBase {
     }
 
     function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
+            require(_playerExists(playerId), "playerId invalid");
             uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             uint256 seed = _computeSeed(getTeamDNA(teamId), posInTeam);
@@ -265,7 +268,7 @@ contract Assets is AssetsBase {
     }
 
     function _teamExists(uint256 teamId) internal view returns (bool) {
-        return botTeamIdToLeagueId(teamId) < leaguesCount();
+        return botTeamIdToLeagueId(teamId) <= leaguesCount();
     }
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
@@ -343,7 +346,6 @@ contract Assets is AssetsBase {
     
     /// LEAGUE FUNCTIONS
     function createLeague(
-        uint8 nTeams,
         uint256 initBlock, 
         uint256 step
     ) 
@@ -351,9 +353,7 @@ contract Assets is AssetsBase {
     {
         require(initBlock > block.number, "invalid init block");
         require(step > 0, "invalid block step");
-        require(nTeams % 2 == 0, "odd teams count");
-        require(nTeams > 0, "cannot create leagues with no teams");
-        _leagues.push(League(nTeams, initBlock, step, 0, 0));
+        _leagues.push(League(TEAMS_PER_LEAGUE, initBlock, step, 0, 0));
         emit LeagueCreated(leaguesCount());
     }
 
