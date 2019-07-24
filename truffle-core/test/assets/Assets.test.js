@@ -117,24 +117,37 @@ contract('Assets', (accounts) => {
 
     // });
 
-    it('get playerIds of the team after player transfer', async () => {
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        let playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
-        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
-        for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
-            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-        // Players in bot teams cannot be traded:
-        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.rejected;
-        await assets.transferTeam(teamId=1,ALICE);
-        await assets.transferTeam(teamId=2,BOB);
-        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
-        playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
-        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
-        for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
-            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-        playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal(playerId1.toString());
-    });
+    // it('get playerIds of the team after player transfer', async () => {
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     let playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
+    //     playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+    //     for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
+    //         playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+    //     // Players in bot teams cannot be traded:
+    //     await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.rejected;
+    //     await assets.transferTeam(teamId=1,ALICE);
+    //     await assets.transferTeam(teamId=2,BOB);
+    //     await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
+    //     playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
+    //     playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+    //     for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
+    //         playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+    //     playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal(playerId1.toString());
+    // });
 
+    it('transfer a bot team', async () => {
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        let isBot = await assets.isBotTeam(teamId = 1).should.be.fulfilled;
+        isBot.should.be.equal(true);
+        await assets.transferTeam(teamId, ALICE);
+        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+        isBot.should.be.equal(false);
+        let owner = await assets.getTeamOwner(teamId).should.be.fulfilled;
+        owner.should.be.equal(ALICE);
+    });
+    
+    
+    
     return;
     
     it('add team with different owner than the sender', async () => {
