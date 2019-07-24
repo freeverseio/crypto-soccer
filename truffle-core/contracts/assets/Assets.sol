@@ -67,10 +67,10 @@ contract Assets is AssetsBase {
 
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
-            uint256,
-            uint8,
-            uint256,
-            uint8
+            uint256 currentLeagueId,
+            uint8 posInCurrentLeague,
+            uint256 prevLeagueId,
+            uint8 posInPrevLeague
         )
     {
         require(_teamExists(teamId), "invalid team id");
@@ -161,20 +161,20 @@ contract Assets is AssetsBase {
     //     emit TeamCreated(id);
     // }
 
-    // function signToLeague(
-    //     uint256 teamId,
-    //     uint256 leagueId,
-    //     uint8 posInLeague
-    // )
-    // public
-    // {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     require(teams[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
-    //     teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
-    //     teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
-    //     teams[teamId].currentLeagueId = leagueId;
-    //     teams[teamId].posInCurrentLeague = posInLeague;
-    // }
+    function signToLeague(
+        uint256 teamId,
+        uint256 leagueId,
+        uint8 posInLeague
+    )
+    public
+    {
+        require(_teamExists(teamId), "invalid team id");
+        require(_teamIdToTeam[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
+        _teamIdToTeam[teamId].prevLeagueId = _teamIdToTeam[teamId].currentLeagueId;
+        _teamIdToTeam[teamId].posInPrevLeague = _teamIdToTeam[teamId].posInCurrentLeague;
+        _teamIdToTeam[teamId].currentLeagueId = leagueId;
+        _teamIdToTeam[teamId].posInCurrentLeague = posInLeague;
+    }
 
     // TODO: exception when not existent team
     function getTeamOwner(uint256 teamId) public view returns (address) {
@@ -382,19 +382,20 @@ contract Assets is AssetsBase {
         return _leagues[leagueId].nTeams;
     }
 
-    // function _signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) internal {
-    //     // warning: the callee should first verify that the teams are not already involved in un-verified leagues
-    //     require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
-    //     // changes prevLeague for team, etc. Will fail if team does not exist:
-    //     signToLeague(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
-    //     _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
-    //         _leagues[leagueId].usersInitDataHash, 
-    //         teamId, 
-    //         teamOrder, 
-    //         teamTactics
-    //     )); 
-    //     _leagues[leagueId].nTeamsSigned++;
-    // }
+    function _signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) internal {
+        // warning: the callee should first verify that the teams are not already involved in un-verified leagues
+        require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
+        require(!isBotTeam(teamId), "BotTeams cannot sign a new league");
+        // changes prevLeague for team, etc. Will fail if team does not exist:
+        signToLeague(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
+        _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
+            _leagues[leagueId].usersInitDataHash, 
+            teamId, 
+            teamOrder, 
+            teamTactics
+        )); 
+        _leagues[leagueId].nTeamsSigned++;
+    }
 
     function _leagueExists(uint256 leagueId) internal view returns (bool) {
         return leagueId <= leaguesCount();
