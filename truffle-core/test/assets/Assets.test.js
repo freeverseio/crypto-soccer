@@ -296,20 +296,20 @@ contract('Assets', (accounts) => {
     //     await assets.getPlayerState(nPLayersPerTeam+1).should.be.rejected;
     // })
 
-    it('get existing virtual player skills', async () => {
-        const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
-        const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
-        skills.length.should.be.equal(numSkills.toNumber());
-        skills[0].should.be.bignumber.equal('69');
-        skills[1].should.be.bignumber.equal('55');
-        skills[2].should.be.bignumber.equal('45');
-        skills[3].should.be.bignumber.equal('25');
-        skills[4].should.be.bignumber.equal('56');
-        const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-        sum.should.be.equal(250);
-    });
+    // it('get existing virtual player skills', async () => {
+    //     const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
+    //     const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
+    //     skills.length.should.be.equal(numSkills.toNumber());
+    //     skills[0].should.be.bignumber.equal('69');
+    //     skills[1].should.be.bignumber.equal('55');
+    //     skills[2].should.be.bignumber.equal('45');
+    //     skills[3].should.be.bignumber.equal('25');
+    //     skills[4].should.be.bignumber.equal('56');
+    //     const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
+    //     sum.should.be.equal(250);
+    // });
 
 
     // it('get existing non virtual player skills', async () => {
@@ -370,28 +370,14 @@ contract('Assets', (accounts) => {
     //     teamAfter.should.be.bignumber.not.equal(teamBefore);
     //     teamAfter.should.be.bignumber.equal('2');
     // });
-return;
-    it('create team', async () => {
-        const receipt = await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-        const count = await assets.countTeams().should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
-        const teamId = receipt.logs[0].args.id.toNumber();
-        teamId.should.be.equal(1);
-        teamName = await assets.getTeamNameHash(teamId).should.be.fulfilled;
-        expected = web3.utils.keccak256(web3.eth.abi.encodeParameter('string', name))
-        teamName.should.be.equal(expected);
-    });
-
-    it('get playersId from teamId and pos in team', async () => {
-        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.rejected;
-        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-        await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM).should.be.rejected;
-        let playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.fulfilled;
-        playerId.toNumber().should.be.equal(1);
-        playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM-1).should.be.fulfilled;
-        playerId.toNumber().should.be.equal(PLAYERS_PER_TEAM);
-
-    });
+    
+    // it('creation of teams through league creation', async () => {
+    //     const receipt = await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     const count = await assets.countTeams().should.be.fulfilled;
+    //     count.toNumber().should.be.equal(TEAMS_PER_LEAGUE);
+    //     const leagueId = receipt.logs[0].args.leagueId.toNumber();
+    //     leagueId.should.be.equal(1);
+    // });
 
     it('sign team to league', async () => {
         await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
@@ -404,6 +390,8 @@ return;
         currentHistory.posInPrevLeague.should.be.bignumber.equal('0');
     });
 
+return;
+    
     it('sign team to league twice should fail', async () => {
         await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
         await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.rejected;
