@@ -135,44 +135,29 @@ contract('Assets', (accounts) => {
     //     playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal(playerId1.toString());
     // });
 
-    it('transfer a bot team', async () => {
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        let isBot = await assets.isBotTeam(teamId = 1).should.be.fulfilled;
-        isBot.should.be.equal(true);
-        await assets.transferTeam(teamId, ALICE);
-        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        let owner = await assets.getTeamOwner(teamId).should.be.fulfilled;
-        owner.should.be.equal(ALICE);
-    });
+    // it('transfer a bot team', async () => {
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     let isBot = await assets.isBotTeam(teamId = 1).should.be.fulfilled;
+    //     isBot.should.be.equal(true);
+    //     await assets.transferTeam(teamId, ALICE);
+    //     isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     let owner = await assets.getTeamOwner(teamId).should.be.fulfilled;
+    //     owner.should.be.equal(ALICE);
+    // });
     
-    
-    
-    return;
-    
-    it('add team with different owner than the sender', async () => {
-        await assets.createTeam('Barca', ALICE).should.be.fulfilled;
-        const owner = await assets.getTeamOwner(teamId = 1).should.be.fulfilled;
-        owner.should.be.equal(ALICE);
-    })
-
-    it('add 2 teams with same name', async() => {
-        await assets.createTeam('Barca', ALICE).should.be.fulfilled;
-        await assets.createTeam('Barca', ALICE).should.be.rejected;
-    })
-
     it('team exists', async () => {
         let result = await assets.teamExists(0).should.be.fulfilled;
         result.should.be.equal(false);
         result = await assets.teamExists(1).should.be.fulfilled;
         result.should.be.equal(false);
-        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
         result = await assets.teamExists(1).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await assets.teamExists(2).should.be.fulfilled;
+        result = await assets.teamExists(TEAMS_PER_LEAGUE + 1).should.be.fulfilled;
         result.should.be.equal(false);
     });
-
+return;
     it('initial number of team', async () => {
         const count = await assets.countTeams().should.be.fulfilled;
         count.toNumber().should.be.equal(0);
