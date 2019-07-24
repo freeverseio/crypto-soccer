@@ -1,6 +1,5 @@
 pragma solidity ^0.5.0;
 
-import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {

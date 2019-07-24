@@ -136,14 +136,14 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
         return block.number > getLastChallengeBlock(id);
     }
     
-    function signTeamInLeague(
-        uint256 leagueId, 
-        uint256 teamId, 
-        uint8[PLAYERS_PER_TEAM] memory teamOrder, 
-        uint8 teamTactics
-    ) public {
-        require(isVerified(_assets.getCurrentLeagueId(teamId)), "team cannot sign a league because still in a non-verified league");
-        _signTeamInLeague(leagueId, teamId, teamOrder, teamTactics);        
-    }
+    // function signTeamInLeague(
+    //     uint256 leagueId, 
+    //     uint256 teamId, 
+    //     uint8[PLAYERS_PER_TEAM] memory teamOrder, 
+    //     uint8 teamTactics
+    // ) public {
+    //     require(isVerified(_assets.getCurrentLeagueId(teamId)), "team cannot sign a league because still in a non-verified league");
+    //     _signTeamInLeague(leagueId, teamId, teamOrder, teamTactics);        
+    // }
         
 }
