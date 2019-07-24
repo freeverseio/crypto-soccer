@@ -79,52 +79,54 @@ contract('Assets', (accounts) => {
     //     blockReported.toNumber().should.be.equal(futureBlock);
     // });
 
-    it('player birth is generated from team creation timestamp', async () => {
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        teamId = 3;
-        posInTeam = 4;
-        playerId = (teamId-1)*PLAYERS_PER_TEAM+ posInTeam +1
-        leagueId = 1;
-        posInLeague = teamId-1; // pos = 0 is for first team, so this is pos = 1 
+    // it('player birth is generated from team creation timestamp', async () => {
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     teamId = 3;
+    //     posInTeam = 4;
+    //     playerId = (teamId-1)*PLAYERS_PER_TEAM+ posInTeam +1
+    //     leagueId = 1;
+    //     posInLeague = teamId-1; // pos = 0 is for first team, so this is pos = 1 
 
-        const teamCreationBlocknum = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
-        teamCreationBlocknum.toNumber().should.be.equal(futureBlock);
+    //     const teamCreationBlocknum = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
+    //     teamCreationBlocknum.toNumber().should.be.equal(futureBlock);
 
-        const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
-        const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
-        const posInTeamReported = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
-        posInTeamReported.toNumber().should.be.equal(posInTeam)
+    //     const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
+    //     const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
+    //     const posInTeamReported = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
+    //     posInTeamReported.toNumber().should.be.equal(posInTeam)
 
-        const dna = web3.utils.keccak256(web3.eth.abi.encodeParameters(
-                ['uint256', 'uint8'],
-                [leagueId, posInLeague]
-            )
-        );
-        const dnaReported = await assets.botTeamIdToDNA(teamId).should.be.fulfilled;
-        dnaReported.should.be.equal(dna);
+    //     const dna = web3.utils.keccak256(web3.eth.abi.encodeParameters(
+    //             ['uint256', 'uint8'],
+    //             [leagueId, posInLeague]
+    //         )
+    //     );
+    //     const dnaReported = await assets.botTeamIdToDNA(teamId).should.be.fulfilled;
+    //     dnaReported.should.be.equal(dna);
 
-        const seed = await assets.computeSeed(dna, posInTeam).should.be.fulfilled;
-        const computedBirth = await assets.computeBirth(seed, futureBlock).should.be.fulfilled;
-        playerBirth.should.be.bignumber.equal(computedBirth);
-    });
+    //     const seed = await assets.computeSeed(dna, posInTeam).should.be.fulfilled;
+    //     const computedBirth = await assets.computeBirth(seed, futureBlock).should.be.fulfilled;
+    //     playerBirth.should.be.bignumber.equal(computedBirth);
+    // });
 
-    return;
     it('get playerIds of the team', async () => {
-        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-        let playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        let playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
         playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
         for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
 
-        await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
-        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
-        playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
-        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
-        for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
-            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-        playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal((PLAYERS_PER_TEAM+3).toString());
     });
+    //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
+    //     await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
+    //     playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
+    //     playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+    //     for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
+    //         playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+    //     playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal((PLAYERS_PER_TEAM+3).toString());
+    // });
 
+    return;
+    
     it('add team with different owner than the sender', async () => {
         await assets.createTeam('Barca', ALICE).should.be.fulfilled;
         const owner = await assets.getTeamOwner(teamId = 1).should.be.fulfilled;
