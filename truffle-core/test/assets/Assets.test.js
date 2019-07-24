@@ -26,73 +26,89 @@ contract('Assets', (accounts) => {
         futureBlock = deployBlock + 200
     });
     
-    it('create league', async () => {
-        let nLeagues = await assets.leaguesCount().should.be.fulfilled;
-        nLeagues.toNumber().should.be.equal(0);
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        nLeagues = await assets.leaguesCount().should.be.fulfilled;
-        nLeagues.toNumber().should.be.equal(1);
-    });
+    // it('create league', async () => {
+    //     let nLeagues = await assets.leaguesCount().should.be.fulfilled;
+    //     nLeagues.toNumber().should.be.equal(0);
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     nLeagues = await assets.leaguesCount().should.be.fulfilled;
+    //     nLeagues.toNumber().should.be.equal(1);
+    // });
 
-    it('create league with wrong init params', async () => {
-        await assets.createLeague(deployBlock - 10, step).should.be.rejected; // only init in future
-        await assets.createLeague(deployBlock - 10, thisStep = -20).should.be.rejected; // only positive
-    });
+    // it('create league with wrong init params', async () => {
+    //     await assets.createLeague(deployBlock - 10, step).should.be.rejected; // only init in future
+    //     await assets.createLeague(deployBlock - 10, thisStep = -20).should.be.rejected; // only positive
+    // });
 
-    it('playerExists upon league creation', async () => {
-        let exists = await assets.playerExists(0).should.be.fulfilled; // playerId = 0 is dummy
-        exists.should.be.equal(false);
-        exists = await assets.playerExists(1).should.be.fulfilled;
-        exists.should.be.equal(false);
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        exists = await assets.playerExists(0).should.be.fulfilled;
-        exists.should.be.equal(false);
-        exists = await assets.playerExists(1).should.be.fulfilled;
-        exists.should.be.equal(true);
-        exists = await assets.playerExists(PLAYERS_PER_TEAM).should.be.fulfilled;
-        exists.should.be.equal(true);
-        exists = await assets.playerExists(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM).should.be.fulfilled;
-        exists.should.be.equal(true);
-        exists = await assets.playerExists(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM+1).should.be.fulfilled;
-        exists.should.be.equal(false);
-    });
+    // it('playerExists upon league creation', async () => {
+    //     let exists = await assets.playerExists(0).should.be.fulfilled; // playerId = 0 is dummy
+    //     exists.should.be.equal(false);
+    //     exists = await assets.playerExists(1).should.be.fulfilled;
+    //     exists.should.be.equal(false);
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     exists = await assets.playerExists(0).should.be.fulfilled;
+    //     exists.should.be.equal(false);
+    //     exists = await assets.playerExists(1).should.be.fulfilled;
+    //     exists.should.be.equal(true);
+    //     exists = await assets.playerExists(PLAYERS_PER_TEAM).should.be.fulfilled;
+    //     exists.should.be.equal(true);
+    //     exists = await assets.playerExists(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM).should.be.fulfilled;
+    //     exists.should.be.equal(true);
+    //     exists = await assets.playerExists(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM+1).should.be.fulfilled;
+    //     exists.should.be.equal(false);
+    // });
     
-    it('generate virtual player state', async () => {
-        await assets.generateVirtualPlayerState(0).should.be.rejected; // playerId = 0 is dummy
-        await assets.generateVirtualPlayerState(1).should.be.rejected;
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        await assets.generateVirtualPlayerState(0).should.be.rejected; 
-        await assets.generateVirtualPlayerState(1).should.be.fulfilled;
-        await assets.generateVirtualPlayerState(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM).should.be.fulfilled;
-        await assets.generateVirtualPlayerState(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM+1).should.be.rejected;
-    });
+    // it('generate virtual player state', async () => {
+    //     await assets.generateVirtualPlayerState(0).should.be.rejected; // playerId = 0 is dummy
+    //     await assets.generateVirtualPlayerState(1).should.be.rejected;
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     await assets.generateVirtualPlayerState(0).should.be.rejected; 
+    //     await assets.generateVirtualPlayerState(1).should.be.fulfilled;
+    //     await assets.generateVirtualPlayerState(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM).should.be.fulfilled;
+    //     await assets.generateVirtualPlayerState(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM+1).should.be.rejected;
+    // });
     
-    it('compute seed', async () => {
-        const seed = await assets.computeSeed(web3.utils.keccak256("ciao"), 55).should.be.fulfilled;
-        seed.should.be.bignumber.equal('34043593120303183903741292954315585295064490957430510451016950480665910064957');
-    });
+    // it('compute seed', async () => {
+    //     const seed = await assets.computeSeed(web3.utils.keccak256("ciao"), 55).should.be.fulfilled;
+    //     seed.should.be.bignumber.equal('34043593120303183903741292954315585295064490957430510451016950480665910064957');
+    // });
 
-    it('get team creation timestamp', async () => {
-        await assets.getTeamCreationBlocknum(teamId = 1).should.be.rejected;
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        const blockReported = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
-        blockReported.toNumber().should.be.equal(futureBlock);
-    });
+    // it('get team creation timestamp', async () => {
+    //     await assets.getTeamCreationBlocknum(teamId = 1).should.be.rejected;
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     const blockReported = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
+    //     blockReported.toNumber().should.be.equal(futureBlock);
+    // });
 
-    return;
     it('player birth is generated from team creation timestamp', async () => {
-        const name = "Barca"
-        await assets.createTeam(name, ALICE).should.be.fulfilled;
-        const teamCreationTimestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
-        const playerState = await assets.getPlayerState(5).should.be.fulfilled;
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        teamId = 3;
+        posInTeam = 4;
+        playerId = (teamId-1)*PLAYERS_PER_TEAM+ posInTeam +1
+        leagueId = 1;
+        posInLeague = teamId-1; // pos = 0 is for first team, so this is pos = 1 
+
+        const teamCreationBlocknum = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
+        teamCreationBlocknum.toNumber().should.be.equal(futureBlock);
+
+        const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
         const playerBirth = await playerStateLib.getMonthOfBirthInUnixTime(playerState).should.be.fulfilled;
-        const posInTeam = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
-        const nameHash = web3.utils.keccak256(web3.eth.abi.encodeParameter('string', name))
-        const seed = await assets.computeSeed(nameHash, posInTeam).should.be.fulfilled;
-        const computedBirth = await assets.computeBirth(seed, teamCreationTimestamp).should.be.fulfilled;
+        const posInTeamReported = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
+        posInTeamReported.toNumber().should.be.equal(posInTeam)
+
+        const dna = web3.utils.keccak256(web3.eth.abi.encodeParameters(
+                ['uint256', 'uint8'],
+                [leagueId, posInLeague]
+            )
+        );
+        const dnaReported = await assets.botTeamIdToDNA(teamId).should.be.fulfilled;
+        dnaReported.should.be.equal(dna);
+
+        const seed = await assets.computeSeed(dna, posInTeam).should.be.fulfilled;
+        const computedBirth = await assets.computeBirth(seed, futureBlock).should.be.fulfilled;
         playerBirth.should.be.bignumber.equal(computedBirth);
     });
 
+    return;
     it('get playerIds of the team', async () => {
         await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
         let playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
