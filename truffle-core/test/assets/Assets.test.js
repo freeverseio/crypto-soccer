@@ -108,22 +108,32 @@ contract('Assets', (accounts) => {
     //     playerBirth.should.be.bignumber.equal(computedBirth);
     // });
 
-    it('get playerIds of the team', async () => {
+    // it('get playerIds of the team', async () => {
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     let playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
+    //     playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+    //     for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
+    //         playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+
+    // });
+
+    it('get playerIds of the team after player transfer', async () => {
         await assets.createLeague(futureBlock, step).should.be.fulfilled;
         let playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
         playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
         for (let pos = 0; pos < PLAYERS_PER_TEAM ; pos++) 
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-
+        // Players in bot teams cannot be traded:
+        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.rejected;
+        await assets.transferTeam(teamId=1,ALICE);
+        await assets.transferTeam(teamId=2,BOB);
+        await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
+        playerIds = await assets.getTeamPlayerIds(teamId = 1).should.be.fulfilled;
+        playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
+        for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
+            playerIds[pos].should.be.bignumber.equal((pos+1).toString());
+        playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal(playerId1.toString());
     });
-    //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
-    //     await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM, playerId1 = PLAYERS_PER_TEAM+3).should.be.fulfilled;
-    //     playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
-    //     playerIds.length.should.be.equal(PLAYERS_PER_TEAM);
-    //     for (let pos = 0; pos < PLAYERS_PER_TEAM-1 ; pos++) 
-    //         playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-    //     playerIds[PLAYERS_PER_TEAM-1].should.be.bignumber.equal((PLAYERS_PER_TEAM+3).toString());
-    // });
 
     return;
     
