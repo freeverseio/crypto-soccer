@@ -3,8 +3,6 @@ pragma solidity >=0.4.21 <0.6.0;
 import "../assets/Assets.sol";
 
 contract AssetsMock is Assets {
-    constructor(address playerState) public Assets(playerState) {
-    }
 
     function computeSkills(uint256 rnd) public pure returns (uint16[5] memory) {
         return _computeSkills(rnd);
@@ -27,8 +25,8 @@ contract AssetsMock is Assets {
         return _playerExists(playerId);
     }
 
-    function isVirtual(uint256 playerId) public view returns (bool) {
-        return _isVirtual(playerId);
+    function isPlayerVirtual(uint256 playerId) public view returns (bool) {
+        return _isPlayerVirtual(playerId);
     }
 
     function setPlayerState(uint256 state) public {

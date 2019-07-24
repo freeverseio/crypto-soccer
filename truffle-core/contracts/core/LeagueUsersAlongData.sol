@@ -6,12 +6,12 @@ contract LeagueUsersAlongData is LeaguesScheduler {
     mapping(uint256 => bytes32) private _usersAlongDataHash;
 
     function getUsersAlongDataHash(uint256 id) public view returns (bytes32) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _usersAlongDataHash[id];
     }
 
     function updateUsersAlongDataHash(uint256 id, uint256[] memory teamIds, uint8[] memory tacticsIds, uint256[] memory blocks) public {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         require(!hasFinished(id), "finished league");
         // TODO: do this well with lionel4
         bytes32 usersAlongDataHash = _usersAlongDataHash[id];

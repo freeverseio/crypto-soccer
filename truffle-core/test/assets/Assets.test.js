@@ -7,18 +7,30 @@ require('chai')
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
 const PLAYERS_PER_TEAM = 25;
+const initBlock = 1;
+const step = 1;
 
 contract('Assets', (accounts) => {
     let assets = null;
     let playerStateLib = null;
+    let deployBlock = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
-
+    
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
+        await assets.setStatesContract(playerStateLib.address);
+        deployBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
     });
-
+    
+    it('create league', async () => {
+        await assets.createLeague(nTeams = 2, deployBlock + 10, step).should.be.fulfilled;
+        await assets.createLeague(nTeams = 3, deployBlock + 10, step).should.be.rejected; // only even num teams allowed
+        await assets.createLeague(nTeams = 2, deployBlock - 10, step).should.be.rejected; // only init in future
+    });
+    return;    
+    
     it('generate virtual player state', async () => {
         await assets.generateVirtualPlayerState(0).should.be.rejected;
         await assets.generateVirtualPlayerState(1).should.be.rejected;

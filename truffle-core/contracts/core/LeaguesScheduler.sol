@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "./LeaguesBase.sol";
+import "../assets/Assets.sol";
 
-contract LeaguesScheduler is LeaguesBase {
+contract LeaguesScheduler is Assets {
+
     function countLeagueDays(uint256 id) public view returns (uint256) 
     {
         uint256 nTeams = getNTeams(id);
@@ -10,7 +11,7 @@ contract LeaguesScheduler is LeaguesBase {
     }
 
     function getEndBlock(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         uint256 nMatchDays = countLeagueDays(id);
         uint256 initBlock = getInitBlock(id);
         uint256 step = getStep(id);

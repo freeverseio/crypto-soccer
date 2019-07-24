@@ -41,7 +41,7 @@ contract LeagueUpdatable is LeaguesScheduler {
     )
         public
     {
-        require(_exists(id), "invalid league id");
+        require(_leagueExists(id), "invalid league id");
         require(hasFinished(id), "league not finished");
         require(!isUpdated(id), "already updated");
         _result[id].initStateHash = initStateHash;
@@ -56,7 +56,7 @@ contract LeagueUpdatable is LeaguesScheduler {
     }
 
     function resetUpdater(uint256 id) public {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         _result[id].updateBlock = 0;
 
         if (_stakers != GameControllerInterface(0))
@@ -64,32 +64,32 @@ contract LeagueUpdatable is LeaguesScheduler {
     }
 
     function didUpdaterLie(uint256 id) public view returns (bool) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].isLie;
     }
 
     function getUpdater(uint256 id) external view returns (address) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].updater;
     }
 
     function getUpdateBlock(uint256 id) public view returns (uint256) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].updateBlock;
     }
 
     function getInitStateHash(uint256 id) public view returns (bytes32) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].initStateHash;
     }
 
     function getDayStateHashes(uint256 id) public view returns (bytes32[] memory) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].dayStateHashes;
     }
 
     function getScores(uint256 id) public view returns (uint16[] memory) {
-        require(_exists(id), "unexistent league");
+        require(_leagueExists(id), "unexistent league");
         return _result[id].scores;
     }
 
