@@ -397,23 +397,24 @@ contract('Assets', (accounts) => {
     //     currentHistory.posInPrevLeague.should.be.bignumber.equal('4');
     // });
 
-    it('sign team to league where it already belongs', async () => {
+    // it('sign team to league where it already belongs', async () => {
+    //     await assets.createLeague(futureBlock, step).should.be.fulfilled;
+    //     await assets.createLeague(futureBlock + step, step).should.be.fulfilled;
+    //     await assets.transferTeam(teamId, ALICE);
+    //     // it already belongs to league = 1:
+    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
+    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.rejected;
+    //     // it can only sign once to league = 2:
+    //     await assets.signToLeague(teamId = 1, leagueId = 2, posInLeague = 3).should.be.fulfilled;
+    //     await assets.signToLeague(teamId = 1, leagueId = 2, posInLeague = 3).should.be.rejected;
+    // });
+
+    it('transfer non-bots team', async () => {
         await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        await assets.createLeague(futureBlock + step, step).should.be.fulfilled;
-        await assets.transferTeam(teamId, ALICE);
-        // it already belongs to league = 1:
-        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
-        await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.rejected;
-        // it can only sign once to league = 2:
-        await assets.signToLeague(teamId = 1, leagueId = 2, posInLeague = 3).should.be.fulfilled;
-        await assets.signToLeague(teamId = 1, leagueId = 2, posInLeague = 3).should.be.rejected;
-    });
-    return;
-    it('transfer team', async () => {
-        await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-        const currentOwner = await assets.getTeamOwner(teamId = 1).should.be.fulfilled;
+        await assets.transferTeam(teamId = 1, ALICE);
+        const currentOwner = await assets.getTeamOwner(teamId).should.be.fulfilled;
         currentOwner.should.be.equal(ALICE);
-        await assets.transferTeam(teamId = 1, BOB).should.be.fulfilled;
+        await assets.transferTeam(teamId, BOB).should.be.fulfilled;
         const newOwner = await assets.getTeamOwner(teamId).should.be.fulfilled;
         newOwner.should.be.equal(BOB);
     });
@@ -423,7 +424,8 @@ contract('Assets', (accounts) => {
     });
 
     it('transfer team accross same owner', async () => {
-        await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        await assets.transferTeam(teamId = 1, ALICE);
         await assets.transferTeam(teamId = 1, ALICE).should.be.rejected;
     });
         
