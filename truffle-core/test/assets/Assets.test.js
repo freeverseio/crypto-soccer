@@ -7,13 +7,14 @@ require('chai')
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
 const PLAYERS_PER_TEAM = 25;
-const initBlock = 1;
+const TEAMS_PER_LEAGUE = 10;
 const step = 1;
 
 contract('Assets', (accounts) => {
     let assets = null;
     let playerStateLib = null;
     let deployBlock = null;
+    let futureBlock = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
     
@@ -22,13 +23,22 @@ contract('Assets', (accounts) => {
         assets = await Assets.new().should.be.fulfilled;
         await assets.setStatesContract(playerStateLib.address);
         deployBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
+        futureBlock = deployBlock + 200
     });
     
     it('create league', async () => {
-        await assets.createLeague(nTeams = 2, deployBlock + 10, step).should.be.fulfilled;
-        await assets.createLeague(nTeams = 3, deployBlock + 10, step).should.be.rejected; // only even num teams allowed
+        let nLeagues = await assets.leaguesCount().should.be.fulfilled;
+        nLeagues.toNumber().should.be.equal(0);
+        await assets.createLeague(nTeams = 2, futureBlock, step).should.be.fulfilled;
+        nLeagues = await assets.leaguesCount().should.be.fulfilled;
+        nLeagues.toNumber().should.be.equal(1);
+    });
+
+    it('create league with wrong init params', async () => {
+        await assets.createLeague(nTeams = 3, futureBlock, step).should.be.rejected; // only even num teams allowed
         await assets.createLeague(nTeams = 2, deployBlock - 10, step).should.be.rejected; // only init in future
     });
+    
     return;    
     
     it('generate virtual player state', async () => {
