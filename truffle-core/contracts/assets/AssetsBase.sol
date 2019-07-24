@@ -40,8 +40,8 @@ contract AssetsBase {
     uint8 constant public NUM_SKILLS = 5;
     address constant public FREEVERSE = address(1);
 
-    mapping(uint256 => uint256) internal _playerIdToState;
-    mapping(uint256 => Team) internal _teamIdToTeam;
+    mapping(uint256 => uint256) internal _playerIdToState; // id = 1, ...
+    mapping(uint256 => Team) internal _teamIdToTeam; // id = 1, ...
     mapping(bytes32 => address) internal _teamGivenNameHashToTeamId;
 
     League[] internal _leagues;
