@@ -67,22 +67,19 @@ contract('Assets', (accounts) => {
         await assets.generateVirtualPlayerState(TEAMS_PER_LEAGUE*PLAYERS_PER_TEAM+1).should.be.rejected;
     });
     
-return;
-    
     it('compute seed', async () => {
         const seed = await assets.computeSeed(web3.utils.keccak256("ciao"), 55).should.be.fulfilled;
         seed.should.be.bignumber.equal('34043593120303183903741292954315585295064490957430510451016950480665910064957');
     });
 
     it('get team creation timestamp', async () => {
-        await assets.getTeamCreationTimestamp(1).should.be.rejected;
-        const receipt = await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-        const blockNumber = receipt.receipt.blockNumber;
-        const block = await web3.eth.getBlock(blockNumber).should.be.fulfilled;
-        const timestamp = await assets.getTeamCreationTimestamp(1).should.be.fulfilled;
-        timestamp.should.be.bignumber.equal(block.timestamp.toString());
+        await assets.getTeamCreationBlocknum(teamId = 1).should.be.rejected;
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        const blockReported = await assets.getTeamCreationBlocknum(teamId).should.be.fulfilled;
+        blockReported.toNumber().should.be.equal(futureBlock);
     });
 
+    return;
     it('player birth is generated from team creation timestamp', async () => {
         const name = "Barca"
         await assets.createTeam(name, ALICE).should.be.fulfilled;

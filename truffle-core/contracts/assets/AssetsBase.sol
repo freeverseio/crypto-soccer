@@ -19,7 +19,7 @@ contract AssetsBase {
         uint256 prevLeagueId;
         uint8 posInPrevLeague;
         uint256[PLAYERS_PER_TEAM] playerIds;
-        uint256 creationTimestamp; // timestamp as seconds since unix epoch
+        uint256 creationBlocknum; // timestamp as seconds since unix epoch
         address teamOwner;
     }
 
@@ -39,6 +39,7 @@ contract AssetsBase {
     uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
     address constant public FREEVERSE = address(1);
+    uint16 constant internal MAX_INITBLOCK_DELAY = 2000;
 
     mapping(uint256 => uint256) internal _playerIdToState; // id = 1, ...
     mapping(uint256 => Team) internal _teamIdToTeam; // id = 1, ...

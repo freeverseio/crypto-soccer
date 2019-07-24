@@ -36,7 +36,7 @@ contract Assets is AssetsBase {
     }
 
     function isTeamWritten(uint256 teamId) public view returns (bool) {
-        return _teamIdToTeam[teamId].creationTimestamp != 0; 
+        return _teamIdToTeam[teamId].creationBlocknum != 0; 
     }
 
     function isBotTeam(uint256 teamId) public view returns (bool) {
@@ -47,10 +47,10 @@ contract Assets is AssetsBase {
         return _leagues[botTeamIdToLeagueId(teamId)].initBlock;
     }
 
-    function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
+    function getTeamCreationBlocknum(uint256 teamId) public view returns (uint256) {
         require(_teamExists(teamId), "invalid team id to get creation timestamp");
         if (isTeamWritten(teamId)) {
-            return _teamIdToTeam[teamId].creationTimestamp;
+            return _teamIdToTeam[teamId].creationBlocknum;
         } else {
             return botTeamIdToTimeCreation(teamId);
         }
@@ -235,7 +235,7 @@ contract Assets is AssetsBase {
             uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
             uint256 seed = _computeSeed(getTeamDNA(teamId), posInTeam);
             uint16[5] memory skills = _computeSkills(seed);
-            uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
+            uint16 birth = _computeBirth(seed, getTeamCreationBlocknum(teamId));
             return _playerState.playerStateCreate(
                 skills[0], // defence,
                 skills[1], // speed,
@@ -352,6 +352,7 @@ contract Assets is AssetsBase {
         public 
     {
         require(initBlock > block.number, "invalid init block");
+        require(initBlock < block.number + MAX_INITBLOCK_DELAY, "cannot create a league too far in future");
         require(step > 0, "invalid block step");
         _leagues.push(League(TEAMS_PER_LEAGUE, initBlock, step, 0, 0));
         emit LeagueCreated(leaguesCount());
