@@ -1549,10 +1549,10 @@ class Storage(Counter):
         superRoots, leagueRoots = self.computeLeagueHashesForVerse(self.currentVerse)
         tree = MerkleTree(superRoots)
         verseRoot = tree.root
-        self.updateVerseRoot(self.currentVerse, verseRoot, ADDR1)
+        self.updateVerseRoot(self.currentVerse, verseRoot, ALICE)
         # only lie (if forced) in the BC, not locally
         verseRootFinal = pylio.duplicate(verseRoot)
         if self.forceVerseRootLie:
             verseRootFinal = verseRootFinal * 2
-        ST.updateVerseRoot(self.currentVerse, verseRootFinal, ADDR1)
+        ST.updateVerseRoot(self.currentVerse, verseRootFinal, ALICE)
 
