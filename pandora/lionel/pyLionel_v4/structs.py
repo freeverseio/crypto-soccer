@@ -1,33 +1,26 @@
 import numpy as np
+# we need 'copy' because Python passes ALWAYS by reference, and sometimes, we want to avoid unwated modification inside a function
 import copy
 import datetime
+# These are the main constants that govern the whole thing.
 from constants import *
-import pylio
+# We use the serialization function from the Pickle library. In Solidity, we'll serialize our way.
 from pickle import dumps as serialize
+# Currently, we use this library for building Merkle Trees and Proofs. Any other would work:
 from merkle_tree import *
+# Pylio is a set of useful handmade functions:
+import pylio
 
 
-# simple block counter simulator, where the blockhash is just the hash of the blocknumber
-class Counter():
-    def __init__(self):
-        self.currentBlock = 0
-        self.currentVerse = 0
+# ------------------------------------------------------------------------
+# ----------      Classes common to both ST and CLIENT        ------------
+# ------------------------------------------------------------------------
 
-    def incrementBlock(self):
-        verseWasCrossed = False
-        if self.currentBlock == self.nextVerseBlock():
-            self.currentVerse += 1
-            verseWasCrossed = True
-        self.currentBlock += 1
-        return verseWasCrossed
+# In Solidity, PlayerState will be just a uin256, serializing the data shown here,
+# ...and there'll be associated read/write functions
+# Note: playerIdx = 0 is the null player
 
-class DataToChallengePlayerSkills():
-    def __init__(self, merkleProofStates, merkleProofLeague, merkleProofLeagueRoots, merkleProofSuperRoots):
-        self.merkleProofStates      = merkleProofStates
-        self.merkleProofLeague      = merkleProofLeague
-        self.merkleProofLeagueRoots = merkleProofLeagueRoots
-        self.merkleProofSuperRoots  = merkleProofSuperRoots
-
+# MinimalPlayerState contains the data regarding the player's DNA (not about the team it belongs, etc)
 class MinimalPlayerState():
     def __init__(self, playerState = None):
         if playerState:
@@ -57,9 +50,8 @@ class MinimalPlayerState():
     def getPlayerIdx(self):
         return self.playerIdx
 
-# In Solidity, PlayerState will be just a uin256, serializing the data shown here,
-# and there'll be associated read/write functions
-# playerIdx = 0 is the null player
+
+# PlayerState extends the previous to incorporate data not-related to the player's DNA
 class PlayerState(MinimalPlayerState):
     def __init__(self):
         MinimalPlayerState.__init__(self)
@@ -97,8 +89,10 @@ class PlayerState(MinimalPlayerState):
         return self.lastSaleBlocknum
 
 
-
-# teamIdx = 0 is the null team
+# Note: teamIdx = 0 is the null team
+# The Team struct contains the array playerIdxs.
+# - if playerIdx = 0, it is considered a virtual player
+# - if playerIdx = UINTMINUS1, this place in the team is free
 class Team():
     def __init__(self, name, nowInMonthsUnixTime):
         self.name = name
@@ -113,12 +107,6 @@ class Team():
         self.prevLeagueIdx          = 0
         self.teamPosInPrevLeague    = 0
         self.freePlayerSlots        = NPLAYERS_PER_TEAM_MAX - NPLAYERS_PER_TEAM_INIT
-
-class DataToChallengeLeague():
-    def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):
-        self.initSkillsHash         = initSkillsHash
-        self.dataAtMatchdayHashes   = dataAtMatchdayHashes
-        self.scores                 = scores
 
 
 class League():
@@ -139,6 +127,82 @@ class League():
         nMatchdays = 2 * (self.nTeams - 1)
         return self.verseInit + (nMatchdays-1)*self.verseStep
 
+
+# The main class that rules the update/challenge process
+# Level 1: VerseRoot provided (one single hash)
+# Level 2: SuperRoots provided (up to 200 Hashes, indexed by 'subverse')
+# Level 3: LeagueRoots provided (up to 200 LeagueRoots that challenge a particular subverse; indexed by 'posInSubverse')
+# Level 4: OneLeague provided (one hash per mathchday that challenge a particular LeagueRoot)
+class VerseUpdate():
+    # Constructed directly at Level 1 by an updater that provides the verseRoot.
+    def __init__(self, verseRoot, addr, blocknum):
+        self.verseRoot                      = pylio.duplicate(verseRoot)
+        self.verseRootAddr                  = pylio.duplicate(addr)
+        self.lastWriteBlocknum              = pylio.duplicate(blocknum)
+
+        # Levels 2, 3, 4 start at zero.
+        self.initSuperRoots()
+        self.initLeagueRoots()
+        self.initOneLeagueData()
+
+    def initSuperRoots(self):
+        self.superRoots                     = None
+        self.superRootsOwner                = None
+        self.superRootsVerseRoot            = None
+
+    def initLeagueRoots(self):
+        self.subVerse                       = None
+        self.leagueRoots                    = None
+        self.leagueRootsOwner               = None
+
+    def initOneLeagueData(self):
+        self.posInSubVerse                  = None
+        self.dataToChallengeLeague          = None
+        self.oneLeagueDataOwner             = None
+
+    # Challenge to Level 1, moves to Level 2
+    def writeSuperRoots(self, superRoots, superRootsVerseRoot, ownerAddr, blocknum):
+        self.superRoots                     = superRoots
+        self.superRootsOwner                = ownerAddr
+        self.lastWriteBlocknum              = blocknum
+        self.superRootsVerseRoot            = superRootsVerseRoot
+
+    # Challenge to Level 2, moves to Level 3
+    def writeLeagueRoots(self, subVerse, leagueRoots, ownerAddr, blocknum):
+        self.subVerse           = subVerse
+        self.leagueRoots        = leagueRoots
+        self.leagueRootsOwner   = ownerAddr
+        self.lastWriteBlocknum  = blocknum
+
+    # Challenge to Level 3, moves to Level 4
+    def writeOneLeagueData(self, posInSubVerse, dataToChallengeLeague, addr, blocknum):
+        self.posInSubVerse              = posInSubVerse
+        self.dataToChallengeLeague      = dataToChallengeLeague
+        self.oneLeagueDataOwner         = addr
+        self.lastWriteBlocknum          = blocknum
+
+    # slashing basically resets data below the given update, and resets timer.
+    def slashSuperRoots(self, blocknum):
+        self.lastWriteBlocknum = blocknum
+        self.initSuperRoots()
+        self.initLeagueRoots()
+        self.initOneLeagueData()
+
+    def slashLeagueRoots(self, blocknum):
+        self.lastWriteBlocknum          = blocknum
+        self.initLeagueRoots()
+        self.initOneLeagueData()
+
+    def slashOneLeagueData(self, blocknum):
+        self.lastWriteBlocknum          = blocknum
+        self.initOneLeagueData()
+
+
+# ------------------------------------------------------------------------
+# ----------      Classes used only by CLIENT                 ------------
+# ------------------------------------------------------------------------
+
+# LeagueClient extends League to store pre-hash stuff, etc.
 class LeagueClient(League):
     def __init__(self, verseInit, verseStep, usersInitData):
         nTeams = len(usersInitData["teamIdxs"])
@@ -172,15 +236,21 @@ class LeagueClient(League):
 
 # The VerseActionsCommit basically stores the merkle roots of all actions corresponding to a league starting at that moment
 # The Merkle Roots are computed from the leafs:
-#
-#  leafs = [ [leagueIdx0, allActionsInLeagueIdx0], ..., ]
-#
-#  where allActionsInLeagueIdx0 = [action0, action1, action2,...]
+#   - leafs = [ [leagueIdx0, allActionsInLeagueIdx0], ..., ]
+#   - where allActionsInLeagueIdx0 = [action0, action1, action2,...]
 
 class VerseActionsCommit:
     def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
         self.actionsMerkleRoots = actionsMerkleRoots
         self.blockNum = blockNum
+
+
+# Data that the CLIENT builds to challenge a league at level 4.
+class DataToChallengeLeague():
+    def __init__(self, initSkillsHash, dataAtMatchdayHashes, scores):
+        self.initSkillsHash         = initSkillsHash
+        self.dataAtMatchdayHashes   = dataAtMatchdayHashes
+        self.scores                 = scores
 
 
 # The Accumulator is responsible for receving user actions and committing them in the correct verse.
@@ -217,6 +287,7 @@ class DataAtMatchday():
         self.tacticsAtMatchday      = pylio.duplicate(tacticsAtMatchday)
         self.teamOrdersAtMatchday   = pylio.duplicate(teamOrdersAtMatchday)
 
+
 # Simple struct that stores the data needed to proof that a certain leaf belongs to a Merkle tree
 # "Values" is just the pair [ leafIdx, leafValue ]
 class MerkleProof():
@@ -225,6 +296,7 @@ class MerkleProof():
         self.depth          = pylio.duplicate(depth)
         self.leaf           = pylio.duplicate(leaf)
         self.leafIdx        = pylio.duplicate(leafIdx)
+
 
 # Simple struct that stores a tree
 class MerkleTree():
@@ -247,64 +319,27 @@ class MerkleTree():
         neededHashes = proof(self.tree, [leafIdx])
         return MerkleProof(neededHashes, self.depth, leaf, leafIdx)
 
-class LeaguesCommitInVerse():
-    def __init__(self, verseRoot, addr, blocknum):
-        # SuperRoot provided:
-        self.verseRoot                      = pylio.duplicate(verseRoot)
-        self.verseRootAddr                  = pylio.duplicate(addr)
-        self.lastWriteBlocknum              = pylio.duplicate(blocknum)
 
-        self.initSuperRoots()
-        self.initLeagueRoots()
-        self.initOneLeagueData()
+# Simple block counter simulator, where the blockhash is just the hash of the blocknumber. Not serious, who cares here.
+class Counter():
+    def __init__(self):
+        self.currentBlock = 0
+        self.currentVerse = 0
 
-    def initSuperRoots(self):
-        self.superRoots                     = None
-        self.superRootsOwner                = None
-        self.superRootsVerseRoot            = None
+    def incrementBlock(self):
+        verseWasCrossed = False
+        if self.currentBlock == self.nextVerseBlock():
+            self.currentVerse += 1
+            verseWasCrossed = True
+        self.currentBlock += 1
+        return verseWasCrossed
 
-    def initLeagueRoots(self):
-        self.subVerse                       = None
-        self.leagueRoots                    = None
-        self.leagueRootsOwner               = None
-
-    def initOneLeagueData(self):
-        self.posInSubVerse                  = None
-        self.dataToChallengeLeague          = None
-        self.oneLeagueDataOwner             = None
-
-    def writeSuperRoots(self, superRoots, superRootsVerseRoot, ownerAddr, blocknum):
-        self.superRoots                     = superRoots
-        self.superRootsOwner                = ownerAddr
-        self.lastWriteBlocknum              = blocknum
-        self.superRootsVerseRoot            = superRootsVerseRoot
-
-    def slashSuperRoots(self, blocknum):
-        self.lastWriteBlocknum = blocknum
-        self.initSuperRoots()
-        self.initLeagueRoots()
-        self.initOneLeagueData()
-
-    def writeLeagueRoots(self, subVerse, leagueRoots, ownerAddr, blocknum):
-        self.subVerse           = subVerse
-        self.leagueRoots        = leagueRoots
-        self.leagueRootsOwner   = ownerAddr
-        self.lastWriteBlocknum  = blocknum
-
-    def slashLeagueRoots(self, blocknum):
-        self.lastWriteBlocknum          = blocknum
-        self.initLeagueRoots()
-        self.initOneLeagueData()
-
-    def writeOneLeagueData(self, posInSubVerse, dataToChallengeLeague, addr, blocknum):
-        self.posInSubVerse              = posInSubVerse
-        self.dataToChallengeLeague      = dataToChallengeLeague
-        self.oneLeagueDataOwner         = addr
-        self.lastWriteBlocknum          = blocknum
-
-    def slashOneLeagueData(self, blocknum):
-        self.lastWriteBlocknum          = blocknum
-        self.initOneLeagueData()
+class DataToChallengePlayerSkills():
+    def __init__(self, merkleProofStates, merkleProofLeague, merkleProofLeagueRoots, merkleProofSuperRoots):
+        self.merkleProofStates      = merkleProofStates
+        self.merkleProofLeague      = merkleProofLeague
+        self.merkleProofLeagueRoots = merkleProofLeagueRoots
+        self.merkleProofSuperRoots  = merkleProofSuperRoots
 
 
 # The MAIN CLASS that manages all BC & CLIENT storage
@@ -342,6 +377,9 @@ class Storage(Counter):
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
+
+
+
 
     # ------------------------------------------------------------------------
     # ----------      Functions common to both BC and CLIENT      ------------
@@ -444,11 +482,11 @@ class Storage(Counter):
 
     def updateLeaguesSuperRoots(self, verse, superRoots, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
-        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(superRoots, addr,self.currentBlock)
+        self.verseToLeagueCommits[verse] = VerseUpdate(superRoots, addr,self.currentBlock)
 
     def updateVerseRoot(self, verse, verseRoot, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
-        self.verseToLeagueCommits[verse] = LeaguesCommitInVerse(verseRoot, addr, self.currentBlock)
+        self.verseToLeagueCommits[verse] = VerseUpdate(verseRoot, addr, self.currentBlock)
 
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
@@ -1091,6 +1129,7 @@ class Storage(Counter):
             return []
         else:
             return self.verseToFinishingLeagueIdxs[verse]
+
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
