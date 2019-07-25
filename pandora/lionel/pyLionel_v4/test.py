@@ -381,7 +381,8 @@ def integrationTest():
     shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS),\
                      "League is settled, but not detected")
 
-    # Create a New League To Test that SuperRoot lies can be caught too
+
+    # OK: let's start New League To Test that SuperRoot lies can be caught too
     verseInit = ST.currentVerse + 2
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
@@ -389,25 +390,31 @@ def integrationTest():
     assert ST.isLeagueIsAboutToStart(leagueIdx), "League not detected as created"
 
     # Advance to end of league and submit a truth
-    verse = ST.leagues[leagueIdx].verseFinal()
+    assert ST_CLIENT.forceVerseRootLie == False, "we want to tell the truth in the automatic updates now!"
     advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
+    verse = ST.leagues[leagueIdx].verseFinal()
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE) # Level 1 (truth)
 
-    # Check that a lie can be caught by comparing with local computation
+    # Check that I cannot challenge a truth with another truth:
+    # (again, the merkle root of my provided data coincides with the hash that I am challenging)
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, BOB), "Updater should have lied in superroot, but didnt")
-    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
 
-    # Submit a challenge and check its time evolution after waiting....
+    # Challenge with a lie:
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
     ST.challengeVerseRoot(verse, superRootsLie, BOB)
-    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS) # Level 2 (lie)
+
+    # Challenge with truth:
     ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB)
-    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (truth)
+
+    # Check that no-one needs to be slashed until some time passes
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
-    # We do not wait enough and try a sell/buy action is attempted
+    # Since verse is not settled yet, we cannot transfer players involved in this league. Check it:
     shouldFail(lambda x:
         exchangePlayers(
             ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1),
@@ -416,44 +423,52 @@ def integrationTest():
         ), "Player sell/buy was allowed but previous league was not settled yet"
      )
 
-    # We now wait enough
+    # So let's wait enough...
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    # ...and check that we moved up to level 1:
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE) # Level 1 (truth)
+    # ...and that we should manually slash the level 2 lier:
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
-    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
     assert needsSlash == UPDT_SUPROOTS, "Verse incorrectly reporting slash not needed"
+
+    # The verse is not settled yet! We can still challenge if we wanted.
     assert not isVerseSettled, "Verse incorrectly detected as already settled"
+    # ...until some more time passes:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
-    # Now, we can sell-buy players
+    # Skip this part if you are only interested in Stakers games
+    # Now, finally, we can transfer players.
+    # Let's check that their teams are correctly reported before and after
     playerIdx1 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1)
     playerIdx2 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6)
-
+    # we can either exchange players:
     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
-
+    # or transfer them one by one:
     playerIdx3 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx3, 2)
     team3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert team3 == teamIdx3, "some is wrong with team assignments"
     movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
     team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert team == teamIdx1, "wrong initial assignment"
-
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
     assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
     assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
     assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
 
-    #           -----  LEAGUE 2 ------
+
+    #           -----  LEAGUE 3 ------
     # After the player exchange... we create another league
     verseInit = ST.currentVerse + 2
     leagueIdx          = ST.createLeague(verseInit, verseStep, usersInitData)
     leagueIdx_client   = ST_CLIENT.createLeagueClient(verseInit, verseStep, usersInitData)
     assert leagueIdx == leagueIdx_client, "Leagues in client not in sync with BC"
 
-    # At the end of league until, to the challenging period
+    # Move to end of league, during the challenging period. The Synchronizer has updated the verse with truth.
     advanceToEndOfLeague(leagueIdx, ST, ST_CLIENT)
     verse = ST_CLIENT.leagues[leagueIdx].verseFinal()
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE) # Level 1 (truth)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
@@ -461,22 +476,24 @@ def integrationTest():
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
     ST.challengeVerseRoot(verse, superRootsLie, BOB)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS) # Level 2 (lie)
+
+    # and yet another challenge with lie:
     superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 5)
     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
-    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (lie)
 
     # Try to challenge by providing a false ONE-LEAGUE...
     dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
     dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
     dataToChallengeLeagueLie.initSkillsHash += 1
-
     ST.challengeleagueRoots(
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
         CAROL
     )
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (lie)
 
     # We successfully challenge the ONE-LEAGUE, and return to ALL-LEAGUES
     ST.challengeInitSkills(
@@ -484,7 +501,7 @@ def integrationTest():
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)  # Level 3 (lie)
 
     # We now successfully challenge the false ALL-LEAGUES
     ST.challengeleagueRoots(
@@ -493,7 +510,7 @@ def integrationTest():
         dataToChallengeLeague,
         CAROL
     )
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (true)
 
     # We fail to prove that anything was wrong
     ST.challengeInitSkills(
@@ -501,39 +518,46 @@ def integrationTest():
         ST_CLIENT.leagues[leagueIdx].usersInitData,
         duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
     )
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (true)
 
     # it also fails at proving that any matchday is wrong
     selectedMatchday = 0
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (true)
     selectedMatchday = 1
     challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (true)
 
     # finally, after a CHLL_PERIOD, it shows that it is back to the superRoot
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS) # Level 2 (lie)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
+    # we challenge with truth:
     ST.challengeSuperRoot(verse, subVerse, leagueRoots, CAROL)
-    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (truth)
+
+    # we wait and we see that we're back to Level 1, and should slash the level 2 lier
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
-    ST.assertCanChallengeStatus(verse, UPDT_VERSE)
+    ST.assertCanChallengeStatus(verse, UPDT_VERSE) # Level 1 (truth)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
+    assert needsSlash == UPDT_SUPROOTS, "we did not detect that this guy should be slashed"
     assert not isVerseSettled, "Verse incorrectly detected as settled"
+
+    # the verse settles after time:
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
+    assert needsSlash == UPDT_SUPROOTS, "we did not detect that this guy should be slashed"
 
 
     # We make sure that we can inquire the state of any player after these leagues and player sales:
-    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
+    assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
 
     # The following all-team printout is interesting. On the one hand, it checks that all player states
     # in that team can be certified by the BC. On the other hand, you can check that the 2nd player
-    # corresponds to the player bought from team4, in the exchange done above.
+    # corresponds to the player bought from team4, in the exchange done above. Basically, that transfers went right.
     printTeam(teamIdx1, ST_CLIENT)
 
 
