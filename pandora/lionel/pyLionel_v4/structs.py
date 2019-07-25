@@ -524,7 +524,6 @@ class Storage(Counter):
     # note that values = actionsAtSelectedMatchday, formated so that is has the form
     # {idx: actionsAtSelectedMatchday}, where idx is the leaf idx.
     # so it should happen that both things coincide.
-
     def challengeMatchdayStates(self,
             verse,
             selectedMatchday,
@@ -594,6 +593,7 @@ class Storage(Counter):
             return
 
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
+
 
     def isShirtNumFree(self, teamIdx, shirtNum):
         return self.teams[teamIdx].playerIdxs[shirtNum] == UINTMINUS1
