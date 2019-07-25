@@ -191,7 +191,7 @@ contract Assets is AssetsBase {
     }
 
     function countTeams() public view returns (uint256){
-        return leaguesCount() * TEAMS_PER_LEAGUE;
+        return countLeagues() * TEAMS_PER_LEAGUE;
     }
 
     function getTeamDNA(uint256 teamId) public view returns (bytes32) {
@@ -272,7 +272,7 @@ contract Assets is AssetsBase {
     }
 
     function _teamExists(uint256 teamId) internal view returns (bool) {
-        return botTeamIdToLeagueId(teamId) <= leaguesCount();
+        return botTeamIdToLeagueId(teamId) <= countLeagues();
     }
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
@@ -344,7 +344,7 @@ contract Assets is AssetsBase {
         return uint256(keccak256(abi.encode(arg)));
     }
     
-        function leaguesCount() public view returns (uint256) {
+        function countLeagues() public view returns (uint256) {
         return _leagues.length - 1;
     }
     
@@ -359,7 +359,7 @@ contract Assets is AssetsBase {
         require(initBlock < block.number + MAX_INITBLOCK_DELAY, "cannot create a league too far in future");
         require(step > 0, "invalid block step");
         _leagues.push(League(TEAMS_PER_LEAGUE, initBlock, step, 0, 0));
-        emit LeagueCreated(leaguesCount());
+        emit LeagueCreated(countLeagues());
     }
 
     function leagueIdAndPosToTeamId(uint256 leagueId, uint8 posInLeague) public pure returns (uint256) {
@@ -401,7 +401,7 @@ contract Assets is AssetsBase {
     }
 
     function _leagueExists(uint256 leagueId) internal view returns (bool) {
-        return leagueId <= leaguesCount();
+        return leagueId <= countLeagues();
     }
     
     
