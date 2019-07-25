@@ -15,9 +15,8 @@ from structs import *
 
 # import __builtin__ as builtin
 
+# Function used in the integration test to update a set of leagues always telling the truth
 def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
-    # Now go through every league and verse, and always tell the truth in all challenges.
-    # Since the verseRoot was true in all cases, we should end up in verseRoot state at the very end.
     for extraVerse in range(2000):
         if doExchanges and extraVerse % 10:
             for p in range(2):
@@ -39,7 +38,7 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                     print("challenging league... superRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
                     subVerse = 0
-                    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2)
+                    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB)
                     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
                 if verseStatus == UPDT_LGROOTS:
                     print("challenging league... leagueRoot", leagueIdx)
@@ -48,7 +47,7 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                         verse,
                         ST.getPosInSubverse(verse, leagueIdx),
                         dataToChallengeLeague,
-                        ADDR3
+                        CAROL
                     )
                 elif verseStatus == UPDT_ONELEAGUE:
                     thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
@@ -58,17 +57,19 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                         ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
                         duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
                     )
-        # advanceNVerses(2, ST, ST_CLIENT)
         return ST, ST_CLIENT
 
+# Function to create a set of updates/challenges to many leagues
+# We start with all such leagues already updated with the "VerseRoot", which was always TRUE/HONEST => Level 1 is True
+# Then:
+#   - if we encounter the league in Level 1 / VerseRoot  => challenge with a Lie (moving to Level 2 / SuperRoots)
+#   - if we encounter the league in Level 2 / SuperRoots => challenge with a Lie (moving to Level 3 / LeagueRoots)
+#   - if we encounter the league in Level 3 / LeagueRoots:
+#       - if first time for this league  => challenge with a Lie (moving to Level 4 / OneLeague)
+#       - if second time for this league => challenge with a Truth (moving to Level 4 / OneLeague)
+#   - if we encounter the league in Level 4 / OneLeague:
+#         - challenge it, and check that it is successful only if it had truly lied.
 def brutalBlock(ST, ST_CLIENT, leaguesTested):
-    # We will loop for leagues so that we first always lie:
-    #   - first: challenge the superRoot with lie
-    #   - second: challenge the allLeagues with lie
-    # Then catch the last lie with a challengeInitSkills
-    # And then always tell the truth
-    # We keep a list of leagues that already went down to the challengeInitskills to know
-    # that we now need to tell the truth.
     leaguesTestedAtLevel3 = []
     advanceNVerses(250, ST, ST_CLIENT)
     for extraVerse in range(45):
@@ -82,14 +83,14 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                     print("challenging league... verseRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
                     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 11)
-                    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+                    ST.challengeVerseRoot(verse, superRootsLie, BOB)
                     ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
                 elif verseStatus == UPDT_SUPROOTS:
                     print("challenging league... superRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
                     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 12)
                     subVerse = 0
-                    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
+                    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
                     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
                 elif verseStatus == UPDT_LGROOTS:
                     if leagueIdx in leaguesTestedAtLevel3:
@@ -99,7 +100,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                             verse,
                             ST.getPosInSubverse(verse, leagueIdx),
                             dataToChallengeLeague,
-                            ADDR3
+                            CAROL
                         )
                         ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
                     else:
@@ -112,7 +113,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                             verse,
                             ST.getPosInSubverse(verse, leagueIdx),
                             dataToChallengeLeagueLie,
-                            ADDR3
+                            CAROL
                         )
                         ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
@@ -134,24 +135,35 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
 
 
 
-
+# Main integration test.
+# We keep two main structs: ST, ST_CLIENT
+#   - ST keeps all the storage and functions that will be required in the Blockchain Contract
+#   - ST_CLIENT extends ST with more storage in functions that are kept by the Synchronizer, locally.
+#       - examples: pre-hash data, computations to do a challenge, etc.
+#       - as such, ST_CLIENT always keeps the TRUTH state of the Universe, and hence, it is able
+#       - to detect if someone sent a lie to the Blockchain
+# So for example, when creating a new team, we do that 'simultaneously' in ST and ST_CLIENT.
+#
 def integrationTest():
     # Create contract storage in BC, and its extended version for the CLIENT
-    # We need to keep both in sync. The CLIENT stores, besides what is in the BC, the pre-hash stuff.
     ST          = Storage(isClient = False)
     ST_CLIENT   = Storage(isClient = True)
 
     # The accumulator is responsible for receiving user actions and committing them in the correct verse.
+    # It only lives in the CLIENT.
     ST_CLIENT.addAccumulator()
 
-    # Note that every 'advance' we do will check if some user actions need to be commited
+    # Note that in every 'advance' we do, the CLIENT will check if some user actions need to be commited, and do so.
+    # It will also check if a new verse needs to be updated, and do so:
+    #   - honestly if we set ST_CLIENT.forceVerseRootLie = False (default)
+    #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    # Create teams in BC and client
-    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
-    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
-    teamIdx3 = createTeam("Milan", ADDR3, ST, ST_CLIENT)
-    teamIdx4 = createTeam("PSG", ADDR3, ST, ST_CLIENT)
+    # Create teams in ST and ST_CLIENT
+    teamIdx1 = createTeam("Barca", ALICE, ST, ST_CLIENT)
+    teamIdx2 = createTeam("Madrid", BOB, ST, ST_CLIENT)
+    teamIdx3 = createTeam("Milan", CAROL, ST, ST_CLIENT)
+    teamIdx4 = createTeam("PSG", CAROL, ST, ST_CLIENT)
 
     # advances both BC and CLIENT, and syncs if it goes through a verse
     advanceToBlock(100, ST, ST_CLIENT)
@@ -222,19 +234,19 @@ def integrationTest():
 
     # Challenge with a lie
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    ST.challengeVerseRoot(verse, superRoots, ADDR2)
+    ST.challengeVerseRoot(verse, superRoots, BOB)
 
 
     # Try to challenge by providing a correct All-leagues-roots... should fail
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     ST_CLIENT.getSubVerseData(verse)
     subVerse = 0
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2), \
+    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB), \
         "You were able to challenge a superroot by providing compatible leagueRoots")
 
     # Try to challenge by providing a lie about one of the leagues root, it will be caught later on
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 2)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
 
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
 
@@ -247,7 +259,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 0
@@ -262,7 +274,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     selectedMatchday = 1
@@ -278,7 +290,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     ST.challengeInitSkills(
@@ -293,7 +305,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
@@ -319,14 +331,14 @@ def integrationTest():
     assert needsSlash == UPDT_LGROOTS, "We should be able to slash AllLeagues, but not detected"
 
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 3)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
     ST.challengeleagueRoots(
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
@@ -355,13 +367,13 @@ def integrationTest():
 
     # Check that a lie can be caught by comparing with local computation
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    pylio.shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, ADDR2), "Updater should have lied in superroot, but didnt")
+    pylio.shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, BOB), "Updater should have lied in superroot, but didnt")
     superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
 
     # Submit a challenge and check its time evolution after waiting....
-    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+    ST.challengeVerseRoot(verse, superRootsLie, BOB)
     ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
-    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "Verse incorrectly reporting slash needed"
@@ -420,9 +432,9 @@ def integrationTest():
     # Try to challenge by providing a false ALL-LEAGUES
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 4)
-    ST.challengeVerseRoot(verse, superRootsLie, ADDR2)
+    ST.challengeVerseRoot(verse, superRootsLie, BOB)
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 5)
-    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], ADDR2)
+    ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
 
     # Try to challenge by providing a false ONE-LEAGUE...
@@ -434,7 +446,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeagueLie,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
@@ -451,7 +463,7 @@ def integrationTest():
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
-        ADDR3
+        CAROL
     )
     ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
 
@@ -477,7 +489,7 @@ def integrationTest():
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
-    ST.challengeSuperRoot(verse, subVerse, leagueRoots, ADDR3)
+    ST.challengeSuperRoot(verse, subVerse, leagueRoots, CAROL)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_VERSE)
@@ -504,7 +516,7 @@ def integrationTest():
     nPlayers    = 400
 
     for t in range(nTeams):
-        createTeam("BotTeam"+str(t), ADDR1, ST, ST_CLIENT)
+        createTeam("BotTeam"+str(t), ALICE, ST, ST_CLIENT)
 
     for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM_MAX
@@ -580,8 +592,8 @@ def simpleExchangeTest():
     ST          = Storage(isClient = False)
     ST_CLIENT   = Storage(isClient = True)
 
-    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
-    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
+    teamIdx1 = createTeam("Barca", ALICE, ST, ST_CLIENT)
+    teamIdx2 = createTeam("Madrid", BOB, ST, ST_CLIENT)
 
     # Test that we can ask the BC if state of a player (computed by the Client) is correct:
     pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
