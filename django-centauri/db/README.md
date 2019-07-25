@@ -1,0 +1,1 @@
+This directory will contain django database file
