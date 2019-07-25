@@ -740,7 +740,7 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Entire Workflow", result = integrationTest(), expected = 170)
+success = success and runTest(name = "Test Entire Workflow", result = integrationTest(), expected = 978)
 success = success and runTest(name = "Test Simple Team Creation", result = simpleExchangeTest(), expected = 11024)
 success = success and runTest(name = "Test Merkle", result = simpleMerkleTreeTest(), expected = True)
 if success:
