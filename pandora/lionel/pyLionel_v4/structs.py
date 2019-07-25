@@ -342,18 +342,25 @@ class DataToChallengePlayerSkills():
         self.merkleProofSuperRoots  = merkleProofSuperRoots
 
 
-# The MAIN CLASS that manages all BC & CLIENT storage
+
+
+    # ------------------------------------------------------------------------
+    # ------     THE MAIN CLASS. PART THAT IS COMMON TO BC AND CLIENT---------
+    # ------------------------------------------------------------------------
+
 class Storage(Counter):
     def __init__(self, isClient):
 
+        # The Blockchain does not need this fake counter :-)
         Counter.__init__(self)
 
         # this bool is just to understand if the created BC is actually a client
-        # it allows to assert that some funcions should only be run by the client
+        # it allows us, in this simulation, to ensure that the functions that are
+        # only to be used by the CLIENT are actually used only by the CLIENT :-)
         self.isClient = isClient
 
         # an array of Team structs, the first entry being the null team
-        self.teams = [Team("",0)]
+        self.teams = [Team("", 0)]
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.
@@ -377,7 +384,6 @@ class Storage(Counter):
 
     def assertIsClient(self):
         assert self.isClient, "This code should only be run by CLIENTS, not the BC"
-
 
 
 
@@ -414,16 +420,19 @@ class Storage(Counter):
         assert False, "We should never be in this verse state"
 
 
+    # getVerseUpdateStatus - returns:
+    # - Level at which the current is (from no update to Level 1,2,3,4)
+    # - Should someone be slashed?
+    # - is verse settled
     def getVerseUpdateStatus(self, verse):
-        needsSlash = UPDT_NONE
-
-        # No updates ever done
+        # If verse was never updated, return immediately
         if not (verse in self.verseToLeagueCommits):
             verseStatus     = UPDT_NONE
+            needsSlash      = UPDT_NONE
             isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
-        # Start from the bottom
+        # Start from the bottom. If Level 4
         if self.verseToLeagueCommits[verse].oneLeagueDataOwner:
             if self.haveNPeriodsPassed(verse, 2):
                 verseStatus     = UPDT_SUPROOTS
@@ -435,6 +444,7 @@ class Storage(Counter):
                 isVerseSettled  = False
             else:
                 verseStatus     = UPDT_ONELEAGUE
+                needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
@@ -450,6 +460,7 @@ class Storage(Counter):
                 isVerseSettled  = False
             else:
                 verseStatus     = UPDT_LGROOTS
+                needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
@@ -461,10 +472,12 @@ class Storage(Counter):
                 isVerseSettled  = True
             else:
                 verseStatus     = UPDT_SUPROOTS
+                needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
         verseStatus     = UPDT_VERSE
+        needsSlash      = UPDT_NONE
         isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
         return verseStatus, isVerseSettled, needsSlash
 
