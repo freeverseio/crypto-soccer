@@ -560,16 +560,18 @@ def integrationTest():
     # corresponds to the player bought from team4, in the exchange done above. Basically, that transfers went right.
     printTeam(teamIdx1, ST_CLIENT)
 
-
+    # NOW: GO WILD
     # create many teams, and leagues, and mess it all.
     advanceNVerses(1000, ST, ST_CLIENT)
     nTeams      = 200
     nLeagues    = 20
     nPlayers    = 400
 
+    # create many teams
     for t in range(nTeams):
         createTeam("BotTeam"+str(t), ALICE, ST, ST_CLIENT)
 
+    # transfer many players
     for p in range(nPlayers):
         playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM_MAX
         playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM_MAX
@@ -599,10 +601,15 @@ def integrationTest():
 
 
     # We run a large set of updates, challenges, exchanges, etc.
-    # Only the verseRoot is true. So we may end up in one of the many other states, but false.
+    # Only the verseRoot is true in all of them.
+    # After the "brutalBlock" call, we may end up in one of the many possible verse states, depending
+    # on the lying sequence.
+    # But after the brutalBlock, we will still be in the challenging period... and hence, after telling
+    # the truths in all such leagues, we should end up with all of them in the original Level 1 honest state.
     ST, ST_CLIENT = brutalBlock(ST, ST_CLIENT, leaguesTested)
     # We now tell the truth for all leagues. We need to do this in 2 steps, since some leagues
-    # ended up in the last state. That's why we wait for an extra challenging block, and repeat telling truth.
+    # ended up level 3 or 4. That's why we wait for an extra challenging block, and repeat telling truth.
+    # By the way, we also try to transfer many players at the same time by setting the "True" bool
     ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
     ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
@@ -615,13 +622,11 @@ def integrationTest():
         assert isVerseSettled
         assert verseStatus == UPDT_VERSE, "league should be back to Verse..."
 
-
+    # Repeat the brutal sequence.
     ST, ST_CLIENT = brutalBlock(ST, ST_CLIENT, leaguesTested)
     ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, False)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS + 1, ST, ST_CLIENT)
     ST, ST_CLIENT = updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, True)
-
-    # Wait for everything to settle and check we're in the SuperRoot state in all such leagues
     advanceNVerses(2000, ST, ST_CLIENT)
     for leagueIdx in leaguesTested:
         verse = ST.leagues[leagueIdx].verseFinal()
@@ -630,9 +635,11 @@ def integrationTest():
         assert verseStatus == UPDT_VERSE, "league should be back to Verse..."
 
 
+    # If we made it to this point, the tests basically passed.
+    # We will return the hash of the entire ST and ST_CLIENT gigantic structs.
+    # This will ensure that not only is the flow as expected, but the stored data
+    # does not change accidentally.
 
-
-    # Returns test result, to later check against expected
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
     return testResult
 
