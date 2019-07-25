@@ -36,14 +36,25 @@ contract AssetsMock is Assets {
     function teamExists(uint256 teamId) public view returns (bool){
         return _teamExists(teamId);
     }
-    
+
+    function updateTeamHistory(
+        uint256 teamId,
+        uint256 leagueId,
+        uint8 posInLeague
+    )
+    public
+    {
+        _updateTeamHistory(teamId, leagueId,posInLeague);
+    }
+
     function signTeamInLeagueMock(
-        uint256 leagueId, 
         uint256 teamId, 
+        uint256 leagueId, 
+        uint8 posInLeague, 
         uint8[PLAYERS_PER_TEAM] memory teamOrder, 
         uint8 teamTactics
     ) public {
-        _signTeamInLeague(leagueId, teamId, teamOrder, teamTactics);
+        _signTeamInLeague(teamId, leagueId, posInLeague, teamOrder, teamTactics);
     }
 
 }
