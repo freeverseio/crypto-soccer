@@ -4,6 +4,8 @@ services:
     image: freeverseio/centauri:dev
     ports: 
       - "8000:8000"
+    volumes:
+      - centauri-data:/app/db
   postgres:
     image: freeverseio/postgres:dev
   synchronizer:
@@ -18,10 +20,5 @@ services:
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
       - "4000:4000"
-  # # frontend:
-  #   build:
-  #     context: ./reactjs-frontend/.
-  #   depends_on:
-  #     - horizon
-  #   ports:
-  #     - "3000:3000"
+volumes:
+  centauri-data:
