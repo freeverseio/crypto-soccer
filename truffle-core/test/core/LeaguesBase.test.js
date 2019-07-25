@@ -129,7 +129,7 @@ contract('LeaguesBase', (accounts) => {
         const receipt = await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
         const leagueId = receipt.logs[0].args.leagueId.toNumber();
         leagueId.should.be.equal(1);
-        const count = await leagues.leaguesCount().should.be.fulfilled;
+        const count = await leagues.countLeagues().should.be.fulfilled;
         count.toNumber().should.be.equal(1);
     });
 
@@ -140,13 +140,13 @@ contract('LeaguesBase', (accounts) => {
     });
 
     it('count leagues', async () => {
-        let counter = await leagues.leaguesCount().should.be.fulfilled;
+        let counter = await leagues.countLeagues().should.be.fulfilled;
         counter.toNumber().should.be.equal(0);
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
-        counter = await leagues.leaguesCount().should.be.fulfilled;
+        counter = await leagues.countLeagues().should.be.fulfilled;
         counter.toNumber().should.be.equal(1);
         await leagues.create(nTeams = 2, initBlock, step).should.be.fulfilled;
-        counter = await leagues.leaguesCount().should.be.fulfilled;
+        counter = await leagues.countLeagues().should.be.fulfilled;
         counter.toNumber().should.be.equal(2);
     });
 

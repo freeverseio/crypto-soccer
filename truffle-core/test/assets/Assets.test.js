@@ -29,10 +29,10 @@ contract('Assets', (accounts) => {
     });
     
     it('create league', async () => {
-        let nLeagues = await assets.leaguesCount().should.be.fulfilled;
+        let nLeagues = await assets.countLeagues().should.be.fulfilled;
         nLeagues.toNumber().should.be.equal(0);
         await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        nLeagues = await assets.leaguesCount().should.be.fulfilled;
+        nLeagues = await assets.countLeagues().should.be.fulfilled;
         nLeagues.toNumber().should.be.equal(1);
     });
 
