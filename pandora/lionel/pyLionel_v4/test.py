@@ -82,13 +82,13 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                 if verseStatus == UPDT_VERSE:
                     print("challenging league... verseRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-                    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 11)
+                    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 11)
                     ST.challengeVerseRoot(verse, superRootsLie, BOB)
                     ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
                 elif verseStatus == UPDT_SUPROOTS:
                     print("challenging league... superRoot", leagueIdx)
                     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-                    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 12)
+                    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 12)
                     subVerse = 0
                     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
                     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
@@ -244,14 +244,14 @@ def integrationTest():
     # Basically, the merkle root of your new data equals the hash that you're challenging.
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
     subVerse = 0
-    pylio.shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB), \
+    shouldFail(lambda x: ST.challengeSuperRoot(verse, subVerse, leagueRoots[subVerse], BOB), \
         "You were able to challenge a superroot by providing compatible data")
     # so the state remains the same:
     ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS) # Level 2 (truth)
 
 
     # Try to challenge by providing a Lie about one of the leagues root, it will be caught later on
-    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 2)
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 2)
     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (lie)
 
@@ -346,7 +346,7 @@ def integrationTest():
     # the current Level 2 data. Let's see it:
 
     # Good, so we're now at Level 2, which was true, let's challenge again... with a lie.
-    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 3)
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 3)
     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (lie)
 
@@ -378,7 +378,7 @@ def integrationTest():
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
 
     # now that it is settled, no challenge is accepted:
-    pylio.shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS),\
+    shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS),\
                      "League is settled, but not detected")
 
     # Create a New League To Test that SuperRoot lies can be caught too
@@ -395,7 +395,7 @@ def integrationTest():
 
     # Check that a lie can be caught by comparing with local computation
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    pylio.shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, BOB), "Updater should have lied in superroot, but didnt")
+    shouldFail(lambda x: ST.challengeVerseRoot(verse, superRoots, BOB), "Updater should have lied in superroot, but didnt")
     superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
 
     # Submit a challenge and check its time evolution after waiting....
@@ -408,7 +408,7 @@ def integrationTest():
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
     # We do not wait enough and try a sell/buy action is attempted
-    pylio.shouldFail(lambda x:
+    shouldFail(lambda x:
         exchangePlayers(
             ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx1, 1),
             ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx4, 6),
@@ -459,9 +459,9 @@ def integrationTest():
 
     # Try to challenge by providing a false ALL-LEAGUES
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 4)
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
     ST.challengeVerseRoot(verse, superRootsLie, BOB)
-    superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 5)
+    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 5)
     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS)
 
