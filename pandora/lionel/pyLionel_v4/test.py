@@ -133,68 +133,9 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
 
 
 
-# TEST1: create a team, print players
-# Exchange 2 players in different teams, check that all is updated OK
-# the test is passed if the hash mod 1000 of all that is printed is as expected
-def test1():
-    ST          = Storage(isClient = False)
-    ST_CLIENT   = Storage(isClient = True)
-
-    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
-    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
-
-    # Test that we can ask the BC if state of a player (computed by the Client) is correct:
-    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
-
-    print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
-    hash0 = printTeam(teamIdx1, ST_CLIENT)
-
-    print("\n\nplayers 2 and 27 before sale:\n")
-
-    playerIdx1 = 2
-    playerIdx2 = NPLAYERS_PER_TEAM_MAX + 2
-
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
-
-    assert team1 == teamIdx1, "wrong initial assignment"
-    assert team2 == teamIdx2, "wrong initial assignment"
-
-    hash1 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1))
-
-    print("\n")
-    hash2 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx2))
-
-    advanceNBlocks(10, ST, ST_CLIENT)
-
-    exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
-
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
-
-    assert team1 == teamIdx2, "wrong initial assignment"
-    assert team2 == teamIdx1, "wrong initial assignment"
-
-    playerIdx3 = 34
-    teamIdx3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
-    assert teamIdx3 != teamIdx1, "please pick players from different teams"
-    movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
-    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
-    assert team == teamIdx1, "wrong initial assignment"
 
 
-
-    print("\n\nplayers 2 and 27 after sale:\n")
-    hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1))
-    print("\n")
-    hash4 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx2))
-    hashSum         = hash0+hash1+hash2+hash3+hash4
-    return hashSum
-
-
-
-# TEST2: all the workflow!
-def test2():
+def integrationTest():
     # Create contract storage in BC, and its extended version for the CLIENT
     # We need to keep both in sync. The CLIENT stores, besides what is in the BC, the pre-hash stuff.
     ST          = Storage(isClient = False)
@@ -632,41 +573,91 @@ def test2():
     return testResult
 
 
-def test4():
-    leafs = [1,2,3,4,5,6,"rew"]
-    tree, depth = make_tree(duplicate(leafs), serialHash)
-    assert depth == get_depth(tree), "Depth not computed correctly"
+# TEST: create a team, print players
+# Exchange 2 players in different teams, check that all is updated OK
+# the test is passed if the hash mod 1000 of all that is printed is as expected
+def simpleExchangeTest():
+    ST          = Storage(isClient = False)
+    ST_CLIENT   = Storage(isClient = True)
 
-    # We show that this library can prove 1 leaf at a time, or (below), many
-    idxsToProve = [1]
-    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
-    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
-          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
-          )
-    success1 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+    teamIdx1 = createTeam("Barca", ADDR1, ST, ST_CLIENT)
+    teamIdx2 = createTeam("Madrid", ADDR2, ST, ST_CLIENT)
 
-    idxsToProve = [1,2,3]
-    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
-    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
-          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
-          )
-    success2 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+    # Test that we can ask the BC if state of a player (computed by the Client) is correct:
+    pylio.assertPlayerStateInClientIsCertifiable(1, ST, ST_CLIENT)
 
-    # it is also valid in the case of a single element, where the 'neededHashes' is empty,
-    # as we just need the root(tree), which is passed too
-    leafs = ["prew"]
-    tree, depth = make_tree(duplicate(leafs), serialHash)
-    idxsToProve = [0]
-    neededHashes, values = prepareProofForIdxs(idxsToProve, tree, leafs)
-    assert not neededHashes, "No Hash should be needed, but you have a non empty array"
-    print("To prove these %i leafs you need %i hashes, in a tree with %i leafs, and depth %i" \
-          % (len(idxsToProve), len(neededHashes), len(leafs), depth)
-          )
-    success3 = verify(root(tree), depth, values, neededHashes, serialHash, debug_print=False)
+    print("Team created with teamIdx, teamName = " + str(teamIdx1) + ", " + ST.teams[teamIdx1].name)
+    hash0 = printTeam(teamIdx1, ST_CLIENT)
+
+    print("\n\nplayers 2 and 27 before sale:\n")
+
+    playerIdx1 = 2
+    playerIdx2 = NPLAYERS_PER_TEAM_MAX + 2
+
+    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+
+    assert team1 == teamIdx1, "wrong initial assignment"
+    assert team2 == teamIdx2, "wrong initial assignment"
+
+    hash1 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1))
+
+    print("\n")
+    hash2 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx2))
+
+    advanceNBlocks(10, ST, ST_CLIENT)
+
+    exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
+
+    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+
+    assert team1 == teamIdx2, "wrong initial assignment"
+    assert team2 == teamIdx1, "wrong initial assignment"
+
+    playerIdx3 = 34
+    teamIdx3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert teamIdx3 != teamIdx1, "please pick players from different teams"
+    movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
+    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    assert team == teamIdx1, "wrong initial assignment"
 
 
-    return success1 and success2 and success3
 
+    print("\n\nplayers 2 and 27 after sale:\n")
+    hash3 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx1))
+    print("\n")
+    hash4 = printPlayerFromSkills(ST_CLIENT, ST_CLIENT.getPlayerSkillsAtEndOfLastLeague(playerIdx2))
+    hashSum         = hash0+hash1+hash2+hash3+hash4
+    return hashSum
+
+
+# Tests the current library used to compute merkle trees / roots
+def simpleMerkleTreeTest():
+    # start with a set of leafs
+    leafs = [0, 10, 20, 30, 40, 50, 60, "mygod"]
+
+    # compute the Merkle Tree
+    tree = MerkleTree(leafs)
+    assert tree.depth == 3, "Depth not computed correctly"
+
+    # Create a proof that 30 is in idx = 3 of the leafs
+    leaf = 30
+    leafIdx = 3
+    proof = tree.prepareProofForLeaf(leaf, leafIdx)  # this struct contains '30' and its prove that it is in the idx = 3
+
+    # check that we can verify the proof:
+    assert verifyMerkleProof(tree.root, proof, serialHash) == True, "proof should be valid!"
+
+    # try to create false proofs... and fail:
+    proof = tree.prepareProofForLeaf(33, 3)
+    assert verifyMerkleProof(tree.root, proof, serialHash) == False, "proof should be invalid!"
+
+    proof = tree.prepareProofForLeaf(30, 2)
+    assert verifyMerkleProof(tree.root, proof, serialHash) == False, "proof should be invalid!"
+
+    # If we made it to this point, test passed.
+    return True
 
 def runTest(name, result, expected):
     success = (result == expected)
@@ -678,20 +669,12 @@ def runTest(name, result, expected):
 
 
 success = True
-success = success and runTest(name = "Test Simple Team Creation", result = test1(), expected = 11024)
-success = success and runTest(name = "Test Entire Workflow",      result = test2(), expected = 170)
-# success = success and runTest(name = "Test Merkle",      result = test4(), expected = True)
+success = success and runTest(name = "Test Entire Workflow", result = integrationTest(), expected = 170)
+success = success and runTest(name = "Test Simple Team Creation", result = simpleExchangeTest(), expected = 11024)
+success = success and runTest(name = "Test Merkle", result = simpleMerkleTreeTest(), expected = True)
 if success:
     print("ALL TESTS:  -- PASSED --")
 else:
     print("At least one test FAILED")
 
 
-# TODO:
-# remove ugly:         if type(dataToChallengePlayerState) == type(DataAtMatchday(0, 0, 0)):
-# add tests for getOwner
-
-# TODO: - less important -
-# do not store scores but the hash or merkle root
-# unify all iniHash, serialHash, etc
-# remove need for the last matchdayHash, as we just need to test the states.
