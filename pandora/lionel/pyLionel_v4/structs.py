@@ -486,26 +486,17 @@ class Storage(Counter):
         isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
         return verseStatus, isVerseSettled, needsSlash
 
+    # fail unless the status of a verse is as expected.
+    # if does not fail, returns if someone needs slashing
     def assertCanChallengeStatus(self, verse, status):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert not isVerseSettled, "Verse Settled already, cannot challenge it"
         assert verseStatus == status, "Verse not ready to challenge this status"
         return needsSlash
 
-    def slashThisUpdater(self, verse, needsSlash):
-        if needsSlash == UPDT_LGROOTS:
-            print("Slashing an AllLeagues updater")
-            self.verseToLeagueCommits[verse].slashLeagueRoots(self.currentBlock)
-        assert False, "Unknown slash requirement"
-
-    def updateLeaguesSuperRoots(self, verse, superRoots, addr):
-        self.assertCanChallengeStatus(verse, UPDT_NONE)
-        self.verseToLeagueCommits[verse] = VerseUpdate(superRoots, addr,self.currentBlock)
-
     def updateVerseRoot(self, verse, verseRoot, addr):
         self.assertCanChallengeStatus(verse, UPDT_NONE)
         self.verseToLeagueCommits[verse] = VerseUpdate(verseRoot, addr, self.currentBlock)
-
 
     def updateLeague(self, leagueIdx, initSkillsHash, dataAtMatchdayHashes, scores, updaterAddr):
         assert self.hasLeagueFinished(leagueIdx), "League cannot be updated before the last matchday finishes"
@@ -517,8 +508,6 @@ class Storage(Counter):
             updaterAddr,
             self.currentBlock,
         )
-
-
 
     def computeUsersInitDataHash(self, usersInitData):
         hash = 0
