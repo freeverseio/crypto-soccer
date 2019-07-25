@@ -432,50 +432,55 @@ class Storage(Counter):
             isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
-        # Start from the bottom. If Level 4
+        # Start from the bottom. If there is Level 4 data:
         if self.verseToLeagueCommits[verse].oneLeagueDataOwner:
-            if self.haveNPeriodsPassed(verse, 2):
-                verseStatus     = UPDT_SUPROOTS
-                needsSlash      = UPDT_LGROOTS
+            if self.haveNPeriodsPassed(verse, 2):   # successful, since time passed, and settled
+                verseStatus     = UPDT_SUPROOTS     # so move to Level 2
+                needsSlash      = UPDT_LGROOTS      # and report slash for Level 3
                 isVerseSettled  = True
-            elif self.haveNPeriodsPassed(verse, 1):
-                verseStatus     = UPDT_SUPROOTS
-                needsSlash      = UPDT_LGROOTS
+            elif self.haveNPeriodsPassed(verse, 1): # successful, since time passed, but not settled yet
+                verseStatus     = UPDT_SUPROOTS     # so move to Level 2
+                needsSlash      = UPDT_LGROOTS      # and report slash for Level 3
                 isVerseSettled  = False
-            else:
-                verseStatus     = UPDT_ONELEAGUE
+            else:                                   # not sure if successful yet, need more time
+                verseStatus     = UPDT_ONELEAGUE    # so, still at Level 4
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
-        # Now that there is no ONELEAGUE, continue one level up
+        # If we're here, there's not Level 4 data.
+        # If there's Level 3 data:
         if self.verseToLeagueCommits[verse].leagueRootsOwner:
-            if self.haveNPeriodsPassed(verse, 2):
-                verseStatus     = UPDT_VERSE
-                needsSlash      = UPDT_SUPROOTS
+            if self.haveNPeriodsPassed(verse, 2):   # successful, since time passed, and settled
+                verseStatus     = UPDT_VERSE        # so move to Level 1
+                needsSlash      = UPDT_SUPROOTS     # and report slash for Level 2
                 isVerseSettled  = True
-            elif self.haveNPeriodsPassed(verse, 1):
-                verseStatus     = UPDT_VERSE
-                needsSlash      = UPDT_SUPROOTS
+            elif self.haveNPeriodsPassed(verse, 1): # successful, since time passed, but not settled yet
+                verseStatus     = UPDT_VERSE        # so move to Level 1
+                needsSlash      = UPDT_SUPROOTS     # and report slash for Level 2
                 isVerseSettled  = False
-            else:
-                verseStatus     = UPDT_LGROOTS
+            else:                                   # not sure if successful yet, need more time
+                verseStatus     = UPDT_LGROOTS      # so, still at Level 3
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
-        # Now that there is no LEAGUEROOTS, continue one level up
+        # If we're here, there's not Level 3 nor Level 4 data.
+        # If there's Level 2 data:
         if self.verseToLeagueCommits[verse].superRootsOwner:
-            if self.haveNPeriodsPassed(verse, 1):
-                verseStatus     = UPDT_SUPROOTS
-                needsSlash      = UPDT_VERSE
+            if self.haveNPeriodsPassed(verse, 1):   # successful, since time passed, and settled
+                verseStatus     = UPDT_SUPROOTS     # so stay at Level 2
+                needsSlash      = UPDT_VERSE        # and slash the guy at Level 1
                 isVerseSettled  = True
-            else:
-                verseStatus     = UPDT_SUPROOTS
+            else:                                   # not sure if successful yet, need more time
+                verseStatus     = UPDT_SUPROOTS     # so stay at Level 2
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
 
+        # If we're here, there's not Level 2, 3 nor Level 4 data.
+        # And there is only Level 1 data.
+        # So, isSettled here is just a checking time.
         verseStatus     = UPDT_VERSE
         needsSlash      = UPDT_NONE
         isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
