@@ -9,6 +9,8 @@ const PlayerStateLib = artifacts.require('PlayerState');
 const PLAYERS_PER_TEAM = 25;
 const TEAMS_PER_LEAGUE = 10;
 const step = 1;
+const teamOrder = Array.from(new Array(PLAYERS_PER_TEAM), (x,i) => i) // [0,1,...24]
+const tactic442 = 0;
 
 contract('Assets', (accounts) => {
     let assets = null;
@@ -379,8 +381,8 @@ contract('Assets', (accounts) => {
         leagueId.should.be.equal(1);
     });
 
-    it('sign team to league internal function', async () => {
-        await assets.updateTeamHistory(teamId = 5, leagueId = 1, posInLeague = 0).should.be.rejected;
+    it('update team history', async () => {
+        teamId = 5;
         await assets.createLeague(futureBlock, step).should.be.fulfilled;
         await assets.createLeague(futureBlock + 10 * step, step).should.be.fulfilled;
         await assets.transferTeam(teamId, ALICE);
@@ -395,18 +397,6 @@ contract('Assets', (accounts) => {
         currentHistory.posInCurrentLeague.should.be.bignumber.equal('3');
         currentHistory.prevLeagueId.should.be.bignumber.equal('1');
         currentHistory.posInPrevLeague.should.be.bignumber.equal('4');
-    });
-
-    it('sign team to league where it already belongs (internal function)', async () => {
-        await assets.createLeague(futureBlock, step).should.be.fulfilled;
-        await assets.createLeague(futureBlock + step, step).should.be.fulfilled;
-        await assets.transferTeam(teamId = 1, ALICE);
-        // it already belongs to league = 1:
-        await assets.updateTeamHistory(teamId, leagueId = 1, posInLeague = 0).should.be.rejected;
-        await assets.updateTeamHistory(teamId, leagueId = 1, posInLeague = 3).should.be.rejected;
-        // it can only sign once to league = 2:
-        await assets.updateTeamHistory(teamId, leagueId = 2, posInLeague = 3).should.be.fulfilled;
-        await assets.updateTeamHistory(teamId, leagueId = 2, posInLeague = 3).should.be.rejected;
     });
 
     it('transfer non-bots team', async () => {
@@ -430,4 +420,41 @@ contract('Assets', (accounts) => {
     });
         
    
+    it('sign team to non-existing league', async () => {
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        await assets.transferTeam(teamId = 1, ALICE).should.be.fulfilled;
+        await assets.signTeamInLeagueMock(teamId, leagueId = 2, posInLeague = 2, teamOrder, tactic442).should.be.rejected;
+    });
+    
+    it('sign bot team in league', async () => {
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        await assets.signTeamInLeagueMock(teamId = 1, leagueId = 2, posInLeague = 2, teamOrder, tactic442).should.be.rejected;
+    });
+    
+    it('sign team in league twice', async () => {
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        await assets.createLeague(futureBlock+10, step).should.be.fulfilled;
+        await assets.transferTeam(teamId = 1, ALICE).should.be.fulfilled;
+        await assets.signTeamInLeagueMock(teamId = 1, leagueId = 2, posInLeague = 2, teamOrder, tactic442).should.be.fulfilled;
+        await assets.signTeamInLeagueMock(teamId = 1, leagueId = 2, posInLeague = 3, teamOrder, tactic442).should.be.rejected;
+    });
+    
+    it('sign team to league', async () => {
+        teamId = 5
+        await assets.createLeague(futureBlock, step).should.be.fulfilled;
+        await assets.createLeague(futureBlock + 10 * step, step).should.be.fulfilled;
+        await assets.transferTeam(teamId, ALICE);
+        currentHistory = await assets.getTeamCurrentHistory(teamId).should.be.fulfilled;
+        currentHistory.currentLeagueId.should.be.bignumber.equal('1');
+        currentHistory.posInCurrentLeague.should.be.bignumber.equal('4');
+        currentHistory.prevLeagueId.should.be.bignumber.equal('0');
+        currentHistory.posInPrevLeague.should.be.bignumber.equal('0');
+        await assets.updateTeamHistory(teamId, leagueId = 2, posInLeague = 3).should.be.fulfilled;
+        currentHistory = await assets.getTeamCurrentHistory(teamId).should.be.fulfilled;
+        currentHistory.currentLeagueId.should.be.bignumber.equal('2');
+        currentHistory.posInCurrentLeague.should.be.bignumber.equal('3');
+        currentHistory.prevLeagueId.should.be.bignumber.equal('1');
+        currentHistory.posInPrevLeague.should.be.bignumber.equal('4');
+    });
+
 });

@@ -35,6 +35,10 @@ contract Assets is AssetsBase {
         return (leagueId, uint8(posInLeague));
     }
 
+    function botTeamIdFromLeagueIdAndPos(uint256 leagueId,  uint8 posInLeague) internal pure returns (uint256) {
+        return 1 + (leagueId -1) * TEAMS_PER_LEAGUE + posInLeague;
+    }
+
     function isTeamWritten(uint256 teamId) public view returns (bool) {
         return _teamIdToTeam[teamId].creationBlocknum != 0; 
     }
@@ -82,10 +86,10 @@ contract Assets is AssetsBase {
                 _teamIdToTeam[teamId].posInPrevLeague
             );
         } else {
-            (uint256 currentLeagueId, uint8 posInCurrentLeague) = botTeamIdToLeagueIdAndPos(teamId); 
+            (uint256 leagueId, uint8 posInLeague) = botTeamIdToLeagueIdAndPos(teamId); 
             return(
-                currentLeagueId,
-                posInCurrentLeague,
+                leagueId,
+                posInLeague,
                 0,
                 0
             );
@@ -161,15 +165,15 @@ contract Assets is AssetsBase {
     //     emit TeamCreated(id);
     // }
 
-    function updateTeamHistory(
+    // @dev When signing a team to a new league, it updates current and prev data
+    // @dev It does not check legitimacy of this step. Should be done before calling this.
+    function _updateTeamHistory(
         uint256 teamId,
         uint256 leagueId,
         uint8 posInLeague
     )
     public
     {
-        require(_teamExists(teamId), "invalid team id");
-        require(getCurrentLeagueId(teamId) != leagueId, "cannot sign to a league twice");
         _teamIdToTeam[teamId].prevLeagueId = _teamIdToTeam[teamId].currentLeagueId;
         _teamIdToTeam[teamId].posInPrevLeague = _teamIdToTeam[teamId].posInCurrentLeague;
         _teamIdToTeam[teamId].currentLeagueId = leagueId;
@@ -382,19 +386,18 @@ contract Assets is AssetsBase {
         return _leagues[leagueId].nTeams;
     }
 
-    function _signTeamInLeague(uint256 leagueId, uint256 teamId, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) internal {
-        // warning: the callee should first verify that the teams are not already involved in un-verified leagues
-        require(_leagues[leagueId].nTeamsSigned < _leagues[leagueId].nTeams, "league already full");
+    // @dev the callee should first verify that the teams are not already involved in un-verified leagues
+    function _signTeamInLeague(uint256 teamId, uint256 leagueId, uint8 posInLeague, uint8[PLAYERS_PER_TEAM] memory teamOrder, uint8 teamTactics) internal {
         require(!isBotTeam(teamId), "BotTeams cannot sign a new league");
-        // changes prevLeague for team, etc. Will fail if team does not exist:
-        updateTeamHistory(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
+        require(getCurrentLeagueId(teamId) != leagueId, "cannot sign to a league twice");
+        require(isBotTeam(botTeamIdFromLeagueIdAndPos(leagueId, posInLeague)), "this place in the league is already occupied");
+        _updateTeamHistory(teamId, leagueId, _leagues[leagueId].nTeamsSigned);
         _leagues[leagueId].usersInitDataHash = keccak256(abi.encode(
             _leagues[leagueId].usersInitDataHash, 
             teamId, 
             teamOrder, 
             teamTactics
         )); 
-        _leagues[leagueId].nTeamsSigned++;
     }
 
     function _leagueExists(uint256 leagueId) internal view returns (bool) {
