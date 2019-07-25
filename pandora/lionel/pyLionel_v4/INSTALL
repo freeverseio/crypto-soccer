@@ -1,8 +1,8 @@
-# use python 2.7!
+# use python 3.6
 
-# install the library for keccak hashes:
+# probably (not sure) needs to install the library for keccak hashes:
 pip install pysha3
 
 # try this as starting point
-python test.py
+python3 test.py
 
