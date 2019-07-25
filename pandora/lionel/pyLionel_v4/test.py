@@ -341,31 +341,45 @@ def integrationTest():
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_LGROOTS, "We should be able to slash AllLeagues, but not detected"
 
+    # important: we could do this slash manually (now that time has passed).
+    # regardless of this, it will be done automatically if now someone challenges (again)
+    # the current Level 2 data. Let's see it:
+
     # Good, so we're now at Level 2, which was true, let's challenge again... with a lie.
     superRootsLie, leagueRootsLie = pylio.createLieSuperRoot(superRoots, leagueRoots, 3)
     ST.challengeSuperRoot(verse, subVerse, leagueRootsLie[subVerse], BOB)
     ST.assertCanChallengeStatus(verse, UPDT_LGROOTS) # Level 3 (lie)
 
+    # Check that the previous guy was already slashed (and all his update data was erased):
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
+
+    # Good, let catch this lie by telling the truth:
     ST.challengeleagueRoots(
         verse,
         ST.getPosInSubverse(verse, leagueIdx),
         dataToChallengeLeague,
         CAROL
     )
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE) # Level 4 (truth)
+
+    # time passes (no-one would dare to challenge this truth again)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS+1, ST, ST_CLIENT)
+    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS) # back to Level 2 (truth)
+
+    # check that we can manually slash the Level 3 guy:
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert needsSlash == UPDT_LGROOTS, "We should be able to slash AllLeagues, but not detected"
+
+    # check that the verse is not yet settled, but if some times passes, it will settle.
     assert not isVerseSettled, "Verse incorrectly detected as settled"
-    ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
     advanceNBlocks(CHALLENGING_PERIOD_BLKS, ST, ST_CLIENT)
     verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
     assert isVerseSettled, "Verse incorrectly detected as not yet settled"
+
+    # now that it is settled, no challenge is accepted:
     pylio.shouldFail(lambda x: ST.assertCanChallengeStatus(verse, UPDT_SUPROOTS),\
                      "League is settled, but not detected")
-
 
     # Create a New League To Test that SuperRoot lies can be caught too
     verseInit = ST.currentVerse + 2
