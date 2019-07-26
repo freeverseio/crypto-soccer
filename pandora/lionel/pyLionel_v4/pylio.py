@@ -225,8 +225,8 @@ def flatten(statesPerTeam):
 
 
 # It uses the CLIENT data to submit a challenge to the BC
-def challengeLeagueAtSelectedMatchday(selectedMatchday, verse, ST, ST_CLIENT):
-    ST.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+def challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT):
+    ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
     posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
     leagueRoot = ST.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
     assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
