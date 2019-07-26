@@ -240,7 +240,6 @@ def challengeLevel2(verse, subVerse, addr, ST, ST_CLIENT, lie):
         ST.challengeLevel2(verse, subVerse, leagueRootsLie[subVerse], addr)
 
 def challengeLevel3(verse, leagueIdx, addr, ST, ST_CLIENT, lie):
-    # lie = -1  => lie in every possible field
     # lie = 0   => tell the truth
     # lie = 1   => lie in initSkillsHash
     # lie = 2   => lie in first dataAtMatchdayHashes[0]
@@ -252,12 +251,9 @@ def challengeLevel3(verse, leagueIdx, addr, ST, ST_CLIENT, lie):
         ST.challengeLevel3(verse, posInSubverse, dataToChallengeLeague, addr)
     else:
         dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-        if lie == -1 or lie == 1:
+        if lie == 1:
             dataToChallengeLeagueLie.initSkillsHash += 1
-        if lie == -1:
-            for matchdayHash in dataToChallengeLeagueLie.dataAtMatchdayHashes:
-                matchdayHash += 1
-        if lie != -1:
+        else:
             dataToChallengeLeagueLie.dataAtMatchdayHashes[lie-2] += 1
         ST.challengeLevel3(verse, posInSubverse, dataToChallengeLeagueLie, addr)
 
