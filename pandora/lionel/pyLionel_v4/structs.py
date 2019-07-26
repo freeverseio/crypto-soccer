@@ -413,9 +413,9 @@ class Storage(Counter):
     def getVerseSettledVerseRoot(self, verse):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
         assert isVerseSettled, "Asking for a settled superRoot of a not-settled verse"
-        if verseStatus == UPDT_VERSE:
+        if verseStatus == UPDT_LEVEL1:
             return self.verseToLeagueCommits[verse].verseRoot
-        if verseStatus == UPDT_SUPROOTS:
+        if verseStatus == UPDT_LEVEL2:
             return self.verseToLeagueCommits[verse].superRootsVerseRoot
         assert False, "We should never be in this verse state"
 
@@ -435,15 +435,15 @@ class Storage(Counter):
         # Start from the bottom. If there is Level 4 data:
         if self.verseToLeagueCommits[verse].oneLeagueDataOwner:
             if self.haveNPeriodsPassed(verse, 2):   # successful, since time passed, and settled
-                verseStatus     = UPDT_SUPROOTS     # so move to Level 2
-                needsSlash      = UPDT_LGROOTS      # and report slash for Level 3
+                verseStatus     = UPDT_LEVEL2     # so move to Level 2
+                needsSlash      = UPDT_LEVEL3      # and report slash for Level 3
                 isVerseSettled  = True
             elif self.haveNPeriodsPassed(verse, 1): # successful, since time passed, but not settled yet
-                verseStatus     = UPDT_SUPROOTS     # so move to Level 2
-                needsSlash      = UPDT_LGROOTS      # and report slash for Level 3
+                verseStatus     = UPDT_LEVEL2     # so move to Level 2
+                needsSlash      = UPDT_LEVEL3      # and report slash for Level 3
                 isVerseSettled  = False
             else:                                   # not sure if successful yet, need more time
-                verseStatus     = UPDT_ONELEAGUE    # so, still at Level 4
+                verseStatus     = UPDT_LEVEL4    # so, still at Level 4
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
@@ -452,15 +452,15 @@ class Storage(Counter):
         # If there's Level 3 data:
         if self.verseToLeagueCommits[verse].leagueRootsOwner:
             if self.haveNPeriodsPassed(verse, 2):   # successful, since time passed, and settled
-                verseStatus     = UPDT_VERSE        # so move to Level 1
-                needsSlash      = UPDT_SUPROOTS     # and report slash for Level 2
+                verseStatus     = UPDT_LEVEL1        # so move to Level 1
+                needsSlash      = UPDT_LEVEL2     # and report slash for Level 2
                 isVerseSettled  = True
             elif self.haveNPeriodsPassed(verse, 1): # successful, since time passed, but not settled yet
-                verseStatus     = UPDT_VERSE        # so move to Level 1
-                needsSlash      = UPDT_SUPROOTS     # and report slash for Level 2
+                verseStatus     = UPDT_LEVEL1        # so move to Level 1
+                needsSlash      = UPDT_LEVEL2     # and report slash for Level 2
                 isVerseSettled  = False
             else:                                   # not sure if successful yet, need more time
-                verseStatus     = UPDT_LGROOTS      # so, still at Level 3
+                verseStatus     = UPDT_LEVEL3      # so, still at Level 3
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
@@ -469,11 +469,11 @@ class Storage(Counter):
         # If there's Level 2 data:
         if self.verseToLeagueCommits[verse].superRootsOwner:
             if self.haveNPeriodsPassed(verse, 1):   # successful, since time passed, and settled
-                verseStatus     = UPDT_SUPROOTS     # so stay at Level 2
-                needsSlash      = UPDT_VERSE        # and slash the guy at Level 1
+                verseStatus     = UPDT_LEVEL2     # so stay at Level 2
+                needsSlash      = UPDT_LEVEL1        # and slash the guy at Level 1
                 isVerseSettled  = True
             else:                                   # not sure if successful yet, need more time
-                verseStatus     = UPDT_SUPROOTS     # so stay at Level 2
+                verseStatus     = UPDT_LEVEL2     # so stay at Level 2
                 needsSlash      = UPDT_NONE
                 isVerseSettled  = False
             return verseStatus, isVerseSettled, needsSlash
@@ -481,12 +481,12 @@ class Storage(Counter):
         # If we're here, there's not Level 2, 3 nor Level 4 data.
         # And there is only Level 1 data.
         # So, isSettled here is just a checking time.
-        verseStatus     = UPDT_VERSE
+        verseStatus     = UPDT_LEVEL1
         needsSlash      = UPDT_NONE
         isVerseSettled  = self.haveNPeriodsPassed(verse, 1)
         return verseStatus, isVerseSettled, needsSlash
 
-    # fail unless the status of a verse is as expected.
+    # fail unless the status of a verse is as expected, and not settled yet.
     # if does not fail, returns if someone needs slashing
     def assertCanChallengeStatus(self, verse, status):
         verseStatus, isVerseSettled, needsSlash = self.getVerseUpdateStatus(verse)
@@ -789,8 +789,8 @@ class Storage(Counter):
 
 
 
-    def challengeInitSkills(self, verse, usersInitData, dataToChallengeInitSkills):
-        self.assertCanChallengeStatus(verse, UPDT_ONELEAGUE)
+    def challengeLevel4InitSkills(self, verse, usersInitData, dataToChallengeInitSkills):
+        self.assertCanChallengeStatus(verse, UPDT_LEVEL4)
 
         posInSubVerse = self.verseToLeagueCommits[verse].posInSubVerse
         leagueIdx = self.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
@@ -1023,9 +1023,9 @@ class Storage(Counter):
             tactics[teamPosInLeague] = action["tactics"]
             teamOrders[teamPosInLeague] = action["teamOrder"]
 
-    def challengeVerseRoot(self, verse, superRoots, addr):
-        needsSlash = self.assertCanChallengeStatus(verse, UPDT_VERSE)
-        if needsSlash == UPDT_SUPROOTS:
+    def challengeLevel1(self, verse, superRoots, addr):
+        needsSlash = self.assertCanChallengeStatus(verse, UPDT_LEVEL1)
+        if needsSlash == UPDT_LEVEL2:
             self.verseToLeagueCommits[verse].slashLevel2(self.currentBlock)
         tree = MerkleTree(superRoots)
 
@@ -1041,9 +1041,9 @@ class Storage(Counter):
 
 
 
-    def challengeSuperRoot(self, verse, subVerse, leagueRoots, addr):
-        needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
-        if needsSlash == UPDT_LGROOTS:
+    def challengeLevel2(self, verse, subVerse, leagueRoots, addr):
+        needsSlash = self.assertCanChallengeStatus(verse, UPDT_LEVEL2)
+        if needsSlash == UPDT_LEVEL3:
             self.verseToLeagueCommits[verse].slashLevel3(self.currentBlock)
 
         tree = MerkleTree(leagueRoots)
@@ -1075,8 +1075,8 @@ class Storage(Counter):
                 return True
         return False
 
-    def challengeleagueRoots(self, verse, posInSubVerse, dataToChallengeLeague, addr):
-        self.assertCanChallengeStatus(verse, UPDT_LGROOTS)
+    def challengeLevel3(self, verse, posInSubVerse, dataToChallengeLeague, addr):
+        self.assertCanChallengeStatus(verse, UPDT_LEVEL3)
         leagueRoot = self.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(dataToChallengeLeague) != leagueRoot, \

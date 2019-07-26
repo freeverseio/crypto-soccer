@@ -9,11 +9,11 @@ from os.path import isfile, join, exists
 CHALLENGING_PERIOD_BLKS = 1000
 
 # Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
-UPDT_NONE       = 0 # no update at all
-UPDT_VERSE      = 1 # only verseRoot, but nothing else. Aka LEVEL 1
-UPDT_SUPROOTS   = 2 # only superRoot, but nothing else. Aka LEVEL 2
-UPDT_LGROOTS    = 3 # allLeaguesRoot, but nothing else. Aka LEVEL 3
-UPDT_ONELEAGUE  = 4 # matchdayHashes provided. Aka LEVEL 4
+UPDT_NONE    = 0 # no update at all
+UPDT_LEVEL1  = 1 # only verseRoot, but nothing else. Aka LEVEL 1
+UPDT_LEVEL2  = 2 # only superRoot, but nothing else. Aka LEVEL 2
+UPDT_LEVEL3  = 3 # allLeaguesRoot, but nothing else. Aka LEVEL 3
+UPDT_LEVEL4  = 4 # matchdayHashes provided. Aka LEVEL 4
 
 # Players and teams constants
 AVG_SKILL = 50
