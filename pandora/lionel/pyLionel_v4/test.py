@@ -41,13 +41,7 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3)
                 if verseStatus == UPDT_LEVEL3:
                     print("challenging league... leagueRoot", leagueIdx)
-                    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-                    ST.challengeLevel3(
-                        verse,
-                        ST.getPosInSubverse(verse, leagueIdx),
-                        dataToChallengeLeague,
-                        CAROL
-                    )
+                    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie=0)
                 elif verseStatus == UPDT_LEVEL4:
                     thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
                     print("challenging league... initSkills", thisLeagueIdx)
@@ -86,13 +80,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                 elif verseStatus == UPDT_LEVEL3:
                     if leagueIdx in leaguesTestedAtLevel3:
                         print("challenging league... allLeagues with truth: ", leagueIdx)
-                        dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-                        ST.challengeLevel3(
-                            verse,
-                            ST.getPosInSubverse(verse, leagueIdx),
-                            dataToChallengeLeague,
-                            CAROL
-                        )
+                        challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie=0)
                         ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
                     else:
                         print("challenging league... allLeagues with lie: ", leagueIdx)
@@ -417,28 +405,16 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # Try to challenge by providing a false ONE-LEAGUE...
-    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.initSkillsHash += 1
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeagueLie,
-        CAROL
-    )
+    dayToLie = -1 # this is a lie in initSkills
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= dayToLie + 2)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
 
     # We successfully challenge the ONE-LEAGUE, and return to ALL-LEAGUES
     challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3)  # Level 3 (lie)
 
-    # We now successfully challenge the false ALL-LEAGUES
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeague,
-        CAROL
-    )
+    # We now successfully challenge the false ALL-LEAGUES by telling the truth
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= 0)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (true)
 
     # We fail to prove that anything was wrong
