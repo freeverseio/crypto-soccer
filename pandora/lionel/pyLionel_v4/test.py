@@ -77,9 +77,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                 verseStatus, isVerseSettled, needsSlash = ST.getVerseUpdateStatus(verse)
                 if verseStatus == UPDT_LEVEL1:
                     print("challenging league... verseRoot", leagueIdx)
-                    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-                    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 11)
-                    ST.challengeLevel1(verse, superRootsLie, BOB)
+                    challengeLevel1(verse, BOB, ST, ST_CLIENT, lie = 11)
                     ST.assertCanChallengeStatus(verse, UPDT_LEVEL2)
                 elif verseStatus == UPDT_LEVEL2:
                     print("challenging league... superRoot", leagueIdx)
@@ -227,8 +225,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL1) # Level 1  (lie)
 
     # Challenge with the truth
-    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    ST.challengeLevel1(verse, superRoots, BOB)
+    challengeLevel1(verse, BOB, ST, ST_CLIENT, lie = 0)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL2) # Level 2 (truth)
 
     # Try to challenge by providing the truth too... it must fail, since the Blockchain detects
@@ -382,11 +379,10 @@ def integrationTest():
     # Check that I cannot challenge a truth with another truth:
     # (again, the merkle root of my provided data coincides with the hash that I am challenging)
     superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    shouldFail(lambda x: ST.challengeLevel1(verse, superRoots, BOB), "Updater should have lied in superroot, but didnt")
+    shouldFail(lambda x: challengeLevel1(verse, BOB, ST, ST_CLIENT, lie = 0), "Updater should have lied in superroot, but didnt")
 
     # Challenge with a lie:
-    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
-    ST.challengeLevel1(verse, superRootsLie, BOB)
+    challengeLevel1(verse, BOB, ST, ST_CLIENT, lie = 4)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL2) # Level 2 (lie)
 
     # Challenge with truth:
@@ -457,9 +453,7 @@ def integrationTest():
     assert not isVerseSettled, "Verse incorrectly detected as settled"
 
     # Try to challenge by providing a false ALL-LEAGUES
-    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
-    superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, 4)
-    ST.challengeLevel1(verse, superRootsLie, BOB)
+    challengeLevel1(verse, BOB, ST, ST_CLIENT, lie = 4)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL2) # Level 2 (lie)
 
     # and yet another challenge with lie:

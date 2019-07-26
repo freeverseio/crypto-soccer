@@ -223,6 +223,14 @@ def flatten(statesPerTeam):
             flatStates.append(MinimalPlayerState(statePlayer)) # select only skills and playerIdx
     return flatStates
 
+def challengeLevel1(verse, addr, ST, ST_CLIENT, lie):
+    superRoots, leagueRoots = ST_CLIENT.computeLeagueHashesForVerse(verse)
+    if lie == 0:
+        ST.challengeLevel1(verse, superRoots, addr)
+    else:
+        superRootsLie, leagueRootsLie = createLieSuperRoot(superRoots, leagueRoots, lie)
+        ST.challengeLevel1(verse, superRootsLie, addr)
+
 
 def challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT):
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
