@@ -141,61 +141,61 @@ class VerseUpdate():
         self.lastWriteBlocknum              = pylio.duplicate(blocknum)
 
         # Levels 2, 3, 4 start at zero.
-        self.initSuperRoots()
-        self.initLeagueRoots()
-        self.initOneLeagueData()
+        self.initLevel2()
+        self.initLevel3()
+        self.initLevel4()
 
-    def initSuperRoots(self):
+    def initLevel2(self):
         self.superRoots                     = None
         self.superRootsOwner                = None
         self.superRootsVerseRoot            = None
 
-    def initLeagueRoots(self):
+    def initLevel3(self):
         self.subVerse                       = None
         self.leagueRoots                    = None
         self.leagueRootsOwner               = None
 
-    def initOneLeagueData(self):
+    def initLevel4(self):
         self.posInSubVerse                  = None
         self.dataToChallengeLeague          = None
         self.oneLeagueDataOwner             = None
 
     # Challenge to Level 1, moves to Level 2
-    def writeSuperRoots(self, superRoots, superRootsVerseRoot, ownerAddr, blocknum):
+    def writeLevel2(self, superRoots, superRootsVerseRoot, ownerAddr, blocknum):
         self.superRoots                     = superRoots
         self.superRootsOwner                = ownerAddr
         self.lastWriteBlocknum              = blocknum
         self.superRootsVerseRoot            = superRootsVerseRoot
 
     # Challenge to Level 2, moves to Level 3
-    def writeLeagueRoots(self, subVerse, leagueRoots, ownerAddr, blocknum):
+    def writeLevel3(self, subVerse, leagueRoots, ownerAddr, blocknum):
         self.subVerse           = subVerse
         self.leagueRoots        = leagueRoots
         self.leagueRootsOwner   = ownerAddr
         self.lastWriteBlocknum  = blocknum
 
     # Challenge to Level 3, moves to Level 4
-    def writeOneLeagueData(self, posInSubVerse, dataToChallengeLeague, addr, blocknum):
+    def writeLevel4(self, posInSubVerse, dataToChallengeLeague, addr, blocknum):
         self.posInSubVerse              = posInSubVerse
         self.dataToChallengeLeague      = dataToChallengeLeague
         self.oneLeagueDataOwner         = addr
         self.lastWriteBlocknum          = blocknum
 
     # slashing basically resets data below the given update, and resets timer.
-    def slashSuperRoots(self, blocknum):
+    def slashLevel2(self, blocknum):
         self.lastWriteBlocknum = blocknum
-        self.initSuperRoots()
-        self.initLeagueRoots()
-        self.initOneLeagueData()
+        self.initLevel2()
+        self.initLevel3()
+        self.initLevel4()
 
-    def slashLeagueRoots(self, blocknum):
+    def slashLevel3(self, blocknum):
         self.lastWriteBlocknum          = blocknum
-        self.initLeagueRoots()
-        self.initOneLeagueData()
+        self.initLevel3()
+        self.initLevel4()
 
-    def slashOneLeagueData(self, blocknum):
+    def slashLevel4(self, blocknum):
         self.lastWriteBlocknum          = blocknum
-        self.initOneLeagueData()
+        self.initLevel4()
 
 
 # ------------------------------------------------------------------------
@@ -584,12 +584,12 @@ class Storage(Counter):
 
         if not dataAtMatchdayHash == self.verseToLeagueCommits[verse].dataToChallengeLeague.dataAtMatchdayHashes[selectedMatchday]:
             print("Challenger Wins: skillsAtMatchday provided by updater are invalid")
-            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashLevel4(self.currentBlock)
             return
 
         if not (scores == self.verseToLeagueCommits[verse].dataToChallengeLeague.scores[selectedMatchday]).all():
             print("Challenger Wins: scores provided by updater are invalid")
-            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashLevel4(self.currentBlock)
             return
 
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
@@ -814,7 +814,7 @@ class Storage(Counter):
             print("Challenger failed to prove that initStates were wrong")
         else:
             print("Challenger Wins: initStates provided by updater are invalid")
-            self.verseToLeagueCommits[verse].slashOneLeagueData(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashLevel4(self.currentBlock)
 
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
@@ -1026,13 +1026,13 @@ class Storage(Counter):
     def challengeVerseRoot(self, verse, superRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_VERSE)
         if needsSlash == UPDT_SUPROOTS:
-            self.verseToLeagueCommits[verse].slashSuperRoots(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashLevel2(self.currentBlock)
         tree = MerkleTree(superRoots)
 
         assert tree.root != self.verseToLeagueCommits[verse].verseRoot, \
             "The superRoots provided lead to the same verseRoot as already provided by updater"
 
-        self.verseToLeagueCommits[verse].writeSuperRoots(
+        self.verseToLeagueCommits[verse].writeLevel2(
             superRoots,
             tree.root,
             addr,
@@ -1044,14 +1044,14 @@ class Storage(Counter):
     def challengeSuperRoot(self, verse, subVerse, leagueRoots, addr):
         needsSlash = self.assertCanChallengeStatus(verse, UPDT_SUPROOTS)
         if needsSlash == UPDT_LGROOTS:
-            self.verseToLeagueCommits[verse].slashLeagueRoots(self.currentBlock)
+            self.verseToLeagueCommits[verse].slashLevel3(self.currentBlock)
 
         tree = MerkleTree(leagueRoots)
         assert tree.root != self.verseToLeagueCommits[verse].superRoots[subVerse], \
             "The leagueRoots provided lead to the same superRoot as already provided by updated"
 
 
-        self.verseToLeagueCommits[verse].writeLeagueRoots(
+        self.verseToLeagueCommits[verse].writeLevel3(
             subVerse,
             leagueRoots,
             addr,
@@ -1081,7 +1081,7 @@ class Storage(Counter):
         assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
         assert self.computeLeagueRoot(dataToChallengeLeague) != leagueRoot, \
             "Your data coincides with the updater. Nothing to challenge."
-        self.verseToLeagueCommits[verse].writeOneLeagueData(
+        self.verseToLeagueCommits[verse].writeLevel4(
             posInSubVerse,
             dataToChallengeLeague,
             addr,
