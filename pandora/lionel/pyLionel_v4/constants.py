@@ -78,3 +78,5 @@ POSSIBLE_TACTICS = [TACTICS["433"], TACTICS["442"], TACTICS["433pressing"], TACT
 
 # Max number of superroots that fit in a single verse
 SUPERROOTS_PER_VERSE = 200
+
+LEAGUE_INIT_SKILLS_ID = -1

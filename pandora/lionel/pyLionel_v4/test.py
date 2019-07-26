@@ -300,11 +300,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
 
     # it is caught instantly, which sends us back to one level up
-    ST.challengeLevel4InitSkills(
-        verse,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
+    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger finally provides the truth that proves that Level 3 was a lie

@@ -225,23 +225,24 @@ def flatten(statesPerTeam):
 
 
 def challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT):
-    if selectedMatchday == -1:
+    ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
+    posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
+    leagueRoot = ST.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
+    assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
+    leagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
+
+    if selectedMatchday == LEAGUE_INIT_SKILLS_ID:
         ST.challengeLevel4InitSkills(
             verse,
             ST_CLIENT.leagues[leagueIdx].usersInitData,
             duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
         )
     else:
-        challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
+        challengeLevel4MatchDay(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT)
 
 
 # It uses the CLIENT data to submit a challenge to the BC
-def challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT):
-    ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
-    posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
-    leagueRoot = ST.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
-    assert leagueRoot != 0, "You cannot challenge a league that is not part of the verse commit"
-    leagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, posInSubVerse)
+def challengeLevel4MatchDay(selectedMatchday, verse, leagueIdx, ST, ST_CLIENT):
     # ...first, it selects a matchday, and gathers the data at that matchday (states, tactics, teamOrders)
     dataAtPrevMatchday = ST_CLIENT.getPrevMatchdayData(leagueIdx, selectedMatchday)
     # ...next, it builds the Merkle proof for the actions commited on the corresponding verse, for that league
