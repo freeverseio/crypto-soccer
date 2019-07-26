@@ -96,16 +96,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                         ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
                     else:
                         print("challenging league... allLeagues with lie: ", leagueIdx)
-                        dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-                        dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-                        dataToChallengeLeagueLie.initSkillsHash += 1
-                        dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
-                        ST.challengeLevel3(
-                            verse,
-                            ST.getPosInSubverse(verse, leagueIdx),
-                            dataToChallengeLeagueLie,
-                            CAROL
-                        )
+                        challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie = 1)
                         ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
 
                 elif verseStatus == UPDT_LEVEL4:
@@ -241,15 +232,8 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger provides... yet another a lie at matchday 0
-    dataToChallengeLeague = ST_CLIENT.leagues[leagueIdx].dataToChallengeLeague
-    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.dataAtMatchdayHashes[0] += 1
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeagueLie,
-        CAROL
-    )
+    dayToLie = 0
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= dayToLie + 2)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
 
     # it is caught instantly, which sends us back to one level up
@@ -258,15 +242,8 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger provides... yet another lie at matchday 1
-    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.dataAtMatchdayHashes[1] += 1
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeagueLie,
-        CAROL
-    )
-    ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
+    dayToLie = 1
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= dayToLie + 2)
 
     # it is caught instantly, which sends us back to one level up
     selectedMatchday = 1
@@ -274,14 +251,8 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger provides... yet another lie at initskills
-    dataToChallengeLeagueLie = pylio.duplicate(dataToChallengeLeague)
-    dataToChallengeLeagueLie.initSkillsHash += 1
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeagueLie,
-        CAROL
-    )
+    dayToLie = -1 # -1 corresponds to initSkills
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= dayToLie + 2)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
 
     # it is caught instantly, which sends us back to one level up
@@ -289,12 +260,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger finally provides the truth that proves that Level 3 was a lie
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeague,
-        CAROL
-    )
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= 0)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     # every challenge to this update will fail instantly
@@ -331,12 +297,7 @@ def integrationTest():
     assert needsSlash == UPDT_NONE, "The previous challenge shouldve slashed AllLeague, but didnot"
 
     # Good, let catch this lie by telling the truth:
-    ST.challengeLevel3(
-        verse,
-        ST.getPosInSubverse(verse, leagueIdx),
-        dataToChallengeLeague,
-        CAROL
-    )
+    challengeLevel3(verse, leagueIdx, CAROL, ST, ST_CLIENT, lie= 0)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     # time passes (no-one would dare to challenge this truth again)
