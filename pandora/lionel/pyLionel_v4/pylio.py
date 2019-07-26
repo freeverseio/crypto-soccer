@@ -224,8 +224,19 @@ def flatten(statesPerTeam):
     return flatStates
 
 
+def challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT):
+    if selectedMatchday == -1:
+        ST.challengeLevel4InitSkills(
+            verse,
+            ST_CLIENT.leagues[leagueIdx].usersInitData,
+            duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
+        )
+    else:
+        challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
+
+
 # It uses the CLIENT data to submit a challenge to the BC
-def challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT):
+def challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT):
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
     posInSubVerse = ST.verseToLeagueCommits[verse].posInSubVerse
     leagueRoot = ST.verseToLeagueCommits[verse].leagueRoots[posInSubVerse]
