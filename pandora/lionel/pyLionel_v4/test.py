@@ -269,7 +269,7 @@ def integrationTest():
 
     # it is caught instantly, which sends us back to one level up
     selectedMatchday = 0
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger provides... yet another lie at matchday 1
@@ -285,7 +285,7 @@ def integrationTest():
 
     # it is caught instantly, which sends us back to one level up
     selectedMatchday = 1
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3) # Level 3 (lie)
 
     # A Challenger provides... yet another lie at initskills
@@ -325,11 +325,11 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     selectedMatchday = 0
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     selectedMatchday = 1
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     # at this point we basically know that the level 4 update was TRUE (so level 3 was lying).
@@ -522,10 +522,10 @@ def integrationTest():
 
     # it also fails at proving that any matchday is wrong
     selectedMatchday = 0
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (true)
     selectedMatchday = 1
-    challengeLevel4Matchday(selectedMatchday, verse, ST, ST_CLIENT)
+    challengeLevel4(selectedMatchday, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (true)
 
     # finally, after a CHLL_PERIOD, it shows that it is back to the superRoot
