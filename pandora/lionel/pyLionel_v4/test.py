@@ -52,11 +52,7 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
                 elif verseStatus == UPDT_LEVEL4:
                     thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
                     print("challenging league... initSkills", thisLeagueIdx)
-                    ST.challengeLevel4InitSkills(
-                        verse,
-                        ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
-                        duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
-                    )
+                    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
         return ST, ST_CLIENT
 
 # Function to create a set of updates/challenges to many leagues
@@ -120,11 +116,7 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
                 elif verseStatus == UPDT_LEVEL4:
                     thisLeagueIdx = ST.getLeagueIdxFromPosInSubverse(verse, ST.verseToLeagueCommits[verse].posInSubVerse)
                     print("challenging league... initSkills", thisLeagueIdx)
-                    ST.challengeLevel4InitSkills(
-                        verse,
-                        ST_CLIENT.leagues[thisLeagueIdx].usersInitData,
-                        duplicate(ST_CLIENT.leagues[thisLeagueIdx].dataToChallengeInitSkills)
-                    )
+                    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
                     if thisLeagueIdx in leaguesTestedAtLevel3:
                         ST.assertCanChallengeStatus(verse, UPDT_LEVEL4)
                     else:
@@ -313,11 +305,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     # every challenge to this update will fail instantly
-    ST.challengeLevel4InitSkills(
-        verse,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
+    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (truth)
 
     selectedMatchday = 0
@@ -492,11 +480,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (lie)
 
     # We successfully challenge the ONE-LEAGUE, and return to ALL-LEAGUES
-    ST.challengeLevel4InitSkills(
-        verse,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
+    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL3)  # Level 3 (lie)
 
     # We now successfully challenge the false ALL-LEAGUES
@@ -509,11 +493,7 @@ def integrationTest():
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (true)
 
     # We fail to prove that anything was wrong
-    ST.challengeLevel4InitSkills(
-        verse,
-        ST_CLIENT.leagues[leagueIdx].usersInitData,
-        duplicate(ST_CLIENT.leagues[leagueIdx].dataToChallengeInitSkills)
-    )
+    challengeLevel4(LEAGUE_INIT_SKILLS_ID, verse, ST, ST_CLIENT)
     ST.assertCanChallengeStatus(verse, UPDT_LEVEL4) # Level 4 (true)
 
     # it also fails at proving that any matchday is wrong
