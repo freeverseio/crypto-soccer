@@ -1,5 +1,5 @@
 contracts: 
-	cd truffle-core && npm install && truffle compile
+	cd truffle-core && npm install && ./node_modules/.bin/truffle compile
 	mkdir -p ./nodejs-horizon/contracts
 	cp ./truffle-core/build/contracts/*.json ./nodejs-horizon/contracts
 	cd ./scripts && ./deploy_go_contracts_bind.py
