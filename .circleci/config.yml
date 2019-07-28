@@ -6,7 +6,7 @@ version: 2
 jobs:
   truffle_core:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run: 
@@ -20,7 +20,7 @@ jobs:
           command: cd truffle-core && ./node_modules/.bin/truffle test
   go-synchronizer:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run: 
@@ -44,7 +44,7 @@ jobs:
             #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
   go-soccer:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run:
@@ -55,7 +55,7 @@ jobs:
           command: cd go-soccer && go test ./...
   nodejs-horizon:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run: 
@@ -72,7 +72,7 @@ jobs:
           command: cd nodejs-horizon && npm test
   reactjs-frontend:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run:
@@ -86,7 +86,7 @@ jobs:
           command: cd reactjs-frontend && npm run build
   django-centauri:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run:
@@ -97,7 +97,7 @@ jobs:
           command: cd django-centauri && python3 manage.py test
   dockerization:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - checkout
       - setup_remote_docker:   # (2)
@@ -132,7 +132,7 @@ jobs:
 
   deploy:
     docker:
-      - image: asiniscalchi/freeverse_circleci:alpine
+      - image: freeverseio/circleci
     steps:
       - add_ssh_keys:
           fingerprints:
