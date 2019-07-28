@@ -29,3 +29,5 @@ with open('./Leagues.bin', 'w', encoding='utf-8') as outfile:
     outfile.write(contract['bytecode'])
 
 os.system('abigen --abi ./Leagues.abi --bin ./Leagues.bin --pkg leagues -out ../go-synchronizer/contracts/leagues/leagues.go')
+
+os.system('rm -rf ./*abi ./*bin')

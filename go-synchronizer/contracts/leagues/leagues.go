@@ -28,10 +28,10 @@ var (
 )
 
 // LeaguesABI is the input ABI used to generate the binding from.
-const LeaguesABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getScores\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"},{\"name\":\"blocks\",\"type\":\"uint256[]\"}],\"name\":\"computeUsersAlongDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getNTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"hasFinished\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"resetUpdater\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUpdateBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"leaguesCount\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"score\",\"type\":\"uint16\"}],\"name\":\"scoresAppend\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"isVerified\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"tactics\",\"type\":\"uint256[3][]\"}],\"name\":\"hashTactics\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"day\",\"type\":\"uint256\"}],\"name\":\"scoresGetDay\",\"outputs\":[{\"name\":\"dayScores\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"hasStarted\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getTactics\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getDayStateHashes\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"home\",\"type\":\"uint8\"},{\"name\":\"visitor\",\"type\":\"uint8\"}],\"name\":\"encodeScore\",\"outputs\":[{\"name\":\"score\",\"type\":\"uint16\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"leagueDay\",\"type\":\"uint256\"},{\"name\":\"initLeagueState\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"}],\"name\":\"computeDay\",\"outputs\":[{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"finalLeagueState\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"initBlock\",\"type\":\"uint256\"},{\"name\":\"step\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"}],\"name\":\"create\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getChallengePeriod\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getStep\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"usersInitDataTeamIds\",\"type\":\"uint256[]\"},{\"name\":\"usersInitDataTactics\",\"type\":\"uint8[3][]\"},{\"name\":\"usersAlongDataTeamIds\",\"type\":\"uint256[]\"},{\"name\":\"usersAlongDataTactics\",\"type\":\"uint8[3][]\"},{\"name\":\"usersAlongDataBlocks\",\"type\":\"uint256[]\"},{\"name\":\"leagueDay\",\"type\":\"uint256\"},{\"name\":\"prevMatchdayStates\",\"type\":\"uint256[]\"}],\"name\":\"challengeMatchdayStates\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getMatchPerDay\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"matchday\",\"type\":\"uint256\"},{\"name\":\"matchIdx\",\"type\":\"uint256\"}],\"name\":\"getTeamsInMatch\",\"outputs\":[{\"name\":\"homeIdx\",\"type\":\"uint256\"},{\"name\":\"visitorIdx\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getEndBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"initStateHash\",\"type\":\"bytes32\"},{\"name\":\"dayStateHashes\",\"type\":\"bytes32[]\"},{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"isLie\",\"type\":\"bool\"}],\"name\":\"updateLeague\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEngineContract\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUsersAlongDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"target\",\"type\":\"uint16[]\"},{\"name\":\"scores\",\"type\":\"uint16[]\"}],\"name\":\"scoresConcat\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUpdater\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"countLeagueDays\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"},{\"name\":\"dataToChallengeInitStates\",\"type\":\"uint256[]\"}],\"name\":\"challengeInitStates\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"},{\"name\":\"blocks\",\"type\":\"uint256[]\"}],\"name\":\"updateUsersAlongDataHash\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getInitStateHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"}],\"name\":\"hashUsersInitData\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"day\",\"type\":\"uint256\"}],\"name\":\"getMatchDayBlockHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUsersInitDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"stakersContract\",\"type\":\"address\"}],\"name\":\"setStakersContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"name\":\"hashInitState\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getLastChallengeBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"name\":\"hashDayState\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"isUpdated\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getIsLie\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"scoresCreate\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getInitBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tactics\",\"type\":\"uint8[3][]\"},{\"name\":\"dataToChallengeInitStates\",\"type\":\"uint256[]\"}],\"name\":\"getInitPlayerStates\",\"outputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"score\",\"type\":\"uint16\"}],\"name\":\"decodeScore\",\"outputs\":[{\"name\":\"home\",\"type\":\"uint8\"},{\"name\":\"visitor\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"engine\",\"type\":\"address\"},{\"name\":\"state\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"LeagueCreated\",\"type\":\"event\"}]"
+const LeaguesABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamPlayerIds\",\"outputs\":[{\"name\":\"playerIds\",\"type\":\"uint256[25]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getScores\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"}],\"name\":\"getNTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"posInTeam\",\"type\":\"uint8\"}],\"name\":\"teamIdAndPosToVirtualPlayerId\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamOwner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"botTeamIdToLeagueId\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"hasFinished\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"leagueDay\",\"type\":\"uint256\"},{\"name\":\"initLeagueState\",\"type\":\"uint256[]\"},{\"name\":\"tacticsIds\",\"type\":\"uint8[]\"}],\"name\":\"computeDay\",\"outputs\":[{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"finalLeagueState\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"usersInitDataTeamIds\",\"type\":\"uint256[]\"},{\"name\":\"usersInitDataTactics\",\"type\":\"uint8[]\"},{\"name\":\"usersAlongDataTeamIds\",\"type\":\"uint256[]\"},{\"name\":\"usersAlongDataTactics\",\"type\":\"uint8[]\"},{\"name\":\"usersAlongDataBlocks\",\"type\":\"uint256[]\"},{\"name\":\"leagueDay\",\"type\":\"uint256\"},{\"name\":\"prevMatchdayStates\",\"type\":\"uint256[]\"}],\"name\":\"challengeMatchdayStates\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"countTeams\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"isTeamWritten\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tacticsIds\",\"type\":\"uint8[]\"},{\"name\":\"dataToChallengeInitStates\",\"type\":\"uint256[]\"}],\"name\":\"challengeInitStates\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"countLeagues\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"initBlock\",\"type\":\"uint256\"},{\"name\":\"step\",\"type\":\"uint256\"}],\"name\":\"createLeague\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"resetUpdater\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUpdateBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tacticsIds\",\"type\":\"uint8[]\"},{\"name\":\"dataToChallengeInitStates\",\"type\":\"uint256[]\"}],\"name\":\"getInitPlayerStates\",\"outputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"score\",\"type\":\"uint16\"}],\"name\":\"scoresAppend\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"isVerified\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"FREEVERSE\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"day\",\"type\":\"uint256\"}],\"name\":\"scoresGetDay\",\"outputs\":[{\"name\":\"dayScores\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamDNA\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"hasStarted\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"NUM_SKILLS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCreationBlocknum\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"botTeamIdToTimeCreation\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"playerId\",\"type\":\"uint256\"}],\"name\":\"generateVirtualPlayerState\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getDayStateHashes\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tacticsIds\",\"type\":\"uint8[]\"},{\"name\":\"blocks\",\"type\":\"uint256[]\"}],\"name\":\"computeUsersAlongDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"teamIds\",\"type\":\"uint256[]\"},{\"name\":\"tacticsIds\",\"type\":\"uint8[]\"},{\"name\":\"blocks\",\"type\":\"uint256[]\"}],\"name\":\"updateUsersAlongDataHash\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"home\",\"type\":\"uint8\"},{\"name\":\"visitor\",\"type\":\"uint8\"}],\"name\":\"encodeScore\",\"outputs\":[{\"name\":\"score\",\"type\":\"uint16\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getChallengePeriod\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"}],\"name\":\"getStep\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"playerId0\",\"type\":\"uint256\"},{\"name\":\"playerId1\",\"type\":\"uint256\"}],\"name\":\"exchangePlayersTeams\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getMatchPerDay\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"matchday\",\"type\":\"uint256\"},{\"name\":\"matchIdx\",\"type\":\"uint256\"}],\"name\":\"getTeamsInMatch\",\"outputs\":[{\"name\":\"homeIdx\",\"type\":\"uint256\"},{\"name\":\"visitorIdx\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"didUpdaterLie\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getEndBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"isBotTeam\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"initStateHash\",\"type\":\"bytes32\"},{\"name\":\"dayStateHashes\",\"type\":\"bytes32[]\"},{\"name\":\"scores\",\"type\":\"uint16[]\"},{\"name\":\"isLie\",\"type\":\"bool\"}],\"name\":\"updateLeague\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getEngineContract\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUsersAlongDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"target\",\"type\":\"uint16[]\"},{\"name\":\"scores\",\"type\":\"uint16[]\"}],\"name\":\"scoresConcat\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getUpdater\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"PLAYERS_PER_TEAM\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"TEAMS_PER_LEAGUE\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"countLeagueDays\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getInitStateHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"},{\"name\":\"day\",\"type\":\"uint256\"}],\"name\":\"getMatchDayBlockHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"}],\"name\":\"getUsersInitDataHash\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"stakersContract\",\"type\":\"address\"}],\"name\":\"setStakersContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"name\":\"hashInitState\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"getLastChallengeBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"state\",\"type\":\"uint256[]\"}],\"name\":\"hashDayState\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"posInLeague\",\"type\":\"uint8\"}],\"name\":\"leagueIdAndPosToTeamId\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"statesAddr\",\"type\":\"address\"}],\"name\":\"setStatesContract\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"isUpdated\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"botTeamIdToDNA\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getCurrentLeagueId\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"leagueId\",\"type\":\"uint256\"},{\"name\":\"posInLeague\",\"type\":\"uint8\"}],\"name\":\"_updateTeamHistory\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"botTeamIdToLeagueIdAndPos\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"},{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"scoresCreate\",\"outputs\":[{\"name\":\"\",\"type\":\"uint16[]\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"leagueId\",\"type\":\"uint256\"}],\"name\":\"getInitBlock\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"},{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferTeam\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"playerId\",\"type\":\"uint256\"}],\"name\":\"getPlayerState\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"teamId\",\"type\":\"uint256\"}],\"name\":\"getTeamCurrentHistory\",\"outputs\":[{\"name\":\"currentLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInCurrentLeague\",\"type\":\"uint8\"},{\"name\":\"prevLeagueId\",\"type\":\"uint256\"},{\"name\":\"posInPrevLeague\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"score\",\"type\":\"uint16\"}],\"name\":\"decodeScore\",\"outputs\":[{\"name\":\"home\",\"type\":\"uint8\"},{\"name\":\"visitor\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"engine\",\"type\":\"address\"},{\"name\":\"state\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"challengeSucceeded\",\"type\":\"bool\"}],\"name\":\"ChallengeFinished\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"id\",\"type\":\"uint256\"}],\"name\":\"TeamCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"name\":\"leagueId\",\"type\":\"uint256\"}],\"name\":\"LeagueCreated\",\"type\":\"event\"}]"
 
 // LeaguesBin is the compiled bytecode used for deploying new contracts.
-const LeaguesBin = `0x60806040523480156200001157600080fd5b50604051620060c8380380620060c8833981810160405260408110156200003757600080fd5b8101908080519060200190929190805190602001909291905050508181818181600760006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555080600660006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550505050505050615fda80620000ee6000396000f3fe608060405234801561001057600080fd5b506004361061028a5760003560e01c806394f370211161015c578063beec5522116100ce578063e36decc311610087578063e36decc3146121a2578063e41f70bd146121e8578063e878ffa314612247578063f025f7f414612289578063f6c8d8de14612504578063fcb10b94146125875761028a565b8063beec552214611efc578063c1fb64ca14611f3e578063c46a693914611f82578063c85aed291461204e578063cc540c8f14612090578063d39daf7e1461215c5761028a565b8063adac0d7f11610120578063adac0d7f14611844578063b1f65f3914611886578063b2df2c5714611aac578063b4c2129514611cd2578063b524951f14611d14578063bdfe30ab14611eb05761028a565b806394f370211461143d5780639c0536d8146115a95780639e33c8a1146115f3578063a338f23714611635578063a8541e8e146117d65761028a565b806351f41c09116102005780637864b77d116101b95780637864b77d14610ed35780637874888a14610ef157806382b36ed814610f33578063832e00811461135c57806384ec783c1461139e5780638c8ab7ad146113fb5761028a565b806351f41c091461094e5780635c106b7e14610994578063620d4e8d14610a17578063723adff314610a9a57806377b7d5c014610af457806377f2a89114610d2d5761028a565b80632b866890116102525780632b866890146105f8578063336b5a651461063a57806333a4aba61461065857806337b6d96b1461077357806349b5bda9146107b95780634a52e3ec146108c15761028a565b806304527d901461028f57806306c6bb991461031257806307a6d22214610542578063126f648c1461058457806328d3be79146105ca575b600080fd5b6102bb600480360360208110156102a557600080fd5b81019080803590602001909291905050506125e0565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156102fe5780820151818401526020810190506102e3565b505050509050019250505060405180910390f35b61052c6004803603606081101561032857600080fd5b810190808035906020019064010000000081111561034557600080fd5b82018360208201111561035757600080fd5b8035906020019184602083028401116401000000008311171561037957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156103d957600080fd5b8201836020820111156103eb57600080fd5b8035906020019184606083028401116401000000008311171561040d57600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015610486578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f8201169050808301925050505050508152602001906001019061042f565b50505050509192919290803590602001906401000000008111156104a957600080fd5b8201836020820111156104bb57600080fd5b803590602001918460208302840111640100000000831117156104dd57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192905050506126f1565b6040518082815260200191505060405180910390f35b61056e6004803603602081101561055857600080fd5b810190808035906020019092919050505061270a565b6040518082815260200191505060405180910390f35b6105b06004803603602081101561059a57600080fd5b81019080803590602001909291905050506127a5565b604051808215151515815260200191505060405180910390f35b6105f6600480360360208110156105e057600080fd5b81019080803590602001909291905050506127ba565b005b6106246004803603602081101561060e57600080fd5b8101908080359060200190929190505050612938565b6040518082815260200191505060405180910390f35b6106426129d3565b6040518082815260200191505060405180910390f35b61071c6004803603604081101561066e57600080fd5b810190808035906020019064010000000081111561068b57600080fd5b82018360208201111561069d57600080fd5b803590602001918460208302840111640100000000831117156106bf57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803561ffff1690602001909291905050506129dd565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b8381101561075f578082015181840152602081019050610744565b505050509050019250505060405180910390f35b61079f6004803603602081101561078957600080fd5b8101908080359060200190929190505050612a9a565b604051808215151515815260200191505060405180910390f35b6108ab600480360360208110156107cf57600080fd5b81019080803590602001906401000000008111156107ec57600080fd5b8201836020820111156107fe57600080fd5b8035906020019184606083028401116401000000008311171561082057600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015610899578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f82011690508083019250505050505081526020019060010190610842565b50505050509192919290505050612ac5565b6040518082815260200191505060405180910390f35b6108f7600480360360408110156108d757600080fd5b810190808035906020019092919080359060200190929190505050612b57565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b8381101561093a57808201518184015260208101905061091f565b505050509050019250505060405180910390f35b61097a6004803603602081101561096457600080fd5b8101908080359060200190929190505050612c09565b604051808215151515815260200191505060405180910390f35b6109c0600480360360208110156109aa57600080fd5b8101908080359060200190929190505050612c1e565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015610a035780820151818401526020810190506109e8565b505050509050019250505060405180910390f35b610a4360048036036020811015610a2d57600080fd5b8101908080359060200190929190505050612e70565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015610a86578082015181840152602081019050610a6b565b505050509050019250505060405180910390f35b610ad660048036036040811015610ab057600080fd5b81019080803560ff169060200190929190803560ff169060200190929190505050612f59565b604051808261ffff1661ffff16815260200191505060405180910390f35b610c8e60048036036080811015610b0a57600080fd5b81019080803590602001909291908035906020019092919080359060200190640100000000811115610b3b57600080fd5b820183602082011115610b4d57600080fd5b80359060200191846020830284011164010000000083111715610b6f57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610bcf57600080fd5b820183602082011115610be157600080fd5b80359060200191846060830284011164010000000083111715610c0357600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015610c7c578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f82011690508083019250505050505081526020019060010190610c25565b50505050509192919290505050612f75565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b83811015610cd5578082015181840152602081019050610cba565b50505050905001838103825284818151815260200191508051906020019060200280838360005b83811015610d17578082015181840152602081019050610cfc565b5050505090500194505050505060405180910390f35b610ed1600480360360a0811015610d4357600080fd5b8101908080359060200190929190803590602001909291908035906020019092919080359060200190640100000000811115610d7e57600080fd5b820183602082011115610d9057600080fd5b80359060200191846020830284011164010000000083111715610db257600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610e1257600080fd5b820183602082011115610e2457600080fd5b80359060200191846060830284011164010000000083111715610e4657600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015610ebf578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f82011690508083019250505050505081526020019060010190610e68565b50505050509192919290505050612fa4565b005b610edb613427565b6040518082815260200191505060405180910390f35b610f1d60048036036020811015610f0757600080fd5b8101908080359060200190929190505050613430565b6040518082815260200191505060405180910390f35b61135a6004803603610100811015610f4a57600080fd5b810190808035906020019092919080359060200190640100000000811115610f7157600080fd5b820183602082011115610f8357600080fd5b80359060200191846020830284011164010000000083111715610fa557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561100557600080fd5b82018360208201111561101757600080fd5b8035906020019184606083028401116401000000008311171561103957600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b828210156110b2578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f8201169050808301925050505050508152602001906001019061105b565b50505050509192919290803590602001906401000000008111156110d557600080fd5b8201836020820111156110e757600080fd5b8035906020019184602083028401116401000000008311171561110957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561116957600080fd5b82018360208201111561117b57600080fd5b8035906020019184606083028401116401000000008311171561119d57600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015611216578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f820116905080830192505050505050815260200190600101906111bf565b505050505091929192908035906020019064010000000081111561123957600080fd5b82018360208201111561124b57600080fd5b8035906020019184602083028401116401000000008311171561126d57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190929190803590602001906401000000008111156112d757600080fd5b8201836020820111156112e957600080fd5b8035906020019184602083028401116401000000008311171561130b57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192905050506134cb565b005b6113886004803603602081101561137257600080fd5b81019080803590602001909291905050506138ab565b6040518082815260200191505060405180910390f35b6113de600480360360608110156113b457600080fd5b810190808035906020019092919080359060200190929190803590602001909291905050506138cc565b604051808381526020018281526020019250505060405180910390f35b6114276004803603602081101561141157600080fd5b8101908080359060200190929190505050613a1b565b6040518082815260200191505060405180910390f35b6115a7600480360360a081101561145357600080fd5b8101908080359060200190929190803590602001909291908035906020019064010000000081111561148457600080fd5b82018360208201111561149657600080fd5b803590602001918460208302840111640100000000831117156114b857600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561151857600080fd5b82018360208201111561152a57600080fd5b8035906020019184602083028401116401000000008311171561154c57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803515159060200190929190505050613ad1565b005b6115b1613e7a565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61161f6004803603602081101561160957600080fd5b8101908080359060200190929190505050613ea4565b6040518082815260200191505060405180910390f35b61177f6004803603604081101561164b57600080fd5b810190808035906020019064010000000081111561166857600080fd5b82018360208201111561167a57600080fd5b8035906020019184602083028401116401000000008311171561169c57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156116fc57600080fd5b82018360208201111561170e57600080fd5b8035906020019184602083028401116401000000008311171561173057600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050613f3c565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156117c25780820151818401526020810190506117a7565b505050509050019250505060405180910390f35b611802600480360360208110156117ec57600080fd5b8101908080359060200190929190505050614028565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b6118706004803603602081101561185a57600080fd5b81019080803590602001909291905050506140e3565b6040518082815260200191505060405180910390f35b611aaa6004803603608081101561189c57600080fd5b8101908080359060200190929190803590602001906401000000008111156118c357600080fd5b8201836020820111156118d557600080fd5b803590602001918460208302840111640100000000831117156118f757600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561195757600080fd5b82018360208201111561196957600080fd5b8035906020019184606083028401116401000000008311171561198b57600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015611a04578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f820116905080830192505050505050815260200190600101906119ad565b5050505050919291929080359060200190640100000000811115611a2757600080fd5b820183602082011115611a3957600080fd5b80359060200191846020830284011164010000000083111715611a5b57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050614100565b005b611cd060048036036080811015611ac257600080fd5b810190808035906020019092919080359060200190640100000000811115611ae957600080fd5b820183602082011115611afb57600080fd5b80359060200191846020830284011164010000000083111715611b1d57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115611b7d57600080fd5b820183602082011115611b8f57600080fd5b80359060200191846060830284011164010000000083111715611bb157600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015611c2a578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f82011690508083019250505050505081526020019060010190611bd3565b5050505050919291929080359060200190640100000000811115611c4d57600080fd5b820183602082011115611c5f57600080fd5b80359060200191846020830284011164010000000083111715611c8157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929050505061428f565b005b611cfe60048036036020811015611ce857600080fd5b81019080803590602001909291905050506143cb565b6040518082815260200191505060405180910390f35b611e9a60048036036040811015611d2a57600080fd5b8101908080359060200190640100000000811115611d4757600080fd5b820183602082011115611d5957600080fd5b80359060200191846020830284011164010000000083111715611d7b57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115611ddb57600080fd5b820183602082011115611ded57600080fd5b80359060200191846060830284011164010000000083111715611e0f57600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015611e88578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f82011690508083019250505050505081526020019060010190611e31565b50505050509192919290505050614466565b6040518082815260200191505060405180910390f35b611ee660048036036040811015611ec657600080fd5b810190808035906020019092919080359060200190929190505050614542565b6040518082815260200191505060405180910390f35b611f2860048036036020811015611f1257600080fd5b8101908080359060200190929190505050614611565b6040518082815260200191505060405180910390f35b611f8060048036036020811015611f5457600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506146ac565b005b61203860048036036020811015611f9857600080fd5b8101908080359060200190640100000000811115611fb557600080fd5b820183602082011115611fc757600080fd5b80359060200191846020830284011164010000000083111715611fe957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192905050506146f0565b6040518082815260200191505060405180910390f35b61207a6004803603602081101561206457600080fd5b8101908080359060200190929190505050614761565b6040518082815260200191505060405180910390f35b612146600480360360208110156120a657600080fd5b81019080803590602001906401000000008111156120c357600080fd5b8201836020820111156120d557600080fd5b803590602001918460208302840111640100000000831117156120f757600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192905050506147f1565b6040518082815260200191505060405180910390f35b6121886004803603602081101561217257600080fd5b81019080803590602001909291905050506149ac565b604051808215151515815260200191505060405180910390f35b6121ce600480360360208110156121b857600080fd5b81019080803590602001909291905050506149cf565b604051808215151515815260200191505060405180910390f35b6121f0614a77565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015612233578082015181840152602081019050612218565b505050509050019250505060405180910390f35b6122736004803603602081101561225d57600080fd5b8101908080359060200190929190505050614a7c565b6040518082815260200191505060405180910390f35b6124ad6004803603608081101561229f57600080fd5b8101908080359060200190929190803590602001906401000000008111156122c657600080fd5b8201836020820111156122d857600080fd5b803590602001918460208302840111640100000000831117156122fa57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561235a57600080fd5b82018360208201111561236c57600080fd5b8035906020019184606083028401116401000000008311171561238e57600080fd5b9190808060200260200160405190810160405280939291908181526020016000905b82821015612407578484839050606002016003806020026040519081016040528092919082600360200280828437600081840152601f19601f820116905080830192505050505050815260200190600101906123b0565b505050505091929192908035906020019064010000000081111561242a57600080fd5b82018360208201111561243c57600080fd5b8035906020019184602083028401116401000000008311171561245e57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050614b17565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156124f05780820151818401526020810190506124d5565b505050509050019250505060405180910390f35b6125306004803603602081101561251a57600080fd5b8101908080359060200190929190505050614b21565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015612573578082015181840152602081019050612558565b505050509050019250505060405180910390f35b6125b76004803603602081101561259d57600080fd5b81019080803561ffff169060200190929190505050614c06565b604051808360ff1660ff1681526020018260ff1660ff1681526020019250505060405180910390f35b60606125eb82614c26565b61265d576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b600560008381526020019081526020016000206002018054806020026020016040519081016040528092919081815260200182805480156126e557602002820191906000526020600020906000905b82829054906101000a900461ffff1661ffff16815260200190600201906020826001010492830192600103820291508084116126ac5790505b50505050509050919050565b60008061270081868686614c49565b9150509392505050565b600061271582614c26565b612787576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60026000838152602001908152602001600020600001549050919050565b60006127b082613a1b565b4310159050919050565b6127c381614c26565b612835576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60006005600083815260200190815260200160002060040181905550600073ffffffffffffffffffffffffffffffffffffffff16600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff161461293557600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166345e73685826040518263ffffffff1660e01b815260040180828152602001915050600060405180830381600087803b15801561291c57600080fd5b505af1158015612930573d6000803e3d6000fd5b505050505b50565b600061294382614c26565b6129b5576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60056000838152602001908152602001600020600401549050919050565b6000600354905090565b6060806001845101604051908082528060200260200182016040528015612a135781602001602082028038833980820191505090505b50905060008090505b8451811015612a6857848181518110612a3157fe5b6020026020010151828281518110612a4557fe5b602002602001019061ffff16908161ffff16815250508080600101915050612a1c565b508281600183510381518110612a7a57fe5b602002602001019061ffff16908161ffff16815250508091505092915050565b6000612aa5826149ac565b612ab25760009050612ac0565b612abb82614761565b431190505b919050565b60008160405160200180806020018281038252838181518152602001915080516000925b81841015612b325782846020026020010151600360200280838360005b83811015612b21578082015181840152602081019050612b06565b505050509050019260010192612ae9565b9250505092505050604051602081830303815290604052805190602001209050919050565b60606000612b64846138ab565b90506060612b71856125e0565b90506000828502905082604051908082528060200260200182016040528015612ba95781602001602082028038833980820191505090505b50935060008090505b83811015612bff578281830181518110612bc857fe5b6020026020010151858281518110612bdc57fe5b602002602001019061ffff16908161ffff16815250508080600101915050612bb2565b5050505092915050565b6000612c1482614a7c565b4310159050919050565b6060612c2982614c26565b612c9b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60606003600160008581526020019081526020016000208054905002604051908082528060200260200182016040528015612ce55781602001602082028038833980820191505090505b50905060008090505b6001600085815260200190815260200160002080549050811015612e6657600160008581526020019081526020016000208181548110612d2a57fe5b90600052602060002001600060038110612d4057fe5b602091828204019190069054906101000a900460ff16828260030281518110612d6557fe5b602002602001019060ff16908160ff1681525050600160008581526020019081526020016000208181548110612d9757fe5b90600052602060002001600160038110612dad57fe5b602091828204019190069054906101000a900460ff16826001836003020181518110612dd557fe5b602002602001019060ff16908160ff1681525050600160008581526020019081526020016000208181548110612e0757fe5b90600052602060002001600260038110612e1d57fe5b602091828204019190069054906101000a900460ff16826002836003020181518110612e4557fe5b602002602001019060ff16908160ff16815250508080600101915050612cee565b5080915050919050565b6060612e7b82614c26565b612eed576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60056000838152602001908152602001600020600101805480602002602001604051908101604052809291908181526020018280548015612f4d57602002820191906000526020600020905b815481526020019060010190808311612f39575b50505050509050919050565b60006101008360ff1602811790508160ff168117905092915050565b6060806000612f848787614542565b60001c9050612f968787878785614e09565b925092505094509492505050565b6000841161301a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c696420696e697420626c6f636b000000000000000000000000000081525060200191505060405180910390fd5b60008311613090576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c696420626c6f636b2073746570000000000000000000000000000081525060200191505060405180910390fd5b6001825111613107576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601a8152602001807f6d696e696d756d2032207465616d7320706572206c656167756500000000000081525060200191505060405180910390fd5b6000600283518161311457fe5b0614613188576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f6f6464207465616d7320636f756e74000000000000000000000000000000000081525060200191505060405180910390fd5b80518251146131ff576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601c8152602001807f6e5465616d7320616e64206e54616374696373206d69736d617463680000000081525060200191505060405180910390fd5b61320885614c26565b1561327b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260168152602001807f6c656167756520616c726561647920637265617465640000000000000000000081525060200191505060405180910390fd5b600082519050600061328d8484614466565b9050604051806080016040528083815260200187815260200186815260200182815250600260008981526020019081526020016000206000820151816000015560208201518160010155604082015181600201556060820151816003015590505060036000815480929190600101919050555060008090505b845181101561336b5760008089815260200190815260200160002085828151811061332d57fe5b602002602001015190806001815401808255809150509060018203906000526020600020016000909192909190915055508080600101915050613306565b5060008090505b83518110156133e6576001600089815260200190815260200160002084828151811061339a57fe5b60200260200101519080600181540180825580915050906001820390600052602060002001600090919290919091509060036133d7929190615d1e565b50508080600101915050613372565b507f5d69f37aa0f3d80654d5e87cc70b8464663e1e43be29aae3a06dcecef8471906876040518082815260200191505060405180910390a150505050505050565b6000603c905090565b600061343b82614c26565b6134ad576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60026000838152602001908152602001600020600201549050919050565b6134d4886149ac565b613529576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180615f7e6028913960400191505060405180910390fd5b61353288612a9a565b156135a5576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f6e6f74206368616c6c656e676561626c65206c6561677565000000000000000081525060200191505060405180910390fd5b6135af8787614466565b6135b889614611565b1461362b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f696e636f7272656374207573657220696e69742064617461000000000000000081525060200191505060405180910390fd5b61363488613ea4565b61363f8686866126f1565b14613695576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526022815260200180615f366022913960400191505060405180910390fd5b600082141561370b576136a7886143cb565b6136b0826146f0565b14613706576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526026815260200180615f586026913960400191505060405180910390fd5b61378a565b61371488612e70565b600183038151811061372257fe5b6020026020010151613733826147f1565b14613789576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526026815260200180615f586026913960400191505060405180910390fd5b5b600061379589613430565b83026137a08a614a7c565b01905060606137b38989848a8a8a615451565b90506060806137c48c878786612f75565b915091506137d18c6149cf565b156137e0576137df8c6127ba565b5b505050506138a1565b838110156138045780820151818401526020810190506137e9565b505050509050019250505060405160208183030381529060405280519060200120826040516020018080602001828103825283818151815260200191508051906020019060200280838360005b8381101561386c578082015181840152602081019050613851565b5050505090500192505050604051602081830303815290604052805190602001201461389c5761389b8c6127ba565b5b505050505b5050505050505050565b6000806138b78361270a565b9050600281816138c357fe5b04915050919050565b6000806138d8856140e3565b841061394c576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f77726f6e67206d6174636820646179000000000000000000000000000000000081525060200191505060405180910390fd5b613955856138ab565b83106139c9576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600b8152602001807f77726f6e67206d6174636800000000000000000000000000000000000000000081525060200191505060405180910390fd5b60006139d48661270a565b9050600181038510156139f9576139ec85858361550f565b8093508194505050613a12565b613a09600182038603858361550f565b80945081935050505b50935093915050565b6000613a2682614c26565b613a98576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6000613aa3836140e3565b90506000613ab084614a7c565b90506000613abd85613430565b905080600184030282019350505050919050565b613ada85614c26565b613b4c576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f696e76616c6964206c656167756520696400000000000000000000000000000081525060200191505060405180910390fd5b613b55856127a5565b613bc7576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260138152602001807f6c6561677565206e6f742066696e69736865640000000000000000000000000081525060200191505060405180910390fd5b613bd0856149ac565b15613c43576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f616c72656164792075706461746564000000000000000000000000000000000081525060200191505060405180910390fd5b83600560008781526020019081526020016000206000018190555082600560008781526020019081526020016000206001019080519060200190613c88929190615db8565b5081600560008781526020019081526020016000206002019080519060200190613cb3929190615e05565b50336005600087815260200190815260200160002060030160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550436005600087815260200190815260200160002060040181905550806005600087815260200190815260200160002060050160006101000a81548160ff021916908315150217905550600073ffffffffffffffffffffffffffffffffffffffff16600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614613e7357600460009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16631f438a5b866000336040518463ffffffff1660e01b8152600401808481526020018381526020018273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019350505050600060405180830381600087803b158015613e5a57600080fd5b505af1158015613e6e573d6000803e3d6000fd5b505050505b5050505050565b6000600760009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b6000613eaf82614c26565b613f21576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60086000838152602001908152602001600020549050919050565b6060808251845101604051908082528060200260200182016040528015613f725781602001602082028038833980820191505090505b50905060008090505b8451811015613fc757848181518110613f9057fe5b6020026020010151828281518110613fa457fe5b602002602001019061ffff16908161ffff16815250508080600101915050613f7b565b5060008090505b835181101561401d57838181518110613fe357fe5b6020026020010151828287510181518110613ffa57fe5b602002602001019061ffff16908161ffff16815250508080600101915050613fce565b508091505092915050565b600061403382614c26565b6140a5576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6005600083815260200190815260200160002060030160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050919050565b6000806140ef8361270a565b905060018103600202915050919050565b614109846149ac565b61415e576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180615f7e6028913960400191505060405180910390fd5b61416784612a9a565b156141da576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f6e6f74206368616c6c656e676561626c65206c6561677565000000000000000081525060200191505060405180910390fd5b6141e48383614466565b6141ed85614611565b14614260576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f696e636f7272656374207573657220696e69742064617461000000000000000081525060200191505060405180910390fd5b606061426e85858585614b17565b9050614279856149cf565b1561428857614287856127ba565b5b5050505050565b61429884614c26565b61430a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b614313846127a5565b15614386576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f66696e6973686564206c6561677565000000000000000000000000000000000081525060200191505060405180910390fd5b6000600860008681526020019081526020016000205490506143aa81858585614c49565b90508060086000878152602001908152602001600020819055505050505050565b60006143d682614c26565b614448576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60056000838152602001908152602001600020600001549050919050565b60008282604051602001808060200180602001838103835285818151815260200191508051906020019060200280838360005b838110156144b4578082015181840152602081019050614499565b505050509050018381038252848181518152602001915080516000925b8184101561451a5782846020026020010151600360200280838360005b838110156145095780820151818401526020810190506144ee565b5050505090500192600101926144d1565b9250505094505050505060405160208183030381529060405280519060200120905092915050565b60008061454e84614a7c565b9050600061455b85613430565b905060008482028301604051602001808281526020019150506040516020818303038152906040528051906020012090506000801b811415614605576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601c8152602001807f756e61626c6520746f207265747269766520626c6f636b20686173680000000081525060200191505060405180910390fd5b80935050505092915050565b600061461c82614c26565b61468e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60026000838152602001908152602001600020600301549050919050565b80600460006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b6000816040516020018080602001828103825283818151815260200191508051906020019060200280838360005b8381101561473957808201518184015260208101905061471e565b5050505090500192505050604051602081830303815290604052805190602001209050919050565b600061476c826149ac565b6147de576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f6e6f742075706461746564206c6561677565000000000000000000000000000081525060200191505060405180910390fd5b603c6147e983612938565b019050919050565b60006060600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166399d49eef846040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b8381101561488657808201518184015260208101905061486b565b505050509050019250505060006040518083038186803b1580156148a957600080fd5b505afa1580156148bd573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f8201168201806040525060208110156148e757600080fd5b8101908080516401000000008111156148ff57600080fd5b8281019050602081018481111561491557600080fd5b815185602082028301116401000000008211171561493257600080fd5b50509291905050509050806040516020018080602001828103825283818151815260200191508051906020019060200280838360005b83811015614983578082015181840152602081019050614968565b505050509050019250505060405160208183030381529060405280519060200120915050919050565b600080600560008481526020019081526020016000206004015414159050919050565b60006149da82614c26565b614a4c576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6005600083815260200190815260200160002060050160009054906101000a900460ff169050919050565b606090565b6000614a8782614c26565b614af9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60026000838152602001908152602001600020600101549050919050565b6060949350505050565b6060614b2c82614c26565b614b9e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b600080838152602001908152602001600020805480602002602001604051908101604052809291908181526020018280548015614bfa57602002820191906000526020600020905b815481526020019060010190808311614be6575b50505050509050919050565b6000806101008361ffff1681614c1857fe5b04915060ff83169050915091565b600080600260008481526020019081526020016000206001015414159050919050565b6000808451905080845114614cc6576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601a8152602001807f7465616d7320616e642074616374696373206d69736d6174636800000000000081525060200191505060405180910390fd5b80835114614d3c576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260198152602001807f7465616d7320616e6420626c6f636b73206d69736d617463680000000000000081525060200191505060405180910390fd5b85915060008090505b81811015614dfc5782868281518110614d5a57fe5b6020026020010151868381518110614d6e57fe5b6020026020010151868481518110614d8257fe5b60200260200101516040516020018085815260200184815260200183600360200280838360005b83811015614dc4578082015181840152602081019050614da9565b505050509050018281526020019450505050506040516020818303038152906040528051906020012092508080600101915050614d45565b5081915050949350505050565b6060806000614e17886138ab565b905085915060008090505b8181101561544557600080614e388b8b856138cc565b915091506060600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663422d1df28b856040518363ffffffff1660e01b81526004018080602001838152602001828103825284818151815260200191508051906020019060200280838360005b83811015614ed6578082015181840152602081019050614ebb565b50505050905001935050505060006040518083038186803b158015614efa57600080fd5b505afa158015614f0e573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f820116820180604052506020811015614f3857600080fd5b810190808051640100000000811115614f5057600080fd5b82810190506020810184811115614f6657600080fd5b8151856020820283011164010000000082111715614f8357600080fd5b505092919050505090506060600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663422d1df28c856040518363ffffffff1660e01b81526004018080602001838152602001828103825284818151815260200191508051906020019060200280838360005b8381101561502757808201518184015260208101905061500c565b50505050905001935050505060006040518083038186803b15801561504b57600080fd5b505afa15801561505f573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561508957600080fd5b8101908080516401000000008111156150a157600080fd5b828101905060208101848111156150b757600080fd5b81518560208202830111640100000000821117156150d457600080fd5b5050929190505050905060006060806150ef85858f8f615575565b9250925092506150ff8b846129dd565b9a50600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663221c501a8b89856040518463ffffffff1660e01b8152600401808060200184815260200180602001838103835286818151815260200191508051906020019060200280838360005b8381101561519e578082015181840152602081019050615183565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156151e05780820151818401526020810190506151c5565b505050509050019550505050505060006040518083038186803b15801561520657600080fd5b505afa15801561521a573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561524457600080fd5b81019080805164010000000081111561525c57600080fd5b8281019050602081018481111561527257600080fd5b815185602082028301116401000000008211171561528f57600080fd5b50509291905050509950600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663221c501a8b88846040518463ffffffff1660e01b8152600401808060200184815260200180602001838103835286818151815260200191508051906020019060200280838360005b8381101561533657808201518184015260208101905061531b565b50505050905001838103825284818151815260200191508051906020019060200280838360005b8381101561537857808201518184015260208101905061535d565b505050509050019550505050505060006040518083038186803b15801561539e57600080fd5b505afa1580156153b2573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f8201168201806040525060208110156153dc57600080fd5b8101908080516401000000008111156153f457600080fd5b8281019050602081018481111561540a57600080fd5b815185602082028301116401000000008211171561542757600080fd5b50509291905050509950505050505050508080600101915050614e22565b50509550959350505050565b606060008090505b8451811015615501578583828151811061546f57fe5b6020026020010151116154f45760008090505b88518110156154f25785828151811061549757fe5b60200260200101518982815181106154ab57fe5b602002602001015114156154e5578482815181106154c557fe5b60200260200101518882815181106154d957fe5b60200260200101819052505b8080600101915050615482565b505b8080600101915050615459565b508590509695505050505050565b600080600080905060008511156155315761552e86868603018561577e565b90505b60006155428760018801018661577e565b905060006002888161555057fe5b06141561556457818193509350505061556d565b80829350935050505b935093915050565b6000606080600080600760009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f251388a878b8b8b6000815181106155cb57fe5b60200260200101518c6001815181106155e057fe5b60200260200101516040518663ffffffff1660e01b815260040180868152602001806020018060200185600360200280838360005b83811015615630578082015181840152602081019050615615565b5050505090500184600360200280838360005b8381101561565e578082015181840152602081019050615643565b50505050905001838103835287818151815260200191508051906020019060200280838360005b838110156156a0578082015181840152602081019050615685565b50505050905001838103825286818151815260200191508051906020019060200280838360005b838110156156e25780820151818401526020810190506156c7565b50505050905001975050505050505050604080518083038186803b15801561570957600080fd5b505afa15801561571d573d6000803e3d6000fd5b505050506040513d604081101561573357600080fd5b8101908080519060200190929190805190602001909291905050509150915061575c8282612f59565b945061576a8989848461579f565b809450819550505050509450945094915050565b60008183101561579057829050615799565b60018203830390505b92915050565b6060806000806157b188888888615a6a565b91509150600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16635c01078289846040518363ffffffff1660e01b815260040180806020018360ff1660ff168152602001828103825284818151815260200191508051906020019060200280838360005b83811015615853578082015181840152602081019050615838565b50505050905001935050505060006040518083038186803b15801561587757600080fd5b505afa15801561588b573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f8201168201806040525060208110156158b557600080fd5b8101908080516401000000008111156158cd57600080fd5b828101905060208101848111156158e357600080fd5b815185602082028301116401000000008211171561590057600080fd5b50509291905050509350600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16635c01078288836040518363ffffffff1660e01b815260040180806020018360ff1660ff168152602001828103825284818151815260200191508051906020019060200280838360005b838110156159a857808201518184015260208101905061598d565b50505050905001935050505060006040518083038186803b1580156159cc57600080fd5b505afa1580156159e0573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f820116820180604052506020811015615a0a57600080fd5b810190808051640100000000811115615a2257600080fd5b82810190506020810184811115615a3857600080fd5b8151856020820283011164010000000082111715615a5557600080fd5b50509291905050509250505094509492505050565b6000808260ff168460ff161415615a8d5760008081915080905091509150615d15565b6000600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663bd64d4fa886040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b83811015615b20578082015181840152602081019050615b05565b505050509050019250505060206040518083038186803b158015615b4357600080fd5b505afa158015615b57573d6000803e3d6000fd5b505050506040513d6020811015615b6d57600080fd5b810190808051906020019092919050505090506000600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663bd64d4fa886040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b83811015615c13578082015181840152602081019050615bf8565b505050509050019250505060206040518083038186803b158015615c3657600080fd5b505afa158015615c4a573d6000803e3d6000fd5b505050506040513d6020811015615c6057600080fd5b8101908080519060200190929190505050905080821415615cad578460ff168660ff1611615c975760006005819150809050615ca2565b600560008191508090505b935093505050615d15565b80821115615ce7578460ff168660ff1611615cd15760006008819150809050615cdc565b600260008191508090505b935093505050615d15565b8460ff168660ff1611615d035760006002819150809050615d0e565b600860008191508090505b9350935050505b94509492505050565b826003601f01602090048101928215615da75791602002820160005b83821115615d7857835183826101000a81548160ff021916908360ff1602179055509260200192600101602081600001049283019260010302615d3a565b8015615da55782816101000a81549060ff0219169055600101602081600001049283019260010302615d78565b505b509050615db49190615eaf565b5090565b828054828255906000526020600020908101928215615df4579160200282015b82811115615df3578251825591602001919060010190615dd8565b5b509050615e019190615edf565b5090565b82805482825590600052602060002090600f01601090048101928215615e9e5791602002820160005b83821115615e6e57835183826101000a81548161ffff021916908361ffff1602179055509260200192600201602081600101049283019260010302615e2e565b8015615e9c5782816101000a81549061ffff0219169055600201602081600101049283019260010302615e6e565b505b509050615eab9190615f04565b5090565b615edc91905b80821115615ed857600081816101000a81549060ff021916905550600101615eb5565b5090565b90565b615f0191905b80821115615efd576000816000905550600101615ee5565b5090565b90565b615f3291905b80821115615f2e57600081816101000a81549061ffff021916905550600101615f0a565b5090565b9056fe496e636f72726563742070726f76696465643a207573657273416c6f6e6744617461496e636f72726563742070726f76696465643a20707265764d617463686461795374617465736e6f742075706461746564206c65616775652e204e6f206368616c6c656e676520616c6c6f776564a265627a7a72305820affdc3cf0fece0d88818bdcb92bcbfdc8ddd787300cc02fda8ea272181c834cd64736f6c63430005090032`
+var LeaguesBin = "0x60806040523480156200001157600080fd5b5060405162007ce738038062007ce7833981810160405260408110156200003757600080fd5b8101908080519060200190929190805190602001909291905050508181818160036040518060a00160405280600060ff16815260200160008152602001600081526020016000801b8152602001600060ff168152509080600181540180825580915050906001820390600052602060002090600502016000909192909190915060008201518160000160006101000a81548160ff021916908360ff16021790555060208201518160010155604082015181600201556060820151816003015560808201518160040160006101000a81548160ff021916908360ff16021790555050505081600960006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555080600860006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550505050505050617b3580620001b26000396000f3fe608060405234801561001057600080fd5b50600436106103f15760003560e01c8063789875b511610215578063c1fb64ca11610125578063d9d63573116100b8578063e878ffa311610087578063e878ffa3146125a4578063e945e96a146125e6578063ec7ecec514612634578063f97fa22f14612676578063fcb10b94146126d9576103f1565b8063d9d635731461246f578063dcfe71e4146124b1578063ddea4907146124f6578063e41f70bd14612545576103f1565b8063cf5c5374116100f4578063cf5c537414612354578063cfa48bb9146123a3578063d39daf7e146123e7578063d77a11721461242d576103f1565b8063c1fb64ca14612136578063c46a69391461217a578063c85aed2914612246578063cc540c8f14612288576103f1565b80639e33c8a1116101a8578063ac5db9ee11610177578063ac5db9ee14612000578063adac0d7f14612024578063b4c2129514612066578063bdfe30ab146120a8578063beec5522146120f4576103f1565b80639e33c8a114611d8b578063a338f23714611dcd578063a8541e8e14611f6e578063ab6eeb0014611fdc576103f1565b80638c8ab7ad116101e45780638c8ab7ad14611b4d5780638cc9a8d514611b8f57806394f3702114611bd55780639c0536d814611d41576103f1565b8063789875b514611a30578063832e008114611a6857806384ec783c14611aaa5780638748d89914611b07576103f1565b80632c2dd4f7116103105780635527450a116102a357806365a1250d1161027257806365a1250d14611598578063706735c31461178c578063723adff3146119765780637864b77d146119d05780637874888a146119ee576103f1565b80635527450a1461144f5780635b2d024d146114915780635cd5df14146114d3578063620d4e8d14611515576103f1565b80634a52e3ec116102df5780634a52e3ec146113165780634fcb6203146113a357806351f41c09146113e5578063528afa3f1461142b576103f1565b80632c2dd4f714610f2c57806333a4aba61461116b57806337b6d96b1461128657806339644f21146112cc576103f1565b8063168183b4116103885780631e8e5ddf116103575780631e8e5ddf14610e665780631f178b0314610e8457806328d3be7914610ebc5780632b86689014610eea576103f1565b8063168183b41461086757806316cb9b9d14610c185780631923519514610c365780631996da2d14610c7c576103f1565b80630c8135a7116103c45780630c8135a7146105745780630f6489f9146105e2578063126f648c146106245780631307edf21461066a576103f1565b806303908478146103f657806304527d901461046057806307a6d222146104e35780630ab077ea14610525575b600080fd5b6104226004803603602081101561040c57600080fd5b8101908080359060200190929190505050612732565b6040518082601960200280838360005b8381101561044d578082015181840152602081019050610432565b5050505090500191505060405180910390f35b61048c6004803603602081101561047657600080fd5b81019080803590602001909291905050506128ad565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b838110156104cf5780820151818401526020810190506104b4565b505050509050019250505060405180910390f35b61050f600480360360208110156104f957600080fd5b81019080803590602001909291905050506129be565b6040518082815260200191505060405180910390f35b61055e6004803603604081101561053b57600080fd5b8101908080359060200190929190803560ff169060200190929190505050612a71565b6040518082815260200191505060405180910390f35b6105a06004803603602081101561058a57600080fd5b8101908080359060200190929190505050612b83565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61060e600480360360208110156105f857600080fd5b8101908080359060200190929190505050612bdb565b6040518082815260200191505060405180910390f35b6106506004803603602081101561063a57600080fd5b8101908080359060200190929190505050612bf8565b604051808215151515815260200191505060405180910390f35b6107c86004803603608081101561068057600080fd5b810190808035906020019092919080359060200190929190803590602001906401000000008111156106b157600080fd5b8201836020820111156106c357600080fd5b803590602001918460208302840111640100000000831117156106e557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561074557600080fd5b82018360208201111561075757600080fd5b8035906020019184602083028401116401000000008311171561077957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050612c0d565b604051808060200180602001838103835285818151815260200191508051906020019060200280838360005b8381101561080f5780820151818401526020810190506107f4565b50505050905001838103825284818151815260200191508051906020019060200280838360005b83811015610851578082015181840152602081019050610836565b5050505090500194505050505060405180910390f35b610c16600480360361010081101561087e57600080fd5b8101908080359060200190929190803590602001906401000000008111156108a557600080fd5b8201836020820111156108b757600080fd5b803590602001918460208302840111640100000000831117156108d957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561093957600080fd5b82018360208201111561094b57600080fd5b8035906020019184602083028401116401000000008311171561096d57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156109cd57600080fd5b8201836020820111156109df57600080fd5b80359060200191846020830284011164010000000083111715610a0157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610a6157600080fd5b820183602082011115610a7357600080fd5b80359060200191846020830284011164010000000083111715610a9557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610af557600080fd5b820183602082011115610b0757600080fd5b80359060200191846020830284011164010000000083111715610b2957600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019092919080359060200190640100000000811115610b9357600080fd5b820183602082011115610ba557600080fd5b80359060200191846020830284011164010000000083111715610bc757600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050612c3c565b005b610c20612d79565b6040518082815260200191505060405180910390f35b610c6260048036036020811015610c4c57600080fd5b8101908080359060200190929190505050612d8e565b604051808215151515815260200191505060405180910390f35b610e6460048036036080811015610c9257600080fd5b810190808035906020019092919080359060200190640100000000811115610cb957600080fd5b820183602082011115610ccb57600080fd5b80359060200191846020830284011164010000000083111715610ced57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610d4d57600080fd5b820183602082011115610d5f57600080fd5b80359060200191846020830284011164010000000083111715610d8157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610de157600080fd5b820183602082011115610df357600080fd5b80359060200191846020830284011164010000000083111715610e1557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050612db1565b005b610e6e612eea565b6040518082815260200191505060405180910390f35b610eba60048036036040811015610e9a57600080fd5b810190808035906020019092919080359060200190929190505050612efa565b005b610ee860048036036020811015610ed257600080fd5b8101908080359060200190929190505050613149565b005b610f1660048036036020811015610f0057600080fd5b81019080803590602001909291905050506132c7565b6040518082815260200191505060405180910390f35b61111460048036036080811015610f4257600080fd5b810190808035906020019092919080359060200190640100000000811115610f6957600080fd5b820183602082011115610f7b57600080fd5b80359060200191846020830284011164010000000083111715610f9d57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115610ffd57600080fd5b82018360208201111561100f57600080fd5b8035906020019184602083028401116401000000008311171561103157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561109157600080fd5b8201836020820111156110a357600080fd5b803590602001918460208302840111640100000000831117156110c557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050613362565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b8381101561115757808201518184015260208101905061113c565b505050509050019250505060405180910390f35b61122f6004803603604081101561118157600080fd5b810190808035906020019064010000000081111561119e57600080fd5b8201836020820111156111b057600080fd5b803590602001918460208302840111640100000000831117156111d257600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803561ffff16906020019092919050505061336c565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015611272578082015181840152602081019050611257565b505050509050019250505060405180910390f35b6112b26004803603602081101561129c57600080fd5b8101908080359060200190929190505050613429565b604051808215151515815260200191505060405180910390f35b6112d4613465565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b61134c6004803603604081101561132c57600080fd5b81019080803590602001909291908035906020019092919050505061346a565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b8381101561138f578082015181840152602081019050611374565b505050509050019250505060405180910390f35b6113cf600480360360208110156113b957600080fd5b810190808035906020019092919050505061351c565b6040518082815260200191505060405180910390f35b611411600480360360208110156113fb57600080fd5b81019080803590602001909291905050506135d6565b604051808215151515815260200191505060405180910390f35b6114336135eb565b604051808260ff1660ff16815260200191505060405180910390f35b61147b6004803603602081101561146557600080fd5b81019080803590602001909291905050506135f0565b6040518082815260200191505060405180910390f35b6114bd600480360360208110156114a757600080fd5b810190808035906020019092919050505061368d565b6040518082815260200191505060405180910390f35b6114ff600480360360208110156114e957600080fd5b81019080803590602001909291905050506136bd565b6040518082815260200191505060405180910390f35b6115416004803603602081101561152b57600080fd5b810190808035906020019092919050505061392c565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015611584578082015181840152602081019050611569565b505050509050019250505060405180910390f35b611776600480360360608110156115ae57600080fd5b81019080803590602001906401000000008111156115cb57600080fd5b8201836020820111156115dd57600080fd5b803590602001918460208302840111640100000000831117156115ff57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561165f57600080fd5b82018360208201111561167157600080fd5b8035906020019184602083028401116401000000008311171561169357600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156116f357600080fd5b82018360208201111561170557600080fd5b8035906020019184602083028401116401000000008311171561172757600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050613a15565b6040518082815260200191505060405180910390f35b611974600480360360808110156117a257600080fd5b8101908080359060200190929190803590602001906401000000008111156117c957600080fd5b8201836020820111156117db57600080fd5b803590602001918460208302840111640100000000831117156117fd57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f8201169050808301925050505050505091929192908035906020019064010000000081111561185d57600080fd5b82018360208201111561186f57600080fd5b8035906020019184602083028401116401000000008311171561189157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803590602001906401000000008111156118f157600080fd5b82018360208201111561190357600080fd5b8035906020019184602083028401116401000000008311171561192557600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050613a2e565b005b6119b26004803603604081101561198c57600080fd5b81019080803560ff169060200190929190803560ff169060200190929190505050613bc1565b604051808261ffff1661ffff16815260200191505060405180910390f35b6119d8613bdd565b6040518082815260200191505060405180910390f35b611a1a60048036036020811015611a0457600080fd5b8101908080359060200190929190505050613be6565b6040518082815260200191505060405180910390f35b611a6660048036036040811015611a4657600080fd5b810190808035906020019092919080359060200190929190505050613c89565b005b611a9460048036036020811015611a7e57600080fd5b81019080803590602001909291905050506147dc565b6040518082815260200191505060405180910390f35b611aea60048036036060811015611ac057600080fd5b810190808035906020019092919080359060200190929190803590602001909291905050506147fd565b604051808381526020018281526020019250505060405180910390f35b611b3360048036036020811015611b1d57600080fd5b810190808035906020019092919050505061494c565b604051808215151515815260200191505060405180910390f35b611b7960048036036020811015611b6357600080fd5b81019080803590602001909291905050506149f4565b6040518082815260200191505060405180910390f35b611bbb60048036036020811015611ba557600080fd5b8101908080359060200190929190505050614aaa565b604051808215151515815260200191505060405180910390f35b611d3f600480360360a0811015611beb57600080fd5b81019080803590602001909291908035906020019092919080359060200190640100000000811115611c1c57600080fd5b820183602082011115611c2e57600080fd5b80359060200191846020830284011164010000000083111715611c5057600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115611cb057600080fd5b820183602082011115611cc257600080fd5b80359060200191846020830284011164010000000083111715611ce457600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290803515159060200190929190505050614ace565b005b611d49614e77565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b611db760048036036020811015611da157600080fd5b8101908080359060200190929190505050614ea1565b6040518082815260200191505060405180910390f35b611f1760048036036040811015611de357600080fd5b8101908080359060200190640100000000811115611e0057600080fd5b820183602082011115611e1257600080fd5b80359060200191846020830284011164010000000083111715611e3457600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f82011690508083019250505050505050919291929080359060200190640100000000811115611e9457600080fd5b820183602082011115611ea657600080fd5b80359060200191846020830284011164010000000083111715611ec857600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050614f39565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015611f5a578082015181840152602081019050611f3f565b505050509050019250505060405180910390f35b611f9a60048036036020811015611f8457600080fd5b8101908080359060200190929190505050615025565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b611fe46150e0565b604051808260ff1660ff16815260200191505060405180910390f35b6120086150e5565b604051808260ff1660ff16815260200191505060405180910390f35b6120506004803603602081101561203a57600080fd5b81019080803590602001909291905050506150ea565b6040518082815260200191505060405180910390f35b6120926004803603602081101561207c57600080fd5b8101908080359060200190929190505050615107565b6040518082815260200191505060405180910390f35b6120de600480360360408110156120be57600080fd5b8101908080359060200190929190803590602001909291905050506151a2565b6040518082815260200191505060405180910390f35b6121206004803603602081101561210a57600080fd5b8101908080359060200190929190505050615271565b6040518082815260200191505060405180910390f35b6121786004803603602081101561214c57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050615314565b005b6122306004803603602081101561219057600080fd5b81019080803590602001906401000000008111156121ad57600080fd5b8201836020820111156121bf57600080fd5b803590602001918460208302840111640100000000831117156121e157600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050615358565b6040518082815260200191505060405180910390f35b6122726004803603602081101561225c57600080fd5b81019080803590602001909291905050506153c9565b6040518082815260200191505060405180910390f35b61233e6004803603602081101561229e57600080fd5b81019080803590602001906401000000008111156122bb57600080fd5b8201836020820111156122cd57600080fd5b803590602001918460208302840111640100000000831117156122ef57600080fd5b919080806020026020016040519081016040528093929190818152602001838360200280828437600081840152601f19601f820116905080830192505050505050509192919290505050615459565b6040518082815260200191505060405180910390f35b61238d6004803603604081101561236a57600080fd5b8101908080359060200190929190803560ff169060200190929190505050615614565b6040518082815260200191505060405180910390f35b6123e5600480360360208110156123b957600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919050505061562d565b005b612413600480360360208110156123fd57600080fd5b8101908080359060200190929190505050615671565b604051808215151515815260200191505060405180910390f35b6124596004803603602081101561244357600080fd5b8101908080359060200190929190505050615694565b6040518082815260200191505060405180910390f35b61249b6004803603602081101561248557600080fd5b81019080803590602001909291905050506156e4565b6040518082815260200191505060405180910390f35b6124f4600480360360608110156124c757600080fd5b810190808035906020019092919080359060200190929190803560ff16906020019092919050505061579e565b005b6125226004803603602081101561250c57600080fd5b8101908080359060200190929190505050615870565b604051808381526020018260ff1660ff1681526020019250505060405180910390f35b61254d6158fc565b6040518080602001828103825283818151815260200191508051906020019060200280838360005b83811015612590578082015181840152602081019050612575565b505050509050019250505060405180910390f35b6125d0600480360360208110156125ba57600080fd5b8101908080359060200190929190505050615901565b6040518082815260200191505060405180910390f35b612632600480360360408110156125fc57600080fd5b8101908080359060200190929190803573ffffffffffffffffffffffffffffffffffffffff1690602001909291905050506159a4565b005b6126606004803603602081101561264a57600080fd5b8101908080359060200190929190505050615cad565b6040518082815260200191505060405180910390f35b6126a26004803603602081101561268c57600080fd5b8101908080359060200190929190505050615d63565b604051808581526020018460ff1660ff1681526020018381526020018260ff1660ff16815260200194505050505060405180910390f35b612709600480360360208110156126ef57600080fd5b81019080803561ffff169060200190929190505050615ea2565b604051808360ff1660ff1681526020018260ff1660ff1681526020019250505060405180910390f35b61273a6177fa565b61274382615ec2565b612798576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526025815260200180617a436025913960400191505060405180910390fd5b6127a182612d8e565b156128625760008090505b601960ff168160ff16101561285c576000600160008581526020019081526020016000206005018260ff16601981106127e157fe5b01541415612810576127f38382612a71565b828260ff166019811061280257fe5b60200201818152505061284f565b600160008481526020019081526020016000206005018160ff166019811061283457fe5b0154828260ff166019811061284557fe5b6020020181815250505b80806001019150506127ac565b506128a8565b60008090505b601960ff168160ff1610156128a6576128818382612a71565b828260ff166019811061289057fe5b6020020181815250508080600101915050612868565b505b919050565b60606128b882615ede565b61292a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b600760008381526020019081526020016000206002018054806020026020016040519081016040528092919081815260200182805480156129b257602002820191906000526020600020906000905b82829054906101000a900461ffff1661ffff16815260200190600201906020826001010492830192600103820291508084116129795790505b50505050509050919050565b60006129c982615ede565b612a3b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60038281548110612a4857fe5b906000526020600020906005020160000160009054906101000a900460ff1660ff169050919050565b6000612a7c83615ec2565b612aee576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f756e6578697374656e74207465616d000000000000000000000000000000000081525060200191505060405180910390fd5b601960ff168260ff1610612b6a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c696420706c6179657220706f73000000000000000000000000000081525060200191505060405180910390fd5b8160ff166001808503601960ff16020101905092915050565b6000612b8e82612d8e565b15612bd15760016000838152602001908152602001600020601f0160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050612bd6565b600190505b919050565b6000600a60ff166001830381612bed57fe5b046001019050919050565b6000612c03826149f4565b4310159050919050565b6060806000612c1c87876151a2565b60001c9050612c2e8787878785615ef2565b925092505094509492505050565b612c4588615671565b612c9a576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180617ad96028913960400191505060405180910390fd5b612ca388613429565b15612d16576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f6e6f74206368616c6c656e676561626c65206c6561677565000000000000000081525060200191505060405180910390fd5b6000612d218961494c565b90508015612d3357612d3289613149565b5b7ff19a51839da277a55f6a0a5294bd53fd566a9c37614e7229f506da7a4e750d2f81604051808215151515815260200191505060405180910390a1505050505050505050565b6000600a60ff16612d88612eea565b02905090565b60008060016000848152602001908152602001600020601e015414159050919050565b612dba84615671565b612e0f576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180617ad96028913960400191505060405180910390fd5b612e1884613429565b15612e8b576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260188152602001807f6e6f74206368616c6c656e676561626c65206c6561677565000000000000000081525060200191505060405180910390fd5b6000612e968561494c565b90508015612ea857612ea785613149565b5b7ff19a51839da277a55f6a0a5294bd53fd566a9c37614e7229f506da7a4e750d2f81604051808215151515815260200191505060405180910390a15050505050565b6000600160038054905003905090565b438211612f6f576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c696420696e697420626c6f636b000000000000000000000000000081525060200191505060405180910390fd5b6107d061ffff1643018210612fcf576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180617a686028913960400191505060405180910390fd5b60008111613045576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c696420626c6f636b2073746570000000000000000000000000000081525060200191505060405180910390fd5b60036040518060a00160405280600a60ff1681526020018481526020018381526020016000801b8152602001600060ff168152509080600181540180825580915050906001820390600052602060002090600502016000909192909190915060008201518160000160006101000a81548160ff021916908360ff16021790555060208201518160010155604082015181600201556060820151816003015560808201518160040160006101000a81548160ff021916908360ff1602179055505050507f5d69f37aa0f3d80654d5e87cc70b8464663e1e43be29aae3a06dcecef8471906613130612eea565b6040518082815260200191505060405180910390a15050565b61315281615ede565b6131c4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60006007600083815260200190815260200160002060040181905550600073ffffffffffffffffffffffffffffffffffffffff16600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16146132c457600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166345e73685826040518263ffffffff1660e01b815260040180828152602001915050600060405180830381600087803b1580156132ab57600080fd5b505af11580156132bf573d6000803e3d6000fd5b505050505b50565b60006132d282615ede565b613344576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60076000838152602001908152602001600020600401549050919050565b6060949350505050565b60608060018451016040519080825280602002602001820160405280156133a25781602001602082028038833980820191505090505b50905060008090505b84518110156133f7578481815181106133c057fe5b60200260200101518282815181106133d457fe5b602002602001019061ffff16908161ffff168152505080806001019150506133ab565b50828160018351038151811061340957fe5b602002602001019061ffff16908161ffff16815250508091505092915050565b60008082141561343c5760019050613460565b61344582615671565b6134525760009050613460565b61345b826153c9565b431190505b919050565b600181565b60606000613477846147dc565b90506060613484856128ad565b905060008285029050826040519080825280602002602001820160405280156134bc5781602001602082028038833980820191505090505b50935060008090505b838110156135125782818301815181106134db57fe5b60200260200101518582815181106134ef57fe5b602002602001019061ffff16908161ffff168152505080806001019150506134c5565b5050505092915050565b600061352782615ec2565b613599576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260208152602001807f696e76616c6964207465616d206964207768656e2067657474696e6720444e4181525060200191505060405180910390fd5b6135a282612d8e565b156135c557600160008381526020019081526020016000206000015490506135d1565b6135ce82615694565b90505b919050565b60006135e182615901565b4310159050919050565b600581565b60006135fb82615ec2565b613650576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260298152602001806179f26029913960400191505060405180910390fd5b61365982612d8e565b1561367c5760016000838152602001908152602001600020601e01549050613688565b6136858261368d565b90505b919050565b6000600361369a83612bdb565b815481106136a457fe5b9060005260206000209060050201600101549050919050565b60006136c88261653a565b61373a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260108152602001807f706c61796572496420696e76616c69640000000000000000000000000000000081525060200191505060405180910390fd5b6000601960ff16600184038161374c57fe5b04600101905060006001808303601960ff1602850303905060006137786137728461351c565b8361659c565b905061378261781d565b61378b826165d8565b905060006137a18361379c876135f0565b616795565b9050600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663530f63d6836000600581106137ee57fe5b60200201518460016005811061380057fe5b60200201518560026005811061381257fe5b60200201518660036005811061382457fe5b60200201518760046005811061383657fe5b6020020151878e8d8d6000806000806040518e63ffffffff1660e01b8152600401808e61ffff1681526020018d61ffff1681526020018c61ffff1681526020018b61ffff1681526020018a61ffff1681526020018961ffff1681526020018881526020018781526020018681526020018581526020018481526020018381526020018281526020019d505050505050505050505050505060206040518083038186803b1580156138e557600080fd5b505afa1580156138f9573d6000803e3d6000fd5b505050506040513d602081101561390f57600080fd5b810190808051906020019092919050505095505050505050919050565b606061393782615ede565b6139a9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60076000838152602001908152602001600020600101805480602002602001604051908101604052809291908181526020018280548015613a0957602002820191906000526020600020905b8154815260200190600101908083116139f5575b50505050509050919050565b600080613a24818686866167f6565b9150509392505050565b613a3784615ede565b613aa9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b613ab284612bf8565b15613b25576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f66696e6973686564206c6561677565000000000000000000000000000000000081525060200191505060405180910390fd5b6000600a6000868152602001908152602001600020549050613b49818585856167f6565b90506040516020018080602001828103825260048152602001807f544f444f0000000000000000000000000000000000000000000000000000000081525060200191505060405160208183030381529060405280519060200120600a6000878152602001908152602001600020819055505050505050565b60006101008360ff1602811790508160ff168117905092915050565b6000603c905090565b6000613bf182615ede565b613c63576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60038281548110613c7057fe5b9060005260206000209060050201600201549050919050565b613c928261653a565b8015613ca35750613ca28161653a565b5b613d15576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260138152602001807f756e6578697374656e7420706c6179657249640000000000000000000000000081525060200191505060405180910390fd5b6000613d2083615cad565b90506000613d2d83615cad565b905060008290506000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663cd2105e8856040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015613da957600080fd5b505afa158015613dbd573d6000803e3d6000fd5b505050506040513d6020811015613dd357600080fd5b810190808051906020019092919050505090506000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663cd2105e8856040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015613e5b57600080fd5b505afa158015613e6f573d6000803e3d6000fd5b505050506040513d6020811015613e8557600080fd5b81019080805190602001909291905050509050613ea182614aaa565b158015613eb45750613eb281614aaa565b155b613f09576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526024815260200180617ab56024913960400191505060405180910390fd5b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663eb78b7b7876040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015613f7e57600080fd5b505afa158015613f92573d6000803e3d6000fd5b505050506040513d6020811015613fa857600080fd5b810190808051906020019092919050505090506000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663eb78b7b7876040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561403057600080fd5b505afa158015614044573d6000803e3d6000fd5b505050506040513d602081101561405a57600080fd5b81019080805190602001909291905050509050600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c37b1c2586600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663cd2105e88a6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561411f57600080fd5b505afa158015614133573d6000803e3d6000fd5b505050506040513d602081101561414957600080fd5b81019080805190602001909291905050506040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b15801561419557600080fd5b505afa1580156141a9573d6000803e3d6000fd5b505050506040513d60208110156141bf57600080fd5b81019080805190602001909291905050509450600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a95e858b86600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663eb78b7b78a6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561428457600080fd5b505afa158015614298573d6000803e3d6000fd5b505050506040513d60208110156142ae57600080fd5b81019080805190602001909291905050506040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156142fa57600080fd5b505afa15801561430e573d6000803e3d6000fd5b505050506040513d602081101561432457600080fd5b81019080805190602001909291905050509450600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c37b1c2587600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663cd2105e88b6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b1580156143e957600080fd5b505afa1580156143fd573d6000803e3d6000fd5b505050506040513d602081101561441357600080fd5b81019080805190602001909291905050506040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b15801561445f57600080fd5b505afa158015614473573d6000803e3d6000fd5b505050506040513d602081101561448957600080fd5b81019080805190602001909291905050509550600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663a95e858b87600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663eb78b7b78b6040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b15801561454e57600080fd5b505afa158015614562573d6000803e3d6000fd5b505050506040513d602081101561457857600080fd5b81019080805190602001909291905050506040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b1580156145c457600080fd5b505afa1580156145d8573d6000803e3d6000fd5b505050506040513d60208110156145ee57600080fd5b81019080805190602001909291905050509550600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663af76cd0186436040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b15801561467c57600080fd5b505afa158015614690573d6000803e3d6000fd5b505050506040513d60208110156146a657600080fd5b81019080805190602001909291905050509450600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663af76cd0187436040518363ffffffff1660e01b8152600401808381526020018281526020019250505060206040518083038186803b15801561473457600080fd5b505afa158015614748573d6000803e3d6000fd5b505050506040513d602081101561475e57600080fd5b810190808051906020019092919050505095508760016000868152602001908152602001600020600501836019811061479357fe5b0181905550886001600085815260200190815260200160002060050182601981106147ba57fe5b01819055506147c885616994565b6147d186616994565b505050505050505050565b6000806147e8836129be565b9050600281816147f457fe5b04915050919050565b600080614809856150ea565b841061487d576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f77726f6e67206d6174636820646179000000000000000000000000000000000081525060200191505060405180910390fd5b614886856147dc565b83106148fa576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600b8152602001807f77726f6e67206d6174636800000000000000000000000000000000000000000081525060200191505060405180910390fd5b6000614905866129be565b90506001810385101561492a5761491d858583616f95565b8093508194505050614943565b61493a6001820386038583616f95565b80945081935050505b50935093915050565b600061495782615ede565b6149c9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6007600083815260200190815260200160002060050160009054906101000a900460ff169050919050565b60006149ff82615ede565b614a71576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6000614a7c836150ea565b90506000614a8984615901565b90506000614a9685613be6565b905080600184030282019350505050919050565b6000614ab582615ec2565b8015614ac75750614ac582612d8e565b155b9050919050565b614ad785615ede565b614b49576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f696e76616c6964206c656167756520696400000000000000000000000000000081525060200191505060405180910390fd5b614b5285612bf8565b614bc4576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260138152602001807f6c6561677565206e6f742066696e69736865640000000000000000000000000081525060200191505060405180910390fd5b614bcd85615671565b15614c40576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f616c72656164792075706461746564000000000000000000000000000000000081525060200191505060405180910390fd5b83600760008781526020019081526020016000206000018190555082600760008781526020019081526020016000206001019080519060200190614c8592919061783f565b5081600760008781526020019081526020016000206002019080519060200190614cb092919061788c565b50336007600087815260200190815260200160002060030160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550436007600087815260200190815260200160002060040181905550806007600087815260200190815260200160002060050160006101000a81548160ff021916908315150217905550600073ffffffffffffffffffffffffffffffffffffffff16600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1614614e7057600660009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16631f438a5b866000336040518463ffffffff1660e01b8152600401808481526020018381526020018273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019350505050600060405180830381600087803b158015614e5757600080fd5b505af1158015614e6b573d6000803e3d6000fd5b505050505b5050505050565b6000600960009054906101000a900473ffffffffffffffffffffffffffffffffffffffff16905090565b6000614eac82615ede565b614f1e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b600a6000838152602001908152602001600020549050919050565b6060808251845101604051908082528060200260200182016040528015614f6f5781602001602082028038833980820191505090505b50905060008090505b8451811015614fc457848181518110614f8d57fe5b6020026020010151828281518110614fa157fe5b602002602001019061ffff16908161ffff16815250508080600101915050614f78565b5060008090505b835181101561501a57838181518110614fe057fe5b6020026020010151828287510181518110614ff757fe5b602002602001019061ffff16908161ffff16815250508080600101915050614fcb565b508091505092915050565b600061503082615ede565b6150a2576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6007600083815260200190815260200160002060030160009054906101000a900473ffffffffffffffffffffffffffffffffffffffff169050919050565b601981565b600a81565b6000806150f6836129be565b905060018103600202915050919050565b600061511282615ede565b615184576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b60076000838152602001908152602001600020600001549050919050565b6000806151ae84615901565b905060006151bb85613be6565b905060008482028301604051602001808281526020019150506040516020818303038152906040528051906020012090506000801b811415615265576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601c8152602001807f756e61626c6520746f207265747269766520626c6f636b20686173680000000081525060200191505060405180910390fd5b80935050505092915050565b600061527c82615ede565b6152ee576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b600382815481106152fb57fe5b9060005260206000209060050201600301549050919050565b80600660006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b6000816040516020018080602001828103825283818151815260200191508051906020019060200280838360005b838110156153a1578082015181840152602081019050615386565b5050505090500192505050604051602081830303815290604052805190602001209050919050565b60006153d482615671565b615446576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f6e6f742075706461746564206c6561677565000000000000000000000000000081525060200191505060405180910390fd5b603c615451836132c7565b019050919050565b60006060600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff166399d49eef846040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b838110156154ee5780820151818401526020810190506154d3565b505050509050019250505060006040518083038186803b15801561551157600080fd5b505afa158015615525573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561554f57600080fd5b81019080805164010000000081111561556757600080fd5b8281019050602081018481111561557d57600080fd5b815185602082028301116401000000008211171561559a57600080fd5b50509291905050509050806040516020018080602001828103825283818151815260200191508051906020019060200280838360005b838110156155eb5780820151818401526020810190506155d0565b505050509050019250505060405160208183030381529060405280519060200120915050919050565b60008160ff16600a60ff16600185030201905092915050565b80600560006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b600080600760008481526020019081526020016000206004015414159050919050565b60008060006156a284615870565b915091508181604051602001808381526020018260ff1660ff168152602001925050506040516020818303038152906040528051906020012092505050919050565b60006156ef82615ec2565b615761576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f696e76616c6964207465616d206964000000000000000000000000000000000081525060200191505060405180910390fd5b61576a82612d8e565b1561578d5760016000838152602001908152602001600020600101549050615799565b61579682612bdb565b90505b919050565b600160008481526020019081526020016000206001015460016000858152602001908152602001600020600301819055506001600084815260200190815260200160002060020160009054906101000a900460ff166001600085815260200190815260200160002060040160006101000a81548160ff021916908360ff160217905550816001600085815260200190815260200160002060010181905550806001600085815260200190815260200160002060020160006101000a81548160ff021916908360ff160217905550505050565b600080600061587e84612bdb565b9050600060018203600a60ff160260018603039050600a60ff1681106158ef576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526025815260200180617a906025913960400191505060405180910390fd5b8181935093505050915091565b606090565b600061590c82615ede565b61597e576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e74206c656167756500000000000000000000000000000081525060200191505060405180910390fd5b6003828154811061598b57fe5b9060005260206000209060050201600101549050919050565b6159ad82615ec2565b50600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415615a51576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f6d65616e696e676c65737320616472657373000000000000000000000000000081525060200191505060405180910390fd5b615a5a82612d8e565b15615b4657615a6882612b83565b73ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff161415615aec576040517f08c379a0000000000000000000000000000000000000000000000000000000008152600401808060200182810382526028815260200180617a1b6028913960400191505060405180910390fd5b8060016000848152602001908152602001600020601f0160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff160217905550615ca9565b615b4e6177fa565b600080615b5a85615870565b91509150604051806101000160405280615b7387615694565b81526020018381526020018260ff16815260200160008152602001600060ff168152602001848152602001615ba78761368d565b81526020018573ffffffffffffffffffffffffffffffffffffffff1681525060016000878152602001908152602001600020600082015181600001556020820151816001015560408201518160020160006101000a81548160ff021916908360ff1602179055506060820151816003015560808201518160040160006101000a81548160ff021916908360ff16021790555060a082015181600501906019615c50929190617936565b5060c082015181601e015560e082015181601f0160006101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055509050505050505b5050565b6000615cb88261653a565b615d2a576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e7420706c6179657200000000000000000000000000000081525060200191505060405180910390fd5b615d3382616ffb565b15615d4857615d41826136bd565b9050615d5e565b6000808381526020019081526020016000205490505b919050565b600080600080615d7285615ec2565b615de4576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f696e76616c6964207465616d206964000000000000000000000000000000000081525060200191505060405180910390fd5b615ded85612d8e565b15615e755760016000868152602001908152602001600020600101546001600087815260200190815260200160002060020160009054906101000a900460ff1660016000888152602001908152602001600020600301546001600089815260200190815260200160002060040160009054906101000a900460ff169350935093509350615e9b565b600080615e8187615870565b915091508181600080819150809050955095509550955050505b9193509193565b6000806101008361ffff1681615eb457fe5b04915060ff83169050915091565b6000615ecc612eea565b615ed583612bdb565b11159050919050565b6000615ee8612eea565b8211159050919050565b6060806000615f00886147dc565b905085915060008090505b8181101561652e57600080615f218b8b856147fd565b915091506060600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663422d1df28b856040518363ffffffff1660e01b81526004018080602001838152602001828103825284818151815260200191508051906020019060200280838360005b83811015615fbf578082015181840152602081019050615fa4565b50505050905001935050505060006040518083038186803b158015615fe357600080fd5b505afa158015615ff7573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561602157600080fd5b81019080805164010000000081111561603957600080fd5b8281019050602081018481111561604f57600080fd5b815185602082028301116401000000008211171561606c57600080fd5b505092919050505090506060600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663422d1df28c856040518363ffffffff1660e01b81526004018080602001838152602001828103825284818151815260200191508051906020019060200280838360005b838110156161105780820151818401526020810190506160f5565b50505050905001935050505060006040518083038186803b15801561613457600080fd5b505afa158015616148573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561617257600080fd5b81019080805164010000000081111561618a57600080fd5b828101905060208101848111156161a057600080fd5b81518560208202830111640100000000821117156161bd57600080fd5b5050929190505050905060006060806161d885858f8f617095565b9250925092506161e88b8461336c565b9a50600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663221c501a8b89856040518463ffffffff1660e01b8152600401808060200184815260200180602001838103835286818151815260200191508051906020019060200280838360005b8381101561628757808201518184015260208101905061626c565b50505050905001838103825284818151815260200191508051906020019060200280838360005b838110156162c95780820151818401526020810190506162ae565b505050509050019550505050505060006040518083038186803b1580156162ef57600080fd5b505afa158015616303573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561632d57600080fd5b81019080805164010000000081111561634557600080fd5b8281019050602081018481111561635b57600080fd5b815185602082028301116401000000008211171561637857600080fd5b50509291905050509950600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663221c501a8b88846040518463ffffffff1660e01b8152600401808060200184815260200180602001838103835286818151815260200191508051906020019060200280838360005b8381101561641f578082015181840152602081019050616404565b50505050905001838103825284818151815260200191508051906020019060200280838360005b83811015616461578082015181840152602081019050616446565b505050509050019550505050505060006040518083038186803b15801561648757600080fd5b505afa15801561649b573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f8201168201806040525060208110156164c557600080fd5b8101908080516401000000008111156164dd57600080fd5b828101905060208101848111156164f357600080fd5b815185602082028301116401000000008211171561651057600080fd5b50509291905050509950505050505050508080600101915050615f0b565b50509550959350505050565b60008082141561654d5760009050616597565b600080600084815260200190815260200160002054146165705760019050616597565b6000601960ff16600184038161658257fe5b046001019050616590612d79565b8111159150505b919050565b6000828260405160200180838152602001828152602001925050506040516020818303038152906040528051906020012060001c905092915050565b6165e061781d565b6165e861781d565b60008090505b60058160ff16101561663c57613fff61ffff168416828260ff166005811061661257fe5b602002019061ffff16908161ffff1681525050600e60ff1684901c935080806001019150506165ee565b50600080600090505b60058160ff1610156166ba576032838260ff166005811061666257fe5b602002015161ffff168161667257fe5b06838260ff166005811061668257fe5b602002019061ffff16908161ffff1681525050828160ff16600581106166a457fe5b6020020151820191508080600101915050616645565b50600060058260fa0361ffff16816166ce57fe5b04905060008090505b60058160ff1610156167285781848260ff16600581106166f357fe5b602002015101848260ff166005811061670857fe5b602002019061ffff16908161ffff168152505080806001019150506166d7565b50600060058360fa0361ffff168161673c57fe5b06905060008090505b8161ffff168160ff16101561678857848160ff166005811061676357fe5b60200201805180919060010161ffff1661ffff16815250508080600101915050616745565b5083945050505050919050565b60006005600e0260ff1683901c92506000613fff61ffff1684169050600060148261ffff16816167c157fe5b06601001905060006301e133809050600062278d00905080828461ffff16028703816167e957fe5b0494505050505092915050565b6000808451905080845114616873576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601d8152602001807f7465616d7320616e642074616374696373496473206d69736d6174636800000081525060200191505060405180910390fd5b808351146168e9576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260198152602001807f7465616d7320616e6420626c6f636b73206d69736d617463680000000000000081525060200191505060405180910390fd5b85915060008090505b81811015616987578286828151811061690757fe5b602002602001015186838151811061691b57fe5b602002602001015186848151811061692f57fe5b6020026020010151604051602001808581526020018481526020018360ff1660ff16815260200182815260200194505050505060405160208183030381529060405280519060200120925080806001019150506168f2565b5081915050949350505050565b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663f4385912836040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015616a0957600080fd5b505afa158015616a1d573d6000803e3d6000fd5b505050506040513d6020811015616a3357600080fd5b81019080805190602001909291905050509050616a4f8161653a565b616ac1576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e7420706c6179657200000000000000000000000000000081525060200191505060405180910390fd5b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663cd2105e8846040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015616b3657600080fd5b505afa158015616b4a573d6000803e3d6000fd5b505050506040513d6020811015616b6057600080fd5b81019080805190602001909291905050509050616b7c81615ec2565b616bee576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252600f8152602001807f756e6578697374656e74207465616d000000000000000000000000000000000081525060200191505060405180910390fd5b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663eb78b7b7856040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015616c6357600080fd5b505afa158015616c77573d6000803e3d6000fd5b505050506040513d6020811015616c8d57600080fd5b81019080805190602001909291905050509050601960ff168110616d19576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260148152602001807f696e76616c6964207368697274206e756d62657200000000000000000000000081525060200191505060405180910390fd5b600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663666d0070856040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015616d8c57600080fd5b505afa158015616da0573d6000803e3d6000fd5b505050506040513d6020811015616db657600080fd5b81019080805190602001909291905050509050601960ff168110616e42576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260148152602001807f696e76616c6964207368697274206e756d62657200000000000000000000000081525060200191505060405180910390fd5b6000600560009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663c566b5bc866040518263ffffffff1660e01b81526004018082815260200191505060206040518083038186803b158015616eb757600080fd5b505afa158015616ecb573d6000803e3d6000fd5b505050506040513d6020811015616ee157600080fd5b8101908080519060200190929190505050905060008114158015616f055750438111155b616f77576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260128152602001807f696e76616c69642073616c6520626c6f636b000000000000000000000000000081525060200191505060405180910390fd5b84600080868152602001908152602001600020819055505050505050565b60008060008090506000851115616fb757616fb486868603018561725a565b90505b6000616fc88760018801018661725a565b9050600060028881616fd657fe5b061415616fea578181935093505050616ff3565b80829350935050505b935093915050565b60006170068261653a565b617078576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260118152602001807f756e6578697374656e7420706c6179657200000000000000000000000000000081525060200191505060405180910390fd5b600080600084815260200190815260200160002054149050919050565b6000606080600080600960009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16630a507e9f878b8b8b6000815181106170eb57fe5b60200260200101518c60018151811061710057fe5b60200260200101516040518663ffffffff1660e01b81526004018086815260200180602001806020018560ff1660ff1681526020018460ff1660ff168152602001838103835287818151815260200191508051906020019060200280838360005b8381101561717c578082015181840152602081019050617161565b50505050905001838103825286818151815260200191508051906020019060200280838360005b838110156171be5780820151818401526020810190506171a3565b50505050905001975050505050505050604080518083038186803b1580156171e557600080fd5b505afa1580156171f9573d6000803e3d6000fd5b505050506040513d604081101561720f57600080fd5b810190808051906020019092919080519060200190929190505050915091506172388282613bc1565b94506172468989848461727b565b809450819550505050509450945094915050565b60008183101561726c57829050617275565b60018203830390505b92915050565b60608060008061728d88888888617546565b91509150600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16635c01078289846040518363ffffffff1660e01b815260040180806020018360ff1660ff168152602001828103825284818151815260200191508051906020019060200280838360005b8381101561732f578082015181840152602081019050617314565b50505050905001935050505060006040518083038186803b15801561735357600080fd5b505afa158015617367573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f82011682018060405250602081101561739157600080fd5b8101908080516401000000008111156173a957600080fd5b828101905060208101848111156173bf57600080fd5b81518560208202830111640100000000821117156173dc57600080fd5b50509291905050509350600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16635c01078288836040518363ffffffff1660e01b815260040180806020018360ff1660ff168152602001828103825284818151815260200191508051906020019060200280838360005b83811015617484578082015181840152602081019050617469565b50505050905001935050505060006040518083038186803b1580156174a857600080fd5b505afa1580156174bc573d6000803e3d6000fd5b505050506040513d6000823e3d601f19601f8201168201806040525060208110156174e657600080fd5b8101908080516401000000008111156174fe57600080fd5b8281019050602081018481111561751457600080fd5b815185602082028301116401000000008211171561753157600080fd5b50509291905050509250505094509492505050565b6000808260ff168460ff16141561756957600080819150809050915091506177f1565b6000600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663bd64d4fa886040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b838110156175fc5780820151818401526020810190506175e1565b505050509050019250505060206040518083038186803b15801561761f57600080fd5b505afa158015617633573d6000803e3d6000fd5b505050506040513d602081101561764957600080fd5b810190808051906020019092919050505090506000600860009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663bd64d4fa886040518263ffffffff1660e01b81526004018080602001828103825283818151815260200191508051906020019060200280838360005b838110156176ef5780820151818401526020810190506176d4565b505050509050019250505060206040518083038186803b15801561771257600080fd5b505afa158015617726573d6000803e3d6000fd5b505050506040513d602081101561773c57600080fd5b8101908080519060200190929190505050905080821415617789578460ff168660ff1611617773576000600581915080905061777e565b600560008191508090505b9350935050506177f1565b808211156177c3578460ff168660ff16116177ad57600060088191508090506177b8565b600260008191508090505b9350935050506177f1565b8460ff168660ff16116177df57600060028191508090506177ea565b600860008191508090505b9350935050505b94509492505050565b604051806103200160405280601990602082028038833980820191505090505090565b6040518060a00160405280600590602082028038833980820191505090505090565b82805482825590600052602060002090810192821561787b579160200282015b8281111561787a57825182559160200191906001019061785f565b5b5090506178889190617976565b5090565b82805482825590600052602060002090600f016010900481019282156179255791602002820160005b838211156178f557835183826101000a81548161ffff021916908361ffff16021790555092602001926002016020816001010492830192600103026178b5565b80156179235782816101000a81549061ffff02191690556002016020816001010492830192600103026178f5565b505b509050617932919061799b565b5090565b8260198101928215617965579160200282015b82811115617964578251825591602001919060010190617949565b5b50905061797291906179cc565b5090565b61799891905b8082111561799457600081600090555060010161797c565b5090565b90565b6179c991905b808211156179c557600081816101000a81549061ffff0219169055506001016179a1565b5090565b90565b6179ee91905b808211156179ea5760008160009055506001016179d2565b5090565b9056fe696e76616c6964207465616d20696420746f20676574206372656174696f6e2074696d657374616d70756e61626c6520746f207472616e73666572206265747765656e207468652073616d652075736572696e76616c6964207465616d206964207768656e206765745465616d506c6179657249647363616e6e6f74206372656174652061206c656167756520746f6f2066617220696e206675747572654f766572666c6f7720696e207465616d20746f206c65616775652061737369676e6d656e74506c617965727320696e20426f745465616d732063616e6e6f74206265207472616465646e6f742075706461746564206c65616775652e204e6f206368616c6c656e676520616c6c6f776564a265627a7a72305820952083c45cc436c9c9fe7e0b912a2f1dd7aa1fa529005703f80ea81f2d1f0fec64736f6c63430005090032"
 
 // DeployLeagues deploys a new Ethereum contract, binding an instance of Leagues to it.
 func DeployLeagues(auth *bind.TransactOpts, backend bind.ContractBackend, engine common.Address, state common.Address) (common.Address, *types.Transaction, *Leagues, error) {
@@ -39,6 +39,7 @@ func DeployLeagues(auth *bind.TransactOpts, backend bind.ContractBackend, engine
 	if err != nil {
 		return common.Address{}, nil, nil, err
 	}
+
 	address, tx, contract, err := bind.DeployContract(auth, parsed, common.FromHex(LeaguesBin), backend, engine, state)
 	if err != nil {
 		return common.Address{}, nil, nil, err
@@ -188,10 +189,222 @@ func (_Leagues *LeaguesTransactorRaw) Transact(opts *bind.TransactOpts, method s
 	return _Leagues.Contract.contract.Transact(opts, method, params...)
 }
 
-// ComputeDay is a free data retrieval call binding the contract method 0x77b7d5c0.
+// FREEVERSE is a free data retrieval call binding the contract method 0x39644f21.
 //
-// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[3][] tactics) constant returns(uint16[] scores, uint256[] finalLeagueState)
-func (_Leagues *LeaguesCaller) ComputeDay(opts *bind.CallOpts, leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tactics [][3]uint8) (struct {
+// Solidity: function FREEVERSE() constant returns(address)
+func (_Leagues *LeaguesCaller) FREEVERSE(opts *bind.CallOpts) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "FREEVERSE")
+	return *ret0, err
+}
+
+// FREEVERSE is a free data retrieval call binding the contract method 0x39644f21.
+//
+// Solidity: function FREEVERSE() constant returns(address)
+func (_Leagues *LeaguesSession) FREEVERSE() (common.Address, error) {
+	return _Leagues.Contract.FREEVERSE(&_Leagues.CallOpts)
+}
+
+// FREEVERSE is a free data retrieval call binding the contract method 0x39644f21.
+//
+// Solidity: function FREEVERSE() constant returns(address)
+func (_Leagues *LeaguesCallerSession) FREEVERSE() (common.Address, error) {
+	return _Leagues.Contract.FREEVERSE(&_Leagues.CallOpts)
+}
+
+// NUMSKILLS is a free data retrieval call binding the contract method 0x528afa3f.
+//
+// Solidity: function NUM_SKILLS() constant returns(uint8)
+func (_Leagues *LeaguesCaller) NUMSKILLS(opts *bind.CallOpts) (uint8, error) {
+	var (
+		ret0 = new(uint8)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "NUM_SKILLS")
+	return *ret0, err
+}
+
+// NUMSKILLS is a free data retrieval call binding the contract method 0x528afa3f.
+//
+// Solidity: function NUM_SKILLS() constant returns(uint8)
+func (_Leagues *LeaguesSession) NUMSKILLS() (uint8, error) {
+	return _Leagues.Contract.NUMSKILLS(&_Leagues.CallOpts)
+}
+
+// NUMSKILLS is a free data retrieval call binding the contract method 0x528afa3f.
+//
+// Solidity: function NUM_SKILLS() constant returns(uint8)
+func (_Leagues *LeaguesCallerSession) NUMSKILLS() (uint8, error) {
+	return _Leagues.Contract.NUMSKILLS(&_Leagues.CallOpts)
+}
+
+// PLAYERSPERTEAM is a free data retrieval call binding the contract method 0xab6eeb00.
+//
+// Solidity: function PLAYERS_PER_TEAM() constant returns(uint8)
+func (_Leagues *LeaguesCaller) PLAYERSPERTEAM(opts *bind.CallOpts) (uint8, error) {
+	var (
+		ret0 = new(uint8)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "PLAYERS_PER_TEAM")
+	return *ret0, err
+}
+
+// PLAYERSPERTEAM is a free data retrieval call binding the contract method 0xab6eeb00.
+//
+// Solidity: function PLAYERS_PER_TEAM() constant returns(uint8)
+func (_Leagues *LeaguesSession) PLAYERSPERTEAM() (uint8, error) {
+	return _Leagues.Contract.PLAYERSPERTEAM(&_Leagues.CallOpts)
+}
+
+// PLAYERSPERTEAM is a free data retrieval call binding the contract method 0xab6eeb00.
+//
+// Solidity: function PLAYERS_PER_TEAM() constant returns(uint8)
+func (_Leagues *LeaguesCallerSession) PLAYERSPERTEAM() (uint8, error) {
+	return _Leagues.Contract.PLAYERSPERTEAM(&_Leagues.CallOpts)
+}
+
+// TEAMSPERLEAGUE is a free data retrieval call binding the contract method 0xac5db9ee.
+//
+// Solidity: function TEAMS_PER_LEAGUE() constant returns(uint8)
+func (_Leagues *LeaguesCaller) TEAMSPERLEAGUE(opts *bind.CallOpts) (uint8, error) {
+	var (
+		ret0 = new(uint8)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "TEAMS_PER_LEAGUE")
+	return *ret0, err
+}
+
+// TEAMSPERLEAGUE is a free data retrieval call binding the contract method 0xac5db9ee.
+//
+// Solidity: function TEAMS_PER_LEAGUE() constant returns(uint8)
+func (_Leagues *LeaguesSession) TEAMSPERLEAGUE() (uint8, error) {
+	return _Leagues.Contract.TEAMSPERLEAGUE(&_Leagues.CallOpts)
+}
+
+// TEAMSPERLEAGUE is a free data retrieval call binding the contract method 0xac5db9ee.
+//
+// Solidity: function TEAMS_PER_LEAGUE() constant returns(uint8)
+func (_Leagues *LeaguesCallerSession) TEAMSPERLEAGUE() (uint8, error) {
+	return _Leagues.Contract.TEAMSPERLEAGUE(&_Leagues.CallOpts)
+}
+
+// BotTeamIdToDNA is a free data retrieval call binding the contract method 0xd77a1172.
+//
+// Solidity: function botTeamIdToDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesCaller) BotTeamIdToDNA(opts *bind.CallOpts, teamId *big.Int) ([32]byte, error) {
+	var (
+		ret0 = new([32]byte)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "botTeamIdToDNA", teamId)
+	return *ret0, err
+}
+
+// BotTeamIdToDNA is a free data retrieval call binding the contract method 0xd77a1172.
+//
+// Solidity: function botTeamIdToDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesSession) BotTeamIdToDNA(teamId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.BotTeamIdToDNA(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToDNA is a free data retrieval call binding the contract method 0xd77a1172.
+//
+// Solidity: function botTeamIdToDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesCallerSession) BotTeamIdToDNA(teamId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.BotTeamIdToDNA(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToLeagueId is a free data retrieval call binding the contract method 0x0f6489f9.
+//
+// Solidity: function botTeamIdToLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) BotTeamIdToLeagueId(opts *bind.CallOpts, teamId *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "botTeamIdToLeagueId", teamId)
+	return *ret0, err
+}
+
+// BotTeamIdToLeagueId is a free data retrieval call binding the contract method 0x0f6489f9.
+//
+// Solidity: function botTeamIdToLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesSession) BotTeamIdToLeagueId(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.BotTeamIdToLeagueId(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToLeagueId is a free data retrieval call binding the contract method 0x0f6489f9.
+//
+// Solidity: function botTeamIdToLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) BotTeamIdToLeagueId(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.BotTeamIdToLeagueId(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToLeagueIdAndPos is a free data retrieval call binding the contract method 0xddea4907.
+//
+// Solidity: function botTeamIdToLeagueIdAndPos(uint256 teamId) constant returns(uint256, uint8)
+func (_Leagues *LeaguesCaller) BotTeamIdToLeagueIdAndPos(opts *bind.CallOpts, teamId *big.Int) (*big.Int, uint8, error) {
+	var (
+		ret0 = new(*big.Int)
+		ret1 = new(uint8)
+	)
+	out := &[]interface{}{
+		ret0,
+		ret1,
+	}
+	err := _Leagues.contract.Call(opts, out, "botTeamIdToLeagueIdAndPos", teamId)
+	return *ret0, *ret1, err
+}
+
+// BotTeamIdToLeagueIdAndPos is a free data retrieval call binding the contract method 0xddea4907.
+//
+// Solidity: function botTeamIdToLeagueIdAndPos(uint256 teamId) constant returns(uint256, uint8)
+func (_Leagues *LeaguesSession) BotTeamIdToLeagueIdAndPos(teamId *big.Int) (*big.Int, uint8, error) {
+	return _Leagues.Contract.BotTeamIdToLeagueIdAndPos(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToLeagueIdAndPos is a free data retrieval call binding the contract method 0xddea4907.
+//
+// Solidity: function botTeamIdToLeagueIdAndPos(uint256 teamId) constant returns(uint256, uint8)
+func (_Leagues *LeaguesCallerSession) BotTeamIdToLeagueIdAndPos(teamId *big.Int) (*big.Int, uint8, error) {
+	return _Leagues.Contract.BotTeamIdToLeagueIdAndPos(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToTimeCreation is a free data retrieval call binding the contract method 0x5b2d024d.
+//
+// Solidity: function botTeamIdToTimeCreation(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) BotTeamIdToTimeCreation(opts *bind.CallOpts, teamId *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "botTeamIdToTimeCreation", teamId)
+	return *ret0, err
+}
+
+// BotTeamIdToTimeCreation is a free data retrieval call binding the contract method 0x5b2d024d.
+//
+// Solidity: function botTeamIdToTimeCreation(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesSession) BotTeamIdToTimeCreation(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.BotTeamIdToTimeCreation(&_Leagues.CallOpts, teamId)
+}
+
+// BotTeamIdToTimeCreation is a free data retrieval call binding the contract method 0x5b2d024d.
+//
+// Solidity: function botTeamIdToTimeCreation(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) BotTeamIdToTimeCreation(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.BotTeamIdToTimeCreation(&_Leagues.CallOpts, teamId)
+}
+
+// ComputeDay is a free data retrieval call binding the contract method 0x1307edf2.
+//
+// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[] tacticsIds) constant returns(uint16[] scores, uint256[] finalLeagueState)
+func (_Leagues *LeaguesCaller) ComputeDay(opts *bind.CallOpts, leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tacticsIds []uint8) (struct {
 	Scores           []uint16
 	FinalLeagueState []*big.Int
 }, error) {
@@ -200,54 +413,54 @@ func (_Leagues *LeaguesCaller) ComputeDay(opts *bind.CallOpts, leagueId *big.Int
 		FinalLeagueState []*big.Int
 	})
 	out := ret
-	err := _Leagues.contract.Call(opts, out, "computeDay", leagueId, leagueDay, initLeagueState, tactics)
+	err := _Leagues.contract.Call(opts, out, "computeDay", leagueId, leagueDay, initLeagueState, tacticsIds)
 	return *ret, err
 }
 
-// ComputeDay is a free data retrieval call binding the contract method 0x77b7d5c0.
+// ComputeDay is a free data retrieval call binding the contract method 0x1307edf2.
 //
-// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[3][] tactics) constant returns(uint16[] scores, uint256[] finalLeagueState)
-func (_Leagues *LeaguesSession) ComputeDay(leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tactics [][3]uint8) (struct {
+// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[] tacticsIds) constant returns(uint16[] scores, uint256[] finalLeagueState)
+func (_Leagues *LeaguesSession) ComputeDay(leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tacticsIds []uint8) (struct {
 	Scores           []uint16
 	FinalLeagueState []*big.Int
 }, error) {
-	return _Leagues.Contract.ComputeDay(&_Leagues.CallOpts, leagueId, leagueDay, initLeagueState, tactics)
+	return _Leagues.Contract.ComputeDay(&_Leagues.CallOpts, leagueId, leagueDay, initLeagueState, tacticsIds)
 }
 
-// ComputeDay is a free data retrieval call binding the contract method 0x77b7d5c0.
+// ComputeDay is a free data retrieval call binding the contract method 0x1307edf2.
 //
-// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[3][] tactics) constant returns(uint16[] scores, uint256[] finalLeagueState)
-func (_Leagues *LeaguesCallerSession) ComputeDay(leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tactics [][3]uint8) (struct {
+// Solidity: function computeDay(uint256 leagueId, uint256 leagueDay, uint256[] initLeagueState, uint8[] tacticsIds) constant returns(uint16[] scores, uint256[] finalLeagueState)
+func (_Leagues *LeaguesCallerSession) ComputeDay(leagueId *big.Int, leagueDay *big.Int, initLeagueState []*big.Int, tacticsIds []uint8) (struct {
 	Scores           []uint16
 	FinalLeagueState []*big.Int
 }, error) {
-	return _Leagues.Contract.ComputeDay(&_Leagues.CallOpts, leagueId, leagueDay, initLeagueState, tactics)
+	return _Leagues.Contract.ComputeDay(&_Leagues.CallOpts, leagueId, leagueDay, initLeagueState, tacticsIds)
 }
 
-// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x06c6bb99.
+// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x65a1250d.
 //
-// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) constant returns(bytes32)
-func (_Leagues *LeaguesCaller) ComputeUsersAlongDataHash(opts *bind.CallOpts, teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) ([32]byte, error) {
+// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) constant returns(bytes32)
+func (_Leagues *LeaguesCaller) ComputeUsersAlongDataHash(opts *bind.CallOpts, teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "computeUsersAlongDataHash", teamIds, tactics, blocks)
+	err := _Leagues.contract.Call(opts, out, "computeUsersAlongDataHash", teamIds, tacticsIds, blocks)
 	return *ret0, err
 }
 
-// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x06c6bb99.
+// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x65a1250d.
 //
-// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) constant returns(bytes32)
-func (_Leagues *LeaguesSession) ComputeUsersAlongDataHash(teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) ([32]byte, error) {
-	return _Leagues.Contract.ComputeUsersAlongDataHash(&_Leagues.CallOpts, teamIds, tactics, blocks)
+// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) constant returns(bytes32)
+func (_Leagues *LeaguesSession) ComputeUsersAlongDataHash(teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) ([32]byte, error) {
+	return _Leagues.Contract.ComputeUsersAlongDataHash(&_Leagues.CallOpts, teamIds, tacticsIds, blocks)
 }
 
-// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x06c6bb99.
+// ComputeUsersAlongDataHash is a free data retrieval call binding the contract method 0x65a1250d.
 //
-// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) constant returns(bytes32)
-func (_Leagues *LeaguesCallerSession) ComputeUsersAlongDataHash(teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) ([32]byte, error) {
-	return _Leagues.Contract.ComputeUsersAlongDataHash(&_Leagues.CallOpts, teamIds, tactics, blocks)
+// Solidity: function computeUsersAlongDataHash(uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) constant returns(bytes32)
+func (_Leagues *LeaguesCallerSession) ComputeUsersAlongDataHash(teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) ([32]byte, error) {
+	return _Leagues.Contract.ComputeUsersAlongDataHash(&_Leagues.CallOpts, teamIds, tacticsIds, blocks)
 }
 
 // CountLeagueDays is a free data retrieval call binding the contract method 0xadac0d7f.
@@ -274,6 +487,58 @@ func (_Leagues *LeaguesSession) CountLeagueDays(id *big.Int) (*big.Int, error) {
 // Solidity: function countLeagueDays(uint256 id) constant returns(uint256)
 func (_Leagues *LeaguesCallerSession) CountLeagueDays(id *big.Int) (*big.Int, error) {
 	return _Leagues.Contract.CountLeagueDays(&_Leagues.CallOpts, id)
+}
+
+// CountLeagues is a free data retrieval call binding the contract method 0x1e8e5ddf.
+//
+// Solidity: function countLeagues() constant returns(uint256)
+func (_Leagues *LeaguesCaller) CountLeagues(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "countLeagues")
+	return *ret0, err
+}
+
+// CountLeagues is a free data retrieval call binding the contract method 0x1e8e5ddf.
+//
+// Solidity: function countLeagues() constant returns(uint256)
+func (_Leagues *LeaguesSession) CountLeagues() (*big.Int, error) {
+	return _Leagues.Contract.CountLeagues(&_Leagues.CallOpts)
+}
+
+// CountLeagues is a free data retrieval call binding the contract method 0x1e8e5ddf.
+//
+// Solidity: function countLeagues() constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) CountLeagues() (*big.Int, error) {
+	return _Leagues.Contract.CountLeagues(&_Leagues.CallOpts)
+}
+
+// CountTeams is a free data retrieval call binding the contract method 0x16cb9b9d.
+//
+// Solidity: function countTeams() constant returns(uint256)
+func (_Leagues *LeaguesCaller) CountTeams(opts *bind.CallOpts) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "countTeams")
+	return *ret0, err
+}
+
+// CountTeams is a free data retrieval call binding the contract method 0x16cb9b9d.
+//
+// Solidity: function countTeams() constant returns(uint256)
+func (_Leagues *LeaguesSession) CountTeams() (*big.Int, error) {
+	return _Leagues.Contract.CountTeams(&_Leagues.CallOpts)
+}
+
+// CountTeams is a free data retrieval call binding the contract method 0x16cb9b9d.
+//
+// Solidity: function countTeams() constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) CountTeams() (*big.Int, error) {
+	return _Leagues.Contract.CountTeams(&_Leagues.CallOpts)
 }
 
 // DecodeScore is a free data retrieval call binding the contract method 0xfcb10b94.
@@ -312,6 +577,32 @@ func (_Leagues *LeaguesCallerSession) DecodeScore(score uint16) (struct {
 	return _Leagues.Contract.DecodeScore(&_Leagues.CallOpts, score)
 }
 
+// DidUpdaterLie is a free data retrieval call binding the contract method 0x8748d899.
+//
+// Solidity: function didUpdaterLie(uint256 id) constant returns(bool)
+func (_Leagues *LeaguesCaller) DidUpdaterLie(opts *bind.CallOpts, id *big.Int) (bool, error) {
+	var (
+		ret0 = new(bool)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "didUpdaterLie", id)
+	return *ret0, err
+}
+
+// DidUpdaterLie is a free data retrieval call binding the contract method 0x8748d899.
+//
+// Solidity: function didUpdaterLie(uint256 id) constant returns(bool)
+func (_Leagues *LeaguesSession) DidUpdaterLie(id *big.Int) (bool, error) {
+	return _Leagues.Contract.DidUpdaterLie(&_Leagues.CallOpts, id)
+}
+
+// DidUpdaterLie is a free data retrieval call binding the contract method 0x8748d899.
+//
+// Solidity: function didUpdaterLie(uint256 id) constant returns(bool)
+func (_Leagues *LeaguesCallerSession) DidUpdaterLie(id *big.Int) (bool, error) {
+	return _Leagues.Contract.DidUpdaterLie(&_Leagues.CallOpts, id)
+}
+
 // EncodeScore is a free data retrieval call binding the contract method 0x723adff3.
 //
 // Solidity: function encodeScore(uint8 home, uint8 visitor) constant returns(uint16 score)
@@ -338,6 +629,32 @@ func (_Leagues *LeaguesCallerSession) EncodeScore(home uint8, visitor uint8) (ui
 	return _Leagues.Contract.EncodeScore(&_Leagues.CallOpts, home, visitor)
 }
 
+// GenerateVirtualPlayerState is a free data retrieval call binding the contract method 0x5cd5df14.
+//
+// Solidity: function generateVirtualPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GenerateVirtualPlayerState(opts *bind.CallOpts, playerId *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "generateVirtualPlayerState", playerId)
+	return *ret0, err
+}
+
+// GenerateVirtualPlayerState is a free data retrieval call binding the contract method 0x5cd5df14.
+//
+// Solidity: function generateVirtualPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GenerateVirtualPlayerState(playerId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GenerateVirtualPlayerState(&_Leagues.CallOpts, playerId)
+}
+
+// GenerateVirtualPlayerState is a free data retrieval call binding the contract method 0x5cd5df14.
+//
+// Solidity: function generateVirtualPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GenerateVirtualPlayerState(playerId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GenerateVirtualPlayerState(&_Leagues.CallOpts, playerId)
+}
+
 // GetChallengePeriod is a free data retrieval call binding the contract method 0x7864b77d.
 //
 // Solidity: function getChallengePeriod() constant returns(uint256)
@@ -362,6 +679,32 @@ func (_Leagues *LeaguesSession) GetChallengePeriod() (*big.Int, error) {
 // Solidity: function getChallengePeriod() constant returns(uint256)
 func (_Leagues *LeaguesCallerSession) GetChallengePeriod() (*big.Int, error) {
 	return _Leagues.Contract.GetChallengePeriod(&_Leagues.CallOpts)
+}
+
+// GetCurrentLeagueId is a free data retrieval call binding the contract method 0xd9d63573.
+//
+// Solidity: function getCurrentLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetCurrentLeagueId(opts *bind.CallOpts, teamId *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "getCurrentLeagueId", teamId)
+	return *ret0, err
+}
+
+// GetCurrentLeagueId is a free data retrieval call binding the contract method 0xd9d63573.
+//
+// Solidity: function getCurrentLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetCurrentLeagueId(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetCurrentLeagueId(&_Leagues.CallOpts, teamId)
+}
+
+// GetCurrentLeagueId is a free data retrieval call binding the contract method 0xd9d63573.
+//
+// Solidity: function getCurrentLeagueId(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetCurrentLeagueId(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetCurrentLeagueId(&_Leagues.CallOpts, teamId)
 }
 
 // GetDayStateHashes is a free data retrieval call binding the contract method 0x620d4e8d.
@@ -444,28 +787,28 @@ func (_Leagues *LeaguesCallerSession) GetEngineContract() (common.Address, error
 
 // GetInitBlock is a free data retrieval call binding the contract method 0xe878ffa3.
 //
-// Solidity: function getInitBlock(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCaller) GetInitBlock(opts *bind.CallOpts, id *big.Int) (*big.Int, error) {
+// Solidity: function getInitBlock(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetInitBlock(opts *bind.CallOpts, leagueId *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getInitBlock", id)
+	err := _Leagues.contract.Call(opts, out, "getInitBlock", leagueId)
 	return *ret0, err
 }
 
 // GetInitBlock is a free data retrieval call binding the contract method 0xe878ffa3.
 //
-// Solidity: function getInitBlock(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesSession) GetInitBlock(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetInitBlock(&_Leagues.CallOpts, id)
+// Solidity: function getInitBlock(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetInitBlock(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetInitBlock(&_Leagues.CallOpts, leagueId)
 }
 
 // GetInitBlock is a free data retrieval call binding the contract method 0xe878ffa3.
 //
-// Solidity: function getInitBlock(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCallerSession) GetInitBlock(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetInitBlock(&_Leagues.CallOpts, id)
+// Solidity: function getInitBlock(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetInitBlock(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetInitBlock(&_Leagues.CallOpts, leagueId)
 }
 
 // GetInitStateHash is a free data retrieval call binding the contract method 0xb4c21295.
@@ -492,32 +835,6 @@ func (_Leagues *LeaguesSession) GetInitStateHash(id *big.Int) ([32]byte, error) 
 // Solidity: function getInitStateHash(uint256 id) constant returns(bytes32)
 func (_Leagues *LeaguesCallerSession) GetInitStateHash(id *big.Int) ([32]byte, error) {
 	return _Leagues.Contract.GetInitStateHash(&_Leagues.CallOpts, id)
-}
-
-// GetIsLie is a free data retrieval call binding the contract method 0xe36decc3.
-//
-// Solidity: function getIsLie(uint256 id) constant returns(bool)
-func (_Leagues *LeaguesCaller) GetIsLie(opts *bind.CallOpts, id *big.Int) (bool, error) {
-	var (
-		ret0 = new(bool)
-	)
-	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getIsLie", id)
-	return *ret0, err
-}
-
-// GetIsLie is a free data retrieval call binding the contract method 0xe36decc3.
-//
-// Solidity: function getIsLie(uint256 id) constant returns(bool)
-func (_Leagues *LeaguesSession) GetIsLie(id *big.Int) (bool, error) {
-	return _Leagues.Contract.GetIsLie(&_Leagues.CallOpts, id)
-}
-
-// GetIsLie is a free data retrieval call binding the contract method 0xe36decc3.
-//
-// Solidity: function getIsLie(uint256 id) constant returns(bool)
-func (_Leagues *LeaguesCallerSession) GetIsLie(id *big.Int) (bool, error) {
-	return _Leagues.Contract.GetIsLie(&_Leagues.CallOpts, id)
 }
 
 // GetLastChallengeBlock is a free data retrieval call binding the contract method 0xc85aed29.
@@ -600,28 +917,54 @@ func (_Leagues *LeaguesCallerSession) GetMatchPerDay(id *big.Int) (*big.Int, err
 
 // GetNTeams is a free data retrieval call binding the contract method 0x07a6d222.
 //
-// Solidity: function getNTeams(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCaller) GetNTeams(opts *bind.CallOpts, id *big.Int) (*big.Int, error) {
+// Solidity: function getNTeams(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetNTeams(opts *bind.CallOpts, leagueId *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getNTeams", id)
+	err := _Leagues.contract.Call(opts, out, "getNTeams", leagueId)
 	return *ret0, err
 }
 
 // GetNTeams is a free data retrieval call binding the contract method 0x07a6d222.
 //
-// Solidity: function getNTeams(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesSession) GetNTeams(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetNTeams(&_Leagues.CallOpts, id)
+// Solidity: function getNTeams(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetNTeams(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetNTeams(&_Leagues.CallOpts, leagueId)
 }
 
 // GetNTeams is a free data retrieval call binding the contract method 0x07a6d222.
 //
-// Solidity: function getNTeams(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCallerSession) GetNTeams(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetNTeams(&_Leagues.CallOpts, id)
+// Solidity: function getNTeams(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetNTeams(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetNTeams(&_Leagues.CallOpts, leagueId)
+}
+
+// GetPlayerState is a free data retrieval call binding the contract method 0xec7ecec5.
+//
+// Solidity: function getPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetPlayerState(opts *bind.CallOpts, playerId *big.Int) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "getPlayerState", playerId)
+	return *ret0, err
+}
+
+// GetPlayerState is a free data retrieval call binding the contract method 0xec7ecec5.
+//
+// Solidity: function getPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetPlayerState(playerId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetPlayerState(&_Leagues.CallOpts, playerId)
+}
+
+// GetPlayerState is a free data retrieval call binding the contract method 0xec7ecec5.
+//
+// Solidity: function getPlayerState(uint256 playerId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetPlayerState(playerId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetPlayerState(&_Leagues.CallOpts, playerId)
 }
 
 // GetScores is a free data retrieval call binding the contract method 0x04527d90.
@@ -652,80 +995,176 @@ func (_Leagues *LeaguesCallerSession) GetScores(id *big.Int) ([]uint16, error) {
 
 // GetStep is a free data retrieval call binding the contract method 0x7874888a.
 //
-// Solidity: function getStep(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCaller) GetStep(opts *bind.CallOpts, id *big.Int) (*big.Int, error) {
+// Solidity: function getStep(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetStep(opts *bind.CallOpts, leagueId *big.Int) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getStep", id)
+	err := _Leagues.contract.Call(opts, out, "getStep", leagueId)
 	return *ret0, err
 }
 
 // GetStep is a free data retrieval call binding the contract method 0x7874888a.
 //
-// Solidity: function getStep(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesSession) GetStep(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetStep(&_Leagues.CallOpts, id)
+// Solidity: function getStep(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetStep(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetStep(&_Leagues.CallOpts, leagueId)
 }
 
 // GetStep is a free data retrieval call binding the contract method 0x7874888a.
 //
-// Solidity: function getStep(uint256 id) constant returns(uint256)
-func (_Leagues *LeaguesCallerSession) GetStep(id *big.Int) (*big.Int, error) {
-	return _Leagues.Contract.GetStep(&_Leagues.CallOpts, id)
+// Solidity: function getStep(uint256 leagueId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetStep(leagueId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetStep(&_Leagues.CallOpts, leagueId)
 }
 
-// GetTactics is a free data retrieval call binding the contract method 0x5c106b7e.
+// GetTeamCreationBlocknum is a free data retrieval call binding the contract method 0x5527450a.
 //
-// Solidity: function getTactics(uint256 id) constant returns(uint8[])
-func (_Leagues *LeaguesCaller) GetTactics(opts *bind.CallOpts, id *big.Int) ([]uint8, error) {
+// Solidity: function getTeamCreationBlocknum(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCaller) GetTeamCreationBlocknum(opts *bind.CallOpts, teamId *big.Int) (*big.Int, error) {
 	var (
-		ret0 = new([]uint8)
+		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getTactics", id)
+	err := _Leagues.contract.Call(opts, out, "getTeamCreationBlocknum", teamId)
 	return *ret0, err
 }
 
-// GetTactics is a free data retrieval call binding the contract method 0x5c106b7e.
+// GetTeamCreationBlocknum is a free data retrieval call binding the contract method 0x5527450a.
 //
-// Solidity: function getTactics(uint256 id) constant returns(uint8[])
-func (_Leagues *LeaguesSession) GetTactics(id *big.Int) ([]uint8, error) {
-	return _Leagues.Contract.GetTactics(&_Leagues.CallOpts, id)
+// Solidity: function getTeamCreationBlocknum(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesSession) GetTeamCreationBlocknum(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetTeamCreationBlocknum(&_Leagues.CallOpts, teamId)
 }
 
-// GetTactics is a free data retrieval call binding the contract method 0x5c106b7e.
+// GetTeamCreationBlocknum is a free data retrieval call binding the contract method 0x5527450a.
 //
-// Solidity: function getTactics(uint256 id) constant returns(uint8[])
-func (_Leagues *LeaguesCallerSession) GetTactics(id *big.Int) ([]uint8, error) {
-	return _Leagues.Contract.GetTactics(&_Leagues.CallOpts, id)
+// Solidity: function getTeamCreationBlocknum(uint256 teamId) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) GetTeamCreationBlocknum(teamId *big.Int) (*big.Int, error) {
+	return _Leagues.Contract.GetTeamCreationBlocknum(&_Leagues.CallOpts, teamId)
 }
 
-// GetTeams is a free data retrieval call binding the contract method 0xf6c8d8de.
+// GetTeamCurrentHistory is a free data retrieval call binding the contract method 0xf97fa22f.
 //
-// Solidity: function getTeams(uint256 id) constant returns(uint256[])
-func (_Leagues *LeaguesCaller) GetTeams(opts *bind.CallOpts, id *big.Int) ([]*big.Int, error) {
+// Solidity: function getTeamCurrentHistory(uint256 teamId) constant returns(uint256 currentLeagueId, uint8 posInCurrentLeague, uint256 prevLeagueId, uint8 posInPrevLeague)
+func (_Leagues *LeaguesCaller) GetTeamCurrentHistory(opts *bind.CallOpts, teamId *big.Int) (struct {
+	CurrentLeagueId    *big.Int
+	PosInCurrentLeague uint8
+	PrevLeagueId       *big.Int
+	PosInPrevLeague    uint8
+}, error) {
+	ret := new(struct {
+		CurrentLeagueId    *big.Int
+		PosInCurrentLeague uint8
+		PrevLeagueId       *big.Int
+		PosInPrevLeague    uint8
+	})
+	out := ret
+	err := _Leagues.contract.Call(opts, out, "getTeamCurrentHistory", teamId)
+	return *ret, err
+}
+
+// GetTeamCurrentHistory is a free data retrieval call binding the contract method 0xf97fa22f.
+//
+// Solidity: function getTeamCurrentHistory(uint256 teamId) constant returns(uint256 currentLeagueId, uint8 posInCurrentLeague, uint256 prevLeagueId, uint8 posInPrevLeague)
+func (_Leagues *LeaguesSession) GetTeamCurrentHistory(teamId *big.Int) (struct {
+	CurrentLeagueId    *big.Int
+	PosInCurrentLeague uint8
+	PrevLeagueId       *big.Int
+	PosInPrevLeague    uint8
+}, error) {
+	return _Leagues.Contract.GetTeamCurrentHistory(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamCurrentHistory is a free data retrieval call binding the contract method 0xf97fa22f.
+//
+// Solidity: function getTeamCurrentHistory(uint256 teamId) constant returns(uint256 currentLeagueId, uint8 posInCurrentLeague, uint256 prevLeagueId, uint8 posInPrevLeague)
+func (_Leagues *LeaguesCallerSession) GetTeamCurrentHistory(teamId *big.Int) (struct {
+	CurrentLeagueId    *big.Int
+	PosInCurrentLeague uint8
+	PrevLeagueId       *big.Int
+	PosInPrevLeague    uint8
+}, error) {
+	return _Leagues.Contract.GetTeamCurrentHistory(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamDNA is a free data retrieval call binding the contract method 0x4fcb6203.
+//
+// Solidity: function getTeamDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesCaller) GetTeamDNA(opts *bind.CallOpts, teamId *big.Int) ([32]byte, error) {
 	var (
-		ret0 = new([]*big.Int)
+		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getTeams", id)
+	err := _Leagues.contract.Call(opts, out, "getTeamDNA", teamId)
 	return *ret0, err
 }
 
-// GetTeams is a free data retrieval call binding the contract method 0xf6c8d8de.
+// GetTeamDNA is a free data retrieval call binding the contract method 0x4fcb6203.
 //
-// Solidity: function getTeams(uint256 id) constant returns(uint256[])
-func (_Leagues *LeaguesSession) GetTeams(id *big.Int) ([]*big.Int, error) {
-	return _Leagues.Contract.GetTeams(&_Leagues.CallOpts, id)
+// Solidity: function getTeamDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesSession) GetTeamDNA(teamId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.GetTeamDNA(&_Leagues.CallOpts, teamId)
 }
 
-// GetTeams is a free data retrieval call binding the contract method 0xf6c8d8de.
+// GetTeamDNA is a free data retrieval call binding the contract method 0x4fcb6203.
 //
-// Solidity: function getTeams(uint256 id) constant returns(uint256[])
-func (_Leagues *LeaguesCallerSession) GetTeams(id *big.Int) ([]*big.Int, error) {
-	return _Leagues.Contract.GetTeams(&_Leagues.CallOpts, id)
+// Solidity: function getTeamDNA(uint256 teamId) constant returns(bytes32)
+func (_Leagues *LeaguesCallerSession) GetTeamDNA(teamId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.GetTeamDNA(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamOwner is a free data retrieval call binding the contract method 0x0c8135a7.
+//
+// Solidity: function getTeamOwner(uint256 teamId) constant returns(address)
+func (_Leagues *LeaguesCaller) GetTeamOwner(opts *bind.CallOpts, teamId *big.Int) (common.Address, error) {
+	var (
+		ret0 = new(common.Address)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "getTeamOwner", teamId)
+	return *ret0, err
+}
+
+// GetTeamOwner is a free data retrieval call binding the contract method 0x0c8135a7.
+//
+// Solidity: function getTeamOwner(uint256 teamId) constant returns(address)
+func (_Leagues *LeaguesSession) GetTeamOwner(teamId *big.Int) (common.Address, error) {
+	return _Leagues.Contract.GetTeamOwner(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamOwner is a free data retrieval call binding the contract method 0x0c8135a7.
+//
+// Solidity: function getTeamOwner(uint256 teamId) constant returns(address)
+func (_Leagues *LeaguesCallerSession) GetTeamOwner(teamId *big.Int) (common.Address, error) {
+	return _Leagues.Contract.GetTeamOwner(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamPlayerIds is a free data retrieval call binding the contract method 0x03908478.
+//
+// Solidity: function getTeamPlayerIds(uint256 teamId) constant returns(uint256[25] playerIds)
+func (_Leagues *LeaguesCaller) GetTeamPlayerIds(opts *bind.CallOpts, teamId *big.Int) ([25]*big.Int, error) {
+	var (
+		ret0 = new([25]*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "getTeamPlayerIds", teamId)
+	return *ret0, err
+}
+
+// GetTeamPlayerIds is a free data retrieval call binding the contract method 0x03908478.
+//
+// Solidity: function getTeamPlayerIds(uint256 teamId) constant returns(uint256[25] playerIds)
+func (_Leagues *LeaguesSession) GetTeamPlayerIds(teamId *big.Int) ([25]*big.Int, error) {
+	return _Leagues.Contract.GetTeamPlayerIds(&_Leagues.CallOpts, teamId)
+}
+
+// GetTeamPlayerIds is a free data retrieval call binding the contract method 0x03908478.
+//
+// Solidity: function getTeamPlayerIds(uint256 teamId) constant returns(uint256[25] playerIds)
+func (_Leagues *LeaguesCallerSession) GetTeamPlayerIds(teamId *big.Int) ([25]*big.Int, error) {
+	return _Leagues.Contract.GetTeamPlayerIds(&_Leagues.CallOpts, teamId)
 }
 
 // GetTeamsInMatch is a free data retrieval call binding the contract method 0x84ec783c.
@@ -844,28 +1283,28 @@ func (_Leagues *LeaguesCallerSession) GetUsersAlongDataHash(id *big.Int) ([32]by
 
 // GetUsersInitDataHash is a free data retrieval call binding the contract method 0xbeec5522.
 //
-// Solidity: function getUsersInitDataHash(uint256 id) constant returns(bytes32)
-func (_Leagues *LeaguesCaller) GetUsersInitDataHash(opts *bind.CallOpts, id *big.Int) ([32]byte, error) {
+// Solidity: function getUsersInitDataHash(uint256 leagueId) constant returns(bytes32)
+func (_Leagues *LeaguesCaller) GetUsersInitDataHash(opts *bind.CallOpts, leagueId *big.Int) ([32]byte, error) {
 	var (
 		ret0 = new([32]byte)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "getUsersInitDataHash", id)
+	err := _Leagues.contract.Call(opts, out, "getUsersInitDataHash", leagueId)
 	return *ret0, err
 }
 
 // GetUsersInitDataHash is a free data retrieval call binding the contract method 0xbeec5522.
 //
-// Solidity: function getUsersInitDataHash(uint256 id) constant returns(bytes32)
-func (_Leagues *LeaguesSession) GetUsersInitDataHash(id *big.Int) ([32]byte, error) {
-	return _Leagues.Contract.GetUsersInitDataHash(&_Leagues.CallOpts, id)
+// Solidity: function getUsersInitDataHash(uint256 leagueId) constant returns(bytes32)
+func (_Leagues *LeaguesSession) GetUsersInitDataHash(leagueId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.GetUsersInitDataHash(&_Leagues.CallOpts, leagueId)
 }
 
 // GetUsersInitDataHash is a free data retrieval call binding the contract method 0xbeec5522.
 //
-// Solidity: function getUsersInitDataHash(uint256 id) constant returns(bytes32)
-func (_Leagues *LeaguesCallerSession) GetUsersInitDataHash(id *big.Int) ([32]byte, error) {
-	return _Leagues.Contract.GetUsersInitDataHash(&_Leagues.CallOpts, id)
+// Solidity: function getUsersInitDataHash(uint256 leagueId) constant returns(bytes32)
+func (_Leagues *LeaguesCallerSession) GetUsersInitDataHash(leagueId *big.Int) ([32]byte, error) {
+	return _Leagues.Contract.GetUsersInitDataHash(&_Leagues.CallOpts, leagueId)
 }
 
 // HasFinished is a free data retrieval call binding the contract method 0x126f648c.
@@ -972,56 +1411,56 @@ func (_Leagues *LeaguesCallerSession) HashInitState(state []*big.Int) ([32]byte,
 	return _Leagues.Contract.HashInitState(&_Leagues.CallOpts, state)
 }
 
-// HashTactics is a free data retrieval call binding the contract method 0x49b5bda9.
+// IsBotTeam is a free data retrieval call binding the contract method 0x8cc9a8d5.
 //
-// Solidity: function hashTactics(uint256[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesCaller) HashTactics(opts *bind.CallOpts, tactics [][3]*big.Int) ([32]byte, error) {
+// Solidity: function isBotTeam(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesCaller) IsBotTeam(opts *bind.CallOpts, teamId *big.Int) (bool, error) {
 	var (
-		ret0 = new([32]byte)
+		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "hashTactics", tactics)
+	err := _Leagues.contract.Call(opts, out, "isBotTeam", teamId)
 	return *ret0, err
 }
 
-// HashTactics is a free data retrieval call binding the contract method 0x49b5bda9.
+// IsBotTeam is a free data retrieval call binding the contract method 0x8cc9a8d5.
 //
-// Solidity: function hashTactics(uint256[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesSession) HashTactics(tactics [][3]*big.Int) ([32]byte, error) {
-	return _Leagues.Contract.HashTactics(&_Leagues.CallOpts, tactics)
+// Solidity: function isBotTeam(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesSession) IsBotTeam(teamId *big.Int) (bool, error) {
+	return _Leagues.Contract.IsBotTeam(&_Leagues.CallOpts, teamId)
 }
 
-// HashTactics is a free data retrieval call binding the contract method 0x49b5bda9.
+// IsBotTeam is a free data retrieval call binding the contract method 0x8cc9a8d5.
 //
-// Solidity: function hashTactics(uint256[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesCallerSession) HashTactics(tactics [][3]*big.Int) ([32]byte, error) {
-	return _Leagues.Contract.HashTactics(&_Leagues.CallOpts, tactics)
+// Solidity: function isBotTeam(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesCallerSession) IsBotTeam(teamId *big.Int) (bool, error) {
+	return _Leagues.Contract.IsBotTeam(&_Leagues.CallOpts, teamId)
 }
 
-// HashUsersInitData is a free data retrieval call binding the contract method 0xb524951f.
+// IsTeamWritten is a free data retrieval call binding the contract method 0x19235195.
 //
-// Solidity: function hashUsersInitData(uint256[] teamIds, uint8[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesCaller) HashUsersInitData(opts *bind.CallOpts, teamIds []*big.Int, tactics [][3]uint8) ([32]byte, error) {
+// Solidity: function isTeamWritten(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesCaller) IsTeamWritten(opts *bind.CallOpts, teamId *big.Int) (bool, error) {
 	var (
-		ret0 = new([32]byte)
+		ret0 = new(bool)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "hashUsersInitData", teamIds, tactics)
+	err := _Leagues.contract.Call(opts, out, "isTeamWritten", teamId)
 	return *ret0, err
 }
 
-// HashUsersInitData is a free data retrieval call binding the contract method 0xb524951f.
+// IsTeamWritten is a free data retrieval call binding the contract method 0x19235195.
 //
-// Solidity: function hashUsersInitData(uint256[] teamIds, uint8[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesSession) HashUsersInitData(teamIds []*big.Int, tactics [][3]uint8) ([32]byte, error) {
-	return _Leagues.Contract.HashUsersInitData(&_Leagues.CallOpts, teamIds, tactics)
+// Solidity: function isTeamWritten(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesSession) IsTeamWritten(teamId *big.Int) (bool, error) {
+	return _Leagues.Contract.IsTeamWritten(&_Leagues.CallOpts, teamId)
 }
 
-// HashUsersInitData is a free data retrieval call binding the contract method 0xb524951f.
+// IsTeamWritten is a free data retrieval call binding the contract method 0x19235195.
 //
-// Solidity: function hashUsersInitData(uint256[] teamIds, uint8[3][] tactics) constant returns(bytes32)
-func (_Leagues *LeaguesCallerSession) HashUsersInitData(teamIds []*big.Int, tactics [][3]uint8) ([32]byte, error) {
-	return _Leagues.Contract.HashUsersInitData(&_Leagues.CallOpts, teamIds, tactics)
+// Solidity: function isTeamWritten(uint256 teamId) constant returns(bool)
+func (_Leagues *LeaguesCallerSession) IsTeamWritten(teamId *big.Int) (bool, error) {
+	return _Leagues.Contract.IsTeamWritten(&_Leagues.CallOpts, teamId)
 }
 
 // IsUpdated is a free data retrieval call binding the contract method 0xd39daf7e.
@@ -1076,30 +1515,30 @@ func (_Leagues *LeaguesCallerSession) IsVerified(id *big.Int) (bool, error) {
 	return _Leagues.Contract.IsVerified(&_Leagues.CallOpts, id)
 }
 
-// LeaguesCount is a free data retrieval call binding the contract method 0x336b5a65.
+// LeagueIdAndPosToTeamId is a free data retrieval call binding the contract method 0xcf5c5374.
 //
-// Solidity: function leaguesCount() constant returns(uint256)
-func (_Leagues *LeaguesCaller) LeaguesCount(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function leagueIdAndPosToTeamId(uint256 leagueId, uint8 posInLeague) constant returns(uint256)
+func (_Leagues *LeaguesCaller) LeagueIdAndPosToTeamId(opts *bind.CallOpts, leagueId *big.Int, posInLeague uint8) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Leagues.contract.Call(opts, out, "leaguesCount")
+	err := _Leagues.contract.Call(opts, out, "leagueIdAndPosToTeamId", leagueId, posInLeague)
 	return *ret0, err
 }
 
-// LeaguesCount is a free data retrieval call binding the contract method 0x336b5a65.
+// LeagueIdAndPosToTeamId is a free data retrieval call binding the contract method 0xcf5c5374.
 //
-// Solidity: function leaguesCount() constant returns(uint256)
-func (_Leagues *LeaguesSession) LeaguesCount() (*big.Int, error) {
-	return _Leagues.Contract.LeaguesCount(&_Leagues.CallOpts)
+// Solidity: function leagueIdAndPosToTeamId(uint256 leagueId, uint8 posInLeague) constant returns(uint256)
+func (_Leagues *LeaguesSession) LeagueIdAndPosToTeamId(leagueId *big.Int, posInLeague uint8) (*big.Int, error) {
+	return _Leagues.Contract.LeagueIdAndPosToTeamId(&_Leagues.CallOpts, leagueId, posInLeague)
 }
 
-// LeaguesCount is a free data retrieval call binding the contract method 0x336b5a65.
+// LeagueIdAndPosToTeamId is a free data retrieval call binding the contract method 0xcf5c5374.
 //
-// Solidity: function leaguesCount() constant returns(uint256)
-func (_Leagues *LeaguesCallerSession) LeaguesCount() (*big.Int, error) {
-	return _Leagues.Contract.LeaguesCount(&_Leagues.CallOpts)
+// Solidity: function leagueIdAndPosToTeamId(uint256 leagueId, uint8 posInLeague) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) LeagueIdAndPosToTeamId(leagueId *big.Int, posInLeague uint8) (*big.Int, error) {
+	return _Leagues.Contract.LeagueIdAndPosToTeamId(&_Leagues.CallOpts, leagueId, posInLeague)
 }
 
 // ScoresAppend is a free data retrieval call binding the contract method 0x33a4aba6.
@@ -1206,88 +1645,156 @@ func (_Leagues *LeaguesCallerSession) ScoresGetDay(id *big.Int, day *big.Int) ([
 	return _Leagues.Contract.ScoresGetDay(&_Leagues.CallOpts, id, day)
 }
 
-// ChallengeInitStates is a paid mutator transaction binding the contract method 0xb1f65f39.
+// TeamIdAndPosToVirtualPlayerId is a free data retrieval call binding the contract method 0x0ab077ea.
 //
-// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns()
-func (_Leagues *LeaguesTransactor) ChallengeInitStates(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.contract.Transact(opts, "challengeInitStates", id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function teamIdAndPosToVirtualPlayerId(uint256 teamId, uint8 posInTeam) constant returns(uint256)
+func (_Leagues *LeaguesCaller) TeamIdAndPosToVirtualPlayerId(opts *bind.CallOpts, teamId *big.Int, posInTeam uint8) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Leagues.contract.Call(opts, out, "teamIdAndPosToVirtualPlayerId", teamId, posInTeam)
+	return *ret0, err
 }
 
-// ChallengeInitStates is a paid mutator transaction binding the contract method 0xb1f65f39.
+// TeamIdAndPosToVirtualPlayerId is a free data retrieval call binding the contract method 0x0ab077ea.
 //
-// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns()
-func (_Leagues *LeaguesSession) ChallengeInitStates(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.ChallengeInitStates(&_Leagues.TransactOpts, id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function teamIdAndPosToVirtualPlayerId(uint256 teamId, uint8 posInTeam) constant returns(uint256)
+func (_Leagues *LeaguesSession) TeamIdAndPosToVirtualPlayerId(teamId *big.Int, posInTeam uint8) (*big.Int, error) {
+	return _Leagues.Contract.TeamIdAndPosToVirtualPlayerId(&_Leagues.CallOpts, teamId, posInTeam)
 }
 
-// ChallengeInitStates is a paid mutator transaction binding the contract method 0xb1f65f39.
+// TeamIdAndPosToVirtualPlayerId is a free data retrieval call binding the contract method 0x0ab077ea.
 //
-// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns()
-func (_Leagues *LeaguesTransactorSession) ChallengeInitStates(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.ChallengeInitStates(&_Leagues.TransactOpts, id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function teamIdAndPosToVirtualPlayerId(uint256 teamId, uint8 posInTeam) constant returns(uint256)
+func (_Leagues *LeaguesCallerSession) TeamIdAndPosToVirtualPlayerId(teamId *big.Int, posInTeam uint8) (*big.Int, error) {
+	return _Leagues.Contract.TeamIdAndPosToVirtualPlayerId(&_Leagues.CallOpts, teamId, posInTeam)
 }
 
-// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x82b36ed8.
+// UpdateTeamHistory is a paid mutator transaction binding the contract method 0xdcfe71e4.
 //
-// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[3][] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[3][] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
-func (_Leagues *LeaguesTransactor) ChallengeMatchdayStates(opts *bind.TransactOpts, id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics [][3]uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics [][3]uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
+// Solidity: function _updateTeamHistory(uint256 teamId, uint256 leagueId, uint8 posInLeague) returns()
+func (_Leagues *LeaguesTransactor) UpdateTeamHistory(opts *bind.TransactOpts, teamId *big.Int, leagueId *big.Int, posInLeague uint8) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "_updateTeamHistory", teamId, leagueId, posInLeague)
+}
+
+// UpdateTeamHistory is a paid mutator transaction binding the contract method 0xdcfe71e4.
+//
+// Solidity: function _updateTeamHistory(uint256 teamId, uint256 leagueId, uint8 posInLeague) returns()
+func (_Leagues *LeaguesSession) UpdateTeamHistory(teamId *big.Int, leagueId *big.Int, posInLeague uint8) (*types.Transaction, error) {
+	return _Leagues.Contract.UpdateTeamHistory(&_Leagues.TransactOpts, teamId, leagueId, posInLeague)
+}
+
+// UpdateTeamHistory is a paid mutator transaction binding the contract method 0xdcfe71e4.
+//
+// Solidity: function _updateTeamHistory(uint256 teamId, uint256 leagueId, uint8 posInLeague) returns()
+func (_Leagues *LeaguesTransactorSession) UpdateTeamHistory(teamId *big.Int, leagueId *big.Int, posInLeague uint8) (*types.Transaction, error) {
+	return _Leagues.Contract.UpdateTeamHistory(&_Leagues.TransactOpts, teamId, leagueId, posInLeague)
+}
+
+// ChallengeInitStates is a paid mutator transaction binding the contract method 0x1996da2d.
+//
+// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns()
+func (_Leagues *LeaguesTransactor) ChallengeInitStates(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "challengeInitStates", id, teamIds, tacticsIds, dataToChallengeInitStates)
+}
+
+// ChallengeInitStates is a paid mutator transaction binding the contract method 0x1996da2d.
+//
+// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns()
+func (_Leagues *LeaguesSession) ChallengeInitStates(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.ChallengeInitStates(&_Leagues.TransactOpts, id, teamIds, tacticsIds, dataToChallengeInitStates)
+}
+
+// ChallengeInitStates is a paid mutator transaction binding the contract method 0x1996da2d.
+//
+// Solidity: function challengeInitStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns()
+func (_Leagues *LeaguesTransactorSession) ChallengeInitStates(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.ChallengeInitStates(&_Leagues.TransactOpts, id, teamIds, tacticsIds, dataToChallengeInitStates)
+}
+
+// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x168183b4.
+//
+// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
+func (_Leagues *LeaguesTransactor) ChallengeMatchdayStates(opts *bind.TransactOpts, id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics []uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics []uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
 	return _Leagues.contract.Transact(opts, "challengeMatchdayStates", id, usersInitDataTeamIds, usersInitDataTactics, usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks, leagueDay, prevMatchdayStates)
 }
 
-// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x82b36ed8.
+// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x168183b4.
 //
-// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[3][] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[3][] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
-func (_Leagues *LeaguesSession) ChallengeMatchdayStates(id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics [][3]uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics [][3]uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
+// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
+func (_Leagues *LeaguesSession) ChallengeMatchdayStates(id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics []uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics []uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
 	return _Leagues.Contract.ChallengeMatchdayStates(&_Leagues.TransactOpts, id, usersInitDataTeamIds, usersInitDataTactics, usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks, leagueDay, prevMatchdayStates)
 }
 
-// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x82b36ed8.
+// ChallengeMatchdayStates is a paid mutator transaction binding the contract method 0x168183b4.
 //
-// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[3][] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[3][] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
-func (_Leagues *LeaguesTransactorSession) ChallengeMatchdayStates(id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics [][3]uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics [][3]uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
+// Solidity: function challengeMatchdayStates(uint256 id, uint256[] usersInitDataTeamIds, uint8[] usersInitDataTactics, uint256[] usersAlongDataTeamIds, uint8[] usersAlongDataTactics, uint256[] usersAlongDataBlocks, uint256 leagueDay, uint256[] prevMatchdayStates) returns()
+func (_Leagues *LeaguesTransactorSession) ChallengeMatchdayStates(id *big.Int, usersInitDataTeamIds []*big.Int, usersInitDataTactics []uint8, usersAlongDataTeamIds []*big.Int, usersAlongDataTactics []uint8, usersAlongDataBlocks []*big.Int, leagueDay *big.Int, prevMatchdayStates []*big.Int) (*types.Transaction, error) {
 	return _Leagues.Contract.ChallengeMatchdayStates(&_Leagues.TransactOpts, id, usersInitDataTeamIds, usersInitDataTactics, usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks, leagueDay, prevMatchdayStates)
 }
 
-// Create is a paid mutator transaction binding the contract method 0x77f2a891.
+// CreateLeague is a paid mutator transaction binding the contract method 0x1f178b03.
 //
-// Solidity: function create(uint256 id, uint256 initBlock, uint256 step, uint256[] teamIds, uint8[3][] tactics) returns()
-func (_Leagues *LeaguesTransactor) Create(opts *bind.TransactOpts, id *big.Int, initBlock *big.Int, step *big.Int, teamIds []*big.Int, tactics [][3]uint8) (*types.Transaction, error) {
-	return _Leagues.contract.Transact(opts, "create", id, initBlock, step, teamIds, tactics)
+// Solidity: function createLeague(uint256 initBlock, uint256 step) returns()
+func (_Leagues *LeaguesTransactor) CreateLeague(opts *bind.TransactOpts, initBlock *big.Int, step *big.Int) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "createLeague", initBlock, step)
 }
 
-// Create is a paid mutator transaction binding the contract method 0x77f2a891.
+// CreateLeague is a paid mutator transaction binding the contract method 0x1f178b03.
 //
-// Solidity: function create(uint256 id, uint256 initBlock, uint256 step, uint256[] teamIds, uint8[3][] tactics) returns()
-func (_Leagues *LeaguesSession) Create(id *big.Int, initBlock *big.Int, step *big.Int, teamIds []*big.Int, tactics [][3]uint8) (*types.Transaction, error) {
-	return _Leagues.Contract.Create(&_Leagues.TransactOpts, id, initBlock, step, teamIds, tactics)
+// Solidity: function createLeague(uint256 initBlock, uint256 step) returns()
+func (_Leagues *LeaguesSession) CreateLeague(initBlock *big.Int, step *big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.CreateLeague(&_Leagues.TransactOpts, initBlock, step)
 }
 
-// Create is a paid mutator transaction binding the contract method 0x77f2a891.
+// CreateLeague is a paid mutator transaction binding the contract method 0x1f178b03.
 //
-// Solidity: function create(uint256 id, uint256 initBlock, uint256 step, uint256[] teamIds, uint8[3][] tactics) returns()
-func (_Leagues *LeaguesTransactorSession) Create(id *big.Int, initBlock *big.Int, step *big.Int, teamIds []*big.Int, tactics [][3]uint8) (*types.Transaction, error) {
-	return _Leagues.Contract.Create(&_Leagues.TransactOpts, id, initBlock, step, teamIds, tactics)
+// Solidity: function createLeague(uint256 initBlock, uint256 step) returns()
+func (_Leagues *LeaguesTransactorSession) CreateLeague(initBlock *big.Int, step *big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.CreateLeague(&_Leagues.TransactOpts, initBlock, step)
 }
 
-// GetInitPlayerStates is a paid mutator transaction binding the contract method 0xf025f7f4.
+// ExchangePlayersTeams is a paid mutator transaction binding the contract method 0x789875b5.
 //
-// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns(uint256[] state)
-func (_Leagues *LeaguesTransactor) GetInitPlayerStates(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.contract.Transact(opts, "getInitPlayerStates", id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) returns()
+func (_Leagues *LeaguesTransactor) ExchangePlayersTeams(opts *bind.TransactOpts, playerId0 *big.Int, playerId1 *big.Int) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "exchangePlayersTeams", playerId0, playerId1)
 }
 
-// GetInitPlayerStates is a paid mutator transaction binding the contract method 0xf025f7f4.
+// ExchangePlayersTeams is a paid mutator transaction binding the contract method 0x789875b5.
 //
-// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns(uint256[] state)
-func (_Leagues *LeaguesSession) GetInitPlayerStates(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.GetInitPlayerStates(&_Leagues.TransactOpts, id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) returns()
+func (_Leagues *LeaguesSession) ExchangePlayersTeams(playerId0 *big.Int, playerId1 *big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.ExchangePlayersTeams(&_Leagues.TransactOpts, playerId0, playerId1)
 }
 
-// GetInitPlayerStates is a paid mutator transaction binding the contract method 0xf025f7f4.
+// ExchangePlayersTeams is a paid mutator transaction binding the contract method 0x789875b5.
 //
-// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] dataToChallengeInitStates) returns(uint256[] state)
-func (_Leagues *LeaguesTransactorSession) GetInitPlayerStates(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.GetInitPlayerStates(&_Leagues.TransactOpts, id, teamIds, tactics, dataToChallengeInitStates)
+// Solidity: function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) returns()
+func (_Leagues *LeaguesTransactorSession) ExchangePlayersTeams(playerId0 *big.Int, playerId1 *big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.ExchangePlayersTeams(&_Leagues.TransactOpts, playerId0, playerId1)
+}
+
+// GetInitPlayerStates is a paid mutator transaction binding the contract method 0x2c2dd4f7.
+//
+// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns(uint256[] state)
+func (_Leagues *LeaguesTransactor) GetInitPlayerStates(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "getInitPlayerStates", id, teamIds, tacticsIds, dataToChallengeInitStates)
+}
+
+// GetInitPlayerStates is a paid mutator transaction binding the contract method 0x2c2dd4f7.
+//
+// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns(uint256[] state)
+func (_Leagues *LeaguesSession) GetInitPlayerStates(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.GetInitPlayerStates(&_Leagues.TransactOpts, id, teamIds, tacticsIds, dataToChallengeInitStates)
+}
+
+// GetInitPlayerStates is a paid mutator transaction binding the contract method 0x2c2dd4f7.
+//
+// Solidity: function getInitPlayerStates(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] dataToChallengeInitStates) returns(uint256[] state)
+func (_Leagues *LeaguesTransactorSession) GetInitPlayerStates(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, dataToChallengeInitStates []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.GetInitPlayerStates(&_Leagues.TransactOpts, id, teamIds, tacticsIds, dataToChallengeInitStates)
 }
 
 // ResetUpdater is a paid mutator transaction binding the contract method 0x28d3be79.
@@ -1332,6 +1839,48 @@ func (_Leagues *LeaguesTransactorSession) SetStakersContract(stakersContract com
 	return _Leagues.Contract.SetStakersContract(&_Leagues.TransactOpts, stakersContract)
 }
 
+// SetStatesContract is a paid mutator transaction binding the contract method 0xcfa48bb9.
+//
+// Solidity: function setStatesContract(address statesAddr) returns()
+func (_Leagues *LeaguesTransactor) SetStatesContract(opts *bind.TransactOpts, statesAddr common.Address) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "setStatesContract", statesAddr)
+}
+
+// SetStatesContract is a paid mutator transaction binding the contract method 0xcfa48bb9.
+//
+// Solidity: function setStatesContract(address statesAddr) returns()
+func (_Leagues *LeaguesSession) SetStatesContract(statesAddr common.Address) (*types.Transaction, error) {
+	return _Leagues.Contract.SetStatesContract(&_Leagues.TransactOpts, statesAddr)
+}
+
+// SetStatesContract is a paid mutator transaction binding the contract method 0xcfa48bb9.
+//
+// Solidity: function setStatesContract(address statesAddr) returns()
+func (_Leagues *LeaguesTransactorSession) SetStatesContract(statesAddr common.Address) (*types.Transaction, error) {
+	return _Leagues.Contract.SetStatesContract(&_Leagues.TransactOpts, statesAddr)
+}
+
+// TransferTeam is a paid mutator transaction binding the contract method 0xe945e96a.
+//
+// Solidity: function transferTeam(uint256 teamId, address newOwner) returns()
+func (_Leagues *LeaguesTransactor) TransferTeam(opts *bind.TransactOpts, teamId *big.Int, newOwner common.Address) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "transferTeam", teamId, newOwner)
+}
+
+// TransferTeam is a paid mutator transaction binding the contract method 0xe945e96a.
+//
+// Solidity: function transferTeam(uint256 teamId, address newOwner) returns()
+func (_Leagues *LeaguesSession) TransferTeam(teamId *big.Int, newOwner common.Address) (*types.Transaction, error) {
+	return _Leagues.Contract.TransferTeam(&_Leagues.TransactOpts, teamId, newOwner)
+}
+
+// TransferTeam is a paid mutator transaction binding the contract method 0xe945e96a.
+//
+// Solidity: function transferTeam(uint256 teamId, address newOwner) returns()
+func (_Leagues *LeaguesTransactorSession) TransferTeam(teamId *big.Int, newOwner common.Address) (*types.Transaction, error) {
+	return _Leagues.Contract.TransferTeam(&_Leagues.TransactOpts, teamId, newOwner)
+}
+
 // UpdateLeague is a paid mutator transaction binding the contract method 0x94f37021.
 //
 // Solidity: function updateLeague(uint256 id, bytes32 initStateHash, bytes32[] dayStateHashes, uint16[] scores, bool isLie) returns()
@@ -1353,25 +1902,158 @@ func (_Leagues *LeaguesTransactorSession) UpdateLeague(id *big.Int, initStateHas
 	return _Leagues.Contract.UpdateLeague(&_Leagues.TransactOpts, id, initStateHash, dayStateHashes, scores, isLie)
 }
 
-// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0xb2df2c57.
+// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0x706735c3.
 //
-// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) returns()
-func (_Leagues *LeaguesTransactor) UpdateUsersAlongDataHash(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) (*types.Transaction, error) {
-	return _Leagues.contract.Transact(opts, "updateUsersAlongDataHash", id, teamIds, tactics, blocks)
+// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) returns()
+func (_Leagues *LeaguesTransactor) UpdateUsersAlongDataHash(opts *bind.TransactOpts, id *big.Int, teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) (*types.Transaction, error) {
+	return _Leagues.contract.Transact(opts, "updateUsersAlongDataHash", id, teamIds, tacticsIds, blocks)
 }
 
-// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0xb2df2c57.
+// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0x706735c3.
 //
-// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) returns()
-func (_Leagues *LeaguesSession) UpdateUsersAlongDataHash(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.UpdateUsersAlongDataHash(&_Leagues.TransactOpts, id, teamIds, tactics, blocks)
+// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) returns()
+func (_Leagues *LeaguesSession) UpdateUsersAlongDataHash(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.UpdateUsersAlongDataHash(&_Leagues.TransactOpts, id, teamIds, tacticsIds, blocks)
 }
 
-// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0xb2df2c57.
+// UpdateUsersAlongDataHash is a paid mutator transaction binding the contract method 0x706735c3.
 //
-// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[3][] tactics, uint256[] blocks) returns()
-func (_Leagues *LeaguesTransactorSession) UpdateUsersAlongDataHash(id *big.Int, teamIds []*big.Int, tactics [][3]uint8, blocks []*big.Int) (*types.Transaction, error) {
-	return _Leagues.Contract.UpdateUsersAlongDataHash(&_Leagues.TransactOpts, id, teamIds, tactics, blocks)
+// Solidity: function updateUsersAlongDataHash(uint256 id, uint256[] teamIds, uint8[] tacticsIds, uint256[] blocks) returns()
+func (_Leagues *LeaguesTransactorSession) UpdateUsersAlongDataHash(id *big.Int, teamIds []*big.Int, tacticsIds []uint8, blocks []*big.Int) (*types.Transaction, error) {
+	return _Leagues.Contract.UpdateUsersAlongDataHash(&_Leagues.TransactOpts, id, teamIds, tacticsIds, blocks)
+}
+
+// LeaguesChallengeFinishedIterator is returned from FilterChallengeFinished and is used to iterate over the raw logs and unpacked data for ChallengeFinished events raised by the Leagues contract.
+type LeaguesChallengeFinishedIterator struct {
+	Event *LeaguesChallengeFinished // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *LeaguesChallengeFinishedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(LeaguesChallengeFinished)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(LeaguesChallengeFinished)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *LeaguesChallengeFinishedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *LeaguesChallengeFinishedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// LeaguesChallengeFinished represents a ChallengeFinished event raised by the Leagues contract.
+type LeaguesChallengeFinished struct {
+	ChallengeSucceeded bool
+	Raw                types.Log // Blockchain specific contextual infos
+}
+
+// FilterChallengeFinished is a free log retrieval operation binding the contract event 0xf19a51839da277a55f6a0a5294bd53fd566a9c37614e7229f506da7a4e750d2f.
+//
+// Solidity: event ChallengeFinished(bool challengeSucceeded)
+func (_Leagues *LeaguesFilterer) FilterChallengeFinished(opts *bind.FilterOpts) (*LeaguesChallengeFinishedIterator, error) {
+
+	logs, sub, err := _Leagues.contract.FilterLogs(opts, "ChallengeFinished")
+	if err != nil {
+		return nil, err
+	}
+	return &LeaguesChallengeFinishedIterator{contract: _Leagues.contract, event: "ChallengeFinished", logs: logs, sub: sub}, nil
+}
+
+// WatchChallengeFinished is a free log subscription operation binding the contract event 0xf19a51839da277a55f6a0a5294bd53fd566a9c37614e7229f506da7a4e750d2f.
+//
+// Solidity: event ChallengeFinished(bool challengeSucceeded)
+func (_Leagues *LeaguesFilterer) WatchChallengeFinished(opts *bind.WatchOpts, sink chan<- *LeaguesChallengeFinished) (event.Subscription, error) {
+
+	logs, sub, err := _Leagues.contract.WatchLogs(opts, "ChallengeFinished")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(LeaguesChallengeFinished)
+				if err := _Leagues.contract.UnpackLog(event, "ChallengeFinished", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseChallengeFinished is a log parse operation binding the contract event 0xf19a51839da277a55f6a0a5294bd53fd566a9c37614e7229f506da7a4e750d2f.
+//
+// Solidity: event ChallengeFinished(bool challengeSucceeded)
+func (_Leagues *LeaguesFilterer) ParseChallengeFinished(log types.Log) (*LeaguesChallengeFinished, error) {
+	event := new(LeaguesChallengeFinished)
+	if err := _Leagues.contract.UnpackLog(event, "ChallengeFinished", log); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 // LeaguesLeagueCreatedIterator is returned from FilterLeagueCreated and is used to iterate over the raw logs and unpacked data for LeagueCreated events raised by the Leagues contract.
@@ -1443,13 +2125,13 @@ func (it *LeaguesLeagueCreatedIterator) Close() error {
 
 // LeaguesLeagueCreated represents a LeagueCreated event raised by the Leagues contract.
 type LeaguesLeagueCreated struct {
-	Id  *big.Int
-	Raw types.Log // Blockchain specific contextual infos
+	LeagueId *big.Int
+	Raw      types.Log // Blockchain specific contextual infos
 }
 
 // FilterLeagueCreated is a free log retrieval operation binding the contract event 0x5d69f37aa0f3d80654d5e87cc70b8464663e1e43be29aae3a06dcecef8471906.
 //
-// Solidity: event LeagueCreated(uint256 id)
+// Solidity: event LeagueCreated(uint256 leagueId)
 func (_Leagues *LeaguesFilterer) FilterLeagueCreated(opts *bind.FilterOpts) (*LeaguesLeagueCreatedIterator, error) {
 
 	logs, sub, err := _Leagues.contract.FilterLogs(opts, "LeagueCreated")
@@ -1461,7 +2143,7 @@ func (_Leagues *LeaguesFilterer) FilterLeagueCreated(opts *bind.FilterOpts) (*Le
 
 // WatchLeagueCreated is a free log subscription operation binding the contract event 0x5d69f37aa0f3d80654d5e87cc70b8464663e1e43be29aae3a06dcecef8471906.
 //
-// Solidity: event LeagueCreated(uint256 id)
+// Solidity: event LeagueCreated(uint256 leagueId)
 func (_Leagues *LeaguesFilterer) WatchLeagueCreated(opts *bind.WatchOpts, sink chan<- *LeaguesLeagueCreated) (event.Subscription, error) {
 
 	logs, sub, err := _Leagues.contract.WatchLogs(opts, "LeagueCreated")
@@ -1494,4 +2176,148 @@ func (_Leagues *LeaguesFilterer) WatchLeagueCreated(opts *bind.WatchOpts, sink c
 			}
 		}
 	}), nil
+}
+
+// ParseLeagueCreated is a log parse operation binding the contract event 0x5d69f37aa0f3d80654d5e87cc70b8464663e1e43be29aae3a06dcecef8471906.
+//
+// Solidity: event LeagueCreated(uint256 leagueId)
+func (_Leagues *LeaguesFilterer) ParseLeagueCreated(log types.Log) (*LeaguesLeagueCreated, error) {
+	event := new(LeaguesLeagueCreated)
+	if err := _Leagues.contract.UnpackLog(event, "LeagueCreated", log); err != nil {
+		return nil, err
+	}
+	return event, nil
+}
+
+// LeaguesTeamCreatedIterator is returned from FilterTeamCreated and is used to iterate over the raw logs and unpacked data for TeamCreated events raised by the Leagues contract.
+type LeaguesTeamCreatedIterator struct {
+	Event *LeaguesTeamCreated // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *LeaguesTeamCreatedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(LeaguesTeamCreated)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(LeaguesTeamCreated)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *LeaguesTeamCreatedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *LeaguesTeamCreatedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// LeaguesTeamCreated represents a TeamCreated event raised by the Leagues contract.
+type LeaguesTeamCreated struct {
+	Id  *big.Int
+	Raw types.Log // Blockchain specific contextual infos
+}
+
+// FilterTeamCreated is a free log retrieval operation binding the contract event 0x015c069c0e6438bd2d98e0c7b6526d4f7596120b3a6ac20fd43f2aa00450b813.
+//
+// Solidity: event TeamCreated(uint256 id)
+func (_Leagues *LeaguesFilterer) FilterTeamCreated(opts *bind.FilterOpts) (*LeaguesTeamCreatedIterator, error) {
+
+	logs, sub, err := _Leagues.contract.FilterLogs(opts, "TeamCreated")
+	if err != nil {
+		return nil, err
+	}
+	return &LeaguesTeamCreatedIterator{contract: _Leagues.contract, event: "TeamCreated", logs: logs, sub: sub}, nil
+}
+
+// WatchTeamCreated is a free log subscription operation binding the contract event 0x015c069c0e6438bd2d98e0c7b6526d4f7596120b3a6ac20fd43f2aa00450b813.
+//
+// Solidity: event TeamCreated(uint256 id)
+func (_Leagues *LeaguesFilterer) WatchTeamCreated(opts *bind.WatchOpts, sink chan<- *LeaguesTeamCreated) (event.Subscription, error) {
+
+	logs, sub, err := _Leagues.contract.WatchLogs(opts, "TeamCreated")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(LeaguesTeamCreated)
+				if err := _Leagues.contract.UnpackLog(event, "TeamCreated", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTeamCreated is a log parse operation binding the contract event 0x015c069c0e6438bd2d98e0c7b6526d4f7596120b3a6ac20fd43f2aa00450b813.
+//
+// Solidity: event TeamCreated(uint256 id)
+func (_Leagues *LeaguesFilterer) ParseTeamCreated(log types.Log) (*LeaguesTeamCreated, error) {
+	event := new(LeaguesTeamCreated)
+	if err := _Leagues.contract.UnpackLog(event, "TeamCreated", log); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
