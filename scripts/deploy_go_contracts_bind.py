@@ -10,6 +10,7 @@ with open('./Assets.abi', 'w', encoding='utf-8') as outfile:
 with open('./Assets.bin', 'w', encoding='utf-8') as outfile:
     outfile.write(contract['bytecode'])
 
+os.system('mkdir -p ../go-synchronizer/contracts/assets')
 os.system('abigen --abi ./Assets.abi --bin ./Assets.bin --pkg assets -out ../go-synchronizer/contracts/assets/assets.go')
 
 with open('../truffle-core/build/contracts/TeamState.json', 'r') as fp:
@@ -19,6 +20,7 @@ with open('./States.abi', 'w', encoding='utf-8') as outfile:
 with open('./States.bin', 'w', encoding='utf-8') as outfile:
     outfile.write(contract['bytecode'])
 
+os.system('mkdir -p ../go-synchronizer/contracts/states')
 os.system('abigen --abi ./States.abi --bin ./States.bin --pkg states -out ../go-synchronizer/contracts/states/states.go')
 
 with open('../truffle-core/build/contracts/Leagues.json', 'r') as fp:
@@ -28,6 +30,7 @@ with open('./Leagues.abi', 'w', encoding='utf-8') as outfile:
 with open('./Leagues.bin', 'w', encoding='utf-8') as outfile:
     outfile.write(contract['bytecode'])
 
+os.system('mkdir -p ../go-synchronizer/contracts/leagues')
 os.system('abigen --abi ./Leagues.abi --bin ./Leagues.bin --pkg leagues -out ../go-synchronizer/contracts/leagues/leagues.go')
 
 os.system('rm -rf ./*abi ./*bin')
