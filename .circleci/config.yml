@@ -23,9 +23,9 @@ jobs:
       - image: asiniscalchi/freeverse_circleci:alpine
     steps:
       - checkout
-      - run:
-          name: Compile go-synchronizer
-          command: cd go-synchronizer && go build
+      - run: 
+          name: Set up contracts
+          command: make
       - run:
           name: Test go-synchronizer
           command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
@@ -59,8 +59,8 @@ jobs:
     steps:
       - checkout
       - run: 
-          name: Set up truffle-core
-          command: cd truffle-core && npm install
+          name: Set up contracts
+          command: make
       - run:
           name: Compile truffle-core
           command: cd truffle-core && ./node_modules/.bin/truffle compile
