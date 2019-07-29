@@ -432,7 +432,7 @@ class Storage(Counter):
     def getNTeamsInCountry(self, countryIdx):
         return self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
 
-    def getTeamIdxFromLeagueAndPos(self, divisionIdx, leaguePosInDiv, teamPosInLeague):
+    def getTeamIdxInCountryFromLeagueAndPos(self, divisionIdx, leaguePosInDiv, teamPosInLeague):
         # posInDiv and posInLeague start at zero.
         assert divisionIdx > 0, "divs start at idx = 1"
         if divisionIdx == 1:
@@ -442,6 +442,22 @@ class Storage(Counter):
             nLeaguesAbove = 1 + (divisionIdx - 2) * LEAGUES_PER_DIVISON + leaguePosInDiv
         return 1 + nLeaguesAbove * TEAMS_PER_LEAGUE + teamPosInLeague
 
+    def encode(self, val1, val2, bits1, bits2):
+        assert val1 < 2**bits1 - 1, "val too big"
+        assert val2 < 2**bits2 - 1, "val too big"
+        return val1 * 2**bits2 + val2
+
+    def decode(self, val, bits1, bits2):
+        assert val < 2**(bits1+bits2) - 1, "val too big"
+        val2 = val % 2**bits2
+        val1 = int( (val - val2)/2**bits2 )
+        return (val1, val2)
+
+    def encodeCountryAndVal(self, val1, val2):
+        return self.encode(val1, val2, BITS_PER_COUNTRYIDX, BITS_PER_TEAMIDX)
+
+    def decodeCountryAndVal(self, val):
+        return self.decode(val, BITS_PER_COUNTRYIDX, BITS_PER_TEAMIDX)
 
 
     def lastVerseBlock(self):

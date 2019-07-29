@@ -139,15 +139,22 @@ def integrationTest():
     assert ST.getNLeaguesInCountry(countryIdx) == 17, "wrong nLeagues"
     assert ST.getNTeamsInCountry(countryIdx) == 17*8, "wrong nTeams"
 
-    # getTeamIdxFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
-    shouldFail(lambda x: ST.getTeamIdxFromLeagueAndPos(0,1,1), "division 0 should not exist")
-    shouldFail(lambda x: ST.getTeamIdxFromLeagueAndPos(1,1,0), "division 0 only has 1 league")
-    assert ST.getTeamIdxFromLeagueAndPos(1, 0, 0) == 1, "wrong teamIdx"
-    assert ST.getTeamIdxFromLeagueAndPos(1, 0, 1) == 2, "wrong teamIdx"
-    assert ST.getTeamIdxFromLeagueAndPos(2, 0, 0) == 9, "wrong teamIdx"
-    assert ST.getTeamIdxFromLeagueAndPos(2, 0, 1) == 10, "wrong teamIdx"
-    assert ST.getTeamIdxFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
-    assert ST.getTeamIdxFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
+    # getTeamIdxInCountryFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
+    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(0,1,1), "division 0 should not exist")
+    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(1,1,0), "division 0 only has 1 league")
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 0) == 1, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 1) == 2, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 0) == 9, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 1) == 10, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
+
+    assert ST.encode(0,3,3,4) == 3, "wrong encode"
+    assert ST.encode(1,3,3,4) == 19, "wrong encode"
+    (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(1, 3))
+    assert val1 == 1 and val2 == 3
+    (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(500, 343))
+    assert val1 == 500 and val2 == 343
 
 
 
