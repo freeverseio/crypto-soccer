@@ -23,9 +23,27 @@ class Country():
         self.timeZone = timeZone
         self.nFrozenDivisions = 0
         self.divisonIdxToRound = {1: 1} # divId = 1 starts at the very first round = 1
-        self.teamIdToTeam = {}
-        
+        self.teamIdxInCountryToTeam = {}
 
+
+class TimeZoneUpdate():
+    def __init__(self):
+        self.teamOrgMap = [0, 0]
+        self.newestOrgMap = 0
+        self.teamsSkills = 0
+        self.scores = 0
+        self.updateCycleIdx = 0
+        self.lastBlockUpdate = 0
+
+    def isSettled(self, nowBlock):
+        if self.updateCycleIdx == 0:
+            return True
+        return nowBlock > self.gameUpdate.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
+
+    def newUpdate(self, nowBlock):
+        assert self.isSettled(nowBlock), "cannot update until settled!"
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % 29
+        self.lastBlockUpdate = nowBlock
 
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
@@ -328,9 +346,10 @@ class MerkleTree():
 
 # Simple block counter simulator, where the blockhash is just the hash of the blocknumber. Not serious, who cares here.
 class Counter():
-    def __init__(self):
+    def __init__(self, nowInSecsOfADay):
         self.currentBlock = 0
         self.currentVerse = 0
+        self.deployTimeInSecsOfADay = nowInSecsOfADay
 
     def incrementBlock(self):
         verseWasCrossed = False
@@ -355,14 +374,15 @@ class DataToChallengePlayerSkills():
     # ------------------------------------------------------------------------
 
 class Storage(Counter):
-    def __init__(self, isClient):
+    def __init__(self, nowInSecsOfADay, isClient):
 
         # The Blockchain does not need this fake counter :-)
-        Counter.__init__(self)
+        Counter.__init__(self, nowInSecsOfADay)
 
         self.countries = []
         self.countries.append(Country(0)) # countries[0] is dummy
         self.timeZoneToCountries = {}
+        self.timeZoneUpdates = {}
 
         # this bool is just to understand if the created BC is actually a client
         # it allows us, in this simulation, to ensure that the functions that are
@@ -398,6 +418,7 @@ class Storage(Counter):
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
     def currentRound(self):
+        # verse starts at 0, round at 1.
         return 1 + int(self.currentVerse/VERSES_PER_ROUND)
 
     def addCountryToTimeZone(self, countryIdx, timeZone):
@@ -405,6 +426,7 @@ class Storage(Counter):
             self.timeZoneToCountries[timeZone].append(countryIdx)
         else:
             self.timeZoneToCountries[timeZone] = [countryIdx]
+            self.timeZoneUpdates[timeZone] = TimeZoneUpdate()
 
     def createCountry(self, timeZone):
         countryIdx = len(self.countries)
@@ -495,14 +517,33 @@ class Storage(Counter):
 
     def isBotTeam(self, teamIdx):
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
-        return (teamIdxInCountry not in self.countries[countryIdx].teamIdToTeam)
+        return (teamIdxInCountry not in self.countries[countryIdx].teamIdxInCountryToTeam)
 
     def acquireBoth(self, teamIdx, addr):
         assert self.isBotTeam(teamIdx), "cannot acquire a team that is not a Bot"
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
-        self.countries[countryIdx].teamIdToTeam[teamIdxInCountry] = Team(addr)
+        self.countries[countryIdx].teamIdxInCountryToTeam[teamIdxInCountry] = Team(addr)
 
+    def getCountryTimeZone(self, countryIdx):
+        return self.countries[countryIdx].timeZone
 
+    def isPlayerBusy(self, playerIdx):
+        (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
+        return self.isCountryBusy(countryIdx)
+
+    def isCountryBusy(self, countryIdx):
+        timeZone = self.getCountryTimeZone(countryIdx)
+        return not self.timeZoneUpdates[timeZone].isSettled(self.currentBlock)
+
+    def verseToTimeZone(self, verse, deployTimeInSecsOfADay):
+        secsOfTheDay = (verse * SECS_PER_VERSE + deployTimeInSecsOfADay) % (24*3600)
+        verseOfTheDay = int(secsOfTheDay / SECS_PER_VERSE)
+        timeZone = int((1+verseOfTheDay) / 4) % 24 # the extra +1 is because a timeZone starts at quarter-to-the-hour
+        posInTimeZone = (1+verseOfTheDay) % 4
+        return timeZone, posInTimeZone
+
+    def currentTimeZone(self):
+        return self.verseToTimeZone(self.currentVerse, self.deployTimeInSecsOfADay)
 
     # toni
 
@@ -986,17 +1027,6 @@ class Storage(Counter):
 
 
 
-    def isPlayerBusy(self, playerIdx1):
-        return self.areTeamsBusyInPrevLeagues(
-            [self.getTeamIdxAndShirtForPlayerIdx(playerIdx1)[0]])
-
-
-
-    def areTeamsBusyInPrevLeagues(self, teamIdxs):
-        for teamIdx in teamIdxs:
-            if not self.isFullyVerified(self.teams[teamIdx].currentLeagueIdx):
-                return True
-        return False
 
 
     def addLeagueToVerse(self, leagueIdx, verse):
@@ -1719,4 +1749,9 @@ class Storage(Counter):
         if self.forceVerseRootLie:
             verseRootFinal = verseRootFinal * 2
         ST.updateVerseRoot(self.currentVerse, verseRootFinal, ALICE)
+
+    def syncTimeZoneCommits(self, ST):
+        self.assertIsClient()
+        #toni
+        self.currentTimeZone()
 

@@ -112,8 +112,12 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
 #
 def integrationTest():
     # Create contract storage in BC, and its extended version for the CLIENT
-    ST          = Storage(isClient = False)
-    ST_CLIENT   = Storage(isClient = True)
+    nowInSecsOfADay = 66*60 # we deploy the contract one day, at 1:06 am
+    ST          = Storage(nowInSecsOfADay, isClient = False)
+    ST_CLIENT   = Storage(nowInSecsOfADay, isClient = True)
+
+    assert ST.currentVerse == 0, "we should start at verse = 0"
+    assert ST.currentRound() == 1, "we should start at round = 1"
 
     # The accumulator is responsible for receiving user actions and committing them in the correct verse.
     # It only lives in the CLIENT.
@@ -124,6 +128,26 @@ def integrationTest():
     #   - honestly if we set ST_CLIENT.forceVerseRootLie = False (default)
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
+
+    timeZone, posInTimeZone = ST.verseToTimeZone(0 + 0*4 ,0)
+    assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4 ,0)
+    assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4 ,0)
+    assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4 ,0)
+    assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4 ,0)
+    assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 ,0)
+    assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2 ,0)
+    assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3 ,0)
+    assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
+
+    # we deployed at 1:06 am, so we are in timeZone = 1, pos = 1
+    assert ST.currentTimeZone() == (1,1), "wrong init timeZone"
 
     timeZone = 7
     countryIdx = createCountry(timeZone, ST, ST_CLIENT)
@@ -208,7 +232,9 @@ def integrationTest():
 
     assert ST.isBotTeam(teamIdx) == False, "team not seen as human"
 
+    ST.isPlayerBusy(playerIdx)
 
+    # ST.movePlayerToTeam(playerIdx1, teamIdx2)
 
     b=2
     if False:
