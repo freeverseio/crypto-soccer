@@ -32,8 +32,8 @@ UPDT_LEVEL4  = 4 # matchdayHashes provided. Aka LEVEL 4
 
 # Players and teams constants
 AVG_SKILL = 50
-NPLAYERS_PER_TEAM_INIT  = 18
-NPLAYERS_PER_TEAM_MAX   = 25
+PLAYERS_PER_TEAM_INIT  = 18
+PLAYERS_PER_TEAM_MAX   = 25
 MIN_PLAYER_AGE = 16
 MAX_PLAYER_AGE = 35 # max age at time of creation, of course
 
@@ -72,21 +72,21 @@ TACTICS = {
     # ....
 }
 
-# For the time being, selecting a "team order" is choosing an order for the NPLAYERS_PER_TEAM_MAX
-# So if each player has a shirt number (0,...NPLAYERS_PER_TEAM_MAX-1), then we need to order them, for example:
+# For the time being, selecting a "team order" is choosing an order for the PLAYERS_PER_TEAM_MAX
+# So if each player has a shirt number (0,...PLAYERS_PER_TEAM_MAX-1), then we need to order them, for example:
 #   order = [2, 4, 1, 6, 7, 15, ...]
 # The first position plays as goalkeeper.
 # If the chosen tactics if 433, then the next players [4, 1, 6, 7] would be the defenders, etc.
 # This will change when game design is completed.
 
 # a few orders we will play with:
-DEFAULT_ORDER = np.arange(NPLAYERS_PER_TEAM_MAX)
-REVERSE_ORDER = np.arange(NPLAYERS_PER_TEAM_MAX, 0, -1) - 1
+DEFAULT_ORDER = np.arange(PLAYERS_PER_TEAM_MAX)
+REVERSE_ORDER = np.arange(PLAYERS_PER_TEAM_MAX, 0, -1) - 1
 
 ORDER1 = np.array([0,5,4,3,2,1])
-ORDER1 = np.append(ORDER1, range(6,NPLAYERS_PER_TEAM_MAX))
+ORDER1 = np.append(ORDER1, range(6,PLAYERS_PER_TEAM_MAX))
 ORDER2 = np.array([3,2,1,4,5,0])
-ORDER2 = np.append(ORDER2, range(6,NPLAYERS_PER_TEAM_MAX))
+ORDER2 = np.append(ORDER2, range(6,PLAYERS_PER_TEAM_MAX))
 
 POSSIBLE_ORDERS  = [DEFAULT_ORDER, REVERSE_ORDER, ORDER1, ORDER2]
 POSSIBLE_TACTICS = [TACTICS["433"], TACTICS["442"], TACTICS["433pressing"], TACTICS["442pressing"]]

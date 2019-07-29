@@ -51,7 +51,7 @@ def printPlayer(playerState):
 def printTeam(teamIdx, ST_CLIENT):
     hash = 0
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
-    for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+    for shirtNum in range(PLAYERS_PER_TEAM_MAX):
         if ST_CLIENT.isShirtNumFree(teamIdx, shirtNum):
             continue
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
@@ -62,7 +62,7 @@ def printTeam(teamIdx, ST_CLIENT):
     return hash
 
 def isValidOrdering(playerOrders):
-    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM_INIT]
+    # TODO: Currently not implemented. Check all nums are different and in [0, PLAYERS_PER_TEAM_INIT]
     return True
 
 def shiftBack(t, nTeams):
@@ -172,7 +172,7 @@ def areEqualStructs(st1, st2):
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
-    return arrayDims(NPLAYERS_PER_TEAM_MAX, nTeams)
+    return arrayDims(PLAYERS_PER_TEAM_MAX, nTeams)
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------

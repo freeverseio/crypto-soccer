@@ -20,8 +20,8 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
     for extraVerse in range(2000):
         if doExchanges and extraVerse % 10:
             for p in range(2):
-                playerIdx1 = 1 + intHash(str(p+extraVerse)) % 100 * NPLAYERS_PER_TEAM_MAX
-                playerIdx2 = 1 + intHash(str(p+extraVerse) + "salt") % 100 * NPLAYERS_PER_TEAM_MAX
+                playerIdx1 = 1 + intHash(str(p+extraVerse)) % 100 * PLAYERS_PER_TEAM_MAX
+                playerIdx2 = 1 + intHash(str(p+extraVerse) + "salt") % 100 * PLAYERS_PER_TEAM_MAX
                 try:
                     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
                 except:
@@ -138,6 +138,11 @@ def integrationTest():
     assert ST.teamExists(ST.encodeCountryAndVal(1, 8)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeCountryAndVal(1, 9)), "wrong teamExists call"
 
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 3)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(2, 3)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+
     divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
     assert divisionIdx == 2, "wrong divisionIdx"
     assert ST.getNDivisionsInCountry(countryIdx) == 2, "wrong nDivisions"
@@ -162,10 +167,14 @@ def integrationTest():
     (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(500, 343))
     assert val1 == 500 and val2 == 343
 
-    assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeCountryAndVal(2, 3)), "wrong teamExists call"
     assert ST.teamExists(ST.encodeCountryAndVal(1, 8*17)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeCountryAndVal(1, 8*17+1)), "wrong teamExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+
+
 
     if False:
         # Create teams in ST and ST_CLIENT
@@ -517,8 +526,8 @@ def integrationTest():
 
         # transfer many players
         for p in range(nPlayers):
-            playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM_MAX
-            playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM_MAX
+            playerIdx1 = 1+intHash(str(p)) % 100*PLAYERS_PER_TEAM_MAX
+            playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * PLAYERS_PER_TEAM_MAX
             exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
             pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
 
@@ -607,7 +616,7 @@ def simpleExchangeTest():
     print("\n\nplayers 2 and 27 before sale:\n")
 
     playerIdx1 = 2
-    playerIdx2 = NPLAYERS_PER_TEAM_MAX + 2
+    playerIdx2 = PLAYERS_PER_TEAM_MAX + 2
 
     team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
     team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)

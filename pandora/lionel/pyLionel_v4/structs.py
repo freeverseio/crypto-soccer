@@ -109,15 +109,15 @@ class Team():
         self.name = name
         self.monthOfTeamCreationInUnixTime = nowInMonthsUnixTime
         self.playerIdxs             = np.append(
-            np.zeros(NPLAYERS_PER_TEAM_INIT, int),
-            UINTMINUS1*np.ones(NPLAYERS_PER_TEAM_MAX-NPLAYERS_PER_TEAM_INIT, int)
+            np.zeros(PLAYERS_PER_TEAM_INIT, int),
+            UINTMINUS1*np.ones(PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT, int)
         )
-        assert len(self.playerIdxs) == NPLAYERS_PER_TEAM_MAX
+        assert len(self.playerIdxs) == PLAYERS_PER_TEAM_MAX
         self.currentLeagueIdx       = 0
         self.teamPosInCurrentLeague = 0
         self.prevLeagueIdx          = 0
         self.teamPosInPrevLeague    = 0
-        self.freePlayerSlots        = NPLAYERS_PER_TEAM_MAX - NPLAYERS_PER_TEAM_INIT
+        self.freePlayerSlots        = PLAYERS_PER_TEAM_MAX - PLAYERS_PER_TEAM_INIT
 
 
 class League():
@@ -266,7 +266,7 @@ class DataToChallengeLeague():
 
 # The Accumulator is responsible for receving user actions and committing them in the correct verse.
 # An action is a struct:
-#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,NPLAYERS_PER_TEAM_INIT], "tactics": 3}
+#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,PLAYERS_PER_TEAM_INIT], "tactics": 3}
 #       where "tactics" is an int < 16. For example, tactics = 1 means (4,4,2).
 #
 # The buffer is an array that maintains:  buffer[leagueIdx] = [action0, action1, ...]
@@ -468,6 +468,11 @@ class Storage(Counter):
             return False
         return teamIdxInCountry <= self.getNTeamsInCountry(countryIdx)
 
+    def playerExists(self, playerIdx):
+        (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
+        if not self.countryExists(countryIdx):
+            return False
+        return playerIdxInCountry <= self.getNTeamsInCountry(countryIdx) * PLAYERS_PER_TEAM_INIT
 
 
 
@@ -689,7 +694,7 @@ class Storage(Counter):
         if isPlayerIdxAssigned:
             return self.teams[teamIdx].playerIdxs[shirtNum]
         else:
-            return 1 + (teamIdx - 1) * NPLAYERS_PER_TEAM_MAX + shirtNum
+            return 1 + (teamIdx - 1) * PLAYERS_PER_TEAM_MAX + shirtNum
 
     def assertTeamIdx(self, teamIdx):
         assert teamIdx < len(self.teams), "Team for this playerIdx not created yet!"
@@ -754,8 +759,8 @@ class Storage(Counter):
     # The inverse of the previous relation
     def getTeamIdxAndShirtForPlayerIdx(self, playerIdx, forceAtBirth=False):
         if forceAtBirth or self.isPlayerVirtual(playerIdx):
-            teamIdx = int(1 + (playerIdx - 1) // NPLAYERS_PER_TEAM_MAX)
-            shirtNum = int((playerIdx - 1) % NPLAYERS_PER_TEAM_MAX)
+            teamIdx = int(1 + (playerIdx - 1) // PLAYERS_PER_TEAM_MAX)
+            shirtNum = int((playerIdx - 1) % PLAYERS_PER_TEAM_MAX)
             return teamIdx, shirtNum
         else:
             return self.playerIdxToPlayerState[playerIdx].getCurrentTeamIdx(), \
@@ -792,10 +797,10 @@ class Storage(Counter):
     # It does an extra check to make sure that the dataToChallengeInitSkills matches the previous league final matchday hash
     def verifyInitSkills(self, usersInitData, dataToChallengeInitSkills):
         nTeams = len(usersInitData["teamIdxs"])
-        # an array of size [nTeams][NPLAYERS_PER_TEAM_INIT]
+        # an array of size [nTeams][PLAYERS_PER_TEAM_INIT]
         initPlayerSkills = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+            for shirtNum in range(PLAYERS_PER_TEAM_MAX):
                 if self.isShirtNumFree(teamIdx, shirtNum):
                     initPlayerSkills[teamPosInLeague][shirtNum] = MinimalPlayerState()
                     continue
@@ -900,7 +905,7 @@ class Storage(Counter):
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
 
     def getFreeShirtNum(self, teamIdx):
-        for shirtNum in range(NPLAYERS_PER_TEAM_MAX-1, -1, -1):
+        for shirtNum in range(PLAYERS_PER_TEAM_MAX-1, -1, -1):
             if self.isShirtNumFree(teamIdx, shirtNum):
                 return shirtNum
         assert "Team is already full"
@@ -1472,7 +1477,7 @@ class Storage(Counter):
             # ----- leagues states in prevLeague last day's hash ------
             skillsAllTeamsAtEndOfPrevLeague = self.leagues[prevLeagueIdx].dataAtMatchdays[-1].skillsAtMatchday
             playerSkills, playerPosInPrevLeague = self.getPlayerFromTeamStates(playerIdx, skillsAllTeamsAtEndOfPrevLeague[teamPosInPrevLeague])
-            idxInFlattenedSkills = teamPosInPrevLeague*NPLAYERS_PER_TEAM_MAX+playerPosInPrevLeague
+            idxInFlattenedSkills = teamPosInPrevLeague*PLAYERS_PER_TEAM_MAX+playerPosInPrevLeague
 
             lastDayTree = self.leagues[prevLeagueIdx].lastDayTree
             merkleProofStates = lastDayTree.prepareProofForLeaf(playerSkills, idxInFlattenedSkills)
@@ -1617,10 +1622,10 @@ class Storage(Counter):
         self.assertIsClient()
         usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
         nTeams = len(usersInitData["teamIdxs"])
-        # an array of size [nTeams][NPLAYERS_PER_TEAM_INIT]
+        # an array of size [nTeams][PLAYERS_PER_TEAM_INIT]
         initPlayerStates = pylio.createEmptyPlayerStatesForAllTeams(nTeams)
         for teamPosInLeague, teamIdx in enumerate(usersInitData["teamIdxs"]):
-            for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+            for shirtNum in range(PLAYERS_PER_TEAM_MAX):
                 if self.isShirtNumFree(teamIdx, shirtNum):
                     initPlayerStates[teamPosInLeague][shirtNum] = PlayerState()
                 else:
