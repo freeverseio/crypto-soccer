@@ -195,8 +195,16 @@ def integrationTest():
     assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
 
     playerIdx = ST.encodeCountryAndVal(1,35)
-    a = ST.getMinimalPlayerStateAtBirth(playerIdx)
+    playerState = ST.getMinimalPlayerStateAtBirth(playerIdx)
+    assert playerState.getPlayerIdx() == playerIdx, "wrong playerIdx set"
+    assert all(playerState.getSkills() == [51,38,61,52,46]), "wrong skills set"
+    assert playerState.getMonth() == 350, "wrong age"
 
+
+
+
+
+    b=2
     if False:
         # Create teams in ST and ST_CLIENT
         # teamIdx1 = createTeam("Barca", ALICE, ST, ST_CLIENT)
