@@ -1,24 +1,33 @@
 version: '3'
 services:
   centauri:
-    image: freeverseio/centauri:dev
+    build:
+      context: ../django-centauri/.
     ports: 
       - "8000:8000"
-    volumes:
-      - centauri-data:/app/db
   postgres:
-    image: freeverseio/postgres:dev
+    build:
+      context: ../go-synchronizer/sql/.
   synchronizer:
-    image: freeverseio/synchronizer:dev
+    build:
+      context: ../go-synchronizer/.
     command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
+    ports:
+      - "5432:5432"
   horizon:
-    image: freeverseio/horizon:dev
+    build:
+      context: ../nodejs-horizon/.
     depends_on:
       - postgres
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
       - "4000:4000"
-volumes:
-  centauri-data:
+  # # frontend:
+  #   build:
+  #     context: ./reactjs-frontend/.
+  #   depends_on:
+  #     - horizon
+  #   ports:
+  #     - "3000:3000"

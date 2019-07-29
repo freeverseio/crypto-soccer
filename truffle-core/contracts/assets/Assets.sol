@@ -21,7 +21,7 @@ contract Assets {
         uint256 creationTimestamp; // timestamp as seconds since unix epoch
     }
 
-    uint8 constant public PLAYERS_PER_TEAM = 11;
+    uint8 constant public PLAYERS_PER_TEAM = 25;
     uint8 constant internal BITS_PER_SKILL = 14;
     uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
@@ -46,6 +46,11 @@ contract Assets {
         return teams[teamId].creationTimestamp;
     }
 
+    function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
+        require(_teamExists(teamId), "invalid team id");
+        return teams[teamId].currentLeagueId;
+    }
+
     /// get the current and previous team league and position in league
     function getTeamCurrentHistory(uint256 teamId) external view returns (
         uint256 currentLeagueId,
@@ -60,6 +65,17 @@ contract Assets {
             teams[teamId].posInCurrentLeague,
             teams[teamId].prevLeagueId,
             teams[teamId].posInPrevLeague);
+    }
+
+
+    /// @dev Transfers a team to a new owner. 
+    /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
+    function transferTeam(uint256 teamId, address newOwner) public {
+        _teamExists(teamId);
+        require(newOwner != address(0), "meaningless adress");
+        require(newOwner != getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
+        bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
+        _teamNameHashToOwner[nameHash] = newOwner;
     }
 
     // TODO: exchange fails on playerId0 & playerId1 of the same team
@@ -114,6 +130,7 @@ contract Assets {
     public
     {
         require(_teamExists(teamId), "invalid team id");
+        require(teams[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
         teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
         teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
         teams[teamId].currentLeagueId = leagueId;
@@ -269,4 +286,5 @@ contract Assets {
     function _intHash(string memory arg) internal pure returns (uint256) {
         return uint256(keccak256(abi.encode(arg)));
     }
+    
 }

@@ -5,6 +5,9 @@ import "../game_controller/GameControllerInterface.sol";
 
 /// @title an updatable league
 contract LeagueUpdatable is LeaguesScheduler {
+
+    event ChallengeFinished (bool challengeSucceeded);
+
     struct Result {
         // hash of the init status of the league 
         bytes32 initStateHash;
@@ -60,7 +63,7 @@ contract LeagueUpdatable is LeaguesScheduler {
             _stakers.challenged(id);
     }
 
-    function getIsLie(uint256 id) public view returns (bool) {
+    function didUpdaterLie(uint256 id) public view returns (bool) {
         require(_exists(id), "unexistent league");
         return _result[id].isLie;
     }

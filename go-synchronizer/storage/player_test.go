@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -23,6 +22,60 @@ func TestPlayerCount(t *testing.T) {
 	}
 }
 
+func TestPlayerStateUpdate(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var playerState storage.PlayerState
+	err = sto.PlayerStateUpdate(1, playerState)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetPlayer(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var player storage.Player
+	player.Id = 1
+	player.MonthOfBirthInUnixTime = "ff"
+	player.State.BlockNumber = 33
+	player.State.Defence = 4
+	player.State.Endurance = 5
+	player.State.Pass = 6
+	player.State.Shoot = 7
+	player.State.Speed = 8
+	player.State.State = "23"
+	player.State.TeamId = 99
+	err = sto.PlayerAdd(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := sto.GetPlayer(player.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != player {
+		t.Fatalf("Expected %v got %v", player, result)
+	}
+	player.State.BlockNumber = 366
+	player.State.Defence = 6
+	err = sto.PlayerStateUpdate(player.Id, player.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = sto.GetPlayer(player.Id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result != player {
+		t.Fatalf("Expected %v got %v", player, result)
+	}
+}
+
 func TestPlayerAdd(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
@@ -30,8 +83,7 @@ func TestPlayerAdd(t *testing.T) {
 	}
 	var player storage.Player
 	player.Id = 3
-	player.State = "43524"
-	err = sto.PlayerAdd(&player)
+	err = sto.PlayerAdd(player)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,38 +96,19 @@ func TestPlayerAdd(t *testing.T) {
 	}
 }
 
-func TestGetPlayer(t *testing.T) {
+func TestPlayerAddTwiceSameTeam(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err := sto.GetPlayer(1)
+	var player storage.Player
+	player.Id = 3
+	err = sto.PlayerAdd(player)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player != nil {
-		t.Fatal("expected nil player")
-	}
-	id := uint64(3)
-	state := "43524"
-	var player2 storage.Player
-	player2.Id = 3
-	player2.State = "43524"
-	err = sto.PlayerAdd(&player2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	player, err = sto.GetPlayer(3)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if player == nil {
-		t.Fatal("expected player")
-	}
-	if player.Id != id {
-		t.Fatalf("expected %v got %v", id, player.Id)
-	}
-	if strings.Compare(state, player.State) != 0 {
-		t.Fatalf("Expected %v got %v", state, player.State)
+	err = sto.PlayerAdd(player)
+	if err == nil {
+		t.Fatal("No error adding the same player twice")
 	}
 }

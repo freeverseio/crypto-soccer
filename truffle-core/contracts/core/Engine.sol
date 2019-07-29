@@ -4,7 +4,7 @@ import "./Leagues.sol";
 import "../state/PlayerState.sol";
 
 contract Engine is PlayerState {
-    uint8 private constant MAX_PLAYERS      = 11;   // Max num of players allowed in a team
+    uint8 private constant MAX_PLAYERS      = 25;   // Max num of players allowed in a team
     uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
     uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of rounds played in each match
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
@@ -23,27 +23,25 @@ contract Engine is PlayerState {
      * @param seed the pseudo-random number to use as a seed for the match
      * @param state0 a vector with the state of the players of team 0
      * @param state1 a vector with the state of the players of team 1
-     * @param tactic0 a vector[3] with the tactic (ex. [4,4,2]) of team 0 
-     * @param tactic1 a vector[3] with the tactic (ex. [4,4,2]) of team 1
+     * @param tacticId0 a vector with the tacticId (ex. 0 for [4,4,2]) of team 0 
+     * @param tacticId1 a vector with the tacticId (ex. 0 for [4,4,2]) of team 1
      * @return the score of the match
      */
     function playMatch(
         uint256 seed,
         uint256[] memory state0,
         uint256[] memory state1, 
-        uint8[3] memory tactic0, 
-        uint8[3] memory tactic1
+        uint8 tacticId0, 
+        uint8 tacticId1
     )
         public
         pure
         returns (uint8 home, uint8 visitor) 
     {
-        require(state0.length == MAX_PLAYERS, "Team 0 needs 11 players");
-        require(state1.length == MAX_PLAYERS, "Team 1 needs 11 players");
-        require(tactic0[0] + tactic0[1] + tactic0[2] == 10, "wrong tactic for team 0: sum is not correct");
-        require(tactic1[0] + tactic1[1] + tactic1[2] == 10, "wrong tactic for team 1: sum is not correct");
-        require(tactic0[0] > 0 && tactic0[1] > 0 && tactic0[2] > 0, "wrong tactic for team 0: all should be >0");
-        require(tactic1[0] > 0 && tactic1[1] > 0 && tactic1[2] > 0, "wrong tactic for team 1: all should be >0");
+        require(state0.length == MAX_PLAYERS, "Team 0 needs 25 players");
+        require(state1.length == MAX_PLAYERS, "Team 1 needs 25 players");
+        uint8[3] memory tactic0 = getTacticsArray(tacticId0);
+        uint8[3] memory tactic1 = getTacticsArray(tacticId1);
         uint16[] memory rnds = _getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
@@ -78,6 +76,14 @@ contract Engine is PlayerState {
             }
         }
         return (teamGoals[0], teamGoals[1]);
+    }
+
+    function getTacticsArray(uint8 tacticsId) internal pure returns (uint8[3] memory) {
+        require(tacticsId < 4);
+        if (tacticsId == 0) return [4,4,2];
+        if (tacticsId == 1) return [5,4,1];
+        if (tacticsId == 2) return [4,3,3];
+        if (tacticsId == 3) return [4,5,1];
     }
 
     /// @dev Rescales global skills of both teams according to their endurance

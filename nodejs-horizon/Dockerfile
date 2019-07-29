@@ -6,10 +6,10 @@ WORKDIR /app
 # Copy the current directory contents into the container at /appa
 COPY . /app
 
-RUN cd nodejs-horizon && npm ci --only=production
+RUN npm ci --only=production
 # If you are building your code for production
 # RUN npm ci --only=production
 
 EXPOSE 4000
 
-CMD ["npm", "start", "--prefix", "nodejs-horizon"]
+ENTRYPOINT [ "npm", "start", "--" ]

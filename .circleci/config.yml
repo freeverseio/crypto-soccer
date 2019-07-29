@@ -53,6 +53,23 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+  nodejs-horizon:
+    docker:
+      - image: asiniscalchi/freeverse_circleci:alpine
+    steps:
+      - checkout
+      - run: 
+          name: Set up truffle-core
+          command: cd truffle-core && npm install
+      - run:
+          name: Compile truffle-core
+          command: cd truffle-core && ./node_modules/.bin/truffle compile
+      - run:
+          name: Setup nodejs-horizon
+          command: cd nodejs-horizon && npm install
+      - run:
+          name: Test nodejs-horizon
+          command: cd nodejs-horizon && npm test
   reactjs-frontend:
     docker:
       - image: asiniscalchi/freeverse_circleci:alpine
@@ -95,6 +112,9 @@ jobs:
           name: Create Docker Postgres
           command: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
       - run:
+          name: Create Docker Horizon
+          command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
@@ -103,6 +123,9 @@ jobs:
       - run: 
           name: Upload Docker Synchronizer
           command: docker push freeverseio/synchronizer:dev
+      - run: 
+          name: Upload Docker Horizon
+          command: docker push freeverseio/horizon:dev
       - run: 
           name: Upload Docker Postgres
           command: docker push freeverseio/postgres:dev
@@ -130,6 +153,7 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
+      - nodejs-horizon
       - dockerization:
           filters:
             branches:
@@ -139,6 +163,7 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
+            - nodejs-horizon
       - deploy:
           filters:
            branches:

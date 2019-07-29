@@ -54,6 +54,12 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
+	log.Info("Creating Leagues bindings to: ", config.LeaguesContractAddress)
+	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(config.LeaguesContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
@@ -66,8 +72,6 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	var leaguesContract *leagues.Leagues // TODO
-	leaguesContract = nil
 	process := process.BackgroundProcessNew(client, assetsContract, statesContract, leaguesContract, sto)
 
 	log.Info("Start processing events ...")

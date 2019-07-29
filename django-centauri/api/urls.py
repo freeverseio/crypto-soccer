@@ -6,12 +6,6 @@ from django.contrib.auth.views import PasswordResetConfirmView, PasswordResetCom
 from .views import *
 
 urlpatterns = {
-    url(r'^debug/user/$',
-        CreateView.as_view(),
-        name='create'),
-    url(r'^debug/user/(?P<pk>[0-9]+)/$',
-        InfoView.as_view(),
-        name='info'),
     url(r'^validate-account/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})$',
         activate_user,
         name='user_activation'),

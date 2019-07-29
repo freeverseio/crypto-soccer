@@ -12,34 +12,39 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
 
     constructor(address engine, address leagueState) LeaguesComputer(engine, leagueState) public {
     }
-
+    
     function challengeInitStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[3][] memory tactics,
+        uint8[] memory tacticsIds,
         uint256[] memory dataToChallengeInitStates
     )
         public
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tactics), "incorrect user init data");
-        uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tactics, dataToChallengeInitStates);
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
-        if (initPlayerStates.length == 0) // challenger wins
-            resetUpdater(id);
-        else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
-            resetUpdater(id);
+        bool challengeSucceeded = didUpdaterLie(id);
+        if (challengeSucceeded) {
+            resetUpdater(id); 
+        }
+        emit ChallengeFinished(challengeSucceeded);
+
+        // TODO: implement lionel4 !
+        // require(getUsersInitDataHash(id) == hashUsersInitData(teamIds, tacticsIds), "incorrect user init data");
+        // uint256[] memory initPlayerStates = getInitPlayerStates(id, teamIds, tacticsIds, dataToChallengeInitStates);
+        // return; // TODO: remove
+        // if (initPlayerStates.length == 0) // challenger wins
+        //     resetUpdater(id);
+        // else if (getInitStateHash(id) != hashDayState(initPlayerStates)) // challenger wins
+            // resetUpdater(id);
     }
 
     function challengeMatchdayStates(
         uint256 id,
         uint256[] memory usersInitDataTeamIds,
-        uint8[3][] memory usersInitDataTactics,
+        uint8[] memory usersInitDataTactics,
         uint256[] memory usersAlongDataTeamIds,
-        uint8[3][] memory usersAlongDataTactics,
+        uint8[] memory usersAlongDataTactics,
         uint256[] memory usersAlongDataBlocks,
         uint256 leagueDay,
         uint256[] memory prevMatchdayStates
@@ -48,45 +53,54 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     {
         require(isUpdated(id), "not updated league. No challenge allowed");
         require(!isVerified(id), "not challengeable league");
-        require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
-        require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
-        if (leagueDay == 0)
-            require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
-        else
-            require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
+        
+        
+        bool challengeSucceeded = didUpdaterLie(id);
+        if (challengeSucceeded) {
+            resetUpdater(id); 
+        }
+        emit ChallengeFinished(challengeSucceeded);
 
-        uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
-        uint8[3][] memory tactics = _updateTacticsToBlockNum(
-            usersInitDataTeamIds,
-            usersInitDataTactics,
-            matchdayBlock,
-            usersAlongDataTeamIds,
-            usersAlongDataTactics,
-            usersAlongDataBlocks);
-        (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tactics);
 
-        if (getIsLie(id)) // TODO: remove
-            resetUpdater(id); // TODO: remove
-        return; // TODO: remove
+        // // TODO: implement in lionel4
 
-        if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
-            resetUpdater(id);
+        // require(getUsersInitDataHash(id) == hashUsersInitData(usersInitDataTeamIds, usersInitDataTactics), "incorrect user init data");
+        // require(computeUsersAlongDataHash(usersAlongDataTeamIds, usersAlongDataTactics, usersAlongDataBlocks) == getUsersAlongDataHash(id), "Incorrect provided: usersAlongData");
+        // if (leagueDay == 0)
+        //     require(hashInitState(prevMatchdayStates) == getInitStateHash(id), "Incorrect provided: prevMatchdayStates");
+        // else
+        //     require(hashDayState(prevMatchdayStates) == getDayStateHashes(id)[leagueDay - 1], "Incorrect provided: prevMatchdayStates");
 
-        if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
-            resetUpdater(id);
+        // uint256 matchdayBlock = getInitBlock(id) + leagueDay * getStep(id);
+        // uint8[] memory tacticsIds = _updateTacticsToBlockNum(
+        //     usersInitDataTeamIds,
+        //     usersInitDataTactics,
+        //     matchdayBlock,
+        //     usersAlongDataTeamIds,
+        //     usersAlongDataTactics,
+        //     usersAlongDataBlocks);
+        // (uint16[] memory scores, uint256[] memory statesAtMatchday) = computeDay(id, leagueDay, prevMatchdayStates, tacticsIds);
+
+
+
+        // if (hashDayState(statesAtMatchday) != getDayStateHashes(id)[leagueDay])
+        //     resetUpdater(id);
+
+        // if (keccak256(abi.encode(scores)) != keccak256(abi.encode(scoresGetDay(id, leagueDay))))
+        //     resetUpdater(id);
     }
 
     function _updateTacticsToBlockNum(
         uint256[] memory usersInitDataTeamIds,
-        uint8[3][] memory usersInitDataTactics,
+        uint8[] memory usersInitDataTactics,
         uint256 blockNum,
         uint256[] memory usersAlongDataTeamIds,
-        uint8[3][] memory usersAlongDataTactics,
+        uint8[] memory usersAlongDataTactics,
         uint256[] memory usersAlongDataBlocks
     )
         internal
         pure
-        returns (uint8[3][] memory)
+        returns (uint8[] memory)
     {
         for (uint256 i = 0 ; i < usersAlongDataTeamIds.length ; i++){
             if (usersAlongDataBlocks[i] <= blockNum){
@@ -102,7 +116,7 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     function getInitPlayerStates(
         uint256 id,
         uint256[] memory teamIds,
-        uint8[3][] memory tactics,
+        uint8[] memory tacticsIds,
         uint256[] memory dataToChallengeInitStates
     )
         public
@@ -116,8 +130,20 @@ contract LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData {
     }
 
     function isVerified(uint256 id) public view returns (bool) {
+        if (id == 0) return true;
         if (!isUpdated(id))
             return false;
         return block.number > getLastChallengeBlock(id);
     }
+    
+    function signTeamInLeague(
+        uint256 leagueId, 
+        uint256 teamId, 
+        uint8[PLAYERS_PER_TEAM] memory teamOrder, 
+        uint8 teamTactics
+    ) public {
+        require(isVerified(_assets.getCurrentLeagueId(teamId)), "team cannot sign a league because still in a non-verified league");
+        _signTeamInLeague(leagueId, teamId, teamOrder, teamTactics);        
+    }
+        
 }
