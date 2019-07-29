@@ -18,6 +18,11 @@ DAYS_BETWEEN_LEAGUES = 2
 VERSES_PER_ROUND = VERSES_PER_DAY * MATCHDAYS_PER_LEAGUE + DAYS_BETWEEN_LEAGUES * VERSES_PER_DAY
 assert VERSES_PER_ROUND == 1536
 
+# BITS TO ENCODE COUNTRY
+BITS_PER_COUNTRYIDX = 10
+BITS_PER_TEAMIDX    = 28
+BITS_PER_PLAYERIDX  = 28
+
 # Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
 UPDT_NONE    = 0 # no update at all
 UPDT_LEVEL1  = 1 # only verseRoot, but nothing else. Aka LEVEL 1

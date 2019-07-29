@@ -139,6 +139,15 @@ def integrationTest():
     assert ST.getNLeaguesInCountry(countryIdx) == 17, "wrong nLeagues"
     assert ST.getNTeamsInCountry(countryIdx) == 17*8, "wrong nTeams"
 
+    # getTeamIdxFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
+    shouldFail(lambda x: ST.getTeamIdxFromLeagueAndPos(0,1,1), "division 0 should not exist")
+    shouldFail(lambda x: ST.getTeamIdxFromLeagueAndPos(1,1,0), "division 0 only has 1 league")
+    assert ST.getTeamIdxFromLeagueAndPos(1, 0, 0) == 1, "wrong teamIdx"
+    assert ST.getTeamIdxFromLeagueAndPos(1, 0, 1) == 2, "wrong teamIdx"
+    assert ST.getTeamIdxFromLeagueAndPos(2, 0, 0) == 9, "wrong teamIdx"
+    assert ST.getTeamIdxFromLeagueAndPos(2, 0, 1) == 10, "wrong teamIdx"
+    assert ST.getTeamIdxFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
+    assert ST.getTeamIdxFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
 
 
 

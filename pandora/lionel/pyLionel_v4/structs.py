@@ -432,6 +432,16 @@ class Storage(Counter):
     def getNTeamsInCountry(self, countryIdx):
         return self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
 
+    def getTeamIdxFromLeagueAndPos(self, divisionIdx, leaguePosInDiv, teamPosInLeague):
+        # posInDiv and posInLeague start at zero.
+        assert divisionIdx > 0, "divs start at idx = 1"
+        if divisionIdx == 1:
+            assert leaguePosInDiv == 0, "First division only has 1 league"
+            nLeaguesAbove = 0
+        else:
+            nLeaguesAbove = 1 + (divisionIdx - 2) * LEAGUES_PER_DIVISON + leaguePosInDiv
+        return 1 + nLeaguesAbove * TEAMS_PER_LEAGUE + teamPosInLeague
+
 
 
     def lastVerseBlock(self):
