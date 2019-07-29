@@ -18,11 +18,11 @@ import pylio
 
 
 class Country():
-    def __init__(self, timeZone):
+    def __init__(self):
         nDivisions = 1
         nFrozenDivisions = 0
-        divisionIdToRound{1: 0}
-        teams = []
+        divisionIdToRound = {1: 1} # divId = 1 starts at the very first round = 1
+        teamIdToTeam = {}
         
 
 
@@ -365,13 +365,13 @@ class Storage(Counter):
         # The Blockchain does not need this fake counter :-)
         Counter.__init__(self)
 
+        self.countries = []
+        self.timeZoneToCountries = {}
+
         # this bool is just to understand if the created BC is actually a client
         # it allows us, in this simulation, to ensure that the functions that are
         # only to be used by the CLIENT are actually used only by the CLIENT :-)
         self.isClient = isClient
-
-        # an array of Team structs, the first entry being the null team
-        self.teams = [Team("", 0)]
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.
@@ -401,6 +401,18 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
+
+    def addCountryToTimeZone(self, countryIdx, timeZone):
+        if timeZone in self.timeZoneToCountries:
+            self.timeZoneToCountries[timeZone].append(countryIdx)
+        else:
+            self.timeZoneToCountries[timeZone] = [countryIdx]
+
+    def createCountry(self, timeZone):
+        self.countries.append(Country())
+        countryIdx = len(self.countries)
+        self.addCountryToTimeZone(countryIdx, timeZone)
+        return countryIdx
 
     def lastVerseBlock(self):
         return self.VerseActionsCommits[-1].blockNum
