@@ -129,21 +129,21 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    timeZone, posInTimeZone = ST.verseToTimeZone(0 + 0*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(0 + 0*4, 0)
     assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4, 0)
     assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4, 0)
     assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4, 0)
     assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4, 0)
     assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4, 0)
     assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2, 0)
     assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3 ,0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3, 0)
     assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
 
     # we deployed at 1:06 am, so we are in timeZone = 1, pos = 1
@@ -232,9 +232,10 @@ def integrationTest():
 
     assert ST.isBotTeam(teamIdx) == False, "team not seen as human"
 
-    ST.isPlayerBusy(playerIdx)
+    ST.isPlayerTransferable(playerIdx)
 
     # ST.movePlayerToTeam(playerIdx1, teamIdx2)
+    advanceToBlock(ST.nextVerseBlock() + 5, ST, ST_CLIENT)
 
     b=2
     if False:

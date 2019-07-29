@@ -35,10 +35,11 @@ class TimeZoneUpdate():
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
-    def isSettled(self, nowBlock):
-        if self.updateCycleIdx == 0:
-            return True
-        return nowBlock > self.gameUpdate.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
+    def isFullySettled(self, nowBlock):
+        return self.updateCycleIdx == 0 and self.isLastUpdateSettled(nowBlock)
+
+    def isLastUpdateSettled(self, nowBlock):
+        return nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
 
     def newUpdate(self, nowBlock):
         assert self.isSettled(nowBlock), "cannot update until settled!"
@@ -527,13 +528,13 @@ class Storage(Counter):
     def getCountryTimeZone(self, countryIdx):
         return self.countries[countryIdx].timeZone
 
-    def isPlayerBusy(self, playerIdx):
+    def isPlayerTransferable(self, playerIdx):
         (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
-        return self.isCountryBusy(countryIdx)
+        return self.isCountryFullySettled(countryIdx)
 
-    def isCountryBusy(self, countryIdx):
+    def isCountryFullySettled(self, countryIdx):
         timeZone = self.getCountryTimeZone(countryIdx)
-        return not self.timeZoneUpdates[timeZone].isSettled(self.currentBlock)
+        return not self.timeZoneUpdates[timeZone].isFullySettled(self.currentBlock)
 
     def verseToTimeZone(self, verse, deployTimeInSecsOfADay):
         secsOfTheDay = (verse * SECS_PER_VERSE + deployTimeInSecsOfADay) % (24*3600)
@@ -986,7 +987,7 @@ class Storage(Counter):
 
     # does not check ownership
     def movePlayerToTeam(self, playerIdx, buyerTeamIdx):
-        assert not self.isPlayerBusy(playerIdx), "Player sale failed: player is busy playing a league, wait until it finishes"
+        assert not self.isPlayerTransferable(playerIdx), "Player sale failed: player is busy playing a league, wait until it finishes"
         assert self.teams[buyerTeamIdx].freePlayerSlots > 0, "Buyer team is already full"
         sellerTeamIdx, sellerShirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx)
         buyerShirtNum = self.getFreeShirtNum(buyerTeamIdx)
@@ -1752,6 +1753,8 @@ class Storage(Counter):
 
     def syncTimeZoneCommits(self, ST):
         self.assertIsClient()
-        #toni
-        self.currentTimeZone()
+        currentTimeZone, posInTimeZone = ST.currentTimeZone()
+        if currentTimeZone in ST.timeZoneUpdates:
+            # when done, we will pass data from self (ST_CLIENT)
+            ST.timeZoneUpdates[currentTimeZone].newUpdate(ST.currentBlock)
 
