@@ -129,8 +129,15 @@ def integrationTest():
     countryIdx = createCountry(timeZone, ST, ST_CLIENT)
     assert countryIdx == 1, "wrong countryIdx"
 
+    assert ST.getNDivisionsInCountry(countryIdx) == 1, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(countryIdx) == 1, "wrong nLeagues"
+    assert ST.getNTeamsInCountry(countryIdx) == 8, "wrong nTeams"
+
     divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
     assert divisionIdx == 2, "wrong divisionIdx"
+    assert ST.getNDivisionsInCountry(countryIdx) == 2, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(countryIdx) == 17, "wrong nLeagues"
+    assert ST.getNTeamsInCountry(countryIdx) == 17*8, "wrong nTeams"
 
 
 

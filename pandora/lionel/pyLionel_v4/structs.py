@@ -419,6 +419,16 @@ class Storage(Counter):
         self.countries[countryIdx].nDivisions += 1
         return self.countries[countryIdx].nDivisions
 
+    def getNDivisionsInCountry(self, countryIdx):
+        return self.countries[countryIdx].nDivisions
+
+    def getNLeaguesInCountry(self, countryIdx):
+        return 1 + (self.getNDivisionsInCountry(countryIdx) -1) * LEAGUES_PER_DIVISON
+
+    def getNTeamsInCountry(self, countryIdx):
+        return self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
+
+
     def lastVerseBlock(self):
         return self.VerseActionsCommits[-1].blockNum
 
