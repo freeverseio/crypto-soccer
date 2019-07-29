@@ -9,7 +9,7 @@ from os.path import isfile, join, exists
 # Blocks after an update/challenge during which it can still be challenged.
 SECS_BETWEEN_BLOCKS = 10 # 10 for ETH, 5 for POA
 CHALLENGING_PERIOD_MINS = 3
-CHALLENGING_PERIOD_BLKS = CHALLENGING_PERIOD_MINS * 60 * SECS_BETWEEN_BLOCKS
+CHALLENGING_PERIOD_BLKS = int(CHALLENGING_PERIOD_MINS * 60 / SECS_BETWEEN_BLOCKS)
 
 # Main league organization
 MAX_DIV_PER_COUNTRY = 100000

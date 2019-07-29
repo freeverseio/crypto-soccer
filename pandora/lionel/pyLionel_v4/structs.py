@@ -42,7 +42,7 @@ class TimeZoneUpdate():
         return nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
 
     def newUpdate(self, nowBlock):
-        assert self.isSettled(nowBlock), "cannot update until settled!"
+        assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
         self.updateCycleIdx = (self.updateCycleIdx + 1) % 29
         self.lastBlockUpdate = nowBlock
 

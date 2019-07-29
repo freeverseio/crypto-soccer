@@ -235,7 +235,7 @@ def integrationTest():
     ST.isPlayerTransferable(playerIdx)
 
     # ST.movePlayerToTeam(playerIdx1, teamIdx2)
-    advanceToBlock(ST.nextVerseBlock() + 5, ST, ST_CLIENT)
+    advanceNVerses(100, ST, ST_CLIENT)
 
     b=2
     if False:
