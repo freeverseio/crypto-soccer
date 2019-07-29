@@ -21,7 +21,7 @@ class Country():
     def __init__(self):
         self.nDivisions = 1
         self.nFrozenDivisions = 0
-        self.divisionIdToRound = {1: 1} # divId = 1 starts at the very first round = 1
+        self.divisonIdxToRound = {1: 1} # divId = 1 starts at the very first round = 1
         self.teamIdToTeam = {}
         
 
@@ -402,6 +402,8 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
+    def currentRound(self):
+        return 1 + int(self.currentVerse/VERSES_PER_ROUND)
 
     def addCountryToTimeZone(self, countryIdx, timeZone):
         if timeZone in self.timeZoneToCountries:
@@ -417,7 +419,9 @@ class Storage(Counter):
 
     def addDivision(self, countryIdx):
         self.countries[countryIdx].nDivisions += 1
-        return self.countries[countryIdx].nDivisions
+        divisionIdx = self.countries[countryIdx].nDivisions
+        self.countries[countryIdx].divisonIdxToRound[divisionIdx] = self.currentRound() + 1
+        return divisionIdx
 
     def getNDivisionsInCountry(self, countryIdx):
         return self.countries[countryIdx].nDivisions
@@ -427,6 +431,7 @@ class Storage(Counter):
 
     def getNTeamsInCountry(self, countryIdx):
         return self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
+
 
 
     def lastVerseBlock(self):
