@@ -180,8 +180,8 @@ def integrationTest():
     (teamIdxInCountry, shirtNum) =  ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
     assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
 
-    assert ST.getDivisionCreationVerse(1,1) == timeZone * 4, "Wrong creation time"
-    assert ST.getDivisionCreationVerse(1,2) == timeZone * 4 + VERSES_PER_ROUND, "Wrong creation time"
+    assert ST.getDivisionCreationDay(1,1) == 0, "Wrong creation time"
+    assert ST.getDivisionCreationDay(1,2) == DAYS_PER_ROUND, "Wrong creation time"
 
     assert ST.verseToUnixMonths(0) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
     assert ST.verseToUnixMonths(10) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
@@ -195,7 +195,7 @@ def integrationTest():
     assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
 
     playerIdx = ST.encodeCountryAndVal(1,35)
-    # a = ST.getMinimalPlayerStateAtBirth(playerIdx)
+    a = ST.getMinimalPlayerStateAtBirth(playerIdx)
 
     if False:
         # Create teams in ST and ST_CLIENT

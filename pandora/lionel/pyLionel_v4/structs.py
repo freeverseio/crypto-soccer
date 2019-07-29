@@ -427,10 +427,15 @@ class Storage(Counter):
     def verseToUnixMonths(self, verse):
         return DEPLOYMENT_IN_UNIX_MONTHS + int(verse/VERSES_PER_MONTH)
 
-    def getDivisionCreationVerse(self, countryIdx, divisionIdx):
-        countryTimeZone = self.countries[countryIdx].timeZone
+    # def getDivisionCreationVerse(self, countryIdx, divisionIdx):
+    #     countryTimeZone = self.countries[countryIdx].timeZone
+    #     creationRound = self.countries[countryIdx].divisonIdxToRound[divisionIdx]
+    #     return (creationRound - 1)* VERSES_PER_ROUND + countryTimeZone * VERSES_PER_TIMEZONE
+
+    def getDivisionCreationDay(self, countryIdx, divisionIdx):
+        # disregards the offset introduced by timeZone, and thanks to this, avoids requiring country.timeZone
         creationRound = self.countries[countryIdx].divisonIdxToRound[divisionIdx]
-        return (creationRound - 1)* VERSES_PER_ROUND + countryTimeZone * VERSES_PER_TIMEZONE
+        return (creationRound - 1)* DAYS_PER_ROUND
 
     def getNDivisionsInCountry(self, countryIdx):
         return self.countries[countryIdx].nDivisions
@@ -753,9 +758,9 @@ class Storage(Counter):
     # It only deals with skills & age, not playerIdx.
     def getMinimalPlayerStateFromSeed(self, seed, monthOfTeamCreationInUnixTime):
         newPlayerState = PlayerState()
-        np.random.seed(seed)
-        monthsWhenTeamWasCreated = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE) * 12
-        newPlayerState.setMonth(monthOfTeamCreationInUnixTime-monthsWhenTeamWasCreated)
+        np.random.seed(seed % 2**32) # we need mod(.,32) due to numpy limitation
+        monthsAtBirth = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE) * 12
+        newPlayerState.setMonth(monthOfTeamCreationInUnixTime-monthsAtBirth)
         skills = np.random.randint(0, AVG_SKILL - 1, N_SKILLS)
         excess = int((AVG_SKILL * N_SKILLS - skills.sum()) / N_SKILLS)
         skills += excess
@@ -782,20 +787,19 @@ class Storage(Counter):
         # Disregard his current team, just look at the team at moment of birth to build skills
         (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
         (teamIdxInCountry, shirtNum) = self.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(playerIdxInCountry)
-
         playerDNA = pylio.serialHash([teamIdxInCountry, shirtNum])
 
-        divisionIdx = 2
-        creationVerse = self.getDivisionCreationVerse(countryIdx, divisionIdx)
-        monthOfTeamCreationInUnixTime = self.verseToUnixMonths(creationVerse)
+        divisionIdx = self.getDisivionIdxFromTeamIdxInCountry(teamIdxInCountry)
+        creationDay = self.getDivisionCreationDay(countryIdx, divisionIdx)
+        monthOfTeamCreationInUnixTime = self.verseToUnixMonths(creationDay * VERSES_PER_DAY)
 
-        playerState = pylio.duplicate(self.getMinimalPlayerStateFromSeed(
+        minimalPlayerState = pylio.duplicate(self.getMinimalPlayerStateFromSeed(
             playerDNA,
             monthOfTeamCreationInUnixTime
         ))
         # Once the skills have been added, complete the rest of the player data
-        playerState.setPlayerIdx(playerIdx)
-        return playerState
+        minimalPlayerState.setPlayerIdx(playerIdx)
+        return minimalPlayerState
 
 
     # The inverse of the previous relation
