@@ -133,6 +133,11 @@ def integrationTest():
     assert ST.getNLeaguesInCountry(countryIdx) == 1, "wrong nLeagues"
     assert ST.getNTeamsInCountry(countryIdx) == 8, "wrong nTeams"
 
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(2, 3)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 8)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(1, 9)), "wrong teamExists call"
+
     divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
     assert divisionIdx == 2, "wrong divisionIdx"
     assert ST.getNDivisionsInCountry(countryIdx) == 2, "wrong nDivisions"
@@ -149,6 +154,7 @@ def integrationTest():
     assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
     assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
 
+    # encode/decode with countryIdx
     assert ST.encode(0,3,3,4) == 3, "wrong encode"
     assert ST.encode(1,3,3,4) == 19, "wrong encode"
     (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(1, 3))
@@ -156,7 +162,10 @@ def integrationTest():
     (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(500, 343))
     assert val1 == 500 and val2 == 343
 
-
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(2, 3)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 8*17)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(1, 8*17+1)), "wrong teamExists call"
 
     if False:
         # Create teams in ST and ST_CLIENT

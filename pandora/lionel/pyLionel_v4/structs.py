@@ -459,6 +459,17 @@ class Storage(Counter):
     def decodeCountryAndVal(self, val):
         return self.decode(val, BITS_PER_COUNTRYIDX, BITS_PER_TEAMIDX)
 
+    def countryExists(self, countryIdx):
+        return countryIdx <= len(self.countries) - 1
+
+    def teamExists(self, teamIdx):
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        if not self.countryExists(countryIdx):
+            return False
+        return teamIdxInCountry <= self.getNTeamsInCountry(countryIdx)
+
+
+
 
     def lastVerseBlock(self):
         return self.VerseActionsCommits[-1].blockNum
