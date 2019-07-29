@@ -125,12 +125,15 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    countryIdx = ST.createCountry(timeZone = 8)
-    countryIdx_client = ST_CLIENT.createCountry(timeZone  = 8)
-    assert countryIdx == countryIdx_client, "ST/ST_CLIENT not in sync"
+    timeZone = 8
+    countryIdx = createCountry(timeZone, ST, ST_CLIENT)
     assert countryIdx == 1, "wrong countryIdx"
 
-    
+    divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
+    assert divisionIdx == 2, "wrong divisionIdx"
+
+
+
 
     if False:
         # Create teams in ST and ST_CLIENT

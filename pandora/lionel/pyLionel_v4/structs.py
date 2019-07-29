@@ -19,10 +19,10 @@ import pylio
 
 class Country():
     def __init__(self):
-        nDivisions = 1
-        nFrozenDivisions = 0
-        divisionIdToRound = {1: 1} # divId = 1 starts at the very first round = 1
-        teamIdToTeam = {}
+        self.nDivisions = 1
+        self.nFrozenDivisions = 0
+        self.divisionIdToRound = {1: 1} # divId = 1 starts at the very first round = 1
+        self.teamIdToTeam = {}
         
 
 
@@ -366,6 +366,7 @@ class Storage(Counter):
         Counter.__init__(self)
 
         self.countries = []
+        self.countries.append(Country()) # countries[0] is dummy
         self.timeZoneToCountries = {}
 
         # this bool is just to understand if the created BC is actually a client
@@ -409,10 +410,14 @@ class Storage(Counter):
             self.timeZoneToCountries[timeZone] = [countryIdx]
 
     def createCountry(self, timeZone):
-        self.countries.append(Country())
         countryIdx = len(self.countries)
+        self.countries.append(Country())
         self.addCountryToTimeZone(countryIdx, timeZone)
         return countryIdx
+
+    def addDivision(self, countryIdx):
+        self.countries[countryIdx].nDivisions += 1
+        return self.countries[countryIdx].nDivisions
 
     def lastVerseBlock(self):
         return self.VerseActionsCommits[-1].blockNum

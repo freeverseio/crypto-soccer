@@ -377,3 +377,17 @@ def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
 def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
     ST.movePlayerToTeam(playerIdx, teamIdx)
     ST_CLIENT.movePlayerToTeam(playerIdx, teamIdx)
+
+
+def createCountry(timeZone, ST, ST_CLIENT):
+    countryIdx = ST.createCountry(timeZone)
+    countryIdx_client = ST_CLIENT.createCountry(timeZone)
+    assert countryIdx == countryIdx_client, "ST/ST_CLIENT not in sync"
+    return countryIdx
+
+def addDivision(countryIdx, ST, ST_CLIENT):
+    divisionIdx = ST.addDivision(countryIdx)
+    divisionIdx_client = ST_CLIENT.addDivision(countryIdx)
+    assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
+    return divisionIdx
+
