@@ -200,7 +200,13 @@ def integrationTest():
     assert all(playerState.getSkills() == [51,38,61,52,46]), "wrong skills set"
     assert playerState.getMonth() == 350, "wrong age"
 
+    teamIdx = ST.encodeCountryAndVal(1,4)
+    assert ST.isBotTeam(teamIdx) == True, "team not seen as bot"
 
+    ST.acquireBoth(teamIdx, ALICE)
+    ST_CLIENT.acquireBoth(teamIdx, ALICE)
+
+    assert ST.isBotTeam(teamIdx) == False, "team not seen as human"
 
 
 

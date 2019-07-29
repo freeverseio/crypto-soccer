@@ -106,19 +106,13 @@ class PlayerState(MinimalPlayerState):
 # - if playerIdx = 0, it is considered a virtual player
 # - if playerIdx = UINTMINUS1, this place in the team is free
 class Team():
-    def __init__(self, name, nowInMonthsUnixTime):
-        self.name = name
-        self.monthOfTeamCreationInUnixTime = nowInMonthsUnixTime
+    def __init__(self, addr):
+        self.teamOwner = addr
         self.playerIdxs             = np.append(
             np.zeros(PLAYERS_PER_TEAM_INIT, int),
             UINTMINUS1*np.ones(PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT, int)
         )
         assert len(self.playerIdxs) == PLAYERS_PER_TEAM_MAX
-        self.currentLeagueIdx       = 0
-        self.teamPosInCurrentLeague = 0
-        self.prevLeagueIdx          = 0
-        self.teamPosInPrevLeague    = 0
-        self.freePlayerSlots        = PLAYERS_PER_TEAM_MAX - PLAYERS_PER_TEAM_INIT
 
 
 class League():
@@ -427,11 +421,6 @@ class Storage(Counter):
     def verseToUnixMonths(self, verse):
         return DEPLOYMENT_IN_UNIX_MONTHS + int(verse/VERSES_PER_MONTH)
 
-    # def getDivisionCreationVerse(self, countryIdx, divisionIdx):
-    #     countryTimeZone = self.countries[countryIdx].timeZone
-    #     creationRound = self.countries[countryIdx].divisonIdxToRound[divisionIdx]
-    #     return (creationRound - 1)* VERSES_PER_ROUND + countryTimeZone * VERSES_PER_TIMEZONE
-
     def getDivisionCreationDay(self, countryIdx, divisionIdx):
         # disregards the offset introduced by timeZone, and thanks to this, avoids requiring country.timeZone
         creationRound = self.countries[countryIdx].divisonIdxToRound[divisionIdx]
@@ -504,7 +493,18 @@ class Storage(Counter):
             return False
         return playerIdxInCountry <= self.getNTeamsInCountry(countryIdx) * PLAYERS_PER_TEAM_INIT
 
+    def isBotTeam(self, teamIdx):
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        return (teamIdxInCountry not in self.countries[countryIdx].teamIdToTeam)
 
+    def acquireBoth(self, teamIdx, addr):
+        assert self.isBotTeam(teamIdx), "cannot acquire a team that is not a Bot"
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        self.countries[countryIdx].teamIdToTeam[teamIdxInCountry] = Team(addr)
+
+
+
+    # toni
 
     def lastVerseBlock(self):
         return self.VerseActionsCommits[-1].blockNum
@@ -754,6 +754,7 @@ class Storage(Counter):
         newPlayerState.setMonth(pylio.duplicate(playerStateOrig.getMonth()))
         return newPlayerState
 
+
     # Given a seed, returns a balanced player.
     # It only deals with skills & age, not playerIdx.
     def getMinimalPlayerStateFromSeed(self, seed, monthOfTeamCreationInUnixTime):
@@ -768,20 +769,6 @@ class Storage(Counter):
         return newPlayerState
 
 
-    # TODO: remove
-    def getPlayerStateAtBirth(self, playerIdx):
-        # Disregard his current team, just look at the team at moment of birth to build skills
-        teamIdx, shirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx, forceAtBirth=True)
-        seed = self.getPlayerSeedFromTeamAndShirtNum(self.teams[teamIdx].name, shirtNum)
-        playerState = pylio.duplicate(self.getMinimalPlayerStateFromSeed(
-            seed,
-            self.teams[teamIdx].monthOfTeamCreationInUnixTime
-        ))
-        # Once the skills have been added, complete the rest of the player data
-        playerState.setPlayerIdx(playerIdx)
-        playerState.setCurrentTeamIdx(teamIdx)
-        playerState.setCurrentShirtNum(shirtNum)
-        return playerState
 
     def getMinimalPlayerStateAtBirth(self, playerIdx):
         # Disregard his current team, just look at the team at moment of birth to build skills
