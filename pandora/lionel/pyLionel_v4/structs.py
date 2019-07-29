@@ -18,8 +18,9 @@ import pylio
 
 
 class Country():
-    def __init__(self):
+    def __init__(self, timeZone):
         self.nDivisions = 1
+        self.timeZone = timeZone
         self.nFrozenDivisions = 0
         self.divisonIdxToRound = {1: 1} # divId = 1 starts at the very first round = 1
         self.teamIdToTeam = {}
@@ -366,7 +367,7 @@ class Storage(Counter):
         Counter.__init__(self)
 
         self.countries = []
-        self.countries.append(Country()) # countries[0] is dummy
+        self.countries.append(Country(0)) # countries[0] is dummy
         self.timeZoneToCountries = {}
 
         # this bool is just to understand if the created BC is actually a client
@@ -413,7 +414,7 @@ class Storage(Counter):
 
     def createCountry(self, timeZone):
         countryIdx = len(self.countries)
-        self.countries.append(Country())
+        self.countries.append(Country(timeZone))
         self.addCountryToTimeZone(countryIdx, timeZone)
         return countryIdx
 
@@ -422,6 +423,14 @@ class Storage(Counter):
         divisionIdx = self.countries[countryIdx].nDivisions
         self.countries[countryIdx].divisonIdxToRound[divisionIdx] = self.currentRound() + 1
         return divisionIdx
+
+    def verseToUnixMonths(self, verse):
+        return DEPLOYMENT_IN_UNIX_MONTHS + int(verse/VERSES_PER_MONTH)
+
+    def getDivisionCreationVerse(self, countryIdx, divisionIdx):
+        countryTimeZone = self.countries[countryIdx].timeZone
+        creationRound = self.countries[countryIdx].divisonIdxToRound[divisionIdx]
+        return (creationRound - 1)* VERSES_PER_ROUND + countryTimeZone * VERSES_PER_TIMEZONE
 
     def getNDivisionsInCountry(self, countryIdx):
         return self.countries[countryIdx].nDivisions
@@ -441,6 +450,22 @@ class Storage(Counter):
         else:
             nLeaguesAbove = 1 + (divisionIdx - 2) * LEAGUES_PER_DIVISON + leaguePosInDiv
         return 1 + nLeaguesAbove * TEAMS_PER_LEAGUE + teamPosInLeague
+
+    def getDisivionIdxFromTeamIdxInCountry(self, teamIdxInCountry):
+        if teamIdxInCountry <= TEAMS_PER_LEAGUE:
+            return 1
+        else:
+            return 2 + int( (teamIdxInCountry - 1 - TEAMS_PER_LEAGUE) / (LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE) )
+
+
+    def getTeamIdxInCountryFromPlayerIdxInCountry(self, playerIdxInCountry):
+        # posInDiv and posInLeague start at zero.
+        return 1 + int((playerIdxInCountry-1) / PLAYERS_PER_TEAM_INIT)
+
+    def getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(self, playerIdxInCountry):
+        teamIdxInCountry = self.getTeamIdxInCountryFromPlayerIdxInCountry(playerIdxInCountry)
+        shirtNum = (playerIdxInCountry - 1) - (teamIdxInCountry - 1) * PLAYERS_PER_TEAM_INIT
+        return (teamIdxInCountry, shirtNum)
 
     def encode(self, val1, val2, bits1, bits2):
         assert val1 < 2**bits1 - 1, "val too big"
@@ -724,13 +749,9 @@ class Storage(Counter):
         newPlayerState.setMonth(pylio.duplicate(playerStateOrig.getMonth()))
         return newPlayerState
 
-    # the skills of a player are determined by concat of teamName and shirtNum
-    def getPlayerSeedFromTeamAndShirtNum(self, teamName, shirtNum):
-        return pylio.limitSeed(pylio.intHash(teamName + str(shirtNum)))
-
     # Given a seed, returns a balanced player.
     # It only deals with skills & age, not playerIdx.
-    def getPlayerStateFromSeed(self, seed, monthOfTeamCreationInUnixTime):
+    def getMinimalPlayerStateFromSeed(self, seed, monthOfTeamCreationInUnixTime):
         newPlayerState = PlayerState()
         np.random.seed(seed)
         monthsWhenTeamWasCreated = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE) * 12
@@ -742,11 +763,12 @@ class Storage(Counter):
         return newPlayerState
 
 
+    # TODO: remove
     def getPlayerStateAtBirth(self, playerIdx):
         # Disregard his current team, just look at the team at moment of birth to build skills
         teamIdx, shirtNum = self.getTeamIdxAndShirtForPlayerIdx(playerIdx, forceAtBirth=True)
         seed = self.getPlayerSeedFromTeamAndShirtNum(self.teams[teamIdx].name, shirtNum)
-        playerState = pylio.duplicate(self.getPlayerStateFromSeed(
+        playerState = pylio.duplicate(self.getMinimalPlayerStateFromSeed(
             seed,
             self.teams[teamIdx].monthOfTeamCreationInUnixTime
         ))
@@ -755,6 +777,26 @@ class Storage(Counter):
         playerState.setCurrentTeamIdx(teamIdx)
         playerState.setCurrentShirtNum(shirtNum)
         return playerState
+
+    def getMinimalPlayerStateAtBirth(self, playerIdx):
+        # Disregard his current team, just look at the team at moment of birth to build skills
+        (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
+        (teamIdxInCountry, shirtNum) = self.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(playerIdxInCountry)
+
+        playerDNA = pylio.serialHash([teamIdxInCountry, shirtNum])
+
+        divisionIdx = 2
+        creationVerse = self.getDivisionCreationVerse(countryIdx, divisionIdx)
+        monthOfTeamCreationInUnixTime = self.verseToUnixMonths(creationVerse)
+
+        playerState = pylio.duplicate(self.getMinimalPlayerStateFromSeed(
+            playerDNA,
+            monthOfTeamCreationInUnixTime
+        ))
+        # Once the skills have been added, complete the rest of the player data
+        playerState.setPlayerIdx(playerIdx)
+        return playerState
+
 
     # The inverse of the previous relation
     def getTeamIdxAndShirtForPlayerIdx(self, playerIdx, forceAtBirth=False):

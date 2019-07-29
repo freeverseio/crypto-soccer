@@ -125,7 +125,7 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    timeZone = 8
+    timeZone = 7
     countryIdx = createCountry(timeZone, ST, ST_CLIENT)
     assert countryIdx == 1, "wrong countryIdx"
 
@@ -174,7 +174,28 @@ def integrationTest():
     assert ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
     assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
 
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(1) == 1, "wrong getTeamIdx"
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(18) == 1, "wrong getTeamIdx"
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(19) == 2, "wrong getTeamIdx"
+    (teamIdxInCountry, shirtNum) =  ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
+    assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
 
+    assert ST.getDivisionCreationVerse(1,1) == timeZone * 4, "Wrong creation time"
+    assert ST.getDivisionCreationVerse(1,2) == timeZone * 4 + VERSES_PER_ROUND, "Wrong creation time"
+
+    assert ST.verseToUnixMonths(0) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(10) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(VERSES_PER_DAY*30) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(VERSES_PER_DAY*31) == DEPLOYMENT_IN_UNIX_MONTHS + 1, "wrong verse to months"
+
+    assert ST.getDisivionIdxFromTeamIdxInCountry(1) == 1, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(8) == 1, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(9) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
+
+    playerIdx = ST.encodeCountryAndVal(1,35)
+    # a = ST.getMinimalPlayerStateAtBirth(playerIdx)
 
     if False:
         # Create teams in ST and ST_CLIENT
