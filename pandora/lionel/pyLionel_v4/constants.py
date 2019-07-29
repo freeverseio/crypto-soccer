@@ -8,6 +8,11 @@ from os.path import isfile, join, exists
 # Blocks after an update/challenge during which it can still be challenged.
 CHALLENGING_PERIOD_BLKS = 1000
 
+# Main league organization
+MAX_DIV_PER_COUNTRY = 100000
+TEAMS_PER_LEAGUE = 8
+LEAGUES_PER_DIVISON = 16
+
 # Verse update status. Only one at a time is possible. The further down we are, the more details have been provided
 UPDT_NONE    = 0 # no update at all
 UPDT_LEVEL1  = 1 # only verseRoot, but nothing else. Aka LEVEL 1

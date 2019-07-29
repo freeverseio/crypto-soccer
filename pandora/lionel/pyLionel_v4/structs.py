@@ -16,6 +16,17 @@ import pylio
 # ----------      Classes common to both ST and CLIENT        ------------
 # ------------------------------------------------------------------------
 
+
+class Country():
+    def __init__(self, timeZone):
+        nDivisions = 1
+        nFrozenDivisions = 0
+        divisionIdToRound{1: 0}
+        teams = []
+        
+
+
+
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
 # ...and there'll be associated read/write functions
 # Note: playerIdx = 0 is the null player
