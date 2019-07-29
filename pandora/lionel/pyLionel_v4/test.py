@@ -219,7 +219,7 @@ def integrationTest():
     assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
 
     playerIdx = ST.encodeCountryAndVal(1,35)
-    playerState = ST.getMinimalPlayerStateAtBirth(playerIdx)
+    playerState = ST.getPlayerSkillsAtBirth(playerIdx)
     assert playerState.getPlayerIdx() == playerIdx, "wrong playerIdx set"
     assert all(playerState.getSkills() == [51,38,61,52,46]), "wrong skills set"
     assert playerState.getMonth() == 350, "wrong age"
@@ -227,15 +227,28 @@ def integrationTest():
     teamIdx = ST.encodeCountryAndVal(1,4)
     assert ST.isBotTeam(teamIdx) == True, "team not seen as bot"
 
-    ST.acquireBoth(teamIdx, ALICE)
-    ST_CLIENT.acquireBoth(teamIdx, ALICE)
+    ST.acquireBot(teamIdx, ALICE)
+    ST_CLIENT.acquireBot(teamIdx, ALICE)
 
     assert ST.isBotTeam(teamIdx) == False, "team not seen as human"
 
-    ST.isPlayerTransferable(playerIdx)
+    playerIdx = ST.encodeCountryAndVal(1,3) # belongs to team1, of course
+    assert ST.isPlayerTransferable(playerIdx), "country not started yet"
+    assert ST.timeZoneUpdates[7].updateCycleIdx == 0, "incorrect updateCycleIdx"
 
-    # ST.movePlayerToTeam(playerIdx1, teamIdx2)
-    advanceNVerses(100, ST, ST_CLIENT)
+    teamIdx2 = ST.encodeCountryAndVal(1, 2)
+    shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
+    ST.acquireBot(teamIdx2, BOB)
+    ST_CLIENT.acquireBot(teamIdx2, BOB)
+    shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
+    teamIdx1 = ST.encodeCountryAndVal(1, 1)
+    ST.acquireBot(teamIdx1, CAROL)
+    ST_CLIENT.acquireBot(teamIdx1, CAROL)
+    ST.movePlayerToTeam(playerIdx, teamIdx2)
+
+    advanceNVerses(4*6, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[7].updateCycleIdx == 1, "incorrect updateCycleIdx"
+    assert not ST.isPlayerTransferable(playerIdx), "country not started yet"
 
     b=2
     if False:
@@ -485,15 +498,15 @@ def integrationTest():
         exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
         # or transfer them one by one:
         playerIdx3 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx3, 2)
-        team3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+        team3, shirt3 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
         assert team3 == teamIdx3, "some is wrong with team assignments"
         movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
-        team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+        team, shirt = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
         assert team == teamIdx1, "wrong initial assignment"
-        assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
-        assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
-        assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
-        assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
+        assert ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+        assert ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
+        assert ST_CLIENT.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+        assert ST_CLIENT.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
 
 
         #           -----  LEAGUE 3 ------
@@ -680,8 +693,8 @@ def simpleExchangeTest():
     playerIdx1 = 2
     playerIdx2 = PLAYERS_PER_TEAM_MAX + 2
 
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+    team1, shirt1 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
     assert team1 == teamIdx1, "wrong initial assignment"
     assert team2 == teamIdx2, "wrong initial assignment"
@@ -695,17 +708,17 @@ def simpleExchangeTest():
 
     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
 
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+    team1, shirt1 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
     assert team1 == teamIdx2, "wrong initial assignment"
     assert team2 == teamIdx1, "wrong initial assignment"
 
     playerIdx3 = 34
-    teamIdx3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    teamIdx3, shirt3 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert teamIdx3 != teamIdx1, "please pick players from different teams"
     movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
-    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    team, shirt = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert team == teamIdx1, "wrong initial assignment"
 
 

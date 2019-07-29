@@ -1,7 +1,7 @@
 Lionel4 python:
 
 fix shirtNum vs playerPosInTeam, one has a meaning that is invariant under tactics...
-replace MinimalPlayerState by genome vs temp
+replace PlayerSkills by genome vs temp
 check that skills -> state is only used when really needed
 update help lines from states to skills
 do we need to recheck that the leaf is as expected all the time?

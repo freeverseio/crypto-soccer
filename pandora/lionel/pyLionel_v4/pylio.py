@@ -221,7 +221,7 @@ def flatten(statesPerTeam):
     flatStates = []
     for statesTeam in statesPerTeam:
         for statePlayer in statesTeam:
-            flatStates.append(MinimalPlayerState(statePlayer)) # select only skills and playerIdx
+            flatStates.append(PlayerSkills(statePlayer)) # select only skills and playerIdx
     return flatStates
 
 def challengeLevel1(verse, addr, ST, ST_CLIENT, lie):
