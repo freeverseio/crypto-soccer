@@ -537,7 +537,8 @@ class Storage(Counter):
         return self.countries[countryIdx].timeZone
 
     def getVerseLeaguesStartFromTimeZoneAndRound(self, timeZone, round):
-        return self.verseForRound1 + 4 * (timeZone - self.timeZoneForRound1)+ (round-1) * VERSES_PER_ROUND
+        assert round > 0, "league has never started"
+        return self.verseForRound1 + 4 * (timeZone - self.timeZoneForRound1) + (round-1) * VERSES_PER_ROUND
 
     def verseToRound(self, verse):
         if verse < self.verseForRound1:
@@ -555,7 +556,7 @@ class Storage(Counter):
 
     def verseToTimeZone(self, verse):
         if verse < self.verseForRound1:
-            return self.timeZoneForRound1
+            return 0, 4 - (self.verseForRound1 - verse)
         timeZone = (self.timeZoneForRound1 + (verse - self.verseForRound1) // 4) % 24
         posInTimeZone = (verse - self.verseForRound1) % 4
         return timeZone, posInTimeZone
@@ -1029,9 +1030,8 @@ class Storage(Counter):
 
         # a player should change his prevLeagueIdx only if the current team played
         # a last league that started AFTER the last sale
-        if self.getBlockNumForLastLeagueOfTeam(sellerTeamIdx) > state.getLastSaleBlocknum():
-            state.prevLeagueIdx         = self.teams[sellerTeamIdx].currentLeagueIdx
-            state.prevTeamPosInLeague   = self.teams[sellerTeamIdx].teamPosInCurrentLeague
+        if self.currentRound() == 0 or self.getBlockNumForLastLeagueOfTeam(sellerTeamIdx) > state.getLastSaleBlocknum():
+            state.setPrevPlayedTeamIdx(sellerTeamIdx)
 
         state.setCurrentTeamIdx(buyerTeamIdx)
         state.setCurrentShirtNum(buyerShirtNum)

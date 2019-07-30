@@ -134,21 +134,21 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    timeZone, posInTimeZone = ST.verseToTimeZone(0 + 0*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(0)
     assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4)
     assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4)
     assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4)
     assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4)
     assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4)
     assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2)
     assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3, 0)
+    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3)
     assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
 
     # getVerseLeaguesStartFromTimeZoneAndRound(timeZone, round):
@@ -156,12 +156,11 @@ def integrationTest():
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(2, 1) == 7, "wrong verse start leagues"
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 2) == 3 + VERSES_PER_ROUND, "wrong verse start leagues"
 
-    # we deployed at 1:06 am, so we are in timeZone = 1, pos = 1
-    assert ST.currentTimeZone() == (1,1), "wrong init timeZone"
+    # we deployed at 1:06 am, so we are in timeZone = 0, pos = 1
+    assert ST.currentTimeZone() == (0, 1), "wrong init timeZone"
 
-    timeZone = 7
-    countryIdx = createCountry(timeZone, ST, ST_CLIENT)
-    assert countryIdx == 1, "wrong countryIdx"
+    timeZone = 1
+    countryIdx = 1
 
     assert ST.getNDivisionsInCountry(countryIdx) == 1, "wrong nDivisions"
     assert ST.getNLeaguesInCountry(countryIdx) == 1, "wrong nLeagues"
@@ -215,7 +214,7 @@ def integrationTest():
     assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
 
     assert ST.getDivisionCreationDay(1,1) == 0, "Wrong creation time"
-    assert ST.getDivisionCreationDay(1,2) == DAYS_PER_ROUND, "Wrong creation time"
+    assert ST.getDivisionCreationDay(1,2) == 0, "Wrong creation time"
 
     assert ST.verseToUnixMonths(0) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
     assert ST.verseToUnixMonths(10) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
@@ -244,7 +243,7 @@ def integrationTest():
 
     playerIdx = ST.encodeCountryAndVal(1,3) # belongs to team1, of course
     assert ST.isPlayerTransferable(playerIdx), "country not started yet"
-    assert ST.timeZoneUpdates[7].updateCycleIdx == 0, "incorrect updateCycleIdx"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 0, "incorrect updateCycleIdx"
 
     teamIdx2 = ST.encodeCountryAndVal(1, 2)
     shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
