@@ -118,6 +118,8 @@ def integrationTest():
 
     assert ST.currentVerse == 0, "we should start at verse = 0"
     assert ST.currentRound() == 1, "we should start at round = 1"
+    assert ST.verseToRound(VERSES_PER_ROUND-2) == 1, "we should start at round = 1"
+    assert ST.verseToRound(VERSES_PER_ROUND-1) == 2, "we should have moved to round = 2"
 
     # The accumulator is responsible for receiving user actions and committing them in the correct verse.
     # It only lives in the CLIENT.
@@ -145,6 +147,11 @@ def integrationTest():
     assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
     timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3, 0)
     assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
+
+    # getVerseLeaguesStartFromTimeZoneAndRound(timeZone, round):
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 1) == 3, "wrong verse start leagues"
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(2, 1) == 7, "wrong verse start leagues"
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 2) == 3 + VERSES_PER_ROUND, "wrong verse start leagues"
 
     # we deployed at 1:06 am, so we are in timeZone = 1, pos = 1
     assert ST.currentTimeZone() == (1,1), "wrong init timeZone"

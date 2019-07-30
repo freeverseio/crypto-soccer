@@ -412,7 +412,7 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
     def currentRound(self):
         # verse starts at 0, round at 1.
-        return 1 + int(self.currentVerse/VERSES_PER_ROUND)
+        return self.verseToRound(self.currentVerse)
 
     def addCountryToTimeZone(self, countryIdx, timeZone):
         if timeZone in self.timeZoneToCountries:
@@ -519,6 +519,14 @@ class Storage(Counter):
 
     def getCountryTimeZone(self, countryIdx):
         return self.countries[countryIdx].timeZone
+
+    def getVerseLeaguesStartFromTimeZoneAndRound(self, timeZone, round):
+        # warning: not valid for (round = 1, timeZone = 0)
+        return -1 + 4 * timeZone + (round-1) * VERSES_PER_ROUND
+
+    def verseToRound(self, verse):
+        return 1 + ((verse + 1) // VERSES_PER_ROUND)
+
 
     def isPlayerTransferable(self, playerIdx):
         (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
@@ -979,6 +987,9 @@ class Storage(Counter):
             self.verseToLeagueCommits[verse].slashLevel4(self.currentBlock)
 
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        timeZone = self.getCountryTimeZone(countryIdx)
+        a=2
         return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
 
     def getFreeShirtNum(self, teamIdx):
@@ -1001,7 +1012,7 @@ class Storage(Counter):
 
         # a player should change his prevLeagueIdx only if the current team played
         # a last league that started AFTER the last sale
-        if state.getSoldDuringLastStop() (sellerTeamIdx) > state.getLastSaleBlocknum():
+        if self.getBlockNumForLastLeagueOfTeam(sellerTeamIdx) > state.getLastSaleBlocknum():
             state.prevLeagueIdx         = self.teams[sellerTeamIdx].currentLeagueIdx
             state.prevTeamPosInLeague   = self.teams[sellerTeamIdx].teamPosInCurrentLeague
 
