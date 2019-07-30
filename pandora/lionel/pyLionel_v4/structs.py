@@ -35,7 +35,9 @@ class TimeZoneUpdate():
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
-    def isFullySettled(self, nowBlock):
+    def isTimeZoneMarketOpen(self, nowBlock):
+        if self.updateCycleIdx > TZ_IDX_AT_FINAL_STATES_UPDATE:
+            return True
         return self.updateCycleIdx == 0 and self.isLastUpdateSettled(nowBlock)
 
     def isLastUpdateSettled(self, nowBlock):
@@ -47,7 +49,10 @@ class TimeZoneUpdate():
     def newUpdate(self, nowBlock, updateData):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
         self.updateCycleIdx = (self.updateCycleIdx + 1) % VERSES_PER_TIMEZONE_PER_ROUND
-        self.lastBlockUpdate = nowBlock
+        isInFreezePeriod = self.updateCycleIdx > TZ_IDX_AT_FREEZE
+        if not isInFreezePeriod:
+            # do something with update data
+            self.lastBlockUpdate = nowBlock
 
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
@@ -214,13 +219,6 @@ class VerseUpdate():
     def slashLevel4(self, blocknum):
         self.lastWriteBlocknum          = blocknum
         self.initLevel4()
-
-
-    def updateTimeZone(self, dataForUpdate):
-        timeZoneToUpdate, posInUpdate = self.currentTimeZoneToUpdate()
-        assert not timeZoneToUpdate == TZ_NULL, "nothing to update in this verse"
-        assert timeZoneToUpdate in self.timeZoneUpdates, "nothing to update in this particular timeZone"
-        a=2
 
 
 # ------------------------------------------------------------------------
@@ -558,11 +556,11 @@ class Storage(Counter):
 
     def isPlayerTransferable(self, playerIdx):
         (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
-        return self.isCountryFullySettled(countryIdx)
+        return self.isCountryMarketOpen(countryIdx)
 
-    def isCountryFullySettled(self, countryIdx):
+    def isCountryMarketOpen(self, countryIdx):
         timeZone = self.getCountryTimeZone(countryIdx)
-        return self.timeZoneUpdates[timeZone].isFullySettled(self.currentBlock)
+        return self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
 
     # DeltaVerse < VERSES_PER_DAY:
     # timeZoneToUpdate = timeZoneForRound1 + DeltaVerse // 4 % 24

@@ -268,28 +268,20 @@ def integrationTest():
         for sv in range(4):
             assert ST.currentTimeZoneToUpdate() == ((v+1) % 24, sv), "incorrect timeZone to update"
             advanceNVerses(1, ST, ST_CLIENT)
-    # assert ST.timeZoneUpdates[timeZone].updateCycleIdx == v+1, "incorrect updateCycleIdx"
-    # beyond this, it remains there
     assert ST.currentVerse == 99, "wrong verse num"
     assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
 
+    playerIdx = ST.encodeCountryAndVal(1,3) # belongs to team1, of course
+    assert not ST.isPlayerTransferable(playerIdx), "country busy playing"
 
-    b=2
+    # fix these numbers:
+    verseAtFinal = 3 + VERSES_PER_ROUND - 3*VERSES_PER_DAY -1
+    advanceNVerses(verseAtFinal-ST.currentVerse, ST, ST_CLIENT)
+    assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
+
     if False:
-        # Create teams in ST and ST_CLIENT
-        # teamIdx1 = createTeam("Barca", ALICE, ST, ST_CLIENT)
-        # teamIdx2 = createTeam("Madrid", BOB, ST, ST_CLIENT)
-        # teamIdx3 = createTeam("Milan", CAROL, ST, ST_CLIENT)
-        # teamIdx4 = createTeam("PSG", CAROL, ST, ST_CLIENT)
-
-        # advances both BC and CLIENT, syncs if it goes through a verse, updates, etc... (nothing to do, yet)
-        advanceToBlock(100, ST, ST_CLIENT)
-
-        # One verse is about 1 hour, so a day is about 24 verseSteps
-        verseInit = 3
-        verseStep = 24
-
-        # Cook init data for the 1st league (see constants.py for explanation)
         usersInitData = {
             "teamIdxs": [teamIdx1, teamIdx2],
             "teamOrders": [DEFAULT_ORDER, REVERSE_ORDER],
