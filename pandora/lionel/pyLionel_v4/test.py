@@ -271,12 +271,14 @@ def integrationTest():
     assert ST.currentVerse == 99, "wrong verse num"
     assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
 
-    playerIdx = ST.encodeCountryAndVal(1,3) # belongs to team1, of course
+    playerIdx = ST.encodeCountryAndVal(1,12) # belongs to team1, of course
     assert not ST.isPlayerTransferable(playerIdx), "country busy playing"
 
     # fix these numbers:
-    verseAtFinal = 3 + VERSES_PER_ROUND - 3*VERSES_PER_DAY -1
-    advanceNVerses(verseAtFinal-ST.currentVerse, ST, ST_CLIENT)
+    verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
+    advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)
+    print(ST.timeZoneUpdates[timeZone].updateCycleIdx)
+    assert ST.currentVerse == verseAtLastMatch, "error in advance verse"
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"

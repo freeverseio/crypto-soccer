@@ -36,9 +36,14 @@ class TimeZoneUpdate():
         self.lastBlockUpdate = 0
 
     def isTimeZoneMarketOpen(self, nowBlock):
-        if self.updateCycleIdx > TZ_IDX_AT_FINAL_STATES_UPDATE:
+        if self.updateCycleIdx > TZ_IDX_MARKET_OPENS:
             return True
-        return self.updateCycleIdx == 0 and self.isLastUpdateSettled(nowBlock)
+        if self.isLastUpdateSettled(nowBlock) and (
+            self.updateCycleIdx == TZ_IDX_MARKET_OPENS or
+            self.updateCycleIdx == 0
+        ):
+            return True
+        return False
 
     def isLastUpdateSettled(self, nowBlock):
         if self.lastBlockUpdate == 0:
@@ -48,8 +53,8 @@ class TimeZoneUpdate():
     # Todo: implement do something with updateData
     def newUpdate(self, nowBlock, updateData):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % VERSES_PER_TIMEZONE_PER_ROUND
-        isInFreezePeriod = self.updateCycleIdx > TZ_IDX_AT_FREEZE
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % TZ_IDX_LAST_CYCLE_IDX
+        isInFreezePeriod = self.updateCycleIdx > TZ_IDX_DRAW_NEXT_LEAGUES
         if not isInFreezePeriod:
             # do something with update data
             self.lastBlockUpdate = nowBlock
