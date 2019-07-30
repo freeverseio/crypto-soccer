@@ -352,6 +352,11 @@ class Counter():
         self.currentBlock += 1
         return verseWasCrossed
 
+    def getDeployHoursMinutes(self):
+        hours = self.deployTimeInSecsOfADay // 3600
+        minutes = (self.deployTimeInSecsOfADay - hours*3600) // 60
+        return hours, minutes
+
 class DataToChallengePlayerSkills():
     def __init__(self, merkleProofStates, merkleProofLeague, merkleProofLeagueRoots, merkleProofSuperRoots):
         self.merkleProofStates      = merkleProofStates
@@ -373,9 +378,12 @@ class Storage(Counter):
         Counter.__init__(self, nowInSecsOfADay)
 
         self.countries = []
+        self.timeZoneForRound1, self.verseForRound1 = self.initFirstRound()
+
         self.countries.append(Country(0)) # countries[0] is dummy
         self.timeZoneToCountries = {}
         self.timeZoneUpdates = {}
+        self.createCountry(self.timeZoneForRound1)
 
         # this bool is just to understand if the created BC is actually a client
         # it allows us, in this simulation, to ensure that the functions that are
@@ -410,8 +418,16 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
+    def initFirstRound(self):
+        hours, minutes = self.getDeployHoursMinutes()
+        quarter = minutes // 15 # = 0, 1, 2, 3
+        if quarter == 3:
+            return hours + 1, 4
+        else:
+            return hours, 3 - quarter
+
     def currentRound(self):
-        # verse starts at 0, round at 1.
+        # verse starts at 0, rounds at 1.
         return self.verseToRound(self.currentVerse)
 
     def addCountryToTimeZone(self, countryIdx, timeZone):
@@ -521,12 +537,13 @@ class Storage(Counter):
         return self.countries[countryIdx].timeZone
 
     def getVerseLeaguesStartFromTimeZoneAndRound(self, timeZone, round):
-        # warning: not valid for (round = 1, timeZone = 0)
-        return -1 + 4 * timeZone + (round-1) * VERSES_PER_ROUND
+        return self.verseForRound1 + 4 * (timeZone - self.timeZoneForRound1)+ (round-1) * VERSES_PER_ROUND
 
     def verseToRound(self, verse):
-        return 1 + ((verse + 1) // VERSES_PER_ROUND)
-
+        if verse < self.verseForRound1:
+            return 0
+        else:
+            return 1 + (verse - self.verseForRound1) // VERSES_PER_ROUND
 
     def isPlayerTransferable(self, playerIdx):
         (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
@@ -536,15 +553,15 @@ class Storage(Counter):
         timeZone = self.getCountryTimeZone(countryIdx)
         return self.timeZoneUpdates[timeZone].isFullySettled(self.currentBlock)
 
-    def verseToTimeZone(self, verse, deployTimeInSecsOfADay):
-        secsOfTheDay = (verse * SECS_PER_VERSE + deployTimeInSecsOfADay) % (24*3600)
-        verseOfTheDay = int(secsOfTheDay / SECS_PER_VERSE)
-        timeZone = int((1+verseOfTheDay) / 4) % 24 # the extra +1 is because a timeZone starts at quarter-to-the-hour
-        posInTimeZone = (1+verseOfTheDay) % 4
+    def verseToTimeZone(self, verse):
+        if verse < self.verseForRound1:
+            return self.timeZoneForRound1
+        timeZone = (self.timeZoneForRound1 + (verse - self.verseForRound1) // 4) % 24
+        posInTimeZone = (verse - self.verseForRound1) % 4
         return timeZone, posInTimeZone
 
     def currentTimeZone(self):
-        return self.verseToTimeZone(self.currentVerse, self.deployTimeInSecsOfADay)
+        return self.verseToTimeZone(self.currentVerse)
 
 
     # toni
@@ -989,8 +1006,8 @@ class Storage(Counter):
     def getBlockNumForLastLeagueOfTeam(self, teamIdx):
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
         timeZone = self.getCountryTimeZone(countryIdx)
-        a=2
-        return self.verse2blockNum(self.leagues[self.teams[teamIdx].currentLeagueIdx].verseInit)
+        verseStart = self.getVerseLeaguesStartFromTimeZoneAndRound(timeZone, self.currentRound())
+        return self.verse2blockNum(verseStart)
 
     def getFreeShirtNum(self, teamIdx):
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)

@@ -117,9 +117,12 @@ def integrationTest():
     ST_CLIENT   = Storage(nowInSecsOfADay, isClient = True)
 
     assert ST.currentVerse == 0, "we should start at verse = 0"
-    assert ST.currentRound() == 1, "we should start at round = 1"
-    assert ST.verseToRound(VERSES_PER_ROUND-2) == 1, "we should start at round = 1"
-    assert ST.verseToRound(VERSES_PER_ROUND-1) == 2, "we should have moved to round = 2"
+    assert ST.currentRound() == 0, "we should start at round = 0"
+    assert ST.verseToRound(1) == 0, "we should start at round = 0"
+    assert ST.verseToRound(2) == 0, "we should start at round = 0"
+    assert ST.verseToRound(3) == 1, "we should have moved to round = 1"
+    assert ST.verseToRound(3 + VERSES_PER_ROUND-1) == 1, "we should still be at round = 1"
+    assert ST.verseToRound(3 + VERSES_PER_ROUND) == 2, "we should have moved to round = 2"
 
     # The accumulator is responsible for receiving user actions and committing them in the correct verse.
     # It only lives in the CLIENT.
