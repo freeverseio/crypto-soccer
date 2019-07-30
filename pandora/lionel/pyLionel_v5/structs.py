@@ -1865,12 +1865,8 @@ class Storage(Counter):
         orgMap = []
         for countryIdx in self.timeZoneToCountries[timeZoneToUpdate]:
             countryMap = []
-            teamIdxInCountry = 0
-            for div in range(self.countries[countryIdx].nDivisions):
-                for league in range(self.nLeaguesInDivision(div+1)):
-                    for team in range(TEAMS_PER_LEAGUE):
-                        teamIdxInCountry += 1
-                        countryMap.append(teamIdxInCountry)
+            for t in range(self.getNTeamsInCountry(countryIdx)):
+                countryMap.append(t+1)
             orgMap.append(countryMap)
         return orgMap
 
@@ -1879,6 +1875,7 @@ class Storage(Counter):
         self.assertIsClient()
         if self.timeZoneUpdates[timeZoneToUpdate].lastBlockUpdate == 0:
             self.timeZoneUpdates[timeZoneToUpdate].teamOrgMapPreHash[0] = self.buildDefaultOrgMap(timeZoneToUpdate)
+
         return 0
 
 
