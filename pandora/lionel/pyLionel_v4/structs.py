@@ -43,9 +43,10 @@ class TimeZoneUpdate():
             return True
         return nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
 
-    def newUpdate(self, nowBlock):
+    # Todo: implement do something with updateData
+    def newUpdate(self, nowBlock, updateData):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % 29
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % VERSES_PER_TIMEZONE_PER_ROUND
         self.lastBlockUpdate = nowBlock
 
 
@@ -215,6 +216,13 @@ class VerseUpdate():
         self.initLevel4()
 
 
+    def updateTimeZone(self, dataForUpdate):
+        timeZoneToUpdate, posInUpdate = self.currentTimeZoneToUpdate()
+        assert not timeZoneToUpdate == TZ_NULL, "nothing to update in this verse"
+        assert timeZoneToUpdate in self.timeZoneUpdates, "nothing to update in this particular timeZone"
+        a=2
+
+
 # ------------------------------------------------------------------------
 # ----------      Classes used only by CLIENT                 ------------
 # ------------------------------------------------------------------------
@@ -344,13 +352,15 @@ class Counter():
         self.currentVerse = 0
         self.deployTimeInSecsOfADay = nowInSecsOfADay
 
+    def isCrossingVerse(self):
+        if self.currentBlock == 0:
+            return False
+        return self.currentBlock % self.blocksBetweenVerses == 0
+
     def incrementBlock(self):
-        verseWasCrossed = False
-        if self.currentBlock == self.nextVerseBlock():
+        if self.isCrossingVerse():
             self.currentVerse += 1
-            verseWasCrossed = True
         self.currentBlock += 1
-        return verseWasCrossed
 
     def getDeployHoursMinutes(self):
         hours = self.deployTimeInSecsOfADay // 3600
@@ -401,7 +411,7 @@ class Storage(Counter):
         # an array of leagues, first entry is dummy
         self.leagues = [League(0,0,0)]
 
-        self.blocksBetweenVerses = 360
+        self.blocksBetweenVerses = BLOCKS_BETWEEN_VERSES
         self.VerseActionsCommits = [VerseActionsCommit()]
         self.verseToLeagueCommits = {}
 
@@ -554,15 +564,42 @@ class Storage(Counter):
         timeZone = self.getCountryTimeZone(countryIdx)
         return self.timeZoneUpdates[timeZone].isFullySettled(self.currentBlock)
 
-    def verseToTimeZone(self, verse):
-        if verse < self.verseForRound1:
-            return 0, 4 - (self.verseForRound1 - verse)
-        timeZone = (self.timeZoneForRound1 + (verse - self.verseForRound1) // 4) % 24
-        posInTimeZone = (verse - self.verseForRound1) % 4
-        return timeZone, posInTimeZone
+    # DeltaVerse < VERSES_PER_DAY:
+    # timeZoneToUpdate = timeZoneForRound1 + DeltaVerse // 4 % 24
+    # posInUpdate = DeltaVerse % 4
+    #
+    # if DeltaVerse == VERSES_PER_DAY:
+    #     timeZoneToUpdate = None
+    #
+    # if DeltaVerse > VERSES_PER_DAY and
+    #     timeZoneToUpdate = timeZoneForRound1 + (DeltaVerse - 1) // 4 % 24
+    # posInUpdate = (DeltaVerse - 1) % 4
+    #
+    # Note that VERSES_PER_DAY // 4 % 4 = 0, so:
+    # DeltaVerse = VPD + 1 = > timeZoneToUpdate = timeZoneForRound1(o'clock)
+    # DeltaVerse = VPD + 2 = > timeZoneToUpdate = timeZoneForRound1(past 15)
+    # DeltaVerse = VPD + 3 = > timeZoneToUpdate = timeZoneForRound1(past 30)
+    # DeltaVerse = VPD + 4 = > timeZoneToUpdate = timeZoneForRound1(past 45)
+    # DeltaVerse = VPD + 5 = > timeZoneToUpdate = timeZoneForRound1 + 1(o'clock)
 
-    def currentTimeZone(self):
-        return self.verseToTimeZone(self.currentVerse)
+    def verseToTimeZoneToUpdate(self, verse):
+        if verse < self.verseForRound1:
+            return TZ_NULL, TZ_NULL
+
+        deltaVerse = ( verse - self.verseForRound1 ) % VERSES_PER_ROUND
+        if deltaVerse < VERSES_PER_DAY:
+            timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
+            posInZone   = deltaVerse % 4
+        elif deltaVerse == VERSES_PER_DAY:
+            timeZone    = TZ_NULL
+            posInZone   = TZ_NULL
+        else:
+            timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
+            posInZone   = (deltaVerse - 1) % 4
+        return timeZone, posInZone
+
+    def currentTimeZoneToUpdate(self):
+        return self.verseToTimeZoneToUpdate(self.currentVerse)
 
 
     # toni
@@ -1323,6 +1360,12 @@ class Storage(Counter):
         else:
             return self.verseToFinishingLeagueIdxs[verse]
 
+    def updateTimeZone(self, updateData):
+        timeZoneToUpdate, posInUpdate = self.currentTimeZoneToUpdate()
+        assert not timeZoneToUpdate == TZ_NULL, "nothing to update in this verse"
+        assert timeZoneToUpdate in self.timeZoneUpdates, "nothing to update in this particular timeZone"
+        self.timeZoneUpdates[timeZoneToUpdate].newUpdate(self.currentBlock, updateData)
+
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -1788,10 +1831,20 @@ class Storage(Counter):
             verseRootFinal = verseRootFinal * 2
         ST.updateVerseRoot(self.currentVerse, verseRootFinal, ALICE)
 
+
+    # TODO: implement
+    def getDataForUpdate(self, timeZoneToUpdate, posInUpdate):
+        self.assertIsClient()
+        return 0
+
+
     def syncTimeZoneCommits(self, ST):
         self.assertIsClient()
-        currentTimeZone, posInTimeZone = ST.currentTimeZone()
-        if currentTimeZone in ST.timeZoneUpdates:
-            # when done, we will pass data from self (ST_CLIENT)
-            ST.timeZoneUpdates[currentTimeZone].newUpdate(ST.currentBlock)
+        timeZoneToUpdate, posInUpdate = ST.currentTimeZoneToUpdate()
+        if timeZoneToUpdate == TZ_NULL:
+            return
+        if timeZoneToUpdate in ST.timeZoneUpdates:
+            dataForUpdate = self.getDataForUpdate(timeZoneToUpdate, posInUpdate)
+            ST.updateTimeZone(dataForUpdate)
+
 

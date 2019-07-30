@@ -181,13 +181,12 @@ def advanceToBlock(n, ST, ST_CLIENT):
     nBlocksToAdvance = n - ST.currentBlock
     assert nBlocksToAdvance > 0, "cannot advance less than 1 block"
     for block in range(nBlocksToAdvance):
-        verseWasCrossedBC = ST.incrementBlock()
-        verseWasCrossedCLIENT = ST_CLIENT.incrementBlock()
-        assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
-        if verseWasCrossedBC:
+        assert ST.isCrossingVerse() == ST_CLIENT.isCrossingVerse(), "CLIENT and BC not synced in verse crossing"
+        if ST.isCrossingVerse():
             ST_CLIENT.syncActions(ST)
-            # ST_CLIENT.syncLeagueCommits(ST)
             ST_CLIENT.syncTimeZoneCommits(ST)
+        ST.incrementBlock()
+        ST_CLIENT.incrementBlock()
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(

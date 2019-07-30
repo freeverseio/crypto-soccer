@@ -134,22 +134,22 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    timeZone, posInTimeZone = ST.verseToTimeZone(0)
-    assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(1 + 0*4)
-    assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 0*4)
-    assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 1*4)
-    assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(3 + 22*4)
-    assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4)
-    assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 2)
-    assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
-    timeZone, posInTimeZone = ST.verseToTimeZone(23*4 + 3)
-    assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(0)
+    # assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(1 + 0*4)
+    # assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 0*4)
+    # assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 1*4)
+    # assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 22*4)
+    # assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4)
+    # assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 2)
+    # assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 3)
+    # assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
 
     # getVerseLeaguesStartFromTimeZoneAndRound(timeZone, round):
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 1) == 3, "wrong verse start leagues"
@@ -157,7 +157,7 @@ def integrationTest():
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 2) == 3 + VERSES_PER_ROUND, "wrong verse start leagues"
 
     # we deployed at 1:06 am, so we are in timeZone = 0, pos = 1
-    assert ST.currentTimeZone() == (0, 1), "wrong init timeZone"
+    # assert ST.currentTimeZoneToUpdate() == (0, 1), "wrong init timeZone"
 
     timeZone = 1
     countryIdx = 1
@@ -258,10 +258,36 @@ def integrationTest():
     ST.movePlayerToTeam(playerIdx, teamIdx2)
     assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
 
-
-    advanceNVerses(4*6, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 1, "incorrect updateCycleIdx"
-    assert not ST.isPlayerTransferable(playerIdx), "country not started yet"
+    # we are at verse = 0. The league starts at verse = 3
+    for v in range(3):
+        assert ST.currentTimeZoneToUpdate() == (TZ_NULL, TZ_NULL), "incorrect timeZone to update"
+        assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 0, "incorrect updateCycleIdx"
+        advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.currentVerse == 3, "wrong verse num"
+    for v in range(24):
+        for sv in range(4):
+            print(v, sv, ST.currentVerse )
+            assert ST.currentTimeZoneToUpdate() == ((v+1) % 24, sv), "incorrect timeZone to update"
+            advanceNVerses(1, ST, ST_CLIENT)
+    # assert ST.timeZoneUpdates[timeZone].updateCycleIdx == v+1, "incorrect updateCycleIdx"
+    # beyond this, it remains there
+    assert ST.currentVerse == 7, "wrong verse num"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
+    # move to next day at 0:30
+    advanceNVerses(VERSES_PER_DAY-4, ST, ST_CLIENT)
+    assert ST.currentVerse == 3 + VERSES_PER_DAY - 1, "wrong verse num"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
+    # move to next day at 0:45 => do not update anything on day 1! Only update one the 2nd, 3rd and 4th
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 5, "incorrect updateCycleIdx"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 6, "incorrect updateCycleIdx"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 7, "incorrect updateCycleIdx"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 7, "incorrect updateCycleIdx"
 
     b=2
     if False:
