@@ -266,28 +266,13 @@ def integrationTest():
     assert ST.currentVerse == 3, "wrong verse num"
     for v in range(24):
         for sv in range(4):
-            print(v, sv, ST.currentVerse )
             assert ST.currentTimeZoneToUpdate() == ((v+1) % 24, sv), "incorrect timeZone to update"
             advanceNVerses(1, ST, ST_CLIENT)
     # assert ST.timeZoneUpdates[timeZone].updateCycleIdx == v+1, "incorrect updateCycleIdx"
     # beyond this, it remains there
-    assert ST.currentVerse == 7, "wrong verse num"
+    assert ST.currentVerse == 99, "wrong verse num"
     assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
-    # move to next day at 0:30
-    advanceNVerses(VERSES_PER_DAY-4, ST, ST_CLIENT)
-    assert ST.currentVerse == 3 + VERSES_PER_DAY - 1, "wrong verse num"
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
-    # move to next day at 0:45 => do not update anything on day 1! Only update one the 2nd, 3rd and 4th
-    advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
-    advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 5, "incorrect updateCycleIdx"
-    advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 6, "incorrect updateCycleIdx"
-    advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 7, "incorrect updateCycleIdx"
-    advanceNVerses(1, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 7, "incorrect updateCycleIdx"
+
 
     b=2
     if False:
