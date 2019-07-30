@@ -274,10 +274,13 @@ def integrationTest():
     playerIdx = ST.encodeCountryAndVal(1,12) # belongs to team1, of course
     assert not ST.isPlayerTransferable(playerIdx), "country busy playing"
 
-    # fix these numbers:
+    action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
+    ST_CLIENT.accumulateAction(action00)
+    ST_CLIENT.accumulateAction(action01)
+
     verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
     advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)
-    print(ST.timeZoneUpdates[timeZone].updateCycleIdx)
     assert ST.currentVerse == verseAtLastMatch, "error in advance verse"
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
