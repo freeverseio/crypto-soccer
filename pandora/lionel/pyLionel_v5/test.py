@@ -276,8 +276,8 @@ def integrationTest():
 
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
     action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
-    # ST_CLIENT.accumulateAction(action00)
-    # ST_CLIENT.accumulateAction(action01)
+    ST_CLIENT.accumulateAction(action00)
+    ST_CLIENT.accumulateAction(action01)
 
     verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
     advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)

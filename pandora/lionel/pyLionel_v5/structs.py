@@ -59,6 +59,11 @@ class TimeZoneUpdate():
             # do something with update data
             self.lastBlockUpdate = nowBlock
 
+class TimeZoneUpdateClient(TimeZoneUpdate):
+    def __init__(self):
+        TimeZoneUpdate.__init__(self)
+        self.teamOrgMapPreHash = [0, 0]
+
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
 # ...and there'll be associated read/write functions
@@ -390,6 +395,11 @@ class Storage(Counter):
         # The Blockchain does not need this fake counter :-)
         Counter.__init__(self, nowInSecsOfADay)
 
+        # this bool is just to understand if the created BC is actually a client
+        # it allows us, in this simulation, to ensure that the functions that are
+        # only to be used by the CLIENT are actually used only by the CLIENT :-)
+        self.isClient = isClient
+
         self.countries = []
         self.timeZoneForRound1, self.verseForRound1 = self.initFirstRound()
 
@@ -398,10 +408,6 @@ class Storage(Counter):
         self.timeZoneUpdates = {}
         self.createCountry(self.timeZoneForRound1)
 
-        # this bool is just to understand if the created BC is actually a client
-        # it allows us, in this simulation, to ensure that the functions that are
-        # only to be used by the CLIENT are actually used only by the CLIENT :-)
-        self.isClient = isClient
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.
@@ -448,7 +454,10 @@ class Storage(Counter):
             self.timeZoneToCountries[timeZone].append(countryIdx)
         else:
             self.timeZoneToCountries[timeZone] = [countryIdx]
-            self.timeZoneUpdates[timeZone] = TimeZoneUpdate()
+            if self.isClient:
+                self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient()
+            else:
+                self.timeZoneUpdates[timeZone] = TimeZoneUpdate()
 
     def createCountry(self, timeZone):
         countryIdx = len(self.countries)
@@ -1446,7 +1455,7 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        leagueIdx = self.getLeagueForAction(action)
+        leagueIdx = self.getOrgChartForAction(action)
         if self.hasLeagueFinished(leagueIdx):
             print("Cannot accept actions for leagues that already finished! Action discarded")
         else:
@@ -1471,7 +1480,7 @@ class Storage(Counter):
         return seedsPerVerse
 
     # returns which league did this action refer to
-    def getLeagueForAction(self, action):
+    def getOrgChartForAction(self, action):
         self.assertIsClient()
         return self.teams[action["teamIdx"]].currentLeagueIdx
 
@@ -1835,9 +1844,32 @@ class Storage(Counter):
         ST.updateVerseRoot(self.currentVerse, verseRootFinal, ALICE)
 
 
+    def nLeaguesInDivision(self, div):
+        if div == 1:
+            return 1
+        else:
+            return LEAGUES_PER_DIVISON
+
+    def buildDefaultOrgMap(self, timeZoneToUpdate):
+        # you want to ask orMap[country] = [teamIdx1,...]
+        self.assertIsClient()
+        orgMap = []
+        for countryIdx in self.timeZoneToCountries[timeZoneToUpdate]:
+            countryMap = []
+            teamIdxInCountry = 0
+            for div in range(self.countries[countryIdx].nDivisions):
+                for league in range(self.nLeaguesInDivision(div+1)):
+                    for team in range(TEAMS_PER_LEAGUE):
+                        teamIdxInCountry += 1
+                        countryMap.append(teamIdxInCountry)
+            orgMap.append(countryMap)
+        return orgMap
+
     # TODO: implement
     def getDataForUpdate(self, timeZoneToUpdate, posInUpdate):
         self.assertIsClient()
+        if self.timeZoneUpdates[timeZoneToUpdate].lastBlockUpdate == 0:
+            self.timeZoneUpdates[timeZoneToUpdate].teamOrgMapPreHash[0] = self.buildDefaultOrgMap(timeZoneToUpdate)
         return 0
 
 
