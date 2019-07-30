@@ -1,24 +1,61 @@
-Lionel4 python:
-
-fix shirtNum vs playerPosInTeam, one has a meaning that is invariant under tactics...
-replace MinimalPlayerState by genome vs temp
-check that skills -> state is only used when really needed
-update help lines from states to skills
-do we need to recheck that the leaf is as expected all the time?
-I think that neededHashes contain the root too, not needed.
-
-General doubt: currently, verifyMerkleTree receives the leaf-prehash. In general, I think that we wouldn't need it, but rather, pass the hash of the leaf directly...
-
-Make it all with MerkleTrees
-	=> it may require storing the tree in the ST_CLIENT to produce the proofs?
+def getPlayerStateAtBirth(self, playerIdx):
 
 
-----
+    def lastVerseBlock(self):
+        return self.VerseActionsCommits[-1].blockNum
 
-todo: leagueRoot not needed in dataToChallengeLeague
-just like I have dataToChallengeLeague, do I need dataToChallengeSuperoot, et?
+
+verseToTimeZone: timeZone, posInTimeZone = f(verse) used by currentTimeZone... used by nobody
 
 
 
 
+- updateCycleIdx needs not be written, can be computed on the fly?
+- check all use of deployTimeInSecsOfADay
+- remove Country.timeZone
+- some isPlayerTransferable went from isPlayerBusy, which is the oppostite!
+- use timestamp
+- replace python int() by //
+-----------
+
+
+
+
+es pot fer un shorten del hash per quedarse 16 bytes enlloc de 32?
+why do we need this in each slash? Is not a slash followed by a write()?
+	         self.lastWriteBlocknum          = blocknum # toni (needed?)
+
+
+
+- we should disallow leagues to be created in the past, and test usersAlong...
+
+
+
+check packing inputs by adria
+
+
+LeaguesBase
+
+LeaguesScheduler is LeaguesBase
+
+LeagueUsersAlongData is LeaguesScheduler
+LeagueUpdatable is LeaguesScheduler
+
+LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData
+
+LeaguesScore is LeagueUpdatable
+LeaguesComputer is LeaguesScore
+
+Leagues is LeagueChallengeable
+
+
+Leagues -> LeagueChallengeable =>{
+
+ -> LeaguesComputer		-> LeaguesScore		-> LeagueUpdatable 	-> LeaguesScheduler
+ -> LeagueUsersAlongData 										-> LeaguesScheduler -> LeaguesBase
+
+}
+
+
+LeagueState -> TeamState -> PlayerState
 

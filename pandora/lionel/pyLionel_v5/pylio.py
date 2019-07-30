@@ -51,7 +51,7 @@ def printPlayer(playerState):
 def printTeam(teamIdx, ST_CLIENT):
     hash = 0
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
-    for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+    for shirtNum in range(PLAYERS_PER_TEAM_MAX):
         if ST_CLIENT.isShirtNumFree(teamIdx, shirtNum):
             continue
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
@@ -62,7 +62,7 @@ def printTeam(teamIdx, ST_CLIENT):
     return hash
 
 def isValidOrdering(playerOrders):
-    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM_INIT]
+    # TODO: Currently not implemented. Check all nums are different and in [0, PLAYERS_PER_TEAM_INIT]
     return True
 
 def shiftBack(t, nTeams):
@@ -172,7 +172,7 @@ def areEqualStructs(st1, st2):
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
-    return arrayDims(NPLAYERS_PER_TEAM_MAX, nTeams)
+    return arrayDims(PLAYERS_PER_TEAM_MAX, nTeams)
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
@@ -181,12 +181,12 @@ def advanceToBlock(n, ST, ST_CLIENT):
     nBlocksToAdvance = n - ST.currentBlock
     assert nBlocksToAdvance > 0, "cannot advance less than 1 block"
     for block in range(nBlocksToAdvance):
-        verseWasCrossedBC = ST.incrementBlock()
-        verseWasCrossedCLIENT = ST_CLIENT.incrementBlock()
-        assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
-        if verseWasCrossedBC:
+        assert ST.isCrossingVerse() == ST_CLIENT.isCrossingVerse(), "CLIENT and BC not synced in verse crossing"
+        if ST.isCrossingVerse():
             ST_CLIENT.syncActions(ST)
-            ST_CLIENT.syncLeagueCommits(ST)
+            ST_CLIENT.syncTimeZoneCommits(ST)
+        ST.incrementBlock()
+        ST_CLIENT.incrementBlock()
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -220,7 +220,7 @@ def flatten(statesPerTeam):
     flatStates = []
     for statesTeam in statesPerTeam:
         for statePlayer in statesTeam:
-            flatStates.append(MinimalPlayerState(statePlayer)) # select only skills and playerIdx
+            flatStates.append(PlayerSkills(statePlayer)) # select only skills and playerIdx
     return flatStates
 
 def challengeLevel1(verse, addr, ST, ST_CLIENT, lie):
@@ -377,3 +377,17 @@ def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
 def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
     ST.movePlayerToTeam(playerIdx, teamIdx)
     ST_CLIENT.movePlayerToTeam(playerIdx, teamIdx)
+
+
+def createCountry(timeZone, ST, ST_CLIENT):
+    countryIdx = ST.createCountry(timeZone)
+    countryIdx_client = ST_CLIENT.createCountry(timeZone)
+    assert countryIdx == countryIdx_client, "ST/ST_CLIENT not in sync"
+    return countryIdx
+
+def addDivision(countryIdx, ST, ST_CLIENT):
+    divisionIdx = ST.addDivision(countryIdx)
+    divisionIdx_client = ST_CLIENT.addDivision(countryIdx)
+    assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
+    return divisionIdx
+

@@ -20,8 +20,8 @@ def updateAllLeaguesWithTruth(ST, ST_CLIENT, leaguesTested, doExchanges):
     for extraVerse in range(2000):
         if doExchanges and extraVerse % 10:
             for p in range(2):
-                playerIdx1 = 1 + intHash(str(p+extraVerse)) % 100 * NPLAYERS_PER_TEAM_MAX
-                playerIdx2 = 1 + intHash(str(p+extraVerse) + "salt") % 100 * NPLAYERS_PER_TEAM_MAX
+                playerIdx1 = 1 + intHash(str(p+extraVerse)) % 100 * PLAYERS_PER_TEAM_MAX
+                playerIdx2 = 1 + intHash(str(p+extraVerse) + "salt") % 100 * PLAYERS_PER_TEAM_MAX
                 try:
                     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
                 except:
@@ -112,8 +112,17 @@ def brutalBlock(ST, ST_CLIENT, leaguesTested):
 #
 def integrationTest():
     # Create contract storage in BC, and its extended version for the CLIENT
-    ST          = Storage(isClient = False)
-    ST_CLIENT   = Storage(isClient = True)
+    nowInSecsOfADay = 66*60 # we deploy the contract one day, at 1:06 am
+    ST          = Storage(nowInSecsOfADay, isClient = False)
+    ST_CLIENT   = Storage(nowInSecsOfADay, isClient = True)
+
+    assert ST.currentVerse == 0, "we should start at verse = 0"
+    assert ST.currentRound() == 0, "we should start at round = 0"
+    assert ST.verseToRound(1) == 0, "we should start at round = 0"
+    assert ST.verseToRound(2) == 0, "we should start at round = 0"
+    assert ST.verseToRound(3) == 1, "we should have moved to round = 1"
+    assert ST.verseToRound(3 + VERSES_PER_ROUND-1) == 1, "we should still be at round = 1"
+    assert ST.verseToRound(3 + VERSES_PER_ROUND) == 2, "we should have moved to round = 2"
 
     # The accumulator is responsible for receiving user actions and committing them in the correct verse.
     # It only lives in the CLIENT.
@@ -125,21 +134,159 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    # Create teams in ST and ST_CLIENT
-    teamIdx1 = createTeam("Barca", ALICE, ST, ST_CLIENT)
-    teamIdx2 = createTeam("Madrid", BOB, ST, ST_CLIENT)
-    teamIdx3 = createTeam("Milan", CAROL, ST, ST_CLIENT)
-    teamIdx4 = createTeam("PSG", CAROL, ST, ST_CLIENT)
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(0)
+    # assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(1 + 0*4)
+    # assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 0*4)
+    # assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 1*4)
+    # assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 22*4)
+    # assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4)
+    # assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 2)
+    # assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
+    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 3)
+    # assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
+
+    # getVerseLeaguesStartFromTimeZoneAndRound(timeZone, round):
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 1) == 3, "wrong verse start leagues"
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(2, 1) == 7, "wrong verse start leagues"
+    assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 2) == 3 + VERSES_PER_ROUND, "wrong verse start leagues"
+
+    # we deployed at 1:06 am, so we are in timeZone = 0, pos = 1
+    # assert ST.currentTimeZoneToUpdate() == (0, 1), "wrong init timeZone"
+
+    timeZone = 1
+    countryIdx = 1
+
+    assert ST.getNDivisionsInCountry(countryIdx) == 1, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(countryIdx) == 1, "wrong nLeagues"
+    assert ST.getNTeamsInCountry(countryIdx) == 8, "wrong nTeams"
+
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(2, 3)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 8)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(1, 9)), "wrong teamExists call"
+
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 3)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(2, 3)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+
+    divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
+    assert divisionIdx == 2, "wrong divisionIdx"
+    assert ST.getNDivisionsInCountry(countryIdx) == 2, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(countryIdx) == 17, "wrong nLeagues"
+    assert ST.getNTeamsInCountry(countryIdx) == 17*8, "wrong nTeams"
+
+    # getTeamIdxInCountryFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
+    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(0,1,1), "division 0 should not exist")
+    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(1,1,0), "division 0 only has 1 league")
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 0) == 1, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 1) == 2, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 0) == 9, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 1) == 10, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
+
+    # encode/decode with countryIdx
+    assert ST.encode(0,3,3,4) == 3, "wrong encode"
+    assert ST.encode(1,3,3,4) == 19, "wrong encode"
+    (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(1, 3))
+    assert val1 == 1 and val2 == 3
+    (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(500, 343))
+    assert val1 == 500 and val2 == 343
+
+    assert ST.teamExists(ST.encodeCountryAndVal(1, 8*17)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(1, 8*17+1)), "wrong teamExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
+
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(1) == 1, "wrong getTeamIdx"
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(18) == 1, "wrong getTeamIdx"
+    assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(19) == 2, "wrong getTeamIdx"
+    (teamIdxInCountry, shirtNum) =  ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
+    assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
+
+    assert ST.getDivisionCreationDay(1,1) == 0, "Wrong creation time"
+    assert ST.getDivisionCreationDay(1,2) == 0, "Wrong creation time"
+
+    assert ST.verseToUnixMonths(0) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(10) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(VERSES_PER_DAY*30) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
+    assert ST.verseToUnixMonths(VERSES_PER_DAY*31) == DEPLOYMENT_IN_UNIX_MONTHS + 1, "wrong verse to months"
+
+    assert ST.getDisivionIdxFromTeamIdxInCountry(1) == 1, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(8) == 1, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(9) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
+
+    playerIdx = ST.encodeCountryAndVal(1,35)
+    playerState = ST.getPlayerSkillsAtBirth(playerIdx)
+    assert playerState.getPlayerIdx() == playerIdx, "wrong playerIdx set"
+    assert all(playerState.getSkills() == [51,38,61,52,46]), "wrong skills set"
+    assert playerState.getMonth() == 350, "wrong age"
+
+    teamIdx = ST.encodeCountryAndVal(1,4)
+    assert ST.isBotTeam(teamIdx) == True, "team not seen as bot"
+
+    ST.acquireBot(teamIdx, ALICE)
+    ST_CLIENT.acquireBot(teamIdx, ALICE)
+
+    assert ST.isBotTeam(teamIdx) == False, "team not seen as human"
+
+    playerIdx = ST.encodeCountryAndVal(1,3) # belongs to team1, of course
+    assert ST.isPlayerTransferable(playerIdx), "country not started yet"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 0, "incorrect updateCycleIdx"
+
+    teamIdx2 = ST.encodeCountryAndVal(1, 2)
+    shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
+    ST.acquireBot(teamIdx2, BOB)
+    ST_CLIENT.acquireBot(teamIdx2, BOB)
+    shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
+    teamIdx1 = ST.encodeCountryAndVal(1, 1)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == FREEVERSE, "wrong owner of player"
+    ST.acquireBot(teamIdx1, CAROL)
+    ST_CLIENT.acquireBot(teamIdx1, CAROL)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == CAROL, "wrong owner of player"
+    ST.movePlayerToTeam(playerIdx, teamIdx2)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
+
+    # we are at verse = 0. The league starts at verse = 3
+    for v in range(3):
+        assert ST.currentTimeZoneToUpdate() == (TZ_NULL, TZ_NULL), "incorrect timeZone to update"
+        assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 0, "incorrect updateCycleIdx"
+        advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.currentVerse == 3, "wrong verse num"
+    for v in range(24):
+        for sv in range(4):
+            assert ST.currentTimeZoneToUpdate() == ((v+1) % 24, sv), "incorrect timeZone to update"
+            advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.currentVerse == 99, "wrong verse num"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
+
+    playerIdx = ST.encodeCountryAndVal(1,12) # belongs to team1, of course
+    assert not ST.isPlayerTransferable(playerIdx), "country busy playing"
+
+    action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
+    # ST_CLIENT.accumulateAction(action00)
+    # ST_CLIENT.accumulateAction(action01)
+
+    verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
+    advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)
+    assert ST.currentVerse == verseAtLastMatch, "error in advance verse"
+    assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
+    advanceNVerses(1, ST, ST_CLIENT)
+    assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
 
     if False:
-        # advances both BC and CLIENT, syncs if it goes through a verse, updates, etc... (nothing to do, yet)
-        advanceToBlock(100, ST, ST_CLIENT)
-
-        # One verse is about 1 hour, so a day is about 24 verseSteps
-        verseInit = 3
-        verseStep = 24
-
-        # Cook init data for the 1st league (see constants.py for explanation)
         usersInitData = {
             "teamIdxs": [teamIdx1, teamIdx2],
             "teamOrders": [DEFAULT_ORDER, REVERSE_ORDER],
@@ -372,15 +519,15 @@ def integrationTest():
         exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
         # or transfer them one by one:
         playerIdx3 = ST.getPlayerIdxFromTeamIdxAndShirt(teamIdx3, 2)
-        team3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+        team3, shirt3 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
         assert team3 == teamIdx3, "some is wrong with team assignments"
         movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
-        team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+        team, shirt = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
         assert team == teamIdx1, "wrong initial assignment"
-        assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
-        assert ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
-        assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
-        assert ST_CLIENT.getTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
+        assert ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+        assert ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
+        assert ST_CLIENT.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1) == (teamIdx4, 24), "Exchange did not register properly in BC"
+        assert ST_CLIENT.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2) == (teamIdx1, 24), "Exchange did not register properly in BC"
 
 
         #           -----  LEAGUE 3 ------
@@ -475,8 +622,8 @@ def integrationTest():
 
         # transfer many players
         for p in range(nPlayers):
-            playerIdx1 = 1+intHash(str(p)) % 100*NPLAYERS_PER_TEAM_MAX
-            playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * NPLAYERS_PER_TEAM_MAX
+            playerIdx1 = 1+intHash(str(p)) % 100*PLAYERS_PER_TEAM_MAX
+            playerIdx2 = 1+intHash(str(p)+ "salt") % 100 * PLAYERS_PER_TEAM_MAX
             exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
             pylio.assertPlayerStateInClientIsCertifiable(playerIdx1, ST, ST_CLIENT)
 
@@ -565,10 +712,10 @@ def simpleExchangeTest():
     print("\n\nplayers 2 and 27 before sale:\n")
 
     playerIdx1 = 2
-    playerIdx2 = NPLAYERS_PER_TEAM_MAX + 2
+    playerIdx2 = PLAYERS_PER_TEAM_MAX + 2
 
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+    team1, shirt1 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
     assert team1 == teamIdx1, "wrong initial assignment"
     assert team2 == teamIdx2, "wrong initial assignment"
@@ -582,17 +729,17 @@ def simpleExchangeTest():
 
     exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT)
 
-    team1, shirt1 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx1)
-    team2, shirt2 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx2)
+    team1, shirt1 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx1)
+    team2, shirt2 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx2)
 
     assert team1 == teamIdx2, "wrong initial assignment"
     assert team2 == teamIdx1, "wrong initial assignment"
 
     playerIdx3 = 34
-    teamIdx3, shirt3 = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    teamIdx3, shirt3 = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert teamIdx3 != teamIdx1, "please pick players from different teams"
     movePlayerToTeam(playerIdx3, teamIdx1, ST, ST_CLIENT)
-    team, shirt = ST.getTeamIdxAndShirtForPlayerIdx(playerIdx3)
+    team, shirt = ST.getCurrentTeamIdxAndShirtForPlayerIdx(playerIdx3)
     assert team == teamIdx1, "wrong initial assignment"
 
 
