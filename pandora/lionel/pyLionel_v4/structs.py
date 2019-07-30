@@ -1037,8 +1037,10 @@ class Storage(Counter):
         state.setCurrentShirtNum(buyerShirtNum)
         state.setLastSaleBlocknum(self.currentBlock)
 
-        self.teams[sellerTeamIdx].playerIdxs[sellerShirtNum] = UINTMINUS1
-        self.teams[buyerTeamIdx].playerIdxs[buyerShirtNum] = playerIdx
+        sellerCountryIdx, sellerTeamIdxInCountry    = self.decodeCountryAndVal(sellerTeamIdx)
+        buyerCountryIdx, buyerTeamIdxInCountry      = self.decodeCountryAndVal(buyerTeamIdx)
+        self.countries[sellerCountryIdx].teamIdxInCountryToTeam[sellerTeamIdxInCountry].playerIdxs[sellerShirtNum] = UINTMINUS1
+        self.countries[buyerCountryIdx].teamIdxInCountryToTeam[buyerTeamIdxInCountry].playerIdxs[buyerShirtNum] = playerIdx
 
         self.playerIdxToPlayerState[playerIdx] = pylio.duplicate(state)
 
@@ -1141,7 +1143,10 @@ class Storage(Counter):
             return pylio.duplicate(playerSkills)
 
     def getOwnerAddrFromTeamIdx(self, teamIdx):
-        return self.teamNameHashToOwnerAddr[pylio.intHash(self.teams[teamIdx].name)]
+        if self.isBotTeam(teamIdx):
+            return FREEVERSE
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        return self.countries[countryIdx].teamIdxInCountryToTeam[teamIdxInCountry].teamOwner
 
     def getOwnerAddrFromPlayerIdx(self, playerIdx):
         currentTeamIdx = self.getLastWrittenInBCPlayerStateFromPlayerIdx(playerIdx).currentTeamIdx

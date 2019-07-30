@@ -251,12 +251,16 @@ def integrationTest():
     ST_CLIENT.acquireBot(teamIdx2, BOB)
     shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
     teamIdx1 = ST.encodeCountryAndVal(1, 1)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == FREEVERSE, "wrong owner of player"
     ST.acquireBot(teamIdx1, CAROL)
     ST_CLIENT.acquireBot(teamIdx1, CAROL)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == CAROL, "wrong owner of player"
     ST.movePlayerToTeam(playerIdx, teamIdx2)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
+
 
     advanceNVerses(4*6, ST, ST_CLIENT)
-    assert ST.timeZoneUpdates[7].updateCycleIdx == 1, "incorrect updateCycleIdx"
+    assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 1, "incorrect updateCycleIdx"
     assert not ST.isPlayerTransferable(playerIdx), "country not started yet"
 
     b=2
