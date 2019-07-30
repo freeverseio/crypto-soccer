@@ -298,11 +298,15 @@ class ActionsAccumulator():
         self.commitedActions            = [0] # The genesis commit is a dummy one, as always
         self.commitedTrees              = [0]
 
-    def accumulateAction(self, action, leagueIdx):
-        if leagueIdx in self.buffer:
-            self.buffer[leagueIdx].append(action)
-        else:
-            self.buffer[leagueIdx] = [action]
+    def accumulateAction(self, action, timeZone, countryIdx, leagueIdxInCountry):
+        if timeZone not in self.buffer:
+            self.buffer[timeZone] = {}
+        if countryIdx not in self.buffer[timeZone]:
+            self.buffer[timeZone][countryIdx] = {}
+        if leagueIdxInCountry not in self.buffer[timeZone][countryIdx]:
+            self.buffer[timeZone][countryIdx][leagueIdxInCountry] = []
+        self.buffer[timeZone][countryIdx][leagueIdxInCountry].append(action)
+
 
     def clearBuffer(self, actions2remove):
         for action in actions2remove:
@@ -575,24 +579,6 @@ class Storage(Counter):
     def isCountryMarketOpen(self, countryIdx):
         timeZone = self.getCountryTimeZone(countryIdx)
         return self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
-
-    # DeltaVerse < VERSES_PER_DAY:
-    # timeZoneToUpdate = timeZoneForRound1 + DeltaVerse // 4 % 24
-    # posInUpdate = DeltaVerse % 4
-    #
-    # if DeltaVerse == VERSES_PER_DAY:
-    #     timeZoneToUpdate = None
-    #
-    # if DeltaVerse > VERSES_PER_DAY and
-    #     timeZoneToUpdate = timeZoneForRound1 + (DeltaVerse - 1) // 4 % 24
-    # posInUpdate = (DeltaVerse - 1) % 4
-    #
-    # Note that VERSES_PER_DAY // 4 % 4 = 0, so:
-    # DeltaVerse = VPD + 1 = > timeZoneToUpdate = timeZoneForRound1(o'clock)
-    # DeltaVerse = VPD + 2 = > timeZoneToUpdate = timeZoneForRound1(past 15)
-    # DeltaVerse = VPD + 3 = > timeZoneToUpdate = timeZoneForRound1(past 30)
-    # DeltaVerse = VPD + 4 = > timeZoneToUpdate = timeZoneForRound1(past 45)
-    # DeltaVerse = VPD + 5 = > timeZoneToUpdate = timeZoneForRound1 + 1(o'clock)
 
     def verseToTimeZoneToUpdate(self, verse):
         if verse < self.verseForRound1:
@@ -1455,11 +1441,12 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        leagueIdx = self.getOrgChartForAction(action)
-        if self.hasLeagueFinished(leagueIdx):
-            print("Cannot accept actions for leagues that already finished! Action discarded")
-        else:
-            self.Accumulator.accumulateAction(action, leagueIdx)
+        timeZone, countryIdx, leagueIdxInCountry = self.getOrgMapForAction(action)
+        self.Accumulator.accumulateAction(action, timeZone, countryIdx, leagueIdxInCountry)
+        # TODO: probably avoid receiving actions if league has finished or somrthing
+        # if self.hasLeagueFinished(leagueIdx):
+        #     print("Cannot accept actions for leagues that already finished! Action discarded")
+        # else:
 
     # returns all verses were matchdays of a league took/take place
     def getVersesForLeague(self, leagueIdx):
@@ -1479,10 +1466,32 @@ class Storage(Counter):
             seedsPerVerse.append(self.getSeedForVerse(verse))
         return seedsPerVerse
 
-    # returns which league did this action refer to
-    def getOrgChartForAction(self, action):
+
+    def getLeagueIdxFromOrgMap(self, timeZone, countryIdx, teamIdxInCountry, newest):
         self.assertIsClient()
-        return self.teams[action["teamIdx"]].currentLeagueIdx
+        orgIdx = self.timeZoneUpdates[timeZone].newestOrgMap
+        if not newest:
+            orgIdx = 1 - orgIdx
+
+        assert countryIdx in self.timeZoneToCountries[timeZone], "quering for the wrong countryIdx"
+        for c, orgCountryIdx in enumerate(self.timeZoneToCountries[timeZone]):
+            if countryIdx == orgCountryIdx:
+                countryOrgMap = self.timeZoneUpdates[timeZone].teamOrgMapPreHash[orgIdx]
+                posInCountry = countryOrgMap[c].index(teamIdxInCountry)
+                return 1 + (1+posInCountry) // TEAMS_PER_LEAGUE
+        assert False, "League not found for a country"
+
+
+
+
+    # returns which league did this action refer to
+    def getOrgMapForAction(self, action):
+        self.assertIsClient()
+        teamIdx = action["teamIdx"]
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        timeZone = self.getCountryTimeZone(countryIdx)
+        leagueIdxInCountry = self.getLeagueIdxFromOrgMap(timeZone, countryIdx, teamIdxInCountry, newest = True)
+        return timeZone, countryIdx, leagueIdxInCountry
 
     def getLeaguesPlayingInThisVerse(self, verse):
         self.assertIsClient()
