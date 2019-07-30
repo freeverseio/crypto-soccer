@@ -275,11 +275,14 @@ def integrationTest():
     assert not ST.isPlayerTransferable(playerIdx), "country busy playing"
 
     teamIdx1 = ST.encodeCountryAndVal(1, 6) # from first divison
-    teamIdx2 = ST.encodeCountryAndVal(1, 60) # from second divison
+    teamIdx2 = ST.encodeCountryAndVal(1, 60) # from second divison, league = 60/8 = 7.5 => 8
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
     action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
     ST_CLIENT.accumulateAction(action01)
+    assert 1 in ST_CLIENT.Accumulator.buffer[1][1], "league not found in actions"
+    assert 8 in ST_CLIENT.Accumulator.buffer[1][1], "league not found in actions"
+    assert 2 not in ST_CLIENT.Accumulator.buffer[1][1], "league incorrectly found in actions"
 
     verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
     advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)
