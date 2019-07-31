@@ -1894,6 +1894,7 @@ class Storage(Counter):
 
         # draw for next league: (either the turn is correct, or the country has just been created)
         if (day == 15 and turnInDay == 0):
+            print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
@@ -1909,6 +1910,7 @@ class Storage(Counter):
         if timeZoneToUpdate == TZ_NULL:
             return
         if timeZoneToUpdate in ST.timeZoneUpdates:
+            print("Updating timezone, day, turnInDay: ", timeZoneToUpdate, day, turnInDay)
             self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay, ST)
 
 
