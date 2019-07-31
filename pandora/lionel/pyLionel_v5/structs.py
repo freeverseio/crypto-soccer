@@ -1995,13 +1995,17 @@ class Storage(Counter):
         # if enrolled in an ongoing league, look there
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(playerState.currentTeamIdx)
         timeZone = self.getCountryTimeZone(countryIdx)
-        contryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
-        orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
-        nCountriesInOrgMap = orgMap[0]
-        countryPointerInOrgMap = 2
-        # for
 
         if not self.timeZoneUpdates[timeZone].isJustCreated():
+            countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
+            orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
+            pointer = 0
+            nCountriesInOrgMap = orgMap[pointer]
+            pointer += 1
+            nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
+            pointer += nCountriesInOrgMap
+            pointerToPlayerCountry = pointer + sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1) + playerState.currentShirtNum
+            playerSkills = self.timeZoneUpdates[timeZone].teamSkillsPreHash
             # playerPosInTimeZone = countr
             self.timeZoneUpdates[timeZone].teamSkillsPreHash
             assert False, "implement looking in your country commits"
