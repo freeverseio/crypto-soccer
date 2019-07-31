@@ -36,7 +36,7 @@ class TimeZoneUpdate():
         self.lastBlockUpdate = 0
 
     def incrementCycleIdx(self):
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(16, 4)
 
     def getNewestOrgMap(self):
         return self.teamOrgMap[self.newestOrgMapIdx]
