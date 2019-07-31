@@ -35,11 +35,12 @@ class TimeZoneUpdate():
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
-    def isReadyForInitialDraw(self):
-        if self.lastBlockUpdate:
-            return True
-        else:
-            return True # toni
+    def updateOrgMap(self, newOrgMap, currentBlock):
+        self.newestOrgMap = 1 - self.newestOrgMap
+        self.teamOrgMap[self.newestOrgMap] = newOrgMap
+        self.lastBlockUpdate = currentBlock
+
+
 
     def isTimeZoneMarketOpen(self, nowBlock):
         if self.updateCycleIdx > TZ_IDX_MARKET_OPENS:
@@ -51,13 +52,14 @@ class TimeZoneUpdate():
             return True
         return False
 
+    def isJustCreated(self):
+        return self.lastBlockUpdate == 0
+
     def isLastUpdateSettled(self, nowBlock):
-        if self.lastBlockUpdate == 0:
-            return True
-        return nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS
+        return self.isJustCreated() or (nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS)
 
     # Todo: implement do something with updateData
-    def newUpdate(self, nowBlock, updateData):
+    def newDummyUpdate(self, nowBlock):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
         self.updateCycleIdx = (self.updateCycleIdx + 1) % TZ_IDX_LAST_CYCLE_IDX
         isInFreezePeriod = self.updateCycleIdx > TZ_IDX_DRAW_NEXT_LEAGUES
@@ -68,7 +70,13 @@ class TimeZoneUpdate():
 class TimeZoneUpdateClient(TimeZoneUpdate):
     def __init__(self):
         TimeZoneUpdate.__init__(self)
-        self.teamOrgMapPreHash = [0, 0]
+        self.teamOrgMapPreHash      = [0, 0]
+        self.newestOrgMapPrehash    = 0
+
+    def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
+        self.newestOrgMapPrehash = 1 - self.newestOrgMapPrehash
+        self.teamOrgMapPreHash[self.newestOrgMapPrehash] = newOrgMapPreHash
+        self.updateOrgMap(pylio.serialHash(newOrgMapPreHash), currentBlock)
 
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
@@ -601,7 +609,7 @@ class Storage(Counter):
             posInZone   = TZ_NULL
         else:
             timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
-            day         = 1 + (deltaVerse - 1) % VERSES_PER_DAY
+            day         = 1 + (deltaVerse - 1) // VERSES_PER_DAY
             posInZone   = (deltaVerse - 1) % 4
         return timeZone, day, posInZone
 
@@ -1367,12 +1375,6 @@ class Storage(Counter):
         else:
             return self.verseToFinishingLeagueIdxs[verse]
 
-    def updateTimeZone(self, updateData):
-        timeZoneToUpdate, day, turnInDay = self.currentTimeZoneToUpdate()
-        assert not timeZoneToUpdate == TZ_NULL, "nothing to update in this verse"
-        assert timeZoneToUpdate in self.timeZoneUpdates, "nothing to update in this particular timeZone"
-        self.timeZoneUpdates[timeZoneToUpdate].newUpdate(self.currentBlock, updateData)
-
 
     # ------------------------------------------------------------------------
     # ------------      Functions only for CLIENT                 ------------
@@ -1879,13 +1881,22 @@ class Storage(Counter):
             orgMap.append(countryMap)
         return orgMap
 
-    # TODO: implement
-    def getDataForUpdate(self, timeZoneToUpdate, day, turnInDay):
-        self.assertIsClient()
-        if self.timeZoneUpdates[timeZoneToUpdate].lastBlockUpdate == 0:
-            self.timeZoneUpdates[timeZoneToUpdate].teamOrgMapPreHash[0] = self.buildDefaultOrgMap(timeZoneToUpdate)
+    def isReadyForInitialDraw(self):
+        return 2
 
-        return 0
+    def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay):
+        self.assertIsClient()
+        # first make sure that the timeZone is settled, otherwise halt.
+        assert self.timeZoneUpdates[timeZoneToUpdate].isLastUpdateSettled(self.currentBlock), "Error, about to update new verse when last one is still pending"
+
+        # draw for next league: (either the turn is correct, or the country has just been created)
+        if self.timeZoneUpdates[timeZoneToUpdate].isJustCreated() or (day == 15 and turnInDay == 0):
+            orgMap = self.buildDefaultOrgMap(timeZoneToUpdate)
+            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
+            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+        else:
+            self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
+        # toni
 
 
     def syncTimeZoneCommits(self, ST):
@@ -1894,7 +1905,6 @@ class Storage(Counter):
         if timeZoneToUpdate == TZ_NULL:
             return
         if timeZoneToUpdate in ST.timeZoneUpdates:
-            dataForUpdate = self.getDataForUpdate(timeZoneToUpdate, day, turnInDay)
-            ST.updateTimeZone(dataForUpdate)
+            self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay)
 
 
