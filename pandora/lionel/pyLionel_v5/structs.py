@@ -1931,12 +1931,24 @@ class Storage(Counter):
             self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay, ST)
 
 
-
     def getLatestPlayerSkills(self, playerIdx):
         self.assertIsClient()
-        (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
-        timeZone = self.getCountryTimeZone(countryIdx)
-        if self.timeZoneUpdates[timeZone].isJustCreated():
-            return self.getPlayerSkillsAtBirth(playerIdx)
+        if self.isPlayerVirtual(playerIdx):
+            playerState = self.getPlayerStateAtBirth(playerIdx)
         else:
-            assert False, "implement!"
+            playerState = self.playerIdxToPlayerState[playerIdx]
+
+        # if enrolled in an ongoing league, look there
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(playerState.currentTeamIdx)
+        timeZone = self.getCountryTimeZone(countryIdx)
+        if not self.timeZoneUpdates[timeZone].isJustCreated():
+            assert False, "implement looking in your country commits"
+            return
+
+        # if there was no previous league either, the player is just created, so as at birth
+        if playerState.prevPlayedTeamIdx == 0:
+            return self.getPlayerSkillsAtBirth(playerIdx)
+
+        # So we need to look at the last state of the previous league, which could be elsewhere in the world
+        (prevCountryIdx, prevTeamIdxInCountry) = self.decodeCountryAndVal(playerState.prevPlayedTeamIdx)
+        assert False, "implement looking at the end of last country!"
