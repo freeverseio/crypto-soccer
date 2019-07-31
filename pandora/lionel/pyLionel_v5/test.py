@@ -244,6 +244,14 @@ def integrationTest():
     ST.movePlayerToTeam(playerIdx, teamIdx2)
     assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
 
+    # after transfer, check playerSkills again (we are still at birth)
+    assert ST.currentVerse == 0, "this test should start at verse=0"
+    playerSkillsClient = ST_CLIENT.getLatestPlayerSkills(playerIdx)
+    playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
+    assert areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
+
+
+
     # we are at verse = 0. The league starts at verse = 3
     for v in range(3):
         assert ST.currentTimeZoneToUpdate() == (TZ_NULL, TZ_NULL, TZ_NULL), "incorrect timeZone to update"
@@ -256,6 +264,12 @@ def integrationTest():
             advanceNVerses(1, ST, ST_CLIENT)
     assert ST.currentVerse == 99, "wrong verse num"
     assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 4, "incorrect updateCycleIdx"
+
+    # after transfer, check playerSkills again (we are still at birth)
+    playerSkillsClient = ST_CLIENT.getLatestPlayerSkills(playerIdx)
+    playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
+    assert not areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
+
 
     playerIdx = ST.encodeCountryAndVal(1,12) # belongs to team1, of course
     assert not ST.isPlayerTransferable(playerIdx), "country busy playing"

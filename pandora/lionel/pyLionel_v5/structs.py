@@ -29,19 +29,25 @@ class Country():
 class TimeZoneUpdate():
     def __init__(self, nCountries):
         self.teamOrgMap = [pylio.serialHash(pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)), 0]
-        self.newestOrgMap = 0
+        self.newestOrgMapIdx = 0
         self.teamsSkills = 0
         self.scores = 0
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
-    def updateOrgMap(self, newOrgMap, currentBlock):
+    def getNewestOrgMap(self):
+        return self.teamOrgMap[self.newestOrgMapIdx]
+
+    def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
         self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
-        self.newestOrgMap = 1 - self.newestOrgMap
-        self.teamOrgMap[self.newestOrgMap] = newOrgMap
+        self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
+        self.teamOrgMap[self.newestOrgMapIdx] = newOrgMapHash
         self.lastBlockUpdate = currentBlock
 
+    def updateTeamSkills(self, teamSkillsHash, currentBlock):
+        self.teamSkills = teamSkillsHash
+        self.lastBlockUpdate = currentBlock
 
 
     def isTimeZoneMarketOpen(self, nowBlock):
@@ -73,12 +79,20 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
     def __init__(self, nCountries):
         TimeZoneUpdate.__init__(self, nCountries)
         self.teamOrgMapPreHash      = [pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries), 0]
-        self.newestOrgMapPrehash    = 0
+        self.newestOrgMapIdxPrehash    = 0
+        self.teamSkillsPreHash      = 0
+
+    def getNewestOrgMapPreHash(self):
+        return self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash]
 
     def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
-        self.newestOrgMapPrehash = 1 - self.newestOrgMapPrehash
-        self.teamOrgMapPreHash[self.newestOrgMapPrehash] = newOrgMapPreHash
+        self.newestOrgMapIdxPrehash = 1 - self.newestOrgMapIdxPrehash
+        self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash] = newOrgMapPreHash
         self.updateOrgMap(pylio.serialHash(newOrgMapPreHash), currentBlock)
+
+    def updateTeamSkillsPreHash(self, teamSkills, currentBlock):
+        self.teamSkillsPreHash = teamSkills
+        self.updateTeamSkills(pylio.serialHash(teamSkills), currentBlock)
 
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
@@ -147,13 +161,13 @@ class PlayerState():
 # Note: teamIdx = 0 is the null team
 # The Team struct contains the array playerIdxs.
 # - if playerIdx = 0, it is considered a virtual player
-# - if playerIdx = UINTMINUS1, this place in the team is free
+# - if playerIdx = FREE_SHIRT_IDX, this place in the team is free
 class Team():
     def __init__(self, addr):
         self.teamOwner = addr
         self.playerIdxs             = np.append(
             np.zeros(PLAYERS_PER_TEAM_INIT, int),
-            UINTMINUS1*np.ones(PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT, int)
+            FREE_SHIRT_IDX*np.ones(PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT, int)
         )
         assert len(self.playerIdxs) == PLAYERS_PER_TEAM_MAX
 
@@ -529,7 +543,7 @@ class Storage(Counter):
 
     def getTeamIdxInCountryFromPlayerIdxInCountry(self, playerIdxInCountry):
         # posInDiv and posInLeague start at zero.
-        return 1 + int((playerIdxInCountry-1) / PLAYERS_PER_TEAM_INIT)
+        return 1 + (playerIdxInCountry-1) // PLAYERS_PER_TEAM_INIT
 
     def getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(self, playerIdxInCountry):
         teamIdxInCountry = self.getTeamIdxInCountryFromPlayerIdxInCountry(playerIdxInCountry)
@@ -827,21 +841,30 @@ class Storage(Counter):
         print("Challenger failed to prove that skillsAtMatchday nor scores were wrong")
 
 
-    def isShirtNumFree(self, countryIdx, teamIdxInCountry, shirtNum):
-        return self.countries[countryIdx].teamIdxInCountryToTeam[teamIdxInCountry].playerIdxs[shirtNum] == UINTMINUS1
+            # return self.countries[countryIdx].teamIdxInCountryToTeam[teamIdxInCountry].playerIdxs[shirtNum] == FREE_SHIRT_IDX
 
-    def getPlayerIdxFromTeamIdxAndShirt(self, teamIdx, shirtNum):
+    def getDefaultPlayerIdxInTeam(self, countryIdx, teamIdxInCountry, shirtNum):
+        if shirtNum >= PLAYERS_PER_TEAM_INIT:
+            return FREE_SHIRT_IDX
+        else:
+            return self.encodeCountryAndVal(countryIdx, 1 + (teamIdxInCountry - 1) * PLAYERS_PER_TEAM_INIT + shirtNum)
+
+    def getPlayerIdxInTeam(self, countryIdx, teamIdxInCountry, shirtNum):
+        #
         # If player has never been sold (virtual team): simple relation between playerIdx and (teamIdx, shirtNum)
         # Otherwise, read what's written in the playerState
-        # playerIdx = 0 and teamdIdx = 0 are the null player and teams
-        self.assertTeamIdx(teamIdx)
-        if self.isShirtNumFree(teamIdx, shirtNum):
-            return UINTMINUS1
-        isPlayerIdxAssigned = self.teams[teamIdx].playerIdxs[shirtNum] != 0
-        if isPlayerIdxAssigned:
-            return self.teams[teamIdx].playerIdxs[shirtNum]
+        #   playerIdx = 0 if never assign
+        #   playerIDx = FREE_SHIRT_IDX (uint-1) if no player is there (never occupied slot, or sold)
+        #
+        if self.isBotTeam(self.encodeCountryAndVal(countryIdx, teamIdxInCountry)):
+            return self.getDefaultPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
         else:
-            return 1 + (teamIdx - 1) * PLAYERS_PER_TEAM_MAX + shirtNum
+            playerIdx = self.countries[countryIdx].teamIdxInCountryToTeam[teamIdxInCountry].playerIdxs[shirtNum]
+            if playerIdx != 0:
+                return playerIdx
+            else:
+                return self.getDefaultPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
+
 
     def assertTeamIdx(self, teamIdx):
         assert teamIdx < len(self.teams), "Team for this playerIdx not created yet!"
@@ -1069,7 +1092,7 @@ class Storage(Counter):
     def getFreeShirtNum(self, teamIdx):
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
         for shirtNum in range(PLAYERS_PER_TEAM_MAX-1, -1, -1):
-            if self.isShirtNumFree(countryIdx, teamIdxInCountry, shirtNum):
+            if self.getPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum) == FREE_SHIRT_IDX:
                 return shirtNum
         assert "Team is already full"
 
@@ -1095,7 +1118,7 @@ class Storage(Counter):
 
         sellerCountryIdx, sellerTeamIdxInCountry    = self.decodeCountryAndVal(sellerTeamIdx)
         buyerCountryIdx, buyerTeamIdxInCountry      = self.decodeCountryAndVal(buyerTeamIdx)
-        self.countries[sellerCountryIdx].teamIdxInCountryToTeam[sellerTeamIdxInCountry].playerIdxs[sellerShirtNum] = UINTMINUS1
+        self.countries[sellerCountryIdx].teamIdxInCountryToTeam[sellerTeamIdxInCountry].playerIdxs[sellerShirtNum] = FREE_SHIRT_IDX
         self.countries[buyerCountryIdx].teamIdxInCountryToTeam[buyerTeamIdxInCountry].playerIdxs[buyerShirtNum] = playerIdx
 
         self.playerIdxToPlayerState[playerIdx] = pylio.duplicate(state)
@@ -1484,7 +1507,7 @@ class Storage(Counter):
 
     def getLeagueIdxFromOrgMap(self, timeZone, countryIdx, teamIdxInCountry, newest):
         self.assertIsClient()
-        orgIdx = self.timeZoneUpdates[timeZone].newestOrgMap
+        orgIdx = self.timeZoneUpdates[timeZone].newestOrgMapIdx
         if not newest:
             orgIdx = 1 - orgIdx
 
@@ -1876,19 +1899,33 @@ class Storage(Counter):
 
 
 
-    def buildDefaultOrgMapForTimeZone(self, timeZoneToUpdate):
+    def buildDefaultOrgMapForTimeZone(self, timeZone):
         # you want to ask orMap[country] = [teamIdx1,...]
         self.assertIsClient()
         orgMap = []
-        for countryIdx in self.timeZoneToCountries[timeZoneToUpdate]:
+        for countryIdx in self.timeZoneToCountries[timeZone]:
             countryMap = []
             for t in range(self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE):
                 countryMap.append(t+1)
             orgMap.append(countryMap)
         return orgMap
 
-    def computeTimeZoneInitSkills(self, timeZoneToUpdate):
-        # toni
+    def computeTimeZoneInitSkills(self, timeZone):
+        self.assertIsClient()
+        # start dummy
+        orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
+        if self.timeZoneUpdates[timeZone].isJustCreated():
+            initSkills = []
+            for c, countryMap in enumerate(orgMap):
+                countryIdx = self.timeZoneToCountries[timeZone][c]
+                nActiveTeams = self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
+                for teamIdxInCountry in countryMap[:nActiveTeams]:
+                    for shirtNum in range(PLAYERS_PER_TEAM_MAX):
+                        playerIdx = self.getPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
+                        if playerIdx != FREE_SHIRT_IDX:
+                            initSkills.append(self.getLatestPlayerSkills(playerIdx))
+            return initSkills
+        assert False, "we should never get here"
         return 0
 
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
@@ -1906,14 +1943,14 @@ class Storage(Counter):
             return
 
         # Close of market => COMPUTE INIT SKILLS
-        # if (day == 1 and turnInDay == 0):
-        #     print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
-        #     assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-        #     initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
-        #     # self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
-        #     # ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
-        #
-        #     return
+        if (day == 1 and turnInDay == 0):
+            print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
+            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
+            initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
+            # self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
+            # ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+
+            return
 
 
         self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
@@ -1945,7 +1982,7 @@ class Storage(Counter):
             assert False, "implement looking in your country commits"
             return
 
-        # if there was no previous league either, the player is just created, so as at birth
+        # if there was no previous league, the player is just created, so as at birth
         if playerState.prevPlayedTeamIdx == 0:
             return self.getPlayerSkillsAtBirth(playerIdx)
 
