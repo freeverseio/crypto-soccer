@@ -36,8 +36,8 @@ class TimeZoneUpdate():
         self.lastBlockUpdate = 0
 
     def updateOrgMap(self, newOrgMap, currentBlock):
-        assert self.updateCycleIdx == TZ_IDX_DRAW_NEXT_LEAGUES, "trying to updateOrgMap at wrong moment"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % TZ_IDX_LAST_CYCLE_IDX
+        assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
         self.newestOrgMap = 1 - self.newestOrgMap
         self.teamOrgMap[self.newestOrgMap] = newOrgMap
         self.lastBlockUpdate = currentBlock
@@ -45,10 +45,10 @@ class TimeZoneUpdate():
 
 
     def isTimeZoneMarketOpen(self, nowBlock):
-        if self.updateCycleIdx > TZ_IDX_MARKET_OPENS:
+        if self.updateCycleIdx > pylio.cycleIdx(14, 3):
             return True
         if self.isLastUpdateSettled(nowBlock) and (
-            self.updateCycleIdx == TZ_IDX_MARKET_OPENS or
+            self.updateCycleIdx == pylio.cycleIdx(14, 3) or
             self.updateCycleIdx == 0
         ):
             return True
@@ -63,8 +63,8 @@ class TimeZoneUpdate():
     # Todo: implement do something with updateData
     def newDummyUpdate(self, nowBlock):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % TZ_IDX_LAST_CYCLE_IDX
-        isInFreezePeriod = self.updateCycleIdx > TZ_IDX_DRAW_NEXT_LEAGUES
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
+        isInFreezePeriod = self.updateCycleIdx > pylio.cycleIdx(15, 0)
         if not isInFreezePeriod:
             # do something with update data
             self.lastBlockUpdate = nowBlock
@@ -1887,20 +1887,37 @@ class Storage(Counter):
             orgMap.append(countryMap)
         return orgMap
 
+    def computeTimeZoneInitSkills(self, timeZoneToUpdate):
+        # toni
+        return 0
+
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
         self.assertIsClient()
         # first make sure that the timeZone is settled, otherwise halt.
         assert self.timeZoneUpdates[timeZoneToUpdate].isLastUpdateSettled(self.currentBlock), "Error, about to update new verse when last one is still pending"
 
-        # draw for next league: (either the turn is correct, or the country has just been created)
+        # DRAW for next league: (either the turn is correct, or the country has just been created)
         if (day == 15 and turnInDay == 0):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
+            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
             orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
-        else:
-            self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
+            return
+
+        # Close of market => COMPUTE INIT SKILLS
+        # if (day == 1 and turnInDay == 0):
+        #     print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
+        #     assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
+        #     initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
+        #     # self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
+        #     # ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+        #
+        #     return
+
+
+        self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
+        ST.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
         # toni
 
 
@@ -1914,3 +1931,12 @@ class Storage(Counter):
             self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay, ST)
 
 
+
+    def getLatestPlayerSkills(self, playerIdx):
+        self.assertIsClient()
+        (countryIdx, playerIdxInCountry) = self.decodeCountryAndVal(playerIdx)
+        timeZone = self.getCountryTimeZone(countryIdx)
+        if self.timeZoneUpdates[timeZone].isJustCreated():
+            return self.getPlayerSkillsAtBirth(playerIdx)
+        else:
+            assert False, "implement!"

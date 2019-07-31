@@ -134,23 +134,6 @@ def integrationTest():
     #   - lying if we set ST_CLIENT.forceVerseRootLie = True
     advanceToBlock(10, ST, ST_CLIENT)
 
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(0)
-    # assert timeZone == 0 and posInTimeZone == 1, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(1 + 0*4)
-    # assert timeZone == 0 and posInTimeZone == 2, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 0*4)
-    # assert timeZone == 1 and posInTimeZone == 0, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 1*4)
-    # assert timeZone == 2 and posInTimeZone == 0, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(3 + 22*4)
-    # assert timeZone == 23 and posInTimeZone == 0, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4)
-    # assert timeZone == 23 and posInTimeZone == 1, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 2)
-    # assert timeZone == 23 and posInTimeZone == 3, "wrong timeZone"
-    # timeZone, posInTimeZone = ST.verseToTimeZoneToUpdate(23*4 + 3)
-    # assert timeZone == 0 and posInTimeZone == 0, "wrong timeZone"
-
     # getVerseLeaguesStartFromTimeZoneAndRound(timeZone, round):
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(1, 1) == 3, "wrong verse start leagues"
     assert ST.getVerseLeaguesStartFromTimeZoneAndRound(2, 1) == 7, "wrong verse start leagues"
@@ -226,11 +209,15 @@ def integrationTest():
     assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON) == 2, "wrong divIdx"
     assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
 
+    # player skills and state
+    assert ST.currentVerse == 0, "this test should start at verse=0"
     playerIdx = ST.encodeCountryAndVal(1,35)
-    playerState = ST.getPlayerSkillsAtBirth(playerIdx)
-    assert playerState.getPlayerIdx() == playerIdx, "wrong playerIdx set"
-    assert all(playerState.getSkills() == [51,38,61,52,46]), "wrong skills set"
-    assert playerState.getMonth() == 350, "wrong age"
+    playerSkillsClient = ST_CLIENT.getLatestPlayerSkills(playerIdx)
+    playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
+    assert areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
+    assert playerSkills.getPlayerIdx() == playerIdx, "wrong playerIdx set"
+    assert all(playerSkills.getSkills() == [51,38,61,52,46]), "wrong skills set"
+    assert playerSkills.getMonth() == 350, "wrong age"
 
     teamIdx = ST.encodeCountryAndVal(1,4)
     assert ST.isBotTeam(teamIdx) == True, "team not seen as bot"
@@ -290,7 +277,7 @@ def integrationTest():
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
-    advanceNVerses(VERSES_PER_DAY*3, ST, ST_CLIENT)
+    advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
 
     if False:
         usersInitData = {

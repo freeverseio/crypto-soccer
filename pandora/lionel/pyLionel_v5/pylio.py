@@ -402,3 +402,8 @@ def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
             countryMap.append(t+1)
         orgMap.append(countryMap)
     return orgMap
+
+# TODO: all this can be precompiled and remove calls to cycleIdx
+def cycleIdx(day, turnInDay):
+    return (day - 1) * 4 + turnInDay
+
