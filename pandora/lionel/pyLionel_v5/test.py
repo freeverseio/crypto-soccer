@@ -268,7 +268,7 @@ def integrationTest():
     # after transfer, check playerSkills again (we are still at birth)
     playerSkillsClient = ST_CLIENT.getLatestPlayerSkills(playerIdx)
     playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
-    assert not areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
+    assert areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
 
 
     playerIdx = ST.encodeCountryAndVal(1,12) # belongs to team1, of course
