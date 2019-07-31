@@ -35,6 +35,12 @@ class TimeZoneUpdate():
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
+    def isReadyForInitialDraw(self):
+        if self.lastBlockUpdate:
+            return True
+        else:
+            return True # toni
+
     def isTimeZoneMarketOpen(self, nowBlock):
         if self.updateCycleIdx > TZ_IDX_MARKET_OPENS:
             return True
@@ -582,19 +588,22 @@ class Storage(Counter):
 
     def verseToTimeZoneToUpdate(self, verse):
         if verse < self.verseForRound1:
-            return TZ_NULL, TZ_NULL
+            return TZ_NULL, TZ_NULL, TZ_NULL
 
         deltaVerse = ( verse - self.verseForRound1 ) % VERSES_PER_ROUND
         if deltaVerse < VERSES_PER_DAY:
             timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
+            day         = 1
             posInZone   = deltaVerse % 4
         elif deltaVerse == VERSES_PER_DAY:
             timeZone    = TZ_NULL
+            day         = TZ_NULL
             posInZone   = TZ_NULL
         else:
             timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
+            day         = 1 + (deltaVerse - 1) % VERSES_PER_DAY
             posInZone   = (deltaVerse - 1) % 4
-        return timeZone, posInZone
+        return timeZone, day, posInZone
 
     def currentTimeZoneToUpdate(self):
         return self.verseToTimeZoneToUpdate(self.currentVerse)
@@ -1359,7 +1368,7 @@ class Storage(Counter):
             return self.verseToFinishingLeagueIdxs[verse]
 
     def updateTimeZone(self, updateData):
-        timeZoneToUpdate, posInUpdate = self.currentTimeZoneToUpdate()
+        timeZoneToUpdate, day, turnInDay = self.currentTimeZoneToUpdate()
         assert not timeZoneToUpdate == TZ_NULL, "nothing to update in this verse"
         assert timeZoneToUpdate in self.timeZoneUpdates, "nothing to update in this particular timeZone"
         self.timeZoneUpdates[timeZoneToUpdate].newUpdate(self.currentBlock, updateData)
@@ -1871,7 +1880,7 @@ class Storage(Counter):
         return orgMap
 
     # TODO: implement
-    def getDataForUpdate(self, timeZoneToUpdate, posInUpdate):
+    def getDataForUpdate(self, timeZoneToUpdate, day, turnInDay):
         self.assertIsClient()
         if self.timeZoneUpdates[timeZoneToUpdate].lastBlockUpdate == 0:
             self.timeZoneUpdates[timeZoneToUpdate].teamOrgMapPreHash[0] = self.buildDefaultOrgMap(timeZoneToUpdate)
@@ -1881,11 +1890,11 @@ class Storage(Counter):
 
     def syncTimeZoneCommits(self, ST):
         self.assertIsClient()
-        timeZoneToUpdate, posInUpdate = ST.currentTimeZoneToUpdate()
+        timeZoneToUpdate, day, turnInDay = ST.currentTimeZoneToUpdate()
         if timeZoneToUpdate == TZ_NULL:
             return
         if timeZoneToUpdate in ST.timeZoneUpdates:
-            dataForUpdate = self.getDataForUpdate(timeZoneToUpdate, posInUpdate)
+            dataForUpdate = self.getDataForUpdate(timeZoneToUpdate, day, turnInDay)
             ST.updateTimeZone(dataForUpdate)
 
 
