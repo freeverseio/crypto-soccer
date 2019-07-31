@@ -399,8 +399,13 @@ def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
         nDivisionsInThisCountry = EXTRA_DIVISIONS_IN_ORGMAP
         nLeaguesInCountry = 1 + (nDivisionsInThisCountry - 1) * LEAGUES_PER_DIVISON
         nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
-        teamIdxs = list(range(1, nTeamsInCountry + 1))
         orgMap.append(nTeamsInCountry)
+
+    for country in range(nCountries):
+        nDivisionsInThisCountry = EXTRA_DIVISIONS_IN_ORGMAP
+        nLeaguesInCountry = 1 + (nDivisionsInThisCountry - 1) * LEAGUES_PER_DIVISON
+        nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
+        teamIdxs = list(range(1, nTeamsInCountry + 1))
         orgMap += teamIdxs
     return orgMap
 
