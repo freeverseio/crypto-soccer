@@ -1907,11 +1907,12 @@ class Storage(Counter):
         # you want to ask orMap[country] = [teamIdx1,...]
         self.assertIsClient()
         orgMap = []
+        orgMap.append(len(self.timeZoneToCountries[timeZone]))
         for countryIdx in self.timeZoneToCountries[timeZone]:
-            countryMap = []
-            for t in range(self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE):
-                countryMap.append(t+1)
-            orgMap.append(countryMap)
+            nTeamsInCountry = self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE
+            teamIdxs = list(range(1,nTeamsInCountry+1))
+            orgMap.append(nTeamsInCountry)
+            orgMap += teamIdxs
         return orgMap
 
     def computeTimeZoneInitSkills(self, timeZone):
@@ -1920,14 +1921,24 @@ class Storage(Counter):
         orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
         if self.timeZoneUpdates[timeZone].isJustCreated():
             initSkills = []
-            for c, countryMap in enumerate(orgMap):
+            nCountries = orgMap[0]
+            pointer = 1
+            for c in range(nCountries):
+                nTeams = orgMap[pointer]
+                pointer += 1
                 countryIdx = self.timeZoneToCountries[timeZone][c]
                 nActiveTeams = self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
-                for teamIdxInCountry in countryMap[:nActiveTeams]:
-                    for shirtNum in range(PLAYERS_PER_TEAM_MAX):
+                assert nActiveTeams < nTeams, "we should have plenty of extra divisions computed..."
+                allTeamIdxInCountry = orgMap[pointer:(pointer+nActiveTeams)]
+                for teamIdxInCountry in allTeamIdxInCountry:
+                    for shirtNum in range(0, PLAYERS_PER_TEAM_MAX):
                         playerIdx = self.getPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
-                        if playerIdx != FREE_SHIRT_IDX:
+                        if playerIdx == FREE_SHIRT_IDX:
+                            initSkills.append(0)
+                        else:
                             initSkills.append(self.getLatestPlayerSkills(playerIdx))
+                pointer += nTeams
+
             return initSkills
         assert False, "we should never get here"
         return 0
@@ -1981,7 +1992,10 @@ class Storage(Counter):
         # if enrolled in an ongoing league, look there
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(playerState.currentTeamIdx)
         timeZone = self.getCountryTimeZone(countryIdx)
+        contryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
         if not self.timeZoneUpdates[timeZone].isJustCreated():
+            # playerPosInTimeZone = countr
+            self.timeZoneUpdates[timeZone].teamSkillsPreHash
             assert False, "implement looking in your country commits"
             return
 

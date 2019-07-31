@@ -392,15 +392,16 @@ def addDivision(countryIdx, ST, ST_CLIENT):
     return divisionIdx
 
 def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
-    # you want to ask orMap[country] = [teamIdx1,...]
-    nDivisions = EXTRA_DIVISIONS_IN_ORGMAP
-    nLeagues = 1 + (nDivisions - 1) * LEAGUES_PER_DIVISON
+    # [nCountriesToRead, nTeamsToReadForCountry1, t1, t2, ... nPlayersToReadForCountry2, t1, t2...]
     orgMap = []
-    for countryIdx in range(nCountries):
-        countryMap = []
-        for t in range(nLeagues):
-            countryMap.append(t+1)
-        orgMap.append(countryMap)
+    orgMap.append(nCountries)
+    for country in range(nCountries):
+        nDivisionsInThisCountry = EXTRA_DIVISIONS_IN_ORGMAP
+        nLeaguesInCountry = 1 + (nDivisionsInThisCountry - 1) * LEAGUES_PER_DIVISON
+        nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
+        teamIdxs = list(range(1, nTeamsInCountry + 1))
+        orgMap.append(nTeamsInCountry)
+        orgMap += teamIdxs
     return orgMap
 
 # TODO: all this can be precompiled and remove calls to cycleIdx
