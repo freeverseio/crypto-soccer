@@ -166,12 +166,12 @@ def integrationTest():
     assert ST.getNTeamsInCountry(countryIdx) == 8, "wrong nTeams"
 
     assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeCountryAndVal(2, 3)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(2, 5)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(3, 6)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(4, 6)), "wrong teamExists call"
     assert ST.teamExists(ST.encodeCountryAndVal(1, 8)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeCountryAndVal(1, 9)), "wrong teamExists call"
 
-    assert ST.playerExists(ST.encodeCountryAndVal(1, 3)), "wrong playerExists call"
-    assert not ST.playerExists(ST.encodeCountryAndVal(2, 3)), "wrong playerExists call"
     assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
     assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
 

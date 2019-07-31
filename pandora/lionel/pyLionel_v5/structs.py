@@ -27,8 +27,8 @@ class Country():
 
 
 class TimeZoneUpdate():
-    def __init__(self):
-        self.teamOrgMap = [0, 0]
+    def __init__(self, nCountries):
+        self.teamOrgMap = [pylio.serialHash(pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)), 0]
         self.newestOrgMap = 0
         self.teamsSkills = 0
         self.scores = 0
@@ -36,6 +36,8 @@ class TimeZoneUpdate():
         self.lastBlockUpdate = 0
 
     def updateOrgMap(self, newOrgMap, currentBlock):
+        assert self.updateCycleIdx == TZ_IDX_DRAW_NEXT_LEAGUES, "trying to updateOrgMap at wrong moment"
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % TZ_IDX_LAST_CYCLE_IDX
         self.newestOrgMap = 1 - self.newestOrgMap
         self.teamOrgMap[self.newestOrgMap] = newOrgMap
         self.lastBlockUpdate = currentBlock
@@ -68,9 +70,9 @@ class TimeZoneUpdate():
             self.lastBlockUpdate = nowBlock
 
 class TimeZoneUpdateClient(TimeZoneUpdate):
-    def __init__(self):
-        TimeZoneUpdate.__init__(self)
-        self.teamOrgMapPreHash      = [0, 0]
+    def __init__(self, nCountries):
+        TimeZoneUpdate.__init__(self, nCountries)
+        self.teamOrgMapPreHash      = [pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries), 0]
         self.newestOrgMapPrehash    = 0
 
     def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
@@ -420,11 +422,10 @@ class Storage(Counter):
 
         self.countries = []
         self.timeZoneForRound1, self.verseForRound1 = self.initFirstRound()
-
         self.countries.append(Country(0)) # countries[0] is dummy
         self.timeZoneToCountries = {}
         self.timeZoneUpdates = {}
-        self.createCountry(self.timeZoneForRound1)
+        self.initTimeZone(self.timeZoneForRound1, NUM_COUNTRIES_AT_DEPLOY)
 
 
         # a map from playerIdx to playerState, only available for players already sold once,
@@ -455,6 +456,19 @@ class Storage(Counter):
     # ------------------------------------------------------------------------
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
+
+    def initTimeZone(self, timeZone, nCountriesAtTimeZoneStart):
+        assert timeZone not in self.timeZoneToCountries, "timeZone already alive"
+        self.timeZoneToCountries[timeZone] = []
+        for country in range(nCountriesAtTimeZoneStart):
+            self.createCountry(timeZone)
+        if self.isClient:
+            self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient(nCountriesAtTimeZoneStart)
+        else:
+            self.timeZoneUpdates[timeZone] = TimeZoneUpdate(nCountriesAtTimeZoneStart)
+
+
+
     def initFirstRound(self):
         hours, minutes = self.getDeployHoursMinutes()
         quarter = minutes // 15 # = 0, 1, 2, 3
@@ -467,20 +481,10 @@ class Storage(Counter):
         # verse starts at 0, rounds at 1.
         return self.verseToRound(self.currentVerse)
 
-    def addCountryToTimeZone(self, countryIdx, timeZone):
-        if timeZone in self.timeZoneToCountries:
-            self.timeZoneToCountries[timeZone].append(countryIdx)
-        else:
-            self.timeZoneToCountries[timeZone] = [countryIdx]
-            if self.isClient:
-                self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient()
-            else:
-                self.timeZoneUpdates[timeZone] = TimeZoneUpdate()
-
     def createCountry(self, timeZone):
         countryIdx = len(self.countries)
         self.countries.append(Country(timeZone))
-        self.addCountryToTimeZone(countryIdx, timeZone)
+        self.timeZoneToCountries[timeZone].append(countryIdx)
         return countryIdx
 
     def addDivision(self, countryIdx):
@@ -1870,32 +1874,32 @@ class Storage(Counter):
         else:
             return LEAGUES_PER_DIVISON
 
-    def buildDefaultOrgMap(self, timeZoneToUpdate):
+
+
+    def buildDefaultOrgMapForTimeZone(self, timeZoneToUpdate):
         # you want to ask orMap[country] = [teamIdx1,...]
         self.assertIsClient()
         orgMap = []
         for countryIdx in self.timeZoneToCountries[timeZoneToUpdate]:
             countryMap = []
-            for t in range(self.getNTeamsInCountry(countryIdx)):
+            for t in range(self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE):
                 countryMap.append(t+1)
             orgMap.append(countryMap)
         return orgMap
 
-    def isReadyForInitialDraw(self):
-        return 2
-
-    def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay):
+    def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
         self.assertIsClient()
         # first make sure that the timeZone is settled, otherwise halt.
         assert self.timeZoneUpdates[timeZoneToUpdate].isLastUpdateSettled(self.currentBlock), "Error, about to update new verse when last one is still pending"
 
         # draw for next league: (either the turn is correct, or the country has just been created)
-        if self.timeZoneUpdates[timeZoneToUpdate].isJustCreated() or (day == 15 and turnInDay == 0):
-            orgMap = self.buildDefaultOrgMap(timeZoneToUpdate)
+        if (day == 15 and turnInDay == 0):
+            orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
-            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
         else:
             self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
         # toni
 
 
@@ -1905,6 +1909,6 @@ class Storage(Counter):
         if timeZoneToUpdate == TZ_NULL:
             return
         if timeZoneToUpdate in ST.timeZoneUpdates:
-            self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay)
+            self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay, ST)
 
 

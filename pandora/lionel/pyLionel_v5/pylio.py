@@ -391,3 +391,14 @@ def addDivision(countryIdx, ST, ST_CLIENT):
     assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
     return divisionIdx
 
+def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
+    # you want to ask orMap[country] = [teamIdx1,...]
+    nDivisions = EXTRA_DIVISIONS_IN_ORGMAP
+    nLeagues = 1 + (nDivisions - 1) * LEAGUES_PER_DIVISON
+    orgMap = []
+    for countryIdx in range(nCountries):
+        countryMap = []
+        for t in range(nLeagues):
+            countryMap.append(t+1)
+        orgMap.append(countryMap)
+    return orgMap
