@@ -41,6 +41,9 @@ class TimeZoneUpdate():
     def getNewestOrgMap(self):
         return self.teamOrgMap[self.newestOrgMapIdx]
 
+    def getOldestOrgMap(self):
+        return self.teamOrgMap[1-self.newestOrgMapIdx]
+
     def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
         self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
@@ -88,6 +91,9 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
 
     def getNewestOrgMapPreHash(self):
         return self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash]
+
+    def getOldestOrgMapPreHash(self):
+        return self.teamOrgMapPreHash[1-self.newestOrgMapIdxPreHash]
 
     def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
         self.newestOrgMapIdxPrehash = 1 - self.newestOrgMapIdxPrehash
@@ -1483,7 +1489,7 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        timeZone, countryIdx, leagueIdxInCountry = self.getOrgMapForAction(action)
+        timeZone, countryIdx, leagueIdxInCountry = self.getActionPorInOrgMap(action)
         self.Accumulator.accumulateAction(action, timeZone, countryIdx, leagueIdxInCountry)
         # TODO: probably avoid receiving actions if league has finished or somrthing
         # if self.hasLeagueFinished(leagueIdx):
@@ -1510,24 +1516,31 @@ class Storage(Counter):
 
 
     def getLeagueIdxFromOrgMap(self, timeZone, countryIdx, teamIdxInCountry, newest):
+        # Finds the league in a given country played by a teamIdx, either now, or in the prev round
+        # So we find the pos of teamIdxInCountry in the orgMap, and deduce the league from it
         self.assertIsClient()
-        orgIdx = self.timeZoneUpdates[timeZone].newestOrgMapIdx
-        if not newest:
-            orgIdx = 1 - orgIdx
+        if newest:
+            orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
+        else:
+            orgMap = self.timeZoneUpdates[timeZone].getOldestOrgMapPreHash()
 
         assert countryIdx in self.timeZoneToCountries[timeZone], "quering for the wrong countryIdx"
-        for c, orgCountryIdx in enumerate(self.timeZoneToCountries[timeZone]):
-            if countryIdx == orgCountryIdx:
-                countryOrgMap = self.timeZoneUpdates[timeZone].teamOrgMapPreHash[orgIdx]
-                posInCountry = countryOrgMap[c].index(teamIdxInCountry)
-                return 1 + (1+posInCountry) // TEAMS_PER_LEAGUE
-        assert False, "League not found for a country"
-
-
+        countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
+        pointer = 0
+        nCountriesInOrgMap = orgMap[pointer]
+        pointer += 1
+        nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
+        pointer += nCountriesInOrgMap
+        nTeamsAboveThisCountry = sum(nTeamsPerCountry[:countryPosInTimeZone])
+        pointer += nTeamsAboveThisCountry
+        allTeamIdxInThisCountryOrgMap = orgMap[pointer:pointer+nTeamsPerCountry[countryPosInTimeZone]]
+        assert teamIdxInCountry in allTeamIdxInThisCountryOrgMap, "very wrong: team not found in orgMap"
+        teamPosInCountryOrgMap = allTeamIdxInThisCountryOrgMap.index(teamIdxInCountry)
+        return 1 + (1+teamPosInCountryOrgMap) // TEAMS_PER_LEAGUE
 
 
     # returns which league did this action refer to
-    def getOrgMapForAction(self, action):
+    def getActionPorInOrgMap(self, action):
         self.assertIsClient()
         teamIdx = action["teamIdx"]
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
