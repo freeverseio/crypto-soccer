@@ -35,19 +35,23 @@ class TimeZoneUpdate():
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
 
+    def incrementCycleIdx(self):
+        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
+
     def getNewestOrgMap(self):
         return self.teamOrgMap[self.newestOrgMapIdx]
 
     def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
         self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
         self.teamOrgMap[self.newestOrgMapIdx] = newOrgMapHash
         self.lastBlockUpdate = currentBlock
+        self.incrementCycleIdx()
 
     def updateTeamSkills(self, teamSkillsHash, currentBlock):
         self.teamSkills = teamSkillsHash
         self.lastBlockUpdate = currentBlock
+        self.incrementCycleIdx()
 
 
     def isTimeZoneMarketOpen(self, nowBlock):
@@ -69,7 +73,7 @@ class TimeZoneUpdate():
     # Todo: implement do something with updateData
     def newDummyUpdate(self, nowBlock):
         assert self.isLastUpdateSettled(nowBlock), "cannot update until settled!"
-        self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(15, 3)
+        self.incrementCycleIdx()
         isInFreezePeriod = self.updateCycleIdx > pylio.cycleIdx(15, 0)
         if not isInFreezePeriod:
             # do something with update data
@@ -1947,9 +1951,8 @@ class Storage(Counter):
             print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
             initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
-            # self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
-            # ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
-
+            self.timeZoneUpdates[timeZoneToUpdate].updateTeamSkillsPreHash(initSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateTeamSkills(pylio.serialHash(initSkills), self.currentBlock)
             return
 
 
