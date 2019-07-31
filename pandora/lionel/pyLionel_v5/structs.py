@@ -1956,8 +1956,7 @@ class Storage(Counter):
                 pointer += nTeamsPerCountry[c]
 
             return initSkills
-        assert False, "we should never get here"
-        return 0
+        assert False, "I need to implement getInitSkills after round 1 for a given timezone"
 
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
         self.assertIsClient()

@@ -1,13 +1,23 @@
-def getPlayerStateAtBirth(self, playerIdx):
+- "I need to implement getInitSkills after round 1 for a given timezone"
+- "player evolution through a round by playing games"
+
+- issue: if can 2 bots eventually be created equally? currently yes. Imagine a league in DIV = 2. The first bot. It is then taken by someone who eventually goes to Limbo => BOTS should use "round" as seed. The worse is its playerIDX.
 
 
-    def lastVerseBlock(self):
-        return self.VerseActionsCommits[-1].blockNum
 
+- move TZ_IDX_DRAW_NEXT_LEAGUES... etc to a function:
+	day, turnInDay => cycleIdx
+
+- add divisions + 10 in orgChart
 
 verseToTimeZone: timeZone, posInTimeZone = f(verse) used by currentTimeZone... used by nobody
 
 
+- when a country or a division is created, teams are assigned automatically, so no need for orgChart update
+
+
+
+- maybe repeated: getLeagueIdxInCountryFromTeamIdxInCountry?
 
 
 - updateCycleIdx needs not be written, can be computed on the fly?
