@@ -2003,13 +2003,11 @@ class Storage(Counter):
             nCountriesInOrgMap = orgMap[pointer]
             pointer += 1
             nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
-            pointer += nCountriesInOrgMap
-            pointerToPlayerCountry = pointer + sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1) + playerState.currentShirtNum
-            playerSkills = self.timeZoneUpdates[timeZone].teamSkillsPreHash
-            # playerPosInTimeZone = countr
-            self.timeZoneUpdates[timeZone].teamSkillsPreHash
-            assert False, "implement looking in your country commits"
-            return
+            nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1)
+            pointerToPlayerSkills = nTeamsAbovePlayerTeam * PLAYERS_PER_TEAM_MAX + playerState.currentShirtNum
+            playerSkills = self.timeZoneUpdates[timeZone].teamSkillsPreHash[pointerToPlayerSkills]
+            assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
+            return playerSkills
 
         # if there was no previous league, the player is just created, so as at birth
         if playerState.prevPlayedTeamIdx == 0:
