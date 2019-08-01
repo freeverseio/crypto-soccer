@@ -68,10 +68,10 @@ func (p *EventProcessor) Process() error {
 		} else {
 			for _, event := range events {
 				log.Info(
-					"Found league ", event.Id.Int64(),
-					"\n\tdays: ", p.getLeagueDaysCount(event.Id),
-					"\n\tfinished: ", p.hasLeagueFinished(event.Id),
-					"\n\tupdated: ", p.isLeagueUpdated(event.Id),
+					"Found league ", event.LeagueId.Int64(),
+					"\n\tdays: ", p.getLeagueDaysCount(event.LeagueId),
+					"\n\tfinished: ", p.hasLeagueFinished(event.LeagueId),
+					"\n\tupdated: ", p.isLeagueUpdated(event.LeagueId),
 				)
 			}
 		}
