@@ -28,9 +28,10 @@ class Country():
 
 class TimeZoneUpdate():
     def __init__(self, nCountries):
-        self.teamOrgMap = [pylio.serialHash(pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)), 0]
+        self.orgMap = [pylio.serialHash(pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)), 0]
+        self.skills = [0, 0]
         self.newestOrgMapIdx = 0
-        self.teamsSkills = 0
+        self.newestSkillsIdx = 0
         self.scores = 0
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
@@ -40,19 +41,27 @@ class TimeZoneUpdate():
 
     def getOrgMap(self, newest):
         if newest:
-            return self.teamOrgMap[self.newestOrgMapIdx]
+            return self.orgMap[self.newestOrgMapIdx]
         else:
-            return self.teamOrgMap[1-self.newestOrgMapIdx]
+            return self.orgMap[1-self.newestOrgMapIdx]
+
+    def getSkills(self, newest):
+        if newest:
+            return self.skills[self.newestSkillsIdx]
+        else:
+            return self.skills[1-self.newestSkillsIdx]
 
     def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
         self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
-        self.teamOrgMap[self.newestOrgMapIdx] = newOrgMapHash
+        self.orgMap[self.newestOrgMapIdx] = newOrgMapHash
         self.lastBlockUpdate = currentBlock
         self.incrementCycleIdx()
 
-    def updateTeamSkills(self, teamSkillsHash, currentBlock):
-        self.teamSkills = teamSkillsHash
+    def updateSkills(self, skillsHash, currentBlock):
+        assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(0,0), "trying to updateSkills at wrong moment"
+        self.newestSkillsIdx = 1 - self.newestSkillsIdx
+        self.skills[self.newestSkillsIdx] = skillsHash
         self.lastBlockUpdate = currentBlock
         self.incrementCycleIdx()
 
@@ -85,25 +94,32 @@ class TimeZoneUpdate():
 class TimeZoneUpdateClient(TimeZoneUpdate):
     def __init__(self, nCountries):
         TimeZoneUpdate.__init__(self, nCountries)
-        self.teamOrgMapPreHash      = [pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries), 0]
-        self.newestOrgMapIdxPrehash    = 0
-        self.teamSkillsPreHash      = 0
+        self.orgMapPreHash          = [pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries), 0]
+        self.newestOrgMapIdxPreHash = 0
+        self.skillsPreHash          = [0, 0]
+        self.newestSkillsIdxPreHash = 0
 
     def getOrgMapPreHash(self, newest):
         if newest == True:
-            return self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash]
+            return self.orgMapPreHash[self.newestOrgMapIdxPreHash]
         else:
-            return self.teamOrgMapPreHash[1 - self.newestOrgMapIdxPrehash]
+            return self.orgMapPreHash[1 - self.newestOrgMapIdxPreHash]
+
+    def getSkillsPreHash(self, newest):
+        if newest == True:
+            return self.skillsPreHash[self.newestSkillsIdxPreHash]
+        else:
+            return self.skillsPreHash[1 - self.newestSkillsIdxPreHash]
 
     def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
-        self.newestOrgMapIdxPrehash = 1 - self.newestOrgMapIdxPrehash
-        self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash] = newOrgMapPreHash
+        self.newestOrgMapIdxPreHash = 1 - self.newestOrgMapIdxPreHash
+        self.orgMapPreHash[self.newestOrgMapIdxPreHash] = newOrgMapPreHash
         self.updateOrgMap(pylio.serialHash(newOrgMapPreHash), currentBlock)
 
-    def updateTeamSkillsPreHash(self, teamSkills, currentBlock):
-        self.teamSkillsPreHash = teamSkills
-        self.updateTeamSkills(pylio.serialHash(teamSkills), currentBlock)
-
+    def updateSkillsPreHash(self, skills, currentBlock):
+        self.newestSkillsIdxPreHash = 1 - self.newestSkillsIdxPreHash
+        self.skillsPreHash[self.newestSkillsIdxPreHash] = skills
+        self.updateSkills(pylio.serialHash(skills), currentBlock)
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
 # ...and there'll be associated read/write functions
@@ -1974,8 +1990,8 @@ class Storage(Counter):
             print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
             initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
-            self.timeZoneUpdates[timeZoneToUpdate].updateTeamSkillsPreHash(initSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateTeamSkills(pylio.serialHash(initSkills), self.currentBlock)
+            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(initSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(initSkills), self.currentBlock)
             return
 
 
@@ -2031,7 +2047,7 @@ class Storage(Counter):
         nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
         nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1)
         pointerToPlayerSkills = nTeamsAbovePlayerTeam * PLAYERS_PER_TEAM_MAX + playerState.currentShirtNum
-        playerSkills = self.timeZoneUpdates[timeZone].teamSkillsPreHash[pointerToPlayerSkills]
+        playerSkills = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)[pointerToPlayerSkills]
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
 
