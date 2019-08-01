@@ -1,8 +1,8 @@
 const Web3 = require('web3');
-const statesJSON = require('../../truffle-core/build/contracts/TeamState.json');
-const assetsJSON = require('../../truffle-core/build/contracts/Assets.json');
-const engineJSON = require('../../truffle-core/build/contracts/Engine.json');
-const leaguesJSON = require('../../truffle-core/build/contracts/Leagues.json');
+const statesJSON = require('../contracts/TeamState.json');
+const assetsJSON = require('../contracts/Assets.json');
+const engineJSON = require('../contracts/Engine.json');
+const leaguesJSON = require('../contracts/Leagues.json');
 
 const Universe = async (provider, from) => {
     web3 = new Web3(provider, null, {});
