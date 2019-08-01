@@ -4,6 +4,8 @@ setup:
 
 core:
 	cd truffle-core && ./node_modules/.bin/truffle compile
+
+contracts_deploy:
 	mkdir -p nodejs-horizon
 	cp -r truffle-core/build/contracts ./nodejs-horizon
 	cd scripts && ./deploy_go_contracts_bind.py
@@ -29,4 +31,5 @@ deepclean: clean
 	rm -rf ./truffle-core/node_modules
 	rm -rf ./nodejs-horizon/node_modules
 
+build: core contracts_deploy synchronizer
 test: core_test horizon_test 
