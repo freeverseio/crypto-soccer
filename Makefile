@@ -32,4 +32,4 @@ deepclean: clean
 	rm -rf ./nodejs-horizon/node_modules
 
 build: core contracts_deploy synchronizer
-test: core_test horizon_test 
+test: core_test horizon_test synchronizer_test
