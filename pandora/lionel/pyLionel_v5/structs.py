@@ -38,11 +38,11 @@ class TimeZoneUpdate():
     def incrementCycleIdx(self):
         self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(16, 4)
 
-    def getNewestOrgMap(self):
-        return self.teamOrgMap[self.newestOrgMapIdx]
-
-    def getOldestOrgMap(self):
-        return self.teamOrgMap[1-self.newestOrgMapIdx]
+    def getOrgMap(self, newest):
+        if newest:
+            return self.teamOrgMap[self.newestOrgMapIdx]
+        else:
+            return self.teamOrgMap[1-self.newestOrgMapIdx]
 
     def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
@@ -89,11 +89,11 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.newestOrgMapIdxPrehash    = 0
         self.teamSkillsPreHash      = 0
 
-    def getNewestOrgMapPreHash(self):
-        return self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash]
-
-    def getOldestOrgMapPreHash(self):
-        return self.teamOrgMapPreHash[1-self.newestOrgMapIdxPreHash]
+    def getOrgMapPreHash(self, newest):
+        if newest == True:
+            return self.teamOrgMapPreHash[self.newestOrgMapIdxPrehash]
+        else:
+            return self.teamOrgMapPreHash[1 - self.newestOrgMapIdxPrehash]
 
     def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
         self.newestOrgMapIdxPrehash = 1 - self.newestOrgMapIdxPrehash
@@ -1519,10 +1519,7 @@ class Storage(Counter):
         # Finds the league in a given country played by a teamIdx, either now, or in the prev round
         # So we find the pos of teamIdxInCountry in the orgMap, and deduce the league from it
         self.assertIsClient()
-        if newest:
-            orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
-        else:
-            orgMap = self.timeZoneUpdates[timeZone].getOldestOrgMapPreHash()
+        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest)
 
         assert countryIdx in self.timeZoneToCountries[timeZone], "quering for the wrong countryIdx"
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
@@ -1933,7 +1930,7 @@ class Storage(Counter):
     def computeTimeZoneInitSkills(self, timeZone):
         self.assertIsClient()
         # start dummy
-        orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
+        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
         if self.timeZoneUpdates[timeZone].isJustCreated():
             initSkills = []
             pointer = 0
@@ -2010,7 +2007,7 @@ class Storage(Counter):
 
         if not self.timeZoneUpdates[timeZone].isJustCreated():
             countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
-            orgMap = self.timeZoneUpdates[timeZone].getNewestOrgMapPreHash()
+            orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
             pointer = 0
             nCountriesInOrgMap = orgMap[pointer]
             pointer += 1
