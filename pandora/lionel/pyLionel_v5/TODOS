@@ -1,4 +1,8 @@
 
+- I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?
+
+- check when player has been transfered to the same league, or back and from to the same league.
+
 - double check <= in getLastestSkills:    newest = 0 < self.timeZoneUpdates[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
 - also double check if the player has been sold before any round: is the prevPlayedTeamIdx updated? (we wouldn't want)
         if self.timeZoneUpdates[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:

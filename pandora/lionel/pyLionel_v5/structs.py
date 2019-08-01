@@ -69,10 +69,9 @@ class TimeZoneUpdate():
     def isTimeZoneMarketOpen(self, nowBlock):
         if self.updateCycleIdx > pylio.cycleIdx(14, 3):
             return True
-        if self.isLastUpdateSettled(nowBlock) and (
-            self.updateCycleIdx == pylio.cycleIdx(14, 3) or
-            self.updateCycleIdx == 0
-        ):
+        if self.updateCycleIdx == pylio.cycleIdx(14, 3) and self.isLastUpdateSettled(nowBlock):
+            return True
+        if self.isJustCreated():
             return True
         return False
 
@@ -1109,11 +1108,15 @@ class Storage(Counter):
             print("Challenger Wins: initStates provided by updater are invalid")
             self.verseToLeagueCommits[verse].slashLevel4(self.currentBlock)
 
-    def getBlockNumForLastLeagueOfTeam(self, teamIdx):
-        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+
+    def getBlockNumForLastLeagueOfCountry(self, countryIdx):
         timeZone = self.getCountryTimeZone(countryIdx)
         verseStart = self.getVerseLeaguesStartFromTimeZoneAndRound(timeZone, self.currentRound())
         return self.verse2blockNum(verseStart)
+
+    def getBlockNumForLastLeagueOfTeam(self, teamIdx):
+        (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
+        return self.getBlockNumForLastLeagueOfCountry(countryIdx)
 
     def getFreeShirtNum(self, teamIdx):
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
@@ -2026,29 +2029,41 @@ class Storage(Counter):
         if self.timeZoneUpdates[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:
             return self.getPlayerSkillsAtBirth(playerIdx)
 
-        # Otherwise, there are two possibilities.
-        # 1. I should look at the playerSkills using the latest orgMap
-        # 2. I should look at the playerSkills using the oldest orgMap
-        # Option 1 applies as soon as the initSkills are written, and until the newOrgMap is computed:
-        #       - currentOrgMap, currentTeamIdx
-        # Option 2 has two cases, depending on whether the player was already sold in this round:
-        #       - If not sold: currentTeadIdx, oldOrgMap
-        #       - If yes: prevTeadIdx (and timezone)
+        # Otherwise, there are three possibilities.
+        # 1. If league is being played: (newTimeZone, newSkills, newOrgMap)
+        # 2. If league has finished (market open) and player not transferred: (newTimeZone, newSkills, oldOrgMap)
+        # 3. If league has finished (market open) and player transferred: (prevTimeZone)
+        # 3.a. If prevTimeZone market open: (prevTimeZone, newSkills, oldOrgMap)
+        # 3.b. If prevTimeZone already started: (prevTimeZone, oldSkills, oldOrgMap)
 
-        newest = 0 < self.timeZoneUpdates[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
+        isMarketOpen = self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
+        if not isMarketOpen:
+            timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
+            orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
+        elif self.getBlockNumForLastLeagueOfCountry(countryIdx) > playerState.getLastSaleBlocknum():
+            # separate (14,3) from (15,0)
+            timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
+            orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
+        else:
+            (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(playerState.prevPlayedTeamIdx)
+            timeZone = self.getCountryTimeZone(countryIdx)
+            isPrevMarketOpen = self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
+            if isPrevMarketOpen:
+                timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
+                orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
+            else:
+                timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=False)
+                orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
 
-        (prevCountryIdx, prevTeamIdxInCountry) = self.decodeCountryAndVal(playerState.prevPlayedTeamIdx)
 
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
-        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
         pointer = 0
         nCountriesInOrgMap = orgMap[pointer]
         pointer += 1
         nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
         nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1)
         pointerToPlayerSkills = nTeamsAbovePlayerTeam * PLAYERS_PER_TEAM_MAX + playerState.currentShirtNum
-        playerSkills = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)[pointerToPlayerSkills]
+        playerSkills = timeZoneSkills[pointerToPlayerSkills]
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
 
-        assert False, "implement looking at the end of last country!"
