@@ -1,3 +1,11 @@
+
+- double check <= in getLastestSkills:    newest = 0 < self.timeZoneUpdates[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
+- also double check if the player has been sold before any round: is the prevPlayedTeamIdx updated? (we wouldn't want)
+        if self.timeZoneUpdates[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:
+            return self.getPlayerSkillsAtBirth(playerIdx)
+
+- check what happens when asking for playerSkills between OpenMarket and NewOrgMap, in terms of asking for the correct map
+
 - "I need to implement getInitSkills after round 1 for a given timezone"
 - "player evolution through a round by playing games"
 
