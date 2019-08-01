@@ -23,6 +23,7 @@ synchronizer_test:
 clean:
 	rm -rf ./truffle-core/build
 	rm -rf ./nodejs-horizon/contracts
+	rm -rf ./go-synchronizer/contracts
 
 deepclean: clean
 	rm -rf ./truffle-core/node_modules
