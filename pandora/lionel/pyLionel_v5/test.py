@@ -144,25 +144,21 @@ def integrationTest():
     timeZone = 1
     countryIdx = 1
 
-    assert ST.getNDivisionsInCountry(countryIdx) == 1, "wrong nDivisions"
-    assert ST.getNLeaguesInCountry(countryIdx) == 1, "wrong nLeagues"
-    assert ST.getNTeamsInCountry(countryIdx) == 8, "wrong nTeams"
+    assert ST.getNDivisionsInCountry(countryIdx) == DIVS_PER_COUNTRY_AT_DEPLOY, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(countryIdx) == 1 + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISON, "wrong nLeagues"
+    nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(countryIdx)
+    assert ST.getNTeamsInCountry(countryIdx) == nTeamsPerCountryAtStart, "wrong nTeams"
 
     assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
     assert ST.teamExists(ST.encodeCountryAndVal(2, 5)), "wrong teamExists call"
     assert ST.teamExists(ST.encodeCountryAndVal(3, 6)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeCountryAndVal(4, 6)), "wrong teamExists call"
-    assert ST.teamExists(ST.encodeCountryAndVal(1, 8)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeCountryAndVal(1, 9)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeCountryAndVal(1, nTeamsPerCountryAtStart)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(1, nTeamsPerCountryAtStart+1)), "wrong teamExists call"
 
-    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
-    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
-
-    divisionIdx = addDivision(countryIdx, ST, ST_CLIENT)
-    assert divisionIdx == 2, "wrong divisionIdx"
-    assert ST.getNDivisionsInCountry(countryIdx) == 2, "wrong nDivisions"
-    assert ST.getNLeaguesInCountry(countryIdx) == 17, "wrong nLeagues"
-    assert ST.getNTeamsInCountry(countryIdx) == 17*8, "wrong nTeams"
+    nPlayersPerCountryAtStart = 8 * ST.getNLeaguesInCountry(countryIdx) * PLAYERS_PER_TEAM_INIT
+    assert ST.playerExists(ST.encodeCountryAndVal(1, nPlayersPerCountryAtStart)), "wrong playerExists call"
+    assert not ST.playerExists(ST.encodeCountryAndVal(1, nPlayersPerCountryAtStart+1)), "wrong playerExists call"
 
     # getTeamIdxInCountryFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
     shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(0,1,1), "division 0 should not exist")
@@ -182,17 +178,10 @@ def integrationTest():
     (val1, val2) = ST.decodeCountryAndVal(ST.encodeCountryAndVal(500, 343))
     assert val1 == 500 and val2 == 343
 
-    assert ST.teamExists(ST.encodeCountryAndVal(1, 8*17)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeCountryAndVal(1, 8*17+1)), "wrong teamExists call"
-    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
-    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
-    assert ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT)), "wrong playerExists call"
-    assert not ST.playerExists(ST.encodeCountryAndVal(1, 8*17*PLAYERS_PER_TEAM_INIT+1)), "wrong playerExists call"
-
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(1) == 1, "wrong getTeamIdx"
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(18) == 1, "wrong getTeamIdx"
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(19) == 2, "wrong getTeamIdx"
-    (teamIdxInCountry, shirtNum) =  ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
+    (teamIdxInCountry, shirtNum) = ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
     assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
 
     assert ST.getDivisionCreationDay(1,1) == 0, "Wrong creation time"
@@ -231,6 +220,7 @@ def integrationTest():
     assert ST.isPlayerTransferable(playerIdx), "country not started yet"
     assert ST.timeZoneUpdates[timeZone].updateCycleIdx == 0, "incorrect updateCycleIdx"
 
+    # Transfer of TEAM and PLAYER
     teamIdx2 = ST.encodeCountryAndVal(1, 2)
     shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
     ST.acquireBot(teamIdx2, BOB)
@@ -243,6 +233,8 @@ def integrationTest():
     assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == CAROL, "wrong owner of player"
     ST.movePlayerToTeam(playerIdx, teamIdx2)
     assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
+    assert ST.playerIdxToPlayerState[playerIdx].currentTeamIdx == teamIdx2, "wrong transfer"
+    assert ST.playerIdxToPlayerState[playerIdx].currentShirtNum == PLAYERS_PER_TEAM_MAX-1, "wrong transfer"
 
     # after transfer, check playerSkills again (we are still at birth)
     assert ST.currentVerse == 0, "this test should start at verse=0"
