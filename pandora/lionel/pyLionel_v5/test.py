@@ -276,6 +276,9 @@ def integrationTest():
     assert 8 in ST_CLIENT.Accumulator.buffer[1][1], "league not found in actions"
     assert 2 not in ST_CLIENT.Accumulator.buffer[1][1], "league incorrectly found in actions"
 
+    # add one division to a country to see if next initSkills are properly taken care of
+    addDivision(2, ST, ST_CLIENT)
+
     # move to very end of country leagues and check that players move from non-transferable to transferable
     verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
     advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)
