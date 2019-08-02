@@ -73,6 +73,8 @@ class TimeZoneUpdate():
             return True
         if self.isJustCreated():
             return True
+        if self.updateCycleIdx == pylio.cycleIdx(0, 0) and not self.isLastUpdateSettled(nowBlock):
+            return True
         return False
 
     def isJustCreated(self):
@@ -93,10 +95,18 @@ class TimeZoneUpdate():
 class TimeZoneUpdateClient(TimeZoneUpdate):
     def __init__(self, nCountries):
         TimeZoneUpdate.__init__(self, nCountries)
-        self.orgMapPreHash          = [pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries), 0]
+        defaultHeader, defaultOrgMap = pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)
+        self.orgMapHeader           = [defaultHeader, 0]
+        self.orgMapPreHash          = [defaultOrgMap, 0]
         self.newestOrgMapIdxPreHash = 0
         self.skillsPreHash          = [0, 0]
         self.newestSkillsIdxPreHash = 0
+
+    def getOrgMapHeader(self, newest):
+        if newest == True:
+            return self.orgMapHeader[self.newestOrgMapIdxPreHash]
+        else:
+            return self.orgMapHeader[1 - self.newestOrgMapIdxPreHash]
 
     def getOrgMapPreHash(self, newest):
         if newest == True:
@@ -1539,14 +1549,13 @@ class Storage(Counter):
         # So we find the pos of teamIdxInCountry in the orgMap, and deduce the league from it
         self.assertIsClient()
         orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest)
+        header = self.timeZoneUpdates[timeZone].getOrgMapHeader(newest)
 
         assert countryIdx in self.timeZoneToCountries[timeZone], "quering for the wrong countryIdx"
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
+        nCountriesInOrgMap = header[0]
+        nTeamsPerCountry = header[1:1 + nCountriesInOrgMap]
         pointer = 0
-        nCountriesInOrgMap = orgMap[pointer]
-        pointer += 1
-        nTeamsPerCountry = orgMap[pointer:pointer + nCountriesInOrgMap]
-        pointer += nCountriesInOrgMap
         nTeamsAboveThisCountry = sum(nTeamsPerCountry[:countryPosInTimeZone])
         pointer += nTeamsAboveThisCountry
         allTeamIdxInThisCountryOrgMap = orgMap[pointer:pointer+nTeamsPerCountry[countryPosInTimeZone]]
@@ -1935,44 +1944,41 @@ class Storage(Counter):
     def buildDefaultOrgMapForTimeZone(self, timeZone):
         # you want to ask orMap[country] = [teamIdx1,...]
         self.assertIsClient()
+        header = []
         orgMap = []
-        orgMap.append(len(self.timeZoneToCountries[timeZone]))
+        header.append(len(self.timeZoneToCountries[timeZone]))
         for countryIdx in self.timeZoneToCountries[timeZone]:
             nTeamsInCountry = self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE
-            orgMap.append(nTeamsInCountry)
-        for countryIdx in self.timeZoneToCountries[timeZone]:
-            nTeamsInCountry = self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE
-            teamIdxs = list(range(1,nTeamsInCountry+1))
+            header.append(nTeamsInCountry)
+            teamIdxs = list(range(1, nTeamsInCountry + 1))
             orgMap += teamIdxs
-        return orgMap
+        return header, orgMap
 
     def computeTimeZoneInitSkills(self, timeZone):
         self.assertIsClient()
         # start dummy
+        header = self.timeZoneUpdates[timeZone].getOrgMapHeader(newest=True)
         orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
-        if self.timeZoneUpdates[timeZone].isJustCreated():
-            initSkills = []
-            pointer = 0
-            nCountries = orgMap[pointer]
-            pointer += 1
-            nTeamsPerCountry = orgMap[pointer:pointer+nCountries]
-            pointer += nCountries
-            for c in range(nCountries):
-                countryIdx = self.timeZoneToCountries[timeZone][c]
-                nActiveTeams = self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
-                assert nActiveTeams < nTeamsPerCountry[c], "we should have plenty of extra divisions computed..."
-                allTeamIdxInCountry = orgMap[pointer:(pointer+nActiveTeams)]
-                for teamIdxInCountry in allTeamIdxInCountry:
-                    for shirtNum in range(0, PLAYERS_PER_TEAM_MAX):
-                        playerIdx = self.getPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
-                        if playerIdx == FREE_SHIRT_IDX:
-                            initSkills.append(0)
-                        else:
-                            initSkills.append(self.getLatestPlayerSkills(playerIdx))
-                pointer += nTeamsPerCountry[c]
-
-            return initSkills
-        assert False, "I need to implement getInitSkills after round 1 for a given timezone"
+        initSkills = []
+        nCountries = header[0]
+        nTeamsPerCountry = header[1:1+nCountries]
+        pointer = 0
+        for c in range(nCountries):
+            countryIdx = self.timeZoneToCountries[timeZone][c]
+            nActiveTeams = self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
+            assert nActiveTeams < nTeamsPerCountry[c], "we should have plenty of extra divisions computed..."
+            allTeamIdxInCountry = orgMap[pointer:(pointer+nActiveTeams)]
+            for teamIdxInCountry in allTeamIdxInCountry:
+                for shirtNum in range(0, PLAYERS_PER_TEAM_MAX):
+                    playerIdx = self.getPlayerIdxInTeam(countryIdx, teamIdxInCountry, shirtNum)
+                    if playerIdx == FREE_SHIRT_IDX:
+                        initSkills.append(0)
+                    else:
+                        print(playerIdx)
+                        initSkills.append(self.getLatestPlayerSkills(playerIdx))
+                    print("len: ", len(initSkills))
+            pointer += nTeamsPerCountry[c]
+        return initSkills
 
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
         self.assertIsClient()

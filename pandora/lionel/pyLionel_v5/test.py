@@ -291,7 +291,7 @@ def integrationTest():
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
-    # advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
+    advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
 
     if False:
         usersInitData = {

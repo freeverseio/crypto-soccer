@@ -1,4 +1,6 @@
 
+- we need to keep 'scores'
+- I think we need nDisions (new and old) => probably we need all of that as old/new
 - I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?
 
 - check when player has been transfered to the same league, or back and from to the same league.
