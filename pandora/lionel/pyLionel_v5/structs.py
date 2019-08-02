@@ -60,7 +60,7 @@ class TimeZoneUpdate():
         self.incrementCycleIdx()
 
     def updateSkills(self, skillsHash, currentBlock):
-        assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(0,0), "trying to updateSkills at wrong moment"
+        assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(1,0), "trying to updateSkills at wrong moment"
         self.newestSkillsIdx = 1 - self.newestSkillsIdx
         self.skills[self.newestSkillsIdx] = skillsHash
         self.lastBlockUpdate = currentBlock
