@@ -102,6 +102,9 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
+      - run: 
+          name: deploy contracts
+          command: make contracts
       - run:
           name: Create Docker Centauri
           command: cd django-centauri && docker build -t freeverseio/centauri:dev .
