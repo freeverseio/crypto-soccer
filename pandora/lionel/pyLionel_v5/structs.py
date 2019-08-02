@@ -120,8 +120,9 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         else:
             return self.skillsPreHash[1 - self.newestSkillsIdxPreHash]
 
-    def updateOrgMapPreHash(self, newOrgMapPreHash, currentBlock):
+    def updateOrgMapPreHash(self, header, newOrgMapPreHash, currentBlock):
         self.newestOrgMapIdxPreHash = 1 - self.newestOrgMapIdxPreHash
+        self.orgMapHeader[self.newestOrgMapIdxPreHash] = header
         self.orgMapPreHash[self.newestOrgMapIdxPreHash] = newOrgMapPreHash
         self.updateOrgMap(pylio.serialHash(newOrgMapPreHash), currentBlock)
 
@@ -1548,8 +1549,7 @@ class Storage(Counter):
         # Finds the league in a given country played by a teamIdx, either now, or in the prev round
         # So we find the pos of teamIdxInCountry in the orgMap, and deduce the league from it
         self.assertIsClient()
-        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest)
-        header = self.timeZoneUpdates[timeZone].getOrgMapHeader(newest)
+        header, orgMap = self.getHeaderAndOrgMap(timeZone, newest)
 
         assert countryIdx in self.timeZoneToCountries[timeZone], "quering for the wrong countryIdx"
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
@@ -1957,8 +1957,7 @@ class Storage(Counter):
     def computeTimeZoneInitSkills(self, timeZone):
         self.assertIsClient()
         # start dummy
-        header = self.timeZoneUpdates[timeZone].getOrgMapHeader(newest=True)
-        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
+        header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=True)
         initSkills = []
         nCountries = header[0]
         nTeamsPerCountry = header[1:1+nCountries]
@@ -1989,8 +1988,8 @@ class Storage(Counter):
         if (day == 15 and turnInDay == 0):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
-            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(orgMap, self.currentBlock)
+            header, orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
+            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
             return
 
@@ -2018,6 +2017,8 @@ class Storage(Counter):
             print("Updating timezone, day, turnInDay: ", timeZoneToUpdate, day, turnInDay)
             self.computeDataForUpdateAndCommit(timeZoneToUpdate, day, turnInDay, ST)
 
+    def getHeaderAndOrgMap(self, timeZone, newest):
+        return self.timeZoneUpdates[timeZone].getOrgMapHeader(newest), self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest)
 
     def getLatestPlayerSkills(self, playerIdx):
         self.assertIsClient()
@@ -2045,21 +2046,21 @@ class Storage(Counter):
         isMarketOpen = self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
         if not isMarketOpen:
             timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
-            orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=True)
+            header, orgMap  = self.getHeaderAndOrgMap(timeZone, newest=True)
         elif self.getBlockNumForLastLeagueOfCountry(countryIdx) > playerState.getLastSaleBlocknum():
             # separate (14,3) from (15,0)
             timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
-            orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
+            header, orgMap  = self.getHeaderAndOrgMap(timeZone, newest=False)
         else:
             (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(playerState.prevPlayedTeamIdx)
             timeZone = self.getCountryTimeZone(countryIdx)
             isPrevMarketOpen = self.timeZoneUpdates[timeZone].isTimeZoneMarketOpen(self.currentBlock)
             if isPrevMarketOpen:
                 timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
-                orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
+                header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=False)
             else:
                 timeZoneSkills  = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=False)
-                orgMap          = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest=False)
+                header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=False)
 
 
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
