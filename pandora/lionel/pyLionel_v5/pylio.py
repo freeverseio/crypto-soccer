@@ -391,20 +391,20 @@ def addDivision(countryIdx, ST, ST_CLIENT):
     assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
     return divisionIdx
 
-def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
-    # [nCountriesToRead, nTeamsToReadForCountry1, t1, t2, ... nPlayersToReadForCountry2, t1, t2...]
-    header = []
-    orgMap = []
-    header.append(nCountries)
-    for country in range(nCountries):
-        nDivisionsInThisCountry = EXTRA_DIVISIONS_IN_ORGMAP
-        nLeaguesInCountry = 1 + (nDivisionsInThisCountry - 1) * LEAGUES_PER_DIVISON
-        nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
-        header.append(nTeamsInCountry)
-        teamIdxs = list(range(1, nTeamsInCountry + 1))
-        orgMap += teamIdxs
-
-    return header, orgMap
+# def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
+#     # [nCountriesToRead, nTeamsToReadForCountry1, t1, t2, ... nPlayersToReadForCountry2, t1, t2...]
+#     header = []
+#     orgMap = []
+#     header.append(nCountries)
+#     for country in range(nCountries):
+#         nDivisionsInThisCountry = EXTRA_DIVISIONS_IN_ORGMAP
+#         nLeaguesInCountry = 1 + (nDivisionsInThisCountry - 1) * LEAGUES_PER_DIVISON
+#         nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
+#         header.append(nTeamsInCountry)
+#         teamIdxs = list(range(1, nTeamsInCountry + 1))
+#         orgMap += teamIdxs
+#
+#     return header, orgMap
 
 # TODO: all this can be precompiled and remove calls to cycleIdx
 def cycleIdx(day, turnInDay):

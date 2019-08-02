@@ -27,8 +27,9 @@ class Country():
 
 
 class TimeZoneUpdate():
-    def __init__(self, nCountries):
-        self.orgMap = [pylio.serialHash(pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)), 0]
+    def __init__(self, initOrgMapHash):
+        # warning: this dummy hash is applied to both the header and the data
+        self.orgMap = [initOrgMapHash, 0]
         self.skills = [0, 0]
         self.newestOrgMapIdx = 0
         self.newestSkillsIdx = 0
@@ -93,11 +94,10 @@ class TimeZoneUpdate():
             self.lastBlockUpdate = nowBlock
 
 class TimeZoneUpdateClient(TimeZoneUpdate):
-    def __init__(self, nCountries):
-        TimeZoneUpdate.__init__(self, nCountries)
-        defaultHeader, defaultOrgMap = pylio.buildDefaultOrgMapAtTimeZoneCreation(nCountries)
-        self.orgMapHeader           = [defaultHeader, 0]
-        self.orgMapPreHash          = [defaultOrgMap, 0]
+    def __init__(self, initHeader, initOrgMap):
+        TimeZoneUpdate.__init__(self, pylio.serialHash([initHeader, initOrgMap]))
+        self.orgMapHeader           = [initHeader, 0]
+        self.orgMapPreHash          = [initOrgMap, 0]
         self.newestOrgMapIdxPreHash = 0
         self.skillsPreHash          = [0, 0]
         self.newestSkillsIdxPreHash = 0
@@ -475,7 +475,7 @@ class Storage(Counter):
         self.countries.append(Country(0)) # countries[0] is dummy
         self.timeZoneToCountries = {}
         self.timeZoneUpdates = {}
-        self.initTimeZone(self.timeZoneForRound1, NUM_COUNTRIES_AT_DEPLOY)
+        self.initTimeZone(self.timeZoneForRound1, NUM_COUNTRIES_AT_DEPLOY, DIVS_PER_COUNTRY_AT_DEPLOY)
 
 
         # a map from playerIdx to playerState, only available for players already sold once,
@@ -507,15 +507,17 @@ class Storage(Counter):
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
 
-    def initTimeZone(self, timeZone, nCountriesAtTimeZoneStart):
+    def initTimeZone(self, timeZone, nCountriesAtTimeZoneStart, nDivsPerCountry):
         assert timeZone not in self.timeZoneToCountries, "timeZone already alive"
         self.timeZoneToCountries[timeZone] = []
         for country in range(nCountriesAtTimeZoneStart):
             self.createCountry(timeZone)
+        initHeader, initOrgMap = self.buildDefaultOrgMap(nCountriesAtTimeZoneStart, nDivsPerCountry)
         if self.isClient:
-            self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient(nCountriesAtTimeZoneStart)
+            self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient(initHeader, initOrgMap)
         else:
-            self.timeZoneUpdates[timeZone] = TimeZoneUpdate(nCountriesAtTimeZoneStart)
+            orgMapHash = pylio.serialHash([initHeader, initOrgMap])
+            self.timeZoneUpdates[timeZone] = TimeZoneUpdate(orgMapHash)
 
 
 
@@ -1941,14 +1943,14 @@ class Storage(Counter):
 
 
 
-    def buildDefaultOrgMapForTimeZone(self, timeZone):
-        # you want to ask orMap[country] = [teamIdx1,...]
-        self.assertIsClient()
+    def buildDefaultOrgMap(self, nCountries, nDivsPerCountry):
+        # this should be hardcoded for each nCountries
         header = []
         orgMap = []
-        header.append(len(self.timeZoneToCountries[timeZone]))
-        for countryIdx in self.timeZoneToCountries[timeZone]:
-            nTeamsInCountry = self.getNTeamsInCountry(countryIdx) + EXTRA_DIVISIONS_IN_ORGMAP * LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE
+        header.append(nCountries)
+        nLeaguesPerCountry = 1 + LEAGUES_PER_DIVISON + (nDivsPerCountry-1)
+        nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
+        for country in range(nCountries):
             header.append(nTeamsInCountry)
             teamIdxs = list(range(1, nTeamsInCountry + 1))
             orgMap += teamIdxs
@@ -1973,9 +1975,7 @@ class Storage(Counter):
                     if playerIdx == FREE_SHIRT_IDX:
                         initSkills.append(0)
                     else:
-                        print(playerIdx)
                         initSkills.append(self.getLatestPlayerSkills(playerIdx))
-                    print("len: ", len(initSkills))
             pointer += nTeamsPerCountry[c]
         return initSkills
 
@@ -1988,7 +1988,9 @@ class Storage(Counter):
         if (day == 15 and turnInDay == 0):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            header, orgMap = self.buildDefaultOrgMapForTimeZone(timeZoneToUpdate)
+            nCountries = len(self.timeZoneToCountries[timeZoneToUpdate])
+            nDivsPerCountry = DIVS_PER_COUNTRY_AT_DEPLOY
+            header, orgMap = self.buildDefaultOrgMap(nCountries, nDivsPerCountry)
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
             return
