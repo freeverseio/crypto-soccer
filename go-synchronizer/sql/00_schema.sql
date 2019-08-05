@@ -13,6 +13,10 @@ CREATE TABLE countries (
     PRIMARY KEY(id)
 );
 
+/* TODO: remove the following hardcoded countries when Liuonel5 is ready */
+INSERT INTO countries (id, name, timezoneUTC) VALUES ('1', 'Spain', '1');
+INSERT INTO countries (id, name, timezoneUTC) VALUES ('2', 'Italy', '1');
+
 CREATE TABLE teams (
     id BIGINT NOT NULL,
     name TEXT NOT NULL,
