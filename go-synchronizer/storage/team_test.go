@@ -12,10 +12,11 @@ func TestTeamStateUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 	team := storage.Team{
-		4,
-		"pippo",
-		54,
-		storage.TeamState{
+		Id:                4,
+		Name:              "pippo",
+		CreationTimestamp: 54,
+		CountryId:         1,
+		State: storage.TeamState{
 			BlockNumber:          5,
 			Owner:                "io",
 			CurrentLeagueId:      7,
@@ -119,10 +120,11 @@ func TestGetTeam(t *testing.T) {
 		t.Fatal(err)
 	}
 	team := storage.Team{
-		4,
-		"pippo",
-		67,
-		storage.TeamState{
+		Id:                4,
+		Name:              "pippo",
+		CreationTimestamp: 67,
+		CountryId:         1,
+		State: storage.TeamState{
 			BlockNumber:          5,
 			Owner:                "io",
 			CurrentLeagueId:      7,

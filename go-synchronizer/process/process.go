@@ -151,10 +151,11 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 		} else if blockTime, blockNumber, err := p.getTimeOfEvent(event.Raw); err != nil {
 			return err
 		} else if err := p.db.TeamAdd(storage.Team{
-			event.Id.Uint64(),
-			name,
-			blockTime,
-			storage.TeamState{
+			Id:                event.Id.Uint64(),
+			Name:              name,
+			CreationTimestamp: blockTime,
+			CountryId:         1, // TODO: get it from blockchain
+			State: storage.TeamState{
 				BlockNumber:          blockNumber,
 				Owner:                owner.Hex(),
 				CurrentLeagueId:      0, // TODO: uint64

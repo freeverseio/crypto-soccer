@@ -20,6 +20,7 @@ type Team struct {
 	Id                uint64
 	Name              string
 	CreationTimestamp uint64
+	CountryId         uint64
 	State             TeamState
 }
 
@@ -75,9 +76,10 @@ func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 func (b *Storage) TeamAdd(team Team) error {
 	//  TODO: check for db is initialized
 	log.Infof("[DBMS] Adding team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (id, name, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
+	_, err := b.db.Exec("INSERT INTO teams (id, name, countryId, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		team.Id,
 		team.Name,
+		team.CountryId,
 		team.CreationTimestamp,
 		team.State.BlockNumber,
 		team.State.CurrentLeagueId,
@@ -113,7 +115,7 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) GetTeam(id uint64) (Team, error) {
 	team := Team{}
-	rows, err := b.db.Query("SELECT id, name, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex FROM teams WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT id, name, countryId, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex FROM teams WHERE (id = $1);", id)
 	if err != nil {
 		return team, err
 	}
@@ -124,6 +126,7 @@ func (b *Storage) GetTeam(id uint64) (Team, error) {
 	rows.Scan(
 		&team.Id,
 		&team.Name,
+		&team.CountryId,
 		&team.CreationTimestamp,
 		&team.State.BlockNumber,
 		&team.State.CurrentLeagueId,
