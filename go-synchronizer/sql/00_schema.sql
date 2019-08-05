@@ -6,9 +6,17 @@ CREATE TABLE params (
 
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
+CREATE TABLE countries (
+    id BIGINT NOT NULL,
+    name TEXT NOT NULL,
+    timezone INT NOT NULL,
+    PRIMARY KEY(id)
+);
+
 CREATE TABLE teams (
     id BIGINT NOT NULL,
     name TEXT NOT NULL,
+    countryId BIGINT NOT NULL REFERENCES countries(id),
     creationTimestamp BIGINT NOT NULL,
     blockNumber BIGINT NOT NULL,
     inBlockIndex INT NOT NULL,
@@ -61,9 +69,4 @@ CREATE TABLE players_history (
     PRIMARY KEY(playerId, blockNumber, inBlockIndex)
 );
 
-CREATE TABLE countries (
-    id BIGINT NOT NULL,
-    name TEXT NOT NULL,
-    timezone INT NOT NULL,
-    PRIMARY KEY(id)
-);
+
