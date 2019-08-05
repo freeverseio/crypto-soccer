@@ -74,7 +74,6 @@ func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 }
 
 func (b *Storage) TeamAdd(team Team) error {
-	//  TODO: check for db is initialized
 	log.Infof("[DBMS] Adding team %v", team)
 	_, err := b.db.Exec("INSERT INTO teams (id, name, countryId, creationTimestamp, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, InBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		team.Id,
@@ -109,7 +108,10 @@ func (b *Storage) TeamCount() (uint64, error) {
 	defer rows.Close()
 	rows.Next()
 	var count uint64
-	rows.Scan(&count)
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
 	return count, nil
 }
 
@@ -123,7 +125,7 @@ func (b *Storage) GetTeam(id uint64) (Team, error) {
 	if !rows.Next() {
 		return team, errors.New("Unexistent team")
 	}
-	rows.Scan(
+	err = rows.Scan(
 		&team.Id,
 		&team.Name,
 		&team.CountryId,
@@ -136,5 +138,8 @@ func (b *Storage) GetTeam(id uint64) (Team, error) {
 		&team.State.PrevLeagueId,
 		&team.State.InBlockIndex,
 	)
+	if err != nil {
+		return team, err
+	}
 	return team, nil
 }

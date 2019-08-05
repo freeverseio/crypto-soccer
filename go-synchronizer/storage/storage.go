@@ -20,7 +20,10 @@ func NewPostgres(url string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	err = storage.db.Ping()
+	if err != nil {
+		return nil, err
+	}
 	return storage, nil
 }
 

@@ -25,7 +25,7 @@ jobs:
       - checkout
       - run: 
           name: deploy contracts
-          command: make contracts
+          command: make setup contracts
       - run:
           name: Compile go-synchronizer
           command: cd go-synchronizer && go build
@@ -63,7 +63,7 @@ jobs:
       - checkout
       - run: 
           name: deploy contracts
-          command: make contracts
+          command: make setup contracts
       - run:
           name: Setup nodejs-horizon
           command: cd nodejs-horizon && npm install
@@ -104,7 +104,7 @@ jobs:
           docker_layer_caching: true # (3)
       - run: 
           name: deploy contracts
-          command: make contracts
+          command: make setup contracts
       - run:
           name: Create Docker Centauri
           command: cd django-centauri && docker build -t freeverseio/centauri:dev .
