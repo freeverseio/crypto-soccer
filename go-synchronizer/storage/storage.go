@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"io/ioutil"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 )
 
 type Storage struct {
@@ -20,9 +22,11 @@ func NewPostgres(url string) (*Storage, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = storage.db.Ping()
-	if err != nil {
-		return nil, err
+	for storage.db.Ping() != nil {
+		const pause = 5
+		log.Errorf("[DBMS] Failed to connect to DBMS: %v", url)
+		log.Infof("[DBMS] wainting %v sec ...", pause)
+		time.Sleep(pause * time.Second)
 	}
 	return storage, nil
 }
