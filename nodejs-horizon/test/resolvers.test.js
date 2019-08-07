@@ -33,11 +33,6 @@ describe('assets resolvers', () => {
     });
 
     describe('Mutation', () => {
-        it('create team', async () => {
-            const result = await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
-            result.should.be.equal(true);
-        });
-
         it('createLeague', async () => {
             const result = await resolvers.Mutation.createLeague(_, { nTeams: 4, initBlock: 10, step: 20 }).should.be.fulfilled;
             result.should.be.equal(true);

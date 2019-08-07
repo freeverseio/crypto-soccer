@@ -24,7 +24,7 @@ describe('assets resolvers', () => {
     let query = null;
     let mutate = null;
 
-    beforeEach(async () => {
+    it("instantiate", async () => {
         // deploy contracts
         const { states, assets, leagues } = await genesis(provider, identity.address).should.be.fulfilled;
 
@@ -34,10 +34,9 @@ describe('assets resolvers', () => {
             leagues,
             from: identity.address
         });
-        await resolvers.Mutation.createTeam(_, { name: "Barca", owner: identity.address }).should.be.fulfilled;
         const server = new ApolloServer({ typeDefs, resolvers });
         const testClient = createTestClient(server);
-        query = testClient.query;
-        mutate = testClient.mutate;
+        // query = testClient.query;
+        // mutate = testClient.mutate;
     });
 }); 

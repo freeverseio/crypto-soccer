@@ -6,7 +6,6 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createTeam(name: String!, owner: String!): Boolean,
     createLeague(
       nTeams: Int!
       initBlock: Int!

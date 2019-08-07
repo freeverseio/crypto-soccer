@@ -9,11 +9,6 @@ function Resolvers({
   };
 
   this.Mutation = {
-    createTeam: async (_, { name, owner }) => {
-      const gas = await assets.methods.createTeam(name, owner).estimateGas();
-      await assets.methods.createTeam(name, owner).send({ from: from, gas });
-      return true;
-    },
     createLeague: async (_, { nTeams, initBlock, step }) => {
       const gas = await leagues.methods.create(
         nTeams,
