@@ -37,5 +37,12 @@ describe('assets resolvers', () => {
             const result = await resolvers.Mutation.createLeague(_, { nTeams: 4, initBlock: 10, step: 20 }).should.be.fulfilled;
             result.should.be.equal(true);
         });
+
+        it('transferTeam', async () => {
+            const gas = await assets.methods.createTeam("Madrid", identity.address).estimateGas().should.be.fulfilled;
+            await assets.methods.createTeam("Madrid", identity.address).send({ from: identity.address, gas }).should.be.fulfilled;
+            const result = await resolvers.Mutation.transferTeam(_, { teamId: "1", owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.fulfilled;
+            result.should.be.equal(true);
+        })
     });
 });

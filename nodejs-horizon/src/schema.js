@@ -10,6 +10,10 @@ const typeDefs = gql`
       nTeams: Int!
       initBlock: Int!
       step: Int!
+    ): Boolean,
+    transferTeam(
+      teamId: String!,
+      owner: String!
     ): Boolean
   }`;
 
