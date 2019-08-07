@@ -68,7 +68,7 @@ function main() {
     {
       disableDefaultMutations: true,
       dynamicJson: true,
-      simpleCollections: "only"
+      simpleCollections: "both"
     }
   )
     .then(result => {
