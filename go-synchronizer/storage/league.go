@@ -7,9 +7,7 @@ import (
 )
 
 type League struct {
-	Id          uint64
-	Name        string
-	TimezoneUTC int
+	Id uint64
 }
 
 func (b *Storage) LeagueCount() (uint64, error) {
@@ -29,10 +27,8 @@ func (b *Storage) LeagueCount() (uint64, error) {
 
 func (b *Storage) LeagueAdd(league League) error {
 	log.Infof("[DBMS] Adding league %v", league)
-	_, err := b.db.Exec("INSERT INTO leagues (id, name, timezoneUTC) VALUES ($1, $2, $3);",
+	_, err := b.db.Exec("INSERT INTO leagues (id) VALUES ($1);",
 		league.Id,
-		league.Name,
-		league.TimezoneUTC,
 	)
 	if err != nil {
 		return err
@@ -42,7 +38,7 @@ func (b *Storage) LeagueAdd(league League) error {
 
 func (b *Storage) GetLeague(id uint64) (League, error) {
 	league := League{}
-	rows, err := b.db.Query("SELECT id, name, timezoneUTC FROM leagues WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT id FROM leagues WHERE (id = $1);", id)
 	if err != nil {
 		return league, err
 	}
@@ -52,8 +48,6 @@ func (b *Storage) GetLeague(id uint64) (League, error) {
 	}
 	err = rows.Scan(
 		&league.Id,
-		&league.Name,
-		&league.TimezoneUTC,
 	)
 	if err != nil {
 		return league, err
