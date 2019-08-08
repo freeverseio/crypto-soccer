@@ -5,6 +5,7 @@ contract('Stakers', (accounts) => {
   const [owner, game, bob, alice, carol] = accounts
 
   let stakers
+  let stake
 
   beforeEach(async () => {
       stakers  = await Stakers.new({from:owner})
@@ -45,9 +46,14 @@ contract('Stakers', (accounts) => {
       "cannot update: staker not registered",
       "bob not yet enrolled, so it should revert"
     )
-    //await expect.passes(
-    //  stakers.enroll(bob, {from:game}),
-    //  "failed enrolling bob"
-    //)
+    await expect.passes(
+      stakers.enroll(bob, {from:game, value: stake}),
+      "failed enrolling bob"
+    )
+    // TODO: check that the money is taken from game, but it should be taken from bob
+    await expect.passes(
+      stakers.update(1, bob, {from:game}),
+      "failed to update"
+    )
   })
 })
