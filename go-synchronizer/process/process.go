@@ -66,13 +66,16 @@ func (p *EventProcessor) Process() error {
 		if events, err := p.scanLeagueCreated(opts); err != nil {
 			return err
 		} else {
-			for _, event := range events {
-				log.Info(
-					"Found league ", event.LeagueId.Int64(),
-					"\n\tdays: ", p.getLeagueDaysCount(event.LeagueId),
-					"\n\tfinished: ", p.hasLeagueFinished(event.LeagueId),
-					"\n\tupdated: ", p.isLeagueUpdated(event.LeagueId),
-				)
+			for _, event := range events { // TODO: next part to be recoded
+				p.db.LeagueAdd(storage.League{
+					Id: event.LeagueId.Uint64(),
+				})
+				// log.Info(
+				// 	"Found league ", event.LeagueId.Int64(),
+				// 	"\n\tdays: ", p.getLeagueDaysCount(event.LeagueId),
+				// 	"\n\tfinished: ", p.hasLeagueFinished(event.LeagueId),
+				// 	"\n\tupdated: ", p.isLeagueUpdated(event.LeagueId),
+				// )
 			}
 		}
 	} else {
@@ -158,7 +161,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 			State: storage.TeamState{
 				BlockNumber:          blockNumber,
 				Owner:                owner.Hex(),
-				CurrentLeagueId:      0, // TODO: uint64
+				CurrentLeagueId:      1, // TODO: uint64
 				PosInCurrentLeagueId: 0, // TODO: uint64
 				PrevLeagueId:         0, // TODO: uint64
 				PosInPrevLeagueId:    0, // TODO: uint64

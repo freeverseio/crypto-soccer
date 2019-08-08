@@ -73,4 +73,9 @@ CREATE TABLE players_history (
     PRIMARY KEY(playerId, blockNumber, inBlockIndex)
 );
 
+CREATE TABLE leagues (
+    id BIGINT NOT NULL,
+    PRIMARY KEY(id)
+);
+
 
