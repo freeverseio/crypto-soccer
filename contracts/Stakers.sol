@@ -1,16 +1,21 @@
 pragma solidity ^ 0.5.0;
 
+// TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
+
 contract AddressStack {
   uint16 public constant capacity = 4;
   uint16 public length = 0;
   address[capacity] private array;
 
+  /// @notice adds a new element. Reverts in case the element is found in array or array is full
   function push(address _address) public {
     require (length < capacity, "cannot push to a full AddressStack");
     require (!contains(_address), "cannot push, address is already in AddressStack");
     array[length++] = _address;
   }
 
+  /// @notice removes the last element that was pushed. Reverts in case it is empty.
+  /// @return the element that has been removed from the array
   function pop() public returns (address _address) {
     require (length > 0, "cannot pop from an empty AddressStack");
     _address = array[--length];
@@ -80,12 +85,14 @@ contract Stakers {
   function update(uint16 _level, address _staker) public onlyGame {
     require (_level == level() + 1);
     require (_level < maxNumLevels() + 1);
-    updaters.push(_staker); // TODO
+    // TODO: add logic of the stakers game. For now just simply push
+    updaters.push(_staker);
   }
 
   /// @notice start new verse
   /// @dev current state will be resolved at this point
   function start() public onlyGame {
+    // TODO: add logic to resolve the previous stakers game. For now just simply clear state
     updaters.clear();
   }
 
