@@ -112,7 +112,7 @@ contract Stakers {
     return updaters.length();
   }
 
-  /// @notice get the current level
+  /// @notice get the maximum level
   function maxNumLevels() public view returns (uint) {
     return updaters.capacity();
   }
