@@ -55,8 +55,13 @@ contract Stakers {
     _;
   }
   modifier onlyGame {
-    require(msg.sender == game,
+    require(msg.sender == game && game != address(0x0),
             "Only game can call this function.");
+    _;
+  }
+  modifier onlyOwnerOrGame {
+    require(msg.sender == owner || (msg.sender == game && game != address(0x0)),
+            "Only owner or game can call this function.");
     _;
   }
 
@@ -69,20 +74,20 @@ contract Stakers {
   /// @notice sets the address of the game that interacts with this contract
   function setGame(address _address) public onlyOwner {
     require (game == address(0x0), "game is already set");
-    require (_address == address(0x0), "invalid address 0x0");
+    require (_address != address(0x0), "invalid address 0x0");
     game = _address;
   }
 
   /// @notice registers a new staker
   /// @param _staker address that will be registered
-  function enroll(address payable _staker) public payable onlyOwner onlyGame {
+  function enroll(address payable _staker) public payable onlyOwnerOrGame {
     require (msg.value == kRequiredStake, "failed to enroll: not enough stake");
     require (addStaker(_staker), "failed to enroll");
   }
 
   /// @notice unregisters a new staker
   /// @param _staker address that will be unregistered
-  function unEnroll(address payable _staker) public onlyOwner onlyGame {
+  function unEnroll(address payable _staker) public onlyOwnerOrGame {
     require (removeStaker(_staker), "failed to unenroll");
     _staker.transfer(kRequiredStake);
   }
@@ -92,8 +97,9 @@ contract Stakers {
   /// @param _staker address of the staker that reports this update
   /// @dev if some state from previous updates can be resolved, it will be done at this point. That means previous updates could be slashed
   function update(uint16 _level, address _staker) public onlyGame {
-    require (_level == level() + 1, "cannout update: unexpected update level");
+    require (_level == level() + 1, "cannot update: wrong level");
     require (_level < maxNumLevels() + 1, "cannot update: level too large");
+    require (isStaker(_staker), "cannot update: staker not registered");
     require (!isSlashed(_staker), "cannot update: staker was slashed");
     // TODO: add logic of the stakers game. For now just simply push
     updaters.push(_staker);
@@ -122,6 +128,15 @@ contract Stakers {
   function isSlashed(address _addr) private view returns (bool) {
     for (uint i=0; i<slashed.length; i++) {
       if (slashed[i] == _addr) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function isStaker(address _addr) private view returns (bool) {
+    for (uint16 i=0; i<kNumStakers; i++) {
+      if (stakers[i] == _addr) {
         return true;
       }
     }
