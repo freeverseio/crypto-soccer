@@ -74,7 +74,8 @@ contract Stakers {
   /// @notice registers a new staker
   /// @param _staker address that will be registered
   function register(address _staker) public onlyOwner onlyGame {
-    require (stakers.length < kNumStakers, "");
+    require (stakers.length < kNumStakers, "no space left to register staker");
+    require (!contains(stakers, _staker), "staker already registered");
     stakers.push(_staker);
   }
 
@@ -83,8 +84,9 @@ contract Stakers {
   /// @param _staker address of the staker that reports this update
   /// @dev if some state from previous updates can be resolved, it will be done at this point. That means previous updates could be slashed
   function update(uint16 _level, address _staker) public onlyGame {
-    require (_level == level() + 1);
-    require (_level < maxNumLevels() + 1);
+    require (_level == level() + 1, "cannout update: unexpected update level");
+    require (_level < maxNumLevels() + 1, "cannot update: level too large");
+    require (!contains(slashed, _staker), "cannot update: staker was slashed");
     // TODO: add logic of the stakers game. For now just simply push
     updaters.push(_staker);
   }
@@ -92,6 +94,7 @@ contract Stakers {
   /// @notice start new verse
   /// @dev current state will be resolved at this point
   function start() public onlyGame {
+    require (updaters.length() > 0 && updaters.length() < 3, "cannot start new verse from current level");
     // TODO: add logic to resolve the previous stakers game. For now just simply clear state
     updaters.clear();
   }
@@ -107,4 +110,13 @@ contract Stakers {
   }
 
   // ----------------- private functions -----------------------
+
+  function contains(address[] storage _array, address _value) private view returns (bool) {
+    for (uint i=0; i<_array.length; i++) {
+      if (_array[i] == _value) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
