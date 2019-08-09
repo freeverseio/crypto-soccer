@@ -39,9 +39,10 @@ describe('assets resolvers', () => {
         });
 
         it('transferTeam', async () => {
+            await resolvers.Mutation.transferTeam(_, { teamId: 1, owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.rejected;
             const gas = await assets.methods.createTeam("Madrid", identity.address).estimateGas().should.be.fulfilled;
             await assets.methods.createTeam("Madrid", identity.address).send({ from: identity.address, gas }).should.be.fulfilled;
-            const result = await resolvers.Mutation.transferTeam(_, { teamId: "1", owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.fulfilled;
+            const result = await resolvers.Mutation.transferTeam(_, { teamId: 1, owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.fulfilled;
             result.should.be.equal(true);
         })
     });
