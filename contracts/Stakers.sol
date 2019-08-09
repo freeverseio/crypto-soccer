@@ -45,6 +45,7 @@ contract Stakers {
   AddressStack private updaters = new AddressStack();
   address[kNumStakers] public stakers;
   address[] public slashed;
+  address[] public trustedParties;
 
 
   // ----------------- modifiers -----------------------
@@ -59,11 +60,6 @@ contract Stakers {
             "Only game can call this function.");
     _;
   }
-  modifier onlyOwnerOrGame {
-    require(msg.sender == owner || (msg.sender == game && game != address(0x0)),
-            "Only owner or game can call this function.");
-    _;
-  }
 
   // ----------------- public functions -----------------------
 
@@ -73,23 +69,29 @@ contract Stakers {
 
   /// @notice sets the address of the game that interacts with this contract
   function setGame(address _address) public onlyOwner {
-    require (game == address(0x0), "game is already set");
+    require (game == address(0x0),     "game is already set");
     require (_address != address(0x0), "invalid address 0x0");
     game = _address;
   }
 
+  /// @notice adds address as trusted party
+  function addTrustedParty(address _staker) public onlyOwner {
+    require (!isTrustedParty(_staker), "failed to add trusted party");
+    trustedParties.push(_staker);
+  }
+
   /// @notice registers a new staker
-  /// @param _staker address that will be registered
-  function enroll(address payable _staker) public payable onlyOwnerOrGame {
+  function enroll() public payable {
     require (msg.value == kRequiredStake, "failed to enroll: not enough stake");
-    require (addStaker(_staker), "failed to enroll");
+    require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
+    require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
+    require (addStaker(msg.sender),       "failed to enroll");
   }
 
   /// @notice unregisters a new staker
-  /// @param _staker address that will be unregistered
-  function unEnroll(address payable _staker) public onlyOwnerOrGame {
-    require (removeStaker(_staker), "failed to unenroll");
-    _staker.transfer(kRequiredStake);
+  function unEnroll() public {
+    require (removeStaker(msg.sender), "failed to unenroll");
+    msg.sender.transfer(kRequiredStake);
   }
 
   /// @notice update to a new level
@@ -97,18 +99,23 @@ contract Stakers {
   /// @param _staker address of the staker that reports this update
   /// @dev if some state from previous updates can be resolved, it will be done at this point. That means previous updates could be slashed
   function update(uint16 _level, address _staker) public onlyGame {
-    require (_level == level() + 1, "cannot update: wrong level");
-    require (_level < maxNumLevels() + 1, "cannot update: level too large");
-    require (isStaker(_staker), "cannot update: staker not registered");
-    require (!isSlashed(_staker), "cannot update: staker was slashed");
+    require (_level == level(),           "failed to update: wrong level");
+    require (_level < maxNumLevels() + 1, "failed to update: level too large");
+    require (isStaker(_staker),           "failed to update: staker not registered");
+    require (!isSlashed(_staker),         "failed to update: staker was slashed");
     // TODO: add logic of the stakers game. For now just simply push
-    updaters.push(_staker);
+    if (_level < maxNumLevels()) {
+      updaters.push(_staker);
+    }
+    else {
+      // TODO: slash last staker immediately
+    }
   }
 
   /// @notice start new verse
   /// @dev current state will be resolved at this point
   function start() public onlyGame {
-    require (updaters.length() > 0 && updaters.length() < 3, "cannot start new verse from current level");
+    require (updaters.length() > 0 && updaters.length() < 3, "failed starting new verse from current level");
     // TODO: add logic to resolve the previous stakers game. For now just simply clear state
     updaters.clear();
   }
@@ -125,13 +132,21 @@ contract Stakers {
 
   // ----------------- private functions -----------------------
 
-  function isSlashed(address _addr) private view returns (bool) {
-    for (uint i=0; i<slashed.length; i++) {
-      if (slashed[i] == _addr) {
+  function contains(address[] storage _array, address _value) private view returns (bool) {
+    for (uint i=0; i<_array.length; i++) {
+      if (_array[i] == _value) {
         return true;
       }
     }
     return false;
+  }
+
+  function isTrustedParty(address _addr) private view returns (bool) {
+    return contains(trustedParties, _addr);
+  }
+
+  function isSlashed(address _addr) private view returns (bool) {
+    return contains(slashed, _addr);
   }
 
   function isStaker(address _addr) private view returns (bool) {
@@ -142,6 +157,7 @@ contract Stakers {
     }
     return false;
   }
+
 
   function addStaker(address _staker) private returns (bool) {
     for (uint16 i = 0; i<kNumStakers; i++){
