@@ -3,6 +3,7 @@ require('chai')
     .use(require('chai-as-promised'))
     .use(require('chai-bn')(BN))
     .should();
+const truffleAssert = require('truffle-assertions');
 
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
@@ -18,7 +19,7 @@ contract('Assets', (accounts) => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
-
+    
     it('generate virtual player state', async () => {
         await assets.generateVirtualPlayerState(0).should.be.rejected;
         await assets.generateVirtualPlayerState(1).should.be.rejected;
@@ -357,9 +358,12 @@ contract('Assets', (accounts) => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
         const currentOwner = await assets.getTeamOwner(name).should.be.fulfilled;
         currentOwner.should.be.equal(ALICE);
-        await assets.transferTeam(teamId = 1, BOB).should.be.fulfilled;
+        let tx = await assets.transferTeam(teamId = 1, BOB).should.be.fulfilled;
         const newOwner = await assets.getTeamOwner(name).should.be.fulfilled;
         newOwner.should.be.equal(BOB);
+        truffleAssert.eventEmitted(tx, "TeamTransfer", (ev) => {
+            return ev.teamId == 1 && ev.to == BOB;
+        });
     });
 
     it ('transfer invalid team 0', async () => {
