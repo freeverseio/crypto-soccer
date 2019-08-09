@@ -2,9 +2,9 @@
     "providerUrl": "https://devnet.busyverse.com/web3",
     "privateKey": "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54",
     "address": "0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7",
-    "assetsContractAddress": "0xA783483b8ee8F108dC4c8D7F5DF079Ea5f31c6d1",
-    "statesContractAddress": "0x0d2d0817b154a4EEF7E3623Dd130833fd9A8aB3E",
-    "engineContractAddress": "0xe22F7509bcc961cB8a2A6713fA5980a3A878d8E1",
-    "gameControllerContractAddress": "0x1789f271a0ccA0107FDA8061a3E34c720aE2e3A2",
-    "leaguesContractAddress": "0x4A7a110021E5Eb5563d0B25bC5785663e27E22AA"
+    "assetsContractAddress": "0x0184f2009a752D2C0b096B773A6D4c4dB08b4cF6",
+    "statesContractAddress": "0x12eceb398f386dF3A61c0Ae29E9EdEafcBAfe545",
+    "engineContractAddress": "0x5702C60F277a0EcadBaBf67a6B8A7A6E5155D086",
+    "gameControllerContractAddress": "0x632549b6081021aF3E5764d56BA7Bceb32312a35",
+    "leaguesContractAddress": "0xab4A804cFd22d5E571cD19dEAeb272319a74758C"
 }
