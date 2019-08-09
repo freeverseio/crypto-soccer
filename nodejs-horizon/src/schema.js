@@ -12,7 +12,7 @@ const typeDefs = gql`
       step: Int!
     ): Boolean,
     transferTeam(
-      teamId: String!,
+      teamId: Int,
       owner: String!
     ): Boolean
   }`;
