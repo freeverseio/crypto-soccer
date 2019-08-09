@@ -361,6 +361,10 @@ contract('Assets', (accounts) => {
         const newOwner = await assets.getTeamOwner(name).should.be.fulfilled;
         newOwner.should.be.equal(BOB);
     });
+
+    it ('transfer invalid team 0', async () => {
+        await assets.transferTeam(teamId = 0, BOB).should.be.rejected;
+    });
         
     it('transfer non-exisiting team', async () => {
         await assets.transferTeam(teamId = 1, BOB).should.be.rejected;
@@ -370,6 +374,4 @@ contract('Assets', (accounts) => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
         await assets.transferTeam(teamId = 1, ALICE).should.be.rejected;
     });
-        
-   
 });

@@ -6,6 +6,7 @@ import "../state/PlayerState.sol";
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets {
     event TeamCreated (uint256 id);
+    event TeamTransfer(uint256 teamId, address to);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -71,11 +72,12 @@ contract Assets {
     /// @dev Transfers a team to a new owner. 
     /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
     function transferTeam(uint256 teamId, address newOwner) public {
-        _teamExists(teamId);
+        require(_teamExists(teamId), "invalid team id");
         require(newOwner != address(0), "meaningless adress");
         require(newOwner != getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
         bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
         _teamNameHashToOwner[nameHash] = newOwner;
+        emit TeamTransfer(teamId, newOwner);
     }
 
     // TODO: exchange fails on playerId0 & playerId1 of the same team
