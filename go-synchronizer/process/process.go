@@ -66,12 +66,17 @@ func (p *EventProcessor) Process() error {
 		return err
 	} else {
 		for _, event := range events { // TODO: next part to be recoded
+			_, blockNumber, err := p.getTimeOfEvent(event.Raw)
+			if err != nil {
+				return err
+			}
 			teamId := event.TeamId.Uint64()
 			newOwner := event.To.String()
 			team, err := p.db.GetTeam(teamId)
 			if err != nil {
 				return err
 			}
+			team.State.BlockNumber = blockNumber
 			team.State.Owner = newOwner
 			err = p.db.TeamStateUpdate(teamId, team.State)
 			if err != nil {
