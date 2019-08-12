@@ -102,7 +102,7 @@ contract Stakers {
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
-    require (_level <= maxNumLevels(), "failed to update: wrong level");
+    //require (_level <= maxNumLevels(), "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker(_staker),        "failed to update: staker not registered");
     require (!isSlashed(_staker),      "failed to update: staker was slashed");
 
@@ -112,7 +112,7 @@ contract Stakers {
         // period has passed, so last updater told the truth.
         // The last updater should be rewarded, the one before
         // last should be slashed and level moves back two positions
-        require (_level > 0 && _level == level() - 2);
+        require (_level > 0 && _level == level() - 2, "failed to update: resolving wrong level");
         resolve();
       }
       updaters.push(_staker);
