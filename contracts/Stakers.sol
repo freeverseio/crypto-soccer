@@ -98,28 +98,52 @@ contract Stakers {
   /// @notice update to a new level
   /// @param _level to which update
   /// @param _staker address of the staker that reports this update
-  /// @dev if some state from previous updates can be resolved, it will be done at this point. That means previous updates could be slashed
+  /// @dev This function will also resolve previous updates when
+  //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) public onlyGame {
-    require (_level == level(),        "failed to update: wrong level");
-    require (isStaker(_staker),        "failed to update: staker not registered");
-    require (!isSlashed(_staker),      "failed to update: staker was slashed");
+    require (isStaker(_staker),   "failed to update: staker not registered");
+    require (!isSlashed(_staker), "failed to update: staker was slashed");
+    require (_level <= maxNumLevels(), "failed to update: wrong level");
+
     if (_level < maxNumLevels()) {
-      // TODO: add logic of the stakers game. For now just simply push
+      require (_level <= level(), "failed to update: wrong level");
+      if (_level < level()) {
+        // If level is below current, it means the challenge
+        // period has passed, so last updater told the truth.
+        // The last updater should be rewarded, the one before
+        // last should be slashed and level moves back two positions
+        require (_level > 0 && _level == level() - 2);
+        earnStake(updaters.pop());
+        slash(updaters.pop());
+      }
       updaters.push(_staker);
     }
     else {
-      //require (_level == maxNumLevels(), "failed to update: level too large");
+      require (_level == level(), "failed to update: wrong level");
+      // The very last possible update: the challenge.
+      // It resolves immediately by slashing the last
+      // updater
       slash(updaters.pop());
-      address(0x0).transfer(kRequiredStake); // TODO: burn the stake or transfer it to updater?
+      earnStake(_staker);
     }
   }
 
   /// @notice start new verse
-  /// @dev current state will be resolved at this point
+  /// @dev current state will be resolved at this point. Can only be called at level 1 or 2
   function start() public onlyGame {
-    require (updaters.length() > 0 && updaters.length() < 3, "failed starting new verse from current level");
-    // TODO: add logic to resolve the previous stakers game. For now just simply clear state
-    updaters.clear();
+    require (level() > 0 && level() < 3, "failed to start: wrong level");
+    if (level() == 1) {
+      // this was the only updater, and told the truth
+      // from the beginning, so it is entittled for
+      // this month reward
+      addToMonthReward(updaters.pop());
+    }
+    else {
+      // level 2
+      earnStake(updaters.pop());
+      slash(updaters.pop());
+    }
+    require (level() == 0, "failed to start: no updaters should have been left");
   }
 
   /// @notice get the current level
@@ -160,7 +184,6 @@ contract Stakers {
     return false;
   }
 
-
   function addStaker(address _staker) private returns (bool) {
     for (uint16 i = 0; i<kNumStakers; i++){
       if (stakers[i] == _staker) {
@@ -193,12 +216,22 @@ contract Stakers {
       stakers[kNumStakers-1] = address(0x0);
       return true;
     }
-
-    // staker not found
     return false;
   }
 
   function slash(address _staker) private {
     slashed.push(_staker);
   }
+
+  function earnStake(address _addr) private {
+    address(uint160(_addr)).transfer(kRequiredStake);
+    // TODO: alternatively it has been proposed to burn stake, and reward true tellers with the monthly pool.
+    // The idea behind it, is not to promote interest in stealing someone else's stake
+    // address(0x0).transfer(kRequiredStake); // burn stake
+  }
+
+  function addToMonthReward(address /*_staker*/) private pure {
+    // TODO
+  }
+
 }

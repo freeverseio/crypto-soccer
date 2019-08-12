@@ -71,6 +71,7 @@ contract('Stakers', (accounts) => {
 
   it("Tests level to update", async () => {
 
+    // start (L0) ->  bob updates (L1) -> alice updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
     stakers.setGame(game, {from:owner}),
     await expect.reverts(
       stakers.update(0, bob, {from:game}),
@@ -82,11 +83,14 @@ contract('Stakers', (accounts) => {
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
 
+    assert.equal(0, (await stakers.level()).toNumber());
+
     await expect.reverts(
       stakers.update(1, bob, {from:game}),
       "failed to update: wrong level",
       "level to update is 1, so it should revert"
     )
+
     await expect.reverts(
       stakers.update(2, bob, {from:game}),
       "failed to update: wrong level",
@@ -97,49 +101,62 @@ contract('Stakers', (accounts) => {
       stakers.update(0, bob, {from:game}),
       "bob failed to update"
     )
+
+    assert.equal(1, (await stakers.level()).toNumber());
+
     await expect.reverts(
       stakers.update(1, bob, {from:game}),
       null,
       "bob is already updating, cannot participate until resolved"
     )
+
     await expect.passes(
       stakers.update(1, alice, {from:game}),
       "alice failed to update"
     )
+
+    assert.equal(2, (await stakers.level()).toNumber());
+
     await expect.passes(
       stakers.update(2, carol, {from:game}),
       "carol failed to update"
     )
-    await expect.reverts(
-      stakers.update(2, dave, {from:game}),
-      "failed to update: wrong level",
-      "level to update is 4, so it should revert"
-    )
+
+    assert.equal(3, (await stakers.level()).toNumber());
+
     await expect.passes(
       stakers.update(3, dave, {from:game}),
       "dave failed to update"
     )
+
+    assert.equal(4, (await stakers.level()).toNumber());
+
     await expect.passes(
       stakers.update(4, erin, {from:game}),
       "erin failed to update"
     )
+
+    assert.equal(3, (await stakers.level()).toNumber());
+
     await expect.reverts(
       stakers.update(5, erin, {from:game}),
       "failed to update: wrong level",
       "this update level does not exist, so it should revert"
     )
+
+    assert.equal(3, (await stakers.level()).toNumber());
+
     await expect.reverts(
       stakers.update(4, erin, {from:game}),
       "failed to update: wrong level",
-      "dave was slashed by erin, so we are at level 3, so it should revert"
+      "after erin slashed dave, level is 3, so it should revert"
     )
-    await expect.passes(
-      stakers.update(3, erin, {from:game}),
-      "erin failed to update"
-    )
+
+    assert.equal(3, (await stakers.level()).toNumber());
+
     await expect.reverts(
       stakers.start({from:game}),
-      "failed starting new verse from current level",
+      "failed to start: wrong level",
       "starting a new verse is only possible from level 1 or 2, so it should revert"
     )
   })
