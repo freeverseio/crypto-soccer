@@ -8,7 +8,7 @@ contract AddressStack {
   address[capacity] private array;
 
   /// @notice adds a new element. Reverts in case the element is found in array or array is full
-  function push(address _address) public {
+  function push(address _address) external {
     require (length < capacity, "cannot push to a full AddressStack");
     require (!contains(_address), "cannot push, address is already in AddressStack");
     array[length++] = _address;
@@ -16,14 +16,14 @@ contract AddressStack {
 
   /// @notice removes the last element that was pushed. Reverts in case it is empty.
   /// @return the element that has been removed from the array
-  function pop() public returns (address _address) {
+  function pop() external returns (address _address) {
     require (length > 0, "cannot pop from an empty AddressStack");
     _address = array[--length];
   }
 
-  function clear() public {
-    length = 0;
-  }
+  //function clear() public {
+  //  length = 0;
+  //}
 
   function contains(address _address) private view returns (bool) {
     for (uint16 i=0; i<length; i++) {
@@ -68,14 +68,14 @@ contract Stakers {
   }
 
   /// @notice sets the address of the game that interacts with this contract
-  function setGame(address _address) public onlyOwner {
+  function setGame(address _address) external onlyOwner {
     require (game == address(0x0),     "game is already set");
     require (_address != address(0x0), "invalid address 0x0");
     game = _address;
   }
 
   /// @notice adds address as trusted party
-  function addTrustedParty(address _staker) public onlyOwner {
+  function addTrustedParty(address _staker) external onlyOwner {
     require (!isTrustedParty(_staker), "failed to add trusted party");
     trustedParties.push(_staker);
   }
@@ -100,7 +100,7 @@ contract Stakers {
   /// @param _staker address of the staker that reports this update
   /// @dev This function will also resolve previous updates when
   //       level is below current or level has reached the end
-  function update(uint16 _level, address _staker) public onlyGame {
+  function update(uint16 _level, address _staker) external onlyGame {
     require (_level <= level(),        "failed to update: wrong level");
     require (_level <= maxNumLevels(), "failed to update: wrong level");
     require (isStaker(_staker),        "failed to update: staker not registered");
@@ -129,7 +129,7 @@ contract Stakers {
 
   /// @notice start new verse
   /// @dev current state will be resolved at this point. Can only be called at level 1 or 2
-  function start() public onlyGame {
+  function start() external onlyGame {
     require (level() > 0 && level() < 3, "failed to start: wrong level");
     if (level() == 1) {
       // this was the only updater, and told the truth
