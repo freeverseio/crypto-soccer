@@ -391,7 +391,7 @@ def addDivision(countryIdx, ST, ST_CLIENT):
     assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
     return divisionIdx
 
-# def buildDefaultOrgMapAtTimeZoneCreation(nCountries):
+# def buildInitOrgMapAtTimeZoneCreation(nCountries):
 #     # [nCountriesToRead, nTeamsToReadForCountry1, t1, t2, ... nPlayersToReadForCountry2, t1, t2...]
 #     header = []
 #     orgMap = []

@@ -515,7 +515,7 @@ class Storage(Counter):
             for div in range(DIVS_PER_COUNTRY_AT_DEPLOY-1):
                 self.addDivision(countryIdx)
 
-        initHeader, initOrgMap = self.buildDefaultOrgMap()
+        initHeader, initOrgMap = self.buildInitOrgMap()
         if self.isClient:
             self.timeZoneUpdates[timeZone] = TimeZoneUpdateClient(initHeader, initOrgMap)
         else:
@@ -579,7 +579,7 @@ class Storage(Counter):
         if teamIdxInCountry <= TEAMS_PER_LEAGUE:
             return 1
         else:
-            return 2 + int( (teamIdxInCountry - 1 - TEAMS_PER_LEAGUE) / (LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE) )
+            return 2 + (teamIdxInCountry - 1 - TEAMS_PER_LEAGUE) // (LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE)
 
 
     def getTeamIdxInCountryFromPlayerIdxInCountry(self, playerIdxInCountry):
@@ -1946,22 +1946,22 @@ class Storage(Counter):
 
 
     def buildOrgMap(self, timeZone):
-        # return buildDefaultOrgMap(nCountries, nDivsPerCountry)
+        # return buildInitOrgMap(nCountries, nDivsPerCountry)
         # this should be hardcoded for each nCountries
         header = []
         orgMap = []
-        header.append(nCountries)
-        nLeaguesPerCountry = 1 + LEAGUES_PER_DIVISON * (nDivsPerCountry-1)
-        nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
-        for country in range(nCountries):
+        countries = self.timeZoneToCountries[timeZone]
+        header.append(len(countries))
+        for country in countries:
+            nDivsInCountry = self.countries[country].nDivisions
+            nLeaguesInCountry = 1 + LEAGUES_PER_DIVISON * (nDivsInCountry-1)
+            nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
             header.append(nTeamsInCountry)
             teamIdxs = list(range(1, nTeamsInCountry + 1))
             orgMap += teamIdxs
         return header, orgMap
 
-
-
-    def buildDefaultOrgMap(self):
+    def buildInitOrgMap(self):
         # this should be hardcoded for each nCountries
         header = []
         orgMap = []
@@ -1993,7 +1993,6 @@ class Storage(Counter):
                     if playerIdx == FREE_SHIRT_IDX:
                         initSkills.append(0)
                     else:
-                        # print(playerIdx, countryIdx, teamIdxInCountry, shirtNum)
                         initSkills.append(self.getLatestPlayerSkills(playerIdx))
             pointer += nTeamsPerCountry[c]
         return initSkills
@@ -2007,7 +2006,8 @@ class Storage(Counter):
         if (day == 15 and turnInDay == 0):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            header, orgMap = self.buildDefaultOrgMap()
+            header, orgMap = self.buildOrgMap(timeZoneToUpdate)
+            # header, orgMap = self.buildInitOrgMap()
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
             return
@@ -2082,12 +2082,16 @@ class Storage(Counter):
                 header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=False)
 
 
+        # If the division was just created, and the player was just created with it, return skills at birth.
+        division = self.getDisivionIdxFromTeamIdxInCountry(teamIdxInCountry)
+        if self.countries[countryIdx].divisonIdxToRound[division] <= self.currentRound() and playerState.prevPlayedTeamIdx == 0:
+            return self.getPlayerSkillsAtBirth(playerIdx)
+
         countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
         nCountriesInOrgMap = header[0]
         nTeamsPerCountry = header[1:1 + nCountriesInOrgMap]
         nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1)
         pointerToPlayerSkills = nTeamsAbovePlayerTeam * PLAYERS_PER_TEAM_MAX + playerState.currentShirtNum
-        assert nTeamsPerCountry[0] == 17*TEAMS_PER_LEAGUE
         playerSkills = timeZoneSkills[pointerToPlayerSkills]
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills

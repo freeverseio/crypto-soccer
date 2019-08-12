@@ -1,8 +1,12 @@
 I WAS DOING:
+536873361
+
+- set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):
 
 trying to compute initSkills properly at round = 2 after having added 1 division:
     - this forces the recomputation of the orgMap to be the correct one
 
+recheck that there's enough room to compute all getInitSkills !
 
 - I think we need nDisions (new and old) => probably we need all of that as old/new
 - I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?
