@@ -113,8 +113,7 @@ contract Stakers {
         // The last updater should be rewarded, the one before
         // last should be slashed and level moves back two positions
         require (_level > 0 && _level == level() - 2);
-        earnStake(updaters.pop());
-        slash(updaters.pop());
+        resolve();
       }
       updaters.push(_staker);
     }
@@ -134,13 +133,12 @@ contract Stakers {
     if (level() == 1) {
       // this was the only updater, and told the truth
       // from the beginning, so it is entittled for
-      // this month reward
+      // this month reward and nothing needs to be resolved
       addToMonthReward(updaters.pop());
     }
     else {
       // level 2
-      earnStake(updaters.pop());
-      slash(updaters.pop());
+      resolve();
     }
     require (level() == 0, "failed to start: no updaters should have been left");
   }
@@ -216,6 +214,11 @@ contract Stakers {
       return true;
     }
     return false;
+  }
+
+  function resolve() private {
+    earnStake(updaters.pop());
+    slash(updaters.pop());
   }
 
   function slash(address _staker) private {
