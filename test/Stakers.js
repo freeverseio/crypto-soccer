@@ -1,6 +1,9 @@
 const Stakers = artifacts.require("Stakers")
 const expect = require('truffle-assertions');
 
+
+// TODO: add test where a malicious party is updating and tries to unenroll. Test should fail.
+
 contract('Stakers', (accounts) => {
   const [owner, game, bob, alice, carol, dave, erin, frank] = accounts
 

@@ -25,7 +25,7 @@ contract AddressStack {
   //  length = 0;
   //}
 
-  function contains(address _address) private view returns (bool) {
+  function contains(address _address) public view returns (bool) {
     for (uint16 i=0; i<length; i++) {
       if (array[i] == _address) {
         return true;
@@ -91,7 +91,8 @@ contract Stakers {
 
   /// @notice unregisters a new staker
   function unEnroll() external {
-    require (removeStaker(msg.sender), "failed to unenroll");
+    require (!updaters.contains(msg.sender), "failed to unenroll: staker currently updating");
+    require (removeStaker(msg.sender),       "failed to unenroll");
     msg.sender.transfer(kRequiredStake);
   }
 
@@ -222,6 +223,7 @@ contract Stakers {
   }
 
   function slash(address _staker) private {
+    require (removeStaker(_staker), "failed to slash: staker not found");
     slashed.push(_staker);
   }
 
