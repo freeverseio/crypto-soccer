@@ -81,15 +81,16 @@ contract Stakers {
   }
 
   /// @notice registers a new staker
-  function enroll() public payable {
-    require (msg.value == kRequiredStake, "failed to enroll: not enough stake");
+  function enroll() external payable {
+    require (msg.value == kRequiredStake, "failed to enroll: wrong stake amount");
     require (!isSlashed(msg.sender),      "failed to enroll: staker was slashed");
     require (isTrustedParty(msg.sender),  "failed to enroll: staker is not trusted party");
     require (addStaker(msg.sender),       "failed to enroll");
+
   }
 
   /// @notice unregisters a new staker
-  function unEnroll() public {
+  function unEnroll() external {
     require (removeStaker(msg.sender), "failed to unenroll");
     msg.sender.transfer(kRequiredStake);
   }
@@ -99,16 +100,17 @@ contract Stakers {
   /// @param _staker address of the staker that reports this update
   /// @dev if some state from previous updates can be resolved, it will be done at this point. That means previous updates could be slashed
   function update(uint16 _level, address _staker) public onlyGame {
-    require (_level == level(),           "failed to update: wrong level");
-    require (_level < maxNumLevels() + 1, "failed to update: level too large");
-    require (isStaker(_staker),           "failed to update: staker not registered");
-    require (!isSlashed(_staker),         "failed to update: staker was slashed");
-    // TODO: add logic of the stakers game. For now just simply push
+    require (_level == level(),        "failed to update: wrong level");
+    require (isStaker(_staker),        "failed to update: staker not registered");
+    require (!isSlashed(_staker),      "failed to update: staker was slashed");
     if (_level < maxNumLevels()) {
+      // TODO: add logic of the stakers game. For now just simply push
       updaters.push(_staker);
     }
     else {
-      // TODO: slash last staker immediately
+      //require (_level == maxNumLevels(), "failed to update: level too large");
+      slash(updaters.pop());
+      address(0x0).transfer(kRequiredStake); // TODO: burn the stake or transfer it to updater?
     }
   }
 
@@ -194,5 +196,9 @@ contract Stakers {
 
     // staker not found
     return false;
+  }
+
+  function slash(address _staker) private {
+    slashed.push(_staker);
   }
 }

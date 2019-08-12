@@ -55,8 +55,33 @@ contract('Stakers', (accounts) => {
     )
   })
 
+  it("Tests stake", async () => {
+    assert.equal(0, await web3.eth.getBalance(stakers.address));
+
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
+    assert.equal(parties.length*Number(stake),
+                 await web3.eth.getBalance(stakers.address));
+
+    await unenroll(stakers, parties);
+    assert.equal(0, await web3.eth.getBalance(stakers.address));
+  })
+
   it("Tests level to update", async () => {
+
     stakers.setGame(game, {from:owner}),
+    await expect.reverts(
+      stakers.update(0, bob, {from:game}),
+      "failed to update: staker not registered",
+      "bob not yet enrolled, so it should revert"
+    )
+
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
     await expect.reverts(
       stakers.update(1, bob, {from:game}),
       "failed to update: wrong level",
@@ -67,19 +92,6 @@ contract('Stakers', (accounts) => {
       "failed to update: wrong level",
       "level to update is 1, so it should revert"
     )
-    await expect.reverts(
-      stakers.update(0, bob, {from:game}),
-      "failed to update: staker not registered",
-      "bob not yet enrolled, so it should revert"
-    )
-
-    parties = [bob, alice, carol, dave, erin, frank]
-    await parties.forEach(function(address) {
-      stakers.addTrustedParty(address, {from:owner})
-    })
-    await parties.forEach(function(address) {
-      stakers.enroll({from:address, value: stake})
-    })
 
     await expect.passes(
       stakers.update(0, bob, {from:game}),
@@ -88,7 +100,7 @@ contract('Stakers', (accounts) => {
     await expect.reverts(
       stakers.update(1, bob, {from:game}),
       null,
-      "bob is already updating, cannot participate until next verse"
+      "bob is already updating, cannot participate until resolved"
     )
     await expect.passes(
       stakers.update(1, alice, {from:game}),
@@ -111,18 +123,46 @@ contract('Stakers', (accounts) => {
       stakers.update(4, erin, {from:game}),
       "erin failed to update"
     )
-
-    // TODO: this fails
     await expect.reverts(
       stakers.update(5, erin, {from:game}),
-      "failed to update: level too large",
+      "failed to update: wrong level",
       "this update level does not exist, so it should revert"
     )
-
+    await expect.reverts(
+      stakers.update(4, erin, {from:game}),
+      "failed to update: wrong level",
+      "dave was slashed by erin, so we are at level 3, so it should revert"
+    )
+    await expect.passes(
+      stakers.update(3, erin, {from:game}),
+      "erin failed to update"
+    )
     await expect.reverts(
       stakers.start({from:game}),
       "failed starting new verse from current level",
       "starting a new verse is only possible from level 1 or 2, so it should revert"
     )
   })
+
 })
+
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+async function addTrustedParties(contract, owner, addresses) {
+  await asyncForEach(addresses, async (address) => {
+    contract.addTrustedParty(address, {from:owner})
+  });
+}
+async function enroll(contract, stake, addresses) {
+  await asyncForEach(addresses, async (address) => {
+    await contract.enroll({from:address, value: stake})
+  });
+}
+async function unenroll(contract, addresses) {
+  await asyncForEach(addresses, async (address) => {
+    await contract.unEnroll({from:address})
+  });
+}
