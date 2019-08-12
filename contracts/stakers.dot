@@ -1,0 +1,62 @@
+digraph G {
+  splines=false;
+  
+  verse [label=<verse finished<br/><FONT POINT-SIZE="10">resolve state from previous verse</FONT>> fillcolor=grey style=filled]
+  next_verse [label="next verse" fillcolor=grey style=filled]
+  level1 [label="L1" fillcolor=grey style=filled group=g1]
+  level2 [label="L2" fillcolor=grey style=filled group=g2]
+  level3 [label="L3" fillcolor=grey style=filled group=g3]
+  level4 [label="L4" fillcolor=grey style=filled group=g4]
+  level5 [label="L5 - challenge L4" fillcolor=grey style=filled group=g5]
+  
+  level1b [label="L1" fillcolor=grey style=filled]
+  level2b [label="L2" fillcolor=grey style=filled]
+  level3b [label="L3" fillcolor=grey style=filled]
+
+  settled [label="new root settled" group=g1]
+
+  slash1 [label="slash addr 1\n addr2 earns stake from addr1" group=g2]
+  slash2 [label="slash addr 2\n addr3 earns stake from addr2" group=g3]
+  slash3 [label="slash addr 3\n addr4 earns stake from addr3" group=g4]
+  slash4 [label="slash addr 4\n addr5 earns stake from addr4" group=g5]
+  
+  time1 [label="challenge time passed?" shape=diamond fontsize=12 group=g1]
+  time2 [label="challenge time passed?" shape=diamond fontsize=12 group=g2]
+  time3 [label="challenge time passed?" shape=diamond fontsize=12 group=g3]
+  time4 [label="challenge time passed?" shape=diamond fontsize=12 group=g4]
+
+
+  verse -> level1 [label="  stakers::update(addr1)\n  addr1 supplies 1 merkle root" fontsize=11]
+  level1 -> time1 [label=" stakers::update(addr2)" fontsize=11]
+  time1:s -> settled [label=<<b>YES</b><br/>addr 1 entitled for<br/>reward end of month> fontsize=11]
+  {rank=same; time1, level2 };
+  time1 -> level2 [ label=<  <b>NO</b><br/>addr2 supplies next 200 leafs<br/>(new root is computed by game)> fontsize=11]
+
+  level2 -> time2:n [label=" stakers::update(addr3)" fontsize=11]
+  time2:s-> slash1  [label=<<b>YES</b>> fontsize=11]
+  slash1 -> settled
+  {rank=same; time2, level3 };
+  time2:no-> level3 [label=<<b>NO</b><br/>addr3 supplies 200 more leafs<br/>and which leaf from L2<br/>is incorrect> fontsize=11]
+
+  level3 -> time3 [label=" stakers::update(addr4)" fontsize=11]
+  {rank=same; time3, level4 };
+  time3:e -> level4 [label=<  <b>NO</b><br/>addr4 supplies last 200 leafs<br/>and which leaf from L3<br/>is incorrect> fontsize=11]
+  time3:s -> slash2 [label=<<b>YES</b>> fontsize=11]
+  slash2 -> level1b [label=" back to"]
+  empty1b [label="" shape=plaintext]
+  level1b -> empty1b [label="  addr4 becomes addr2", style=dashed]
+
+  level4 -> time4 [label=" stakers::update(addr5)" fontsize=11]
+  time4:s -> slash3 [label=<<b>YES</b>> fontsize=11]
+  slash3 -> level2b [label=" back to"]
+  empty2b [label="" shape=plaintext]
+  level2b -> empty2b [label="  addr5 becomes addr3", style=dashed]
+  {rank=same; time4, level5 };
+  time4:e -> level5 [label= <<b>NO</b><br/>addr5 tells which leaf from L4 is incorrect.<br/>This is the only data that the game needs<br/>in order to know that indeed L4 was lying<br/>and be able to fit it in 1 block.> fontsize=11]
+  level5 -> slash4
+  slash4 -> level3b [label="  back to"]
+  //level4 -> slash3 [label="no need to wait for challenge time,\nat this point the game has all data\nto assert whether addr 4 is lying,\nso if we receive this update\nit means L3 was wrong"]
+  //slash3 -> level2b [label="back to"]
+
+  settled -> next_verse [style=dashed]
+}
