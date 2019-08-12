@@ -101,10 +101,10 @@ contract Stakers {
   /// @dev This function will also resolve previous updates when
   //       level is below current or level has reached the end
   function update(uint16 _level, address _staker) public onlyGame {
-    require (isStaker(_staker),        "failed to update: staker not registered");
-    require (!isSlashed(_staker),      "failed to update: staker was slashed");
     require (_level <= level(),        "failed to update: wrong level");
     require (_level <= maxNumLevels(), "failed to update: wrong level");
+    require (isStaker(_staker),        "failed to update: staker not registered");
+    require (!isSlashed(_staker),      "failed to update: staker was slashed");
 
     if (_level < maxNumLevels()) {
       if (_level < level()) {
