@@ -86,24 +86,21 @@ contract('Stakers', (accounts) => {
     )
   })
 
-  it("Tests L0 - > L1 -> start  -> L1, the usual path", async () => {
+  it("Tests L0 - > L1 -> start -> L1, the usual path", async () => {
 
     stakers.setGame(game, {from:owner}),
-    await expect.reverts(
-      stakers.update(0, bob, {from:game}),
-      "failed to update: staker not registered",
-      "bob not yet enrolled, so it should revert"
-    )
-
     parties = [bob, alice, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
 
+    // L0
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.passes(
       stakers.update(0, bob, {from:game}),
       "bob failed to update"
     )
+
+    // L1
     assert.equal(1, (await stakers.level()).toNumber());
     await expect.reverts(
       stakers.update(0, alice, {from:game}),
@@ -112,44 +109,46 @@ contract('Stakers', (accounts) => {
     )
 
     for (i=0; i<10; i++) {
+      // start new verse
       await expect.passes(
         stakers.start({from:game}),
         "failed starting new verse"
       )
 
+      // L0
       assert.equal(0, (await stakers.level()).toNumber());
       await expect.passes(
         stakers.update(0, bob, {from:game}),
         "bob failed to update"
       )
+
+      // L1
       assert.equal(1, (await stakers.level()).toNumber());
     }
   })
 
-  it("Tests L0 - > L1 -> L2 -> start  -> L1 -> L2", async () => {
+  it("Tests L0 - > L1 -> L2 -> start -> L1 -> L2", async () => {
 
     stakers.setGame(game, {from:owner}),
-    await expect.reverts(
-      stakers.update(0, bob, {from:game}),
-      "failed to update: staker not registered",
-      "bob not yet enrolled, so it should revert"
-    )
-
     parties = [bob, alice, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
 
+    // L0
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.passes(
       stakers.update(0, bob, {from:game}),
       "bob failed to update"
     )
+
+    // L1
     assert.equal(1, (await stakers.level()).toNumber());
     await expect.passes(
       stakers.update(1, alice, {from:game}),
       "alice failed to update"
     )
 
+    // L2
     assert.equal(2, (await stakers.level()).toNumber());
     await expect.reverts(
       stakers.update(0, carol, {from:game}),
@@ -162,10 +161,13 @@ contract('Stakers', (accounts) => {
       "level 1 is already updated, it should revert"
     )
 
+    // ------------- start new verse ----------------
     await expect.passes(
       stakers.start({from:game}),
       "failed starting new verse"
     )
+
+    // L0
     assert.equal(0, (await stakers.level()).toNumber());
     await expect.reverts(
       stakers.update(0, bob, {from:game}),
@@ -181,24 +183,91 @@ contract('Stakers', (accounts) => {
       stakers.update(0, alice, {from:game}),
       "alice failed to update after new verse"
     )
+
+    // L1
     assert.equal(1, (await stakers.level()).toNumber());
     await expect.passes(
       stakers.update(1, dave, {from:game}),
       "dave failed to update level 1"
     )
+
+    // L2
     assert.equal(2, (await stakers.level()).toNumber());
+  })
+
+  it("Tests L0 -> L1 -> L2 -> L3 -> L1 -> L2", async () => {
+
+    stakers.setGame(game, {from:owner}),
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
+    // L0
+    assert.equal(0, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(0, bob, {from:game}),
+      "bob failed to update"
+    )
+
+    // L1
+    assert.equal(1, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(1, alice, {from:game}),
+      "alice failed to update"
+    )
+
+    // L2
+    assert.equal(2, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(2, dave, {from:game}),
+      "dave failed to update"
+    )
+    daveBalance = Number(await web3.eth.getBalance(dave));
+
+    // L3
+    assert.equal(3, (await stakers.level()).toNumber());
+
+    await expect.reverts(
+      stakers.start({from:game}),
+      "failed to start: wrong level",
+      "can't start a new verse from L3, so it should revert"
+    )
+
+    // resolve L3: alice will be slashed and dave earns alice's stake
+    await expect.passes(
+      stakers.update(1, erin, {from:game}),
+      "erin failed to update"
+    )
+
+    // L2: because L3 was resolved we are now at L2, not L1
+    assert.equal(2, (await stakers.level()).toNumber());
+
+    await expect.reverts(
+      stakers.enroll({from:alice, value: stake}),
+      "failed to enroll: staker was slashed",
+      "alice was slashed, so it should revert"
+    )
+
+    assert.isBelow(daveBalance, Number(await web3.eth.getBalance(dave)),
+                 "Dave current balance should be higher now, since it earned alice's stake");
+
+    // start new verse
+    await expect.passes(
+      stakers.start({from:game}),
+      "failed starting new verse"
+    )
+
+    await expect.reverts(
+      stakers.enroll({from:alice, value: stake}),
+      "failed to enroll: staker was slashed",
+      "alice was slashed and will never be able to enroll again, so it should revert"
+    )
   })
 
   it("Tests L0 -> L1 -> L2 -> L3 -> L4 -> L3 -> L4", async () => {
 
     // start (L0) ->  bob updates (L1) -> alice updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
     stakers.setGame(game, {from:owner}),
-    await expect.reverts(
-      stakers.update(0, bob, {from:game}),
-      "failed to update: staker not registered",
-      "bob not yet enrolled, so it should revert"
-    )
-
     parties = [bob, alice, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
