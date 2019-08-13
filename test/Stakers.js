@@ -72,7 +72,64 @@ contract('Stakers', (accounts) => {
     assert.equal(0, await web3.eth.getBalance(stakers.address));
   })
 
-  it("Tests level to update", async () => {
+  it("Tests can't unenroll during update", async () => {
+    stakers.setGame(game, {from:owner}),
+    await stakers.addTrustedParty(bob, {from:owner});
+    await stakers.enroll({from:bob, value: stake});
+    await stakers.update(0, bob, {from:game}),
+    await expect.reverts(
+      stakers.unEnroll({from:bob}),
+      "failed to unenroll: staker currently updating",
+      "bob is currently updating, so it should revert"
+    )
+    await stakers.start({from:game});
+    await expect.passes(
+      stakers.unEnroll({from:bob}),
+      "failed unenrolling bob"
+    )
+  })
+
+  it("Tests L0 - > L1 -> start  -> L1, the usual path", async () => {
+
+    stakers.setGame(game, {from:owner}),
+    await expect.reverts(
+      stakers.update(0, bob, {from:game}),
+      "failed to update: staker not registered",
+      "bob not yet enrolled, so it should revert"
+    )
+
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
+    assert.equal(0, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(0, bob, {from:game}),
+      "bob failed to update"
+    )
+    assert.equal(1, (await stakers.level()).toNumber());
+    await expect.reverts(
+      stakers.update(0, alice, {from:game}),
+      "failed to update: resolving wrong level",
+      "level 0 cannot be updated without starting a new verse, it should revert"
+    )
+
+    for (i=0; i<10; i++) {
+      await expect.passes(
+        stakers.start({from:game}),
+        "failed starting new verse"
+      )
+
+      assert.equal(0, (await stakers.level()).toNumber());
+      await expect.passes(
+        stakers.update(0, bob, {from:game}),
+        "bob failed to update"
+      )
+      assert.equal(1, (await stakers.level()).toNumber());
+    }
+  })
+
+  it("Tests L0 -> L1 -> L2 -> L3 -> L4 -> L3 -> L4", async () => {
 
     // start (L0) ->  bob updates (L1) -> alice updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
     stakers.setGame(game, {from:owner}),
@@ -163,7 +220,6 @@ contract('Stakers', (accounts) => {
       "starting a new verse is only possible from level 1 or 2, so it should revert"
     )
   })
-
 })
 
 async function asyncForEach(array, callback) {
