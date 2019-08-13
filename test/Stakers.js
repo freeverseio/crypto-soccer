@@ -96,7 +96,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 - > L1 -> start -> L1, the usual path", async () => {
+  it("Tests L0 - > L1 true -> start -> L1 true, the usual path", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
@@ -139,7 +139,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 - > L1 -> L2 -> start -> L1 -> L2", async () => {
+  it("Tests L0 - > L1 lie -> L2 true -> start -> L1 lie -> L2 true", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
