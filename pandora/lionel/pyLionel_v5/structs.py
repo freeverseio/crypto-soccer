@@ -2023,7 +2023,7 @@ class Storage(Counter):
                     skillsLeftIdx = teamPointer + team * PLAYERS_PER_TEAM_MAX
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
-                skillsPerTeam, scores = pylio.computeStatesAtMatchday(day, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
+                skillsPerTeam, scores = pylio.computeStatesAtMatchday(day-1, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
                 for skillsInOneTeam in skillsPerTeam:
                     for skills in skillsInOneTeam:
                         newSkills.append(skills)
