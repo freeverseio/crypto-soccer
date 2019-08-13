@@ -60,7 +60,7 @@ class TimeZoneUpdate():
         self.incrementCycleIdx()
 
     def updateSkills(self, skillsHash, currentBlock):
-        assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(1,0), "trying to updateSkills at wrong moment"
+        # assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(1,0), "trying to updateSkills at wrong moment"
         self.newestSkillsIdx = 1 - self.newestSkillsIdx
         self.skills[self.newestSkillsIdx] = skillsHash
         self.lastBlockUpdate = currentBlock
@@ -2011,6 +2011,7 @@ class Storage(Counter):
         tactics = [TACTICS["433"] for team in range(TEAMS_PER_LEAGUE)]
         teamOrders = [DEFAULT_ORDER for team in range(TEAMS_PER_LEAGUE)]
         matchdaySeed = 3
+        newSkills = []
         for c in range(nCountries):
             countryIdx = self.timeZoneToCountries[timeZone][c]
             allTeamIdxInCountry = orgMap[teamPointer:(teamPointer+nTeamsPerCountry[c])]
@@ -2022,10 +2023,13 @@ class Storage(Counter):
                     skillsLeftIdx = teamPointer + team * PLAYERS_PER_TEAM_MAX
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
-                pylio.computeStatesAtMatchday(day, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
+                skillsPerTeam, scores = pylio.computeStatesAtMatchday(day, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
+                for skillsInOneTeam in skillsPerTeam:
+                    for skills in skillsInOneTeam:
+                        newSkills.append(skills)
                 teamPointer += TEAMS_PER_LEAGUE
-
-
+        assert len(newSkills) == len(prevSkills), "new skills length not equal to prevSkills length"
+        return newSkills
 
 
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
