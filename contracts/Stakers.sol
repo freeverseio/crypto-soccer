@@ -105,7 +105,7 @@ contract Stakers {
     require (_level <= level(),        "failed to update: wrong level");
     //require (_level <= maxNumLevels(), "failed to update: max level exceeded"); // already covered by previous require
     require (isStaker(_staker),        "failed to update: staker not registered");
-    require (!isSlashed(_staker),      "failed to update: staker was slashed");
+    //require (!isSlashed(_staker),      "failed to update: staker was slashed"); // also covered by not being part of stakers, because slashing removes address from stakers
 
     if (_level < maxNumLevels()) {
       if (_level < level()) {

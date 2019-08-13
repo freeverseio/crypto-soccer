@@ -1,9 +1,6 @@
 const Stakers = artifacts.require("Stakers")
 const expect = require('truffle-assertions');
 
-
-// TODO: add test where a malicious party is updating and tries to unenroll. Test should fail.
-
 contract('Stakers', (accounts) => {
   const [owner, game, bob, alice, carol, dave, erin, frank] = accounts
 
@@ -127,6 +124,69 @@ contract('Stakers', (accounts) => {
       )
       assert.equal(1, (await stakers.level()).toNumber());
     }
+  })
+
+  it("Tests L0 - > L1 -> L2 -> start  -> L1 -> L2", async () => {
+
+    stakers.setGame(game, {from:owner}),
+    await expect.reverts(
+      stakers.update(0, bob, {from:game}),
+      "failed to update: staker not registered",
+      "bob not yet enrolled, so it should revert"
+    )
+
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
+    assert.equal(0, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(0, bob, {from:game}),
+      "bob failed to update"
+    )
+    assert.equal(1, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(1, alice, {from:game}),
+      "alice failed to update"
+    )
+
+    assert.equal(2, (await stakers.level()).toNumber());
+    await expect.reverts(
+      stakers.update(0, carol, {from:game}),
+      "failed to update: resolving wrong level",
+      "level 0 cannot be updated without starting a new verse, it should revert"
+    )
+    await expect.reverts(
+      stakers.update(1, carol, {from:game}),
+      "failed to update: resolving wrong level",
+      "level 1 is already updated, it should revert"
+    )
+
+    await expect.passes(
+      stakers.start({from:game}),
+      "failed starting new verse"
+    )
+    assert.equal(0, (await stakers.level()).toNumber());
+    await expect.reverts(
+      stakers.update(0, bob, {from:game}),
+      "failed to update: staker not registered",
+      "bob was slashed by alice and therefore it is removed from registered stakers, so it should revert"
+    )
+    await expect.reverts(
+      stakers.enroll({from:bob, value: stake}),
+      "failed to enroll: staker was slashed",
+      "bob was slashed by alice it can no longer enroll, so it should revert"
+    )
+    await expect.passes(
+      stakers.update(0, alice, {from:game}),
+      "alice failed to update after new verse"
+    )
+    assert.equal(1, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(1, dave, {from:game}),
+      "dave failed to update level 1"
+    )
+    assert.equal(2, (await stakers.level()).toNumber());
   })
 
   it("Tests L0 -> L1 -> L2 -> L3 -> L4 -> L3 -> L4", async () => {
