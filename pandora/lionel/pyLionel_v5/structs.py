@@ -2056,9 +2056,17 @@ class Storage(Counter):
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(initSkills), self.currentBlock)
             return
 
-        # Any game (1st half or 2nd half) is played
+        # Any game 1st half is played
         if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
             print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
+            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            return
+
+        # Any game 2nd half is played
+        if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
+            print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
