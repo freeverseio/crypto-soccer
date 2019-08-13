@@ -264,6 +264,10 @@ contract('Stakers', (accounts) => {
     )
   })
 
+  it("Tests L0 -> L1 -> L2 -> L3 -> L2 -> L3 -> L4", async () => {
+    // TODO
+  })
+
   it("Tests L0 -> L1 -> L2 -> L3 -> L4 -> L3 -> L4", async () => {
 
     // start (L0) ->  bob updates (L1) -> alice updates (L2) -> carol updates (L3) -> dave updates (L4) -> erin challenges dave (L3) -> erin updates (L4)
