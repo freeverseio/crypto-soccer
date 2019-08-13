@@ -128,18 +128,18 @@ contract Stakers {
   }
 
   /// @notice start new verse
-  /// @dev current state will be resolved at this point. Can only be called at level 1 or 2
+  /// @dev current state will be resolved at this point.
+  /// If called from level 1, then staker is rewardeds.
+  /// When called from any other level, means that everys
+  /// other staker told the truth but the one in between
+  /// told a lie.
   function start() external onlyGame {
-    require (level() > 0 && level() < 3, "failed to start: wrong level");
-    if (level() == 1) {
-      // this was the only updater, and told the truth
-      // from the beginning, so it is entittled for
-      // this month reward and nothing needs to be resolved
-      addToMonthReward(updaters.pop());
-    }
-    else {
-      // level 2
+    require (level() > 0, "failed to start: wrong level");
+    while (level() > 1) {
       resolve();
+    }
+    if (level() == 1) {
+      addToMonthReward(updaters.pop());
     }
     require (level() == 0, "failed to start: no updaters should have been left");
   }
