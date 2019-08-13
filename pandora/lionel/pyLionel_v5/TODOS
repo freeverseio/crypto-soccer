@@ -1,12 +1,31 @@
-I WAS DOING:
-536873361
+def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
 
-- set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):
+prevSkills[team]...
+tactics[team]...
+teamOrders[team]
+team1, team2 = getTeamsInMatch(matchday, match, nTeams)
 
-trying to compute initSkills properly at round = 2 after having added 1 division:
-    - this forces the recomputation of the orgMap to be the correct one
+called at:
+def computeAllMatchdayStates(self, leagueIdx):
+    initPlayerSkills = self.leagues[leagueIdx].getInitPlayerSkills()
+    usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
+    seedsPerVerse = self.getAllSeedsForLeague(leagueIdx)
 
-recheck that there's enough room to compute all getInitSkills !
+    # In this initial implementation, evolution happens at the end of the league only
+    tactics     = pylio.duplicate(usersInitData["tactics"])
+    teamOrders  = pylio.duplicate(usersInitData["teamOrders"])
+
+
+
+
+
+
+
+
+- probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)
+- recheck that there's enough room to compute all getInitSkills !
+
+
 
 - I think we need nDisions (new and old) => probably we need all of that as old/new
 - I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?

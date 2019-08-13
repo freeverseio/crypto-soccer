@@ -78,7 +78,7 @@ ATTACKER    = 3
 
 
 # the largest number that can be used for playerIdx. To be decided. If we went for 26 bits:
-FREE_SHIRT_IDX = 2**26-1
+FREE_PLAYER_IDX = 2**26-1
 MAX_RND_SEED_ALLOWED_BY_NUMPY = 2**32 - 1
 
 # For the time being, selecting "tactics" is choosing a number between 0...MAX, where 0 = 442, etc.
