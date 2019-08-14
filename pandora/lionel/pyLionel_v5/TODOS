@@ -1,21 +1,5 @@
-def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
-
-prevSkills[team]...
-tactics[team]...
-teamOrders[team]
-team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-
-called at:
-def computeAllMatchdayStates(self, leagueIdx):
-    initPlayerSkills = self.leagues[leagueIdx].getInitPlayerSkills()
-    usersInitData = pylio.duplicate(self.leagues[leagueIdx].usersInitData)
-    seedsPerVerse = self.getAllSeedsForLeague(leagueIdx)
-
-    # In this initial implementation, evolution happens at the end of the league only
-    tactics     = pylio.duplicate(usersInitData["tactics"])
-    teamOrders  = pylio.duplicate(usersInitData["teamOrders"])
-
-
+    def syncActions(self, ST):
+    def accumulateAction(self, action, timeZone, countryIdx, leagueIdxInCountry):
 
 
 

@@ -242,7 +242,12 @@ def integrationTest():
     playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
     assert areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
 
-
+    teamIdx1 = ST.encodeCountryAndVal(1, 6)
+    teamIdx2 = ST.encodeCountryAndVal(1, 7)
+    action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
+    ST_CLIENT.accumulateAction(action00)
+    ST_CLIENT.accumulateAction(action01)
 
     # we are at verse = 0. The league starts at verse = 3
     for v in range(3):
