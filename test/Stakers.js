@@ -271,6 +271,13 @@ contract('Stakers', (accounts) => {
     // L3
     assert.equal(3, (await stakers.level()).toNumber());
 
+    // make sure level 2 is not updatable
+    await expect.reverts(
+      stakers.update(2, erin, {from:game}),
+      "failed to update: resolving wrong level",
+      "we are at level 3, level 2 is not updatable anymore, so it should revert"
+    )
+
     // challenge time for L3 has passed, and also challenge time for L1 has passed.
     // In other words dave  and alice told the truth, and the game can now call start
     // resolving that dave earns bob's stake, and alice earns reward. Also bob will
@@ -464,6 +471,13 @@ contract('Stakers', (accounts) => {
 
     // L4 - true
     assert.equal(4, (await stakers.level()).toNumber());
+
+    // make sure level 3 is not updatable
+    await expect.reverts(
+      stakers.update(3, frank, {from:game}),
+      "failed to update: resolving wrong level",
+      "we are at level 4, level 3 is not updatable anymore, so it should revert"
+    )
 
     // challenge time for L4 has passed, and also challenge time for L2 has passed.
     // In other words erin  and bob told the truth, and the game can now call start
