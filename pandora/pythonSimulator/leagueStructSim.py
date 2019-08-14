@@ -6,7 +6,7 @@ from os import listdir, makedirs
 from os.path import isfile, join, exists
 
 N_ROUNDS = 100
-ALPHA = 0.75
+ALPHA = 0.25
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
 N_LEAGUES = 16*10
@@ -137,7 +137,7 @@ avgPoints = 100.0 * np.ones(N_TEAMS)
 for round in range(N_ROUNDS):
     for league in range(N_LEAGUES):
         perfPoints = playLeague(allSkills[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE])
-        avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE] += perfPoints
+        avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE] = ALPHA * perfPoints + (1-ALPHA) * avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE]
     newOrder = np.argsort(avgPoints)
     allSkills = allSkills[newOrder]
     avgPoints = avgPoints[newOrder]
