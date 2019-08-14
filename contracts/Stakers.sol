@@ -2,6 +2,37 @@ pragma solidity ^ 0.5.0;
 
 // TODO: leaving for later how the monthly grant is going to be computed/shared among L1 updaters
 
+contract Rewards {
+
+  address public owner = address(0x0);
+  address payable[] public toBeRewarded;
+
+  modifier onlyOwner {
+    require(msg.sender == owner,
+            "Only owner can call this function.");
+    _;
+  }
+
+  constructor() public {
+    owner = msg.sender;
+  }
+
+  function() external payable { }
+
+  function execute() external onlyOwner {
+    require (toBeRewarded.length != 0, "failed to execute reward: empty array");
+    uint amount = address(this).balance / toBeRewarded.length;
+    for (uint i=0; i<toBeRewarded.length; i++) {
+      toBeRewarded[i].transfer(amount);
+    }
+    delete toBeRewarded;
+  }
+
+  function push(address _addr) external onlyOwner {
+    toBeRewarded.push(address(uint160(_addr)));
+  }
+}
+
 contract AddressStack {
   uint16 public constant capacity = 4;
   uint16 public length = 0;
@@ -43,6 +74,7 @@ contract Stakers {
   address public owner = address(0x0);
   address public game = address(0x0);
   AddressStack private updaters = new AddressStack();
+  Rewards public rewards = new Rewards();
   address[kNumStakers] public stakers;
   address[] public slashed;
   address[] public trustedParties;
@@ -65,6 +97,16 @@ contract Stakers {
 
   constructor() public {
     owner = msg.sender;
+  }
+
+  /// @notice adds amount to rewards contract
+  function addReward() external payable {
+    address(rewards).transfer(msg.value);
+  }
+
+  /// @notice executes rewards
+  function executeReward() external {
+    rewards.execute();
   }
 
   /// @notice sets the address of the game that interacts with this contract
@@ -139,7 +181,7 @@ contract Stakers {
       resolve();
     }
     if (level() == 1) {
-      addToMonthReward(updaters.pop());
+      rewards.push(updaters.pop());
     }
     require (level() == 0, "failed to start: no updaters should have been left");
   }
@@ -233,9 +275,4 @@ contract Stakers {
     // The idea behind it, is not to promote interest in stealing someone else's stake
     // address(0x0).transfer(kRequiredStake); // burn stake
   }
-
-  function addToMonthReward(address /*_staker*/) private pure {
-    // TODO
-  }
-
 }

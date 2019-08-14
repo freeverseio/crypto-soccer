@@ -1,6 +1,8 @@
 const Stakers = artifacts.require("Stakers")
 const expect = require('truffle-assertions');
 
+// TODO: add more tests that execute reward
+
 contract('Stakers', (accounts) => {
   const [owner, game, alice, bob, carol, dave, erin, frank] = accounts
 
@@ -96,12 +98,31 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+  it("Tests adding reward", async () => {
+
+    assert.equal(0, Number(await web3.eth.getBalance(await stakers.rewards())));
+    await expect.passes(
+      stakers.addReward({value: stake}),
+      "failed to add reward")
+    assert.equal(Number(stake), Number(await web3.eth.getBalance(await stakers.rewards())));
+    await expect.reverts(
+      stakers.executeReward({from:owner}),
+      "failed to execute reward: empty array",
+      "no one deserves reward cause nothing has been played, so it should revert"
+    )
+  })
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
   it("Tests L0 -> L1 true -> start -> L1 true, the usual path", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [alice, bob, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
     await enroll(stakers, stake, parties);
+    await expect.passes(
+      stakers.addReward({value: stake}),
+      "failed to add reward")
 
     // L0
     assert.equal(0, (await stakers.level()).toNumber());
@@ -135,6 +156,17 @@ contract('Stakers', (accounts) => {
       // L1
       assert.equal(1, (await stakers.level()).toNumber());
     }
+
+
+    // execute reward and test that alice has more balance
+    aliceBalance = Number(await web3.eth.getBalance(alice));
+    await expect.passes(
+      stakers.executeReward({from:owner}),
+      "failed to execute reward"
+    )
+
+    assert.isBelow(aliceBalance, Number(await web3.eth.getBalance(alice)),
+                 "Alice's current balance should be higher since she was rewarded");
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
