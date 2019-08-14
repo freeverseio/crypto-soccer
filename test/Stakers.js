@@ -96,7 +96,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 - > L1 true -> start -> L1 true, the usual path", async () => {
+  it("Tests L0 -> L1 true -> start -> L1 true, the usual path", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
@@ -139,7 +139,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 - > L1 lie -> L2 true -> start -> L1 lie -> L2 true", async () => {
+  it("Tests L0 -> L1 lie  -> L2 true -> start -> L1 lie  -> L2 true", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
@@ -208,8 +208,54 @@ contract('Stakers', (accounts) => {
   })
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+  it("Tests L0 -> L1 true -> L2 lie  -> L3 true -> start", async () => {
 
-  it("Tests L0 -> L1 lie -> L2 lie -> L3 true -> L1 -> L2 true", async () => {
+    stakers.setGame(game, {from:owner}),
+    parties = [bob, alice, carol, dave, erin, frank]
+    await addTrustedParties(stakers, owner, parties);
+    await enroll(stakers, stake, parties);
+
+    // L0
+    assert.equal(0, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(0, bob, {from:game}),
+      "bob failed to update"
+    )
+
+    // L1
+    assert.equal(1, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(1, alice, {from:game}),
+      "alice failed to update"
+    )
+
+    // L2
+    assert.equal(2, (await stakers.level()).toNumber());
+    await expect.passes(
+      stakers.update(2, dave, {from:game}),
+      "dave failed to update"
+    )
+
+    // L3
+    assert.equal(3, (await stakers.level()).toNumber());
+
+    // challenge time for L3 has passed, and also challenge time for L1 has passed.
+    // In other words dave  and bob told the truth, and the game can now call start
+    // resolving that dave earns alice's stake, and bob earns reward. Also alice will
+    // be slashed
+
+    daveBalance = Number(await web3.eth.getBalance(dave));
+    await expect.passes(
+      stakers.start({from:game}),
+      "failed to start from L3"
+    )
+    assert.isBelow(daveBalance, Number(await web3.eth.getBalance(dave)),
+                 "Dave's current balance should be higher now, since he earned Alice's stake");
+
+  })
+
+
+  it("Tests L0 -> L1 lie  -> L2 lie  -> L3 true -> L1 -> L2 true", async () => {
 
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
@@ -240,12 +286,6 @@ contract('Stakers', (accounts) => {
 
     // L3
     assert.equal(3, (await stakers.level()).toNumber());
-
-    //await expect.reverts(
-    //  stakers.start({from:game}),
-    //  "failed to start: wrong level",
-    //  "can't start a new verse from L3, so it should revert"
-    //)
 
     // challenge time has passed, resolve from L3: alice will be slashed and dave earns alice's stake
     await expect.passes(
@@ -280,7 +320,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 true -> L2 lie -> L3 lie -> L4 true -> L2 -> L3 true -> start", async () => {
+  it("Tests L0 -> L1 true -> L2 lie  -> L3 lie  -> L4 true -> L2 -> L3 true -> start", async () => {
     stakers.setGame(game, {from:owner}),
     parties = [bob, alice, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
@@ -357,7 +397,7 @@ contract('Stakers', (accounts) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-  it("Tests L0 -> L1 lie -> L2 true -> L3 lie -> L4 true -> start", async () => {
+  it("Tests L0 -> L1 lie  -> L2 true -> L3 lie  -> L4 true -> start", async () => {
     stakers.setGame(game, {from:owner})
     parties = [bob, alice, carol, dave, erin, frank]
     await addTrustedParties(stakers, owner, parties);
