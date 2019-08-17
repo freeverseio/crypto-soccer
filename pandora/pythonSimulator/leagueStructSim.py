@@ -12,6 +12,7 @@ N_ROUNDS = 30
 ALPHA = 0.25
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
+GAMES_PER_LEAGUE = TEAMS_PER_LEAGUE * (TEAMS_PER_LEAGUE-1)
 N_LEAGUES = 16*5
 N_TEAMS = N_LEAGUES * TEAMS_PER_LEAGUE
 SK_START    = 50 * PLAYERS_PER_TEAM
@@ -21,18 +22,16 @@ RESULT_WINS1 = 0
 RESULT_WINS2 = 2
 RESULT_TIE = 1
 PERF_POINTS = [-8, -5, -3, 0, 2, 5, 8, 10]
+MAX_LEAGUES_PLAYER = 18
+MAX_GAMES_PLAYER = MAX_LEAGUES_PLAYER * GAMES_PER_LEAGUE
+MAX_PERPOINTS_PLAYER = 12000
+AVG_PERPOINTS_PER_GAME = MAX_PERPOINTS_PLAYER // MAX_GAMES_PLAYER
+PERPOINTS_RANGE = int(0.5*AVG_PERPOINTS_PER_GAME)
 
 def probOverResults(sk1, sk2):
-    if sk1/sk2 > 1.1:
-        probWins1   = 0.85
-        probTie     = 0.05
-    elif sk2/sk1 > 1.1:
-        probWins1   = 1-0.85
-        probTie     = 0.05
-    else:
-        probWins1   = 0.3
-        probTie     = 1 - 2*probWins1
-    probWins2 = 1 - probWins1 - probTie
+    probWins1 = min(0.9, 1/3*sk1/sk2)
+    probWins2 = min(0.9, 1/3*sk2/sk1)
+    probTie = 1 - probWins1 - probWins2
     return np.array([probWins1, probTie, probWins2])
 
 # result = 0 if sk1 wins, 1 if tie, 2 if sk2 wins
@@ -40,21 +39,23 @@ def updateSkills(sk1, sk2, result):
     if result == RESULT_TIE:
         return sk1, sk2
 
-    ratingDiff = sk1 - sk2
-    winnerWasBetter = (ratingDiff > 0 and result == RESULT_WINS1) or (ratingDiff < 0 and result == RESULT_WINS2)
-
-    if ratingDiff == 0:
-        perfPoints = 5
-    elif winnerWasBetter:
-        perfPoints = 4
+    if sk1 >= sk2:
+        extra = min(3, sk1/sk2)
+        winnerWasBetter = (result == RESULT_WINS1)
     else:
-        perfPoints = 6
+        extra = min(3, sk2/sk1)
+        winnerWasBetter = (result == RESULT_WINS2)
+
+    if winnerWasBetter:
+        perfPoints = AVG_PERPOINTS_PER_GAME - PERPOINTS_RANGE * min(1, 0.3 * extra)
+    else:
+        perfPoints = AVG_PERPOINTS_PER_GAME + PERPOINTS_RANGE * min(1, 0.3 * extra)
 
     if result == RESULT_WINS1:
         return sk1 + perfPoints, sk2
     else:
         return sk1, sk2 + perfPoints
-    assert False, "we should never reach here"
+
 
 def playGameAndUpdateSkills(sk1, sk2):
     results = [RESULT_WINS1, RESULT_TIE, RESULT_WINS2]
