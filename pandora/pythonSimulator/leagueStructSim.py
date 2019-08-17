@@ -9,7 +9,9 @@ from os.path import isfile, join, exists
 import matplotlib.pyplot as plt
 
 N_ROUNDS = 30
-ALPHA = 0.25
+ALPHA_INTERTIA = 0.25
+WEIGHT_SKILLS = 1
+WEIGHT_PERF = 1
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
 GAMES_PER_LEAGUE = TEAMS_PER_LEAGUE * (TEAMS_PER_LEAGUE-1)
@@ -150,8 +152,11 @@ def computeQualities(allSkills):
         quality[league] = sum(allSkills[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE])
     return quality
 
-allSkills = 1.0 * np.random.randint(low=40, high=70, size= N_TEAMS)
-avgPoints = 100.0 * np.ones(N_TEAMS)
+def overallRating(allSkills, avgPoints):
+    return WEIGHT_SKILLS * allSkills/SK_START + WEIGHT_PERF * avgPoints
+
+allSkills = 1.0 * np.random.randint(low=SK_LOW, high=SK_START, size= N_TEAMS)
+avgPoints = np.zeros(N_TEAMS)
 prevOrder = range(N_TEAMS)
 rankings = np.zeros([N_ROUNDS+1, N_TEAMS])
 qualities = np.zeros([N_ROUNDS+1, N_LEAGUES])
@@ -161,8 +166,8 @@ qualities[0, :] = computeQualities(allSkills)
 for round in range(N_ROUNDS):
     for league in range(N_LEAGUES):
         perfPoints = playLeague(allSkills[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE])
-        avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE] = ALPHA * perfPoints + (1-ALPHA) * avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE]
-    newOrder = np.argsort(avgPoints)
+        avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE] = ALPHA_INTERTIA * perfPoints + (1-ALPHA_INTERTIA) * avgPoints[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE]
+    newOrder = np.argsort(overallRating(allSkills, avgPoints))
     allSkills = allSkills[newOrder]
     avgPoints = avgPoints[newOrder]
     rankings[round+1, :] = newOrder[prevOrder]
@@ -172,9 +177,9 @@ for round in range(N_ROUNDS):
 
 fig, ax = plt.subplots()
 for round in range(0, N_ROUNDS,N_ROUNDS//10):
-    ax.plot(qualities[round,:])
+    ax.plot(qualities[round,:]/SK_START/TEAMS_PER_LEAGUE)
 setPlot(ax,
-        'Match number',
+        'league number',
         'League quality',
         'League quality evolution at various rounds',
         )
