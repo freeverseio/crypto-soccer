@@ -143,12 +143,19 @@ def setPlot(ax, xlabel, ylabel, title):
     # ax.set_ylim(0,1)
     # ax.set_yticks([0.1*t for t in range(11)], True)
 
+def computeQualities(allSkills):
+    quality = np.zeros(N_LEAGUES)
+    for league in range(N_LEAGUES):
+        quality[league] = sum(allSkills[league*TEAMS_PER_LEAGUE:(league+1)*TEAMS_PER_LEAGUE])
+    return quality
 
 allSkills = 1.0 * np.random.randint(low=40, high=70, size= N_TEAMS)
 avgPoints = 100.0 * np.ones(N_TEAMS)
 prevOrder = range(N_TEAMS)
 rankings = np.zeros([N_ROUNDS+1, N_TEAMS])
-rankings[0,:] = prevOrder
+qualities = np.zeros([N_ROUNDS+1, N_LEAGUES])
+rankings[0, :] = prevOrder
+qualities[0, :] = computeQualities(allSkills)
 
 for round in range(N_ROUNDS):
     for league in range(N_LEAGUES):
@@ -158,15 +165,28 @@ for round in range(N_ROUNDS):
     allSkills = allSkills[newOrder]
     avgPoints = avgPoints[newOrder]
     rankings[round+1, :] = newOrder[prevOrder]
+    qualities[round+1, :] = computeQualities(allSkills)
     prevOrder = newOrder
 
+
 fig, ax = plt.subplots()
-ax.plot(rankings[:,0])
-ax.plot(rankings[:,200])
-ax.plot(rankings[:,N_TEAMS-1])
+for round in range(0, N_ROUNDS,N_ROUNDS//10):
+    ax.plot(qualities[round,:])
 setPlot(ax,
-        'League pos',
         'Match number',
+        'League quality',
+        'League quality evolution at various rounds',
+        )
+plt.savefig('qualities.png')
+plt.close(fig)
+
+
+fig, ax = plt.subplots()
+for team in range(0, N_TEAMS,N_TEAMS//5):
+    ax.plot(rankings[:,team])
+setPlot(ax,
+        'Match number',
+        'League pos',
         'League evolution for various teams',
         )
 plt.savefig('leagueEvoPerTeam.png')
