@@ -8,9 +8,9 @@ from os.path import isfile, join, exists
 # from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import matplotlib.pyplot as plt
 
-N_ROUNDS = 30
-ALPHA_INTERTIA = 0.25
-WEIGHT_SKILLS = 1
+N_ROUNDS = 100
+ALPHA_INTERTIA = 0.8
+WEIGHT_SKILLS = 0
 WEIGHT_PERF = 1
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
@@ -23,7 +23,7 @@ SK_HIGH     = int(SK_START * 1.2)
 RESULT_WINS1 = 0
 RESULT_WINS2 = 2
 RESULT_TIE = 1
-PERF_POINTS = [-8, -5, -3, 0, 2, 5, 8, 10]
+PERF_POINTS = 10 * np.array([-8, -5, -3, 0, 2, 5, 8, 10])
 MAX_LEAGUES_PLAYER = 18
 MAX_GAMES_PLAYER = MAX_LEAGUES_PLAYER * GAMES_PER_LEAGUE
 MAX_PERPOINTS_PLAYER = 12000
@@ -191,7 +191,7 @@ fig, ax = plt.subplots()
 for team in range(0, N_TEAMS,N_TEAMS//5):
     ax.plot(rankings[:,team])
 setPlot(ax,
-        'Match number',
+        'league number',
         'League pos',
         'League evolution for various teams',
         )
