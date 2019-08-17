@@ -10,25 +10,26 @@ import matplotlib.pyplot as plt
 
 N_ROUNDS = 100
 ALPHA_INTERTIA = 0.8
-WEIGHT_SKILLS = 0
+WEIGHT_SKILLS = 10
 WEIGHT_PERF = 1
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
 GAMES_PER_LEAGUE = TEAMS_PER_LEAGUE * (TEAMS_PER_LEAGUE-1)
 N_LEAGUES = 16*5
 N_TEAMS = N_LEAGUES * TEAMS_PER_LEAGUE
-SK_START    = 50 * PLAYERS_PER_TEAM
+SK_START    = 1000 * PLAYERS_PER_TEAM
 SK_LOW      = int(SK_START / 1.2)
 SK_HIGH     = int(SK_START * 1.2)
 RESULT_WINS1 = 0
 RESULT_WINS2 = 2
 RESULT_TIE = 1
-PERF_POINTS = 10 * np.array([-8, -5, -3, 0, 2, 5, 8, 10])
+PERF_POINTS = 1 * np.array([-8, -5, -3, 0, 2, 5, 8, 10])
 MAX_LEAGUES_PLAYER = 18
 MAX_GAMES_PLAYER = MAX_LEAGUES_PLAYER * GAMES_PER_LEAGUE
 MAX_PERPOINTS_PLAYER = 12000
-AVG_PERPOINTS_PER_GAME = MAX_PERPOINTS_PLAYER // MAX_GAMES_PLAYER
-PERPOINTS_RANGE = int(0.5*AVG_PERPOINTS_PER_GAME)
+AVG_PERPOINTS_PER_GAME = MAX_PERPOINTS_PLAYER // MAX_GAMES_PLAYER * 3
+PERPOINTS_RANGE = int(0.8*AVG_PERPOINTS_PER_GAME)
+MAX_DICE_RAND = 16383
 
 def probOverResults(sk1, sk2):
     probWins1 = min(0.9, 1/3*sk1/sk2)
@@ -59,7 +60,33 @@ def updateSkills(sk1, sk2, result):
         return sk1, sk2 + perfPoints
 
 
+def throwDiceArray(weights, rndNum, maxRndNum):
+    uniformRndInSumOfWeights = sum(weights) * rndNum
+    cumSum = 0
+    for w in range(len(weights)):
+        cumSum += weights[w]
+        if ( uniformRndInSumOfWeights < ( cumSum * (maxRndNum-1) )):
+            return w
+    return w
+
 def playGameAndUpdateSkills(sk1, sk2):
+    results = [RESULT_WINS1, RESULT_TIE, RESULT_WINS2]
+    probResults = probOverResults(sk1, sk2)
+    result = throwDiceArray(probResults, np.random.randint(0, MAX_DICE_RAND), MAX_DICE_RAND)
+    (newSk1, newSk2) = updateSkills(sk1, sk2, result)
+    if result == RESULT_WINS1:
+        leaguePoints1 = 3
+        leaguePoints2 = 0
+    elif result == RESULT_WINS2:
+        leaguePoints1 = 0
+        leaguePoints2 = 3
+    else:
+        leaguePoints1 = 1
+        leaguePoints2 = 1
+    return newSk1, newSk2, leaguePoints1, leaguePoints2
+
+
+def playGameAndUpdateSkillsAvg(sk1, sk2):
     results = [RESULT_WINS1, RESULT_TIE, RESULT_WINS2]
     probResults = probOverResults(sk1, sk2)
     newSk1 = 0
@@ -111,9 +138,9 @@ print(sum(probOverResults(4,1)))
 print(playGameAndUpdateSkills(1,1))
 print(playGameAndUpdateSkills(1.2,1))
 
-# testing recursively getting better than the other guy
-sk1 = 1.2
-sk2 = 1
+print(" testing recursively getting better than the other guy")
+sk1 = 1010
+sk2 = 1000
 for t in range(10):
     newSk1, newSk2, leaguePoints1, leaguePoints2 = playGameAndUpdateSkills(sk1, sk2)
     print(newSk1, newSk2)
@@ -177,7 +204,8 @@ for round in range(N_ROUNDS):
 
 fig, ax = plt.subplots()
 for round in range(0, N_ROUNDS,N_ROUNDS//10):
-    ax.plot(qualities[round,:]/SK_START/TEAMS_PER_LEAGUE)
+    ax.plot(qualities[round,:]/TEAMS_PER_LEAGUE/PLAYERS_PER_TEAM)
+    # ax.plot(qualities[round, :] / SK_START / TEAMS_PER_LEAGUE)
 setPlot(ax,
         'league number',
         'League quality',
