@@ -4,12 +4,15 @@ import copy
 import datetime
 from os import listdir, makedirs
 from os.path import isfile, join, exists
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+import matplotlib.pyplot as plt
 
-N_ROUNDS = 100
+N_ROUNDS = 30
 ALPHA = 0.25
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
-N_LEAGUES = 16*10
+N_LEAGUES = 16*5
 N_TEAMS = N_LEAGUES * TEAMS_PER_LEAGUE
 SK_START    = 50 * PLAYERS_PER_TEAM
 SK_LOW      = int(SK_START / 1.2)
@@ -131,8 +134,21 @@ def playLeague(skills):
     perfPoints[classification] = PERF_POINTS
     return perfPoints
 
+def setPlot(ax, xlabel, ylabel, title):
+    ax.legend()
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.grid(True,'both')
+    # ax.set_ylim(0,1)
+    # ax.set_yticks([0.1*t for t in range(11)], True)
+
+
 allSkills = 1.0 * np.random.randint(low=40, high=70, size= N_TEAMS)
 avgPoints = 100.0 * np.ones(N_TEAMS)
+prevOrder = range(N_TEAMS)
+rankings = np.zeros([N_ROUNDS+1, N_TEAMS])
+rankings[0,:] = prevOrder
 
 for round in range(N_ROUNDS):
     for league in range(N_LEAGUES):
@@ -141,10 +157,24 @@ for round in range(N_ROUNDS):
     newOrder = np.argsort(avgPoints)
     allSkills = allSkills[newOrder]
     avgPoints = avgPoints[newOrder]
+    rankings[round+1, :] = newOrder[prevOrder]
+    prevOrder = newOrder
+
+fig, ax = plt.subplots()
+ax.plot(rankings[:,0])
+ax.plot(rankings[:,200])
+ax.plot(rankings[:,N_TEAMS-1])
+setPlot(ax,
+        'League pos',
+        'Match number',
+        'League evolution for various teams',
+        )
+plt.savefig('leagueEvoPerTeam.png')
+plt.close(fig)
 
 
-print(allSkills)
-print(avgPoints)
+
+a=2+2
 
 
 
