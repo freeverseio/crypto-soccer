@@ -9,10 +9,10 @@ from os.path import isfile, join, exists
 import matplotlib.pyplot as plt
 
 N_ROUNDS = 100
-INIT_SORT = 1
-ALPHA_INTERTIA = 0.8
-WEIGHT_SKILLS = 1
-WEIGHT_PERF = 10
+INIT_SORT = 0
+ALPHA_INTERTIA = 0.4
+WEIGHT_SKILLS = 100
+WEIGHT_PERF = 1
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
 GAMES_PER_LEAGUE = TEAMS_PER_LEAGUE * (TEAMS_PER_LEAGUE-1)
@@ -21,6 +21,8 @@ N_TEAMS = N_LEAGUES * TEAMS_PER_LEAGUE
 SK_START    = 1000 * PLAYERS_PER_TEAM
 SK_LOW      = int(SK_START / 12)
 SK_HIGH     = int(SK_START * 12)
+# SK_LOW      = int(SK_START / 2)
+# SK_HIGH     = int(SK_START * 2)
 RESULT_WINS1 = 0
 RESULT_WINS2 = 2
 RESULT_TIE = 1
@@ -188,11 +190,11 @@ def overallRating(allSkills, avgPoints):
 allSkills = 1.0 * np.random.randint(low=SK_LOW, high=SK_START, size= N_TEAMS)
 avgPoints = np.zeros(N_TEAMS)
 prevOrder = range(N_TEAMS)
-if INIT_SORT:
+if INIT_SORT == 1:
     newOrder = np.argsort(overallRating(allSkills, avgPoints))
     allSkills = allSkills[newOrder]
 else:
-    newOrder = prevOrder
+    newOrder = np.argsort(prevOrder)
 rankings = np.zeros([N_ROUNDS+1, N_TEAMS])
 qualities = np.zeros([N_ROUNDS+1, N_LEAGUES])
 rankings[0, :] = newOrder[prevOrder]
@@ -213,7 +215,7 @@ for round in range(N_ROUNDS):
 fig, ax = plt.subplots()
 for round in range(0, N_ROUNDS+1,N_ROUNDS//10):
     ax.plot(qualities[round,:]/TEAMS_PER_LEAGUE/PLAYERS_PER_TEAM)
-plotname = '(initSort,low,high)=(%s,%s,%s),(Perf,wSk,wPerf)=(%s,%s,%s)' %(PERF, INIT_SORT, int(SK_LOW/PLAYERS_PER_TEAM),int(SK_HIGH/PLAYERS_PER_TEAM), WEIGHT_SKILLS, WEIGHT_PERF)
+plotname = '(initSort,inertia)=(%s,%s),(low,high)=(%s,%s),(Perf,wSk,wPerf)=(%s,%s,%s)' %(ALPHA_INTERTIA, INIT_SORT, int(SK_LOW/PLAYERS_PER_TEAM),int(SK_HIGH/PLAYERS_PER_TEAM), PERF, WEIGHT_SKILLS, WEIGHT_PERF)
 
 setPlot(ax,
         'league number',
