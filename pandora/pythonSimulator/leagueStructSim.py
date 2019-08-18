@@ -9,21 +9,23 @@ from os.path import isfile, join, exists
 import matplotlib.pyplot as plt
 
 N_ROUNDS = 100
+INIT_SORT = 1
 ALPHA_INTERTIA = 0.8
-WEIGHT_SKILLS = 10
-WEIGHT_PERF = 1
+WEIGHT_SKILLS = 1
+WEIGHT_PERF = 10
 PLAYERS_PER_TEAM = 18
 TEAMS_PER_LEAGUE = 8
 GAMES_PER_LEAGUE = TEAMS_PER_LEAGUE * (TEAMS_PER_LEAGUE-1)
 N_LEAGUES = 16*5
 N_TEAMS = N_LEAGUES * TEAMS_PER_LEAGUE
 SK_START    = 1000 * PLAYERS_PER_TEAM
-SK_LOW      = int(SK_START / 1.2)
-SK_HIGH     = int(SK_START * 1.2)
+SK_LOW      = int(SK_START / 12)
+SK_HIGH     = int(SK_START * 12)
 RESULT_WINS1 = 0
 RESULT_WINS2 = 2
 RESULT_TIE = 1
-PERF_POINTS = 1 * np.array([-8, -5, -3, 0, 2, 5, 8, 10])
+PERF = 1
+PERF_POINTS = PERF * np.array([-8, -5, -3, 0, 2, 5, 8, 10])
 MAX_LEAGUES_PLAYER = 18
 MAX_GAMES_PLAYER = MAX_LEAGUES_PLAYER * GAMES_PER_LEAGUE
 MAX_PERPOINTS_PLAYER = 12000
@@ -168,7 +170,8 @@ def setPlot(ax, xlabel, ylabel, title):
     ax.legend()
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    ax.set_title(title, fontsize = 7)
+    # ax.text(0, 1200, subtitle)
     ax.grid(True,'both')
     # ax.set_ylim(0,1)
     # ax.set_yticks([0.1*t for t in range(11)], True)
@@ -185,9 +188,14 @@ def overallRating(allSkills, avgPoints):
 allSkills = 1.0 * np.random.randint(low=SK_LOW, high=SK_START, size= N_TEAMS)
 avgPoints = np.zeros(N_TEAMS)
 prevOrder = range(N_TEAMS)
+if INIT_SORT:
+    newOrder = np.argsort(overallRating(allSkills, avgPoints))
+    allSkills = allSkills[newOrder]
+else:
+    newOrder = prevOrder
 rankings = np.zeros([N_ROUNDS+1, N_TEAMS])
 qualities = np.zeros([N_ROUNDS+1, N_LEAGUES])
-rankings[0, :] = prevOrder
+rankings[0, :] = newOrder[prevOrder]
 qualities[0, :] = computeQualities(allSkills)
 
 for round in range(N_ROUNDS):
@@ -203,27 +211,29 @@ for round in range(N_ROUNDS):
 
 
 fig, ax = plt.subplots()
-for round in range(0, N_ROUNDS,N_ROUNDS//10):
+for round in range(0, N_ROUNDS+1,N_ROUNDS//10):
     ax.plot(qualities[round,:]/TEAMS_PER_LEAGUE/PLAYERS_PER_TEAM)
-    # ax.plot(qualities[round, :] / SK_START / TEAMS_PER_LEAGUE)
+plotname = '(initSort,low,high)=(%s,%s,%s),(Perf,wSk,wPerf)=(%s,%s,%s)' %(PERF, INIT_SORT, int(SK_LOW/PLAYERS_PER_TEAM),int(SK_HIGH/PLAYERS_PER_TEAM), WEIGHT_SKILLS, WEIGHT_PERF)
+
 setPlot(ax,
         'league number',
-        'League quality',
-        'League quality evolution at various rounds',
-        )
-plt.savefig('qualities.png')
+        'Average quality per player',
+        'Quality at various rounds,' + plotname
+)
+plt.savefig('qualities'+plotname+'.png')
 plt.close(fig)
 
 
 fig, ax = plt.subplots()
-for team in range(0, N_TEAMS,N_TEAMS//5):
+for team in range(0, N_TEAMS, N_TEAMS//3):
     ax.plot(rankings[:,team])
+ax.plot(rankings[:, N_TEAMS-1])
 setPlot(ax,
         'league number',
         'League pos',
-        'League evolution for various teams',
+        'Evolution for various teams' + plotname
         )
-plt.savefig('leagueEvoPerTeam.png')
+plt.savefig('leagueEvoPerTeam'+plotname+'.png')
 plt.close(fig)
 
 
