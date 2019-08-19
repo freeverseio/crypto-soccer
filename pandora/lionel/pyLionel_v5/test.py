@@ -145,7 +145,7 @@ def integrationTest():
     countryIdx = 1
 
     assert ST.getNDivisionsInCountry(countryIdx) == DIVS_PER_COUNTRY_AT_DEPLOY, "wrong nDivisions"
-    assert ST.getNLeaguesInCountry(countryIdx) == 1 + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISON, "wrong nLeagues"
+    assert ST.getNLeaguesInCountry(countryIdx) == LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION, "wrong nLeagues"
     nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(countryIdx)
     assert ST.getNTeamsInCountry(countryIdx) == nTeamsPerCountryAtStart, "wrong nTeams"
 
@@ -162,13 +162,13 @@ def integrationTest():
 
     # getTeamIdxInCountryFromLeagueAndPos(divisionIdx, leaguePosInDiv, teamPosInLeague)
     shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(0,1,1), "division 0 should not exist")
-    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(1,1,0), "division 0 only has 1 league")
+    shouldFail(lambda x: ST.getTeamIdxInCountryFromLeagueAndPos(1,LEAGUES_1ST_DIVISION,0), "division 0 only has 1 league")
     assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 0) == 1, "wrong teamIdx"
     assert ST.getTeamIdxInCountryFromLeagueAndPos(1, 0, 1) == 2, "wrong teamIdx"
-    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 0) == 9, "wrong teamIdx"
-    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 1) == 10, "wrong teamIdx"
-    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 0) == 17, "wrong teamIdx"
-    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 1) == 18, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 0) == LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE+1, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 0, 1) == LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE+2, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 0) == LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE+TEAMS_PER_LEAGUE+1, "wrong teamIdx"
+    assert ST.getTeamIdxInCountryFromLeagueAndPos(2, 1, 1) == LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE+TEAMS_PER_LEAGUE+2, "wrong teamIdx"
 
     # encode/decode with countryIdx
     assert ST.encode(0,3,3,4) == 3, "wrong encode"
@@ -193,10 +193,10 @@ def integrationTest():
     assert ST.verseToUnixMonths(VERSES_PER_DAY*31) == DEPLOYMENT_IN_UNIX_MONTHS + 1, "wrong verse to months"
 
     assert ST.getDisivionIdxFromTeamIdxInCountry(1) == 1, "wrong divIdx"
-    assert ST.getDisivionIdxFromTeamIdxInCountry(8) == 1, "wrong divIdx"
-    assert ST.getDisivionIdxFromTeamIdxInCountry(9) == 2, "wrong divIdx"
-    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON) == 2, "wrong divIdx"
-    assert ST.getDisivionIdxFromTeamIdxInCountry(TEAMS_PER_LEAGUE + TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISON + 1) == 3, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE) == 1, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry(LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE+1) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry((LEAGUES_1ST_DIVISION+LEAGUES_PER_DIVISION)*TEAMS_PER_LEAGUE) == 2, "wrong divIdx"
+    assert ST.getDisivionIdxFromTeamIdxInCountry((LEAGUES_1ST_DIVISION+LEAGUES_PER_DIVISION)*TEAMS_PER_LEAGUE+1) == 3, "wrong divIdx"
 
     # player skills and state
     assert ST.currentVerse == 0, "this test should start at verse=0"

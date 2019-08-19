@@ -560,7 +560,7 @@ class Storage(Counter):
         return self.countries[countryIdx].nDivisions
 
     def getNLeaguesInCountry(self, countryIdx):
-        return 1 + (self.getNDivisionsInCountry(countryIdx) -1) * LEAGUES_PER_DIVISON
+        return LEAGUES_1ST_DIVISION + (self.getNDivisionsInCountry(countryIdx) -1) * LEAGUES_PER_DIVISION
 
     def getNTeamsInCountry(self, countryIdx):
         return self.getNLeaguesInCountry(countryIdx) * TEAMS_PER_LEAGUE
@@ -569,17 +569,19 @@ class Storage(Counter):
         # posInDiv and posInLeague start at zero.
         assert divisionIdx > 0, "divs start at idx = 1"
         if divisionIdx == 1:
-            assert leaguePosInDiv == 0, "First division only has 1 league"
-            nLeaguesAbove = 0
+            assert leaguePosInDiv < LEAGUES_1ST_DIVISION, "leaguePos too large"
+            nLeaguesAbove = leaguePosInDiv
         else:
-            nLeaguesAbove = 1 + (divisionIdx - 2) * LEAGUES_PER_DIVISON + leaguePosInDiv
+            assert leaguePosInDiv < LEAGUES_PER_DIVISION, "leaguePos too large"
+            nLeaguesAbove = LEAGUES_1ST_DIVISION + (divisionIdx - 2) * LEAGUES_PER_DIVISION + leaguePosInDiv
         return 1 + nLeaguesAbove * TEAMS_PER_LEAGUE + teamPosInLeague
 
     def getDisivionIdxFromTeamIdxInCountry(self, teamIdxInCountry):
-        if teamIdxInCountry <= TEAMS_PER_LEAGUE:
+        teamsInDiv1 = LEAGUES_1ST_DIVISION*TEAMS_PER_LEAGUE
+        if teamIdxInCountry <= teamsInDiv1:
             return 1
         else:
-            return 2 + (teamIdxInCountry - 1 - TEAMS_PER_LEAGUE) // (LEAGUES_PER_DIVISON * TEAMS_PER_LEAGUE)
+            return 2 + (teamIdxInCountry - 1 - teamsInDiv1) // (LEAGUES_PER_DIVISION * TEAMS_PER_LEAGUE)
 
 
     def getTeamIdxInCountryFromPlayerIdxInCountry(self, playerIdxInCountry):
@@ -1942,9 +1944,9 @@ class Storage(Counter):
 
     def nLeaguesInDivision(self, div):
         if div == 1:
-            return 1
+            return LEAGUES_1ST_DIVISION
         else:
-            return LEAGUES_PER_DIVISON
+            return LEAGUES_PER_DIVISION
 
 
     def buildOrgMap(self, timeZone):
@@ -1956,7 +1958,7 @@ class Storage(Counter):
         header.append(len(countries))
         for country in countries:
             nDivsInCountry = self.countries[country].nDivisions
-            nLeaguesInCountry = 1 + LEAGUES_PER_DIVISON * (nDivsInCountry-1)
+            nLeaguesInCountry = LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION * (nDivsInCountry-1)
             nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
             header.append(nTeamsInCountry)
             teamIdxs = list(range(1, nTeamsInCountry + 1))
@@ -1968,7 +1970,7 @@ class Storage(Counter):
         header = []
         orgMap = []
         header.append(NUM_COUNTRIES_AT_DEPLOY)
-        nLeaguesPerCountry = 1 + LEAGUES_PER_DIVISON * (DIVS_PER_COUNTRY_AT_DEPLOY-1)
+        nLeaguesPerCountry = LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION * (DIVS_PER_COUNTRY_AT_DEPLOY-1)
         nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
         for country in range(NUM_COUNTRIES_AT_DEPLOY):
             header.append(nTeamsInCountry)
