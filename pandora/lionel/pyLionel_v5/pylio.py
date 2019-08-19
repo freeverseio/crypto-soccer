@@ -183,7 +183,6 @@ def advanceToBlock(n, ST, ST_CLIENT):
     for block in range(nBlocksToAdvance):
         assert ST.isCrossingVerse() == ST_CLIENT.isCrossingVerse(), "CLIENT and BC not synced in verse crossing"
         if ST.isCrossingVerse():
-            ST_CLIENT.syncActions(ST)
             ST_CLIENT.syncTimeZoneCommits(ST)
         ST.incrementBlock()
         ST_CLIENT.incrementBlock()

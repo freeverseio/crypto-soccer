@@ -101,6 +101,18 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.newestOrgMapIdxPreHash = 0
         self.skillsPreHash          = [0, 0]
         self.newestSkillsIdxPreHash = 0
+        self.actions                = None
+        self.initActions()
+
+    def initActions(self):
+        orgMapHeader = self.getOrgMapHeader(newest=True)
+        nCountriesInOrgMap = orgMapHeader[0]
+        nTeamsPerCountry = orgMapHeader[1:1 + nCountriesInOrgMap]
+        self.actions = [None for a in range(sum(nTeamsPerCountry))]
+
+    def setAction(self, action, actionPosInOrgMap):
+        self.actions[actionPosInOrgMap] = action
+
 
     def getOrgMapHeader(self, newest):
         if newest == True:
@@ -208,25 +220,6 @@ class Team():
         assert len(self.playerIdxs) == PLAYERS_PER_TEAM_MAX
 
 
-class League():
-    def __init__(self, verseInit, verseStep, nTeams):
-        self.nTeams             = nTeams
-        self.verseInit          = verseInit
-        self.verseStep          = verseStep
-        self.usersInitDataHash  = 0
-
-    # simulates what would happen when users sign up, one by one
-    def signTeamInLeague(self, teamIdx, teamOrders, tactics):
-        self.usersInitDataHash = pylio.serialHash([self.usersInitDataHash, teamIdx, teamOrders, tactics])
-
-    def isGenesisLeague(self):
-        return self.verseInit == 0
-
-    def verseFinal(self):
-        nMatchdays = 2 * (self.nTeams - 1)
-        return self.verseInit + (nMatchdays-1)*self.verseStep
-
-
 # The main class that rules the update/challenge process
 # Level 1: VerseRoot provided (one single hash)
 # Level 2: SuperRoots provided (up to 200 Hashes, indexed by 'subverse')
@@ -302,10 +295,9 @@ class VerseUpdate():
 # ------------------------------------------------------------------------
 
 # LeagueClient extends League to store pre-hash stuff, etc.
-class LeagueClient(League):
-    def __init__(self, verseInit, verseStep, usersInitData):
-        nTeams = len(usersInitData["teamIdxs"])
-        League.__init__(self, verseInit, verseStep, nTeams)
+class LeagueClient:
+    def __init__(self, usersInitData):
+        self.usersInitDataHash = 0
         self.usersInitData      = usersInitData
         self.initPlayerStates   = None
         self.lastDayTree        = None
@@ -313,6 +305,17 @@ class LeagueClient(League):
         self.dataToChallengeInitSkills = None
         self.dataAtMatchdays    = 0
         self.dataToChallengeLeague = DataToChallengeLeague(0,0,0)
+
+    # simulates what would happen when users sign up, one by one
+    def signTeamInLeague(self, teamIdx, teamOrders, tactics):
+        self.usersInitDataHash = pylio.serialHash([self.usersInitDataHash, teamIdx, teamOrders, tactics])
+
+    def isGenesisLeague(self):
+        return self.verseInit == 0
+
+    def verseFinal(self):
+        nMatchdays = 2 * (self.nTeams - 1)
+        return self.verseInit + (nMatchdays - 1) * self.verseStep
 
     def storeDataAtMatchdays(self, dataAtMatchdays):
         self.dataAtMatchdays    = pylio.duplicate(dataAtMatchdays)
@@ -364,14 +367,16 @@ class ActionsAccumulator():
         self.commitedActions            = [0] # The genesis commit is a dummy one, as always
         self.commitedTrees              = [0]
 
-    def accumulateAction(self, action, timeZone, countryIdx, leagueIdxInCountry):
+    def accumulateAction(self, action, timeZone, actionPosInOrgMap):
         if timeZone not in self.buffer:
             self.buffer[timeZone] = {}
         if countryIdx not in self.buffer[timeZone]:
             self.buffer[timeZone][countryIdx] = {}
         if leagueIdxInCountry not in self.buffer[timeZone][countryIdx]:
-            self.buffer[timeZone][countryIdx][leagueIdxInCountry] = []
-        self.buffer[timeZone][countryIdx][leagueIdxInCountry].append(action)
+            self.buffer[timeZone][countryIdx][leagueIdxInCountry] = {}
+        # the following will either create or rewrite the entry for this team
+        # so when various actions arrive, only the last one remains
+        self.buffer[timeZone][countryIdx][leagueIdxInCountry][teamPosInLeague] = action
 
 
     def clearBuffer(self, actions2remove):
@@ -485,9 +490,6 @@ class Storage(Counter):
 
         # the obvious ownership map:
         self.teamNameHashToOwnerAddr = {}
-
-        # an array of leagues, first entry is dummy
-        self.leagues = [League(0,0,0)]
 
         self.blocksBetweenVerses = BLOCKS_BETWEEN_VERSES
         self.VerseActionsCommits = [VerseActionsCommit()]
@@ -1528,8 +1530,9 @@ class Storage(Counter):
     def accumulateAction(self, action):
         self.assertIsClient()
         assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
-        timeZone, countryIdx, leagueIdxInCountry = self.getActionPorInOrgMap(action)
-        self.Accumulator.accumulateAction(action, timeZone, countryIdx, leagueIdxInCountry)
+        timeZone, actionPosInOrgMap = self.getActionPosInOrgMap(action)
+        del action["teamIdx"]
+        self.timeZoneUpdates[timeZone].setAction(action, actionPosInOrgMap)
         # TODO: probably avoid receiving actions if league has finished or somrthing
         # if self.hasLeagueFinished(leagueIdx):
         #     print("Cannot accept actions for leagues that already finished! Action discarded")
@@ -1554,7 +1557,7 @@ class Storage(Counter):
         return seedsPerVerse
 
 
-    def getLeagueIdxFromOrgMap(self, timeZone, countryIdx, teamIdxInCountry, newest):
+    def getTeamPosInCountryOrgMap(self, timeZone, countryIdx, teamIdxInCountry, newest):
         # Finds the league in a given country played by a teamIdx, either now, or in the prev round
         # So we find the pos of teamIdxInCountry in the orgMap, and deduce the league from it
         self.assertIsClient()
@@ -1567,20 +1570,22 @@ class Storage(Counter):
         pointer = 0
         nTeamsAboveThisCountry = sum(nTeamsPerCountry[:countryPosInTimeZone])
         pointer += nTeamsAboveThisCountry
+
         allTeamIdxInThisCountryOrgMap = orgMap[pointer:pointer+nTeamsPerCountry[countryPosInTimeZone]]
         assert teamIdxInCountry in allTeamIdxInThisCountryOrgMap, "very wrong: team not found in orgMap"
         teamPosInCountryOrgMap = allTeamIdxInThisCountryOrgMap.index(teamIdxInCountry)
-        return 1 + (1+teamPosInCountryOrgMap) // TEAMS_PER_LEAGUE
+        # leagueIdxInCountry = 1 + teamPosInCountryOrgMap // TEAMS_PER_LEAGUE
+        # teamPosInLeague = teamPosInCountryOrgMap - (leagueIdxInCountry - 1) * TEAMS_PER_LEAGUE
+        # return leagueIdxInCountry, teamPosInLeague
+        return teamPosInCountryOrgMap
 
-
-    # returns which league did this action refer to
-    def getActionPorInOrgMap(self, action):
+    # returns which team did this action refer to
+    def getActionPosInOrgMap(self, action):
         self.assertIsClient()
         teamIdx = action["teamIdx"]
         (countryIdx, teamIdxInCountry) = self.decodeCountryAndVal(teamIdx)
         timeZone = self.getCountryTimeZone(countryIdx)
-        leagueIdxInCountry = self.getLeagueIdxFromOrgMap(timeZone, countryIdx, teamIdxInCountry, newest = True)
-        return timeZone, countryIdx, leagueIdxInCountry
+        return timeZone, self.getTeamPosInCountryOrgMap(timeZone, countryIdx, teamIdxInCountry, newest = True)
 
     def getLeaguesPlayingInThisVerse(self, verse):
         self.assertIsClient()
@@ -1592,34 +1597,24 @@ class Storage(Counter):
                 leagueIdxs.append(leagueIdx)
         return leagueIdxs
 
+    def replaceEmptyActions(self, leafs):
+        self.assertIsClient()
+        return [NULL_ACTION if leaf==None else leaf for leaf in leafs]
 
     # Sends the actions acummulated in the buffer to the BC, by sending the Merkle Root first.
     # It only sends the actions corresponding to leagues that play games at the current verse.
     # Before computing the Merkler Root, it first orders all the actions in the form:
     # [leagueIdx0, allActionsInLeagueIdx0], [leagueIdx1, allActionsInLeagueIdx1], ...
     # So each leaf has the form [leagueIdx, allActionsInLeagueIdx]
-    def syncActions(self, ST):
+    def submitActions(self, timeZone, ST):
         self.assertIsClient()
         assert self.currentBlock == ST.currentBlock, "Client and BC are out of sync in blocknum!"
-        leaguesPlayingInThisVerse = self.getLeaguesPlayingInThisVerse(ST.currentVerse)
-        leagueIdxAndActionsArray = []
-        # Builds two quantities.
-        #   - leagueIdxAndActionsArray, used to get the Merkle game
-        #   - self.leagues[leagueIdx].actionsPerMatchday to store the pre-hashes
-        for leagueIdx in leaguesPlayingInThisVerse:
-            if leagueIdx in self.Accumulator.buffer:
-                leagueIdxAndActionsArray.append([leagueIdx, self.Accumulator.buffer[leagueIdx]])
-                self.leagues[leagueIdx].actionsPerMatchday.append(self.Accumulator.buffer[leagueIdx])
-            else:
-                leagueIdxAndActionsArray.append([leagueIdx, 0])
-                self.leagues[leagueIdx].actionsPerMatchday.append(0)
 
-        if leagueIdxAndActionsArray:
-            tree = MerkleTree(leagueIdxAndActionsArray)
-            rootTree    = tree.root
-        else:
-            tree        = 0
-            rootTree    = 0
+        leafs = self.timeZoneUpdates[timeZone].actions
+        leafs = self.replaceEmptyActions(leafs)
+
+        tree = MerkleTree(leafs)
+        rootTree    = tree.root
 
         ST.commit(rootTree)
         self.commit(rootTree)
@@ -2060,6 +2055,7 @@ class Storage(Counter):
 
         # Any game 1st half is played
         if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
+            self.submitActions(timeZoneToUpdate, ST)
             print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
@@ -2068,6 +2064,7 @@ class Storage(Counter):
 
         # Any game 2nd half is played
         if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
+            self.submitActions(timeZoneToUpdate, ST)
             print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
