@@ -36,6 +36,8 @@ class TimeZoneUpdate():
         self.scores = 0
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
+        self.actionsRoot = 0
+        self.blockHash = 0
 
     def incrementCycleIdx(self):
         self.updateCycleIdx = (self.updateCycleIdx + 1) % pylio.cycleIdx(16, 4)
@@ -336,16 +338,6 @@ class LeagueClient:
         return initSkills
 
 
-# The VerseActionsCommit basically stores the merkle roots of all actions corresponding to a league starting at that moment
-# The Merkle Roots are computed from the leafs:
-#   - leafs = [ [leagueIdx0, allActionsInLeagueIdx0], ..., ]
-#   - where allActionsInLeagueIdx0 = [action0, action1, action2,...]
-
-class VerseActionsCommit:
-    def __init__(self, actionsMerkleRoots = 0, blockNum = 0):
-        self.actionsMerkleRoots = actionsMerkleRoots
-        self.blockNum = blockNum
-
 
 # Data that the CLIENT builds to challenge a league at level 4.
 class DataToChallengeLeague():
@@ -492,7 +484,6 @@ class Storage(Counter):
         self.teamNameHashToOwnerAddr = {}
 
         self.blocksBetweenVerses = BLOCKS_BETWEEN_VERSES
-        self.VerseActionsCommits = [VerseActionsCommit()]
         self.verseToLeagueCommits = {}
 
         self.verseToFinishingLeagueIdxs = {}
@@ -679,15 +670,8 @@ class Storage(Counter):
     def currentTimeZoneToUpdate(self):
         return self.verseToTimeZoneToUpdate(self.currentVerse)
 
-
-    def lastVerseBlock(self):
-        return self.VerseActionsCommits[-1].blockNum
-
     def nextVerseBlock(self):
         return self.lastVerseBlock() + self.blocksBetweenVerses
-
-    def commit(self, actionsRoot):
-        self.VerseActionsCommits.append(VerseActionsCommit(actionsRoot, self.currentBlock))
 
     def hasLeagueBeenUpdated(self, leagueIdx):
         verse = self.leagues[leagueIdx].verseFinal()
@@ -1529,7 +1513,6 @@ class Storage(Counter):
 
     def accumulateAction(self, action):
         self.assertIsClient()
-        assert self.currentBlock >= self.lastVerseBlock(), "Weird, blocknum for action received that belonged to past commit"
         timeZone, actionPosInOrgMap = self.getActionPosInOrgMap(action)
         del action["teamIdx"]
         self.timeZoneUpdates[timeZone].setAction(action, actionPosInOrgMap)
@@ -1616,12 +1599,14 @@ class Storage(Counter):
         tree = MerkleTree(leafs)
         rootTree    = tree.root
 
-        ST.commit(rootTree)
-        self.commit(rootTree)
+        self.timeZoneUpdates[timeZone].initActions()
 
-        self.Accumulator.commitedActions.append(leagueIdxAndActionsArray)
-        self.Accumulator.commitedTrees.append(tree)
-        self.Accumulator.clearBuffer(pylio.duplicate(leagueIdxAndActionsArray))
+        self.timeZoneUpdates[timeZone].actionsRoot = rootTree
+        self.timeZoneUpdates[timeZone].blockHash = self.getBlockHash(self.currentBlock-1)
+
+        ST.timeZoneUpdates[timeZone].actionsRoot = rootTree
+        ST.timeZoneUpdates[timeZone].blockHash = self.getBlockHash(self.currentBlock-1)
+
 
 
     # It gathers all actions that were sent for a given selectedMatchday of a given league.

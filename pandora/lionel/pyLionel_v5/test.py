@@ -277,9 +277,9 @@ def integrationTest():
     action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
     ST_CLIENT.accumulateAction(action01)
-    assert 1 in ST_CLIENT.Accumulator.buffer[1][1], "league not found in actions"
-    assert 8 in ST_CLIENT.Accumulator.buffer[1][1], "league not found in actions"
-    assert 2 not in ST_CLIENT.Accumulator.buffer[1][1], "league incorrectly found in actions"
+    assert None == ST_CLIENT.timeZoneUpdates[timeZone].actions[4], "an action is present in the wrong team"
+    assert "teamOrder" in ST_CLIENT.timeZoneUpdates[timeZone].actions[5], "action not submitted"
+    assert "teamOrder" in ST_CLIENT.timeZoneUpdates[timeZone].actions[59], "action not submitted"
 
     # add one division to a country to see if next initSkills are properly taken care of
     addDivision(2, ST, ST_CLIENT)
