@@ -26,7 +26,7 @@ VERSES_PER_ROUND = DAYS_PER_ROUND * VERSES_PER_DAY
 BLOCKS_BETWEEN_VERSES = 360
 EXTRA_DIVISIONS_IN_ORGMAP = 10
 NUM_COUNTRIES_AT_DEPLOY = 3
-DIVS_PER_COUNTRY_AT_DEPLOY = 2
+DIVS_PER_COUNTRY_AT_DEPLOY = 1
 assert VERSES_PER_ROUND == 1536
 
 # TIMEZONE UPDATE CODES
@@ -78,6 +78,8 @@ DEFENDER    = 1
 MIDFIELD    = 2
 ATTACKER    = 3
 
+FIRST_HALF = 1
+SECOND_HALF = 2
 
 # the largest number that can be used for playerIdx. To be decided. If we went for 26 bits:
 FREE_PLAYER_IDX = 2**26-1
@@ -120,3 +122,5 @@ LEAGUE_INIT_SKILLS_ID = -1
 
 NULL_ACTION = {"teamOrder": ORDER1, "tactics": TACTICS["433"]}
 
+# performance leaguePoints at the end of league for: last, last-to-last,... second, first
+LEAGUE_PP = np.array([-8, -5, -3, 0, 2, 5, 8, 10], int)

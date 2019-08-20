@@ -103,12 +103,12 @@ def computeTeamRating(playerSkills):
     return sum([sum(thisPlayerSkills.getSkills()) for thisPlayerSkills in playerSkills])
 
 
-def addFixedPointsToAllPlayers(allPlayerSkills, points):
+def addFixedleaguePointsToAllPlayers(allPlayerSkills, leaguePoints):
     for playerSkills in allPlayerSkills:
-        playerSkills.setSkills(playerSkills.getSkills() + points)
+        playerSkills.setSkills(playerSkills.getSkills() + leaguePoints)
 
 
-# given the result, it computes the evolution points won per team, and applies them to their players
+# given the result, it computes the evolution leaguePoints won per team, and applies them to their players
 def updatePlayerSkillsAfterMatch(playerSkills1, playerSkills2, goals1, goals2):
     ps1 = duplicate(playerSkills1)
     ps2 = duplicate(playerSkills2)
@@ -116,17 +116,17 @@ def updatePlayerSkillsAfterMatch(playerSkills1, playerSkills2, goals1, goals2):
     if goals1 == goals2:
         return ps1, ps2
 
-    pointsWon = computePointsWon(ps1, ps2, goals1, goals2)
+    leaguePointsWon = computeleaguePointsWon(ps1, ps2, goals1, goals2)
     if goals1 > goals2:
-        addFixedPointsToAllPlayers(ps1, pointsWon)
+        addFixedleaguePointsToAllPlayers(ps1, leaguePointsWon)
     else:
-        addFixedPointsToAllPlayers(ps2, pointsWon)
+        addFixedleaguePointsToAllPlayers(ps2, leaguePointsWon)
 
     return ps1, ps2
 
 
-# simple mockup of what the evolution points could look like.
-def computePointsWon(playerState1, playerState2, goals1, goals2):
+# simple mockup of what the evolution leaguePoints could look like.
+def computeleaguePointsWon(playerState1, playerState2, goals1, goals2):
     ratingDiff              = computeTeamRating(playerState1) - computeTeamRating(playerState2)
     winnerWasBetter         = (ratingDiff > 0 and goals1>goals2) or (ratingDiff < 0 and goals1<goals2)
 
@@ -140,7 +140,7 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
 # were right at the beginning of that matchday
 def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevSkills)
-    points = np.zeros(nTeams, int)
+    leaguePoints = np.zeros(nTeams, int)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
     skillsAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
@@ -159,12 +159,12 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
             matchSeed
         )
         if goals1 > goals2:
-            points[team1] = 3
+            leaguePoints[team1] = 3
         elif goals1 < goals2:
-            points[team2] = 3
+            leaguePoints[team2] = 3
         else:
-            points[team1] = 1
-            points[team2] = 1
+            leaguePoints[team1] = 1
+            leaguePoints[team2] = 1
         scores[match] = [goals1, goals2]
         skillsAtMatchday[team1], skillsAtMatchday[team2] = \
             updatePlayerSkillsAfterMatch(
@@ -173,7 +173,7 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
                     goals1,
                     goals2
                 )
-    return skillsAtMatchday, scores, points
+    return skillsAtMatchday, scores, leaguePoints
 
 # checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):

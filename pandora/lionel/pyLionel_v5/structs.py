@@ -107,7 +107,8 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.actions                = None
         # scores dimension: [country][league][matchday][matchInDay][homeAway]
         self.scores                 = None
-        self.points                 = None
+        self.leaguePoints           = None
+        self.leaguePerfPoints       = None
         self.initActions()
         self.initScoresAndPoints()
 
@@ -128,13 +129,16 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         nCountriesInOrgMap = orgMapHeader[0]
         nLeaguesPerCountry = np.array(orgMapHeader[1:1 + nCountriesInOrgMap], int)//TEAMS_PER_LEAGUE
         self.scores = np.empty(nCountriesInOrgMap, dtype = object)
-        self.points = np.empty(nCountriesInOrgMap, dtype = object)
+        self.leaguePoints = np.empty(nCountriesInOrgMap, dtype = object)
+        self.leaguePerfPoints = np.empty(nCountriesInOrgMap, dtype = object)
         for country in range(nCountriesInOrgMap):
             self.scores[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
-            self.points[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
+            self.leaguePoints[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
+            self.leaguePerfPoints[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
             for league in range(nLeaguesPerCountry[country]):
                 self.scores[country][league] = pylio.duplicate(oneLeagueScores)
-                self.points[country][league] = pylio.duplicate(oneLeaguePoints)
+                self.leaguePoints[country][league] = pylio.duplicate(oneLeaguePoints)
+                self.leaguePerfPoints[country][league] = pylio.duplicate(oneLeaguePoints)
 
     def setAction(self, action, actionPosInOrgMap):
         self.actions[actionPosInOrgMap] = action
@@ -1968,7 +1972,7 @@ class Storage(Counter):
             pointer += nTeamsPerCountry[c]
         return initSkills
 
-    def computeTimeZoneSkillsAtMatchday(self, timeZone, day):
+    def computeTimeZoneSkillsAtMatchday(self, timeZone, day, half):
         prevSkills = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest=True)
         header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=True)
         assert len(prevSkills) // PLAYERS_PER_TEAM_MAX == len(orgMap), "incorrect size of skills and orgMap"
@@ -1993,9 +1997,19 @@ class Storage(Counter):
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
                 matchdaySeed = pylio.intHash(str(timeZoneSeed + leaguePos))
-                skillsPerTeam, scores, points = pylio.computeStatesAtMatchday(day-1, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
-                self.timeZoneUpdates[timeZone].points[countryPos][leaguePos] += points
-                self.timeZoneUpdates[timeZone].scores[countryPos][leaguePos][day-1] = scores
+                skillsPerTeam, scores, leaguePoints = pylio.computeStatesAtMatchday(
+                    day - 1,
+                    prevSkillsInLeague,
+                    tactics,
+                    teamOrders,
+                    matchdaySeed
+                )
+                if half == FIRST_HALF:
+                    self.timeZoneUpdates[timeZone].scores[countryPos][leaguePos][day-1] = scores
+                elif half == SECOND_HALF:
+                    self.timeZoneUpdates[timeZone].scores[countryPos][leaguePos][day-1] += scores
+                    self.timeZoneUpdates[timeZone].leaguePoints[countryPos][leaguePos] += leaguePoints
+
                 for skillsInOneTeam in skillsPerTeam:
                     for skills in skillsInOneTeam:
                         newSkills.append(skills)
@@ -2074,6 +2088,13 @@ class Storage(Counter):
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
 
+    def computeLeaguePP(self, timeZone):
+        self.assertIsClient()
+        for country in self.timeZoneUpdates[timeZone].leaguePoints:
+            for leagueleaguePoints in country:
+                order = np.argsort(leagueleaguePoints)
+                self.timeZoneUpdates[timeZone].leaguePerfPoints[country][leagueleaguePoints] = LEAGUE_PP[order]
+
     def assertScoresAreFilled(self, timeZone):
         self.assertIsClient()
         for country in self.timeZoneUpdates[timeZone].scores:
@@ -2098,7 +2119,7 @@ class Storage(Counter):
             # we now reset the actions array, possibly making it larger (if new DIVS were created)
             # and hence, destroying any actions that were provided to this point
             self.timeZoneUpdates[timeZoneToUpdate].initActions()
-            self.timeZoneUpdates[timeZoneToUpdate].initScores()
+            self.timeZoneUpdates[timeZoneToUpdate].initScoresAndPoints()
             return
 
         # Close of market => COMPUTE INIT SKILLS
@@ -2118,7 +2139,7 @@ class Storage(Counter):
         if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
             self.submitActions(timeZoneToUpdate, ST)
             print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
-            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day, FIRST_HALF)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkillsAndScores(
                 pylio.serialHash(newSkills),
@@ -2132,7 +2153,7 @@ class Storage(Counter):
         if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
             self.submitActions(timeZoneToUpdate, ST)
             print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
-            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day, SECOND_HALF)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkillsAndScores(
                 pylio.serialHash(newSkills),
@@ -2142,7 +2163,7 @@ class Storage(Counter):
             self.timeZoneUpdates[timeZoneToUpdate].initActions()
             if day == 14:
                 self.assertScoresAreFilled(timeZoneToUpdate)
-                # self.computeClassification(timeZoneToUpdate)
+                self.computeLeaguePP(timeZoneToUpdate)
             return
 
 
