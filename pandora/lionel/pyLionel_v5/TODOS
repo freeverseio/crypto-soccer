@@ -1,9 +1,5 @@
-replace  teamIdx from actions
 
- accumulate actions to write directly on the orgmap order
- - need a setAction and getAction
-extend actions with new orgmaps
-remove accumulator!
+
 
 - probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)
 - recheck that there's enough room to compute all getInitSkills !

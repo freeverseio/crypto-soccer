@@ -124,10 +124,6 @@ def integrationTest():
     assert ST.verseToRound(3 + VERSES_PER_ROUND-1) == 1, "we should still be at round = 1"
     assert ST.verseToRound(3 + VERSES_PER_ROUND) == 2, "we should have moved to round = 2"
 
-    # The accumulator is responsible for receiving user actions and committing them in the correct verse.
-    # It only lives in the CLIENT.
-    ST_CLIENT.addAccumulator()
-
     # Note that in every 'advance' we do, the CLIENT will check if some user actions need to be commited, and do so.
     # It will also check if a new verse needs to be updated, and do so:
     #   - honestly if we set ST_CLIENT.forceVerseRootLie = False (default)

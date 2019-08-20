@@ -347,38 +347,6 @@ class DataToChallengeLeague():
         self.scores                 = scores
 
 
-# The Accumulator is responsible for receving user actions and committing them in the correct verse.
-# An action is a struct:
-#    action00 = {"teamIdx": 2, "teamOrder": [0,4,2,3...,PLAYERS_PER_TEAM_INIT], "tactics": 3}
-#       where "tactics" is an int < 16. For example, tactics = 1 means (4,4,2).
-#
-# The buffer is an array that maintains:  buffer[leagueIdx] = [action0, action1, ...]
-class ActionsAccumulator():
-    def __init__(self):
-        self.buffer                     = {}
-        self.commitedActions            = [0] # The genesis commit is a dummy one, as always
-        self.commitedTrees              = [0]
-
-    def accumulateAction(self, action, timeZone, actionPosInOrgMap):
-        if timeZone not in self.buffer:
-            self.buffer[timeZone] = {}
-        if countryIdx not in self.buffer[timeZone]:
-            self.buffer[timeZone][countryIdx] = {}
-        if leagueIdxInCountry not in self.buffer[timeZone][countryIdx]:
-            self.buffer[timeZone][countryIdx][leagueIdxInCountry] = {}
-        # the following will either create or rewrite the entry for this team
-        # so when various actions arrive, only the last one remains
-        self.buffer[timeZone][countryIdx][leagueIdxInCountry][teamPosInLeague] = action
-
-
-    def clearBuffer(self, actions2remove):
-        for action in actions2remove:
-            leagueIdx = action[0]
-            if leagueIdx in self.buffer:
-                del self.buffer[leagueIdx]
-            else:
-                assert action[1] == 0, "Tried to remove from buffer the actions in a league that was not present"
-
 
 # Simple struct that stores the data that is computed/updated every matchday
 class DataAtMatchday():
@@ -1506,10 +1474,6 @@ class Storage(Counter):
         self.leagues[leagueIdx].writeInitState(self.getInitPlayerStates(leagueIdx))
         self.leagues[leagueIdx].writeDataToChallengeInitSkills(self.prepareDataToChallengeLeagueInitSkills(leagueIdx))
         return leagueIdx
-
-    def addAccumulator(self):
-        self.assertIsClient()
-        self.Accumulator = ActionsAccumulator()
 
     def accumulateAction(self, action):
         self.assertIsClient()
