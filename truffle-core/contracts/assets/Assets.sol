@@ -82,6 +82,38 @@ contract Assets {
         emit TeamTransfer(teamId, newOwner);
     }
 
+    function getFreeShirt(uint256 teamId) public view returns(uint8) {
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX; shirtNum > 0; shirtNum--) {
+            if (isFreeShirt(teamId, shirtNum)) {
+                return shirtNum;
+            }
+        }
+        return 0;
+    }
+
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+        // warning: check of ownership of players and teams should be done before calling this function
+        require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
+        uint256 state = getPlayerState(playerId);
+        uint256 newState = state;
+        uint256 teamIdOrigin = _playerState.getCurrentTeamId(state);
+        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+        uint256 shirtOrigin = _playerState.getCurrentShirtNum(state);
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget != 0, "target team for transfer is already full");
+        
+        newState = _playerState.setCurrentTeamId(newState, teamIdTarget);
+        newState = _playerState.setCurrentShirtNum(newState, shirtTarget);
+        newState = _playerState.setLastSaleBlock(newState, block.number);
+
+        teams[teamIdTarget].playerIds[shirtTarget] = playerId;
+        teams[teamIdOrigin].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+
+        _setPlayerState(newState);
+    }
+
+
+
     // TODO: exchange fails on playerId0 & playerId1 of the same team
     function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
         // TODO: check ownership address
@@ -225,7 +257,7 @@ contract Assets {
         return teamId != 0 && teamId < teams.length;
     }
 
-    function isFreeSlot(uint256 teamId, uint8 shirtNum) public view returns (bool) {
+    function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
         return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;
     }
 
