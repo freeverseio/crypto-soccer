@@ -24,6 +24,7 @@ contract Assets {
 
     uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    uint256 constant public FREE_PLAYER_ID  = uint256(-1);
     uint8 constant internal BITS_PER_SKILL = 14;
     uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
@@ -120,6 +121,9 @@ contract Assets {
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
         _teamNameHashToOwner[nameHash] = owner;
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
+        for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
+            playerIds[p] = FREE_PLAYER_ID;
+        }
         teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
         uint256 id = teams.length - 1;
         emit TeamCreated(id);
@@ -219,6 +223,10 @@ contract Assets {
 
     function _teamExists(uint256 teamId) internal view returns (bool) {
         return teamId != 0 && teamId < teams.length;
+    }
+
+    function isFreeSlot(uint256 teamId, uint8 shirtNum) public view returns (bool) {
+        return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;
     }
 
     function _playerExists(uint256 playerId) internal view returns (bool) {
