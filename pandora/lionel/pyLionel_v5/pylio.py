@@ -140,9 +140,11 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
 # were right at the beginning of that matchday
 def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevSkills)
+    points = np.zeros(nTeams, int)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
     skillsAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
+
 
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
@@ -156,6 +158,13 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
             teamOrders[team2],
             matchSeed
         )
+        if goals1 > goals2:
+            points[team1] = 3
+        elif goals1 < goals2:
+            points[team2] = 3
+        else:
+            points[team1] = 1
+            points[team2] = 1
         scores[match] = [goals1, goals2]
         skillsAtMatchday[team1], skillsAtMatchday[team2] = \
             updatePlayerSkillsAfterMatch(
@@ -164,7 +173,7 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
                     goals1,
                     goals2
                 )
-    return skillsAtMatchday, scores
+    return skillsAtMatchday, scores, points
 
 # checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):

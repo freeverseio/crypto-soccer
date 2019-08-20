@@ -1,4 +1,5 @@
-
+sort teams in leagues
+check that I think we need L5 instead of L4
 
 
 - probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)
