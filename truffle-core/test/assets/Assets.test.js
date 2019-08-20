@@ -212,7 +212,7 @@ contract('Assets', (accounts) => {
     });
 
     it('get player state of existing player', async () => {
-        const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         await assets.createTeam("Barca",ALICE).should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++)
             await assets.getPlayerState(playerId).should.be.fulfilled;
@@ -243,7 +243,7 @@ contract('Assets', (accounts) => {
     });
 
     it('get player pos in team', async () => {
-        const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         await assets.createTeam("Barca",ALICE).should.be.fulfilled;
         for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
             const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;

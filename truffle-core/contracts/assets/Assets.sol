@@ -232,7 +232,7 @@ contract Assets {
     function _playerExists(uint256 playerId) internal view returns (bool) {
         if (playerId == 0) return false;
         if (_playerIdToState[playerId] != 0) return true;
-        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_MAX;
+        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
         return teamId <= countTeams();
     }
 
