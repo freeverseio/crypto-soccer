@@ -33,7 +33,7 @@ class TimeZoneUpdate():
         self.skills = [0, 0]
         self.newestOrgMapIdx = 0
         self.newestSkillsIdx = 0
-        self.scores = 0
+        self.scoresRoot = 0
         self.updateCycleIdx = 0
         self.lastBlockUpdate = 0
         self.actionsRoot = 0
@@ -61,10 +61,11 @@ class TimeZoneUpdate():
         self.lastBlockUpdate = currentBlock
         self.incrementCycleIdx()
 
-    def updateSkills(self, skillsHash, currentBlock):
-        # assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(1,0), "trying to updateSkills at wrong moment"
+    def updateSkillsAndScores(self, skillsHash, scoresRoot, currentBlock):
+        # assert self.isJustCreated() or self.updateCycleIdx == pylio.cycleIdx(1,0), "trying to updateSkillsAndScores at wrong moment"
         self.newestSkillsIdx = 1 - self.newestSkillsIdx
         self.skills[self.newestSkillsIdx] = skillsHash
+        self.scoresRoot = scoresRoot
         self.lastBlockUpdate = currentBlock
         self.incrementCycleIdx()
 
@@ -161,7 +162,11 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
     def updateSkillsPreHash(self, skills, currentBlock):
         self.newestSkillsIdxPreHash = 1 - self.newestSkillsIdxPreHash
         self.skillsPreHash[self.newestSkillsIdxPreHash] = skills
-        self.updateSkills(pylio.serialHash(skills), currentBlock)
+        self.updateSkillsAndScores(
+            pylio.serialHash(skills),
+            pylio.serialHash(self.scores),
+            currentBlock
+        )
 
 # In Solidity, PlayerState will be just a uin256, serializing the data shown here,
 # ...and there'll be associated read/write functions
@@ -2096,7 +2101,11 @@ class Storage(Counter):
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
             initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(initSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(initSkills), self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkillsAndScores(
+                pylio.serialHash(initSkills),
+                pylio.serialHash(self.timeZoneUpdates[timeZoneToUpdate].scores),
+                self.currentBlock
+            )
             return
 
         # Any game 1st half is played
@@ -2105,7 +2114,11 @@ class Storage(Counter):
             print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkillsAndScores(
+                pylio.serialHash(newSkills),
+                pylio.serialHash(self.timeZoneUpdates[timeZoneToUpdate].scores),
+                self.currentBlock
+            )
             self.timeZoneUpdates[timeZoneToUpdate].initActions()
             return
 
@@ -2115,7 +2128,11 @@ class Storage(Counter):
             print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkillsAndScores(
+                pylio.serialHash(newSkills),
+                pylio.serialHash(self.timeZoneUpdates[timeZoneToUpdate].scores),
+                self.currentBlock
+            )
             self.timeZoneUpdates[timeZoneToUpdate].initActions()
             if day == 14:
                 self.assertScoresAreFilled(timeZoneToUpdate)
