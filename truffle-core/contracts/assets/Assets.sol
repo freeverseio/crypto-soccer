@@ -18,11 +18,12 @@ contract Assets {
         uint8 posInCurrentLeague;
         uint256 prevLeagueId;
         uint8 posInPrevLeague;
-        uint256[PLAYERS_PER_TEAM] playerIds;
+        uint256[PLAYERS_PER_TEAM_MAX] playerIds;
         uint256 creationTimestamp; // timestamp as seconds since unix epoch
     }
 
-    uint8 constant public PLAYERS_PER_TEAM = 25;
+    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
+    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant internal BITS_PER_SKILL = 14;
     uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public NUM_SKILLS = 5;
@@ -38,7 +39,7 @@ contract Assets {
 
     constructor(address playerState) public {
         _playerState = PlayerState(playerState);
-        uint256[PLAYERS_PER_TEAM] memory playerIds;
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
         teams.push(Team("_", 0, 0, 0, 0, playerIds, block.timestamp));
     }
 
@@ -118,7 +119,7 @@ contract Assets {
         bytes32 nameHash = keccak256(abi.encode(name));
         require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
         _teamNameHashToOwner[nameHash] = owner;
-        uint256[PLAYERS_PER_TEAM] memory playerIds;
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
         teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
         uint256 id = teams.length - 1;
         emit TeamCreated(id);
@@ -154,9 +155,9 @@ contract Assets {
         return teams[teamId].name;
     }
 
-    function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM] memory playerIds) {
+    function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
         require(_teamExists(teamId), "invalid team id");
-        for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM ; pos++){
+        for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM_MAX ; pos++){
             if (teams[teamId].playerIds[pos] == 0) // virtual player
                 playerIds[pos] = generateVirtualPlayerId(teamId, pos);
             else
@@ -174,13 +175,13 @@ contract Assets {
 
     function generateVirtualPlayerId(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
         require(_teamExists(teamId), "unexistent team");
-        require(posInTeam < PLAYERS_PER_TEAM, "invalid player pos");
-        return PLAYERS_PER_TEAM * (teamId - 1) + 1 + posInTeam;
+        require(posInTeam < PLAYERS_PER_TEAM_MAX, "invalid player pos");
+        return PLAYERS_PER_TEAM_MAX * (teamId - 1) + 1 + posInTeam;
     }
 
     function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
-            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
-            uint256 posInTeam = playerId - PLAYERS_PER_TEAM * (teamId - 1) - 1;
+            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_MAX;
+            uint256 posInTeam = playerId - PLAYERS_PER_TEAM_MAX * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
             uint256 seed = _computeSeed(teamName, posInTeam);
             uint16[5] memory skills = _computeSkills(seed);
@@ -208,9 +209,9 @@ contract Assets {
         uint256 teamId = _playerState.getCurrentTeamId(state);
         require(_teamExists(teamId), "unexistent team");
         uint256 shirtNumber = _playerState.getCurrentShirtNum(state);
-        require(shirtNumber < PLAYERS_PER_TEAM, "invalid shirt number");
+        require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
         shirtNumber = _playerState.getPrevShirtNumInLeague(state);
-        require(shirtNumber < PLAYERS_PER_TEAM, "invalid shirt number");
+        require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
         uint256 saleBlock = _playerState.getLastSaleBlock(state);
         require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
         _playerIdToState[playerId] = state;
@@ -223,7 +224,7 @@ contract Assets {
     function _playerExists(uint256 playerId) internal view returns (bool) {
         if (playerId == 0) return false;
         if (_playerIdToState[playerId] != 0) return true;
-        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM;
+        uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_MAX;
         return teamId <= countTeams();
     }
 
