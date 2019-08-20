@@ -1,5 +1,7 @@
 # TODO: get tactics etc from actual player actions
 
+check actions at the vert start
+        matchdaySeed = 3
 
 
 - probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)

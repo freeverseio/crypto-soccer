@@ -281,6 +281,13 @@ def integrationTest():
     assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
     addDivision(2, ST, ST_CLIENT)
 
+    teamIdx1 = ST.encodeCountryAndVal(1, 2)
+    teamIdx2 = ST.encodeCountryAndVal(1, 3)
+    action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
+    action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
+    ST_CLIENT.accumulateAction(action00)
+    ST_CLIENT.accumulateAction(action01)
+
     # move to very end of country leagues and check that players move from non-transferable to transferable
     verseAtLastMatch = 3 + 13 * VERSES_PER_DAY + 4
     advanceNVerses(verseAtLastMatch-ST.currentVerse, ST, ST_CLIENT)

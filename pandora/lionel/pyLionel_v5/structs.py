@@ -1578,8 +1578,6 @@ class Storage(Counter):
         tree = MerkleTree(leafs)
         rootTree    = tree.root
 
-        self.timeZoneUpdates[timeZone].initActions()
-
         self.timeZoneUpdates[timeZone].actionsRoot = rootTree
         self.timeZoneUpdates[timeZone].blockHash = self.getBlockHash(self.currentBlock-1)
 
@@ -1967,15 +1965,20 @@ class Storage(Counter):
         nCountries = header[0]
         nLeaguesPerCountry = np.array(header[1:1+nCountries])//TEAMS_PER_LEAGUE
         teamPointer = 0
-        # TODO: get tactics etc from actual player actions
-        tactics = [TACTICS["433"] for team in range(TEAMS_PER_LEAGUE)]
-        teamOrders = [DEFAULT_ORDER for team in range(TEAMS_PER_LEAGUE)]
         matchdaySeed = 3
         newSkills = []
         for countryPos in range(nCountries):
             for leaguePos in range(nLeaguesPerCountry[countryPos]):
+                tactics = []
+                teamOrders = []
                 prevSkillsInLeague = []
                 for team in range(TEAMS_PER_LEAGUE):
+                    action = self.timeZoneUpdates[timeZone].actions[teamPointer+team]
+                    if action == None:
+                        action = NULL_ACTION
+                    tactics.append(action["tactics"])
+                    teamOrders.append(action["teamOrder"])
+
                     skillsLeftIdx = teamPointer + team * PLAYERS_PER_TEAM_MAX
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
@@ -2059,9 +2062,9 @@ class Storage(Counter):
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
 
-    def assertScoresAreFilled(self, timeZoneToUpdate):
+    def assertScoresAreFilled(self, timeZone):
         self.assertIsClient()
-        for country in self.timeZoneUpdates[timeZoneToUpdate].scores:
+        for country in self.timeZoneUpdates[timeZone].scores:
             for league in country:
                 for day in league:
                     for game in day:
@@ -2102,6 +2105,7 @@ class Storage(Counter):
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            self.timeZoneUpdates[timeZoneToUpdate].initActions()
             return
 
         # Any game 2nd half is played
@@ -2111,6 +2115,7 @@ class Storage(Counter):
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            self.timeZoneUpdates[timeZoneToUpdate].initActions()
             if day == 14:
                 self.assertScoresAreFilled(timeZoneToUpdate)
             return
