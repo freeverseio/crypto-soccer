@@ -1516,10 +1516,7 @@ class Storage(Counter):
         timeZone, actionPosInOrgMap = self.getActionPosInOrgMap(action)
         del action["teamIdx"]
         self.timeZoneUpdates[timeZone].setAction(action, actionPosInOrgMap)
-        # TODO: probably avoid receiving actions if league has finished or somrthing
-        # if self.hasLeagueFinished(leagueIdx):
-        #     print("Cannot accept actions for leagues that already finished! Action discarded")
-        # else:
+        # TODO: avoid receiving actions after end of league and before the new orgMap
 
     # returns all verses were matchdays of a league took/take place
     def getVersesForLeague(self, leagueIdx):
@@ -2024,9 +2021,11 @@ class Storage(Counter):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
             header, orgMap = self.buildOrgMap(timeZoneToUpdate)
-            # header, orgMap = self.buildInitOrgMap()
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+            # we now reset the actions array, possibly making it larger (if new DIVS were created)
+            # and hence, destroying any actions that were provided to this point
+            self.timeZoneUpdates[timeZoneToUpdate].initActions()
             return
 
         # Close of market => COMPUTE INIT SKILLS
