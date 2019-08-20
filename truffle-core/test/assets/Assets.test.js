@@ -21,11 +21,11 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
     
-    it('isFreeSlot', async () => {
+    it('isFreeShirt', async () => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-        var isFree = await assets.isFreeSlot(1,3)
+        var isFree = await assets.isFreeShirt(1,3)
         isFree.should.be.equal(false)
-        isFree = await assets.isFreeSlot(1,18)
+        isFree = await assets.isFreeShirt(1,18)
         isFree.should.be.equal(true)
     });
     
