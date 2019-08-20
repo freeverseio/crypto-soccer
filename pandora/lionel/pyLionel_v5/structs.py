@@ -119,7 +119,7 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         # dimension: [country][league][matchday][matchInDay][homeAway]
         matchdays       = 2 * (TEAMS_PER_LEAGUE - 1)
         matchesInOneDay = TEAMS_PER_LEAGUE // 2
-        oneLeagueScores = np.empty([matchdays, matchesInOneDay, 2], dtype = int)
+        oneLeagueScores = -1 * np.ones([matchdays, matchesInOneDay, 2], dtype = int)
 
         orgMapHeader = self.getOrgMapHeader(newest=True)
         nCountriesInOrgMap = orgMapHeader[0]
@@ -1965,26 +1965,22 @@ class Storage(Counter):
         header, orgMap = self.getHeaderAndOrgMap(timeZone, newest=True)
         assert len(prevSkills) // PLAYERS_PER_TEAM_MAX == len(orgMap), "incorrect size of skills and orgMap"
         nCountries = header[0]
-        nTeamsPerCountry = header[1:1+nCountries]
+        nLeaguesPerCountry = np.array(header[1:1+nCountries])//TEAMS_PER_LEAGUE
         teamPointer = 0
-        len(prevSkills)
         # TODO: get tactics etc from actual player actions
         tactics = [TACTICS["433"] for team in range(TEAMS_PER_LEAGUE)]
         teamOrders = [DEFAULT_ORDER for team in range(TEAMS_PER_LEAGUE)]
         matchdaySeed = 3
         newSkills = []
-        for c in range(nCountries):
-            countryIdx = self.timeZoneToCountries[timeZone][c]
-            allTeamIdxInCountry = orgMap[teamPointer:(teamPointer+nTeamsPerCountry[c])]
-            assert nTeamsPerCountry[c] % TEAMS_PER_LEAGUE == 0, "incorrect number of countries to split into leagues"
-            for leagueIdxInCountry in range(nTeamsPerCountry[c] // TEAMS_PER_LEAGUE):
-                teamIdxInLeague = orgMap[teamPointer:(teamPointer+TEAMS_PER_LEAGUE)]
+        for countryPos in range(nCountries):
+            for leaguePos in range(nLeaguesPerCountry[countryPos]):
                 prevSkillsInLeague = []
                 for team in range(TEAMS_PER_LEAGUE):
                     skillsLeftIdx = teamPointer + team * PLAYERS_PER_TEAM_MAX
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
                 skillsPerTeam, scores = pylio.computeStatesAtMatchday(day-1, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
+                self.timeZoneUpdates[timeZone].scores[countryPos][leaguePos][day-1] = scores
                 for skillsInOneTeam in skillsPerTeam:
                     for skills in skillsInOneTeam:
                         newSkills.append(skills)
@@ -2063,6 +2059,15 @@ class Storage(Counter):
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
 
+    def assertScoresAreFilled(self, timeZoneToUpdate):
+        self.assertIsClient()
+        for country in self.timeZoneUpdates[timeZoneToUpdate].scores:
+            for league in country:
+                for day in league:
+                    for game in day:
+                        for goals in game:
+                            assert goals >= 0, "non filled"
+
     def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
         self.assertIsClient()
         # first make sure that the timeZone is settled, otherwise halt.
@@ -2078,6 +2083,7 @@ class Storage(Counter):
             # we now reset the actions array, possibly making it larger (if new DIVS were created)
             # and hence, destroying any actions that were provided to this point
             self.timeZoneUpdates[timeZoneToUpdate].initActions()
+            self.timeZoneUpdates[timeZoneToUpdate].initScores()
             return
 
         # Close of market => COMPUTE INIT SKILLS
@@ -2105,6 +2111,8 @@ class Storage(Counter):
             newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
             self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            if day == 14:
+                self.assertScoresAreFilled(timeZoneToUpdate)
             return
 
 
