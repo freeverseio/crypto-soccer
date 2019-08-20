@@ -104,13 +104,31 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.skillsPreHash          = [0, 0]
         self.newestSkillsIdxPreHash = 0
         self.actions                = None
+        # scores dimension: [country][league][matchday][matchInDay][homeAway]
+        self.scores                 = None
         self.initActions()
+        self.initScores()
 
     def initActions(self):
         orgMapHeader = self.getOrgMapHeader(newest=True)
         nCountriesInOrgMap = orgMapHeader[0]
         nTeamsPerCountry = orgMapHeader[1:1 + nCountriesInOrgMap]
         self.actions = [None for a in range(sum(nTeamsPerCountry))]
+
+    def initScores(self):
+        # dimension: [country][league][matchday][matchInDay][homeAway]
+        matchdays       = 2 * (TEAMS_PER_LEAGUE - 1)
+        matchesInOneDay = TEAMS_PER_LEAGUE // 2
+        oneLeagueScores = np.empty([matchdays, matchesInOneDay, 2], dtype = int)
+
+        orgMapHeader = self.getOrgMapHeader(newest=True)
+        nCountriesInOrgMap = orgMapHeader[0]
+        nLeaguesPerCountry = np.array(orgMapHeader[1:1 + nCountriesInOrgMap], int)//TEAMS_PER_LEAGUE
+        self.scores = np.empty(nCountriesInOrgMap, dtype = object)
+        for country in range(nCountriesInOrgMap):
+            self.scores[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
+            for league in range(nLeaguesPerCountry[country]):
+                self.scores[country][league] = pylio.duplicate(oneLeagueScores)
 
     def setAction(self, action, actionPosInOrgMap):
         self.actions[actionPosInOrgMap] = action
@@ -1975,54 +1993,6 @@ class Storage(Counter):
         return newSkills
 
 
-    def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
-        self.assertIsClient()
-        # first make sure that the timeZone is settled, otherwise halt.
-        assert self.timeZoneUpdates[timeZoneToUpdate].isLastUpdateSettled(self.currentBlock), "Error, about to update new verse when last one is still pending"
-
-        # DRAW for next league: (either the turn is correct, or the country has just been created)
-        if (day == 15 and turnInDay == 0):
-            print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
-            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            header, orgMap = self.buildOrgMap(timeZoneToUpdate)
-            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
-            # we now reset the actions array, possibly making it larger (if new DIVS were created)
-            # and hence, destroying any actions that were provided to this point
-            self.timeZoneUpdates[timeZoneToUpdate].initActions()
-            return
-
-        # Close of market => COMPUTE INIT SKILLS
-        if (day == 1 and turnInDay == 0):
-            print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
-            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
-            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(initSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(initSkills), self.currentBlock)
-            return
-
-        # Any game 1st half is played
-        if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
-            self.submitActions(timeZoneToUpdate, ST)
-            print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
-            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
-            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
-            return
-
-        # Any game 2nd half is played
-        if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
-            self.submitActions(timeZoneToUpdate, ST)
-            print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
-            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
-            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
-            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
-            return
-
-
-        self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
-        ST.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
-
 
     def syncTimeZoneCommits(self, ST):
         self.assertIsClient()
@@ -2092,4 +2062,52 @@ class Storage(Counter):
         playerSkills = timeZoneSkills[pointerToPlayerSkills]
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"
         return playerSkills
+
+    def computeDataForUpdateAndCommit(self, timeZoneToUpdate, day, turnInDay, ST):
+        self.assertIsClient()
+        # first make sure that the timeZone is settled, otherwise halt.
+        assert self.timeZoneUpdates[timeZoneToUpdate].isLastUpdateSettled(self.currentBlock), "Error, about to update new verse when last one is still pending"
+
+        # DRAW for next league: (either the turn is correct, or the country has just been created)
+        if (day == 15 and turnInDay == 0):
+            print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
+            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
+            header, orgMap = self.buildOrgMap(timeZoneToUpdate)
+            self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
+            # we now reset the actions array, possibly making it larger (if new DIVS were created)
+            # and hence, destroying any actions that were provided to this point
+            self.timeZoneUpdates[timeZoneToUpdate].initActions()
+            return
+
+        # Close of market => COMPUTE INIT SKILLS
+        if (day == 1 and turnInDay == 0):
+            print("...market closes: compute init skills: ", timeZoneToUpdate, day, turnInDay)
+            assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
+            initSkills = self.computeTimeZoneInitSkills(timeZoneToUpdate)
+            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(initSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(initSkills), self.currentBlock)
+            return
+
+        # Any game 1st half is played
+        if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
+            self.submitActions(timeZoneToUpdate, ST)
+            print("...playing a 1st half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
+            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            return
+
+        # Any game 2nd half is played
+        if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
+            self.submitActions(timeZoneToUpdate, ST)
+            print("...playing a 2nd half of a leagues game: ", timeZoneToUpdate, day, turnInDay)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZoneToUpdate, day)
+            self.timeZoneUpdates[timeZoneToUpdate].updateSkillsPreHash(newSkills, self.currentBlock)
+            ST.timeZoneUpdates[timeZoneToUpdate].updateSkills(pylio.serialHash(newSkills), self.currentBlock)
+            return
+
+
+        self.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
+        ST.timeZoneUpdates[timeZoneToUpdate].newDummyUpdate(self.currentBlock)
 
