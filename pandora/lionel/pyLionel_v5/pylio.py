@@ -146,7 +146,7 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
 
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-
+        matchSeed = intHash(str(matchdaySeed + match))
         goals1, goals2 = playMatch(
             prevSkills[team1],
             prevSkills[team2],
@@ -154,7 +154,7 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
             tactics[team2],
             teamOrders[team1],
             teamOrders[team2],
-            matchdaySeed
+            matchSeed
         )
         scores[match] = [goals1, goals2]
         skillsAtMatchday[team1], skillsAtMatchday[team2] = \

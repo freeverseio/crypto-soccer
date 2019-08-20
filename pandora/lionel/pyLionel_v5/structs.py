@@ -1965,7 +1965,7 @@ class Storage(Counter):
         nCountries = header[0]
         nLeaguesPerCountry = np.array(header[1:1+nCountries])//TEAMS_PER_LEAGUE
         teamPointer = 0
-        matchdaySeed = 3
+        timeZoneSeed = pylio.intHash(str(self.timeZoneUpdates[timeZone].blockHash + timeZone))
         newSkills = []
         for countryPos in range(nCountries):
             for leaguePos in range(nLeaguesPerCountry[countryPos]):
@@ -1982,6 +1982,7 @@ class Storage(Counter):
                     skillsLeftIdx = teamPointer + team * PLAYERS_PER_TEAM_MAX
                     skillsRightIdx = skillsLeftIdx + PLAYERS_PER_TEAM_MAX
                     prevSkillsInLeague.append(prevSkills[skillsLeftIdx:skillsRightIdx])
+                matchdaySeed = pylio.intHash(str(timeZoneSeed + leaguePos))
                 skillsPerTeam, scores = pylio.computeStatesAtMatchday(day-1, prevSkillsInLeague, tactics, teamOrders, matchdaySeed)
                 self.timeZoneUpdates[timeZone].scores[countryPos][leaguePos][day-1] = scores
                 for skillsInOneTeam in skillsPerTeam:
