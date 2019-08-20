@@ -282,6 +282,7 @@ def integrationTest():
     assert "teamOrder" in ST_CLIENT.timeZoneUpdates[timeZone].actions[59], "action not submitted"
 
     # add one division to a country to see if next initSkills are properly taken care of
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
     addDivision(2, ST, ST_CLIENT)
 
     # move to very end of country leagues and check that players move from non-transferable to transferable
@@ -291,7 +292,9 @@ def integrationTest():
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
     advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISION + 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
 
     if False:
         usersInitData = {
