@@ -21,19 +21,19 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
     
-    // it('isFreeShirt', async () => {
-    //     await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-    //     var isFree = await assets.isFreeShirt(1,3)
-    //     isFree.should.be.equal(false)
-    //     isFree = await assets.isFreeShirt(1,18)
-    //     isFree.should.be.equal(true)
-    // });
+    it('isFreeShirt', async () => {
+        await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
+        var isFree = await assets.isFreeShirt(1,3)
+        isFree.should.be.equal(false)
+        isFree = await assets.isFreeShirt(1,18)
+        isFree.should.be.equal(true)
+    });
 
-    // it('getFreeShirt', async () => {
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     var freeShirt = await assets.getFreeShirt(teamId = 1).should.be.fulfilled;
-    //     freeShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);
-    // });
+    it('getFreeShirt', async () => {
+        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
+        var freeShirt = await assets.getFreeShirt(teamId = 1).should.be.fulfilled;
+        freeShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);
+    });
 
     it('transferPlayer', async () => {
         await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
@@ -56,6 +56,20 @@ contract('Assets', (accounts) => {
         newTeamId.toNumber().should.be.equal(2);
         var newShirt = await playerStateLib.getCurrentShirtNum(newState).should.be.fulfilled;
         newShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);        
+    });
+
+    it('transferPlayer to same team', async () => {
+        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
+        await assets.transferPlayer(playerId, targetTeamId = 1).should.be.rejected;
+    });
+
+    it('transferPlayer to already full team', async () => {
+        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
+        await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
+        for (playerId = 1; playerId <= PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT; playerId++) {
+            await assets.transferPlayer(playerId, targetTeamId = 2).should.be.fulfilled;
+        }
+        await assets.transferPlayer(playerId+1, targetTeamId = 2).should.be.rejected;
     });
 
     it('generate virtual player state', async () => {

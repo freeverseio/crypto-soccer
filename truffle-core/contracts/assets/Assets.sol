@@ -83,12 +83,12 @@ contract Assets {
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
-        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum > 0; shirtNum--) {
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
             if (isFreeShirt(teamId, shirtNum)) {
                 return shirtNum;
             }
         }
-        return 0;
+        return PLAYERS_PER_TEAM_MAX;
     }
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
@@ -100,7 +100,7 @@ contract Assets {
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         uint256 shirtOrigin = _playerState.getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
-        require(shirtTarget != 0, "target team for transfer is already full");
+        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
         newState = _playerState.setCurrentTeamId(newState, teamIdTarget);
         newState = _playerState.setCurrentShirtNum(newState, shirtTarget);
