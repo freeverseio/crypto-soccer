@@ -232,7 +232,7 @@ func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.Asset
 }
 func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
 	// TODO: move to a single run place ...  constructor
-	nPlayersAtCreation, err := p.assets.PLAYERSPERTEAM(&bind.CallOpts{})
+	nPlayersAtCreation, err := p.assets.PLAYERSPERTEAMINIT(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
