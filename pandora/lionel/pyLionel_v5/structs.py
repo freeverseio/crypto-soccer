@@ -2093,7 +2093,7 @@ class Storage(Counter):
         for country in self.timeZoneUpdates[timeZone].leaguePoints:
             for leagueleaguePoints in country:
                 order = np.argsort(leagueleaguePoints)
-                self.timeZoneUpdates[timeZone].leaguePerfPoints[country][leagueleaguePoints] = LEAGUE_PP[order]
+                # self.timeZoneUpdates[timeZone].leaguePerfPoints[country][leagueleaguePoints] = LEAGUE_PP[order]
 
     def assertScoresAreFilled(self, timeZone):
         self.assertIsClient()

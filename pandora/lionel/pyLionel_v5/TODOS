@@ -6,6 +6,7 @@ check that I think we need L5 instead of L4
 - recheck that there's enough room to compute all getInitSkills !
 
 
+- restrict half time changes to 3
 
 - I think we need nDisions (new and old) => probably we need all of that as old/new
 - I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?

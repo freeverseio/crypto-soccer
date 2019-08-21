@@ -59,10 +59,9 @@ def integrationTest():
     nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(countryIdx)
     assert ST.getNTeamsInCountry(countryIdx) == nTeamsPerCountryAtStart, "wrong nTeams"
 
-    assert ST.teamExists(ST.encodeCountryAndVal(1, 3)), "wrong teamExists call"
-    assert ST.teamExists(ST.encodeCountryAndVal(2, 5)), "wrong teamExists call"
-    assert ST.teamExists(ST.encodeCountryAndVal(3, 6)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeCountryAndVal(4, 6)), "wrong teamExists call"
+    for country in range(1,NUM_COUNTRIES_AT_DEPLOY+1):
+     assert ST.teamExists(ST.encodeCountryAndVal(country, 3)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeCountryAndVal(NUM_COUNTRIES_AT_DEPLOY+1, 6)), "wrong teamExists call"
     assert ST.teamExists(ST.encodeCountryAndVal(1, nTeamsPerCountryAtStart)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeCountryAndVal(1, nTeamsPerCountryAtStart+1)), "wrong teamExists call"
 
@@ -94,8 +93,8 @@ def integrationTest():
     (teamIdxInCountry, shirtNum) = ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
     assert teamIdxInCountry == 2 and shirtNum == 0, "wrong team/shirtNum"
 
-    assert ST.getDivisionCreationDay(1,1) == 0, "Wrong creation time"
-    # assert ST.getDivisionCreationDay(1,2) == 0, "Wrong creation time"
+    for div in range(1, DIVS_PER_COUNTRY_AT_DEPLOY+1):
+     assert ST.getDivisionCreationDay(1,div) == 0, "Wrong creation time"
 
     assert ST.verseToUnixMonths(0) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
     assert ST.verseToUnixMonths(10) == DEPLOYMENT_IN_UNIX_MONTHS, "wrong verse to months"
@@ -192,7 +191,7 @@ def integrationTest():
     assert "teamOrder" in ST_CLIENT.timeZoneUpdates[timeZone].actions[59], "action not submitted"
 
     # add one division to a country to see if next initSkills are properly taken care of
-    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == NUM_COUNTRIES_AT_DEPLOY * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION), "wrong number of actions"
     addDivision(2, ST, ST_CLIENT)
 
     teamIdx1 = ST.encodeCountryAndVal(1, 2)
@@ -209,9 +208,9 @@ def integrationTest():
     assert not ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
     advanceNVerses(1, ST, ST_CLIENT)
     assert ST.isPlayerTransferable(playerIdx), "player should be free, since country is settled"
-    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == NUM_COUNTRIES_AT_DEPLOY * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION), "wrong number of actions"
     advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
-    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISION + 3 * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION), "wrong number of actions"
+    assert len(ST_CLIENT.timeZoneUpdates[timeZone].actions) == TEAMS_PER_LEAGUE * LEAGUES_PER_DIVISION + NUM_COUNTRIES_AT_DEPLOY * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION), "wrong number of actions"
 
 
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
