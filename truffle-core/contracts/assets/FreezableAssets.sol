@@ -14,6 +14,9 @@ contract FreezableAssets is Assets {
 
     mapping (uint256 => bool) private isPlayerFrozen;
 
+    constructor(address playerState) public Assets(playerState) {
+    }
+
     function freezePlayer(
         bytes32 privHash,
         uint256 validUntil,
@@ -76,6 +79,10 @@ contract FreezableAssets is Assets {
     // Builds a prefixed hash to mimic the behavior of eth_sign.
     function prefixed(bytes32 hash) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    }
+
+    function getBlockchainNowTime() external view returns (uint) {
+        return now;
     }
 
     function getTeamOwner(uint256 teamId) public view returns (address) {
