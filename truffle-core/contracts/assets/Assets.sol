@@ -83,7 +83,7 @@ contract Assets {
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
-        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX; shirtNum > 0; shirtNum--) {
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum > 0; shirtNum--) {
             if (isFreeShirt(teamId, shirtNum)) {
                 return shirtNum;
             }

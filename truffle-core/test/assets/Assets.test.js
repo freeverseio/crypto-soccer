@@ -21,14 +21,43 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
     });
     
-    it('isFreeShirt', async () => {
-        await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-        var isFree = await assets.isFreeShirt(1,3)
+    // it('isFreeShirt', async () => {
+    //     await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
+    //     var isFree = await assets.isFreeShirt(1,3)
+    //     isFree.should.be.equal(false)
+    //     isFree = await assets.isFreeShirt(1,18)
+    //     isFree.should.be.equal(true)
+    // });
+
+    // it('getFreeShirt', async () => {
+    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
+    //     var freeShirt = await assets.getFreeShirt(teamId = 1).should.be.fulfilled;
+    //     freeShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);
+    // });
+
+    it('transferPlayer', async () => {
+        await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
+        await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
+        // state before selling:
+        var state = await assets.getPlayerState(playerId = 5).should.be.fulfilled;
+        var teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.toNumber().should.be.equal(1);
+        var shirt = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
+        shirt.toNumber().should.be.equal(4);        
+        var isFree = await assets.isFreeShirt(teamId,shirt)
         isFree.should.be.equal(false)
-        isFree = await assets.isFreeShirt(1,18)
+        // sell:
+        await assets.transferPlayer(playerId, targetTeamId = 2).should.be.fulfilled;
+        // state after selling:
+        isFree = await assets.isFreeShirt(teamId,shirt)
         isFree.should.be.equal(true)
+        var newState = await assets.getPlayerState(playerId = 5).should.be.fulfilled;
+        var newTeamId = await playerStateLib.getCurrentTeamId(newState).should.be.fulfilled;
+        newTeamId.toNumber().should.be.equal(2);
+        var newShirt = await playerStateLib.getCurrentShirtNum(newState).should.be.fulfilled;
+        newShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);        
     });
-    
+
     it('generate virtual player state', async () => {
         await assets.generateVirtualPlayerState(0).should.be.rejected;
         await assets.generateVirtualPlayerState(1).should.be.rejected;
@@ -71,14 +100,6 @@ contract('Assets', (accounts) => {
             playerIds[pos].should.be.bignumber.equal((pos+1).toString());
         for (let pos = PLAYERS_PER_TEAM_INIT; pos < PLAYERS_PER_TEAM_MAX ; pos++) 
             playerIds[pos].should.be.bignumber.equal(FREE_PLAYER_ID.toString());
-
-        // await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
-        // await assets.exchangePlayersTeams(playerId0 = PLAYERS_PER_TEAM_MAX, playerId1 = PLAYERS_PER_TEAM_MAX+3).should.be.fulfilled;
-        // playerIds = await assets.getTeamPlayerIds(1).should.be.fulfilled;
-        // playerIds.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
-        // for (let pos = 0; pos < PLAYERS_PER_TEAM_MAX-1 ; pos++) 
-        //     playerIds[pos].should.be.bignumber.equal((pos+1).toString());
-        // playerIds[PLAYERS_PER_TEAM_MAX-1].should.be.bignumber.equal((PLAYERS_PER_TEAM_MAX+3).toString());
     });
 
     it('add team with different owner than the sender', async () => {
