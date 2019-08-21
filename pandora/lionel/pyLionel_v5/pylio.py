@@ -104,7 +104,8 @@ def computeTeamRating(playerSkills):
 
 
 def addFixedleaguePointsToAllPlayers(allPlayerSkills, leaguePoints):
-    for playerSkills in allPlayerSkills:
+    occupiedShirtSkills = [sk for sk in allPlayerSkills if sk.playerIdx != FREE_PLAYER_IDX]
+    for playerSkills in occupiedShirtSkills:
         playerSkills.setSkills(playerSkills.getSkills() + leaguePoints)
 
 
@@ -394,11 +395,8 @@ def createCountry(timeZone, ST, ST_CLIENT):
     return countryIdx
 
 def addDivision(countryIdx, ST, ST_CLIENT):
-    divisionIdx = ST.addDivision(countryIdx)
-    divisionIdx_client = ST_CLIENT.addDivision(countryIdx)
-    assert divisionIdx == divisionIdx_client, "ST/ST_CLIENT not in sync"
-    return divisionIdx
-
+    ST.addDivision(countryIdx)
+    ST_CLIENT.addDivision(countryIdx)
 
 # TODO: all this can be precompiled and remove calls to cycleIdx
 def cycleIdx(day, turnInDay):

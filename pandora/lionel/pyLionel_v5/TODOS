@@ -1,5 +1,15 @@
+add country -> check (maybe like add div)
+
+make orgmap an array of int from start to avoid:
+             prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[c]])
+in general change append() that need fors to avoid [], for np.append( , )
+
+review sum of skills for rating a[d:f]
+skills of freeShirt seem non int
+
 sort teams in leagues
 check that I think we need L5 instead of L4
+
 
 
 - probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)

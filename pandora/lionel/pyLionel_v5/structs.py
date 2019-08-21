@@ -20,8 +20,8 @@ import pylio
 class Country():
     def __init__(self, timeZone):
         self.nDivisions = 1
+        self.nDivisionsToAddNextRound = 0
         self.timeZone = timeZone
-        self.nFrozenDivisions = 0
         self.divisonIdxToRound = {1: 1} # divId = 1 starts at the very first round = 1
         self.teamIdxInCountryToTeam = {}
 
@@ -109,6 +109,7 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.scores                 = None
         self.leaguePoints           = None
         self.leaguePerfPoints       = None
+        self.ratings                = None
         self.initActions()
         self.initScoresAndPoints()
 
@@ -124,6 +125,7 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         matchesInOneDay = TEAMS_PER_LEAGUE // 2
         oneLeagueScores = -1 * np.ones([matchdays, matchesInOneDay, 2], dtype = int)
         oneLeaguePoints = np.zeros(TEAMS_PER_LEAGUE, dtype = int)
+        oneLeagueRating = -1 * np.ones(TEAMS_PER_LEAGUE, dtype = int)
 
         orgMapHeader = self.getOrgMapHeader(newest=True)
         nCountriesInOrgMap = orgMapHeader[0]
@@ -131,14 +133,17 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
         self.scores = np.empty(nCountriesInOrgMap, dtype = object)
         self.leaguePoints = np.empty(nCountriesInOrgMap, dtype = object)
         self.leaguePerfPoints = np.empty(nCountriesInOrgMap, dtype = object)
+        self.ratings = np.empty(nCountriesInOrgMap, dtype = object)
         for country in range(nCountriesInOrgMap):
             self.scores[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
             self.leaguePoints[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
             self.leaguePerfPoints[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
+            self.ratings[country] = np.empty(nLeaguesPerCountry[country], dtype=object)
             for league in range(nLeaguesPerCountry[country]):
                 self.scores[country][league] = pylio.duplicate(oneLeagueScores)
                 self.leaguePoints[country][league] = pylio.duplicate(oneLeaguePoints)
                 self.leaguePerfPoints[country][league] = pylio.duplicate(oneLeaguePoints)
+                self.ratings[country][league] = pylio.duplicate(oneLeagueRating)
 
     def setAction(self, action, actionPosInOrgMap):
         self.actions[actionPosInOrgMap] = action
@@ -183,7 +188,7 @@ class TimeZoneUpdateClient(TimeZoneUpdate):
 
 # PlayerSkills contains the data regarding the player's DNA (not about the team it belongs, etc)
 class PlayerSkills():
-    def __init__(self, skills = np.zeros(N_SKILLS), monthOfBirthInUnixTime = 0, playerIdx = FREE_PLAYER_IDX):
+    def __init__(self, skills = np.zeros(N_SKILLS, int), monthOfBirthInUnixTime = 0, playerIdx = FREE_PLAYER_IDX):
         self.skills                  = skills
         self.monthOfBirthInUnixTime  = monthOfBirthInUnixTime
         self.playerIdx               = playerIdx
@@ -536,10 +541,14 @@ class Storage(Counter):
         return countryIdx
 
     def addDivision(self, countryIdx):
-        self.countries[countryIdx].nDivisions += 1
-        divisionIdx = self.countries[countryIdx].nDivisions
-        self.countries[countryIdx].divisonIdxToRound[divisionIdx] = self.currentRound() + 1
-        return divisionIdx
+        self.countries[countryIdx].nDivisionsToAddNextRound += 1
+
+    def updateNDivisions(self, countryIdx):
+        for div in range(self.countries[countryIdx].nDivisionsToAddNextRound):
+            self.countries[countryIdx].nDivisions += 1
+            divisionIdx = self.countries[countryIdx].nDivisions
+            self.countries[countryIdx].divisonIdxToRound[divisionIdx] = self.currentRound() + 1
+        self.countries[countryIdx].nDivisionsToAddNextRound = 0
 
     def verseToUnixMonths(self, verse):
         return DEPLOYMENT_IN_UNIX_MONTHS + int(verse/VERSES_PER_MONTH)
@@ -943,7 +952,7 @@ class Storage(Counter):
         monthsAtBirth = np.random.randint(MIN_PLAYER_AGE, MAX_PLAYER_AGE) * 12
         newPlayerSkills.setMonth(monthOfTeamCreationInUnixTime-monthsAtBirth)
         skills = np.random.randint(0, AVG_SKILL - 1, N_SKILLS)
-        excess = int((AVG_SKILL * N_SKILLS - skills.sum()) / N_SKILLS)
+        excess = (AVG_SKILL * N_SKILLS - skills.sum()) // N_SKILLS
         skills += excess
         newPlayerSkills.setSkills(skills)
         return newPlayerSkills
@@ -1919,6 +1928,43 @@ class Storage(Counter):
         else:
             return LEAGUES_PER_DIVISION
 
+    def getFlattenedRatings(self, timeZone):
+        ratings = pylio.duplicate(self.timeZoneUpdates[timeZone].ratings)
+        ratingsPerCountryFlat = []
+        for country in ratings:
+            ratingsThisCountry = []
+            for league in country:
+                for teamRating in league:
+                    ratingsThisCountry.append(teamRating)
+            ratingsPerCountryFlat.append(ratingsThisCountry)
+        return ratingsPerCountryFlat
+
+    def buildOrgMapBasedOnRating(self, timeZone):
+        ratingsPerCountryFlat = self.getFlattenedRatings(timeZone)
+        for country in ratingsPerCountryFlat:
+            assert len([r for r in country if r < 0]) == 0, "some teams did not get rating"
+
+        header = self.timeZoneUpdates[timeZone].getOrgMapHeader(newest = True)
+        orgMap = self.timeZoneUpdates[timeZone].getOrgMapPreHash(newest = True)
+        nCountries = header[0]
+        countryIdxs = self.timeZoneToCountries[timeZone]
+        assert nCountries == len(countryIdxs), "mismatch with countries in timezone"
+        nTeamsPerCountry = header[1:1 + nCountries]
+        newOrgMap = np.empty(0, int)
+        teamsAboveThisCountry = 0
+        for c, countryRatings in enumerate(ratingsPerCountryFlat):
+            newOrderThisCountry = np.argsort(countryRatings)
+            prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[c]])
+            newOrgMap = np.append(newOrgMap, prevOrgMapThisCountry[newOrderThisCountry])
+            divsToAdd = self.countries[countryIdxs[c]].nDivisionsToAddNextRound
+            nTeamsToAdd = divsToAdd * LEAGUES_PER_DIVISION * TEAMS_PER_LEAGUE
+            teamIdxToAdd = np.array(range(nTeamsPerCountry[c]+1, nTeamsPerCountry[c] + nTeamsToAdd + 1), int)
+            newOrgMap = np.append(newOrgMap, teamIdxToAdd)
+            header[c+1] += nTeamsToAdd
+            self.updateNDivisions(countryIdxs[c])
+            teamsAboveThisCountry += nTeamsPerCountry[c]
+
+        return header, newOrgMap
 
     def buildOrgMap(self, timeZone):
         # return buildInitOrgMap(nCountries, nDivsPerCountry)
@@ -2017,8 +2063,6 @@ class Storage(Counter):
         assert len(newSkills) == len(prevSkills), "new skills length not equal to prevSkills length"
         return newSkills
 
-
-
     def syncTimeZoneCommits(self, ST):
         self.assertIsClient()
         timeZoneToUpdate, day, turnInDay = ST.currentTimeZoneToUpdate()
@@ -2090,10 +2134,25 @@ class Storage(Counter):
 
     def computeLeaguePP(self, timeZone):
         self.assertIsClient()
-        for country in self.timeZoneUpdates[timeZone].leaguePoints:
-            for leagueleaguePoints in country:
+        for c, country in enumerate(self.timeZoneUpdates[timeZone].leaguePoints):
+            for l, leagueleaguePoints in enumerate(country):
                 order = np.argsort(leagueleaguePoints)
-                # self.timeZoneUpdates[timeZone].leaguePerfPoints[country][leagueleaguePoints] = LEAGUE_PP[order]
+                self.timeZoneUpdates[timeZone].leaguePerfPoints[c][l] = LEAGUE_PP[order]
+
+    def computeRating(self, timeZone):
+        self.assertIsClient()
+        skills = self.timeZoneUpdates[timeZone].getSkillsPreHash(newest = True)
+        leftIdx  = 0
+        rightIdx = leftIdx + PLAYERS_PER_TEAM_MAX
+        for c, country in enumerate(self.timeZoneUpdates[timeZone].leaguePerfPoints):
+            for l, leagueleaguePoints in enumerate(country):
+                for t, teamPP in enumerate(leagueleaguePoints):
+                    teamSkills = sum([sum(sk.skills) for sk in skills[leftIdx:rightIdx]])
+                    self.timeZoneUpdates[timeZone].ratings[c][l][t] = teamSkills + teamPP
+                    leftIdx += PLAYERS_PER_TEAM_MAX
+                    rightIdx += PLAYERS_PER_TEAM_MAX
+
+
 
     def assertScoresAreFilled(self, timeZone):
         self.assertIsClient()
@@ -2113,7 +2172,7 @@ class Storage(Counter):
         if (day == 15 and turnInDay == 0):
             print("...next leagues draw: ", timeZoneToUpdate, day, turnInDay)
             assert self.timeZoneUpdates[timeZoneToUpdate].updateCycleIdx == pylio.cycleIdx(day, turnInDay), "next league draw will fail"
-            header, orgMap = self.buildOrgMap(timeZoneToUpdate)
+            header, orgMap = self.buildOrgMapBasedOnRating(timeZoneToUpdate)
             self.timeZoneUpdates[timeZoneToUpdate].updateOrgMapPreHash(header, orgMap, self.currentBlock)
             ST.timeZoneUpdates[timeZoneToUpdate].updateOrgMap(pylio.serialHash(orgMap), self.currentBlock)
             # we now reset the actions array, possibly making it larger (if new DIVS were created)
@@ -2164,6 +2223,7 @@ class Storage(Counter):
             if day == 14:
                 self.assertScoresAreFilled(timeZoneToUpdate)
                 self.computeLeaguePP(timeZoneToUpdate)
+                self.computeRating(timeZoneToUpdate)
             return
 
 
