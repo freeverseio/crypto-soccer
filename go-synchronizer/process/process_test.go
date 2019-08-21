@@ -100,10 +100,10 @@ func TestSyncTeams(t *testing.T) {
 
 	if count, err := storage.PlayerCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 75 {
-		t.Fatalf("Expected 75 players actual %v", count)
+	} else if count != 54 {
+		t.Fatalf("Expected 54 players actual %v", count)
 	} else {
-		for i := 1; i <= 33; i++ {
+		for i := 1; i <= 18; i++ {
 			if result, err := storage.GetPlayer(uint64(i)); err != nil {
 				t.Fatal(err)
 			} else if result.State.TeamId == uint64(0) || result.Id != uint64(i) {
@@ -132,8 +132,8 @@ func TestSyncTeams(t *testing.T) {
 
 	if count, err := storage.PlayerCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 100 {
-		t.Fatalf("Expected 100 players actual %v", count)
+	} else if count != 72 {
+		t.Fatalf("Expected 72 players actual %v", count)
 	}
 
 	// ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)

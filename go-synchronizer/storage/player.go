@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -124,7 +125,7 @@ func (b *Storage) GetPlayer(id uint64) (Player, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return player, errors.New("Unexistent player")
+		return player, errors.New("Unexistent player " + strconv.FormatUint(id, 10))
 	}
 	err = rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime, &player.State.BlockNumber, &player.State.TeamId, &player.State.State, &player.State.Defence, &player.State.Speed, &player.State.Pass, &player.State.Shoot, &player.State.Endurance, &player.State.InBlockIndex)
 	return player, err
