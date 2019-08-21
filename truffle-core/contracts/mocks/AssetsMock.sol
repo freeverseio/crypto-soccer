@@ -38,4 +38,8 @@ contract AssetsMock is Assets {
     function teamExists(uint256 teamId) public view returns (bool){
         return _teamExists(teamId);
     }
+
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+        _transferPlayer(playerId, teamIdTarget);
+    }
 }
