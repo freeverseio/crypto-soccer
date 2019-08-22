@@ -87,6 +87,10 @@ contract("FreezableAssets", accounts => {
   let verifierLib = null;
   let abiTestingLib = null;
   let PLAYERS_PER_TEAM_INIT = null;
+  const ALICE = accounts[1];
+  const BOB = accounts[2];
+
+
 
   beforeEach(async () => {
     playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
@@ -98,13 +102,19 @@ contract("FreezableAssets", accounts => {
   });
 
   it("player owner", async () => {
-    await verifierLib.createTeam("Barca", accounts[0]).should.be.fulfilled;
+    // create a player and give it to ALICE
+    await verifierLib.createTeam("Barca", ALICE).should.be.fulfilled;
     await verifierLib.getPlayerOwner(0).should.be.rejected;
     let owner = await verifierLib.getPlayerOwner(1).should.be.fulfilled;
-    owner.should.be.equal(accounts[0]);
+    owner.should.be.equal(ALICE);
     owner = await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT).should.be.fulfilled;
-    owner.should.be.equal(accounts[0]);
+    owner.should.be.equal(ALICE);
     await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
+    // create a player and GIVE it to BOB
+    await verifierLib.createTeam("Madrid", BOB).should.be.fulfilled;
+    owner = await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.fulfilled;
+    owner.should.not.equal(ALICE); // the player is not owned by ALICE
+    owner.should.be.equal(BOB);
   });
 
   return;
