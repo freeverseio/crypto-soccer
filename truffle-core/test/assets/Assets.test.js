@@ -49,6 +49,20 @@ contract('Assets', (accounts) => {
         ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
     });
 
+    it('check player team', async () => {
+        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createTeam("Madrid", BOB).should.be.fulfilled;
+        let state = await assets.getPlayerState(1).should.be.fulfilled;
+        let teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('1');
+        state = await assets.getPlayerState(18).should.be.fulfilled;
+        teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('1');
+        state = await assets.getPlayerState(19).should.be.fulfilled;
+        teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('2');
+    });
+
     it('get player state of unexistent player', async () => {
         await assets.getPlayerState(0).should.be.rejected;
         await assets.getPlayerState(1).should.be.rejected;
