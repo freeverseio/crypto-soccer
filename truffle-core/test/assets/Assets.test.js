@@ -37,29 +37,8 @@ contract('Assets', (accounts) => {
         let ids = await assets.getTeamPlayerIds(1).should.be.fulfilled;
         ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
         ids[0].should.be.bignumber.equal('1');
-        ids[1].should.be.bignumber.equal('2');
-        ids[2].should.be.bignumber.equal('3');
-        ids[3].should.be.bignumber.equal('4');
-        ids[4].should.be.bignumber.equal('5');
-        ids[5].should.be.bignumber.equal('6');
-        ids[6].should.be.bignumber.equal('7');
-        ids[7].should.be.bignumber.equal('8');
-        ids[8].should.be.bignumber.equal('9');
-        ids[9].should.be.bignumber.equal('10');
-        ids[10].should.be.bignumber.equal('11');
-        ids[11].should.be.bignumber.equal('12');
-        ids[12].should.be.bignumber.equal('13');
-        ids[13].should.be.bignumber.equal('14');
-        ids[14].should.be.bignumber.equal('15');
-        ids[15].should.be.bignumber.equal('16');
-        ids[16].should.be.bignumber.equal('17');
         ids[17].should.be.bignumber.equal('18');
         ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
-        ids[19].should.be.bignumber.equal(FREE_PLAYER_ID);
-        ids[20].should.be.bignumber.equal(FREE_PLAYER_ID);
-        ids[21].should.be.bignumber.equal(FREE_PLAYER_ID);
-        ids[22].should.be.bignumber.equal(FREE_PLAYER_ID);
-        ids[23].should.be.bignumber.equal(FREE_PLAYER_ID);
         ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
         await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
         ids = await assets.getTeamPlayerIds(2).should.be.fulfilled;
@@ -67,6 +46,7 @@ contract('Assets', (accounts) => {
         ids[0].should.be.bignumber.equal('19');
         ids[17].should.be.bignumber.equal('36');
         ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
+        ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
     });
 
     it('get player state of unexistent player', async () => {
