@@ -329,5 +329,4 @@ contract Assets {
     function _intHash(string memory arg) internal pure returns (uint256) {
         return uint256(keccak256(abi.encode(arg)));
     }
-    
 }
