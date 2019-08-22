@@ -94,6 +94,16 @@ contract("FreezableAssets", accounts => {
     abiTestingLib = await AbiTesting.new().should.be.fulfilled;
   });
 
+  it("player owner", async () => {
+    await verifierLib.createTeam("Barca", accounts[0]).should.be.fulfilled;
+    const teamId = 1;
+    const playerIds = await verifierLib.getTeamPlayerIds(teamId).should.be.fulfilled;
+    console.log(playerIds)
+    playerIds.length.should.be.equal(12);
+  });
+
+  return;
+
   it("completes a seller - buyer agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to seller: OK, failed
