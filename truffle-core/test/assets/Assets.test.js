@@ -7,19 +7,28 @@ const truffleAssert = require('truffle-assertions');
 
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
-const PLAYERS_PER_TEAM_MAX  = 25;
-const PLAYERS_PER_TEAM_INIT = 18;
 
 contract('Assets', (accounts) => {
     let assets = null;
     let playerStateLib = null;
+    let PLAYERS_PER_TEAM_MAX = null;
+    let PLAYERS_PER_TEAM_INIT = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
 
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
+        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
     });
+
+    it('check initial and max number of players per team', async () =>  {
+        PLAYERS_PER_TEAM_INIT.should.be.equal(18);
+        PLAYERS_PER_TEAM_MAX.should.be.equal(25);
+    })
     
     it('isFreeShirt', async () => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
