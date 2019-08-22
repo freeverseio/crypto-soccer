@@ -389,16 +389,29 @@ def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
 
 
 def createCountry(timeZone, ST, ST_CLIENT):
-    countryIdx = ST.createCountry(timeZone)
-    countryIdx_client = ST_CLIENT.createCountry(timeZone)
+    countryIdx = ST.timeZones[timeZone].createCountry(ST.currentRound()+1)
+    countryIdx_client = ST_CLIENT.timeZones[timeZone].createCountry(ST.currentRound()+1)
     assert countryIdx == countryIdx_client, "ST/ST_CLIENT not in sync"
     return countryIdx
 
-def addDivision(countryIdx, ST, ST_CLIENT):
-    ST.addDivision(countryIdx)
-    ST_CLIENT.addDivision(countryIdx)
+def addDivision(timeZone, countryIdx, ST, ST_CLIENT):
+    ST.timeZones[timeZone].addDivision(countryIdx)
+    ST_CLIENT.timeZones[timeZone].addDivision(countryIdx)
 
 # TODO: all this can be precompiled and remove calls to cycleIdx
 def cycleIdx(day, turnInDay):
     return (day - 1) * 4 + turnInDay
+
+def buildInitOrgMap():
+    # this should be hardcoded for each nCountries
+    header = []
+    orgMap = []
+    header.append(NUM_COUNTRIES_AT_DEPLOY)
+    nLeaguesPerCountry = LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION * (DIVS_PER_COUNTRY_AT_DEPLOY-1)
+    nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
+    for country in range(NUM_COUNTRIES_AT_DEPLOY):
+        header.append(nTeamsInCountry)
+        teamIdxs = list(range(1, nTeamsInCountry + 1))
+        orgMap += teamIdxs
+    return header, orgMap
 

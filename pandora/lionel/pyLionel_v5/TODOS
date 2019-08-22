@@ -1,4 +1,9 @@
+buildOrgMapBasedOnRating move to timeZone
+remove all teamIdxInCountryToTeam
+allow create Country with any nDivs
+
 add country -> check (maybe like add div)
+        # assert timeZone not in self.timeZoneToCountries, "timeZone already alive"
 
 make orgmap an array of int from start to avoid:
              prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[c]])
@@ -23,9 +28,9 @@ check that I think we need L5 instead of L4
 
 - check when player has been transfered to the same league, or back and from to the same league.
 
-- double check <= in getLastestSkills:    newest = 0 < self.timeZoneUpdates[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
+- double check <= in getLastestSkills:    newest = 0 < self.timeZones[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
 - also double check if the player has been sold before any round: is the prevPlayedTeamIdx updated? (we wouldn't want)
-        if self.timeZoneUpdates[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:
+        if self.timeZones[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:
             return self.getPlayerSkillsAtBirth(playerIdx)
 
 - check what happens when asking for playerSkills between OpenMarket and NewOrgMap, in terms of asking for the correct map
