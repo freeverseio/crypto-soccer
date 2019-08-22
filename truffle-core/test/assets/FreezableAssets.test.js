@@ -86,20 +86,25 @@ contract("FreezableAssets", accounts => {
   let playerStateLib = null;
   let verifierLib = null;
   let abiTestingLib = null;
+  let PLAYERS_PER_TEAM_INIT = null;
 
   beforeEach(async () => {
     playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
     verifierLib = await FreezableAssets.new(playerStateLib.address).should.be
       .fulfilled;
     abiTestingLib = await AbiTesting.new().should.be.fulfilled;
+    PLAYERS_PER_TEAM_INIT = await verifierLib.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
+    PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
   });
 
   it("player owner", async () => {
     await verifierLib.createTeam("Barca", accounts[0]).should.be.fulfilled;
-    const teamId = 1;
-    const playerIds = await verifierLib.getTeamPlayerIds(teamId).should.be.fulfilled;
-    console.log(playerIds)
-    playerIds.length.should.be.equal(12);
+    await verifierLib.getPlayerOwner(0).should.be.rejected;
+    let owner = await verifierLib.getPlayerOwner(1).should.be.fulfilled;
+    owner.should.be.equal(accounts[0]);
+    owner = await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT).should.be.fulfilled;
+    owner.should.be.equal(accounts[0]);
+    await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
   });
 
   return;
