@@ -178,6 +178,9 @@ contract("FreezableAssets", accounts => {
     // Then, the buyer builds a message to sign
     const teamId = 2;
 
+    let isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
     let sigBuyer = await signBuyerTX(
       currencyId,
       price,
@@ -188,6 +191,9 @@ contract("FreezableAssets", accounts => {
       buyerAccount,
       teamId
     ).should.be.fulfilled;
+
+    isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
@@ -212,6 +218,9 @@ contract("FreezableAssets", accounts => {
       sigs,
       vs
     ).should.be.fulfilled;
+
+    isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(true);
   });
 
   it("test accounts from truffle and web3", async () => {
