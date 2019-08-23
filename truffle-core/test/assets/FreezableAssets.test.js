@@ -102,7 +102,7 @@ contract("FreezableAssets", accounts => {
   });
 
   it("player owner", async () => {
-    // create a player and give it to ALICE
+    // create a team and give it to ALICE
     await verifierLib.createTeam("Barca", ALICE).should.be.fulfilled;
     await verifierLib.getPlayerOwner(0).should.be.rejected;
     let owner = await verifierLib.getPlayerOwner(1).should.be.fulfilled;
@@ -110,7 +110,7 @@ contract("FreezableAssets", accounts => {
     owner = await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT).should.be.fulfilled;
     owner.should.be.equal(ALICE);
     await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
-    // create a player and GIVE it to BOB
+    // create a team and GIVE it to BOB
     await verifierLib.createTeam("Madrid", BOB).should.be.fulfilled;
     owner = await verifierLib.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.fulfilled;
     owner.should.not.equal(ALICE); // the player is not owned by ALICE
