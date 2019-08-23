@@ -491,7 +491,6 @@ class Storage(Counter):
         self.isClient = isClient
 
         self.timeZoneForRound1, self.verseForRound1 = self.initFirstRound()
-        self.timeZoneToCountries = {}
         self.timeZones = {}
 
         if self.isClient:
@@ -1934,25 +1933,7 @@ class Storage(Counter):
             header[c+1] += nTeamsToAdd
             self.timeZones[timeZone].updateNDivisions(c+1, self.currentRound())
             teamsAboveThisCountry += nTeamsPerCountry[c]
-
         return header, newOrgMap
-
-    def buildOrgMap(self, timeZone):
-        # return buildInitOrgMap(nCountries, nDivsPerCountry)
-        # this should be hardcoded for each nCountries
-        header = []
-        orgMap = []
-        countries = self.timeZoneToCountries[timeZone]
-        header.append(len(countries))
-        for country in countries:
-            nDivsInCountry = self.countries[country].nDivisions
-            nLeaguesInCountry = LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION * (nDivsInCountry-1)
-            nTeamsInCountry = nLeaguesInCountry * TEAMS_PER_LEAGUE
-            header.append(nTeamsInCountry)
-            teamIdxs = list(range(1, nTeamsInCountry + 1))
-            orgMap += teamIdxs
-        return header, orgMap
-
 
     def computeTimeZoneInitSkills(self, timeZone):
         self.assertIsClient()
@@ -2078,10 +2059,10 @@ class Storage(Counter):
 
         # If the division was just created, and the player was just created with it, return skills at birth.
         division = self.getDisivionIdxFromTeamIdxInCountry(teamIdxInCountry)
-        if self.timeZones[timeZone].countries[countryIdx].divisonIdxToRound[division] <= self.currentRound() and playerState.prevPlayedTeamIdx == 0:
+        if self.timeZones[timeZone].countries[countryIdx].divisonIdxToRound[division] == self.currentRound() and playerState.prevPlayedTeamIdx == 0:
             return self.getPlayerSkillsAtBirth(playerIdx)
 
-        countryPosInTimeZone = self.timeZoneToCountries[timeZone].index(countryIdx)
+        countryPosInTimeZone = countryIdx - 1
         nCountriesInOrgMap = header[0]
         nTeamsPerCountry = header[1:1 + nCountriesInOrgMap]
         nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + (teamIdxInCountry - 1)

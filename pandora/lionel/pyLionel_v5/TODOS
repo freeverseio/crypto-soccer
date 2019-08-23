@@ -1,6 +1,12 @@
+I left it at:
+    remove all timeZoneToCountries
+where it previously didn't go beyond the main IFS at getLatestPlayerSkills
+now fails at:         countryPosInTimeZone = countryIdx - 1
+
+
 buildOrgMapBasedOnRating move to timeZone
-remove all teamIdxInCountryToTeam
 allow create Country with any nDivs
+divisonIdxToRound needs not be a map (if it is to have outsider teams, make it explicit?)
 
 add country -> check (maybe like add div)
         # assert timeZone not in self.timeZoneToCountries, "timeZone already alive"
