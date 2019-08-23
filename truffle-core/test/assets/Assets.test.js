@@ -7,20 +7,73 @@ const truffleAssert = require('truffle-assertions');
 
 const Assets = artifacts.require('AssetsMock');
 const PlayerStateLib = artifacts.require('PlayerState');
-const PLAYERS_PER_TEAM_MAX  = 25;
-const PLAYERS_PER_TEAM_INIT = 18;
 
 contract('Assets', (accounts) => {
     let assets = null;
     let playerStateLib = null;
+    let PLAYERS_PER_TEAM_MAX = null;
+    let PLAYERS_PER_TEAM_INIT = null;
+    let FREE_PLAYER_ID = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
 
     beforeEach(async () => {
         playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
+        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
+    });
+
+    it('check initial and max number of players per team', async () =>  {
+        PLAYERS_PER_TEAM_INIT.should.be.equal(18);
+        PLAYERS_PER_TEAM_MAX.should.be.equal(25);
+    });
+
+    it('get team player ids', async () => {
+        FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
+        await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;
+        let ids = await assets.getTeamPlayerIds(1).should.be.fulfilled;
+        ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
+        ids[0].should.be.bignumber.equal('1');
+        ids[17].should.be.bignumber.equal('18');
+        ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
+        ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
+        await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
+        ids = await assets.getTeamPlayerIds(2).should.be.fulfilled;
+        ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
+        ids[0].should.be.bignumber.equal('19');
+        ids[17].should.be.bignumber.equal('36');
+        ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
+        ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
+    });
+
+    it('check player team', async () => {
+        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createTeam("Madrid", BOB).should.be.fulfilled;
+        let state = await assets.getPlayerState(1).should.be.fulfilled;
+        let teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('1');
+        state = await assets.getPlayerState(18).should.be.fulfilled;
+        teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('1');
+        state = await assets.getPlayerState(19).should.be.fulfilled;
+        teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        teamId.should.be.bignumber.equal('2');
     });
     
+    it('get player state of unexistent player', async () => {
+        await assets.getPlayerState(0).should.be.rejected;
+        await assets.getPlayerState(1).should.be.rejected;
+        await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;
+        await assets.getPlayerState(1).should.be.fulfilled;
+        await assets.getPlayerState(PLAYERS_PER_TEAM_INIT).should.be.fulfilled;
+        await assets.getPlayerState(PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
+        await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
+        await assets.getPlayerState(2*PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
+    });
+
     it('isFreeShirt', async () => {
         await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
         var isFree = await assets.isFreeShirt(1,3)

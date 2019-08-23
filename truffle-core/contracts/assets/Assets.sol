@@ -91,7 +91,7 @@ contract Assets {
         return PLAYERS_PER_TEAM_MAX;
     }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function _transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
         uint256 state = getPlayerState(playerId);
@@ -212,12 +212,12 @@ contract Assets {
     function generateVirtualPlayerId(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
         require(_teamExists(teamId), "unexistent team");
         require(posInTeam < PLAYERS_PER_TEAM_MAX, "invalid player pos");
-        return PLAYERS_PER_TEAM_MAX * (teamId - 1) + 1 + posInTeam;
+        return PLAYERS_PER_TEAM_INIT * (teamId - 1) + 1 + posInTeam;
     }
 
     function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
-            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_MAX;
-            uint256 posInTeam = playerId - PLAYERS_PER_TEAM_MAX * (teamId - 1) - 1;
+            uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
+            uint256 posInTeam = playerId - PLAYERS_PER_TEAM_INIT * (teamId - 1) - 1;
             string memory teamName = getTeamName(teamId);
             uint256 seed = _computeSeed(teamName, posInTeam);
             uint16[5] memory skills = _computeSkills(seed);
@@ -329,5 +329,4 @@ contract Assets {
     function _intHash(string memory arg) internal pure returns (uint256) {
         return uint256(keccak256(abi.encode(arg)));
     }
-    
 }
