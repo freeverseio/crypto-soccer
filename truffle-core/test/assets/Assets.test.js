@@ -62,7 +62,7 @@ contract('Assets', (accounts) => {
         teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
         teamId.should.be.bignumber.equal('2');
     });
-
+    
     it('get player state of unexistent player', async () => {
         await assets.getPlayerState(0).should.be.rejected;
         await assets.getPlayerState(1).should.be.rejected;
