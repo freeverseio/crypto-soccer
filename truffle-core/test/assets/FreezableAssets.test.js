@@ -117,8 +117,6 @@ contract("FreezableAssets", accounts => {
     owner.should.be.equal(BOB);
   });
 
-  return;
-
   it("completes a seller - buyer agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to seller: OK, failed
@@ -136,10 +134,13 @@ contract("FreezableAssets", accounts => {
     const sellerAccount = await web3.eth.accounts.create("iamaseller");
     const buyerAccount = await web3.eth.accounts.create("iamabuyer");
 
+    await verifierLib.createTeam("Barca", sellerAccount.address).should.be.fulfilled;
+    await verifierLib.createTeam("Madrid", buyerAccount.address).should.be.fulfilled;
+
     // Define params of the seller, and sign
     let now = await verifierLib.getBlockchainNowTime();
     const validUntil = 2 * now.toNumber();
-    const playerID = 20;
+    const playerID = 10;
     const typeOfTX = 1;
     const currencyId = 1;
     const price = 41234;
@@ -175,7 +176,7 @@ contract("FreezableAssets", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    const teamId = 7;
+    const teamId = 2;
 
     let sigBuyer = await signBuyerTX(
       currencyId,
@@ -186,15 +187,11 @@ contract("FreezableAssets", accounts => {
       typeOfTX,
       buyerAccount,
       teamId
-    );
+    ).should.be.fulfilled;
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
     recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-    // We prepare a fake state of the BC
-    await verifierLib.setPlayerOwner(playerID, sellerAccount.address);
-    await verifierLib.setTeamOwner(playerID, buyerAccount.address);
 
     // and send the Freeze TX. If it finishes, it went through.
     const sigs = [
@@ -218,14 +215,14 @@ contract("FreezableAssets", accounts => {
   });
 
   it("test accounts from truffle and web3", async () => {
-    accountsWeb3 = await web3.eth.getAccounts();
+    accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;
     accountsWeb3[0].should.be.equal(accounts[0]);
   });
 
   it("adress type: test abi encode and hash web3 vs solidity", async () => {
     val = accounts[0];
     type = "address";
-    abiFromSolidity = await abiTestingLib.getAbiAddress(val);
+    abiFromSolidity = await abiTestingLib.getAbiAddress(val).should.be.fulfilled;
     abiFromSolidity.should.be.equal(web3.eth.abi.encodeParameter(type, val));
     hashPacked = await abiTestingLib.getHashOfAddress(accounts[0]).should.be
       .fulfilled;
