@@ -26,12 +26,12 @@ class Country():
 
 
 class TimeZone():
-    def __init__(self, creationRound):
+    def __init__(self, creationRound, initOrgMapHash):
         self.countries = []
         for c in range(NUM_COUNTRIES_AT_DEPLOY):
             self.createCountry(creationRound)
-        initHeader, initOrgMap = pylio.buildInitOrgMap()
-        self.orgMap = [pylio.serialHash([initHeader, initOrgMap]), 0]
+        self.nCountriesToAdd = 0
+        self.orgMapHash = [initOrgMapHash, 0]
         self.skills = [0, 0]
         self.newestOrgMapIdx = 0
         self.newestSkillsIdx = 0
@@ -74,7 +74,7 @@ class TimeZone():
     def updateOrgMap(self, newOrgMapHash, currentBlock):
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
         self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
-        self.orgMap[self.newestOrgMapIdx] = newOrgMapHash
+        self.orgMapHash[self.newestOrgMapIdx] = newOrgMapHash
         self.lastUpdateBlockNum = currentBlock
         self.incrementCycleIdx()
 
@@ -117,7 +117,7 @@ class TimeZone():
 class TimeZoneClient(TimeZone):
     def __init__(self, creationRound):
         initHeader, initOrgMap = pylio.buildInitOrgMap()
-        TimeZone.__init__(self, creationRound)
+        TimeZone.__init__(self, creationRound, initOrgMapHash = pylio.serialHash([initHeader, initOrgMap]))
         self.orgMapHeader           = [initHeader, 0]
         self.orgMapPreHash          = [initOrgMap, 0]
         self.newestOrgMapIdxPreHash = 0
@@ -497,7 +497,8 @@ class Storage(Counter):
         if self.isClient:
             self.timeZones[self.timeZoneForRound1] = TimeZoneClient(self.currentRound()+1)
         else:
-            self.timeZones[self.timeZoneForRound1] = TimeZone(self.currentRound()+1)
+            initOrgMapHash = pylio.getInitOrgMapHash()
+            self.timeZones[self.timeZoneForRound1] = TimeZone(self.currentRound()+1, initOrgMapHash)
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.

@@ -402,6 +402,11 @@ def addDivision(timeZone, countryIdx, ST, ST_CLIENT):
 def cycleIdx(day, turnInDay):
     return (day - 1) * 4 + turnInDay
 
+
+def getInitOrgMapHash():
+    header, orgMap = buildInitOrgMap()
+    return serialHash([header, orgMap])
+
 def buildInitOrgMap():
     # this should be hardcoded for each nCountries
     header = []

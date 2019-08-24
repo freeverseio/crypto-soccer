@@ -1,3 +1,5 @@
+createCountry as add country, initOrg, remove
+
 create country is wrong (does not change header), do as in addVicisios
 
 the should not be a zero timezone, that's it
