@@ -52,12 +52,12 @@ def integrationTest():
     # we deployed at 1:06 am, so we are in timeZone = 0, pos = 1
 
     timeZone = 1
-    countryIdx = 1
+    countryIdxInZone = 1
 
-    assert ST.getNDivisionsInCountry(timeZone, countryIdx) == DIVS_PER_COUNTRY_AT_DEPLOY, "wrong nDivisions"
-    assert ST.getNLeaguesInCountry(timeZone, countryIdx) == LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION, "wrong nLeagues"
-    nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdx)
-    assert ST.getNTeamsInCountry(timeZone, countryIdx) == nTeamsPerCountryAtStart, "wrong nTeams"
+    assert ST.getNDivisionsInCountry(timeZone, countryIdxInZone) == DIVS_PER_COUNTRY_AT_DEPLOY, "wrong nDivisions"
+    assert ST.getNLeaguesInCountry(timeZone, countryIdxInZone) == LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION, "wrong nLeagues"
+    nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdxInZone)
+    assert ST.getNTeamsInCountry(timeZone, countryIdxInZone) == nTeamsPerCountryAtStart, "wrong nTeams"
 
     for country in range(1,NUM_COUNTRIES_AT_DEPLOY+1):
         assert ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, country, 3)), "wrong teamExists call"
@@ -65,7 +65,7 @@ def integrationTest():
     assert ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart+1)), "wrong teamExists call"
 
-    nPlayersPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdx) * PLAYERS_PER_TEAM_INIT
+    nPlayersPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdxInZone) * PLAYERS_PER_TEAM_INIT
     assert ST.playerExists(ST.encodeZoneCountryAndVal(timeZone, 1, nPlayersPerCountryAtStart)), "wrong playerExists call"
     assert not ST.playerExists(ST.encodeZoneCountryAndVal(timeZone, 1, nPlayersPerCountryAtStart+1)), "wrong playerExists call"
 

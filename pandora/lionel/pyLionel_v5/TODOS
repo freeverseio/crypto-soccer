@@ -1,9 +1,12 @@
+teamPosInOrgMap = None is ugly
+
 I left it at:
     remove all timeZoneToCountries
 where it previously didn't go beyond the main IFS at getLatestPlayerSkills
 now fails at:         countryPosInTimeZone = countryIdx - 1
 
 
+make sure sales cannot happen in the very same block as market closure
 buildOrgMapBasedOnRating move to timeZone
 allow create Country with any nDivs
 divisonIdxToRound needs not be a map (if it is to have outsider teams, make it explicit?)
