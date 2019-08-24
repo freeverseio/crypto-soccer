@@ -388,11 +388,9 @@ def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
     ST_CLIENT.movePlayerToTeam(playerIdx, teamIdx)
 
 
-def createCountry(timeZone, ST, ST_CLIENT):
-    countryIdx = ST.timeZones[timeZone].createCountry(ST.currentRound()+1)
-    countryIdx_client = ST_CLIENT.timeZones[timeZone].createCountry(ST.currentRound()+1)
-    assert countryIdx == countryIdx_client, "ST/ST_CLIENT not in sync"
-    return countryIdx
+def addCountry(timeZone, ST, ST_CLIENT):
+    ST.timeZones[timeZone].nCountriesToAdd += 1
+    ST_CLIENT.timeZones[timeZone].nCountriesToAdd += 1
 
 def addDivision(timeZone, countryIdx, ST, ST_CLIENT):
     ST.timeZones[timeZone].addDivision(countryIdx)
@@ -416,7 +414,7 @@ def buildInitOrgMap():
     nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
     for country in range(NUM_COUNTRIES_AT_DEPLOY):
         header.append(nTeamsInCountry)
-        teamIdxs = list(range(1, nTeamsInCountry + 1))
+        teamIdxs = list(range(nTeamsInCountry))
         orgMap += teamIdxs
     return header, orgMap
 
