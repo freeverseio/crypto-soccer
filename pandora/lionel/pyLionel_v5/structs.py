@@ -27,7 +27,7 @@ class Country():
 
 class TimeZone():
     def __init__(self, creationRound):
-        self.countries = [Country(0)] # countries[0] is dummy
+        self.countries = []
         for c in range(NUM_COUNTRIES_AT_DEPLOY):
             self.createCountry(creationRound)
         initHeader, initOrgMap = pylio.buildInitOrgMap()
@@ -37,7 +37,7 @@ class TimeZone():
         self.newestSkillsIdx = 0
         self.scoresRoot = 0
         self.updateCycleIdx = 0
-        self.lastBlockUpdate = 0
+        self.lastUpdateBlockNum = 0
         self.actionsRoot = 0
         self.blockHash = 0
         self.lastMarketClosureBlockNum = 0
@@ -75,7 +75,7 @@ class TimeZone():
         assert self.updateCycleIdx == pylio.cycleIdx(15,0), "trying to updateOrgMap at wrong moment"
         self.newestOrgMapIdx = 1 - self.newestOrgMapIdx
         self.orgMap[self.newestOrgMapIdx] = newOrgMapHash
-        self.lastBlockUpdate = currentBlock
+        self.lastUpdateBlockNum = currentBlock
         self.incrementCycleIdx()
 
     def updateSkillsAndScores(self, skillsHash, scoresRoot, currentBlock):
@@ -83,7 +83,7 @@ class TimeZone():
         self.newestSkillsIdx = 1 - self.newestSkillsIdx
         self.skills[self.newestSkillsIdx] = skillsHash
         self.scoresRoot = scoresRoot
-        self.lastBlockUpdate = currentBlock
+        self.lastUpdateBlockNum = currentBlock
         self.incrementCycleIdx()
 
 
@@ -99,10 +99,10 @@ class TimeZone():
         return False
 
     def isJustCreated(self):
-        return self.lastBlockUpdate == 0
+        return self.lastUpdateBlockNum == 0
 
     def isLastUpdateSettled(self, nowBlock):
-        return self.isJustCreated() or (nowBlock > self.lastBlockUpdate + CHALLENGING_PERIOD_BLKS)
+        return self.isJustCreated() or (nowBlock > self.lastUpdateBlockNum + CHALLENGING_PERIOD_BLKS)
 
     # Todo: implement do something with updateData
     def newDummyUpdate(self, nowBlock):
@@ -111,7 +111,7 @@ class TimeZone():
         isInFreezePeriod = self.updateCycleIdx > pylio.cycleIdx(15, 0)
         if not isInFreezePeriod:
             # do something with update data
-            self.lastBlockUpdate = nowBlock
+            self.lastUpdateBlockNum = nowBlock
 
 
 class TimeZoneClient(TimeZone):
@@ -610,13 +610,13 @@ class Storage(Counter):
         return zone, country, val
 
     def countryExists(self, timeZone, countryIdx):
-        return countryIdx <= len(self.timeZones[timeZone].countries) - 1
+        return countryIdx < len(self.timeZones[timeZone].countries)
 
     def teamExists(self, teamIdx):
         (timeZone, countryIdx, teamIdxInCountry) = self.decodeZoneCountryAndVal(teamIdx)
         if not self.countryExists(timeZone, countryIdx):
             return False
-        return teamIdxInCountry <= self.getNTeamsInCountry(timeZone, countryIdx)
+        return teamIdxInCountry < self.getNTeamsInCountry(timeZone, countryIdx)
 
     def playerExists(self, playerIdx):
         (timeZone, countryIdx, playerIdxInCountry) = self.decodeZoneCountryAndVal(playerIdx)
@@ -1925,17 +1925,17 @@ class Storage(Counter):
         nTeamsPerCountry = header[1:1 + nCountries]
         newOrgMap = np.empty(0, int)
         teamsAboveThisCountry = 0
-        for c, countryRatings in enumerate(ratingsPerCountryFlat):
+        for countryIdxInZone, countryRatings in enumerate(ratingsPerCountryFlat):
             newOrderThisCountry = np.argsort(countryRatings)
-            prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[c]])
+            prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[countryIdxInZone]])
             newOrgMap = np.append(newOrgMap, prevOrgMapThisCountry[newOrderThisCountry])
-            divsToAdd = self.timeZones[timeZone].countries[c+1].nDivisionsToAddNextRound
+            divsToAdd = self.timeZones[timeZone].countries[countryIdxInZone].nDivisionsToAddNextRound
             nTeamsToAdd = divsToAdd * LEAGUES_PER_DIVISION * TEAMS_PER_LEAGUE
-            teamIdxToAdd = np.array(range(nTeamsPerCountry[c]+1, nTeamsPerCountry[c] + nTeamsToAdd + 1), int)
+            teamIdxToAdd = np.array(range(nTeamsPerCountry[countryIdxInZone], nTeamsPerCountry[countryIdxInZone] + nTeamsToAdd), int)
             newOrgMap = np.append(newOrgMap, teamIdxToAdd)
-            header[c+1] += nTeamsToAdd
-            self.timeZones[timeZone].updateNDivisions(c+1, self.currentRound())
-            teamsAboveThisCountry += nTeamsPerCountry[c]
+            header[countryIdxInZone+1] += nTeamsToAdd
+            self.timeZones[timeZone].updateNDivisions(countryIdxInZone, self.currentRound())
+            teamsAboveThisCountry += nTeamsPerCountry[countryIdxInZone]
         return header, newOrgMap
 
     def computeTimeZoneInitSkills(self, timeZone):
@@ -1946,10 +1946,9 @@ class Storage(Counter):
         nCountries = header[0]
         nTeamsPerCountry = header[1:1+nCountries]
         pointer = 0
-        for c in range(nCountries):
-            countryIdxInZone = c + 1
+        for countryIdxInZone in range(nCountries):
             nActiveTeams = self.getNLeaguesInCountry(timeZone, countryIdxInZone) * TEAMS_PER_LEAGUE
-            assert nActiveTeams == nTeamsPerCountry[c], "we should have plenty of extra divisions computed..."
+            assert nActiveTeams == nTeamsPerCountry[countryIdxInZone], "we should have plenty of extra divisions computed..."
             allTeamIdxInCountry = orgMap[pointer:(pointer+nActiveTeams)]
             for teamPosInOrgMap, teamIdxInCountry in enumerate(allTeamIdxInCountry):
                 for shirtNum in range(0, PLAYERS_PER_TEAM_MAX):
@@ -1959,7 +1958,7 @@ class Storage(Counter):
                     else:
                         assert playerIdx == self.getLatestPlayerSkills(playerIdx).playerIdx, "getLatestSkills is messed up"
                         initSkills.append(self.getLatestPlayerSkills(playerIdx))
-            pointer += nTeamsPerCountry[c]
+            pointer += nTeamsPerCountry[countryIdxInZone]
         return initSkills
 
     def computeTimeZoneSkillsAtMatchday(self, timeZone, day, half):
@@ -2067,10 +2066,9 @@ class Storage(Counter):
             return self.getPlayerSkillsAtBirth(playerIdx)
 
         teamPosInOrgMap = orgMap.index(teamIdxInCountry)
-        countryPosInTimeZone = countryIdxInZone - 1
         nCountriesInOrgMap = header[0]
         nTeamsPerCountry = header[1:1 + nCountriesInOrgMap]
-        nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryPosInTimeZone]) + teamPosInOrgMap
+        nTeamsAbovePlayerTeam = sum(nTeamsPerCountry[:countryIdxInZone]) + teamPosInOrgMap
         pointerToPlayerSkills = nTeamsAbovePlayerTeam * PLAYERS_PER_TEAM_MAX + playerState.currentShirtNum
         playerSkills = timeZoneSkills[pointerToPlayerSkills]
         assert playerSkills.getPlayerIdx() == playerIdx, "player not found in the correct timeZone skills"

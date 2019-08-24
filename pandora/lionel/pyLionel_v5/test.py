@@ -52,18 +52,18 @@ def integrationTest():
     # we deployed at 1:06 am, so we are in timeZone = 0, pos = 1
 
     timeZone = 1
-    countryIdxInZone = 1
+    countryIdxInZone = 0
 
     assert ST.getNDivisionsInCountry(timeZone, countryIdxInZone) == DIVS_PER_COUNTRY_AT_DEPLOY, "wrong nDivisions"
     assert ST.getNLeaguesInCountry(timeZone, countryIdxInZone) == LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION, "wrong nLeagues"
     nTeamsPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdxInZone)
     assert ST.getNTeamsInCountry(timeZone, countryIdxInZone) == nTeamsPerCountryAtStart, "wrong nTeams"
 
-    for country in range(1,NUM_COUNTRIES_AT_DEPLOY+1):
+    for country in range(NUM_COUNTRIES_AT_DEPLOY):
         assert ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, country, 3)), "wrong teamExists call"
     assert not ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, NUM_COUNTRIES_AT_DEPLOY+1, 6)), "wrong teamExists call"
-    assert ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart)), "wrong teamExists call"
-    assert not ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart+1)), "wrong teamExists call"
+    assert ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart-1)), "wrong teamExists call"
+    assert not ST.teamExists(ST.encodeZoneCountryAndVal(timeZone, 1, nTeamsPerCountryAtStart)), "wrong teamExists call"
 
     nPlayersPerCountryAtStart = 8 * ST.getNLeaguesInCountry(timeZone, countryIdxInZone) * PLAYERS_PER_TEAM_INIT
     assert ST.playerExists(ST.encodeZoneCountryAndVal(timeZone, 1, nPlayersPerCountryAtStart)), "wrong playerExists call"
@@ -192,7 +192,7 @@ def integrationTest():
 
     # add one division to a country to see if next initSkills are properly taken care of
     assert len(ST_CLIENT.timeZones[timeZone].actions) == NUM_COUNTRIES_AT_DEPLOY * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION), "wrong number of actions"
-    addDivision(timeZone, 2, ST, ST_CLIENT)
+    addDivision(timeZone, 1, ST, ST_CLIENT)
 
     teamIdx1 = ST.encodeZoneCountryAndVal(timeZone, 1, 2)
     teamIdx2 = ST.encodeZoneCountryAndVal(timeZone, 1, 3)
