@@ -1919,7 +1919,11 @@ class Storage(Counter):
         for countryIdxInZone, countryRatings in enumerate(ratingsPerCountryFlat):
             newOrderThisCountry = np.argsort(countryRatings)
             prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[countryIdxInZone]])
-            newOrgMap = np.append(newOrgMap, prevOrgMapThisCountry[newOrderThisCountry])
+            newOrgMapThisCountry = prevOrgMapThisCountry[newOrderThisCountry]
+            newOrgMapHuman = [team for team in newOrgMapThisCountry if not self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))]
+            newOrgMapBots = [team for team in newOrgMapThisCountry if self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))]
+            newOrgMap = np.append(newOrgMap, newOrgMapHuman)
+            newOrgMap = np.append(newOrgMap, newOrgMapBots)
             divsToAdd = self.timeZones[timeZone].countries[countryIdxInZone].nDivisionsToAddNextRound
             nTeamsToAdd = divsToAdd * LEAGUES_PER_DIVISION * TEAMS_PER_LEAGUE
             teamIdxToAdd = np.arange(nTeamsPerCountry[countryIdxInZone], nTeamsPerCountry[countryIdxInZone] + nTeamsToAdd)
@@ -2142,7 +2146,7 @@ class Storage(Counter):
             ST.timeZones[timeZone].lastMarketClosureBlockNum = self.currentBlock
             return
 
-        # Any game 1st half is played
+        # A league 1st half is played
         if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
             self.submitActions(timeZone, ST)
             print("...playing a 1st half of a leagues game: ", timeZone, day, turnInDay)
@@ -2156,7 +2160,7 @@ class Storage(Counter):
             self.timeZones[timeZone].initActions()
             return
 
-        # Any game 2nd half is played
+        # A league 2nd half is played
         if (day == 1 and turnInDay == 2) or (2 <= day <= 14 and turnInDay == 1): # toni
             self.submitActions(timeZone, ST)
             print("...playing a 2nd half of a leagues game: ", timeZone, day, turnInDay)
@@ -2176,3 +2180,16 @@ class Storage(Counter):
         self.timeZones[timeZone].newDummyUpdate(self.currentBlock)
         ST.timeZones[timeZone].newDummyUpdate(self.currentBlock)
 
+        # A cup 1st half is played
+        if (day == 1 and turnInDay == 1) or (2 <= day <= 14 and turnInDay == 0): # toni
+            self.submitActions(timeZone, ST)
+            print("...playing a 1st half of a leagues game: ", timeZone, day, turnInDay)
+            newSkills = self.computeTimeZoneSkillsAtMatchday(timeZone, day, FIRST_HALF)
+            self.timeZones[timeZone].updateSkillsPreHash(newSkills, self.currentBlock)
+            ST.timeZones[timeZone].updateSkillsAndScores(
+                pylio.serialHash(newSkills),
+                pylio.serialHash(self.timeZones[timeZone].scores),
+                self.currentBlock
+            )
+            self.timeZones[timeZone].initActions()
+            return
