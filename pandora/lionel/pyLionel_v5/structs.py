@@ -1918,12 +1918,12 @@ class Storage(Counter):
         teamsAboveThisCountry = 0
         for countryIdxInZone, countryRatings in enumerate(ratingsPerCountryFlat):
             newOrderThisCountry = np.argsort(countryRatings)
-            prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[countryIdxInZone]])
+            prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[countryIdxInZone]], int)
             newOrgMapThisCountry = prevOrgMapThisCountry[newOrderThisCountry]
-            newOrgMapHuman = [team for team in newOrgMapThisCountry if not self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))]
-            newOrgMapBots = [team for team in newOrgMapThisCountry if self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))]
-            newOrgMap = np.append(newOrgMap, newOrgMapHuman)
-            newOrgMap = np.append(newOrgMap, newOrgMapBots)
+            newOrgMapHuman = np.array([team for team in newOrgMapThisCountry if not self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))], int)
+            newOrgMapBots = np.array([team for team in newOrgMapThisCountry if self.isBotTeam(self.encodeZoneCountryAndVal(timeZone, countryIdxInZone, team))], int)
+            newOrgMapThisCountry = np.append(newOrgMapHuman, newOrgMapBots)
+            newOrgMap = np.append(newOrgMap, newOrgMapThisCountry)
             divsToAdd = self.timeZones[timeZone].countries[countryIdxInZone].nDivisionsToAddNextRound
             nTeamsToAdd = divsToAdd * LEAGUES_PER_DIVISION * TEAMS_PER_LEAGUE
             teamIdxToAdd = np.arange(nTeamsPerCountry[countryIdxInZone], nTeamsPerCountry[countryIdxInZone] + nTeamsToAdd)
