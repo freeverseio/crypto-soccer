@@ -495,9 +495,11 @@ class Storage(Counter):
 
         if self.isClient:
             self.timeZones[self.timeZoneForRound1] = TimeZoneClient(self.currentRound()+1)
+            self.timeZones[self.timeZoneForRound1+1] = TimeZoneClient(self.currentRound()+1)
         else:
             initOrgMapHash = pylio.getInitOrgMapHash()
             self.timeZones[self.timeZoneForRound1] = TimeZone(self.currentRound()+1, initOrgMapHash)
+            self.timeZones[self.timeZoneForRound1+1] = TimeZone(self.currentRound()+1, initOrgMapHash)
 
         # a map from playerIdx to playerState, only available for players already sold once,
         # or for 'promo players' not created directly from team creation.

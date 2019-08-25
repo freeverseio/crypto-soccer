@@ -147,12 +147,32 @@ def integrationTest():
     playerSkills = ST.getPlayerSkillsAtBirth(playerIdx)
     assert areEqualStructs(playerSkills, playerSkillsClient), "at birth, skills seem not to be right"
 
+    # transfer between 2 timezones
+    teamIdx1 = ST.encodeZoneCountryAndVal(timeZone, 0, 0)
+    teamIdx2 = ST.encodeZoneCountryAndVal(timeZone+1, 0, 0)
+    playerIdx = ST.encodeZoneCountryAndVal(timeZone, 0, 0)
+    assert ST.isBotTeam(teamIdx1), "bot not recognized"
+    assert ST.isBotTeam(teamIdx2), "bot not recognized"
+    ST.acquireBot(teamIdx1, BOB)
+    ST_CLIENT.acquireBot(teamIdx1, BOB)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == BOB, "wrong owner of player"
+    shouldFail(lambda x: ST.movePlayerToTeam(playerIdx, teamIdx2), "should not be able to transfer from or to Bot Teams")
+    ST.acquireBot(teamIdx2, ALICE)
+    ST_CLIENT.acquireBot(teamIdx2, ALICE)
+    ST.movePlayerToTeam(playerIdx, teamIdx2)
+    assert ST.getOwnerAddrFromPlayerIdx(playerIdx) == ALICE, "wrong owner of player"
+    assert ST.playerIdxToPlayerState[playerIdx].currentTeamIdx == teamIdx2, "wrong transfer"
+    assert ST.playerIdxToPlayerState[playerIdx].currentShirtNum == PLAYERS_PER_TEAM_MAX-1, "wrong transfer"
+
+    # send user actions
     teamIdx1 = ST.encodeZoneCountryAndVal(timeZone, 1, 6)
     teamIdx2 = ST.encodeZoneCountryAndVal(timeZone, 1, 7)
     action00 = {"teamIdx": teamIdx1, "teamOrder": ORDER1, "tactics": TACTICS["433"]}
     action01 = {"teamIdx": teamIdx2, "teamOrder": ORDER2, "tactics": TACTICS["442"]}
     ST_CLIENT.accumulateAction(action00)
     ST_CLIENT.accumulateAction(action01)
+
+    addCountry(timeZone, ST, ST_CLIENT)
 
     # we are at verse = 0. The league starts at verse = 3
     for v in range(3):
@@ -207,7 +227,7 @@ def integrationTest():
     assert len(ST_CLIENT.timeZones[timeZone].actions) == NUM_COUNTRIES_AT_DEPLOY * TEAMS_PER_LEAGUE * (LEAGUES_1ST_DIVISION + (DIVS_PER_COUNTRY_AT_DEPLOY-1) * LEAGUES_PER_DIVISION), "wrong number of actions"
     addCountry(timeZone, ST, ST_CLIENT)
     advanceNVerses(VERSES_PER_DAY*5, ST, ST_CLIENT)
-
+    ST_CLIENT.timeZones[timeZone].countries
 
     testResult = intHash(serialize2str(ST) + serialize2str(ST_CLIENT)) % 1000
     # return testResult

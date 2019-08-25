@@ -1,15 +1,5 @@
-createCountry as add country, initOrg, remove
+create timeZone
 
-        self.nDivisionsToAddNextRound = 0 0< should be at deploy?
-
-
-create country is wrong (does not change header), do as in addVicisios
-
-the should not be a zero timezone, that's it
-same for teamIdxInCountry
-look for all c
-
-countryIdx can start at zero now
 
 teamPosInOrgMap = None is ugly
 make sure sales cannot happen in the very same block as market closure
