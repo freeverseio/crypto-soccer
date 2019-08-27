@@ -6,14 +6,21 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
 
   return {
     typeDefs: gql`
-    extend type Mutation {
-        _: Boolean
-    }`,
+      input PlayerSaleOrderInput {
+        playerId: String!
+      }
+
+      extend type Mutation {
+        createPlayerSaleOrder(input: PlayerSaleOrderInput!): Boolean
+      }
+    `,
     resolvers: {
       Mutation: {
-          _: () => true,
+        createPlayerSaleOrder: (_, { input }) =>  {
+          return true;
+        }
       }
-    },
+    }
   };
 });
 
