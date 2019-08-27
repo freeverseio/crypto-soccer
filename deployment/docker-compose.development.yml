@@ -20,11 +20,11 @@ services:
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
       - "4000:4000"
-  market-db:
-    image: freeverseio/market-db:dev
-  market-api:
-    image: freeverseio/market-api:dev
-    command: -d postgres://freeverse:freeverse@market-db:5432/market -p 4001
+  marketdb:
+    image: freeverseio/marketdb:dev
+  marketapi:
+    image: freeverseio/marketapi:dev
+    command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4001
     ports:
       - "4001:4001"
 volumes:
