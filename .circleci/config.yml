@@ -127,10 +127,10 @@ jobs:
           command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run:
           name: Create Docker Market-DB
-          command: cd market/go-market/sql && docker build -t freeverseio/marketdb .
+          command: cd market/go-market/sql && docker build -t freeverseio/marketdb:dev .
       - run:
           name: Create Docker Market-API
-          command: cd market/nodejs-market-api && docker build -t freeverseio/marketapi .
+          command: cd market/nodejs-market-api && docker build -t freeverseio/marketapi:dev .
       - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
