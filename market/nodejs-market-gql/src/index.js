@@ -27,7 +27,8 @@ app.use(
       watchPg: true,
       graphiql: true,
       enhanceGraphiql: true,
-      retryOnInitFail: true
+      retryOnInitFail: true,
+      disableDefaultMutations: true
     }
   )
 );
