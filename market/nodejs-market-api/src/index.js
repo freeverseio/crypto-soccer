@@ -2,6 +2,7 @@ const express = require("express");
 const { postgraphile } = require("postgraphile");
 const program = require("commander");
 const version = require("../package.json").version;
+const mutations = require("./mutations");
 
 // Parsing command line arguments
 program
@@ -28,7 +29,8 @@ app.use(
       graphiql: true,
       enhanceGraphiql: true,
       retryOnInitFail: true,
-      disableDefaultMutations: true
+      disableDefaultMutations: true,
+      appendPlugins: [mutations]
     }
   )
 );
