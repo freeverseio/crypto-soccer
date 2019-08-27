@@ -11,13 +11,13 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
       }
 
       extend type Mutation {
-        createPlayerSaleOrder(input: PlayerSaleOrderInput!): Boolean
+        createPlayerSaleOrder(input: PlayerSaleOrderInput!): Boolean!
       }
     `,
     resolvers: {
       Mutation: {
         createPlayerSaleOrder: (_, { input }) =>  {
-          return true;
+          return false;
         }
       }
     }
