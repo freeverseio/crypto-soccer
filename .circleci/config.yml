@@ -77,7 +77,7 @@ jobs:
       - checkout
       - run:
           name: Setup 
-          command: cd market/nodejs-market-gql && npm install
+          command: cd market/nodejs-market-api && npm install
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
