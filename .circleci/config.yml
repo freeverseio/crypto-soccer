@@ -70,6 +70,17 @@ jobs:
       - run:
           name: Test nodejs-horizon
           command: cd nodejs-horizon && npm test
+  nodejs-market-api:
+    docker:
+      - image: freeverseio/circleci
+    steps:
+      - checkout
+      - run:
+          name: Setup 
+          command: cd market/nodejs-market-gql && npm install
+      - run:
+          name: Test nodejs-horizon
+          command: cd nodejs-horizon && npm test
   reactjs-frontend:
     docker:
       - image: freeverseio/circleci
@@ -118,6 +129,9 @@ jobs:
           name: Create Docker Horizon
           command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run:
+          name: Create Docker Nodejs Market gql
+          command: cd market/nodejs-market-api && docker build -t freeverseio/market-api
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
@@ -132,6 +146,9 @@ jobs:
       - run: 
           name: Upload Docker Postgres
           command: docker push freeverseio/postgres:dev
+      - run:
+          name: Upload Docker Market-API
+          command: docker push freeverseio/market-api:dev
 
   deploy:
     docker:
@@ -157,6 +174,7 @@ workflows:
       - reactjs-frontend
       - django-centauri
       - nodejs-horizon
+      - nodejs-market-api
       - dockerization:
           filters:
             branches:
@@ -167,6 +185,7 @@ workflows:
             - go-synchronizer
             - django-centauri
             - nodejs-horizon
+            - nodejs-market-api
       - deploy:
           filters:
            branches:
