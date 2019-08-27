@@ -100,7 +100,7 @@ contract('LeagueChallengeable', (accounts) => {
         await advanceToBlock(updateBlockNumber + challengePeriod - 1).should.be.fulfilled;
         verified = await leagues.isVerified(leagueId).should.be.fulfilled;
         verified.should.be.equal(false);
-        await advanceToBlock(updateBlockNumber + challengePeriod).should.be.fulfilled;
+        await advanceToBlock(updateBlockNumber + challengePeriod + 1).should.be.fulfilled;
         verified = await leagues.isVerified(leagueId).should.be.fulfilled;
         verified.should.be.equal(true);
     });
