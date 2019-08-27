@@ -7,7 +7,7 @@ const version = require("../package.json").version;
 program
   .version(version)
   .option("-d, --databaseUrl <url>", "set the database url")
-  .option("-p, --port <port>", "server port", "4000")
+  .option("-p, --port <port>", "server port", "4001")
   .parse(process.argv);
 
 const { databaseUrl, port } = program;
