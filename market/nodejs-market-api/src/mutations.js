@@ -11,7 +11,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
       }
 
       extend type Mutation {
-        createPlayerSaleOrder(input: PlayerSaleOrderInput!): Boolean!
+        createPlayerSaleOrder(input: PlayerSaleOrderInput!): Int!
       }
     `,
     resolvers: {
@@ -21,7 +21,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           const query = sql.query`INSERT INTO playerSaleOrders (playerId) VALUES (${sql.value(playerId)})`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return true;
+          return playerId;
         }
       }
     }
