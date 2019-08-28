@@ -1,7 +1,7 @@
 version: '3'
 services:
   market-db:
-    build: ./go-market/sql
+    build: ./sql
   market-api:
     build: ./nodejs-market-api
     command: -d postgres://freeverse:freeverse@market-db:5432/market -p 4001
