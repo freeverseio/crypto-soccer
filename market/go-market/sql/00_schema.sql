@@ -7,6 +7,6 @@ CREATE TABLE params (
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
 CREATE TABLE playerSaleOrders (
-    id BIGINT NOT NULL,
-    PRIMARY KEY(id)
+    playerId BIGINT NOT NULL,
+    PRIMARY KEY(playerId)
 );
