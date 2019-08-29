@@ -18,17 +18,38 @@ const main = async () => {
   const marketRemoteSchema = await createRemoteSchema("http://165.22.66.118:4001/graphql");
 
   const linkTypeDefs = `
-  extend type Player {
-    saleOrder: PlayerSaleOrder
-  }
-`;
+    extend type Player {
+      saleOrderByPlayerId: PlayerSaleOrder
+    }
+  `;
+
+  const resolvers = {
+    Player: {
+      saleOrderByPlayerId: {
+        fragment: `... on Player { id }`,
+        resolve(player, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: marketRemoteSchema,
+            operation: 'query',
+            fieldName: 'playerSaleOrderByPlayerid',
+            args: {
+              playerid: player.id,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    }
+  };
 
   const schema = mergeSchemas({
     schemas: [
       universeRemoteSchema,
       marketRemoteSchema,
       linkTypeDefs
-    ]
+    ],
+    resolvers
   });
 
   const server = new ApolloServer({ schema });
