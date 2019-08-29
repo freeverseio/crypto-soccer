@@ -7,36 +7,36 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
   return {
     typeDefs: gql`
        extend type Mutation {
-        createPlayerSaleOrder(input: PlayerSaleOrderInput!): ID
-        deletePlayerSaleOrder(playerId: ID!): ID
+        createPlayerSellOrder(input: PlayerSellOrderInput!): ID
+        deletePlayerSellOrder(playerId: ID!): ID
         createPlayerBuyOrder(input: PlayerBuyOrderInput!): ID
         deletePlayerBuyOrder(playerId: ID!): ID
       }
     `,
     resolvers: {
       Mutation: {
-        createPlayerSaleOrder: async (_, { input }, context) =>  {
-          const { playerId } = input;
-          const query = sql.query`INSERT INTO playerSaleOrders (playerId) VALUES (${sql.value(playerId)})`;
+        createPlayerSellOrder: async (_, { input }, context) =>  {
+          const { playerid, price } = input;
+          const query = sql.query`INSERT INTO player_sell_orders (playerId, price) VALUES (${sql.value(playerid)}, ${sql.value(price)})`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return playerId;
+          return playerid;
         },
-        deletePlayerSaleOrder: async (_, {playerId}, context) => {
-          const query = sql.query`DELETE FROM playerSaleOrders WHERE playerId=${sql.value(playerId)}`;
+        deletePlayerSellOrder: async (_, {playerId}, context) => {
+          const query = sql.query`DELETE FROM player_sell_orders WHERE playerId=${sql.value(playerId)}`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return playerId;
         },
         createPlayerBuyOrder: async (_, {input}, context) => {
-          const { playerId } = input;
-          const query = sql.query`INSERT INTO playerBuyOrders (playerId) VALUES (${sql.value(playerId)})`;
+          const { playerid, price } = input;
+          const query = sql.query`INSERT INTO player_buy_orders (playerId, price) VALUES (${sql.value(playerid)}, ${sql.value(price)})`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return playerId;
+          return playerid;
         },
         deletePlayerBuyOrder: async (_, {playerId}, context) => {
-          const query = sql.query`DELETE FROM playerBuyOrders WHERE playerId=${sql.value(playerId)}`;
+          const query = sql.query`DELETE FROM player_buy_orders WHERE playerId=${sql.value(playerId)}`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return playerId;
