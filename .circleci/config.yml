@@ -56,7 +56,7 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
-  nodejs-horizon:
+  relay:
     docker:
       - image: freeverseio/circleci
     steps:
@@ -65,11 +65,11 @@ jobs:
           name: deploy contracts
           command: make setup contracts
       - run:
-          name: Setup nodejs-horizon
-          command: cd nodejs-horizon && npm install
+          name: Setup relay
+          command: cd relay/nodejs-api && npm install
       - run:
-          name: Test nodejs-horizon
-          command: cd nodejs-horizon && npm test
+          name: Test relay
+          command: cd relay/nodejs-api && npm test
   nodejs-market-api:
     docker:
       - image: freeverseio/circleci
