@@ -4,10 +4,10 @@ setup:
 contracts:
 	cd truffle-core && ./node_modules/.bin/truffle compile
 	mkdir -p nodejs-horizon
-	cp -r truffle-core/build/contracts ./nodejs-horizon
+	cp -r truffle-core/build/contracts ./relay/nodejs-api
 	cd scripts && ./deploy_go_contracts_bind.py
 
 clean: 
 	rm -rf ./truffle-core/build
-	rm -rf ./nodejs-horizon/contracts
+	rm -rf ./relay/nodejs-api/contracts
 
