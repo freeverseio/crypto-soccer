@@ -74,8 +74,13 @@ const main = async () => {
   });
 };
 
-try {
-  main();
-} catch (e) {
-  console.log(e, e.message, e.stack);
-}
+const run = () => {
+  main()
+  .catch(e => {
+    console.error(e);
+    console.log("wainting ......");
+    setTimeout(run, 3000);
+  })
+};
+
+run();
