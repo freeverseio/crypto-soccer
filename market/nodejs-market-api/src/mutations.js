@@ -6,15 +6,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
 
   return {
     typeDefs: gql`
-      input PlayerSaleOrderInput {
-        playerId: ID!
-      }
-
-      input PlayerBuyOrderInput {
-        playerId: ID!
-      }
-
-      extend type Mutation {
+       extend type Mutation {
         createPlayerSaleOrder(input: PlayerSaleOrderInput!): ID
         deletePlayerSaleOrder(playerId: ID!): ID
         createPlayerBuyOrder(input: PlayerBuyOrderInput!): ID
