@@ -188,8 +188,8 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
-      - nodejs-horizon
       - nodejs-market-api
+      - relay
       - dockerization:
           filters:
             branches:
@@ -199,8 +199,8 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - nodejs-horizon
             - nodejs-market-api
+            - relay
       - deploy:
           filters:
            branches:
