@@ -1,10 +1,4 @@
-const {
-  ApolloServer,
-  makeExecutableSchema,
-  mergeSchemas
-} = require("apollo-server");
-const { makeSchemaAndPlugin } = require("postgraphile-apollo-server");
-const pg = require("pg");
+const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
 const Resolvers = require("./resolvers");
 const Web3 = require("web3");
@@ -19,13 +13,11 @@ const version = require("../package.json").version;
 program
   .version(version)
   .option("-c, --config <path>", "set config path. defaults to config.json")
-  .option("-d, --databaseUrl <url>", "set the database url")
   .parse(process.argv);
 
 let configFile = "../";
 if (typeof program.config !== "undefined") configFile += program.config;
 else configFile += "config.json";
-const databaseUrl = program.databaseUrl;
 
 console.log("Configuration file: " + configFile);
 const config = require(configFile);
@@ -39,70 +31,32 @@ const {
 } = config;
 
 console.log("--------------------------------------------------------");
-console.log("databaseUrl       : ", databaseUrl);
 console.log("providerUrl       : ", providerUrl);
 console.log("account           : ", address);
 console.log("🔥  account p.k.  : ", privateKey);
 console.log("states address    : ", statesContractAddress);
 console.log("assets address    : ", assetsContractAddress);
 console.log("leagues address   : ", leaguesContractAddress);
-
 console.log("--------------------------------------------------------");
+
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
-const states = new web3.eth.Contract(
-  playerStateJSON.abi,
-  statesContractAddress
-);
+const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress);
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
 
-const pgPool = new pg.Pool({
-  connectionString: databaseUrl
+const resolvers = new Resolvers({
+  states,
+  assets,
+  leagues,
+  from: address
 });
 
-function main() {
-  makeSchemaAndPlugin(
-    pgPool,
-    "public", // PostgreSQL schema to use
-    {
-      disableDefaultMutations: true,
-      dynamicJson: true,
-      simpleCollections: "both"
-    }
-  )
-    .then(result => {
-      const { schema, plugin } = result;
+const server = new ApolloServer({
+  typeDefs,
+  resolvers
+});
 
-      const resolvers = new Resolvers({
-        states,
-        assets,
-        leagues,
-        from: address
-      });
-
-      const mutations = makeExecutableSchema({
-        typeDefs: typeDefs,
-        resolvers: resolvers
-      });
-      const mergedSchema = mergeSchemas({
-        schemas: [schema, mutations]
-      });
-
-      const server = new ApolloServer({
-        schema: mergedSchema,
-        plugins: [plugin]
-      });
-
-      server.listen().then(({ url }) => {
-        console.log(`🚀  Server ready at ${url}`);
-      });
-    })
-    .catch(e => {
-      console.error(e);
-      setTimeout(main, 3000);
-    });
-}
-
-main();
-
+server.listen().then(({ url }) => {
+  console.log(`🚀  Server ready at ${url}`);
+});
