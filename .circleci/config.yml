@@ -56,7 +56,7 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
-  nodejs-horizon:
+  relay:
     docker:
       - image: freeverseio/circleci
     steps:
@@ -65,11 +65,11 @@ jobs:
           name: deploy contracts
           command: make setup contracts
       - run:
-          name: Setup nodejs-horizon
-          command: cd nodejs-horizon && npm install
+          name: Setup relay
+          command: cd relay/nodejs-api && npm install
       - run:
-          name: Test nodejs-horizon
-          command: cd nodejs-horizon && npm test
+          name: Test relay
+          command: cd relay/nodejs-api && npm test
   nodejs-market-api:
     docker:
       - image: freeverseio/circleci
@@ -132,6 +132,9 @@ jobs:
           name: Create Docker Market-API
           command: cd market/nodejs-market-api && docker build -t freeverseio/marketapi:dev .
       - run:
+          name: Create Docker relay
+          command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
+      - run:
           name: Create Docker of mono gql
           command: cd nodejs-common-gql && docker build -t freeverseio/monogql:dev .
       - run:
@@ -155,6 +158,9 @@ jobs:
       - run:
           name: Upload Docker Market-API
           command: docker push freeverseio/marketapi:dev
+      - run:
+          name: Upload Docker Relay
+          command: docker push freeverseio/relay:dev
       - run:
           name: Upload Docker Mono gql
           command: docker push freeverseio/monogql:dev
@@ -182,8 +188,8 @@ workflows:
       - go-soccer
       - reactjs-frontend
       - django-centauri
-      - nodejs-horizon
       - nodejs-market-api
+      - relay
       - dockerization:
           filters:
             branches:
@@ -193,8 +199,8 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - nodejs-horizon
             - nodejs-market-api
+            - relay
       - deploy:
           filters:
            branches:

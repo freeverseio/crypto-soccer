@@ -23,12 +23,15 @@ services:
   marketapi:
     image: freeverseio/marketapi:dev
     command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4000
+  relay:
+    image: freeverseio/relay:dev
   monogql:
     image: freeverseio/monogql:dev
     depends_on:
       - horizon
       - marketapi
-    command: -u http://horizon:4000/graphql -m http://marketapi:4000/graphql
+      - relay
+    command: -u http://horizon:4000/graphql -m http://marketapi:4000/graphql -r http://relay:4000/graphql
     ports:
       - "4000:4000"
 volumes:
