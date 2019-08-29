@@ -19,7 +19,7 @@ const main = async () => {
 
   const linkTypeDefs = `
   extend type Player {
-    saleOrder: Playersaleorder
+    saleOrder: PlayerSaleOrder
   }
 `;
 
