@@ -2,6 +2,8 @@ const { ApolloServer } = require("apollo-server");
 const { HttpLink } = require("apollo-link-http");
 const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require("graphql-tools");
 const fetch = require("node-fetch");
+const program = require("commander");
+const version = require("../package.json").version;
 
 const createRemoteSchema = async uri => {
   const link = new HttpLink({ uri, fetch });
@@ -13,9 +15,22 @@ const createRemoteSchema = async uri => {
   return executableSchema;
 };
 
+program
+  .version(version)
+  .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
+  .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
+  .parse(process.argv);
+
+const { universeUrl, marketUrl } = program;
+
+console.log("--------------------------------------------------------");
+console.log("universeUrl       : ", universeUrl);
+console.log("marketUrl         : ", marketUrl);
+console.log("--------------------------------------------------------");
+
 const main = async () => {
-  const universeRemoteSchema = await createRemoteSchema("http://165.22.66.118:4000/graphql");
-  const marketRemoteSchema = await createRemoteSchema("http://165.22.66.118:4001/graphql");
+  const universeRemoteSchema = await createRemoteSchema(universeUrl);
+  const marketRemoteSchema = await createRemoteSchema(marketUrl);
 
   const linkTypeDefs = `
     extend type Player {
@@ -54,8 +69,6 @@ const main = async () => {
 
   const server = new ApolloServer({ schema });
 
-  // This `listen` method launches a web-server.  Existing apps
-  // can utilize middleware options, which we'll discuss later.
   server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
