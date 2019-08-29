@@ -132,6 +132,9 @@ jobs:
           name: Create Docker Market-API
           command: cd market/nodejs-market-api && docker build -t freeverseio/marketapi:dev .
       - run:
+          name: Create Docker of mono gql
+          command: cd nodejs-common-gql && docker build -t freeverseio/monogql:dev .
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
@@ -152,6 +155,9 @@ jobs:
       - run:
           name: Upload Docker Market-API
           command: docker push freeverseio/marketapi:dev
+      - run:
+          name: Upload Docker Mono gql
+          command: docker push freeverseio/monogql:dev
 
   deploy:
     docker:
