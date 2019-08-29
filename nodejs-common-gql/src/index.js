@@ -37,7 +37,7 @@ const main = async () => {
 
   const linkTypeDefs = `
     extend type Player {
-      sellOrderByPlayerId: PlayerSellOrder
+      sellOrderByPlayerid: PlayerSellOrder
     }
   `;
 
