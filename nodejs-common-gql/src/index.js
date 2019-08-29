@@ -19,6 +19,7 @@ program
   .version(version)
   .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
   .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
+  .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
   .parse(process.argv);
 
 const { universeUrl, marketUrl } = program;
@@ -26,11 +27,13 @@ const { universeUrl, marketUrl } = program;
 console.log("--------------------------------------------------------");
 console.log("universeUrl       : ", universeUrl);
 console.log("marketUrl         : ", marketUrl);
+console.log("relayUrl          : ", relayUrl);
 console.log("--------------------------------------------------------");
 
 const main = async () => {
   const universeRemoteSchema = await createRemoteSchema(universeUrl);
   const marketRemoteSchema = await createRemoteSchema(marketUrl);
+  const relayRemoteSchema = await createRemoteSchema(relayUrl);
 
   const linkTypeDefs = `
     extend type Player {
@@ -62,6 +65,7 @@ const main = async () => {
     schemas: [
       universeRemoteSchema,
       marketRemoteSchema,
+      relayRemoteSchema,
       linkTypeDefs
     ],
     resolvers
