@@ -43,7 +43,7 @@ const main = async () => {
 
   const resolvers = {
     Player: {
-      sellOrderByPlayerId: {
+      sellOrderByPlayerid: {
         fragment: `... on Player { id }`,
         resolve(player, args, context, info) {
           return info.mergeInfo.delegateToSchema({
