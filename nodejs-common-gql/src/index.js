@@ -17,10 +17,17 @@ const main = async () => {
   const universeRemoteSchema = await createRemoteSchema("http://165.22.66.118:4000/graphql");
   const marketRemoteSchema = await createRemoteSchema("http://165.22.66.118:4001/graphql");
 
+  const linkTypeDefs = `
+  extend type Player {
+    saleOrder: Playersaleorder
+  }
+`;
+
   const schema = mergeSchemas({
     schemas: [
       universeRemoteSchema,
-      marketRemoteSchema
+      marketRemoteSchema,
+      linkTypeDefs
     ]
   });
 
