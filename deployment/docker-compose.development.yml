@@ -19,13 +19,21 @@ services:
       - postgres
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
-      - "4000:4000"
+      - "4001:4000"
   marketdb:
     image: freeverseio/marketdb:dev
   marketapi:
     image: freeverseio/marketapi:dev
-    command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4001
+    command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4000
     ports:
-      - "4001:4001"
+      - "4002:4000"
+  monogql:
+    image: freeverseio/monogql:dev
+    depends_on:
+      - horizon
+      - marketapi
+    command: -u http://horizon:4000/graphql -m http://marketapi:4000/graphql
+    ports:
+      - "4000:4000"
 volumes:
   centauri-data:
