@@ -1,35 +1,111 @@
-const express = require("express");
-const { postgraphile } = require("postgraphile");;
+const { ApolloServer } = require("apollo-server");
+const { HttpLink } = require("apollo-link-http");
+const { introspectSchema, makeRemoteExecutableSchema, mergeSchemas } = require("graphql-tools");
+const fetch = require("node-fetch");
 const program = require("commander");
 const version = require("../package.json").version;
 
-// Parsing command line arguments
+const createRemoteSchema = async uri => {
+  const link = new HttpLink({ uri, fetch });
+  const schema = await introspectSchema(link);
+  const executableSchema = makeRemoteExecutableSchema({
+    schema,
+    link
+  });
+  return executableSchema;
+};
+
 program
   .version(version)
-  .option("-d, --databaseUrl <url>", "set the database url", "localhost:5432")
+  .option("-u, --universeUrl <url>", "graphql universe url", "http://localhost:4001/graphql")
+  .option("-m, --marketUrl <url>", "graphql market url", "http://localhost:4002/graphql")
+  .option("-r, --relayUrl <url>", "graphql relay url", "http://localhost:4003/graphql")
   .parse(process.argv);
 
-const { databaseUrl } = program;
+const { universeUrl, marketUrl, relayUrl } = program;
 
 console.log("--------------------------------------------------------");
-console.log("databaseUrl       : ", databaseUrl);
+console.log("universeUrl       : ", universeUrl);
+console.log("marketUrl         : ", marketUrl);
+console.log("relayUrl          : ", relayUrl);
 console.log("--------------------------------------------------------");
 
-const app = express();
+const main = async () => {
+  const universeRemoteSchema = await createRemoteSchema(universeUrl);
+  const marketRemoteSchema = await createRemoteSchema(marketUrl);
+  const relayRemoteSchema = await createRemoteSchema(relayUrl);
 
-app.use(
-  postgraphile(
-    databaseUrl,
-    "public",
-    {
-      watchPg: true,
-      graphiql: true,
-      enhanceGraphiql: true,
-      retryOnInitFail: true,
-      disableDefaultMutations: true,
-      simpleCollections: "both", // TODO: remove
+  const linkTypeDefs = `
+    extend type Player {
+      sellOrderByPlayerid: PlayerSellOrder
     }
-  )
-);
 
-app.listen(4000);
+    extend type PlayerSellOrder {
+      playerByPlayerid: Player
+    }
+  `;
+
+  const resolvers = {
+    Player: {
+      sellOrderByPlayerid: {
+        fragment: `... on Player { id }`,
+        resolve(player, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: marketRemoteSchema,
+            operation: 'query',
+            fieldName: 'playerSellOrderByPlayerid',
+            args: {
+              playerid: player.id,
+            },
+            context,
+            info,
+          })
+        }
+      },
+    },
+    PlayerSellOrder: {
+      playerByPlayerid: {
+        fragment: `... on PlayerSellOrder { playerid }`,
+        resolve(playerSellOrder, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'playerById',
+            args: {
+              id: playerSellOrder.playerid,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    }
+  };
+
+  const schema = mergeSchemas({
+    schemas: [
+      universeRemoteSchema,
+      marketRemoteSchema,
+      relayRemoteSchema,
+      linkTypeDefs
+    ],
+    resolvers
+  });
+
+  const server = new ApolloServer({ schema });
+
+  server.listen().then(({ url }) => {
+    console.log(`🚀  Server ready at ${url}`);
+  });
+};
+
+const run = () => {
+  main()
+  .catch(e => {
+    console.error(e);
+    console.log("wainting ......");
+    setTimeout(run, 3000);
+  })
+};
+
+run();

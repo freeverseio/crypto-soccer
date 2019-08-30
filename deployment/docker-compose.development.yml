@@ -13,8 +13,8 @@ services:
     command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
     depends_on:
       - postgres
-  horizon:
-    image: freeverseio/horizon:dev
+  universeapi:
+    image: freeverseio/universeapi:dev
     depends_on:
       - postgres
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
@@ -31,13 +31,13 @@ services:
     image: freeverseio/relay:dev
     ports:
       - "4003:4000"
-  monogql:
-    image: freeverseio/monogql:dev
+  horizon:
+    image: freeverseio/horizon:dev
     depends_on:
-      - horizon
+      - universeapi
       - marketapi
       - relay
-    command: -u http://horizon:4000/graphql -m http://marketapi:4000/graphql -r http://relay:4000/graphql
+    command: -u http://universeapi:4000/graphql -m http://marketapi:4000/graphql -r http://relay:4000/graphql
     ports:
       - "4000:4000"
 volumes:
