@@ -78,20 +78,6 @@ jobs:
       - run:
           name: Setup 
           command: cd market/nodejs-market-api && npm install
-  reactjs-frontend:
-    docker:
-      - image: freeverseio/circleci
-    steps:
-      - checkout
-      - run:
-          name: Setup reactjs-frontend
-          command: cd reactjs-frontend && npm install
-      - run:
-          name: Test reactjs-frontend
-          command: cd reactjs-frontend && npm test
-      - run:
-          name: Build reactjs-frontend
-          command: cd reactjs-frontend && npm run build
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -209,6 +195,5 @@ workflows:
             - dockerization
             - truffle_core
             - go-soccer
-            - reactjs-frontend
 
 
