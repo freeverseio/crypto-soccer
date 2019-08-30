@@ -7,10 +7,10 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
   return {
     typeDefs: gql`
        extend type Mutation {
-        createPlayerSellOrder(input: PlayerSellOrderInput!): ID
-        deletePlayerSellOrder(playerId: ID!): ID
-        createPlayerBuyOrder(input: PlayerBuyOrderInput!): ID
-        deletePlayerBuyOrder(playerId: ID!): ID
+        createPlayerSellOrder(input: PlayerSellOrderInput!): BigInt
+        deletePlayerSellOrder(playerId: BigInt!): BigInt
+        createPlayerBuyOrder(input: PlayerBuyOrderInput!): BigInt
+        deletePlayerBuyOrder(playerId: BigInt!): BigInt
       }
     `,
     resolvers: {
