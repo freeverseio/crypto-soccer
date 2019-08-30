@@ -135,8 +135,8 @@ jobs:
           name: Create Docker relay
           command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
       - run:
-          name: Create Docker of mono gql
-          command: cd nodejs-common-gql && docker build -t freeverseio/monogql:dev .
+          name: Create Docker universe API
+          command: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
       - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -162,8 +162,8 @@ jobs:
           name: Upload Docker Relay
           command: docker push freeverseio/relay:dev
       - run:
-          name: Upload Docker Mono gql
-          command: docker push freeverseio/monogql:dev
+          name: Upload universe API
+          command: docker push freeverseio/universeapi:dev
 
   deploy:
     docker:
