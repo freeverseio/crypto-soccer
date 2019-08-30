@@ -186,7 +186,6 @@ workflows:
       - truffle_core
       - go-synchronizer
       - go-soccer
-      - reactjs-frontend
       - django-centauri
       - nodejs-market-api
       - relay
