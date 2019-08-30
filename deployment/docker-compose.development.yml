@@ -18,13 +18,19 @@ services:
     depends_on:
       - postgres
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
+    ports:
+      - "4001:4000"
   marketdb:
     image: freeverseio/marketdb:dev
   marketapi:
     image: freeverseio/marketapi:dev
     command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4000
+    ports:
+      - "4002:4000"
   relay:
     image: freeverseio/relay:dev
+    ports:
+      - "4003:4000"
   monogql:
     image: freeverseio/monogql:dev
     depends_on:
