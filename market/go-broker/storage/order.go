@@ -9,7 +9,7 @@ type Order struct {
 
 func (b *Storage) GetOrders() ([]Order, error) {
 	var orders []Order
-	rows, err := b.db.Query("SELECT player_sell_orders.playerId, player_sell_orders.price, player_buy_orders.playerId, player_buy_orders.price FROM player_sell_orders LEFT JOIN player_buy_orders;")
+	rows, err := b.db.Query("SELECT player_sell_orders.playerId, player_sell_orders.price, player_buy_orders.playerId, player_buy_orders.price FROM player_sell_orders INNER JOIN player_buy_orders;")
 	if err != nil {
 		return orders, err
 	}
