@@ -2,43 +2,43 @@ package storage
 
 import log "github.com/sirupsen/logrus"
 
-type SellOffer struct {
+type SellOrder struct {
 	PlayerId uint64
 	Price    uint64
 }
 
-func (b *Storage) CreateSellOffer(offer SellOffer) error {
-	log.Infof("[DBMS] + create sell offer %v", offer)
+func (b *Storage) CreateSellOrder(order SellOrder) error {
+	log.Infof("[DBMS] + create sell order %v", order)
 	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price) VALUES ($1, $2);",
-		offer.PlayerId,
-		offer.Price,
+		order.PlayerId,
+		order.Price,
 	)
 	return err
 }
 
-func (b *Storage) GetSellOfferts() ([]SellOffer, error) {
-	var offers []SellOffer
+func (b *Storage) GetSellOrders() ([]SellOrder, error) {
+	var orders []SellOrder
 	rows, err := b.db.Query("SELECT playerId, price FROM player_sell_orders;")
 	if err != nil {
-		return offers, err
+		return orders, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var offer SellOffer
+		var order SellOrder
 		err = rows.Scan(
-			&offer.PlayerId,
-			&offer.Price,
+			&order.PlayerId,
+			&order.Price,
 		)
 		if err != nil {
-			return offers, err
+			return orders, err
 		}
-		offers = append(offers, offer)
+		orders = append(orders, order)
 	}
-	return offers, nil
+	return orders, nil
 }
 
-func (b *Storage) DeleteSellOffer(playerId uint64) error {
-	log.Infof("[DBMS] Delete sell offer %v", playerId)
+func (b *Storage) DeleteSellOrder(playerId uint64) error {
+	log.Infof("[DBMS] Delete sell order %v", playerId)
 	_, err := b.db.Exec("DELETE FROM player_sell_orders WHERE (playerId == '$1');",
 		playerId,
 	)
