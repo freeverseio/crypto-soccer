@@ -39,7 +39,7 @@ func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 
 func (b *Storage) DeleteSellOrder(playerId uint64) error {
 	log.Infof("[DBMS] Delete sell order %v", playerId)
-	_, err := b.db.Exec("DELETE FROM player_sell_orders WHERE (playerId == '$1');",
+	_, err := b.db.Exec("DELETE FROM player_sell_orders WHERE (playerId == $1);",
 		playerId,
 	)
 	return err

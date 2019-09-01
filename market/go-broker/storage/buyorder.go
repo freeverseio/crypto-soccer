@@ -1,8 +1,19 @@
 package storage
 
+import log "github.com/sirupsen/logrus"
+
 type BuyOrder struct {
 	PlayerId uint64
 	Price    uint64
+}
+
+func (b *Storage) CreateBuyOrder(order BuyOrder) error {
+	log.Infof("[DBMS] + create buy order %v", order)
+	_, err := b.db.Exec("INSERT INTO player_buy_orders (playerId, price) VALUES ($1, $2);",
+		order.PlayerId,
+		order.Price,
+	)
+	return err
 }
 
 func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
@@ -24,4 +35,12 @@ func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
 		offers = append(offers, offer)
 	}
 	return offers, nil
+}
+
+func (b *Storage) DeleteBuyOrder(playerId uint64) error {
+	log.Infof("[DBMS] Delete buy order %v", playerId)
+	_, err := b.db.Exec("DELETE FROM player_buy_orders WHERE (playerId == $0);",
+		playerId,
+	)
+	return err
 }
