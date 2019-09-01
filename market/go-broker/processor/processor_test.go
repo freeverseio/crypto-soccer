@@ -12,6 +12,7 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	processor := processor.NewProcessor(sto)
+	ethereumClient := "HTTP://127.0.0.1:8545"
+	processor := processor.NewProcessor(sto, ethereumClient)
 	processor.Process()
 }
