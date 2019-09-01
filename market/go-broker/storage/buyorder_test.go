@@ -6,12 +6,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/market/go-broker/storage"
 )
 
-func TestGetBuyOffers(t *testing.T) {
+func TestGetBuyOrders(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetBuyOfferts()
+	result, err := sto.GetBuyOrders()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,19 +1,19 @@
 package storage
 
-type BuyOffer struct {
+type BuyOrder struct {
 	PlayerId uint64
 	Price    uint64
 }
 
-func (b *Storage) GetBuyOfferts() ([]BuyOffer, error) {
-	var offers []BuyOffer
+func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
+	var offers []BuyOrder
 	rows, err := b.db.Query("SELECT playerId, price FROM player_buy_orders;")
 	if err != nil {
 		return offers, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var offer BuyOffer
+		var offer BuyOrder
 		err = rows.Scan(
 			&offer.PlayerId,
 			&offer.Price,
