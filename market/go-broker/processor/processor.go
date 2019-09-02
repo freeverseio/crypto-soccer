@@ -1,6 +1,8 @@
 package processor
 
 import (
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/market/go-broker/contracts/assets"
@@ -37,7 +39,13 @@ func (b *Processor) Process() error {
 	}
 
 	for _, order := range orders {
-		log.Infof("[broker] transfer player: %v", order.SellOrder.PlayerId)
+		log.Infof("[broker] transfering player: %v", order.SellOrder.PlayerId)
+		owner, err := b.assets.GetPlayerOwner(nil, big.NewInt(int64(order.SellOrder.PlayerId)))
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		log.Infof("owner : %v", owner)
 	}
 
 	return nil
