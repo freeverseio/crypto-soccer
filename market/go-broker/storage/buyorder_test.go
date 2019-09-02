@@ -19,7 +19,7 @@ func TestGetBuyOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBuyOrder(storage.BuyOrder{1, 1000, "0x555"})
+	err = sto.CreateBuyOrder(storage.BuyOrder{1, 1000, 2})
 	if err != nil {
 		t.Fatal(err)
 	}

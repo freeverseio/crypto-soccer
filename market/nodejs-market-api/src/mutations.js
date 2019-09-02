@@ -29,8 +29,8 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           return playerId;
         },
         createPlayerBuyOrder: async (_, {input}, context) => {
-          const { playerid, price, owner } = input;
-          const query = sql.query`INSERT INTO player_buy_orders (playerId, price, owner) VALUES (${sql.value(playerid)}, ${sql.value(price)}, ${sql.value(owner)})`;
+          const { playerid, price, teamid } = input;
+          const query = sql.query`INSERT INTO player_buy_orders (playerId, price, teamId) VALUES (${sql.value(playerid)}, ${sql.value(price)}, ${sql.value(teamid)})`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return playerid;

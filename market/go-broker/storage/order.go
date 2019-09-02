@@ -9,7 +9,7 @@ type Order struct {
 
 func (b *Storage) GetOrders() ([]Order, error) {
 	var orders []Order
-	rows, err := b.db.Query("SELECT player_sell_orders.playerId, player_sell_orders.price, player_buy_orders.playerId, player_buy_orders.price FROM player_sell_orders INNER JOIN player_buy_orders ON player_sell_orders.playerId = player_buy_orders.playerId;")
+	rows, err := b.db.Query("SELECT player_sell_orders.playerId, player_sell_orders.price, player_buy_orders.playerId, player_buy_orders.price, player_buy_orders.teamId FROM player_sell_orders INNER JOIN player_buy_orders ON player_sell_orders.playerId = player_buy_orders.playerId;")
 	if err != nil {
 		return orders, err
 	}
@@ -21,6 +21,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 			&order.SellOrder.Price,
 			&order.BuyOrder.PlayerId,
 			&order.BuyOrder.Price,
+			&order.BuyOrder.TeamId,
 		)
 		if err != nil {
 			return orders, err
@@ -31,7 +32,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 }
 
 func (b *Storage) DeleteOrder(playerId uint64) error {
-	log.Infof("[DBMS] + create order %v", playerId)
+	log.Infof("[DBMS] - delete order %v", playerId)
 	err := b.DeleteBuyOrder(playerId)
 	if err != nil {
 		return err

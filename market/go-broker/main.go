@@ -41,7 +41,10 @@ func main() {
 	}
 
 	for {
-		processor.Process()
+		err = processor.Process()
+		if err != nil {
+			log.Error(err)
+		}
 		time.Sleep(2 * time.Second)
 	}
 }
