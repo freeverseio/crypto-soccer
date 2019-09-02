@@ -91,7 +91,7 @@ contract Assets {
         return PLAYERS_PER_TEAM_MAX;
     }
 
-    function _transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function _transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
         require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
         uint256 state = getPlayerState(playerId);
