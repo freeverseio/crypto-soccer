@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Assets = artifacts.require('Assets');
+const Assets = artifacts.require('FreezableAssets');
 const States = artifacts.require('LeagueState');
 const Engine = artifacts.require('Engine');
 const GameController = artifacts.require("GameController");
