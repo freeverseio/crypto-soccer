@@ -45,7 +45,7 @@ func (b *Processor) Process() error {
 			log.Error(err)
 			continue
 		}
-		log.Infof("owner : %v", owner)
+		log.Infof("owner : %v", owner.Hex())
 	}
 
 	return nil
