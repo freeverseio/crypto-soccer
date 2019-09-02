@@ -42,4 +42,8 @@ contract AssetsMock is Assets {
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         _transferPlayer(playerId, teamIdTarget);
     }
+
+    function getTeamOwner(string memory name) public view returns (address) {
+        return _getTeamOwner(name);
+    }
 }
