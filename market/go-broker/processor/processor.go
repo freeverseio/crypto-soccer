@@ -28,7 +28,17 @@ func NewProcessor(db *storage.Storage, ethereumClient string, assetsContractAddr
 	return &Processor{db, client, assetsContract}, nil
 }
 
-func (b *Processor) Process() {
+func (b *Processor) Process() error {
 	log.Info("Processing")
 
+	orders, err := b.db.GetOrders()
+	if err != nil {
+		return err
+	}
+
+	for _, order := range orders {
+		log.Infof("[broker] transfer player: %v", order.SellOrder.PlayerId)
+	}
+
+	return nil
 }
