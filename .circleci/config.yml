@@ -56,6 +56,17 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
+  broker:
+    docker:
+      - image: freeverseio/circleci
+    steps:
+      - checkout
+      - run:
+          name: Compile 
+          command: cd market/go-broker && go build
+      - run:
+          name: Test 
+          command: cd market/go-broker && go test ./...
   relay:
     docker:
       - image: freeverseio/circleci
@@ -124,6 +135,9 @@ jobs:
           name: Create Docker universe API
           command: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
       - run:
+          name: Create Docker market broker
+          command: cd market/go-broker && docker build -t freeverseio/broker:dev .
+      - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: 
@@ -150,6 +164,9 @@ jobs:
       - run:
           name: Upload universe API
           command: docker push freeverseio/universeapi:dev
+      - run:
+          name: Upload market
+          command: docker push freeverseio/market:dev
 
   deploy:
     docker:
