@@ -1,0 +1,116 @@
+create timeZone
+
+
+teamPosInOrgMap = None is ugly
+make sure sales cannot happen in the very same block as market closure
+
+buildOrgMapBasedOnRating move to timeZone
+
+
+allow create Country with any nDivs
+divisonIdxToRound needs not be a map (if it is to have outsider teams, make it explicit?)
+
+add country -> check (maybe like add div)
+        # assert timeZone not in self.timeZoneToCountries, "timeZone already alive"
+
+make orgmap an array of int from start to avoid:
+             prevOrgMapThisCountry = np.array(orgMap[teamsAboveThisCountry:teamsAboveThisCountry+nTeamsPerCountry[c]])
+in general change append() that need fors to avoid [], for np.append( , )
+
+review sum of skills for rating a[d:f]
+skills of freeShirt seem non int
+
+sort teams in leagues
+check that I think we need L5 instead of L4
+
+
+
+- probably need to set playerIdx in     def getPlayerStateAtBirth(self, playerIdx):  (or otherwise, do not even have that field?)
+- recheck that there's enough room to compute all getInitSkills !
+
+
+- restrict half time changes to 3
+
+- I think we need nDisions (new and old) => probably we need all of that as old/new
+- I would swear I need the prevShirtNumber besides prevTeam in playerState... how do I find skills otherwise?
+
+- check when player has been transfered to the same league, or back and from to the same league.
+
+- double check <= in getLastestSkills:    newest = 0 < self.timeZones[timeZone].updateCycleIdx <= pylio.cycleIdx(15,0)
+- also double check if the player has been sold before any round: is the prevPlayedTeamIdx updated? (we wouldn't want)
+        if self.timeZones[timeZone].isJustCreated() and playerState.prevPlayedTeamIdx == 0:
+            return self.getPlayerSkillsAtBirth(playerIdx)
+
+- check what happens when asking for playerSkills between OpenMarket and NewOrgMap, in terms of asking for the correct map
+
+- "I need to implement getInitSkills after round 1 for a given timezone"
+- "player evolution through a round by playing games"
+
+- issue: if can 2 bots eventually be created equally? currently yes. Imagine a league in DIV = 2. The first bot. It is then taken by someone who eventually goes to Limbo => BOTS should use "round" as seed. The worse is its playerIDX.
+
+
+
+- move TZ_IDX_DRAW_NEXT_LEAGUES... etc to a function:
+	day, turnInDay => cycleIdx
+
+- add divisions + 10 in orgChart
+
+verseToTimeZone: timeZone, posInTimeZone = f(verse) used by currentTimeZone... used by nobody
+
+
+- when a country or a division is created, teams are assigned automatically, so no need for orgChart update
+
+
+
+- maybe repeated: getLeagueIdxInCountryFromTeamIdxInCountry?
+
+
+- updateCycleIdx needs not be written, can be computed on the fly?
+- check all use of deployTimeInSecsOfADay
+- remove Country.timeZone
+- some isPlayerTransferable went from isPlayerBusy, which is the oppostite!
+- use timestamp
+- replace python int() by //
+-----------
+
+
+
+
+es pot fer un shorten del hash per quedarse 16 bytes enlloc de 32?
+why do we need this in each slash? Is not a slash followed by a write()?
+	         self.lastWriteBlocknum          = blocknum # toni (needed?)
+
+
+
+- we should disallow leagues to be created in the past, and test usersAlong...
+
+
+
+check packing inputs by adria
+
+
+LeaguesBase
+
+LeaguesScheduler is LeaguesBase
+
+LeagueUsersAlongData is LeaguesScheduler
+LeagueUpdatable is LeaguesScheduler
+
+LeagueChallengeable is LeaguesComputer, LeagueUsersAlongData
+
+LeaguesScore is LeagueUpdatable
+LeaguesComputer is LeaguesScore
+
+Leagues is LeagueChallengeable
+
+
+Leagues -> LeagueChallengeable =>{
+
+ -> LeaguesComputer		-> LeaguesScore		-> LeagueUpdatable 	-> LeaguesScheduler
+ -> LeagueUsersAlongData 										-> LeaguesScheduler -> LeaguesBase
+
+}
+
+
+LeagueState -> TeamState -> PlayerState
+

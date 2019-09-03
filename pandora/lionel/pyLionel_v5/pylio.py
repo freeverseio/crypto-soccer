@@ -51,7 +51,7 @@ def printPlayer(playerState):
 def printTeam(teamIdx, ST_CLIENT):
     hash = 0
     print("Player for teamIdx %d, with teamName %s: " %(teamIdx, ST_CLIENT.teams[teamIdx].name))
-    for shirtNum in range(NPLAYERS_PER_TEAM_MAX):
+    for shirtNum in range(PLAYERS_PER_TEAM_MAX):
         if ST_CLIENT.isShirtNumFree(teamIdx, shirtNum):
             continue
         playerIdx = ST_CLIENT.getPlayerIdxFromTeamIdxAndShirt(teamIdx, shirtNum)
@@ -62,7 +62,7 @@ def printTeam(teamIdx, ST_CLIENT):
     return hash
 
 def isValidOrdering(playerOrders):
-    # TODO: Currently not implemented. Check all nums are different and in [0, NPLAYERS_PER_TEAM_INIT]
+    # TODO: Currently not implemented. Check all nums are different and in [0, PLAYERS_PER_TEAM_INIT]
     return True
 
 def shiftBack(t, nTeams):
@@ -103,12 +103,13 @@ def computeTeamRating(playerSkills):
     return sum([sum(thisPlayerSkills.getSkills()) for thisPlayerSkills in playerSkills])
 
 
-def addFixedPointsToAllPlayers(playerSkills, points):
-    for playerState in playerSkills:
-        playerState.setSkills(playerState.getSkills() + points)
+def addFixedleaguePointsToAllPlayers(allPlayerSkills, leaguePoints):
+    occupiedShirtSkills = [sk for sk in allPlayerSkills if sk.playerIdx != FREE_PLAYER_IDX]
+    for playerSkills in occupiedShirtSkills:
+        playerSkills.setSkills(playerSkills.getSkills() + leaguePoints)
 
 
-# given the result, it computes the evolution points won per team, and applies them to their players
+# given the result, it computes the evolution leaguePoints won per team, and applies them to their players
 def updatePlayerSkillsAfterMatch(playerSkills1, playerSkills2, goals1, goals2):
     ps1 = duplicate(playerSkills1)
     ps2 = duplicate(playerSkills2)
@@ -116,17 +117,17 @@ def updatePlayerSkillsAfterMatch(playerSkills1, playerSkills2, goals1, goals2):
     if goals1 == goals2:
         return ps1, ps2
 
-    pointsWon = computePointsWon(ps1, ps2, goals1, goals2)
+    leaguePointsWon = computeleaguePointsWon(ps1, ps2, goals1, goals2)
     if goals1 > goals2:
-        addFixedPointsToAllPlayers(ps1, pointsWon)
+        addFixedleaguePointsToAllPlayers(ps1, leaguePointsWon)
     else:
-        addFixedPointsToAllPlayers(ps2, pointsWon)
+        addFixedleaguePointsToAllPlayers(ps2, leaguePointsWon)
 
     return ps1, ps2
 
 
-# simple mockup of what the evolution points could look like.
-def computePointsWon(playerState1, playerState2, goals1, goals2):
+# simple mockup of what the evolution leaguePoints could look like.
+def computeleaguePointsWon(playerState1, playerState2, goals1, goals2):
     ratingDiff              = computeTeamRating(playerState1) - computeTeamRating(playerState2)
     winnerWasBetter         = (ratingDiff > 0 and goals1>goals2) or (ratingDiff < 0 and goals1<goals2)
 
@@ -140,13 +141,15 @@ def computePointsWon(playerState1, playerState2, goals1, goals2):
 # were right at the beginning of that matchday
 def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdaySeed):
     nTeams = len(prevSkills)
+    leaguePoints = np.zeros(nTeams, int)
     nMatchesPerMatchday = nTeams//2
     scores = np.zeros([nMatchesPerMatchday, 2], int)
     skillsAtMatchday = createEmptyPlayerStatesForAllTeams(nTeams)
 
+
     for match in range(nMatchesPerMatchday):
         team1, team2 = getTeamsInMatch(matchday, match, nTeams)
-
+        matchSeed = intHash(str(matchdaySeed + match))
         goals1, goals2 = playMatch(
             prevSkills[team1],
             prevSkills[team2],
@@ -154,8 +157,15 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
             tactics[team2],
             teamOrders[team1],
             teamOrders[team2],
-            matchdaySeed
+            matchSeed
         )
+        if goals1 > goals2:
+            leaguePoints[team1] = 3
+        elif goals1 < goals2:
+            leaguePoints[team2] = 3
+        else:
+            leaguePoints[team1] = 1
+            leaguePoints[team2] = 1
         scores[match] = [goals1, goals2]
         skillsAtMatchday[team1], skillsAtMatchday[team2] = \
             updatePlayerSkillsAfterMatch(
@@ -164,7 +174,7 @@ def computeStatesAtMatchday(matchday, prevSkills, tactics, teamOrders, matchdayS
                     goals1,
                     goals2
                 )
-    return skillsAtMatchday, scores
+    return skillsAtMatchday, scores, leaguePoints
 
 # checks if 2 structs are equal by comparing the hash of their serialization
 def areEqualStructs(st1, st2):
@@ -172,7 +182,7 @@ def areEqualStructs(st1, st2):
 
 
 def createEmptyPlayerStatesForAllTeams(nTeams):
-    return arrayDims(NPLAYERS_PER_TEAM_MAX, nTeams)
+    return arrayDims(PLAYERS_PER_TEAM_MAX, nTeams)
 
 
 # ---------------- FUNCTIONS TO ADVANCE BLOCKS IN THE BC AND CLIENT ----------------
@@ -181,12 +191,11 @@ def advanceToBlock(n, ST, ST_CLIENT):
     nBlocksToAdvance = n - ST.currentBlock
     assert nBlocksToAdvance > 0, "cannot advance less than 1 block"
     for block in range(nBlocksToAdvance):
-        verseWasCrossedBC = ST.incrementBlock()
-        verseWasCrossedCLIENT = ST_CLIENT.incrementBlock()
-        assert verseWasCrossedBC == verseWasCrossedCLIENT, "CLIENT and BC not synced in verse crossing"
-        if verseWasCrossedBC:
-            ST_CLIENT.syncActions(ST)
-            ST_CLIENT.syncLeagueCommits(ST)
+        assert ST.isCrossingVerse() == ST_CLIENT.isCrossingVerse(), "CLIENT and BC not synced in verse crossing"
+        if ST.isCrossingVerse():
+            ST_CLIENT.syncTimeZoneCommits(ST)
+        ST.incrementBlock()
+        ST_CLIENT.incrementBlock()
 
 def advanceNBlocks(deltaN, ST, ST_CLIENT):
     advanceToBlock(
@@ -220,7 +229,7 @@ def flatten(statesPerTeam):
     flatStates = []
     for statesTeam in statesPerTeam:
         for statePlayer in statesTeam:
-            flatStates.append(MinimalPlayerState(statePlayer)) # select only skills and playerIdx
+            flatStates.append(PlayerSkills(statePlayer)) # select only skills and playerIdx
     return flatStates
 
 def challengeLevel1(verse, addr, ST, ST_CLIENT, lie):
@@ -377,3 +386,35 @@ def exchangePlayers(playerIdx1, playerIdx2, ST, ST_CLIENT):
 def movePlayerToTeam(playerIdx, teamIdx, ST, ST_CLIENT):
     ST.movePlayerToTeam(playerIdx, teamIdx)
     ST_CLIENT.movePlayerToTeam(playerIdx, teamIdx)
+
+
+def addCountry(timeZone, ST, ST_CLIENT):
+    ST.timeZones[timeZone].nCountriesToAdd += 1
+    ST_CLIENT.timeZones[timeZone].nCountriesToAdd += 1
+
+def addDivision(timeZone, countryIdx, ST, ST_CLIENT):
+    ST.timeZones[timeZone].addDivision(countryIdx)
+    ST_CLIENT.timeZones[timeZone].addDivision(countryIdx)
+
+# TODO: all this can be precompiled and remove calls to cycleIdx
+def cycleIdx(day, turnInDay):
+    return (day - 1) * 4 + turnInDay
+
+
+def getInitOrgMapHash():
+    header, orgMap = buildInitOrgMap()
+    return serialHash([header, orgMap])
+
+def buildInitOrgMap():
+    # this should be hardcoded for each nCountries
+    header = []
+    orgMap = []
+    header.append(NUM_COUNTRIES_AT_DEPLOY)
+    nLeaguesPerCountry = LEAGUES_1ST_DIVISION + LEAGUES_PER_DIVISION * (DIVS_PER_COUNTRY_AT_DEPLOY-1)
+    nTeamsInCountry = nLeaguesPerCountry * TEAMS_PER_LEAGUE
+    for country in range(NUM_COUNTRIES_AT_DEPLOY):
+        header.append(nTeamsInCountry)
+        teamIdxs = list(range(nTeamsInCountry))
+        orgMap += teamIdxs
+    return header, orgMap
+
