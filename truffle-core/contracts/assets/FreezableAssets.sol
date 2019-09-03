@@ -47,21 +47,21 @@ contract FreezableAssets is Assets {
 
         // check that they signed what they input data says they signed:
         // ...for the seller:
-        bytes32 sellerTxHash = prefixed(buildSellerTxMsg(privHash, validUntil, playerId, typeOfTX));
+        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(privHash, validUntil, playerId, typeOfTX));
         require(sellerTxHash == sigs[SELL_MSG], "seller signed a message that does not match the provided pre-hash data");
         // ...for the buyer:
-        bytes32 buyerTxHash = prefixed(buildBuyerTxMsg(sellerTxHash, teamId));
+        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, teamId));
         require(buyerTxHash == sigs[BUY_MSG], "buyer signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
         playerIdToTargetTeam[playerId] = teamId;
     }
 
-    function buildSellerTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
+    function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
         return keccak256(abi.encode(privHash, validUntil, playerId, typeOfTX));
     }
 
-    function buildBuyerTxMsg(bytes32 sellerMsg, uint256 teamId) public pure returns (bytes32) {
+    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, uint256 teamId) public pure returns (bytes32) {
         return keccak256(abi.encode(sellerMsg, teamId));
     }
 
