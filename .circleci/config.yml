@@ -61,6 +61,9 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
+      - run: 
+          name: deploy contracts
+          command: make setup contracts
       - run:
           name: Compile 
           command: cd market/go-broker && go build
