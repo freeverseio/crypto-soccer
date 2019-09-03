@@ -12,7 +12,7 @@ contract FreezableAssets is Assets {
     uint8 constant internal SELLER   = 0;
     uint8 constant internal BUYER    = 1;
 
-    mapping (uint256 => bool) private isPlayerFrozen;
+    mapping (uint256 => uint256) private playerIdToTargetTeam;
 
     constructor(address playerState) public Assets(playerState) {
     }
@@ -33,7 +33,7 @@ contract FreezableAssets is Assets {
         require(now < validUntil, "these TXs had a valid time that expired already");
 
         // check player is not already frozen
-        require(isPlayerFrozen[playerId] == false, "player already frozen");
+        require(!isFrozen(playerId), "player already frozen");
 
         // check assets are owned by someone
         require(getPlayerOwner(playerId) != address(0), "player not owned by anyone");
@@ -54,7 +54,7 @@ contract FreezableAssets is Assets {
         require(buyerTxHash == sigs[BUY_MSG], "buyer signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
-        isPlayerFrozen[playerId] = true;
+        playerIdToTargetTeam[playerId] = teamId;
     }
 
     function buildSellerTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
@@ -98,11 +98,22 @@ contract FreezableAssets is Assets {
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         _transferPlayer(playerId, teamIdTarget);
-        isPlayerFrozen[playerId] = false;
+        delete(playerIdToTargetTeam[playerId]);
     }
 
-    function isFrozen(uint256 playerId) external view returns (bool) {
+    function isFrozen(uint256 playerId) public view returns (bool) {
         require(_playerExists(playerId), "unexistent player");
-        return isPlayerFrozen[playerId];
+        return playerIdToTargetTeam[playerId] != 0;
     }
+
+    function cancelFreeze(uint256 playerId) public {
+        require(isFrozen(playerId), "player not frozen, nothing to cancel");
+        delete(playerIdToTargetTeam[playerId]);
+    }
+
+    function completeFreeze(uint256 playerId) public {
+        require(isFrozen(playerId), "player not frozen, nothing to cancel");
+        transferPlayer(playerId, playerIdToTargetTeam[playerId]);
+    }
+
 }
