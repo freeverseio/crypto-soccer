@@ -116,7 +116,7 @@ contract("FreezableAssets", accounts => {
     owner.should.not.equal(ALICE); // the player is not owned by ALICE
     owner.should.be.equal(BOB);
   });
-
+ 
   it("completes a seller - buyer agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to seller: OK, failed
@@ -229,6 +229,106 @@ contract("FreezableAssets", accounts => {
     let finalOwner = await verifierLib.getPlayerOwner(playerID).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
+
+  it("completes a seller - buyer agreement via MTXs but cancels because payment went wrong", async () => {
+    const sellerAccount = await web3.eth.accounts.create("iamaseller");
+    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
+    await verifierLib.createTeam("Barca", sellerAccount.address).should.be.fulfilled;
+    await verifierLib.createTeam("Madrid", buyerAccount.address).should.be.fulfilled;
+
+    // Define params of the seller, and sign
+    let now = await verifierLib.getBlockchainNowTime();
+    const validUntil = 2 * now.toNumber();
+    const playerID = 10;
+    const typeOfTX = 1;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
+
+    // mobile app does this:
+    sigSeller = await signSellerTX(
+      currencyId,
+      price,
+      rnd,
+      validUntil,
+      playerID,
+      sellerAccount,
+      typeOfTX
+    );
+
+    // First of all, Freeverse and Buyer check the signature
+    // In this case, using web3:
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+
+    // It can also be checked in the BC:
+    const privHash = concatHash(
+      ["uint8", "uint256", "uint256"],
+      [currencyId, price, rnd]
+    );
+    sellerTxMsgBC = await verifierLib.buildSellerTxMsg(
+      privHash,
+      validUntil,
+      playerID,
+      typeOfTX
+    ).should.be.fulfilled;
+    sellerTxMsgBC.should.be.equal(sigSeller.message);
+
+    // Then, the buyer builds a message to sign
+    const teamId = 2;
+
+    let isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
+    let sigBuyer = await signBuyerTX(
+      currencyId,
+      price,
+      rnd,
+      validUntil,
+      playerID,
+      typeOfTX,
+      buyerAccount,
+      teamId
+    ).should.be.fulfilled;
+
+    isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
+    // Freeverse checks the signature
+    recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
+    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+
+    // and send the Freeze TX. If it finishes, it went through.
+    const sigs = [
+      sigSeller.messageHash,
+      sigSeller.r,
+      sigSeller.s,
+      sigBuyer.messageHash,
+      sigBuyer.r,
+      sigBuyer.s
+    ];
+    const vs = [sigSeller.v, sigBuyer.v];
+    await verifierLib.freezePlayer(
+      privHash,
+      validUntil,
+      playerID,
+      typeOfTX,
+      teamId,
+      sigs,
+      vs
+    ).should.be.fulfilled;
+
+    isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
+    isFrozen.should.be.equal(true);
+    
+    // Freeverse waits until actual money has been transferred between users, and completes sale
+    let initOwner = await verifierLib.getPlayerOwner(playerID).should.be.fulfilled;
+    initOwner.should.be.equal(sellerAccount.address);
+    await verifierLib.cancelFreeze(playerID).should.be.fulfilled;
+    let finalOwner = await verifierLib.getPlayerOwner(playerID).should.be.fulfilled;
+    finalOwner.should.be.equal(initOwner);
+  });
+    
 
   it("test accounts from truffle and web3", async () => {
     accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;
