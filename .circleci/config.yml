@@ -169,7 +169,7 @@ jobs:
           command: docker push freeverseio/universeapi:dev
       - run:
           name: Upload market
-          command: docker push freeverseio/market:dev
+          command: docker push freeverseio/broker:dev
 
   deploy:
     docker:
