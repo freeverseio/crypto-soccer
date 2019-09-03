@@ -221,6 +221,13 @@ contract("FreezableAssets", accounts => {
 
     isFrozen = await verifierLib.isFrozen(playerID).should.be.fulfilled;
     isFrozen.should.be.equal(true);
+    
+    // Freeverse waits until actual money has been transferred between users, and completes sale
+    let initOwner = await verifierLib.getPlayerOwner(playerID).should.be.fulfilled;
+    initOwner.should.be.equal(sellerAccount.address);
+    await verifierLib.completeFreeze(playerID).should.be.fulfilled;
+    let finalOwner = await verifierLib.getPlayerOwner(playerID).should.be.fulfilled;
+    finalOwner.should.be.equal(buyerAccount.address);
   });
 
   it("test accounts from truffle and web3", async () => {
