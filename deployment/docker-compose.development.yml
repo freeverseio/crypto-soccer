@@ -27,6 +27,9 @@ services:
     command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4000
     ports:
       - "4002:4000"
+  broker:
+    image: freeverseio/broker:dev
+    command: -postgres postgres://freeverse:freeverse@marketdb:5432/market?sslmode=disable
   relay:
     image: freeverseio/relay:dev
     ports:
