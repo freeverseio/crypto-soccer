@@ -11,6 +11,8 @@ contract FreezableAssets is Assets {
     uint8 constant internal BUY_s    = 5;
     uint8 constant internal SELLER   = 0;
     uint8 constant internal BUYER    = 1;
+    uint8 constant internal PUT_FOR_SALE  = 1;
+    uint8 constant internal MAKE_AN_OFFER = 2;
 
     mapping (uint256 => uint256) private playerIdToTargetTeam;
 
@@ -27,7 +29,7 @@ contract FreezableAssets is Assets {
         uint8[2] memory vs
     ) public {
         // check that the purpose of this transaction is of type 1 (sell - agree to buy)
-        require(typeOfTX == 1 || typeOfTX == 2, "typeOfTX not valid");
+        require(typeOfTX == PUT_FOR_SALE || typeOfTX == MAKE_AN_OFFER, "typeOfTX not valid");
 
         // check validUntil has not expired
         require(now < validUntil, "these TXs had a valid time that expired already");
@@ -49,7 +51,7 @@ contract FreezableAssets is Assets {
         // ...for the seller and the buyer:
         bytes32 sellerTxHash;
         bytes32 buyerTxHash;
-        if (typeOfTX == 1) {
+        if (typeOfTX == PUT_FOR_SALE) {
             sellerTxHash = prefixed(buildPutForSaleTxMsg(privHash, validUntil, playerId, typeOfTX));
             buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerTeamId));
         } else {
