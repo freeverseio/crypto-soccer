@@ -1,5 +1,5 @@
 const States = artifacts.require('LeagueState');
-const Assets = artifacts.require('Assets');
+const Assets = artifacts.require('FreezableAssets');
 
 module.exports = function (deployer) {
   deployer.then(async () => {

@@ -87,7 +87,7 @@ contract FreezableAssets is Assets {
 
     function getTeamOwner(uint256 teamId) public view returns (address) {
         string memory name = getTeamName(teamId);
-        return getTeamOwner(name);
+        return _getTeamOwner(name);
     }
 
     function getPlayerOwner(uint256 playerId) public view returns (address) {

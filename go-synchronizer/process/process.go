@@ -172,7 +172,7 @@ func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) err
 	for _, event := range events {
 		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
 			return err
-		} else if owner, err := p.assets.GetTeamOwner(nil, name); err != nil {
+		} else if owner, err := p.assets.GetTeamOwner(nil, event.Id); err != nil {
 			return err
 		} else if blockTime, blockNumber, err := p.getTimeOfEvent(event.Raw); err != nil {
 			return err

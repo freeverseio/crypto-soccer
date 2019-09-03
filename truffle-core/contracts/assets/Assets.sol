@@ -76,7 +76,7 @@ contract Assets {
     function transferTeam(uint256 teamId, address newOwner) public {
         require(_teamExists(teamId), "invalid team id");
         require(newOwner != address(0), "meaningless adress");
-        require(newOwner != getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
+        require(newOwner != _getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
         bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
         _teamNameHashToOwner[nameHash] = newOwner;
         emit TeamTransfer(teamId, newOwner);
@@ -91,7 +91,7 @@ contract Assets {
         return PLAYERS_PER_TEAM_MAX;
     }
 
-    function _transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+    function _transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
         // warning: check of ownership of players and teams should be done before calling this function
         require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
         uint256 state = getPlayerState(playerId);
@@ -177,7 +177,7 @@ contract Assets {
     }
 
     // TODO: exception when not existent team
-    function getTeamOwner(string memory name) public view returns (address) {
+    function _getTeamOwner(string memory name) internal view returns (address) {
         bytes32 nameHash = keccak256(abi.encode(name));
         return _teamNameHashToOwner[nameHash];
     }
