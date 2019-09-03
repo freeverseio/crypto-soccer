@@ -192,6 +192,7 @@ workflows:
       - django-centauri
       - nodejs-market-api
       - relay
+      - broker
       - dockerization:
           filters:
             branches:
@@ -203,6 +204,7 @@ workflows:
             - django-centauri
             - nodejs-market-api
             - relay
+            - broker
       - deploy:
           filters:
            branches:
