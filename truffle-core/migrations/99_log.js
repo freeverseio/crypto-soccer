@@ -1,9 +1,9 @@
 const fs = require('fs');
-const Assets = artifacts.require('FreezableAssets');
+const Assets = artifacts.require('Assets');
 const States = artifacts.require('LeagueState');
-const Engine = artifacts.require('Engine');
-const GameController = artifacts.require("GameController");
-const Leagues = artifacts.require('Leagues');
+// const Engine = artifacts.require('Engine');
+// const GameController = artifacts.require("GameController");
+// const Leagues = artifacts.require('Leagues');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -13,9 +13,9 @@ module.exports = function (deployer) {
     config = {};
     config.assetsContractAddress = Assets.address;
     config.statesContractAddress = States.address;
-    config.engineContractAddress = Engine.address;
-    config.gameControllerContractAddress = GameController.address;
-    config.leaguesContractAddress = Leagues.address;
+    // config.engineContractAddress = Engine.address;
+    // config.gameControllerContractAddress = GameController.address;
+    // config.leaguesContractAddress = Leagues.address;
     console.log(JSON.stringify(config, null, 4));
   })
     .catch(console.error);
