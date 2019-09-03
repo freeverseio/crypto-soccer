@@ -22,12 +22,12 @@ contract FreezableAssets is Assets {
         uint256 validUntil,
         uint256 playerId,
         uint8 typeOfTX,
-        uint256 teamId,
+        uint256 buyerTeamId,
         bytes32[6] memory sigs,
         uint8[2] memory vs
     ) public {
         // check that the purpose of this transaction is of type 1 (sell - agree to buy)
-        require(typeOfTX == 1, "typeOfTX not valid");
+        require(typeOfTX == 1 || typeOfTX == 2, "typeOfTX not valid");
 
         // check validUntil has not expired
         require(now < validUntil, "these TXs had a valid time that expired already");
@@ -37,32 +37,42 @@ contract FreezableAssets is Assets {
 
         // check assets are owned by someone
         require(getPlayerOwner(playerId) != address(0), "player not owned by anyone");
-        require(getTeamOwner(teamId) != address(0), "team not owned by anyone");
+        require(getTeamOwner(buyerTeamId) != address(0), "team not owned by anyone");
 
         // check signatures are valid by requiring that they own the asset:
         require(getPlayerOwner(playerId) == recoverAddr(sigs[SELL_MSG], vs[SELLER], sigs[SELL_r], sigs[SELL_s]),
             "seller is not owner of player, or seller signature is not valid");
-        require(getTeamOwner(teamId) == recoverAddr(sigs[BUY_MSG], vs[BUYER], sigs[BUY_r], sigs[BUY_s]),
+        require(getTeamOwner(buyerTeamId) == recoverAddr(sigs[BUY_MSG], vs[BUYER], sigs[BUY_r], sigs[BUY_s]),
             "buyer is not owner of team, or buyer signature not valid");
 
         // check that they signed what they input data says they signed:
-        // ...for the seller:
-        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(privHash, validUntil, playerId, typeOfTX));
+        // ...for the seller and the buyer:
+        bytes32 sellerTxHash;
+        bytes32 buyerTxHash;
+        if (typeOfTX == 1) {
+            sellerTxHash = prefixed(buildPutForSaleTxMsg(privHash, validUntil, playerId, typeOfTX));
+            buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerTeamId));
+        } else {
+            buyerTxHash = prefixed(buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
+            sellerTxHash = buyerTxHash;
+        }
         require(sellerTxHash == sigs[SELL_MSG], "seller signed a message that does not match the provided pre-hash data");
-        // ...for the buyer:
-        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, teamId));
         require(buyerTxHash == sigs[BUY_MSG], "buyer signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
-        playerIdToTargetTeam[playerId] = teamId;
+        playerIdToTargetTeam[playerId] = buyerTeamId;
     }
 
     function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
         return keccak256(abi.encode(privHash, validUntil, playerId, typeOfTX));
     }
 
-    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, uint256 teamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerMsg, teamId));
+    function buildOfferToBuyTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint256 buyerTeamId, uint8 typeOfTX) public pure returns (bytes32) {
+        return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
+    }
+
+    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(sellerMsg, buyerTeamId));
     }
 
     // FUNCTIONS FOR SIGNATURE MANAGEMENT
@@ -85,19 +95,19 @@ contract FreezableAssets is Assets {
         return now;
     }
 
-    function getTeamOwner(uint256 teamId) public view returns (address) {
-        string memory name = getTeamName(teamId);
+    function getTeamOwner(uint256 buyerTeamId) public view returns (address) {
+        string memory name = getTeamName(buyerTeamId);
         return _getTeamOwner(name);
     }
 
     function getPlayerOwner(uint256 playerId) public view returns (address) {
         uint256 state = getPlayerState(playerId);
-        uint256 teamId = _playerState.getCurrentTeamId(state);
-        return getTeamOwner(teamId);
+        uint256 buyerTeamId = _playerState.getCurrentTeamId(state);
+        return getTeamOwner(buyerTeamId);
     }
 
-    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
-        _transferPlayer(playerId, teamIdTarget);
+    function transferPlayer(uint256 playerId, uint256 buyerTeamIdTarget) public  {
+        _transferPlayer(playerId, buyerTeamIdTarget);
         delete(playerIdToTargetTeam[playerId]);
     }
 
