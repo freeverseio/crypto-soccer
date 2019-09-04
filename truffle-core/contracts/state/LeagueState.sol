@@ -11,7 +11,6 @@ contract LeagueState is TeamState {
 
     function leagueStateAppend(uint256[] memory leagueState, uint256[] memory teamState) public pure returns (uint256[] memory state) {
         require(isValidLeagueState(leagueState), "invalid league state");
-        require(isValidTeamState(teamState), "invalid team state");
         state = new uint256[](leagueState.length + teamState.length + 1);
         for (uint256 i = 0 ; i < leagueState.length ; i++)
             state[i] = leagueState[i];

@@ -22,6 +22,32 @@ contract('PlayerState', (accounts) => {
         country.toNumber().should.be.equal(countryIdxInTZ);
         value.toNumber().should.be.equal(val);
     });
+
+    it('encoding skills', async () => {
+        const skills = await playerStateLib.encodePlayerSkills(
+            defence = 16383,
+            speed = 13,
+            pass = 4,
+            shoot = 56,
+            endurance = 456,
+            monthOfBirth = 4, 
+            playerId = 143,
+        ).should.be.fulfilled;
+        result = await playerStateLib.getDefence(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(defence);
+        result = await playerStateLib.getSpeed(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(speed);
+        result = await playerStateLib.getPass(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(pass);
+        result = await playerStateLib.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(shoot);
+        result = await playerStateLib.getEndurance(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(endurance);
+    });
+
+    
+    
+    return;
     
     it('create player state', async () => {
         const state = await playerStateLib.playerStateCreate(
@@ -44,17 +70,6 @@ contract('PlayerState', (accounts) => {
         result.should.be.bignumber.that.equals(shoot);
         result = await playerStateLib.getEndurance(state).should.be.fulfilled;
         result.should.be.bignumber.that.equals(endurance);
-    });
-
-    it('player with all skills 0 is valid', async () => {
-        const playerState = await playerStateLib.playerStateCreate(0,0,0,0,0,0,playerId = '1' ,0,0,0,0,0,1).should.be.fulfilled;
-        const valid = await playerStateLib.isValidPlayerState(playerState).should.be.fulfilled;
-        valid.should.be.equal(true);
-    })
-
-    it('is valid player state', async () => {
-        let result = await playerStateLib.isValidPlayerState(0).should.be.fulfilled;
-        result.should.be.equal(false);
     });
 
     it('skills getters from state player', async () => {

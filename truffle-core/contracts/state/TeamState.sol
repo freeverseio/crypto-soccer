@@ -17,34 +17,23 @@ contract TeamState is PlayerState {
 
     /// @return how many player state are in team state
     function teamStateSize(uint256[] memory teamState) public pure returns (uint256 count) {
-        require(isValidTeamState(teamState), "invalid team state");
         return teamState.length;
     }
 
     /// @return player state at teamState[idx]
     function teamStateAt(uint256[] memory teamState, uint256 idx) public pure returns (uint256 playerState) {
         require(idx < teamState.length, "out of bound");
-        require(isValidTeamState(teamState), "invalid team state");
         playerState = teamState[idx];
-    }
-
-    function isValidTeamState(uint256[] memory state) public pure returns (bool) {
-        for (uint256 i = 0 ; i < state.length ; i++)
-            if (!isValidPlayerState(state[i]))
-                return false;
-        return true;
     }
 
     /// Evolve the team of delta
     function teamStateEvolve(uint256[] memory teamState, uint8 delta) public pure returns (uint256[] memory) {
-        require(isValidTeamState(teamState), "invalid team state");
         for (uint256 i = 0 ; i < teamState.length ; i++)
             teamState[i] = playerStateEvolve(teamState[i], delta);
         return teamState;
     }
 
     function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
-        require(isValidTeamState(teamState), "invalid team state");
         for(uint256 i = 0 ; i < teamState.length ; i++){
             uint256 playerState = teamState[i];
             rating += getDefence(playerState);

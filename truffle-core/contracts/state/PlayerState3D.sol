@@ -18,7 +18,6 @@ contract PlayerState3D is LeagueState {
         returns (uint256[] memory state)
     {
         require(isValidPlayerState3D(playerState3D), "invalid playerState3D");
-        require(isValidTeamState(playerState2D), "invalid playerState2D");
         state = new uint256[](playerState3D.length + playerState2D.length + 1);
         for (uint256 i = 0 ; i < playerState3D.length ; i++)
             state[i] = playerState3D[i];
