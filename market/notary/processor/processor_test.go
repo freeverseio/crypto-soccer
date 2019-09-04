@@ -77,15 +77,25 @@ func TestProcess(t *testing.T) {
 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 
-	_, err = ganache.Assets.CreateTeam(
-		bind.NewKeyedTransactor(owner),
-		"Barca",
-		crypto.PubkeyToAddress(alice.PublicKey))
-	// ganache.CreateTeam("Barca", alice)
-	ganache.createTeam("Barca", alice)
+	ganache.CreateTeam("Barca", alice)
 	ganache.CreateTeam("Madrid", bob)
 
+	var player = big.NewInt(1)
+	originOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if originOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+	}
 	sto.CreateSellOrder(storage.SellOrder{1, 100})
 	sto.CreateBuyOrder(storage.BuyOrder{1, 100, 2})
 	processor.Process()
+	targetOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
+	}
 }
