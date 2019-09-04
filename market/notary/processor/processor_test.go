@@ -47,6 +47,14 @@ func TestChangeOwnership(t *testing.T) {
 	if name != "Madrid" {
 		t.Errorf("Expected Madrid got %v", name)
 	}
+
+	_, err = ganache.Assets.TransferPlayer(
+		nil,
+		big.NewInt(1),
+		big.NewInt(2))
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestProcess(t *testing.T) {
