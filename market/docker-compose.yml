@@ -5,10 +5,10 @@ services:
     ports:
       - "5432:5432"
   trader:
-    build: ./nodejs-market-api
+    build: ./trader
     command: -d postgres://freeverse:freeverse@db:5432/market -p 4000
     ports:
       - "4000:4000"
-  # notary:
-  #   build: ./go-broker
-  #   command: -postgres postgres://freeverse:freeverse@market-db:5432/market
+  notary:
+    build: ./notary
+    command: -postgres postgres://freeverse:freeverse@db:5432/market?sslmode=disable
