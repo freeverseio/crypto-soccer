@@ -83,6 +83,10 @@ def integrationTest():
     (teamIdxInCountry, shirtNum) = ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
     assert teamIdxInCountry == 1 and shirtNum == 1, "wrong team/shirtNum"
 
+    (tz, co, val) = ST.decodeZoneCountryAndVal(ST.getPlayerIdxInTeam(timeZone, 1, 4, 18))
+
+
+
     for div in range(0, DIVS_PER_COUNTRY_AT_DEPLOY):
         assert ST.getDivisionCreationDay(timeZone, 1, div) == 0, "Wrong creation time"
 

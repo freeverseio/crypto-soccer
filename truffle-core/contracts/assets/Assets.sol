@@ -48,6 +48,7 @@ contract Assets {
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     address constant public FREEVERSE = address(1);
+    uint256 constant public FREE_PLAYER_IDX = uint256(-1);
 
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -141,7 +142,7 @@ contract Assets {
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
-    function isVirtual(uint256 playerId) public view returns (bool) {
+    function isVirtualPlayer(uint256 playerId) public view returns (bool) {
         require(playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId] == 0;
     }
@@ -157,6 +158,40 @@ contract Assets {
         transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
     }
 
+    function getDefaultPlayerIdForTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, uint8 shirtNum) public view returns(uint256) {
+        if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
+            return FREE_PLAYER_IDX;
+        } else {
+            return _playerStateLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
+        }
+    }
+
+    // TODO: we really don't need this function. Only for external use. Consider removal
+    function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        if (isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry)) {
+            for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
+                playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+            }
+        } else {
+            for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
+                uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+                if (writtenId == 0) {
+                    playerIds[shirtNum] = getDefaultPlayerIdForTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum);
+                } else {
+                    playerIds[shirtNum] = writtenId;
+                }
+            }
+        }
+    }
+
+
+    // function transferTeam(uint256 teamId, address newOwnerAddr) public {
+    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+    //     transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+    // }
+
 
     // /// @dev Transfers a team to a new owner. 
     // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
@@ -169,17 +204,6 @@ contract Assets {
     //     emit TeamTransfer(teamId, newOwner);
     // }
     
-
-    // function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
-    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
-    //     require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
-    //     for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM_MAX ; pos++){
-    //         if (_timeZones[timeZone].countries[teamId]. teams[teamId].playerIds[pos] == 0) // virtual player
-    //             playerIds[pos] = generateVirtualPlayerId(teamId, pos);
-    //         else
-    //             playerIds[pos] = teams[teamId].playerIds[pos];
-    //     }
-    // }
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
     //     require(_teamExists(teamId), "invalid team id");

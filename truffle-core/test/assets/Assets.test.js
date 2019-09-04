@@ -26,6 +26,7 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
         TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
+        FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
@@ -96,63 +97,86 @@ contract('Assets', (accounts) => {
     //         playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry);
     //         playerExists = await assets.playerExists(playerId).should.be.fulfilled;
     //         playerExists.should.be.equal(true);            
-    //         isVirtual = await assets.isVirtual(playerId).should.be.fulfilled;
+    //         isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
     //         isVirtual.should.be.equal(true);            
     //         playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry+1);
     //         playerExists = await assets.playerExists(playerId).should.be.fulfilled;
     //         playerExists.should.be.equal(false);            
-    //         isVirtual = await assets.isVirtual(playerId).should.be.rejected;
+    //         isVirtual = await assets.isVirtualPlayer(playerId).should.be.rejected;
     //     }
     // });
 
-    it('isBot teams', async () =>  {
-        tz = 1;
-        countryIdxInTimeTZ = 0;
-        teamIdxInCountry = 0;
-        isBot = await assets.isBotTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry).should.be.fulfilled;
-        isBot.should.be.equal(true);            
-    });
-    
-    it('transfer of bot teams', async () =>  {
-        tz = 1;
-        countryIdxInTimeTZ = 0;
-        teamIdxInCountry1 = 0;
-        teamIdxInCountry2 = 1;
-        teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry1);
-        teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry2);
-        await assets.transferBotInCountryToAddr(tz, countryIdxInTimeTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
-        await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
-        isBot = await assets.isBotTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry1).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry1).should.be.fulfilled;
-        owner.should.be.equal(ALICE);
-        owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
-        owner.should.be.equal(BOB);
-    });
-    
-
-
-    
-    // it('get team player ids', async () => {
-    //     FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
-    //     teamId = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTimeTZ = 0, teamIdxInCountry = 0);
-    //     let ids = await assets.getTeamPlayerIds(teamId).should.be.fulfilled;
-    //     ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
-    //     ids[0].should.be.bignumber.equal('1');
-    //     ids[17].should.be.bignumber.equal('18');
-    //     ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
-    //     ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
-    //     // await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
-    //     // ids = await assets.getTeamPlayerIds(2).should.be.fulfilled;
-    //     // ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
-    //     // ids[0].should.be.bignumber.equal('19');
-    //     // ids[17].should.be.bignumber.equal('36');
-    //     // ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
-    //     // ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
+    // it('isBot teams', async () =>  {
+    //     tz = 1;
+    //     countryIdxInTimeTZ = 0;
+    //     teamIdxInCountry = 0;
+    //     isBot = await assets.isBotTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry).should.be.fulfilled;
+    //     isBot.should.be.equal(true);            
     // });
+    
+    // it('transfer of bot teams', async () =>  {
+    //     tz = 1;
+    //     countryIdxInTimeTZ = 0;
+    //     teamIdxInCountry1 = 0;
+    //     teamIdxInCountry2 = 1;
+    //     teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry1);
+    //     teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry2);
+    //     await assets.transferBotInCountryToAddr(tz, countryIdxInTimeTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
+    //     await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+    //     isBot = await assets.isBotTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry1).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry1).should.be.fulfilled;
+    //     owner.should.be.equal(ALICE);
+    //     owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
+    //     owner.should.be.equal(BOB);
+    // });
+    
+    
+    it('get team player ids', async () => {
+        // for the first team we should find playerIdx = [0, 1,...,17, FREE, FREE, ...]
+        teamId = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTimeTZ = 0, teamIdxInCountry = 0);
+        let ids = await assets.getPlayerIdsInTeam(teamId).should.be.fulfilled;
+        ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
+        for (shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_MAX; shirtNum++) {
+            if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
+                ids[shirtNum].should.be.bignumber.equal(FREE_PLAYER_ID);
+                continue;
+            } else {
+                decoded = await playerStateLib.decodeTZCountryAndVal(ids[shirtNum]).should.be.fulfilled;
+                const {0: timeZone, 1: country, 2: playerIdxInCountry} = decoded;
+                playerIdxInCountry.toNumber().should.be.equal(shirtNum);
+            }
+        }
+        // for the first team we should find playerIdx = [18, 19,..., FREE, FREE, ...]
+        teamId = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTimeTZ = 0, teamIdxInCountry = 1);
+        ids = await assets.getPlayerIdsInTeam(teamId).should.be.fulfilled;
+        ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
+        for (shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_MAX; shirtNum++) {
+            if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
+                ids[shirtNum].should.be.bignumber.equal(FREE_PLAYER_ID);
+                continue;
+            } else {
+                decoded = await playerStateLib.decodeTZCountryAndVal(ids[shirtNum]).should.be.fulfilled;
+                const {0: timeZone, 1: country, 2: playerIdxInCountry} = decoded;
+                playerIdxInCountry.toNumber().should.be.equal(shirtNum + PLAYERS_PER_TEAM_INIT);
+            }
+        }
+        // ids[0].should.be.bignumber.equal('1');
+        // ids[17].should.be.bignumber.equal('18');
+        // ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
+        // ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
+        // await assets.createTeam("Madrid", accounts[0]).should.be.fulfilled;
+        // ids = await assets.getTeamPlayerIds(2).should.be.fulfilled;
+        // ids.length.should.be.equal(PLAYERS_PER_TEAM_MAX);
+        // ids[0].should.be.bignumber.equal('19');
+        // ids[17].should.be.bignumber.equal('36');
+        // ids[18].should.be.bignumber.equal(FREE_PLAYER_ID);
+        // ids[24].should.be.bignumber.equal(FREE_PLAYER_ID);
+    });
 
+    return;
     // it('check player team', async () => {
     //     await assets.createTeam("Barca", ALICE).should.be.fulfilled;
     //     await assets.createTeam("Madrid", BOB).should.be.fulfilled;
