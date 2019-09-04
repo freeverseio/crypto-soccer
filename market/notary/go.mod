@@ -1,4 +1,4 @@
-module github.com/freeverseio/crypto-soccer/market/go-broker
+module github.com/freeverseio/crypto-soccer/market/notary
 
 go 1.12
 

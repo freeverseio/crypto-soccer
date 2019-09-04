@@ -3,8 +3,8 @@ package processor_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/market/go-broker/processor"
-	"github.com/freeverseio/crypto-soccer/market/go-broker/storage"
+	"github.com/freeverseio/crypto-soccer/market/notary/processor"
+	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 )
 
 func TestProcess(t *testing.T) {

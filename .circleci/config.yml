@@ -66,10 +66,10 @@ jobs:
           command: make setup contracts
       - run:
           name: Compile 
-          command: cd market/go-broker && go build
+          command: cd market/notary && go build
       - run:
           name: Test 
-          command: cd market/go-broker && go test ./...
+          command: cd market/notary && go test ./...
   relay:
     docker:
       - image: freeverseio/circleci
@@ -139,7 +139,7 @@ jobs:
           command: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
       - run:
           name: Create Docker market broker
-          command: cd market/go-broker && docker build -t freeverseio/broker:dev .
+          command: cd market/notary && docker build -t freeverseio/broker:dev .
       - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin

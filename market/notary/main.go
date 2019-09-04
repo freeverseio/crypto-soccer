@@ -4,8 +4,8 @@ import (
 	"flag"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/market/go-broker/processor"
-	"github.com/freeverseio/crypto-soccer/market/go-broker/storage"
+	"github.com/freeverseio/crypto-soccer/market/notary/processor"
+	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 
 	log "github.com/sirupsen/logrus"
 )
