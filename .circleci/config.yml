@@ -191,7 +191,7 @@ workflows:
       - go-synchronizer
       - go-soccer
       - django-centauri
-      - trader
+      - market/trader
       - relay
       - broker
       - dockerization:
@@ -203,7 +203,7 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - trader
+            - market/trader
             - relay
             - broker
       - deploy:
