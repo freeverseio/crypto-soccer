@@ -1,4 +1,4 @@
-# Javascript Node CircleCI 2.0 configuration file
+:#: Javascript Node CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
@@ -84,12 +84,12 @@ jobs:
       - run:
           name: Test relay
           command: cd relay/nodejs-api && npm test
-  marker.trader:
+  market.trader:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: cd marker/trader && npm install
+      - run: cd market/trader && npm install
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -126,7 +126,7 @@ jobs:
       - run:
           name: Create Docker Market-DB
           command: cd market/sql && docker build -t freeverseio/marketdb:dev .
-      - run: cd marker/trader && docker build -t freeverseio/market.trader:dev .
+      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
       - run:
           name: Create Docker relay
           command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
@@ -187,7 +187,7 @@ workflows:
       - go-synchronizer
       - go-soccer
       - django-centauri
-      - marker.trader
+      - market.trader
       - relay
       - broker
       - dockerization:
@@ -199,7 +199,7 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - marker.trader
+            - market.trader
             - relay
             - broker
       - deploy:
