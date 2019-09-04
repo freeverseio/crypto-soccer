@@ -30,6 +30,7 @@ contract PlayerState {
      * monthOfBirthInUnixTime    = 14 bits
      * playerId                  = 43 bits
     **/
+    // TODO: avoid doing the uint256 for those variables that already are uint256
     function encodePlayerSkills(
         uint256 defence,
         uint256 speed,
@@ -59,17 +60,8 @@ contract PlayerState {
         return (skills |= uint256(playerId) << 129);
     }
     
-    function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
-        // 2**43 - 1 = 8796093022207
-        return uint256(encodedSkills >> 129 & 8796093022207);
-    }
-
-    function getMonthOfBirthInUnixTime(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 172 & 0x3fff);
-    }
-
     function getDefence(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 242 & 0x3fff);
+        return uint256(encodedSkills >> 242 & 0x3fff); // 0x3fff = 2**14 - 1
     }
     
     function getSpeed(uint256 encodedSkills) public pure returns (uint256) {
@@ -86,6 +78,14 @@ contract PlayerState {
 
     function getEndurance(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 186 & 0x3fff);
+    }
+
+    function getMonthOfBirthInUnixTime(uint256 playerState) public pure returns (uint256) {
+        return uint256(playerState >> 172 & 0x3fff);
+    }
+
+    function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 129 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 
     function getSkills(uint256 encodedSkills) public pure returns (uint256) {
@@ -113,7 +113,7 @@ contract PlayerState {
     function encodePlayerState(
         uint256 playerId,
         uint256 currentTeamId,
-        uint256 currentShirtNum,
+        uint8 currentShirtNum,
         uint256 prevPlayerTeamId,
         uint256 lastSaleBlock
     )
@@ -127,10 +127,11 @@ contract PlayerState {
         state = setCurrentShirtNum(state, currentShirtNum);
         state = setPrevPlayerTeamId(state, prevPlayerTeamId);
         state = setLastSaleBlock(state, lastSaleBlock);
+        return state;
     }
 
     function getPlayerIdFromState(uint256 playerState) public pure returns (uint256) {
-        return uint256(playerState >> 213 & (2**43-1));
+        return uint256(playerState >> 213 & (2**43-1)); 
     }
     
     function setCurrentTeamId(uint256 playerState, uint256 teamId) public pure returns (uint256) {
@@ -144,7 +145,7 @@ contract PlayerState {
         return uint256(playerState >> 170 & (2**43-1));
     }
 
-    function setCurrentShirtNum(uint256 state, uint256 currentShirtNum) public pure returns (uint256) {
+    function setCurrentShirtNum(uint256 state, uint8 currentShirtNum) public pure returns (uint256) {
         require(currentShirtNum < 2**5, "currentShirtNum out of bound");
         state &= ~uint256(2**5-1 << 165); // 256 - 43 - 43 - 5
         state |= uint256(currentShirtNum) << 165;
@@ -162,7 +163,7 @@ contract PlayerState {
         return state;
     }
 
-    function setPrevPlayerTeamId(uint256 playerState) public pure returns (uint256) {
+    function getPrevPlayerTeamId(uint256 playerState) public pure returns (uint256) {
         return uint256(playerState >> 122 & (2**43-1));
     }
 
