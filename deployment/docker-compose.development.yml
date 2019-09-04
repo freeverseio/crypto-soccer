@@ -20,16 +20,16 @@ services:
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
     ports:
       - "4001:4000"
-  marketdb:
-    image: freeverseio/marketdb:dev
-  marketapi:
-    image: freeverseio/marketapi:dev
-    command: -d postgres://freeverse:freeverse@marketdb:5432/market -p 4000
+  market.db:
+    image: freeverseio/market.db:dev
+  market.trader:
+    image: freeverseio/market.broker:dev
+    command: -d postgres://freeverse:freeverse@marketdb:5432/market.db -p 4000
     ports:
       - "4002:4000"
-  broker:
-    image: freeverseio/broker:dev
-    command: -postgres postgres://freeverse:freeverse@marketdb:5432/market?sslmode=disable
+  market.notary:
+    image: freeverseio/market.notary:dev
+    command: -postgres postgres://freeverse:freeverse@marketdb:5432/market.db?sslmode=disable
   relay:
     image: freeverseio/relay:dev
     ports:
@@ -38,9 +38,9 @@ services:
     image: freeverseio/horizon:dev
     depends_on:
       - universeapi
-      - marketapi
+      - market.trader
       - relay
-    command: -u http://universeapi:4000/graphql -m http://marketapi:4000/graphql -r http://relay:4000/graphql
+    command: -u http://universeapi:4000/graphql -m http://market.trader:4000/graphql -r http://relay:4000/graphql
     ports:
       - "4000:4000"
 volumes:
