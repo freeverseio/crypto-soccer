@@ -21,7 +21,7 @@ contract Assets {
         uint256 nDivisions;
         uint8 nDivisionsToAddNextRound;
         mapping (uint256 => uint256) divisonIdxToRound;
-        mapping (uint256 => uint256) teamIdxInCountryToTeam;
+        mapping (uint256 => Team) teamIdxInCountryToTeam;
     }
 
     struct TimeZone {
@@ -47,6 +47,7 @@ contract Assets {
     uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
+    address constant public FREEVERSE = address(1);
 
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -101,6 +102,16 @@ contract Assets {
         return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
+    function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == address(0);
+    }
+
+    function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
+        _assertTZExists(timeZone);
+        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner;
+    }
+
     function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
     }
@@ -124,6 +135,18 @@ contract Assets {
         require(playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId] == 0;
     }
+    
+
+    // function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
+    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+    //     require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+    //     for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM_MAX ; pos++){
+    //         if (_timeZones[timeZone].countries[teamId]. teams[teamId].playerIds[pos] == 0) // virtual player
+    //             playerIds[pos] = generateVirtualPlayerId(teamId, pos);
+    //         else
+    //             playerIds[pos] = teams[teamId].playerIds[pos];
+    //     }
+    // }
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
     //     require(_teamExists(teamId), "invalid team id");
@@ -272,15 +295,6 @@ contract Assets {
     //     return teams[teamId].name;
     // }
 
-    // function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM_MAX ; pos++){
-    //         if (teams[teamId].playerIds[pos] == 0) // virtual player
-    //             playerIds[pos] = generateVirtualPlayerId(teamId, pos);
-    //         else
-    //             playerIds[pos] = teams[teamId].playerIds[pos];
-    //     }
-    // }
 
     // function getPlayerState(uint256 playerId) public view returns (uint256) {
     //     require(_playerExists(playerId), "unexistent player");
