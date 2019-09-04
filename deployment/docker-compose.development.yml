@@ -23,13 +23,13 @@ services:
   market.db:
     image: freeverseio/market.db:dev
   market.trader:
-    image: freeverseio/market.broker:dev
-    command: -d postgres://freeverse:freeverse@marketdb:5432/market.db -p 4000
+    image: freeverseio/market.trader:dev
+    command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
     ports:
       - "4002:4000"
   market.notary:
     image: freeverseio/market.notary:dev
-    command: -postgres postgres://freeverse:freeverse@marketdb:5432/market.db?sslmode=disable
+    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable
   relay:
     image: freeverseio/relay:dev
     ports:
