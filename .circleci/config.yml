@@ -84,12 +84,12 @@ jobs:
       - run:
           name: Test relay
           command: cd relay/nodejs-api && npm test
-  market/trader:
+  marker.trader:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: cd market/trader && npm install
+      - run: cd marker.trader && npm install
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -128,7 +128,7 @@ jobs:
           command: cd market/sql && docker build -t freeverseio/marketdb:dev .
       - run:
           name: Create Docker Market-API
-          command: cd market/trader && docker build -t freeverseio/marketapi:dev .
+          command: cd marker.trader && docker build -t freeverseio/marketapi:dev .
       - run:
           name: Create Docker relay
           command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
@@ -191,7 +191,7 @@ workflows:
       - go-synchronizer
       - go-soccer
       - django-centauri
-      - market/trader
+      - marker.trader
       - relay
       - broker
       - dockerization:
@@ -203,7 +203,7 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - market/trader
+            - marker.trader
             - relay
             - broker
       - deploy:
