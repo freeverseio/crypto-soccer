@@ -169,7 +169,7 @@ contract PlayerState {
 
     function setLastSaleBlock(uint256 state, uint256 lastSaleBlock) public pure returns (uint256) {
         require(lastSaleBlock < 2**35, "lastSaleBlock out of bound");
-        state &= ~uint256(2*35-1 << 87); // 256 - 43 - 43 - 5 - 43 - 35
+        state &= ~uint256(2**35-1 << 87); // 256 - 43 - 43 - 5 - 43 - 35
         state |= uint256(lastSaleBlock) << 87;
         return state;
     }
