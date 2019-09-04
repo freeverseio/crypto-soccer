@@ -39,6 +39,8 @@ contract('Assets', (accounts) => {
         TEAMS_PER_LEAGUE.should.be.equal(8);
     });
 
+    return
+    
     it('check initial setup of timeZones', async () =>  {
         nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
         nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;

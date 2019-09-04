@@ -2,6 +2,28 @@ pragma solidity >=0.4.21 <0.6.0;
 
 /// @title the state of a player
 contract PlayerState {
+    /**
+     * @dev encoding:
+     * timeZone                  = 5 bits
+     * countryIdxInTZ            = 10 bits
+     * val (playerId or teamIdx) = 28 bits
+    **/
+    function encodeTZCountryAndVal(uint8 timeZone, uint256 countryIdxInTZ, uint256 val) public pure returns (uint256)
+    {
+        require(timeZone < 2**5, "defence out of bound");
+        require(countryIdxInTZ < 2**10, "defence out of bound");
+        require(val < 2**28, "defence out of bound");
+        uint256 encoded  = uint256(timeZone) << 251;        // 256 - 5
+        encoded         |= uint256(countryIdxInTZ) << 241;  // 251 - 10
+        return (encoded |= uint256(val) << 213);            // 241 - 28
+    }
+
+    function decodeTZCountryAndVal(uint256 encoded) public pure returns (uint8, uint256, uint256)
+    {
+        // 2**14 - 1 = 31;  2**10 - 1 = 1023; 2**28 - 1 = 268435455;
+        return (uint8(encoded >> 251 & 31), uint256(encoded >> 241 & 1023), uint256(encoded >> 213 & 268435455));
+    }
+    
     function isValidPlayerState(uint256 state) public pure returns (bool) {
         return getPlayerId(state) != 0;
     }
