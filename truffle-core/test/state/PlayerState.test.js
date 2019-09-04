@@ -23,13 +23,14 @@ contract('PlayerState', (accounts) => {
         value.toNumber().should.be.equal(val);
     });
 
-    it('encoding skills', async () => {
+    it('encoding and decoding skills', async () => {
+        const sk = [16383, 13, 4, 56, 456]
         const skills = await playerStateLib.encodePlayerSkills(
-            defence = 16383,
-            speed = 13,
-            pass = 4,
-            shoot = 56,
-            endurance = 456,
+            defence = sk[0],
+            speed = sk[1],
+            pass = sk[2],
+            shoot = sk[3],
+            endurance = sk[4],
             monthOfBirth = 4, 
             playerId = 143,
         ).should.be.fulfilled;
@@ -47,6 +48,10 @@ contract('PlayerState', (accounts) => {
         result.toNumber().should.be.equal(monthOfBirth);
         result = await playerStateLib.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
+        result = await playerStateLib.getSkillsVec(skills).should.be.fulfilled;
+        for (s=0; s < sk.length; s++) {
+            result[s].toNumber().should.be.equal(sk[s]);
+        }
     });
 
     
