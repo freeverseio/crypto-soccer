@@ -26,7 +26,7 @@ func main() {
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("../sql/00_schema.sql")
+		sto, err = storage.NewSqlite3("../db/00_schema.sql")
 	} else {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)
