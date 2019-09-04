@@ -43,6 +43,10 @@ contract('PlayerState', (accounts) => {
         result.toNumber().should.be.equal(shoot);
         result = await playerStateLib.getEndurance(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(endurance);
+        result = await playerStateLib.getMonthOfBirthInUnixTime(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(monthOfBirth);
+        result = await playerStateLib.getPlayerIdFromSkills(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(playerId);
     });
 
     
