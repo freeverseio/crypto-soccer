@@ -17,6 +17,7 @@ func TestChangeOwnership(t *testing.T) {
 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 
+	// create team Barca
 	_, err := ganache.Assets.CreateTeam(
 		bind.NewKeyedTransactor(owner),
 		"Barca",
@@ -24,13 +25,7 @@ func TestChangeOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	name, err := ganache.Assets.GetTeamName(nil, big.NewInt(1))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if name != "Barca" {
-		t.Errorf("Expected Barca got %v", name)
-	}
+	// create team Madrid
 	_, err = ganache.Assets.CreateTeam(
 		bind.NewKeyedTransactor(owner),
 		"Madrid",
@@ -38,21 +33,25 @@ func TestChangeOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	name, err = ganache.Assets.GetTeamName(nil, big.NewInt(2))
+	var player = big.NewInt(1)
+	originOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if name != "Madrid" {
-		t.Errorf("Expected Madrid got %v", name)
+	if originOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
 	}
+	// if name != "Madrid" {
+	// 	t.Errorf("Expected Madrid got %v", name)
+	// }
 
-	_, err = ganache.Assets.TransferPlayer(
-		bind.NewKeyedTransactor(alice),
-		big.NewInt(1),
-		big.NewInt(2))
-	if err != nil {
-		t.Fatal(err)
-	}
+	// _, err = ganache.Assets.TransferPlayer(
+	// 	bind.NewKeyedTransactor(alice),
+	// 	big.NewInt(1),
+	// 	big.NewInt(2))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 }
 
 // func TestProcess(t *testing.T) {

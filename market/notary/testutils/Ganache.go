@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/market/notary/contracts/states"
 )
 
 type Ganache struct {
@@ -21,6 +22,7 @@ type Ganache struct {
 	statesAddress common.Address
 	engineAddress common.Address
 	Assets        *assets.Assets
+	States        *states.States
 	Owner         *ecdsa.PrivateKey
 }
 
@@ -49,6 +51,7 @@ func NewGanache() *Ganache {
 		time,
 		common.Address{},
 		common.Address{},
+		nil,
 		nil,
 		creatorPrivateKey,
 	}
@@ -118,7 +121,18 @@ func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
 	ganache.Assets = contract
 	fmt.Println("Assets deployed at:", address.Hex())
 }
+func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
+	address, _, contract, err := states.DeployStates(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployStates failed")
+	ganache.States = contract
+	ganache.statesAddress = address
+	fmt.Println("States deployed at:", address.Hex())
+}
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
+	ganache.deployStates(owner)
 	ganache.deployAssets(owner)
 }
 func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
