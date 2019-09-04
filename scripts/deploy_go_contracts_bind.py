@@ -22,6 +22,8 @@ with open('./States.bin', 'w', encoding='utf-8') as outfile:
     outfile.write(contract['bytecode'])
 os.system('mkdir -p ../go-synchronizer/contracts/states')
 os.system('abigen --abi ./States.abi --bin ./States.bin --pkg states -out ../go-synchronizer/contracts/states/states.go')
+os.system('mkdir -p ../market/notary/contracts/states')
+os.system('abigen --abi ./States.abi --bin ./States.bin --pkg states -out ../market/notary/contracts/states/states.go')
 
 with open('../truffle-core/build/contracts/Leagues.json', 'r') as fp:
     contract = json.load(fp)

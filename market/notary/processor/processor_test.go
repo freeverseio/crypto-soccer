@@ -1,22 +1,125 @@
 package processor_test
 
 import (
+	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
+	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
 )
+
+func TestChangeOwnership(t *testing.T) {
+	ganache := testutils.NewGanache()
+	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	ganache.DeployContracts(owner)
+
+	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
+
+	// create team Barca
+	_, err := ganache.Assets.CreateTeam(
+		bind.NewKeyedTransactor(owner),
+		"Barca",
+		crypto.PubkeyToAddress(alice.PublicKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// create team Madrid
+	_, err = ganache.Assets.CreateTeam(
+		bind.NewKeyedTransactor(owner),
+		"Madrid",
+		crypto.PubkeyToAddress(bob.PublicKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var player = big.NewInt(1)
+	originOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if originOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+	}
+	var toTeam = big.NewInt(2)
+	_, err = ganache.Assets.TransferPlayer(
+		bind.NewKeyedTransactor(owner),
+		player,
+		toTeam)
+	if err != nil {
+		t.Fatal(err)
+	}
+	targetOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
+	}
+}
 
 func TestProcess(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ethereumClient := "HTTP://127.0.0.1:8545"
-	assetsContractAddress := "0x43e3"
-	processor, err := processor.NewProcessor(sto, ethereumClient, assetsContractAddress)
+	ganache := testutils.NewGanache()
+	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
+	ganache.DeployContracts(owner)
+
+	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, owner)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
+
+	ganache.CreateTeam("Barca", alice)
+	ganache.CreateTeam("Madrid", bob)
+
+	var player = big.NewInt(1)
+	originOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if originOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+	}
+	sto.CreateSellOrder(storage.SellOrder{1, 100})
 	processor.Process()
+	targetOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
+	}
+
+	sto.CreateBuyOrder(storage.BuyOrder{1, 100, 2})
+	processor.Process()
+	targetOwner, err = ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
+	}
+
+	buyOrders, err := sto.GetBuyOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buyOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
+	}
+	sellOrders, err := sto.GetSellOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sellOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+	}
 }

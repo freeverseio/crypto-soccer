@@ -45,7 +45,14 @@ jobs:
       - checkout
       - run: make setup contracts
       - run: cd market/notary && go build
-      - run: cd market/notary && go test ./...
+      - run: |
+            ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
+            # wait until ganache is up and running
+            echo waiting for ganache
+            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
+            sleep 1
+            echo ganache is running
+            cd market/notary && go test ./...
   relay:
     docker:
       - image: freeverseio/circleci
