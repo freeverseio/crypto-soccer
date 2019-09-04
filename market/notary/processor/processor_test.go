@@ -107,4 +107,19 @@ func TestProcess(t *testing.T) {
 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
 		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
 	}
+
+	buyOrders, err := sto.GetBuyOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buyOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
+	}
+	sellOrders, err := sto.GetSellOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sellOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+	}
 }
