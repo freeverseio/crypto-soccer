@@ -13,6 +13,8 @@ contract('Assets', (accounts) => {
     let playerStateLib = null;
     let PLAYERS_PER_TEAM_MAX = null;
     let PLAYERS_PER_TEAM_INIT = null;
+    let LEAGUES_PER_DIV = null;
+    let TEAMS_PER_LEAGUE = null;
     let FREE_PLAYER_ID = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
@@ -22,21 +24,37 @@ contract('Assets', (accounts) => {
         assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
+        TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-    });
+        LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
+        TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        });
 
     it('check initial and max number of players per team', async () =>  {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
+        LEAGUES_PER_DIV.should.be.equal(16);
+        TEAMS_PER_LEAGUE.should.be.equal(8);
     });
 
-    it('check initial num of countries in timeZones', async () =>  {
+    it('check initial setup of timeZones', async () =>  {
         nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
         nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;
         for (tz = 1; tz<25; tz++) {
             nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
+            nDivs = await assets.getNDivisionsInCountry(tz, countryIdxInTimeTZ = 0).should.be.fulfilled;
+            nDivs.toNumber().should.be.equal(1);
+            nLeagues = await assets.getNLeaguesInCountry(tz, countryIdxInTimeTZ).should.be.fulfilled;
+            nLeagues.toNumber().should.be.equal(LEAGUES_PER_DIV);
+            nTeams = await assets.getNTeamsInCountry(tz, countryIdxInTimeTZ).should.be.fulfilled;
+            nTeams.toNumber().should.be.equal(LEAGUES_PER_DIV * TEAMS_PER_LEAGUE);
+            teamExists = await assets._teamExists(tz, countryIdxInTimeTZ, nTeams-1).should.be.fulfilled;
+            teamExists.should.be.equal(true);            
+            teamExists = await assets._teamExists(tz, countryIdxInTimeTZ, nTeams).should.be.fulfilled;
+            teamExists.should.be.equal(false);            
         }
     });
     

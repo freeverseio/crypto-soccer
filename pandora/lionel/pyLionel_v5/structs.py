@@ -506,9 +506,6 @@ class Storage(Counter):
         # In Python, maps are closer to 'dictionaries'
         self.playerIdxToPlayerState = {}
 
-        # the obvious ownership map:
-        self.teamNameHashToOwnerAddr = {}
-
         self.blocksBetweenVerses = BLOCKS_BETWEEN_VERSES
         self.verseToLeagueCommits = {}
 
@@ -1187,17 +1184,6 @@ class Storage(Counter):
 
             self.teams[teamIdx].currentLeagueIdx          = leagueIdx
             self.teams[teamIdx].teamPosInCurrentLeague    = team
-
-    # Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
-    # e.g. teamName = "Barcelona5443"
-    def createTeam(self, teamName, ownerAddr):
-        assert pylio.intHash(teamName) not in self.teamNameHashToOwnerAddr, "You cannot create to teams with equal name!"
-        teamIdx = len(self.teams)
-        nowInMonthsUnixTime = 602
-        self.teams.append(Team(teamName, nowInMonthsUnixTime))
-        self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
-        return teamIdx
-
 
     # ------------ LEAGUE STATUS --------------
     def isLeagueIsAboutToStart(self, leagueIdx):

@@ -44,17 +44,21 @@ contract Assets {
     uint256 constant public FREE_PLAYER_ID  = uint256(-1);
     uint8 constant internal BITS_PER_SKILL = 14;
     uint16 constant internal SKILL_MASK = 0x3fff;
-    uint8 constant public NUM_SKILLS = 5;
+    uint8 constant public N_SKILLS = 5;
+    uint8 constant public LEAGUES_PER_DIV = 16;
+    uint8 constant public TEAMS_PER_LEAGUE = 8;
 
     mapping(uint256 => uint256) private _playerIdToState;
 
     PlayerState internal _playerStateLib;
     TimeZone[] internal _timeZones;
+    mapping (uint256 => uint256) internal _playerIdxToPlayerState;
 
     constructor(address playerState) public {
         _playerStateLib = PlayerState(playerState);
         // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
         _timeZones.length++;
+        // It then creates the remaining 24 timezones.
         for (uint8 tz = 0; tz < 24; tz++) {
             createTimeZone();
         }
@@ -70,8 +74,29 @@ contract Assets {
     }
         
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
-        require(timeZone > 0 && timeZone < 25);
+        _assertTZExists(timeZone);
         return _timeZones[timeZone].countries.length;
+    }
+        
+    function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
+        _assertTZExists(timeZone);
+        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions;
+    }
+
+    function getNLeaguesInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
+        return getNDivisionsInCountry(timeZone, countryIdxInTZ) * LEAGUES_PER_DIV;
+    }
+
+    function getNTeamsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
+        return getNLeaguesInCountry(timeZone, countryIdxInTZ) * TEAMS_PER_LEAGUE;
+    }
+
+    function _teamExists(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+        return teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) ;
+    }
+
+    function _assertTZExists(uint8 timeZone) private pure {
+        require(timeZone > 0 && timeZone < 25);
     }
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
@@ -308,7 +333,7 @@ contract Assets {
     // /// @param currentTime in seconds since unix epoch
     // /// @return monthOfBirth in monthUnixTime
     // function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
-    //     rnd >>= BITS_PER_SKILL*NUM_SKILLS;
+    //     rnd >>= BITS_PER_SKILL*N_SKILLS;
     //     uint16 seed = uint16(rnd & SKILL_MASK);
     //     /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
     //     uint16 age = 16 + (seed % 20);
@@ -324,7 +349,7 @@ contract Assets {
     // /// Compute the pseudorandom skills, sum of the skills is 250
     // /// @param rnd is a random number used as seed of the skills
     // /// @return 5 skills
-    // function _computeSkills(uint256 rnd) internal pure returns (uint16[NUM_SKILLS] memory) {
+    // function _computeSkills(uint256 rnd) internal pure returns (uint16[N_SKILLS] memory) {
     //     uint16[5] memory skills;
     //     for (uint8 i = 0; i<5; i++) {
     //         skills[i] = uint16(rnd & SKILL_MASK);
