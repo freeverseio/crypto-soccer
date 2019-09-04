@@ -106,10 +106,20 @@ contract Assets {
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == address(0);
     }
 
+    function isBotTeam(uint256 teamId) public view returns(bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
         return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner;
+    }
+
+    function getOwnerTeam(uint256 teamId) public view returns(address) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
     function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
@@ -141,6 +151,12 @@ contract Assets {
         require(addr != address(0));
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
     }
+
+    function transferBotToAddr(uint256 teamId, address addr) public {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+    }
+
 
     // /// @dev Transfers a team to a new owner. 
     // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
