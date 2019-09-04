@@ -9,32 +9,18 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: 
-          name: Set up truffle-core
-          command: cd truffle-core && npm install
-      - run:
-          name: Compile truffle-core
-          command: cd truffle-core && ./node_modules/.bin/truffle compile
-      - run:
-          name: Test truffle-core
-          command: cd truffle-core && ./node_modules/.bin/truffle test
+      - run: cd truffle-core && npm install
+      - run: cd truffle-core && ./node_modules/.bin/truffle compile
+      - run: cd truffle-core && ./node_modules/.bin/truffle test
   go-synchronizer:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: 
-          name: deploy contracts
-          command: make setup contracts
-      - run:
-          name: Compile go-synchronizer
-          command: cd go-synchronizer && go build
-      - run:
-          name: Test go-synchronizer
-          command: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
-      - run:
-          name: Test go-synchronizer.process
-          command: |
+      - run: make setup contracts
+      - run: cd go-synchronizer && go build
+      - run: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
+      - run: |
             # run ganache in the background
             ./go-synchronizer/testutils/run_ganache.sh &
             # wait until ganache is up and running
@@ -50,12 +36,8 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run:
-          name: Compile goSoccer
-          command: cd go-soccer && go build
-      - run:
-          name: Test goSoccer
-          command: cd go-soccer && go test ./...
+      - run: cd go-soccer && go build
+      - run: cd go-soccer && go test ./...
   market.notary:
     docker:
       - image: freeverseio/circleci
@@ -69,15 +51,9 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: 
-          name: deploy contracts
-          command: make setup contracts
-      - run:
-          name: Setup relay
-          command: cd relay/nodejs-api && npm install
-      - run:
-          name: Test relay
-          command: cd relay/nodejs-api && npm test
+      - run: make setup contracts
+      - run: cd relay/nodejs-api && npm install
+      - run: cd relay/nodejs-api && npm test
   market.trader:
     docker:
       - image: freeverseio/circleci
@@ -89,12 +65,8 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run:
-          name: Build Centauri
-          command: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
-      - run:
-          name: Test Centauri
-          command: cd django-centauri && python3 manage.py test
+      - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
+      - run: cd django-centauri && python3 manage.py test
   dockerization:
     docker:
       - image: freeverseio/circleci
@@ -102,54 +74,26 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: 
-          name: deploy contracts
-          command: make setup contracts
-      - run:
-          name: Create Docker Centauri
-          command: cd django-centauri && docker build -t freeverseio/centauri:dev .
-      - run:
-          name: Create Docker Synchronizer
-          command: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
-      - run:
-          name: Create Docker Postgres
-          command: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
-      - run:
-          name: Create Docker Horizon
-          command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run: make setup contracts
+      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
+      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
+      - run: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd market/db && docker build -t freeverseio/market.db:dev .
       - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
       - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
-      - run:
-          name: Create Docker relay
-          command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
-      - run:
-          name: Create Docker universe API
-          command: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
-      - run:
-          name: Login into Docker Hub
-          command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: 
-          name: Upload Docker Centauri
-          command: docker push freeverseio/centauri:dev
-      - run: 
-          name: Upload Docker Synchronizer
-          command: docker push freeverseio/synchronizer:dev
-      - run: 
-          name: Upload Docker Horizon
-          command: docker push freeverseio/horizon:dev
-      - run: 
-          name: Upload Docker Postgres
-          command: docker push freeverseio/postgres:dev
+      - run: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
+      - run: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/centauri:dev
+      - run: docker push freeverseio/synchronizer:dev
+      - run: docker push freeverseio/horizon:dev
+      - run: docker push freeverseio/postgres:dev
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev
-      - run:
-          name: Upload Docker Relay
-          command: docker push freeverseio/relay:dev
-      - run:
-          name: Upload universe API
-          command: docker push freeverseio/universeapi:dev
+      - run: docker push freeverseio/relay:dev
+      - run: docker push freeverseio/universeapi:dev
 
   deploy:
     docker:
@@ -159,12 +103,9 @@ jobs:
           fingerprints:
             - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - checkout
-      - run: 
-          name: upload docker-compose config
-          command: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
-      - run: 
-          name: deploy
-          command: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
+      - run: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
+      - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
+
 workflows:
   version: 2
   build_and_test:
