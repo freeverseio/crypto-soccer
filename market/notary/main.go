@@ -4,6 +4,9 @@ import (
 	"flag"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 
@@ -35,7 +38,18 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	processor, err := processor.NewProcessor(sto, *ethereumClient, *assetsContractAddress)
+	log.Info("Dial the Ethereum client: ", ethereumClient)
+	client, err := ethclient.Dial(*ethereumClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Info("Creating Assets bindings to: ", assetsContractAddress)
+	assetsContract, err := assets.NewAssets(common.HexToAddress(*assetsContractAddress), client)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	processor, err := processor.NewProcessor(sto, client, assetsContract)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -17,9 +17,7 @@ func TestProcess(t *testing.T) {
 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
 	ganache.DeployContracts(owner)
 
-	ethereumClient := "HTTP://127.0.0.1:8545"
-	assetsContractAddress := "0x43e3"
-	processor, err := processor.NewProcessor(sto, ethereumClient, assetsContractAddress)
+	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets)
 	if err != nil {
 		t.Fatal(err)
 	}

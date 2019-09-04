@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
@@ -20,20 +19,13 @@ type Processor struct {
 	freeverse *ecdsa.PrivateKey
 }
 
-func NewProcessor(db *storage.Storage, ethereumClient string, assetsContractAddress string) (*Processor, error) {
-	log.Info("Dial the Ethereum client: ", ethereumClient)
-	client, err := ethclient.Dial(ethereumClient)
-	if err != nil {
-		return nil, err
-	}
-	log.Info("Creating Assets bindings to: ", assetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(assetsContractAddress), client)
-	if err != nil {
-		return nil, err
-	}
+func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *assets.Assets) (*Processor, error) {
 
 	freeverse, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	return &Processor{db, client, assetsContract, freeverse}, nil
+	if err != nil {
+		return nil, err
+	}
+	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
 }
 
 func (b *Processor) Process() error {
