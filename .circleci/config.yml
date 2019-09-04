@@ -1,4 +1,4 @@
-# Javascript Node CircleCI 2.0 configuration file
+:#: Javascript Node CircleCI 2.0 configuration file
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
@@ -56,20 +56,14 @@ jobs:
       - run:
           name: Test goSoccer
           command: cd go-soccer && go test ./...
-  broker:
+  market.notary:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: 
-          name: deploy contracts
-          command: make setup contracts
-      - run:
-          name: Compile 
-          command: cd market/go-broker && go build
-      - run:
-          name: Test 
-          command: cd market/go-broker && go test ./...
+      - run: make setup contracts
+      - run: cd market/notary && go build
+      - run: cd market/notary && go test ./...
   relay:
     docker:
       - image: freeverseio/circleci
@@ -84,14 +78,12 @@ jobs:
       - run:
           name: Test relay
           command: cd relay/nodejs-api && npm test
-  nodejs-market-api:
+  market.trader:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run:
-          name: Setup 
-          command: cd market/nodejs-market-api && npm install
+      - run: cd market/trader && npm install
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -125,21 +117,15 @@ jobs:
       - run:
           name: Create Docker Horizon
           command: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run:
-          name: Create Docker Market-DB
-          command: cd market/sql && docker build -t freeverseio/marketdb:dev .
-      - run:
-          name: Create Docker Market-API
-          command: cd market/nodejs-market-api && docker build -t freeverseio/marketapi:dev .
+      - run: cd market/db && docker build -t freeverseio/market.db:dev .
+      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
+      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
       - run:
           name: Create Docker relay
           command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
       - run:
           name: Create Docker universe API
           command: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
-      - run:
-          name: Create Docker market broker
-          command: cd market/go-broker && docker build -t freeverseio/broker:dev .
       - run:
           name: Login into Docker Hub
           command: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -155,21 +141,15 @@ jobs:
       - run: 
           name: Upload Docker Postgres
           command: docker push freeverseio/postgres:dev
-      - run:
-          name: Upload Docker Market-DB
-          command: docker push freeverseio/marketdb:dev
-      - run:
-          name: Upload Docker Market-API
-          command: docker push freeverseio/marketapi:dev
+      - run: docker push freeverseio/market.db:dev
+      - run: docker push freeverseio/market.trader:dev
+      - run: docker push freeverseio/market.notary:dev
       - run:
           name: Upload Docker Relay
           command: docker push freeverseio/relay:dev
       - run:
           name: Upload universe API
           command: docker push freeverseio/universeapi:dev
-      - run:
-          name: Upload market
-          command: docker push freeverseio/broker:dev
 
   deploy:
     docker:
@@ -193,9 +173,9 @@ workflows:
       - go-synchronizer
       - go-soccer
       - django-centauri
-      - nodejs-market-api
+      - market.trader
       - relay
-      - broker
+      - market.notary
       - dockerization:
           filters:
             branches:
@@ -205,9 +185,9 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - nodejs-market-api
+            - market.trader
             - relay
-            - broker
+            - market.notary
       - deploy:
           filters:
            branches:
