@@ -8,7 +8,7 @@ const mutations = require("./mutations");
 program
   .version(version)
   .option("-d, --databaseUrl <url>", "set the database url")
-  .option("-p, --port <port>", "server port", "4001")
+  .option("-p, --port <port>", "server port", "4000")
   .parse(process.argv);
 
 const { databaseUrl, port } = program;
