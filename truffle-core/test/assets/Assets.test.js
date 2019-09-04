@@ -55,12 +55,11 @@ contract('Assets', (accounts) => {
     });
 
     it('check teamExists for existing teams', async () =>  {
+        countryIdxInTimeTZ = 0;
+        teamIdxInCountry = nTeams - 1;
         for (tz = 1; tz<25; tz++) {
-            countryIdxInTimeTZ = 0;
-            teamIdxInCountry = nTeams - 1;
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry);
-            decodedTeamId = await playerStateLib.decodeTZCountryAndVal(teamId).should.be.fulfilled;
             teamExists2 = await assets.teamExists(teamId).should.be.fulfilled;
             teamExists.should.be.equal(true);            
             teamExists2.should.be.equal(true); 
@@ -68,12 +67,11 @@ contract('Assets', (accounts) => {
     });
     
     it('check teamExists for not-created teams', async () =>  {
+        countryIdxInTimeTZ = 0;
+        teamIdxInCountry = nTeams;
         for (tz = 1; tz<25; tz++) {
-            countryIdxInTimeTZ = 0;
-            teamIdxInCountry = nTeams;
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry).should.be.fulfilled;
             teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry);
-            decodedTeamId = await playerStateLib.decodeTZCountryAndVal(teamId).should.be.fulfilled;
             teamExists2 = await assets.teamExists(teamId).should.be.fulfilled;
             teamExists.should.be.equal(false);            
             teamExists2.should.be.equal(false); 
@@ -81,17 +79,29 @@ contract('Assets', (accounts) => {
     });
     
     it('check teamExists for non-existing countries', async () =>  {
+        countryIdxInTimeTZ = 1;
+        teamIdxInCountry = nTeams;
         for (tz = 1; tz<25; tz++) {
-            countryIdxInTimeTZ = 1;
-            teamIdxInCountry = nTeams;
             teamExists = await assets._teamExistsInCountry(tz, countryIdxInTimeTZ, teamIdxInCountry).should.be.rejected;
             teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, teamIdxInCountry);
-            decodedTeamId = await playerStateLib.decodeTZCountryAndVal(teamId).should.be.fulfilled;
             teamExists2 = await assets.teamExists(teamId).should.be.rejected;
         }
     });
-    
-    
+
+    it('check playerExists', async () =>  {
+        countryIdxInTimeTZ = 0;
+        teamIdxInCountry = nTeams;
+        playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
+        for (tz = 1; tz<25; tz++) {
+            playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry);
+            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
+            playerExists.should.be.equal(true);            
+            playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry+1);
+            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
+            playerExists.should.be.equal(false);            
+        }
+    });
+
     // it('get team player ids', async () => {
     //     FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
     //     await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;

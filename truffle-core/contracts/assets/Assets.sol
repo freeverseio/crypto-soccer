@@ -96,6 +96,15 @@ contract Assets {
         return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
     }
 
+    function teamExists(uint256 teamId) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    }
+
+    function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
+        return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
+    }
+
     function _assertTZExists(uint8 timeZone) private pure {
         require(timeZone > 0 && timeZone < 25, "timeZone does not exist");
     }
@@ -104,10 +113,25 @@ contract Assets {
         require(countryIdxInTZ < _timeZones[timeZone].countries.length, "country does not exist in this timeZone");
     }
 
-    function teamExists(uint256 teamId) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
-        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
+    function playerExists(uint256 playerId) public view returns (bool) {
+        if (playerId == 0) return false;
+        if (_playerIdToState[playerId] != 0) return true;
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(playerId);
+        return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
+
+    // function _playerExists(uint256 playerId) public view returns (bool) {
+    //     if (playerId == 0) return false;
+    //     if (_playerIdToState[playerId] != 0) return true;
+    //     uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
+    //     return teamId <= countTeams();
+    // }
+
+    // function _isVirtual(uint256 playerId) internal view returns (bool) {
+    //     require(_playerExists(playerId), "unexistent player");
+    //     return _playerIdToState[playerId] == 0;
+    // }
+        
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
     //     require(_teamExists(teamId), "invalid team id");
@@ -323,17 +347,6 @@ contract Assets {
     //     return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;
     // }
 
-    // function _playerExists(uint256 playerId) internal view returns (bool) {
-    //     if (playerId == 0) return false;
-    //     if (_playerIdToState[playerId] != 0) return true;
-    //     uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
-    //     return teamId <= countTeams();
-    // }
-
-    // function _isVirtual(uint256 playerId) internal view returns (bool) {
-    //     require(_playerExists(playerId), "unexistent player");
-    //     return _playerIdToState[playerId] == 0;
-    // }
 
     // /// Compute a random age between 16 and 35
     // /// @param rnd is a random number used as seed of the skills
