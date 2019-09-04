@@ -58,13 +58,6 @@ func TestChangeOwnership(t *testing.T) {
 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
 		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
 	}
-	// _, err = ganache.Assets.TransferPlayer(
-	// 	bind.NewKeyedTransactor(alice),
-	// 	big.NewInt(1),
-	// 	big.NewInt(2))
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
 }
 
 func TestProcess(t *testing.T) {
