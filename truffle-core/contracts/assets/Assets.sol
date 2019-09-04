@@ -135,6 +135,23 @@ contract Assets {
         require(playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId] == 0;
     }
+
+    function transferBotInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) public {
+        require(isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
+        require(addr != address(0));
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+    }
+
+    // /// @dev Transfers a team to a new owner. 
+    // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
+    // function transferTeam(uint256 teamId, address newOwner) public {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     require(newOwner != address(0), "meaningless adress");
+    //     require(newOwner != _getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
+    //     bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
+    //     _teamNameHashToOwner[nameHash] = newOwner;
+    //     emit TeamTransfer(teamId, newOwner);
+    // }
     
 
     // function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
@@ -175,16 +192,6 @@ contract Assets {
     // }
 
 
-    // /// @dev Transfers a team to a new owner. 
-    // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
-    // function transferTeam(uint256 teamId, address newOwner) public {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     require(newOwner != address(0), "meaningless adress");
-    //     require(newOwner != _getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
-    //     bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
-    //     _teamNameHashToOwner[nameHash] = newOwner;
-    //     emit TeamTransfer(teamId, newOwner);
-    // }
 
     // function getFreeShirt(uint256 teamId) public view returns(uint8) {
     //     for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
