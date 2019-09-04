@@ -80,6 +80,7 @@ contract Assets {
         
     function getNDivisionsInCountry(uint8 timeZone, uint256 countryIdxInTZ) public view returns(uint256) {
         _assertTZExists(timeZone);
+        _assertCountryInTZExists(timeZone, countryIdxInTZ);
         return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions;
     }
 
@@ -91,12 +92,21 @@ contract Assets {
         return getNLeaguesInCountry(timeZone, countryIdxInTZ) * TEAMS_PER_LEAGUE;
     }
 
-    function _teamExists(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
-        return teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) ;
+    function _teamExistsInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
+        return (teamIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ));
     }
 
     function _assertTZExists(uint8 timeZone) private pure {
-        require(timeZone > 0 && timeZone < 25);
+        require(timeZone > 0 && timeZone < 25, "timeZone does not exist");
+    }
+
+    function _assertCountryInTZExists(uint8 timeZone, uint256 countryIdxInTZ) private view {
+        require(countryIdxInTZ < _timeZones[timeZone].countries.length, "country does not exist in this timeZone");
+    }
+
+    function teamExists(uint256 teamId) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
@@ -308,9 +318,6 @@ contract Assets {
     //     _playerIdToState[playerId] = state;
     // }
 
-    // function _teamExists(uint256 teamId) internal view returns (bool) {
-    //     return teamId != 0 && teamId < teams.length;
-    // }
 
     // function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
     //     return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;

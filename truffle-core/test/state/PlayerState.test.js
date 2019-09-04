@@ -15,8 +15,8 @@ contract('PlayerState', (accounts) => {
     });
     
     it('encoding of TZ and country in teamId and playerId', async () =>  {
-        encoded = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4);
-        decoded = await playerStateLib.decodeTZCountryAndVal(encoded);
+        encoded = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
+        decoded = await playerStateLib.decodeTZCountryAndVal(encoded).should.be.fulfilled;
         const {0: timeZone, 1: country, 2: value} = decoded;
         timeZone.toNumber().should.be.equal(tz);
         country.toNumber().should.be.equal(countryIdxInTZ);
