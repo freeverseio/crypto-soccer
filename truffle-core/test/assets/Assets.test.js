@@ -31,6 +31,15 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
     });
 
+    it('check initial num of countries in timeZones', async () =>  {
+        nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
+        nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;
+        for (tz = 1; tz<25; tz++) {
+            nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
+            nCountries.toNumber().should.be.equal(1);
+        }
+    });
+    
     // it('get team player ids', async () => {
     //     FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
     //     await assets.createTeam("Barca", accounts[0]).should.be.fulfilled;

@@ -17,6 +17,28 @@ contract Assets {
         address owner; // timestamp as seconds since unix epoch
     }
 
+    struct Country {
+        uint256 nDivisions;
+        uint8 nDivisionsToAddNextRound;
+        mapping (uint256 => uint256) divisonIdxToRound;
+        mapping (uint256 => uint256) teamIdxInCountryToTeam;
+    }
+
+    struct TimeZone {
+        Country[] countries;
+        uint8 nCountriesToAdd;
+        uint256[2] orgMapHash;
+        uint256[2] skillsHash;
+        uint8 newestOrgMapIdx;
+        uint8 newestSkillsIdx;
+        uint256 scoresRoot;
+        uint8 updateCycleIdx;
+        uint256 lastUpdateBlockNum;
+        uint256 actionsRoot;
+        uint256 blockHash;
+        uint256 lastMarketClosureBlockNum;
+    }    
+    
     uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = uint256(-1);
@@ -26,13 +48,32 @@ contract Assets {
 
     mapping(uint256 => uint256) private _playerIdToState;
 
-    PlayerState internal _playerState;
+    PlayerState internal _playerStateLib;
+    TimeZone[] internal _timeZones;
 
     constructor(address playerState) public {
-        _playerState = PlayerState(playerState);
-        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
+        _playerStateLib = PlayerState(playerState);
+        // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
+        _timeZones.length++;
+        for (uint8 tz = 0; tz < 24; tz++) {
+            createTimeZone();
+        }
     }
 
+    function createTimeZone() private {
+        _timeZones.length++;
+        TimeZone storage tz = _timeZones[_timeZones.length - 1];
+        Country memory country;
+        country.nDivisions = 1;
+        tz.countries.push(country);
+        tz.countries[tz.countries.length -1].divisonIdxToRound[0] = 1; 
+    }
+        
+    function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
+        require(timeZone > 0 && timeZone < 25);
+        return _timeZones[timeZone].countries.length;
+    }
+        
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
     //     require(_teamExists(teamId), "invalid team id");
     //     return teams[teamId].creationTimestamp;
@@ -85,15 +126,15 @@ contract Assets {
     //     require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
     //     uint256 state = getPlayerState(playerId);
     //     uint256 newState = state;
-    //     uint256 teamIdOrigin = _playerState.getCurrentTeamId(state);
+    //     uint256 teamIdOrigin = _playerStateLib.getCurrentTeamId(state);
     //     require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-    //     uint256 shirtOrigin = _playerState.getCurrentShirtNum(state);
+    //     uint256 shirtOrigin = _playerStateLib.getCurrentShirtNum(state);
     //     uint8 shirtTarget = getFreeShirt(teamIdTarget);
     //     require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
-    //     newState = _playerState.setCurrentTeamId(newState, teamIdTarget);
-    //     newState = _playerState.setCurrentShirtNum(newState, shirtTarget);
-    //     newState = _playerState.setLastSaleBlock(newState, block.number);
+    //     newState = _playerStateLib.setCurrentTeamId(newState, teamIdTarget);
+    //     newState = _playerStateLib.setCurrentShirtNum(newState, shirtTarget);
+    //     newState = _playerStateLib.setLastSaleBlock(newState, block.number);
 
     //     teams[teamIdTarget].playerIds[shirtTarget] = playerId;
     //     teams[teamIdOrigin].playerIds[shirtOrigin] = FREE_PLAYER_ID;
@@ -110,16 +151,16 @@ contract Assets {
     //     uint256 state0 = getPlayerState(playerId0);
     //     uint256 state1 = getPlayerState(playerId1);
     //     uint256 newState0 = state0;
-    //     uint256 teamId0 = _playerState.getCurrentTeamId(state0);
-    //     uint256 teamId1 = _playerState.getCurrentTeamId(state1);
-    //     uint256 playerShirt0 = _playerState.getCurrentShirtNum(state0);
-    //     uint256 playerShirt1 = _playerState.getCurrentShirtNum(state1);
-    //     newState0 = _playerState.setCurrentTeamId(newState0, _playerState.getCurrentTeamId(state1));
-    //     newState0 = _playerState.setCurrentShirtNum(newState0, _playerState.getCurrentShirtNum(state1));
-    //     state1 = _playerState.setCurrentTeamId(state1,_playerState.getCurrentTeamId(state0));
-    //     state1 = _playerState.setCurrentShirtNum(state1,_playerState.getCurrentShirtNum(state0));
-    //     newState0 = _playerState.setLastSaleBlock(newState0, block.number);
-    //     state1 = _playerState.setLastSaleBlock(state1, block.number);
+    //     uint256 teamId0 = _playerStateLib.getCurrentTeamId(state0);
+    //     uint256 teamId1 = _playerStateLib.getCurrentTeamId(state1);
+    //     uint256 playerShirt0 = _playerStateLib.getCurrentShirtNum(state0);
+    //     uint256 playerShirt1 = _playerStateLib.getCurrentShirtNum(state1);
+    //     newState0 = _playerStateLib.setCurrentTeamId(newState0, _playerStateLib.getCurrentTeamId(state1));
+    //     newState0 = _playerStateLib.setCurrentShirtNum(newState0, _playerStateLib.getCurrentShirtNum(state1));
+    //     state1 = _playerStateLib.setCurrentTeamId(state1,_playerStateLib.getCurrentTeamId(state0));
+    //     state1 = _playerStateLib.setCurrentShirtNum(state1,_playerStateLib.getCurrentShirtNum(state0));
+    //     newState0 = _playerStateLib.setLastSaleBlock(newState0, block.number);
+    //     state1 = _playerStateLib.setLastSaleBlock(state1, block.number);
 
     //     teams[teamId0].playerIds[playerShirt0] = playerId1;
     //     teams[teamId1].playerIds[playerShirt1] = playerId0;
@@ -211,7 +252,7 @@ contract Assets {
     //         uint256 seed = _computeSeed(teamName, posInTeam);
     //         uint16[5] memory skills = _computeSkills(seed);
     //         uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
-    //         return _playerState.playerStateCreate(
+    //         return _playerStateLib.playerStateCreate(
     //             skills[0], // defence,
     //             skills[1], // speed,
     //             skills[2], // pass,
@@ -229,15 +270,15 @@ contract Assets {
     // }
 
     // function _setPlayerState(uint256 state) internal {
-    //     uint256 playerId = _playerState.getPlayerId(state);
+    //     uint256 playerId = _playerStateLib.getPlayerId(state);
     //     require(_playerExists(playerId), "unexistent player");
-    //     uint256 teamId = _playerState.getCurrentTeamId(state);
+    //     uint256 teamId = _playerStateLib.getCurrentTeamId(state);
     //     require(_teamExists(teamId), "unexistent team");
-    //     uint256 shirtNumber = _playerState.getCurrentShirtNum(state);
+    //     uint256 shirtNumber = _playerStateLib.getCurrentShirtNum(state);
     //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
-    //     shirtNumber = _playerState.getPrevShirtNumInLeague(state);
+    //     shirtNumber = _playerStateLib.getPrevShirtNumInLeague(state);
     //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
-    //     uint256 saleBlock = _playerState.getLastSaleBlock(state);
+    //     uint256 saleBlock = _playerStateLib.getLastSaleBlock(state);
     //     require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
     //     _playerIdToState[playerId] = state;
     // }
