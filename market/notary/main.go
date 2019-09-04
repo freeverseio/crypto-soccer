@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
@@ -49,7 +50,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	processor, err := processor.NewProcessor(sto, client, assetsContract, nil)
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	processor, err := processor.NewProcessor(sto, client, assetsContract, privateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
