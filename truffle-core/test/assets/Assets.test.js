@@ -88,7 +88,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('check playerExists', async () =>  {
+    it('check playerExists and isVirtual', async () =>  {
         countryIdxInTimeTZ = 0;
         teamIdxInCountry = nTeams;
         playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
@@ -96,9 +96,12 @@ contract('Assets', (accounts) => {
             playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(true);            
+            isVirtual = await assets.isVirtual(playerId).should.be.fulfilled;
+            isVirtual.should.be.equal(true);            
             playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTimeTZ, playerIdxInCountry+1);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(false);            
+            isVirtual = await assets.isVirtual(playerId).should.be.rejected;
         }
     });
 
@@ -276,34 +279,15 @@ contract('Assets', (accounts) => {
     //     await assets.getTeamName(1).should.be.rejected;
     // });
 
-    // it('existence of null player', async () => {
-    //     const exists = await assets.playerExists(playerId = 0).should.be.fulfilled;
-    //     exists.should.be.equal(false);
-    // });
+    it('existence of null player', async () => {
+        const exists = await assets.playerExists(playerId = 0).should.be.fulfilled;
+        exists.should.be.equal(false);
+    });
 
-    // it('existence of unexistent player', async () => {
-    //     const exists = await assets.playerExists(playerId = 1).should.be.fulfilled;
-    //     exists.should.be.equal(false);
-    // });
+    it('is null player virtual', async () => {
+        await assets.isVirtual(0).should.be.rejected;
+    });
 
-    // it('existence of existent player', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     const exists = await assets.playerExists(playerId = 1).should.be.fulfilled;
-    //     exists.should.be.equal(true);
-    // });
-
-    // it('is null player virtual', async () => {
-    //     await assets.isVirtual(0).should.be.rejected;
-    // });
-
-    // it('is unexistent player virtual', async () => {
-    //     await assets.isVirtual(1).should.be.rejected;
-    // });
-
-    // it('is existent player virtual', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     await assets.isVirtual(1).should.eventually.equal(true);
-    // });
 
     // it('set player state of existent virtual player', async () => {
     //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;

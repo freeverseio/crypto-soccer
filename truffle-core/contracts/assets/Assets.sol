@@ -120,18 +120,10 @@ contract Assets {
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
-    // function _playerExists(uint256 playerId) public view returns (bool) {
-    //     if (playerId == 0) return false;
-    //     if (_playerIdToState[playerId] != 0) return true;
-    //     uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
-    //     return teamId <= countTeams();
-    // }
-
-    // function _isVirtual(uint256 playerId) internal view returns (bool) {
-    //     require(_playerExists(playerId), "unexistent player");
-    //     return _playerIdToState[playerId] == 0;
-    // }
-        
+    function isVirtual(uint256 playerId) public view returns (bool) {
+        require(playerExists(playerId), "unexistent player");
+        return _playerIdToState[playerId] == 0;
+    }
         
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
     //     require(_teamExists(teamId), "invalid team id");
