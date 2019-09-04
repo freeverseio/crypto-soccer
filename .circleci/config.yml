@@ -89,7 +89,7 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: cd marker.trader && npm install
+      - run: cd marker/trader && npm install
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -126,9 +126,7 @@ jobs:
       - run:
           name: Create Docker Market-DB
           command: cd market/sql && docker build -t freeverseio/marketdb:dev .
-      - run:
-          name: Create Docker Market-API
-          command: cd marker.trader && docker build -t freeverseio/marketapi:dev .
+      - run: cd marker/trader && docker build -t freeverseio/market.trader:dev .
       - run:
           name: Create Docker relay
           command: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
@@ -156,9 +154,7 @@ jobs:
       - run:
           name: Upload Docker Market-DB
           command: docker push freeverseio/marketdb:dev
-      - run:
-          name: Upload Docker Market-API
-          command: docker push freeverseio/marketapi:dev
+      - run: docker push freeverseio/market.trader:dev
       - run:
           name: Upload Docker Relay
           command: docker push freeverseio/relay:dev
