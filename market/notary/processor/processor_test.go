@@ -82,6 +82,7 @@ func TestProcess(t *testing.T) {
 		"Barca",
 		crypto.PubkeyToAddress(alice.PublicKey))
 	// ganache.CreateTeam("Barca", alice)
+	ganache.createTeam("Barca", alice)
 	ganache.CreateTeam("Madrid", bob)
 
 	sto.CreateSellOrder(storage.SellOrder{1, 100})
