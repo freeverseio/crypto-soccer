@@ -49,7 +49,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	processor, err := processor.NewProcessor(sto, client, assetsContract)
+	processor, err := processor.NewProcessor(sto, client, assetsContract, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
