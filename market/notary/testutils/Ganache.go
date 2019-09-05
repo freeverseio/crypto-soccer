@@ -24,6 +24,8 @@ type Ganache struct {
 	Assets        *assets.Assets
 	States        *states.States
 	Owner         *ecdsa.PrivateKey
+	Alice         *ecdsa.PrivateKey
+	Bob           *ecdsa.PrivateKey
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -46,7 +48,7 @@ func NewGanache() *Ganache {
 	)
 	AssertNoErr(err, "DeployTime failed")
 
-	return &Ganache{
+	ganache := &Ganache{
 		client,
 		time,
 		common.Address{},
@@ -54,7 +56,16 @@ func NewGanache() *Ganache {
 		nil,
 		nil,
 		creatorPrivateKey,
+		nil,
+		nil,
 	}
+
+	ganache.Alice = ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	ganache.Bob = ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
+
+	ganache.DeployContracts(ganache.Owner)
+
+	return ganache
 }
 func (ganache *Ganache) Advance(blockCount int) {
 	for i := 0; i < blockCount; i++ {
@@ -72,6 +83,18 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 	AssertNoErr(err, "Failed transferring wei")
 
 	return privateKey
+}
+func (ganache *Ganache) GetPlayerOwner(playerId *big.Int) common.Address {
+	address, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, playerId)
+	AssertNoErr(err, "Getting the player owner")
+	return address
+}
+func (ganache *Ganache) TransferPlayer(playerId *big.Int, toTeam *big.Int) error {
+	_, err := ganache.Assets.TransferPlayer(
+		bind.NewKeyedTransactor(ganache.Owner),
+		playerId,
+		toTeam)
+	return err
 }
 func (ganache *Ganache) Public(addr *ecdsa.PrivateKey) common.Address {
 	return crypto.PubkeyToAddress(addr.PublicKey)

@@ -7,6 +7,7 @@ import "../state/PlayerState.sol";
 contract Assets {
     event TeamCreated (uint256 id);
     event TeamTransfer(uint256 teamId, address to);
+    event PlayerTransfer(uint256 playerId, uint256 toTeamId);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -101,7 +102,7 @@ contract Assets {
         uint256 shirtOrigin = _playerState.getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
-        
+
         newState = _playerState.setCurrentTeamId(newState, teamIdTarget);
         newState = _playerState.setCurrentShirtNum(newState, shirtTarget);
         newState = _playerState.setLastSaleBlock(newState, block.number);
@@ -110,6 +111,7 @@ contract Assets {
         teams[teamIdOrigin].playerIds[shirtOrigin] = FREE_PLAYER_ID;
 
         _setPlayerState(newState);
+        emit PlayerTransfer(playerId, teamIdTarget);
     }
 
 
@@ -249,7 +251,7 @@ contract Assets {
         shirtNumber = _playerState.getPrevShirtNumInLeague(state);
         require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
         uint256 saleBlock = _playerState.getLastSaleBlock(state);
-        require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
+        require(saleBlock != 0 || saleBlock <= block.number, "invalid sale block");
         _playerIdToState[playerId] = state;
     }
 
