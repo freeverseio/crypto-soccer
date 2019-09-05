@@ -53,26 +53,21 @@ contract Assets {
     mapping(uint256 => uint256) private _playerIdToState;
 
     PlayerState internal _playerStateLib;
-    TimeZone[] internal _timeZones;
+    TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
 
     constructor(address playerState) public {
         _playerStateLib = PlayerState(playerState);
-        // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
-        _timeZones.length++;
-        // It then creates the remaining 24 timezones.
-        for (uint8 tz = 0; tz < 24; tz++) {
-            createTimeZone();
+        for (uint8 tz = 1; tz < 25; tz++) {
+            _initTimeZone(tz);
         }
     }
 
-    function createTimeZone() private {
-        _timeZones.length++;
-        TimeZone storage tz = _timeZones[_timeZones.length - 1];
+    function _initTimeZone(uint8 tz) private {
         Country memory country;
         country.nDivisions = 1;
-        tz.countries.push(country);
-        tz.countries[tz.countries.length -1].divisonIdxToRound[0] = 1; 
+        _timeZones[tz].countries.push(country);
+        _timeZones[tz].countries[0].divisonIdxToRound[0] = 1; 
     }
         
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
