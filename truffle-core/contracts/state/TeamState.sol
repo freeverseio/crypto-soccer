@@ -26,12 +26,12 @@ contract TeamState is PlayerState {
         playerState = teamState[idx];
     }
 
-    /// Evolve the team of delta
-    function teamStateEvolve(uint256[] memory teamState, uint8 delta) public pure returns (uint256[] memory) {
-        for (uint256 i = 0 ; i < teamState.length ; i++)
-            teamState[i] = playerStateEvolve(teamState[i], delta);
-        return teamState;
-    }
+    // /// Evolve the team of delta
+    // function teamStateEvolve(uint256[] memory teamState, uint8 delta) public pure returns (uint256[] memory) {
+    //     for (uint256 i = 0 ; i < teamState.length ; i++)
+    //         teamState[i] = playerStateEvolve(teamState[i], delta);
+    //     return teamState;
+    // }
 
     function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
         for(uint256 i = 0 ; i < teamState.length ; i++){

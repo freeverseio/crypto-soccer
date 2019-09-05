@@ -178,8 +178,6 @@ contract PlayerState {
         return uint256(playerState >> 87 & (2**35-1));
     }
 
-
-
     /// @dev Sets the number at a given index in a serialized uint256
     function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
         internal
@@ -192,27 +190,6 @@ contract PlayerState {
         uint mask = (1 << bits)-1; // (2**bits)-1
         serialized &= ~(mask << b); // clear all bits at index
         return serialized + (value << b);
-    }
-
-    /// increase the skills of delta
-    function playerStateEvolve(uint256 playerState, uint16 delta) public pure returns (uint256 evolvedState) {
-        return playerState;
-        uint256 defence = getDefence(playerState) + delta;
-        uint256 speed = getSpeed(playerState) + delta;
-        uint256 pass = getPass(playerState) + delta;
-        uint256 shoot = getShoot(playerState) + delta;
-        uint256 endurance = getEndurance(playerState) + delta;
-        require(defence < 2**14, "defence out of bound");
-        require(speed < 2**14, "speed out of bound");
-        require(pass < 2**14, "pass out of bound");
-        require(shoot < 2**14, "shoot out of bound");
-        require(endurance < 2**14, "endurance out of bound");
-        evolvedState = playerState;
-        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 242)) | uint256(defence) << 242;
-        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 228)) | uint256(speed) << 228;
-        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 214)) | uint256(pass) << 214;
-        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 200)) | uint256(shoot) << 200;
-        evolvedState = evolvedState & (uint256(-1) ^ (0x3fff << 186)) | uint256(endurance) << 186;
     }
 
 }
