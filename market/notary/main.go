@@ -22,10 +22,18 @@ func main() {
 	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
 
+	log.Infof("[PARAM] memory            : %v", *inMemoryDatabase)
+	log.Infof("[PARAM] postgres          : %v", *postgresURL)
+	log.Infof("[PARAM] ethereum_client   : %v", *ethereumClient)
+	log.Infof("[PARAM] assets_address    : %v", *assetsContractAddress)
+	log.Infof("[PARAM] debug             : %v", *debug)
+	log.Infof("-------------------------------------------------------------------")
+
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
+	log.Info("Create the connection to DBMS")
 	var err error
 	var sto *storage.Storage
 	if *inMemoryDatabase {
