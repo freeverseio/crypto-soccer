@@ -20,17 +20,17 @@ func TestChangeOwnership(t *testing.T) {
 	ganache.CreateTeam("Madrid", bob)
 
 	var player = big.NewInt(1)
-	originOwner := ganache.GetPlayerOwner(player)
-	if originOwner != ganache.Public(alice) {
-		t.Fatalf("Expected owner ALICE but got %v", originOwner)
+	owner := ganache.GetPlayerOwner(player)
+	if owner != ganache.Public(alice) {
+		t.Fatalf("Expected owner ALICE but got %v", owner)
 	}
 	err := ganache.TransferPlayer(player, big.NewInt(2))
 	if err != nil {
 		t.Fatal(err)
 	}
-	targetOwner := ganache.GetPlayerOwner(player)
-	if targetOwner != ganache.Public(bob) {
-		t.Fatalf("Expectedf owner BOB but got %v", targetOwner)
+	owner = ganache.GetPlayerOwner(player)
+	if owner != ganache.Public(bob) {
+		t.Fatalf("Expectedf owner BOB but got %v", owner)
 	}
 }
 
