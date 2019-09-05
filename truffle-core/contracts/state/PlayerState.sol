@@ -18,15 +18,15 @@ contract PlayerState {
         require(timeZone < 2**5, "defence out of bound");
         require(countryIdxInTZ < 2**10, "defence out of bound");
         require(val < 2**28, "defence out of bound");
-        uint256 encoded  = uint256(timeZone) << 251;        // 256 - 5
-        encoded         |= uint256(countryIdxInTZ) << 241;  // 251 - 10
-        return (encoded | uint256(val) << 213);            // 241 - 28
+        uint256 encoded  = uint256(timeZone) << 38;        // 43 - 5
+        encoded         |= countryIdxInTZ << 28;  // 38 - 10
+        return (encoded | val);            // 28 - 28
     }
 
     function decodeTZCountryAndVal(uint256 encoded) public pure returns (uint8, uint256, uint256)
     {
         // 2**14 - 1 = 31;  2**10 - 1 = 1023; 2**28 - 1 = 268435455;
-        return (uint8(encoded >> 251 & 31), uint256(encoded >> 241 & 1023), uint256(encoded >> 213 & 268435455));
+        return (uint8(encoded >> 38 & 31), uint256(encoded >> 28 & 1023), uint256(encoded & 268435455));
     }
 
     /**
