@@ -48,6 +48,9 @@ contract('Assets', (accounts) => {
         saleBlock = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
         expect(saleBlock.toNumber() < block.number).to.be.true;
         await assets.transferPlayer(player, toTeam = 3).should.be.fulfilled;
+        state = await assets.getPlayerState(player).should.be.fulfilled;
+        team = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        team.should.be.bignumber.equal('3');
     });
 
     it('check initial and max number of players per team', async () => {
