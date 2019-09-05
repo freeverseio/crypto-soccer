@@ -30,7 +30,7 @@ contract('PlayerState', (accounts) => {
             monthOfBirth = 4, 
             playerId = 143,
         ).should.be.fulfilled;
-        result = await playerStateLib.getMonthOfBirthInUnixTime(skills).should.be.fulfilled;
+        result = await playerStateLib.getMonthOfBirth(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
         result = await playerStateLib.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
