@@ -198,6 +198,14 @@ contract Assets {
         return _playerStateLib.encodePlayerSkills(skills, monthOfBirth, playerId);
     }
 
+    function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(playerId);
+        uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
+        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        uint256 currentTeamId = _playerStateLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
+        uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
+        return _playerStateLib.encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
+    }
 
     /// Compute a random age between 16 and 35
     /// @param dna is a random number used as seed of the skills

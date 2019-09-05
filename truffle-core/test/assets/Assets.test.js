@@ -193,6 +193,37 @@ contract('Assets', (accounts) => {
         ageInMonths.toNumber().should.be.equal(348); // 29 years
     });
 
+    it('get state of player on creation', async () => {
+        tz = 1;
+        countryIdxInTZ = 0;
+        // test for players on the first team
+        playerIdxInCountry = 1;
+        teamIdxInCountry = Math.floor(playerIdxInCountry / PLAYERS_PER_TEAM_INIT);
+        teamIdxInCountry.should.be.equal(0);
+        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+        state = await assets.getPlayerStateAtBirth(playerId).should.be.fulfilled;
+        newId =  await playerStateLib.getPlayerIdFromState(state).should.be.fulfilled; 
+        newId.should.be.bignumber.equal(playerId);
+        expectedTeamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        teamId =  await playerStateLib.getCurrentTeamId(state).should.be.fulfilled; 
+        teamId.should.be.bignumber.equal(expectedTeamId);
+        shirtNum =  await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled; 
+        shirtNum.toNumber().should.be.equal(1);
+        // test for players on the second team
+        playerIdxInCountry = 18;
+        teamIdxInCountry = Math.floor(playerIdxInCountry / PLAYERS_PER_TEAM_INIT);
+        teamIdxInCountry.should.be.equal(1);
+        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+        state = await assets.getPlayerStateAtBirth(playerId).should.be.fulfilled;
+        newId =  await playerStateLib.getPlayerIdFromState(state).should.be.fulfilled; 
+        newId.should.be.bignumber.equal(playerId);
+        expectedTeamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        teamId =  await playerStateLib.getCurrentTeamId(state).should.be.fulfilled; 
+        teamId.should.be.bignumber.equal(expectedTeamId);
+        shirtNum =  await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled; 
+        shirtNum.toNumber().should.be.equal(0);
+    });
+
     
     return;
 
