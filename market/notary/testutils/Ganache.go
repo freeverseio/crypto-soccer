@@ -63,6 +63,8 @@ func NewGanache() *Ganache {
 	ganache.Alice = ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	ganache.Bob = ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 
+	ganache.DeployContracts(ganache.Owner)
+
 	return ganache
 }
 func (ganache *Ganache) Advance(blockCount int) {

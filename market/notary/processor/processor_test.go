@@ -13,11 +13,9 @@ import (
 
 func TestChangeOwnership(t *testing.T) {
 	ganache := testutils.NewGanache()
-	owner := ganache.Owner
 	alice := ganache.Alice
 	bob := ganache.Bob
 
-	ganache.DeployContracts(owner)
 	ganache.CreateTeam("Barca", alice)
 	ganache.CreateTeam("Madrid", bob)
 
