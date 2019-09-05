@@ -53,6 +53,17 @@ contract('Assets', (accounts) => {
         team.should.be.bignumber.equal('3');
     });
 
+    it('transfer player emit', async () => {
+        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createTeam("Madrid", BOB).should.be.fulfilled;
+        const player = 1;
+        const toTeam = 2;
+        const tx = await assets.transferPlayer(player, toTeam).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "PlayerTransfer", (ev) => {
+            return ev.playerId == player && ev.toTeamId == toTeam;
+        });
+    });
+
     it('check initial and max number of players per team', async () => {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
