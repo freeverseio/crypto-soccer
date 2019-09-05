@@ -26,7 +26,31 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
     });
 
-    it('check initial and max number of players per team', async () =>  {
+    it('check sale block', async () => {
+        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createTeam("Madrid", BOB).should.be.fulfilled;
+        const player = 1;
+        let state = await assets.getPlayerState(player).should.be.fulfilled;
+        let team = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        team.should.be.bignumber.equal('1');
+        let saleBlock = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
+        saleBlock.should.be.bignumber.equal('0');
+        // transfer player
+        await assets.transferPlayer(player, toTeam = 2).should.be.fulfilled;
+        state = await assets.getPlayerState(player).should.be.fulfilled;
+        team = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        team.should.be.bignumber.equal('2');
+        saleBlock = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
+        let block = await web3.eth.getBlock("latest")
+        expect(saleBlock.toNumber() <= block.number).to.be.true;
+        await assets.createTeam("Venezia", ALICE).should.be.fulfilled;
+        block = await web3.eth.getBlock("latest")
+        saleBlock = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
+        expect(saleBlock.toNumber() < block.number).to.be.true;
+        await assets.transferPlayer(player, toTeam = 3).should.be.fulfilled;
+    });
+
+    it('check initial and max number of players per team', async () => {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
     });

@@ -249,7 +249,7 @@ contract Assets {
         shirtNumber = _playerState.getPrevShirtNumInLeague(state);
         require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
         uint256 saleBlock = _playerState.getLastSaleBlock(state);
-        require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
+        require(saleBlock != 0 || saleBlock <= block.number, "invalid sale block");
         _playerIdToState[playerId] = state;
     }
 
