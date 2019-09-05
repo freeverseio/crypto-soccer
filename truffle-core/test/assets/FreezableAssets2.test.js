@@ -30,4 +30,18 @@ contract('FreezableAssets2', (accounts) => {
         const targetOwner = await assets.getPlayerOwner(player).should.be.fulfilled;
         targetOwner.should.be.equal(BOB);
     });
+
+    it('change ownership 1->2 than 2->1', async () => {
+        await assets.createTeam("Barca", ALICE).should.be.fulfilled;
+        await assets.createTeam("Madrid", BOB).should.be.fulfilled;
+        const player = 1;
+        let origin = await assets.getPlayerOwner(player).should.be.fulfilled;
+        origin.should.be.equal(ALICE);
+        await assets.transferPlayer(player, toTeam = 2).should.be.fulfilled;
+        owner = await assets.getPlayerOwner(player).should.be.fulfilled;
+        owner.should.be.equal(BOB);
+        await assets.transferPlayer(player, toTeam = 1).should.be.fulfilled;
+        owner = await assets.getPlayerOwner(player).should.be.fulfilled;
+        owner.should.be.equal(ALICE);
+    });
 });
