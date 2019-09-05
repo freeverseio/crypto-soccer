@@ -47,17 +47,21 @@ contract Assets {
     uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
+    uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public FREE_PLAYER_IDX = uint256(-1);
+    uint256 constant public DAYS_PER_ROUND = 16;
 
     mapping(uint256 => uint256) private _playerIdToState;
 
     PlayerState internal _playerStateLib;
     TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
+    uint256 public gameDeployMonth;
 
     constructor(address playerState) public {
         _playerStateLib = PlayerState(playerState);
+        gameDeployMonth = (12 * now) / (3600 * 24 * 365);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -181,20 +185,30 @@ contract Assets {
         }
     }
 
+    function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(playerId);
+        uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
+        uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
+        uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
+        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+        uint256 dna = uint256(keccak256(abi.encode(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum)));
+        uint256 playerCreationMonth = (gameDeployMonth * 30 + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND) / 30;
+        uint256 monthOfBirth = computeBirth(dna, playerCreationMonth);
+        uint16[N_SKILLS] memory skills = computeSkills(dna);
+        return _playerStateLib.encodePlayerSkills(skills, monthOfBirth, playerId);
+    }
+
+
     /// Compute a random age between 16 and 35
     /// @param dna is a random number used as seed of the skills
-    /// @param currentTime in seconds since unix epoch
-    /// @return monthOfBirth in monthUnixTime
-    function computeBirth(uint256 dna, uint256 currentTime) public pure returns (uint16) {
+    /// @param playerCreationMonth since unix epoch
+    /// @return monthOfBirth since unix epoch
+    function computeBirth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16) {
+        require(playerCreationMonth > 40*12, "invalid playerCreationMonth");
         dna >>= BITS_PER_SKILL*N_SKILLS;
         uint16 seed = uint16(dna & SKILL_MASK);
-        /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
         uint16 age = 16 + (seed % 20);
-        /// @dev Convert age to monthOfBirthAfterUnixEpoch.
-        /// @dev I leave it this way for clarity, for the time being.
-        uint years2secs = 365 * 24 * 3600; // TODO: make it a constant
-        uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
-        return uint16((currentTime - age * years2secs) / month2secs);
+        return uint16(playerCreationMonth - age * 12);
     }
 
     /// Compute the pseudorandom skills, sum of the skills is 250
@@ -206,14 +220,12 @@ contract Assets {
             skills[i] = uint16(dna & SKILL_MASK);
             dna >>= BITS_PER_SKILL;
         }
-
         /// Adjust skills to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
         for (uint8 i = 0; i < 5; i++) {
             skills[i] = skills[i] % 50;
             excess += skills[i];
         }
-
         /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
         uint16 delta = (250 - excess) / 5;
         for (uint8 i = 0; i < 5; i++)
@@ -222,7 +234,6 @@ contract Assets {
         uint16 remainder = (250 - excess) % 5;
         for (uint8 i = 0 ; i < remainder ; i++)
             skills[i]++;
-
         return skills;
     }
 
@@ -245,10 +256,15 @@ contract Assets {
     //     emit TeamTransfer(teamId, newOwner);
     // }
     
-        
+    // function getDivisionCreationRound(uint8 timeZone, uint256 countryIdx, uint256 divisionIdx) public view returns(uint256) {
+    //     uint256 creationRound = _timeZones[timeZone].countries[countryIdx].divisonIdxToRound[divisionIdx];
+    //     return (creationRound - 1)* DAYS_PER_ROUND;
+    // }
+
     // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     return teams[teamId].creationTimestamp;
+    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+    //     require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
+    //     return getDivisionCreationDay(timeZone, countryIdx, divisionIdx);
     // }
 
     // function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
@@ -442,14 +458,4 @@ contract Assets {
     // }
 
 
-
-    // /// @return seed
-    // function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {
-    //     return uint256(keccak256(abi.encode(teamName, posInTeam)));
-    // }
-
-    // /// @return hashed arg casted to uint256
-    // function _intHash(string memory arg) internal pure returns (uint256) {
-    //     return uint256(keccak256(abi.encode(arg)));
-    // }
 }

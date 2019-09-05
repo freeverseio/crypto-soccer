@@ -26,24 +26,10 @@ contract('PlayerState', (accounts) => {
     it('encoding and decoding skills', async () => {
         const sk = [16383, 13, 4, 56, 456]
         const skills = await playerStateLib.encodePlayerSkills(
-            defence = sk[0],
-            speed = sk[1],
-            pass = sk[2],
-            shoot = sk[3],
-            endurance = sk[4],
+            sk,
             monthOfBirth = 4, 
             playerId = 143,
         ).should.be.fulfilled;
-        result = await playerStateLib.getDefence(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(defence);
-        result = await playerStateLib.getSpeed(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(speed);
-        result = await playerStateLib.getPass(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(pass);
-        result = await playerStateLib.getShoot(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(shoot);
-        result = await playerStateLib.getEndurance(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(endurance);
         result = await playerStateLib.getMonthOfBirthInUnixTime(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
         result = await playerStateLib.getPlayerIdFromSkills(skills).should.be.fulfilled;

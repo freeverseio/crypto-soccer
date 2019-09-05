@@ -5,6 +5,7 @@ contract PlayerState {
 
     uint8 constant public MIN_PLAYER_AGE_AT_BIRTH = 16;
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
+    uint8 constant public N_SKILLS = 5;
 
     /**
      * @dev encoding a total of 43 bits:
@@ -19,7 +20,7 @@ contract PlayerState {
         require(val < 2**28, "defence out of bound");
         uint256 encoded  = uint256(timeZone) << 251;        // 256 - 5
         encoded         |= uint256(countryIdxInTZ) << 241;  // 251 - 10
-        return (encoded |= uint256(val) << 213);            // 241 - 28
+        return (encoded | uint256(val) << 213);            // 241 - 28
     }
 
     function decodeTZCountryAndVal(uint256 encoded) public pure returns (uint8, uint256, uint256)
@@ -31,37 +32,26 @@ contract PlayerState {
     /**
      * @dev encoding a total of 62 bits:
      * 5 skills                  = 5 x 14 bits
-     * monthOfBirthInUnixTime    = 14 bits
+     *                           = defence, speed, pass, shoot, endurance
+     * monthOfBirth              = 14 bits  (since Unix time)
      * playerId                  = 43 bits
     **/
     // TODO: avoid doing the uint256 for those variables that already are uint256
-    function encodePlayerSkills(
-        uint256 defence,
-        uint256 speed,
-        uint256 pass,
-        uint256 shoot,
-        uint256 endurance,
-        uint256 monthOfBirthInUnixTime,
-        uint256 playerId
-    )
+    function encodePlayerSkills(uint16[N_SKILLS] memory skills, uint256 monthOfBirth, uint256 playerId)
         public
         pure
-        returns (uint256)
+        returns (uint256 encoded)
     {
-        require(defence < 2**14, "defence out of bound");
-        require(speed < 2**14, "defence out of bound");
-        require(pass < 2**14, "defence out of bound");
-        require(shoot < 2**14, "defence out of bound");
-        require(endurance < 2**14, "defence out of bound");
-        require(monthOfBirthInUnixTime < 2**14, "monthOfBirthInUnixTime out of bound");
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            require(skills[sk] < 2**14, "skill out of bound");
+        }
+        require(monthOfBirth < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
-        uint256 skills = uint256(defence) << 242;
-        skills |= uint256(speed) << 228;
-        skills |= uint256(pass) << 214;
-        skills |= uint256(shoot) << 200;
-        skills |= uint256(endurance) << 186;
-        skills |= uint256(monthOfBirthInUnixTime) << 172;
-        return (skills |= uint256(playerId) << 129);
+        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+            encoded |= uint256(skills[sk]) << 256 - (sk + 1) * 14;
+        }
+        encoded |= monthOfBirth << 172;
+        return (encoded | playerId << 129);
     }
     
     function getDefence(uint256 encodedSkills) public pure returns (uint256) {
