@@ -32,7 +32,8 @@ func TestChangeOwnership(t *testing.T) {
 	if owner != ganache.Public(bob) {
 		t.Fatalf("Expectedf owner BOB but got %v", owner)
 	}
-	err = ganache.TransferPlayer(player, big.NewInt(1))
+	ganache.CreateTeam("Venice", alice)
+	err = ganache.TransferPlayer(player, big.NewInt(3))
 	if err != nil {
 		t.Fatal(err)
 	}
