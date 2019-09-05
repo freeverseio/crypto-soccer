@@ -74,7 +74,7 @@ contract PlayerState {
         return uint256(encodedSkills >> 186 & 0x3fff);
     }
 
-    function getMonthOfBirthInUnixTime(uint256 playerState) public pure returns (uint256) {
+    function getMonthOfBirth(uint256 playerState) public pure returns (uint256) {
         return uint256(playerState >> 172 & 0x3fff);
     }
 
