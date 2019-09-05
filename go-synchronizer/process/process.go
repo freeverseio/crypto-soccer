@@ -85,6 +85,29 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
+	if events, err := p.scanPlayerTransfer(opts); err != nil {
+		return err
+	} else {
+		for _, event := range events { // TODO: next part to be recoded
+			_, blockNumber, err := p.getTimeOfEvent(event.Raw)
+			if err != nil {
+				return err
+			}
+			playerId := event.PlayerId.Uint64()
+			toTeamId := event.ToTeamId.Uint64()
+			player, err := p.db.GetPlayer(playerId)
+			if err != nil {
+				return err
+			}
+			player.State.BlockNumber = blockNumber
+			player.State.TeamId = toTeamId
+			err = p.db.PlayerStateUpdate(playerId, player.State)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	if p.leagues != nil {
 		if events, err := p.scanLeagueCreated(opts); err != nil {
 			return err
@@ -224,6 +247,22 @@ func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.Asset
 	}
 
 	events := []assets.AssetsTeamTransfer{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]assets.AssetsPlayerTransfer, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterPlayerTransfer(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsPlayerTransfer{}
 
 	for iter.Next() {
 		events = append(events, *(iter.Event))
