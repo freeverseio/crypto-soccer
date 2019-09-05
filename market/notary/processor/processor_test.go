@@ -4,7 +4,6 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
@@ -49,44 +48,32 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache := testutils.NewGanache()
-	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
-	ganache.DeployContracts(owner)
+	alice := ganache.Alice
+	bob := ganache.Bob
 
-	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, owner)
+	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
-	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 
 	ganache.CreateTeam("Barca", alice)
 	ganache.CreateTeam("Madrid", bob)
 
 	var player = big.NewInt(1)
-	originOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if originOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+	originOwner := ganache.GetPlayerOwner(player)
+	if originOwner != ganache.Public(alice) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
 	}
 	sto.CreateSellOrder(storage.SellOrder{1, 100})
 	processor.Process()
-	targetOwner, err := ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
-	if err != nil {
-		t.Fatal(err)
-	}
+	targetOwner := ganache.GetPlayerOwner(player)
 	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
 	}
 
 	sto.CreateBuyOrder(storage.BuyOrder{1, 100, 2})
 	processor.Process()
-	targetOwner, err = ganache.Assets.GetPlayerOwner(&bind.CallOpts{}, player)
-	if err != nil {
-		t.Fatal(err)
-	}
+	targetOwner = ganache.GetPlayerOwner(player)
 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
 		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
 	}
