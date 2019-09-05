@@ -61,7 +61,7 @@ contract Assets {
 
     constructor(address playerState) public {
         _playerStateLib = PlayerState(playerState);
-        gameDeployMonth = (12 * now) / (3600 * 24 * 365);
+        gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -193,7 +193,7 @@ contract Assets {
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 dna = uint256(keccak256(abi.encode(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum)));
         uint256 playerCreationMonth = (gameDeployMonth * 30 + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND) / 30;
-        uint256 monthOfBirth = computeBirth(dna, playerCreationMonth);
+        uint256 monthOfBirth = computeBirthMonth(dna, playerCreationMonth);
         uint16[N_SKILLS] memory skills = computeSkills(dna);
         return _playerStateLib.encodePlayerSkills(skills, monthOfBirth, playerId);
     }
@@ -203,7 +203,7 @@ contract Assets {
     /// @param dna is a random number used as seed of the skills
     /// @param playerCreationMonth since unix epoch
     /// @return monthOfBirth since unix epoch
-    function computeBirth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16) {
+    function computeBirthMonth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16) {
         require(playerCreationMonth > 40*12, "invalid playerCreationMonth");
         dna >>= BITS_PER_SKILL*N_SKILLS;
         uint16 seed = uint16(dna & SKILL_MASK);
@@ -236,8 +236,18 @@ contract Assets {
             skills[i]++;
         return skills;
     }
+    
+    function secsToMonths(uint256 secs) private pure returns (uint256) {
+        return (secs * 12)/ 31536000;  // 31536000 = 3600 * 24 * 365
+    }
 
+    function monthsToSecs(uint256 months) private pure returns (uint256) {
+        return (months * 31536000) / 12; // 31536000 = 3600 * 24 * 365
+    }
 
+    function getPlayerAgeInMonths(uint256 playerId) public view returns (uint256) {
+        return secsToMonths(now - monthsToSecs(_playerStateLib.getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
+    }
 
     // function transferTeam(uint256 teamId, address newOwnerAddr) public {
     //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
@@ -420,7 +430,7 @@ contract Assets {
     //         string memory teamName = getTeamName(teamId);
     //         uint256 seed = _computeSeed(teamName, posInTeam);
     //         uint16[5] memory skills = _computeSkills(seed);
-    //         uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
+    //         uint16 birth = _computeBirthMonth(seed, getTeamCreationTimestamp(teamId));
     //         return _playerStateLib.playerStateCreate(
     //             skills[0], // defence,
     //             skills[1], // speed,

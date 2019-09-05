@@ -189,8 +189,11 @@ contract('Assets', (accounts) => {
         newId.should.be.bignumber.equal(playerId);
         monthOfBirth =  await playerStateLib.getMonthOfBirth(encodedSkills).should.be.fulfilled; 
         monthOfBirth.toNumber().should.be.equal(248);
+        ageInMonths = await assets.getPlayerAgeInMonths(playerId).should.be.fulfilled;
+        ageInMonths.toNumber().should.be.equal(348); // 29 years
     });
 
+    
     return;
 
     // it('check player team', async () => {
