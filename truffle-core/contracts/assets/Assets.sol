@@ -181,6 +181,52 @@ contract Assets {
         }
     }
 
+    /// Compute a random age between 16 and 35
+    /// @param dna is a random number used as seed of the skills
+    /// @param currentTime in seconds since unix epoch
+    /// @return monthOfBirth in monthUnixTime
+    function computeBirth(uint256 dna, uint256 currentTime) public pure returns (uint16) {
+        dna >>= BITS_PER_SKILL*N_SKILLS;
+        uint16 seed = uint16(dna & SKILL_MASK);
+        /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
+        uint16 age = 16 + (seed % 20);
+        /// @dev Convert age to monthOfBirthAfterUnixEpoch.
+        /// @dev I leave it this way for clarity, for the time being.
+        uint years2secs = 365 * 24 * 3600; // TODO: make it a constant
+        uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
+        return uint16((currentTime - age * years2secs) / month2secs);
+    }
+
+    /// Compute the pseudorandom skills, sum of the skills is 250
+    /// @param dna is a random number used as seed of the skills
+    /// @return 5 skills
+    function computeSkills(uint256 dna) public pure returns (uint16[N_SKILLS] memory) {
+        uint16[5] memory skills;
+        for (uint8 i = 0; i<5; i++) {
+            skills[i] = uint16(dna & SKILL_MASK);
+            dna >>= BITS_PER_SKILL;
+        }
+
+        /// Adjust skills to so that they add up to, maximum, 5*50 = 250.
+        uint16 excess;
+        for (uint8 i = 0; i < 5; i++) {
+            skills[i] = skills[i] % 50;
+            excess += skills[i];
+        }
+
+        /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
+        uint16 delta = (250 - excess) / 5;
+        for (uint8 i = 0; i < 5; i++)
+            skills[i] = skills[i] + delta;
+
+        uint16 remainder = (250 - excess) % 5;
+        for (uint8 i = 0 ; i < remainder ; i++)
+            skills[i]++;
+
+        return skills;
+    }
+
+
 
     // function transferTeam(uint256 teamId, address newOwnerAddr) public {
     //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
@@ -396,52 +442,6 @@ contract Assets {
     // }
 
 
-    // /// Compute a random age between 16 and 35
-    // /// @param rnd is a random number used as seed of the skills
-    // /// @param currentTime in seconds since unix epoch
-    // /// @return monthOfBirth in monthUnixTime
-    // function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
-    //     rnd >>= BITS_PER_SKILL*N_SKILLS;
-    //     uint16 seed = uint16(rnd & SKILL_MASK);
-    //     /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
-    //     uint16 age = 16 + (seed % 20);
-
-    //     /// @dev Convert age to monthOfBirthAfterUnixEpoch.
-    //     /// @dev I leave it this way for clarity, for the time being.
-    //     uint years2secs = 365 * 24 * 3600; // TODO: make it a constant
-    //     uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
-
-    //     return uint16((currentTime - age * years2secs) / month2secs);
-    // }
-
-    // /// Compute the pseudorandom skills, sum of the skills is 250
-    // /// @param rnd is a random number used as seed of the skills
-    // /// @return 5 skills
-    // function _computeSkills(uint256 rnd) internal pure returns (uint16[N_SKILLS] memory) {
-    //     uint16[5] memory skills;
-    //     for (uint8 i = 0; i<5; i++) {
-    //         skills[i] = uint16(rnd & SKILL_MASK);
-    //         rnd >>= BITS_PER_SKILL;
-    //     }
-
-    //     /// The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
-    //     uint16 excess;
-    //     for (uint8 i = 0; i < 5; i++) {
-    //         skills[i] = skills[i] % 50;
-    //         excess += skills[i];
-    //     }
-
-    //     /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-    //     uint16 delta = (250 - excess) / 5;
-    //     for (uint8 i = 0; i < 5; i++)
-    //         skills[i] = skills[i] + delta;
-
-    //     uint16 remainder = (250 - excess) % 5;
-    //     for (uint8 i = 0 ; i < remainder ; i++)
-    //         skills[i]++;
-
-    //     return skills;
-    // }
 
     // /// @return seed
     // function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {

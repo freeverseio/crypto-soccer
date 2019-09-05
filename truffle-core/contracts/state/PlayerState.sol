@@ -1,7 +1,11 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-/// @title the state of a player
+/// @title library of functions to encode-decode player states and skills, etc.
 contract PlayerState {
+
+    uint8 constant public MIN_PLAYER_AGE_AT_BIRTH = 16;
+    uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
+
     /**
      * @dev encoding a total of 43 bits:
      * timeZone                  = 5 bits
