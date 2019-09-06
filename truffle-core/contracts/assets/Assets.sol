@@ -5,7 +5,6 @@ import "../state/PlayerState.sol";
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets {
-    event TeamCreated (uint256 id);
     event TeamTransfer(uint256 teamId, address to);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
@@ -158,6 +157,21 @@ contract Assets {
     function transferBotToAddr(uint256 teamId, address addr) public {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
         transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+    }
+    
+    function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
+        _assertTZExists(timeZone);
+        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
+        require(addr != address(0), "cannot transfer to a null address");
+        require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+    }
+
+    function transferTeam(uint256 teamId, address addr) public {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        transferTeamInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        emit TeamTransfer(teamId, addr);
     }
 
     function getDefaultPlayerIdForTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, uint8 shirtNum) public view returns(uint256) {

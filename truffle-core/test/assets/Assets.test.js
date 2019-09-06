@@ -412,144 +412,31 @@ contract('Assets', (accounts) => {
     //     }
     // });
 
-    it('get shirtNum in team for all players in a country', async () => {
-        tz = 0;
-        countryIdxInTZ = 0;
-        playersInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT
-        for (let playerIdxInCountry = 0; playerId < playersInCountry ; playerId++){
-            playerId    = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-            const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
-            const shirtNum = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
-            shirtNum.toNumber().should.be.equal(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
-        }
-    })
-    
-    
-    return;
+    // it('get shirtNum in team for all players in a country', async () => {
+    //     tz = 0;
+    //     countryIdxInTZ = 0;
+    //     playersInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT
+    //     for (let playerIdxInCountry = 0; playerId < playersInCountry ; playerId++){
+    //         playerId    = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+    //         const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
+    //         const shirtNum = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
+    //         shirtNum.toNumber().should.be.equal(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
+    //     }
+    // })
 
-    // it('get existing virtual player skills', async () => {
-    //     const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
-    //     const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
-    //     skills.length.should.be.equal(numSkills.toNumber());
-    //     skills[0].should.be.bignumber.equal('78');
-    //     skills[1].should.be.bignumber.equal('65');
-    //     skills[2].should.be.bignumber.equal('35');
-    //     skills[3].should.be.bignumber.equal('35');
-    //     skills[4].should.be.bignumber.equal('37');
-    //     const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-    //     sum.should.be.equal(250);
-    // });
-
-
-    // it('get existing non virtual player skills', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     const state = await playerStateLib.playerStateCreate(
-    //         defence = 1,
-    //         speed = 2,
-    //         pass = 3,
-    //         shoot = 4,
-    //         endurance = 5,
-    //         monthOfBirthInUnixTime = 6,
-    //         playerId = 10,
-    //         currentTeamId = 1,
-    //         currentShirtNum = 3,
-    //         prevLeagueId = 3,
-    //         prevTeamPosInLeague = 3,
-    //         prevShirtNumInLeague = 3,
-    //         lastSaleBlock = 3
-    //     ).should.be.fulfilled;
-    //     await assets.setPlayerState(state).should.be.fulfilled;
-    //     const playerState = await assets.getPlayerState(playerId = 10).should.be.fulfilled;
-    //     const skills = await playerStateLib.getSkillsVec(playerState).should.be.fulfilled;
-    //     skills[0].should.be.bignumber.equal('1');
-    //     skills[1].should.be.bignumber.equal('2');
-    //     skills[2].should.be.bignumber.equal('3');
-    //     skills[3].should.be.bignumber.equal('4');
-    //     skills[4].should.be.bignumber.equal('5');
-    // });
-
-    it('compute player birth', async () => {
-        const birth = await assets.computeBirth(0, 1557495456).should.be.fulfilled;
-        birth.should.be.bignumber.equal('406');
+    it('transfer team', async () => {
+        teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled;
+        await assets.transferBotToAddr(teamId, ALICE); 
+        currentOwner = await assets.getOwnerTeam(teamId).should.be.fulfilled;
+        currentOwner.should.be.equal(ALICE);
+        tx = await assets.transferTeam(teamId, BOB).should.be.fulfilled;
+        newOwner = await assets.getOwnerTeam(teamId).should.be.fulfilled;
+        newOwner.should.be.equal(BOB);
+        truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
+            return event.teamId.toNumber() == teamId && event.to == BOB;
+        });
     });
-
-    // it('get non virtual player team', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     await assets.createTeam("Madrid",ALICE).should.be.fulfilled;
-    //     let playerState = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
-    //     const teamBefore = await playerStateLib.getCurrentTeamId(playerState).should.be.fulfilled;
-    //     const state = await playerStateLib.playerStateCreate(
-    //         defence = 3,
-    //         speed = 3,
-    //         pass = 3,
-    //         shoot = 3,
-    //         endurance = 3,
-    //         monthOfBirthInUnixTime = 3,
-    //         playerId = 1,
-    //         currentTeamId = 2,
-    //         currentShirtNum = 3,
-    //         prevLeagueId = 3,
-    //         prevTeamPosInLeague = 3,
-    //         prevShirtNumInLeague = 3,
-    //         lastSaleBlock = 3
-    //     ).should.be.fulfilled;
-    //     await assets.setPlayerState(state).should.be.fulfilled;
-    //     playerState = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
-    //     const teamAfter = await playerStateLib.getCurrentTeamId(playerState).should.be.fulfilled;
-    //     teamAfter.should.be.bignumber.not.equal(teamBefore);
-    //     teamAfter.should.be.bignumber.equal('2');
-    // });
-
-    // it('create team', async () => {
-    //     const receipt = await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     const count = await assets.countTeams().should.be.fulfilled;
-    //     count.toNumber().should.be.equal(1);
-    //     const teamId = receipt.logs[0].args.id.toNumber();
-    //     teamId.should.be.equal(1);
-    //     teamName = await assets.getTeamName(teamId).should.be.fulfilled;
-    //     teamName.should.be.equal("Barca",ALICE);
-    // });
-
-    // it('get playersId from teamId and pos in team', async () => {
-    //     await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.rejected;
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM_MAX).should.be.rejected;
-    //     let playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=0).should.be.fulfilled;
-    //     playerId.toNumber().should.be.equal(1);
-    //     playerId = await assets.generateVirtualPlayerId(teamId = 1, posInTeam=PLAYERS_PER_TEAM_MAX-1).should.be.fulfilled;
-    //     playerId.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX);
-
-    // });
-
-    // it('sign team to league', async () => {
-    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.fulfilled;
-    //     const currentHistory = await assets.getTeamCurrentHistory(1).should.be.fulfilled;
-    //     currentHistory.currentLeagueId.should.be.bignumber.equal('1');
-    //     currentHistory.posInCurrentLeague.should.be.bignumber.equal('3');
-    //     currentHistory.prevLeagueId.should.be.bignumber.equal('0');
-    //     currentHistory.posInPrevLeague.should.be.bignumber.equal('0');
-    // });
-
-    // it('sign team to league twice should fail', async () => {
-    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 0).should.be.rejected;
-    //     await assets.signToLeague(teamId = 1, leagueId = 1, posInLeague = 3).should.be.rejected;
-    // });
-    
-    // it('transfer team', async () => {
-    //     await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-    //     const currentOwner = await assets.getTeamOwner(name).should.be.fulfilled;
-    //     currentOwner.should.be.equal(ALICE);
-    //     let tx = await assets.transferTeam(teamId = 1, BOB).should.be.fulfilled;
-    //     const newOwner = await assets.getTeamOwner(name).should.be.fulfilled;
-    //     newOwner.should.be.equal(BOB);
-    //     truffleAssert.eventEmitted(tx, "TeamTransfer", (ev) => {
-    //         return ev.teamId == 1 && ev.to == BOB;
-    //     });
-    // });
+    return;
 
     // it ('transfer invalid team 0', async () => {
     //     await assets.transferTeam(teamId = 0, BOB).should.be.rejected;
