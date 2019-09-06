@@ -309,58 +309,6 @@ contract Assets {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
     }
     
-    
-    // function transferTeam(uint256 teamId, address newOwnerAddr) public {
-    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
-    //     transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
-    // }
-
-
-    // function getDivisionCreationRound(uint8 timeZone, uint256 countryIdx, uint256 divisionIdx) public view returns(uint256) {
-    //     uint256 creationRound = _timeZones[timeZone].countries[countryIdx].divisonIdxToRound[divisionIdx];
-    //     return (creationRound - 1)* DAYS_PER_ROUND;
-    // }
-
-    // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
-    //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
-    //     require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
-    //     return getDivisionCreationDay(timeZone, countryIdx, divisionIdx);
-    // }
-
-    // function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     return teams[teamId].currentLeagueId;
-    // }
-
-
-    // function createTeam(string memory name, address owner) public {
-    //     bytes32 nameHash = keccak256(abi.encode(name));
-    //     require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
-    //     _teamNameHashToOwner[nameHash] = owner;
-    //     uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
-    //     for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
-    //         playerIds[p] = FREE_PLAYER_ID;
-    //     }
-    //     teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
-    //     uint256 id = teams.length - 1;
-    //     emit TeamCreated(id);
-    // }
-
-    // function signToLeague(
-    //     uint256 teamId,
-    //     uint256 leagueId,
-    //     uint8 posInLeague
-    // )
-    // public
-    // {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     require(teams[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
-    //     teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
-    //     teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
-    //     teams[teamId].currentLeagueId = leagueId;
-    //     teams[teamId].posInCurrentLeague = posInLeague;
-    // }
-
     // // TODO: exception when not existent team
     // function _getTeamOwner(string memory name) internal view returns (address) {
     //     bytes32 nameHash = keccak256(abi.encode(name));
