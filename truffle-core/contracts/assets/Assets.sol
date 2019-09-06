@@ -308,6 +308,13 @@ contract Assets {
         (timeZone, countryIdxInTZ, teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
     }
+
+    function countTeams(uint8 timeZone, uint256 countryIdxInTZ) public view returns (uint256){
+        _assertTZExists(timeZone);
+        _assertCountryInTZExists(timeZone, countryIdxInTZ);
+        return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
+    }
+
     
     // // TODO: exception when not existent team
     // function _getTeamOwner(string memory name) internal view returns (address) {
@@ -315,9 +322,6 @@ contract Assets {
     //     return _teamNameHashToOwner[nameHash];
     // }
 
-    // function countTeams() public view returns (uint256){
-    //     return teams.length - 1;
-    // }
 
     // function getTeamName(uint256 teamId) public view returns (string memory) {
     //     require(_teamExists(teamId), "invalid team id");

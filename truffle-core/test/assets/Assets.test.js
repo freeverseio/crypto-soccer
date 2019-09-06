@@ -355,27 +355,25 @@ contract('Assets', (accounts) => {
     //     await assets.transferPlayer(playerId, teamId).should.be.rejected;
     // });
 
-    it('team exists', async () => {
-        teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await assets.teamExists(teamId).should.be.fulfilled;
-        result.should.be.equal(true);
-        teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
-        result = await assets.teamExists(teamId).should.be.fulfilled;
-        result.should.be.equal(true);
-        teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
-        result = await assets.teamExists(teamId).should.be.fulfilled;
-        result.should.be.equal(false);
-        teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
-        result = await assets.teamExists(teamId).should.be.rejected;
-    });
-
-    
-    return;
-    
-    // it('initial number of team', async () => {
-    //     const count = await assets.countTeams().should.be.fulfilled;
-    //     count.toNumber().should.be.equal(0);
+    // it('team exists', async () => {
+    //     teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
+    //     result = await assets.teamExists(teamId).should.be.fulfilled;
+    //     result.should.be.equal(true);
+    //     teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
+    //     result = await assets.teamExists(teamId).should.be.fulfilled;
+    //     result.should.be.equal(true);
+    //     teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
+    //     result = await assets.teamExists(teamId).should.be.fulfilled;
+    //     result.should.be.equal(false);
+    //     teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
+    //     result = await assets.teamExists(teamId).should.be.rejected;
     // });
+    
+    it('initial number of teams', async () => {
+        const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
+        count.toNumber().should.be.equal(TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
+    });
+    return;
 
     // it('get name of invalid team', async () => {
     //     await assets.getTeamName(0).should.be.rejected;
