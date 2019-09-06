@@ -164,6 +164,7 @@ contract Assets {
             return _playerStateLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
         }
     }
+  
 
     // TODO: we really don't need this function. Only for external use. Consider removal
     function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
@@ -206,6 +207,15 @@ contract Assets {
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         return _playerStateLib.encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
     }
+
+    function getPlayerState(uint256 playerId) public view returns (uint256) {
+        if (isVirtualPlayer(playerId)) { 
+            return getPlayerStateAtBirth(playerId);
+        } else {
+            return _playerIdToState[playerId];
+        }
+    }
+
 
     /// Compute a random age between 16 and 35
     /// @param dna is a random number used as seed of the skills
@@ -256,6 +266,7 @@ contract Assets {
     function getPlayerAgeInMonths(uint256 playerId) public view returns (uint256) {
         return secsToMonths(now - monthsToSecs(_playerStateLib.getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
     }
+
 
     // function transferTeam(uint256 teamId, address newOwnerAddr) public {
     //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
