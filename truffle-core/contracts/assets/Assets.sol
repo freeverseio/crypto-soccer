@@ -49,9 +49,8 @@ contract Assets {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
-    uint256 constant public FREE_PLAYER_IDX = uint256(-1);
     uint256 constant public DAYS_PER_ROUND = 16;
-
+    
     mapping(uint256 => uint256) private _playerIdToState;
 
     PlayerState internal _playerStateLib;
@@ -149,7 +148,11 @@ contract Assets {
     function transferBotInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) public {
         require(isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
         require(addr != address(0));
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
+        for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
+            playerIds[p] = FREE_PLAYER_ID;
+        }
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry] = Team(playerIds, addr);
     }
 
     function transferBotToAddr(uint256 teamId, address addr) public {
@@ -159,7 +162,7 @@ contract Assets {
 
     function getDefaultPlayerIdForTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, uint8 shirtNum) public view returns(uint256) {
         if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
-            return FREE_PLAYER_IDX;
+            return FREE_PLAYER_ID;
         } else {
             return _playerStateLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
         }
@@ -253,6 +256,12 @@ contract Assets {
         for (uint8 i = 0 ; i < remainder ; i++)
             skills[i]++;
         return skills;
+    }
+    
+    function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
+        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum] == FREE_PLAYER_ID;
     }
     
     function secsToMonths(uint256 secs) private pure returns (uint256) {
@@ -482,9 +491,6 @@ contract Assets {
     // }
 
 
-    // function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
-    //     return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;
-    // }
 
 
 }

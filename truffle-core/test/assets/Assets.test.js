@@ -115,24 +115,24 @@ contract('Assets', (accounts) => {
     //     isBot.should.be.equal(true);            
     // });
     
-    // it('transfer of bot teams', async () =>  {
-    //     tz = 1;
-    //     countryIdxInTZ = 0;
-    //     teamIdxInCountry1 = 0;
-    //     teamIdxInCountry2 = 1;
-    //     teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
-    //     teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
-    //     await assets.transferBotInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
-    //     await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
-    //     isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
-    //     isBot.should.be.equal(false);
-    //     isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
-    //     isBot.should.be.equal(false);
-    //     owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
-    //     owner.should.be.equal(ALICE);
-    //     owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
-    //     owner.should.be.equal(BOB);
-    // });
+    it('transfer of bot teams', async () =>  {
+        tz = 1;
+        countryIdxInTZ = 0;
+        teamIdxInCountry1 = 0;
+        teamIdxInCountry2 = 1;
+        teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
+        teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
+        await assets.transferBotInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
+        await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+        isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
+        isBot.should.be.equal(false);
+        isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
+        isBot.should.be.equal(false);
+        owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
+        owner.should.be.equal(ALICE);
+        owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
+        owner.should.be.equal(BOB);
+    });
     
     
     // it('get team player ids', async () => {
@@ -224,36 +224,45 @@ contract('Assets', (accounts) => {
     //     shirtNum.toNumber().should.be.equal(0);
     // });
     
-    it('get player state of unexistent player', async () => {
+    // it('get player state of unexistent player', async () => {
+    //     tz = 1;
+    //     countryIdxInTZ = 0;
+    //     playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1; // last player that exists
+    //     playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+    //     state = await assets.getPlayerState(playerId).should.be.fulfilled;
+    //     playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT; // player not existing
+    //     playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+    //     state = await assets.getPlayerState(playerId).should.be.rejected;
+    //     tz = 0; // dummy timeZone
+    //     countryIdxInTZ = 0;
+    //     playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
+    //     playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+    //     state = await assets.getPlayerState(playerId).should.be.rejected;
+    //     tz = 1; 
+    //     countryIdxInTZ = 1; // country not existing
+    //     playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
+    //     playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+    //     state = await assets.getPlayerState(playerId).should.be.rejected;
+    // });
+
+
+    it('isFreeShirt', async () => {
         tz = 1;
         countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1; // last player that exists
-        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.fulfilled;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT; // player not existing
-        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 0; // dummy timeZone
-        countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 1; 
-        countryIdxInTZ = 1; // country not existing
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
+        teamIdxInCountry = 0; 
+        teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        // cannot query about a Bot Team
+        isFree = await assets.isFreeShirt(teamId,3).should.be.rejected
+        // so transfer and query again
+        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+        isBot.should.be.equal(false);
+        isFree = await assets.isFreeShirt(teamId, shirtNum = 3).should.be.fulfilled
+        isFree.should.be.equal(false)
+        isFree = await assets.isFreeShirt(teamId, shirtNum = 18).should.be.fulfilled
+        isFree.should.be.equal(true)
     });
-
-return;
-
-// it('isFreeShirt', async () => {
-    //     await assets.createTeam(name = "Barca", ALICE).should.be.fulfilled;
-    //     var isFree = await assets.isFreeShirt(1,3)
-    //     isFree.should.be.equal(false)
-    //     isFree = await assets.isFreeShirt(1,18)
-    //     isFree.should.be.equal(true)
-    // });
+    return;
 
     // it('getFreeShirt', async () => {
     //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
