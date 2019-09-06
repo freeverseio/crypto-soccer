@@ -309,6 +309,12 @@ contract Assets {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
     }
 
+    function countCountries(uint8 timeZone) public view returns (uint256){
+        _assertTZExists(timeZone);
+        return _timeZones[timeZone].countries.length;
+    }
+
+
     function countTeams(uint8 timeZone, uint256 countryIdxInTZ) public view returns (uint256){
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);

@@ -368,41 +368,28 @@ contract('Assets', (accounts) => {
     //     teamId     = await playerStateLib.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
     //     result = await assets.teamExists(teamId).should.be.rejected;
     // });
-    
-    it('initial number of teams', async () => {
-        const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
-        count.toNumber().should.be.equal(TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
+
+    it('initial number of countries', async () => {
+        const count = await assets.countCountries(tz = 1).should.be.fulfilled;
+        count.toNumber().should.be.equal(1);
     });
+
+    // it('initial number of teams', async () => {
+    //     const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
+    //     count.toNumber().should.be.equal(TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
+    // });
+
+    // it('existence of null player', async () => {
+    //     const exists = await assets.playerExists(playerId = 0).should.be.fulfilled;
+    //     exists.should.be.equal(false);
+    // });
+
+    // it('is null player virtual', async () => {
+    //     await assets.isVirtualPlayer(0).should.be.rejected;
+    // });
+
     return;
-
-    // it('get name of invalid team', async () => {
-    //     await assets.getTeamName(0).should.be.rejected;
-    // });
-
-    // it('get name of unexistent team', async () => {
-    //     await assets.getTeamName(1).should.be.rejected;
-    // });
-
-    it('existence of null player', async () => {
-        const exists = await assets.playerExists(playerId = 0).should.be.fulfilled;
-        exists.should.be.equal(false);
-    });
-
-    it('is null player virtual', async () => {
-        await assets.isVirtualPlayer(0).should.be.rejected;
-    });
-
-
-    // it('set player state of existent virtual player', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     let state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
-    //     const currentBlock = 5; // TODO: get it properly
-    //     state = await playerStateLib.setLastSaleBlock(state, currentBlock).should.be.fulfilled;
-    //     await assets.setPlayerState(state).should.be.fulfilled;
-    //     const resultState = await assets.getPlayerState(playerId).should.be.fulfilled;
-    //     resultState.should.be.bignumber.equal(state);
-    // });
-
+    
     // it('is existent non virtual player', async () => {
     //     await assets.setPlayerState(4).should.be.rejected;
     //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
