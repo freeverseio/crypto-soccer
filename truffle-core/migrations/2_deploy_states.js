@@ -1,8 +1,8 @@
-const States = artifacts.require('LeagueState');
+const AssetsLib = artifacts.require('AssetsLib');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-      await deployer.deploy(States);
+      await deployer.deploy(AssetsLib);
     })
     .catch(console.error);
 };
