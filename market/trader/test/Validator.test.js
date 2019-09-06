@@ -6,11 +6,21 @@ require('chai')
 const Accounts = require('web3-eth-accounts');
 
 describe('Validator', () => {
-    it('create signature of "ciao"', async () => {
+    it('get the signer address by signatureObject', () => {
         var accounts = new Accounts();
-        const account = await accounts.create("iamaseller");
-        const hashedMsg = account.sign("ciao");
-        const address = accounts.recover(hashedMsg);
+        const account = accounts.create("iamaseller");
+        const msg = "ciao";
+        const hashedMsg = account.sign(msg);
+        var address = accounts.recover(hashedMsg);
+        address.should.be.equal(account.address);
+    });
+
+    it('get the signer address by message and signature', () => {
+        var accounts = new Accounts();
+        const account = accounts.create("iamaseller");
+        const msg = "ciao";
+        const hashedMsg = account.sign(msg);
+        address = accounts.recover(msg, hashedMsg.signature);
         address.should.be.equal(account.address);
     });
 }) 
