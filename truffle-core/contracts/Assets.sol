@@ -102,7 +102,7 @@ contract Assets {
     }
 
     function isBotTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(bool) {
-        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == address(0);
+        return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry) == NULL_ADDR;
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
@@ -110,7 +110,7 @@ contract Assets {
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
-    // returns address(0) if team is bot
+    // returns NULL_ADDR if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
@@ -122,7 +122,7 @@ contract Assets {
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
-    // returns address(0) if team is bot
+    // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         require(playerExists(playerId), "unexistent player");
         uint256 teamId = _assetsLib.getCurrentTeamId(getPlayerState(playerId));
@@ -158,7 +158,7 @@ contract Assets {
 
     function transferBotInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) public {
         require(isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
-        require(addr != address(0));
+        require(addr != NULL_ADDR);
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
         for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
             playerIds[p] = FREE_PLAYER_ID;
@@ -175,7 +175,7 @@ contract Assets {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
         require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
-        require(addr != address(0), "cannot transfer to a null address");
+        require(addr != NULL_ADDR, "cannot transfer to a null address");
         require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
     }
