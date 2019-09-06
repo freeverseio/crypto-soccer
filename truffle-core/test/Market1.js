@@ -410,7 +410,6 @@ contract("Market", accounts => {
     let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(initOwner);
   });
-    return;
 
   it("test accounts from truffle and web3", async () => {
     accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;
@@ -427,6 +426,8 @@ contract("Market", accounts => {
     hashPacked.should.be.equal(concatHash([type], [val]));
   });
 
+  return;
+  
   it("uint8 type: test abi encode and hash web3 vs solidity", async () => {
     val = 17;
     type = "uint8";
