@@ -94,17 +94,27 @@ contract("Market", accounts => {
   let assetsLib = null;
   let market = null;
   let PLAYERS_PER_TEAM_INIT = null;
-  const ALICE = accounts[1];
-  const BOB = accounts[2];
-
-
+  let playerId = null;
+  let sellerTeamId = null;
+  let buyerTeamId = null;
+  let buyerAccount = null;
+  let sellerAccount = null;
+  let now = null;
 
   beforeEach(async () => {
     assetsLib = await AssetsLib.new().should.be.fulfilled;
-    market = await Market.new(assetsLib.address).should.be
-      .fulfilled;
+    market = await Market.new(assetsLib.address).should.be.fulfilled;
     PLAYERS_PER_TEAM_INIT = await market.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
     PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
+
+    sellerAccount = await web3.eth.accounts.create("iamaseller");
+    buyerAccount = await web3.eth.accounts.create("iamabuyer");
+    playerId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
+    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
+    now = await market.getBlockchainNowTime().should.be.fulfilled;
   });
 
   it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
@@ -121,16 +131,7 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    const sellerAccount = await web3.eth.accounts.create("iamaseller");
-    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
-
-    const sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    const buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
-    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
-
     // Define params of the seller, and sign
-    let now = await market.getBlockchainNowTime().should.be.fulfilled;
     const validUntil = 2 * now.toNumber();
     const typeOfTX = 2;
     const currencyId = 1;
@@ -214,16 +215,7 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    const sellerAccount = await web3.eth.accounts.create("iamaseller");
-    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
-
-    const sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    const buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
-    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
-
     // Define params of the seller, and sign
-    let now = await market.getBlockchainNowTime().should.be.fulfilled;
     const validUntil = 2 * now.toNumber();
     const typeOfTX = 1;
     const currencyId = 1;
@@ -313,16 +305,7 @@ contract("Market", accounts => {
   });
 
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
-    const sellerAccount = await web3.eth.accounts.create("iamaseller");
-    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
-
-    const sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    const buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
-    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
-
     // Define params of the seller, and sign
-    let now = await market.getBlockchainNowTime().should.be.fulfilled;
     const validUntil = 2 * now.toNumber();
     const typeOfTX = 1;
     const currencyId = 1;
