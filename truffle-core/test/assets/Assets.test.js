@@ -90,22 +90,22 @@ contract('Assets', (accounts) => {
     //     }
     // });
 
-    it('check playerExists and isVirtual', async () =>  {
-        countryIdxInTZ = 0;
-        teamIdxInCountry = nTeams;
-        playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
-        for (tz = 1; tz<25; tz++) {
-            playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
-            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
-            playerExists.should.be.equal(true);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-            isVirtual.should.be.equal(true);            
-            playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry+1);
-            playerExists = await assets.playerExists(playerId).should.be.fulfilled;
-            playerExists.should.be.equal(false);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.rejected;
-        }
-    });
+    // it('check playerExists and isVirtual', async () =>  {
+    //     countryIdxInTZ = 0;
+    //     teamIdxInCountry = nTeams;
+    //     playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
+    //     for (tz = 1; tz<25; tz++) {
+    //         playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
+    //         playerExists = await assets.playerExists(playerId).should.be.fulfilled;
+    //         playerExists.should.be.equal(true);            
+    //         isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
+    //         isVirtual.should.be.equal(true);            
+    //         playerId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry+1);
+    //         playerExists = await assets.playerExists(playerId).should.be.fulfilled;
+    //         playerExists.should.be.equal(false);            
+    //         isVirtual = await assets.isVirtualPlayer(playerId).should.be.rejected;
+    //     }
+    // });
 
     // it('isBot teams', async () =>  {
     //     tz = 1;
@@ -115,24 +115,24 @@ contract('Assets', (accounts) => {
     //     isBot.should.be.equal(true);            
     // });
     
-    it('transfer of bot teams', async () =>  {
-        tz = 1;
-        countryIdxInTZ = 0;
-        teamIdxInCountry1 = 0;
-        teamIdxInCountry2 = 1;
-        teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
-        teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
-        await assets.transferBotInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
-        await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
-        isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
-        owner.should.be.equal(ALICE);
-        owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
-        owner.should.be.equal(BOB);
-    });
+    // it('transfer of bot teams', async () =>  {
+    //     tz = 1;
+    //     countryIdxInTZ = 0;
+    //     teamIdxInCountry1 = 0;
+    //     teamIdxInCountry2 = 1;
+    //     teamId1 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
+    //     teamId2 = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
+    //     await assets.transferBotInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
+    //     await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+    //     isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     isBot = await assets.isBotTeam(teamId2).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     owner = await assets.getOwnerTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry1).should.be.fulfilled;
+    //     owner.should.be.equal(ALICE);
+    //     owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
+    //     owner.should.be.equal(BOB);
+    // });
     
     
     // it('get team player ids', async () => {
@@ -369,10 +369,10 @@ contract('Assets', (accounts) => {
     //     result = await assets.teamExists(teamId).should.be.rejected;
     // });
 
-    it('initial number of countries', async () => {
-        const count = await assets.countCountries(tz = 1).should.be.fulfilled;
-        count.toNumber().should.be.equal(1);
-    });
+    // it('initial number of countries', async () => {
+    //     const count = await assets.countCountries(tz = 1).should.be.fulfilled;
+    //     count.toNumber().should.be.equal(1);
+    // });
 
     // it('initial number of teams', async () => {
     //     const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
@@ -384,117 +384,48 @@ contract('Assets', (accounts) => {
     //     exists.should.be.equal(false);
     // });
 
-    it('isVirtual after sale', async () => {
-        playerId    = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
-        teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        teamId2     = await playerStateLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
-        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
-        await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(true)
-        await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(false)
-    });
+    // it('isVirtual after sale', async () => {
+    //     playerId    = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+    //     teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+    //     teamId2     = await playerStateLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+    //     await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+    //     await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
+    //     isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
+    //     isVirtual.should.be.equal(true)
+    //     await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+    //     isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
+    //     isVirtual.should.be.equal(false)
+    // });
 
-    return;
     
-    // it('is existent non virtual player', async () => {
-    //     await assets.setPlayerState(4).should.be.rejected;
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     const state = await playerStateLib.playerStateCreate(
-    //         defence = 3,
-    //         speed = 3,
-    //         pass = 3,
-    //         shoot = 3,
-    //         endurance = 3,
-    //         monthOfBirthInUnixTime = 3,
-    //         playerId = 1,
-    //         currentTeamId = 1,
-    //         currentShirtNum = 3,
-    //         prevLeagueId = 3,
-    //         prevTeamPosInLeague = 3,
-    //         prevShirtNumInLeague = 3,
-    //         lastSaleBlock = 3
-    //     ).should.be.fulfilled;
-    //     await assets.setPlayerState(state).should.be.fulfilled;
-    //     await assets.isVirtual(playerId = 1).should.eventually.equal(false);
-    // });
-
-    // it('get state of player on creation', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     const state = await assets.getPlayerState(playerId = 1).should.be.fulfilled;
-    //     let result = await playerStateLib.getSkills(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('4972233480341569567');
-    //     result = await playerStateLib.getPlayerId(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('1');
-    //     result = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('1');
-    //     result = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('0');
-    //     result = await playerStateLib.getPrevLeagueId(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('0');
-    //     result = await playerStateLib.getPrevTeamPosInLeague(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('0');
-    //     result = await playerStateLib.getPrevShirtNumInLeague(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('0');
-    //     result = await playerStateLib.getLastSaleBlock(state).should.be.fulfilled;
-    //     result.should.be.bignumber.equal('0');
-    // });
-
-    // it('exchange players team', async () => {
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     await assets.createTeam("Madrid",ALICE).should.be.fulfilled;
-    //     await assets.exchangePlayersTeams(playerId0 = 8, playerId1 = PLAYERS_PER_TEAM_MAX+3).should.be.fulfilled;
-    //     const statePlayer0 = await assets.getPlayerState(playerId0).should.be.fulfilled;
-    //     const teamPlayer0 = await playerStateLib.getCurrentTeamId(statePlayer0).should.be.fulfilled;
-    //     teamPlayer0.should.be.bignumber.equal('2');
-    //     const statePlayer1 = await assets.getPlayerState(playerId1).should.be.fulfilled;
-    //     const teamPlayer1 = await playerStateLib.getCurrentTeamId(statePlayer1).should.be.fulfilled;
-    //     teamPlayer1.should.be.bignumber.equal('1');
-    // });
-
-    // it('get player state of existing player', async () => {
-    //     const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++)
-    //         await assets.getPlayerState(playerId).should.be.fulfilled;
-    //     await assets.getPlayerState(nPLayersPerTeam+1).should.be.rejected;
-    // });
-
-    it('computed skills with rnd = 0 is 50 each', async () => {
-        let skills = await assets.computeSkills(0).should.be.fulfilled;
-        skills.forEach(skill => (skill.toNumber().should.be.equal(50)));
-    });
-
-    // it('int hash is deterministic', async () => {
-    //     const rand0 = await assets.intHash("Barca0").should.be.fulfilled;
-    //     const rand1 = await assets.intHash("Barca0").should.be.fulfilled;
-    //     rand0.should.be.bignumber.equal(rand1);
-    //     const rand2 = await assets.intHash("Barca1").should.be.fulfilled;
-    //     rand0.should.be.bignumber.not.equal(rand2);
-    //     rand0.should.be.bignumber.equal('16868380996023217686301278465084779672212597498847303814512224087959838246889');
+    // it('computed skills with rnd = 0 is 50 each', async () => {
+    //     let skills = await assets.computeSkills(0).should.be.fulfilled;
+    //     skills.forEach(skill => (skill.toNumber().should.be.equal(50)));
     // });
 
     // it('sum of computed skills is 250', async () => {
     //     for (let i = 0; i < 10; i++) {
-    //         const seed = await assets.intHash("Barca" + i).should.be.fulfilled;
+    //         const seed = 32123;
     //         const skills = await assets.computeSkills(seed).should.be.fulfilled;
     //         const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
     //         sum.should.be.equal(250);
     //     }
     // });
 
-    // it('get player pos in team', async () => {
-    //     const nPLayersPerTeam = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
-    //     await assets.createTeam("Barca",ALICE).should.be.fulfilled;
-    //     for (let playerId=1 ; playerId <= nPLayersPerTeam ; playerId++){
-    //         const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
-    //         const pos = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
-    //         pos.toNumber().should.be.equal(playerId - 1);
-    //     }
-    //     await assets.getPlayerState(nPLayersPerTeam+1).should.be.rejected;
-    // })
+    it('get shirtNum in team for all players in a country', async () => {
+        tz = 0;
+        countryIdxInTZ = 0;
+        playersInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT
+        for (let playerIdxInCountry = 0; playerId < playersInCountry ; playerId++){
+            playerId    = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
+            const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
+            const shirtNum = await playerStateLib.getCurrentShirtNum(playerState).should.be.fulfilled;
+            shirtNum.toNumber().should.be.equal(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
+        }
+    })
+    
+    
+    return;
 
     // it('get existing virtual player skills', async () => {
     //     const numSkills = await assets.NUM_SKILLS().should.be.fulfilled;
