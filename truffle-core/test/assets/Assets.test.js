@@ -311,13 +311,43 @@ contract('Assets', (accounts) => {
         shirtNum = await assets.getFreeShirt(teamId2).should.be.fulfilled
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 2);
     });
-// test 1 bot for each, and 2 botts
-    return
-    // it('transferPlayer to same team', async () => {
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     await assets.transferPlayer(playerId, targetTeamId = 1).should.be.rejected;
-    // });
 
+    it('transferPlayer different team works', async () => {
+        playerId    = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+        teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+        teamId2     = await playerStateLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+        await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
+        await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+    });
+
+    it('transferPlayer same team fails', async () => {
+        playerId    = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+        teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+        await assets.transferPlayer(playerId, teamId1).should.be.rejected;
+    });
+
+    it('transferPlayer fails when at least one team involved is a bot', async () => {
+        playerId1   = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+        playerId2   = await playerStateLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ1 = 0, playerIdxInCountry1 = 8).should.be.fulfilled; 
+        teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+        teamId2     = await playerStateLib.encodeTZCountryAndVal(tz2, countryIdxInTZ2, teamIdxInCountry = 0).should.be.fulfilled; 
+        // both teams are bots: fails
+        await assets.transferPlayer(playerId1, teamId2).should.be.rejected;
+        // only buyer team is bot: fails
+        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+        await assets.transferPlayer(playerId1, teamId2).should.be.rejected;
+        // only seller team is bot: fails
+        await assets.transferPlayer(playerId2, teamId1).should.be.rejected;
+        // // both are owned: works
+        await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
+        await assets.transferPlayer(playerId1, teamId2).should.be.fulfilled;
+        await assets.transferPlayer(playerId2, teamId1).should.be.fulfilled;
+    });
+    
+    
+    return;
     // it('transferPlayer to already full team', async () => {
     //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
     //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;

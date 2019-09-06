@@ -287,11 +287,13 @@ contract Assets {
 
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
+        // TODO: checking if they are bots should be done outside this function
         require(playerExists(playerId) && teamExists(teamIdTarget), "unexistent player or team");
         uint256 state = getPlayerState(playerId);
         uint256 newState = state;
         uint256 teamIdOrigin = _playerStateLib.getCurrentTeamId(state);
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+        require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
         uint256 shirtOrigin = _playerStateLib.getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
