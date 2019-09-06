@@ -124,24 +124,21 @@ contract("Market", accounts => {
     const sellerAccount = await web3.eth.accounts.create("iamaseller");
     const buyerAccount = await web3.eth.accounts.create("iamabuyer");
 
-    teamId1 = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
-    teamId2 = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-
-    await market.transferBotToAddr(teamId1, sellerAccount.address).should.be.fulfilled;
-    await market.transferBotToAddr(teamId2, buyerAccount.address).should.be.fulfilled;
+    const sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    const buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
+    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
 
     // Define params of the seller, and sign
-    let now = await market.getBlockchainNowTime();
+    let now = await market.getBlockchainNowTime().should.be.fulfilled;
     const validUntil = 2 * now.toNumber();
-    const playerId = 10;
-    const buyerTeamId = 2;
     const typeOfTX = 2;
     const currencyId = 1;
     const price = 41234;
     const rnd = 42321;
 
     // mobile app does this:
-    sigBuyer = await signOfferToBuyMTx(currencyId, price, rnd, validUntil, playerId, buyerTeamId, typeOfTX, buyerAccount);
+    sigBuyer = await signOfferToBuyMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, buyerAccount);
 
     // First of all, Freeverse and Seller check the signature
     // In this case, using web3:
@@ -153,6 +150,7 @@ contract("Market", accounts => {
       ["uint8", "uint256", "uint256"],
       [currencyId, price, rnd]
     );
+
     buyerTxMsgBC = await market.buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX).should.be.fulfilled;
     buyerTxMsgBC.should.be.equal(sigBuyer.message);
 
@@ -160,7 +158,7 @@ contract("Market", accounts => {
     let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(false);
 
-    let sigSeller = await signAgreeToSellMTx(currencyId, price, rnd, validUntil, playerId, buyerTeamId, typeOfTX, sellerAccount).should.be.fulfilled;
+    let sigSeller = await signAgreeToSellMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, sellerAccount).should.be.fulfilled;
 
     // in this case, both the buyer and the seller sign exactly the same Tx message.
     sigSeller.messageHash.should.be.equal(sigBuyer.messageHash)
@@ -179,6 +177,7 @@ contract("Market", accounts => {
       sigBuyer.s
     ];
     const vs = [sigSeller.v, sigBuyer.v];
+    
     await market.freezePlayer(
       privHash,
       validUntil,
@@ -193,10 +192,10 @@ contract("Market", accounts => {
     isFrozen.should.be.equal(true);
     
     // Freeverse waits until actual money has been transferred between users, and completes sale
-    let initOwner = await market.getPlayerOwner(playerId).should.be.fulfilled;
+    let initOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     initOwner.should.be.equal(sellerAccount.address);
     await market.completeFreeze(playerId).should.be.fulfilled;
-    let finalOwner = await market.getPlayerOwner(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
