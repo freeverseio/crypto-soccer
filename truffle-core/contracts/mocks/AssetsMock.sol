@@ -31,10 +31,6 @@ contract AssetsMock is Assets {
         return _isVirtual(playerId);
     }
 
-    function setPlayerState(uint256 state) public {
-        _setPlayerState(state);
-    }
-
     function teamExists(uint256 teamId) public view returns (bool){
         return _teamExists(teamId);
     }
