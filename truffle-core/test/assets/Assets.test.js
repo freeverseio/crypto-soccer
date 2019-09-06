@@ -246,63 +246,73 @@ contract('Assets', (accounts) => {
     // });
 
 
-    it('isFreeShirt', async () => {
-        tz = 1;
-        countryIdxInTZ = 0;
-        teamIdxInCountry = 0; 
-        teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        // cannot query about a Bot Team
-        isFree = await assets.isFreeShirt(teamId,shirtNum = 3).should.be.rejected
-        // so transfer and query again
-        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
-        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        isFree = await assets.isFreeShirt(teamId, shirtNum = 3).should.be.fulfilled
-        isFree.should.be.equal(false)
-        isFree = await assets.isFreeShirt(teamId, shirtNum = 18).should.be.fulfilled
-        isFree.should.be.equal(true)
-    });
-
-    it('getFreeShirt', async () => {
-        tz = 1;
-        countryIdxInTZ = 0;
-        teamIdxInCountry = 0; 
-        teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
-        // cannot query about a Bot Team
-        shirtNum = await assets.getFreeShirt(teamId).should.be.rejected
-        // so transfer and query again
-        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
-        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
-        isBot.should.be.equal(false);
-        shirtNum = await assets.getFreeShirt(teamId).should.be.fulfilled
-        shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
-    });
-
-    return;
-    
-    // it('transferPlayer', async () => {
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
-    //     // state before selling:
-    //     var state = await assets.getPlayerState(playerId = 5).should.be.fulfilled;
-    //     var teamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
-    //     teamId.toNumber().should.be.equal(1);
-    //     var shirt = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
-    //     shirt.toNumber().should.be.equal(4);        
-    //     var isFree = await assets.isFreeShirt(teamId,shirt)
+    // it('isFreeShirt', async () => {
+    //     tz = 1;
+    //     countryIdxInTZ = 0;
+    //     teamIdxInCountry = 0; 
+    //     teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+    //     // cannot query about a Bot Team
+    //     isFree = await assets.isFreeShirt(teamId,shirtNum = 3).should.be.rejected
+    //     // so transfer and query again
+    //     await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+    //     isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     isFree = await assets.isFreeShirt(teamId, shirtNum = 3).should.be.fulfilled
     //     isFree.should.be.equal(false)
-    //     // sell:
-    //     await assets.transferPlayer(playerId, targetTeamId = 2).should.be.fulfilled;
-    //     // state after selling:
-    //     isFree = await assets.isFreeShirt(teamId,shirt)
+    //     isFree = await assets.isFreeShirt(teamId, shirtNum = 18).should.be.fulfilled
     //     isFree.should.be.equal(true)
-    //     var newState = await assets.getPlayerState(playerId = 5).should.be.fulfilled;
-    //     var newTeamId = await playerStateLib.getCurrentTeamId(newState).should.be.fulfilled;
-    //     newTeamId.toNumber().should.be.equal(2);
-    //     var newShirt = await playerStateLib.getCurrentShirtNum(newState).should.be.fulfilled;
-    //     newShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);        
     // });
 
+    // it('getFreeShirt', async () => {
+    //     tz = 1;
+    //     countryIdxInTZ = 0;
+    //     teamIdxInCountry = 0; 
+    //     teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+    //     // cannot query about a Bot Team
+    //     shirtNum = await assets.getFreeShirt(teamId).should.be.rejected
+    //     // so transfer and query again
+    //     await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+    //     isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+    //     isBot.should.be.equal(false);
+    //     shirtNum = await assets.getFreeShirt(teamId).should.be.fulfilled
+    //     shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
+    // });
+
+    ;
+    
+    it('transferPlayer', async () => {
+        playerId    = await playerStateLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+        teamId1     = await playerStateLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+        teamId2     = await playerStateLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+
+        // state before selling:
+        state = await assets.getPlayerState(playerId).should.be.fulfilled;
+        obtainedTeamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        obtainedTeamId.should.be.bignumber.equal(teamId1);
+        shirt = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
+        shirt.toNumber().should.be.equal(playerIdxInCountry1);        
+
+        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+        await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+        await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+
+        // state of player after selling:
+        state = await assets.getPlayerState(playerId).should.be.fulfilled;
+        obtainedTeamId = await playerStateLib.getCurrentTeamId(state).should.be.fulfilled;
+        obtainedTeamId.should.be.bignumber.equal(teamId2);
+        shirt = await playerStateLib.getCurrentShirtNum(state).should.be.fulfilled;
+        shirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);        
+
+        // states of teams after selling
+        isFree = await assets.isFreeShirt(teamId1, shirtNum = playerIdxInCountry1).should.be.fulfilled
+        isFree.should.be.equal(true);
+        isFree = await assets.isFreeShirt(teamId2, shirtNum = PLAYERS_PER_TEAM_MAX - 1).should.be.fulfilled
+        isFree.should.be.equal(false);
+        shirtNum = await assets.getFreeShirt(teamId2).should.be.fulfilled
+        shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 2);
+    });
+// test 1 bot for each, and 2 botts
+    return
     // it('transferPlayer to same team', async () => {
     //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
     //     await assets.transferPlayer(playerId, targetTeamId = 1).should.be.rejected;

@@ -285,23 +285,35 @@ contract Assets {
         return PLAYERS_PER_TEAM_MAX;
     }
 
+    function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
+        // warning: check of ownership of players and teams should be done before calling this function
+        require(playerExists(playerId) && teamExists(teamIdTarget), "unexistent player or team");
+        uint256 state = getPlayerState(playerId);
+        uint256 newState = state;
+        uint256 teamIdOrigin = _playerStateLib.getCurrentTeamId(state);
+        require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+        uint256 shirtOrigin = _playerStateLib.getCurrentShirtNum(state);
+        uint8 shirtTarget = getFreeShirt(teamIdTarget);
+        require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
+        
+        newState = _playerStateLib.setCurrentTeamId(newState, teamIdTarget);
+        newState = _playerStateLib.setCurrentShirtNum(newState, shirtTarget);
+        newState = _playerStateLib.setLastSaleBlock(newState, block.number);
+        _playerIdToState[playerId] = newState;
+
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamIdOrigin);
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+        (timeZone, countryIdxInTZ, teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamIdTarget);
+        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+    }
+    
+    
     // function transferTeam(uint256 teamId, address newOwnerAddr) public {
     //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
     //     transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
     // }
 
 
-    // /// @dev Transfers a team to a new owner. 
-    // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
-    // function transferTeam(uint256 teamId, address newOwner) public {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     require(newOwner != address(0), "meaningless adress");
-    //     require(newOwner != _getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
-    //     bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
-    //     _teamNameHashToOwner[nameHash] = newOwner;
-    //     emit TeamTransfer(teamId, newOwner);
-    // }
-    
     // function getDivisionCreationRound(uint8 timeZone, uint256 countryIdx, uint256 divisionIdx) public view returns(uint256) {
     //     uint256 creationRound = _timeZones[timeZone].countries[countryIdx].divisonIdxToRound[divisionIdx];
     //     return (creationRound - 1)* DAYS_PER_ROUND;
@@ -318,81 +330,6 @@ contract Assets {
     //     return teams[teamId].currentLeagueId;
     // }
 
-    // /// get the current and previous team league and position in league
-    // function getTeamCurrentHistory(uint256 teamId) external view returns (
-    //     uint256 currentLeagueId,
-    //     uint8 posInCurrentLeague,
-    //     uint256 prevLeagueId,
-    //     uint8 posInPrevLeague
-    //     )
-    // {
-    //     require(_teamExists(teamId), "invalid team id");
-    //     return (
-    //         teams[teamId].currentLeagueId,
-    //         teams[teamId].posInCurrentLeague,
-    //         teams[teamId].prevLeagueId,
-    //         teams[teamId].posInPrevLeague);
-    // }
-
-
-
-
-    // function _transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
-    //     // warning: check of ownership of players and teams should be done before calling this function
-    //     require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
-    //     uint256 state = getPlayerState(playerId);
-    //     uint256 newState = state;
-    //     uint256 teamIdOrigin = _playerStateLib.getCurrentTeamId(state);
-    //     require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
-    //     uint256 shirtOrigin = _playerStateLib.getCurrentShirtNum(state);
-    //     uint8 shirtTarget = getFreeShirt(teamIdTarget);
-    //     require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
-        
-    //     newState = _playerStateLib.setCurrentTeamId(newState, teamIdTarget);
-    //     newState = _playerStateLib.setCurrentShirtNum(newState, shirtTarget);
-    //     newState = _playerStateLib.setLastSaleBlock(newState, block.number);
-
-    //     teams[teamIdTarget].playerIds[shirtTarget] = playerId;
-    //     teams[teamIdOrigin].playerIds[shirtOrigin] = FREE_PLAYER_ID;
-
-    //     _setPlayerState(newState);
-    // }
-
-
-
-    // // TODO: exchange fails on playerId0 & playerId1 of the same team
-    // function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
-    //     // TODO: check ownership address
-    //     require(_playerExists(playerId0) && _playerExists(playerId1), "unexistent playerId");
-    //     uint256 state0 = getPlayerState(playerId0);
-    //     uint256 state1 = getPlayerState(playerId1);
-    //     uint256 newState0 = state0;
-    //     uint256 teamId0 = _playerStateLib.getCurrentTeamId(state0);
-    //     uint256 teamId1 = _playerStateLib.getCurrentTeamId(state1);
-    //     uint256 playerShirt0 = _playerStateLib.getCurrentShirtNum(state0);
-    //     uint256 playerShirt1 = _playerStateLib.getCurrentShirtNum(state1);
-    //     newState0 = _playerStateLib.setCurrentTeamId(newState0, _playerStateLib.getCurrentTeamId(state1));
-    //     newState0 = _playerStateLib.setCurrentShirtNum(newState0, _playerStateLib.getCurrentShirtNum(state1));
-    //     state1 = _playerStateLib.setCurrentTeamId(state1,_playerStateLib.getCurrentTeamId(state0));
-    //     state1 = _playerStateLib.setCurrentShirtNum(state1,_playerStateLib.getCurrentShirtNum(state0));
-    //     newState0 = _playerStateLib.setLastSaleBlock(newState0, block.number);
-    //     state1 = _playerStateLib.setLastSaleBlock(state1, block.number);
-
-    //     teams[teamId0].playerIds[playerShirt0] = playerId1;
-    //     teams[teamId1].playerIds[playerShirt1] = playerId0;
-
-    //     // TODO
-    //     // if getBlockNumForLastLeagueOfTeam(teamIdx1, ST) > state1.getLastSaleBlocknum():
-    //     //     state1.prevLeagueIdx = ST.teams[teamIdx1].currentLeagueIdx
-    //     //     state1.prevTeamPosInLeague = ST.teams[teamIdx1].teamPosInCurrentLeague
-
-    //     // if getBlockNumForLastLeagueOfTeam(teamIdx2, ST) > state2.getLastSaleBlocknum():
-    //     //     state2.prevLeagueIdx = ST.teams[teamIdx2].currentLeagueIdx
-    //     //     state2.prevTeamPosInLeague = ST.teams[teamIdx2].teamPosInCurrentLeague
-
-    //     _setPlayerState(newState0);
-    //     _setPlayerState(state1);
-    // }
 
     // function createTeam(string memory name, address owner) public {
     //     bytes32 nameHash = keccak256(abi.encode(name));
@@ -475,22 +412,6 @@ contract Assets {
     //             0 // lastSaleBloc
     //         );
     // }
-
-    // function _setPlayerState(uint256 state) internal {
-    //     uint256 playerId = _playerStateLib.getPlayerId(state);
-    //     require(_playerExists(playerId), "unexistent player");
-    //     uint256 teamId = _playerStateLib.getCurrentTeamId(state);
-    //     require(_teamExists(teamId), "unexistent team");
-    //     uint256 shirtNumber = _playerStateLib.getCurrentShirtNum(state);
-    //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
-    //     shirtNumber = _playerStateLib.getPrevShirtNumInLeague(state);
-    //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
-    //     uint256 saleBlock = _playerStateLib.getLastSaleBlock(state);
-    //     require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
-    //     _playerIdToState[playerId] = state;
-    // }
-
-
 
 
 }
