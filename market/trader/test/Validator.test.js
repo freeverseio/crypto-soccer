@@ -29,11 +29,11 @@ describe('Validator', () => {
     });
 
     it('get signer address', () => {
-        const validator = new Validator();
         const accounts = new Accounts();
         const account = accounts.privateKeyToAccount(privateKey);
         const msg = "ciao";
         const hashedMsg = account.sign(msg);
+        const validator = new Validator();
         const address = validator.recoverSignerAddress(msg, hashedMsg.signature);
         address.should.be.equal(account.address);
     });
