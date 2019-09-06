@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Assets = artifacts.require('Assets');
+const Assets = artifacts.require('Market');
 const AssetsLib = artifacts.require('AssetsLib');
 
 module.exports = function (deployer) {

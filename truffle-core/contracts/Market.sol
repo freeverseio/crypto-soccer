@@ -14,6 +14,9 @@ contract Market is Assets {
 
     mapping (uint256 => bool) private isPlayerFrozen;
 
+    constructor(address assetsLib) public Assets(assetsLib) {
+    }
+
     function freezePlayer(
         bytes32 privHash,
         uint256 validUntil,
