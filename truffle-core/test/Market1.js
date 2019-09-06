@@ -199,24 +199,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
- return;
   
-  it("player owner", async () => {
-    // create a team and give it to ALICE
-    await market.createTeam("Barca", ALICE).should.be.fulfilled;
-    await market.getPlayerOwner(0).should.be.rejected;
-    let owner = await market.getPlayerOwner(1).should.be.fulfilled;
-    owner.should.be.equal(ALICE);
-    owner = await market.getPlayerOwner(PLAYERS_PER_TEAM_INIT).should.be.fulfilled;
-    owner.should.be.equal(ALICE);
-    await market.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.rejected;
-    // create a team and GIVE it to BOB
-    await market.createTeam("Madrid", BOB).should.be.fulfilled;
-    owner = await market.getPlayerOwner(PLAYERS_PER_TEAM_INIT+1).should.be.fulfilled;
-    owner.should.not.equal(ALICE); // the player is not owned by ALICE
-    owner.should.be.equal(BOB);
-  });
- 
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to seller: OK, failed
@@ -234,13 +217,14 @@ contract("Market", accounts => {
     const sellerAccount = await web3.eth.accounts.create("iamaseller");
     const buyerAccount = await web3.eth.accounts.create("iamabuyer");
 
-    await market.createTeam("Barca", sellerAccount.address).should.be.fulfilled;
-    await market.createTeam("Madrid", buyerAccount.address).should.be.fulfilled;
+    const sellerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
+    const buyerTeamId = await assetsLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
+    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
+    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
 
     // Define params of the seller, and sign
-    let now = await market.getBlockchainNowTime();
+    let now = await market.getBlockchainNowTime().should.be.fulfilled;
     const validUntil = 2 * now.toNumber();
-    const playerId = 10;
     const typeOfTX = 1;
     const currencyId = 1;
     const price = 41234;
@@ -252,7 +236,7 @@ contract("Market", accounts => {
       price,
       rnd,
       validUntil,
-      playerId,
+      playerId.toNumber(),
       typeOfTX,
       sellerAccount
     );
@@ -276,8 +260,6 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    const buyerTeamId = 2;
-
     let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(false);
 
@@ -286,9 +268,9 @@ contract("Market", accounts => {
       price,
       rnd,
       validUntil,
-      playerId,
+      playerId.toNumber(),
       typeOfTX,
-      buyerTeamId,
+      buyerTeamId.toNumber(),
       buyerAccount
     ).should.be.fulfilled;
 
@@ -323,13 +305,15 @@ contract("Market", accounts => {
     isFrozen.should.be.equal(true);
     
     // Freeverse waits until actual money has been transferred between users, and completes sale
-    let initOwner = await market.getPlayerOwner(playerId).should.be.fulfilled;
+    let initOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     initOwner.should.be.equal(sellerAccount.address);
     await market.completeFreeze(playerId).should.be.fulfilled;
-    let finalOwner = await market.getPlayerOwner(playerId).should.be.fulfilled;
+    let finalOwner = await market.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
+ return;
+  
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
     const sellerAccount = await web3.eth.accounts.create("iamaseller");
     const buyerAccount = await web3.eth.accounts.create("iamabuyer");
