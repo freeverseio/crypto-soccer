@@ -276,6 +276,14 @@ contract Assets {
         return secsToMonths(now - monthsToSecs(_playerStateLib.getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
     }
 
+    function getFreeShirt(uint256 teamId) public view returns(uint8) {
+        for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
+            if (isFreeShirt(teamId, shirtNum)) {
+                return shirtNum;
+            }
+        }
+        return PLAYERS_PER_TEAM_MAX;
+    }
 
     // function transferTeam(uint256 teamId, address newOwnerAddr) public {
     //     (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _playerStateLib.decodeTZCountryAndVal(teamId);
@@ -328,14 +336,6 @@ contract Assets {
 
 
 
-    // function getFreeShirt(uint256 teamId) public view returns(uint8) {
-    //     for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
-    //         if (isFreeShirt(teamId, shirtNum)) {
-    //             return shirtNum;
-    //         }
-    //     }
-    //     return PLAYERS_PER_TEAM_MAX;
-    // }
 
     // function _transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
     //     // warning: check of ownership of players and teams should be done before calling this function

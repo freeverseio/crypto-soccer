@@ -252,7 +252,7 @@ contract('Assets', (accounts) => {
         teamIdxInCountry = 0; 
         teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
         // cannot query about a Bot Team
-        isFree = await assets.isFreeShirt(teamId,3).should.be.rejected
+        isFree = await assets.isFreeShirt(teamId,shirtNum = 3).should.be.rejected
         // so transfer and query again
         await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
         isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
@@ -262,14 +262,24 @@ contract('Assets', (accounts) => {
         isFree = await assets.isFreeShirt(teamId, shirtNum = 18).should.be.fulfilled
         isFree.should.be.equal(true)
     });
+
+    it('getFreeShirt', async () => {
+        tz = 1;
+        countryIdxInTZ = 0;
+        teamIdxInCountry = 0; 
+        teamId = await playerStateLib.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled; 
+        // cannot query about a Bot Team
+        shirtNum = await assets.getFreeShirt(teamId).should.be.rejected
+        // so transfer and query again
+        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+        isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
+        isBot.should.be.equal(false);
+        shirtNum = await assets.getFreeShirt(teamId).should.be.fulfilled
+        shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 1);
+    });
+
     return;
-
-    // it('getFreeShirt', async () => {
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     var freeShirt = await assets.getFreeShirt(teamId = 1).should.be.fulfilled;
-    //     freeShirt.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX-1);
-    // });
-
+    
     // it('transferPlayer', async () => {
     //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
     //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
