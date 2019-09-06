@@ -6,7 +6,7 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 
 const Assets = artifacts.require('Assets');
-const AssetsLib = artifacts.require('PlayerState');
+const AssetsLib = artifacts.require('AssetsLib');
 
 contract('Assets', (accounts) => {
     let assets = null;
@@ -16,8 +16,10 @@ contract('Assets', (accounts) => {
     let LEAGUES_PER_DIV = null;
     let TEAMS_PER_LEAGUE = null;
     let FREE_PLAYER_ID = null;
+    let NULL_ADDR = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
+    const CAROL = accounts[3];
     const N_SKILLS = 5;
 
     beforeEach(async () => {
@@ -28,6 +30,7 @@ contract('Assets', (accounts) => {
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
         TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
         FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
+        NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
@@ -309,6 +312,29 @@ contract('Assets', (accounts) => {
         isFree.should.be.equal(false);
         shirtNum = await assets.getFreeShirt(teamId2).should.be.fulfilled
         shirtNum.toNumber().should.be.equal(PLAYERS_PER_TEAM_MAX - 2);
+    });
+
+    it('get owner of player', async () => {
+        playerId    = await assetsLib.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
+        teamId1     = await assetsLib.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
+        teamId2     = await assetsLib.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+
+        // state before selling:
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
+        owner.should.be.equal(NULL_ADDR)
+        // state after acquiring bot:
+        await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
+        owner.should.be.equal(ALICE)
+        // state after selling player:
+        await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+        await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
+        owner.should.be.equal(BOB)
+        // state after selling team:
+        await assets.transferTeam(teamId2, CAROL).should.be.fulfilled;
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
+        owner.should.be.equal(CAROL)
     });
 
     it('transferPlayer different team works', async () => {

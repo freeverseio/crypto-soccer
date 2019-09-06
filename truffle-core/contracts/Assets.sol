@@ -49,6 +49,7 @@ contract Assets {
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
+    address constant public NULL_ADDR = address(0);
     
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -109,6 +110,7 @@ contract Assets {
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
+    // returns address(0) if team is bot
     function getOwnerTeamInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) public view returns(address) {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
@@ -119,6 +121,16 @@ contract Assets {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
+
+    // returns address(0) if team is bot
+    function getOwnerPlayer(uint256 playerId) public view returns(address) {
+        require(playerExists(playerId), "unexistent player");
+        uint256 teamId = _assetsLib.getCurrentTeamId(getPlayerState(playerId));
+        return getOwnerTeam(teamId);
+    }
+
+    
+
 
     function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
         return (playerIdxInCountry < getNTeamsInCountry(timeZone, countryIdxInTZ) * PLAYERS_PER_TEAM_INIT);
