@@ -6,6 +6,6 @@ require('chai')
 
 describe('Validator', () => {
     it('create signature of "ciao"', async () => {
-
+        
     });
 }) 
