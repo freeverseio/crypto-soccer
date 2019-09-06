@@ -346,16 +346,16 @@ contract('Assets', (accounts) => {
         await assets.transferPlayer(playerId2, teamId1).should.be.fulfilled;
     });
     
-    
+    it('transferPlayer to already full team', async () => {
+        teamId     = await playerStateLib.encodeTZCountryAndVal(tz2, countryIdxInTZ2, teamIdxInCountry = 0).should.be.fulfilled; 
+        for (playerIdxInCountry = 0; playerId < PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT; playerId++) {
+            playerId   = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry).should.be.fulfilled; 
+            await assets.transferPlayer(playerId, teamId).should.be.fulfilled;
+        }
+        playerId   = await playerStateLib.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry+1).should.be.fulfilled; 
+        await assets.transferPlayer(playerId, teamId).should.be.rejected;
+    });
     return;
-    // it('transferPlayer to already full team', async () => {
-    //     await assets.createTeam(name = "Barca",ALICE).should.be.fulfilled;
-    //     await assets.createTeam(name = "Madrid",ALICE).should.be.fulfilled;
-    //     for (playerId = 1; playerId <= PLAYERS_PER_TEAM_MAX-PLAYERS_PER_TEAM_INIT; playerId++) {
-    //         await assets.transferPlayer(playerId, targetTeamId = 2).should.be.fulfilled;
-    //     }
-    //     await assets.transferPlayer(playerId+1, targetTeamId = 2).should.be.rejected;
-    // });
 
     // it('generate virtual player state', async () => {
     //     await assets.generateVirtualPlayerState(0).should.be.rejected;
