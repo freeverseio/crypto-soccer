@@ -10,6 +10,7 @@ const Engine = artifacts.require('Engine');
 contract('Engine', (accounts) => {
     let engine = null;
     let teamStateAll50 = null;
+    let teamStateAll1 = null;
     const seed = 610106;
     const tactic0 = 0; // 442
     const tactic1 = 1; // 541
@@ -32,6 +33,7 @@ contract('Engine', (accounts) => {
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
+        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
         });
 
     it('teams get tired', async () => {
@@ -49,7 +51,6 @@ contract('Engine', (accounts) => {
     });
 
     it('play a match', async () => {
-        let teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(17);
         result[1].toNumber().should.be.equal(0);
@@ -134,7 +135,6 @@ contract('Engine', (accounts) => {
         // endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
-        let teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
         let result = await engine.getTeamGlobSkills(teamStateAll1, [4,4,2]).should.be.fulfilled;
         result.attackersSpeed.length.should.be.equal(2);
         result.attackersShoot.length.should.be.equal(2);
@@ -171,7 +171,6 @@ contract('Engine', (accounts) => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
         result.goalsHome.toNumber().should.be.equal(2);
         result.goalsVisitor.toNumber().should.be.equal(1);
-        let teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
         result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
         result.goalsHome.toNumber().should.be.equal(14);
         result.goalsVisitor.toNumber().should.be.equal(0);
