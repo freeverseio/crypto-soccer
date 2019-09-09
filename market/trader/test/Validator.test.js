@@ -57,5 +57,13 @@ describe('Validator', () => {
         rsv.r.should.be.equal(sigObject.r);
         rsv.s.should.be.equal(sigObject.s);
         rsv.v.should.be.equal(sigObject.v);
-    })
-}) 
+    });
+
+    it('recover sender address from known messageHash and signature', () => {
+        const messageHash = '0x3f6c78029ebde952d76a5b4ffe415d074eb256156d0f0b44045057e809add696';
+        const signature = '0xbd7b906b16bfab0ac6007bb4699e82324e89f6d9f6a0e8476cb66bcf0c6dc013650c1667574a3821d7a2681b0b68e8615eeae4d05061ce54f94dce2f1ba8f3351b';
+        const validator = new Validator();
+        const address = validator.recoverSignerAddress(messageHash, signature);
+        address.should.be.equal('0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7');
+    });
+});
