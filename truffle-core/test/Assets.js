@@ -6,7 +6,6 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 
 const Assets = artifacts.require('Assets');
-const Encoding = artifacts.require('Encoding');
 
 contract('Assets', (accounts) => {
     let assets = null;
@@ -23,8 +22,8 @@ contract('Assets', (accounts) => {
     const N_SKILLS = 5;
 
     beforeEach(async () => {
-        encoding = await Encoding.new().should.be.fulfilled;
-        assets = await Assets.new(encoding.address).should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
+        encoding = assets;
         await assets.init().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;

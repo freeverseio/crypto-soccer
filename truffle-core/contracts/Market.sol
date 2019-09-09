@@ -16,9 +16,6 @@ contract Market is Assets {
 
     mapping (uint256 => uint256) private playerIdToTargetTeam;
 
-    constructor(address assetsLib) public Assets(assetsLib) {
-    }
-
     function freezePlayer(
         bytes32 privHash,
         uint256 validUntil,
