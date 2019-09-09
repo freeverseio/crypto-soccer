@@ -47,4 +47,44 @@ contract Leagues is Assets {
         else
             return (team2, team1);
     }
+
+    /// compute points per team in front of goals
+    /// @return home and visitor points
+    function computeEvolutionPoints(
+        uint256[] memory homeTeamState, 
+        uint256[] memory visitorTeamState,
+        uint8 homeGoals,
+        uint8 visitorGoals
+    )
+        public
+        pure
+        returns (uint8 homePoints, uint8 visitorPoints)
+    {
+        if (homeGoals == visitorGoals)
+            return (0, 0);
+
+        uint256 homeTeamRating = computeTeamRating(homeTeamState);
+        uint256 visitorTeamRating = computeTeamRating(visitorTeamState);
+
+        if (homeTeamRating == visitorTeamRating)
+            return homeGoals > visitorGoals ? (5, 0) : (0, 5);
+        else if (homeTeamRating > visitorTeamRating)
+            return homeGoals > visitorGoals ? (2, 0) : (0, 8);
+        else 
+            return homeGoals > visitorGoals ? (8, 0) : (0, 2);
+    }
+
+    function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
+        for(uint256 i = 0 ; i < teamState.length ; i++){
+            uint256 playerSkills = teamState[i];
+            if (getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID) {
+                uint16[5] memory skills = getSkillsVec(playerSkills);
+                for (uint8 sk = 0; sk < N_SKILLS; sk++) {
+                    rating += skills[sk];
+                }
+            }
+        }
+    }
+
+
 }

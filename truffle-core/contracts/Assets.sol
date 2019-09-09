@@ -308,7 +308,7 @@ contract Assets is Encoding {
         }
         return PLAYERS_PER_TEAM_MAX;
     }
-
+    
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         // TODO: checking if they are bots should be done outside this function
