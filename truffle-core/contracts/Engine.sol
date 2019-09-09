@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
-import "./Assets.sol";
+import "./Encoding.sol";
 
-contract Engine is Assets {
+contract Engine is Encoding{
+    
     uint8 private constant ACCEPTED_NPLAYERS= 11;   // Number of accepted num of player by the current version of the Engine
     uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of relevant actions that happen during a game (18 equals one per 5 min)
     uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
@@ -38,7 +39,7 @@ contract Engine is Assets {
     {
         uint8[3] memory tactic0 = getTacticsArray(tacticId0);
         uint8[3] memory tactic1 = getTacticsArray(tacticId1);
-        uint16[] memory rnds = _getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
+        uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
@@ -46,8 +47,8 @@ contract Engine is Assets {
         // TODO: ugly
         nAttackers[0] = tactic0[2];
         nAttackers[1] = tactic1[2];
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = _getTeamGlobSkills(state0, tactic0);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = _getTeamGlobSkills(state1, tactic1);
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
         uint8 teamThatAttacks;
         uint8[2] memory teamGoals;
 
@@ -55,7 +56,7 @@ contract Engine is Assets {
             if ((round == 8) || (round == 13)) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = _throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
+            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(
                     nAttackers[teamThatAttacks],
@@ -98,7 +99,7 @@ contract Engine is Assets {
     }
 
 
-    function _getNRandsFromSeed(uint16 nRands, uint256 seed) internal pure returns (uint16[] memory rnds) {
+    function getNRandsFromSeed(uint16 nRands, uint256 seed) public pure returns (uint16[] memory rnds) {
         rnds = new uint16[](nRands);
         uint256 currentBigRnd = uint(keccak256(abi.encode(seed)));
         uint8 rndsFromSameBigRnd = 0;
@@ -121,7 +122,7 @@ contract Engine is Assets {
     /// @dev The formula is derived as follows. Throw a random number R in the range [0,maxR].
     /// @dev Then, w1 wins if (w1+w2)*(R/maxR) < w1, and w2 wins otherise. 
     /// @dev MAX_RND controls the resolution or fine-graining of the algorithm.
-    function _throwDice(uint weight1, uint weight2, uint rndNum) internal pure returns(uint8) {
+    function throwDice(uint weight1, uint weight2, uint rndNum) public pure returns(uint8) {
         if( ( (weight1 + weight2) * rndNum ) < ( weight1 * (MAX_RND-1) ) ) {
             return 0;
         } else {
@@ -154,7 +155,7 @@ contract Engine is Assets {
         pure
         returns (bool)
     {
-        return _throwDice(
+        return throwDice(
             globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // defendShoot of defending team against...
             (globSkills[teamThatAttacks][IDX_CREATES_HOOT]*6)/10,  // createShoot of attacking team.
             rndNum
@@ -184,7 +185,7 @@ contract Engine is Assets {
         uint8 shooter = throwDiceArray(weights, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return _throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
+        return throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
     }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
@@ -195,8 +196,8 @@ contract Engine is Assets {
     // createShoot =    speed(attackers) + pass(attackers)
     // defendShoot =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function _getTeamGlobSkills(uint256[ACCEPTED_NPLAYERS] memory teamState, uint8[3] memory tactic)
-        internal
+    function getTeamGlobSkills(uint256[ACCEPTED_NPLAYERS] memory teamState, uint8[3] memory tactic)
+        public
         pure
         returns (
             uint[5] memory globSkills,
