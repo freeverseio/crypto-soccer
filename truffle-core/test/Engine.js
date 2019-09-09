@@ -149,5 +149,40 @@ contract('Engine', (accounts) => {
         result.globSkills[4].should.be.bignumber.equal("70");
     });
 
+    it('play match with less or more than 11 players', async () => {
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        wrongTeam = [0,1,2,3,4,5,6,7,8,9];
+        await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
+        wrongTeam = [0,1,2,3,4,5,6,7,8,9,10,11];
+        await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
+    });
 
+    it('play match with wrong tactic', async () => {
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 6, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 7, tactic1).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 8).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 9).should.be.rejected;
+    });
+
+
+    it('different team state => different result', async () => {
+        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        result.goalsHome.toNumber().should.be.equal(2);
+        result.goalsVisitor.toNumber().should.be.equal(1);
+        let teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
+        result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+        result.goalsHome.toNumber().should.be.equal(14);
+        result.goalsVisitor.toNumber().should.be.equal(0);
+    });
+
+    it('different seeds => different result', async () => {
+        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(2);
+        result[1].toNumber().should.be.equal(1);
+        result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(1);
+        result[1].toNumber().should.be.equal(0);
+    });
 });
