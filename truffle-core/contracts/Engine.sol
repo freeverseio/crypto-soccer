@@ -56,8 +56,8 @@ contract Engine is Assets {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = _throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
-            if ( _managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
-                if ( _managesToScore(
+            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+                if ( managesToScore(
                     nAttackers[teamThatAttacks],
                     attackersSpeed[teamThatAttacks],
                     attackersShoot[teamThatAttacks],
@@ -131,7 +131,7 @@ contract Engine is Assets {
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
-    function _throwDiceArray(uint[] memory weights, uint rndNum) internal pure returns(uint8 w) {
+    function throwDiceArray(uint[] memory weights, uint rndNum) public pure returns(uint8 w) {
         uint uniformRndInSumOfWeights;
         for (w = 0; w<weights.length; w++) {
             uniformRndInSumOfWeights += weights[w];
@@ -149,8 +149,8 @@ contract Engine is Assets {
 
 
     /// @dev Decides if a team manages to shoot by confronting attack and defense via globSkills
-    function _managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-        internal
+    function managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
+        public
         pure
         returns (bool)
     {
@@ -164,7 +164,7 @@ contract Engine is Assets {
 
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
-    function _managesToScore(
+    function managesToScore(
         uint8 nAttackers,
         uint[] memory attackersSpeed,
         uint[] memory attackersShoot,
@@ -172,7 +172,7 @@ contract Engine is Assets {
         uint rndNum1,
         uint rndNum2
     )
-        internal
+        public
         pure
         returns (bool)
     {
@@ -181,7 +181,7 @@ contract Engine is Assets {
         for (uint8 p = 0; p < nAttackers; p++) {
             weights[p] = attackersSpeed[p];
         }
-        uint8 shooter = _throwDiceArray(weights, rndNum1);
+        uint8 shooter = throwDiceArray(weights, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return _throwDice((attackersShoot[shooter]*7)/10, blockShoot, rndNum2) == 0;
