@@ -226,6 +226,9 @@ contract("FreezableAssets", accounts => {
     const price = 41234;
     const rnd = 42321;
 
+    const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+    privateHash.should.be.equal('');
+
     // mobile app does this:
     sigSeller = signPutForSaleMTx(
       currencyId,
