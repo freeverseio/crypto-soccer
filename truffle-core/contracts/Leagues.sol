@@ -1,8 +1,8 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Assets.sol";
+import "./Engine.sol";
 
-contract Leagues is Assets {
+contract Leagues is Engine {
     
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
