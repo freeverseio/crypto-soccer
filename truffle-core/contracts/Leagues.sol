@@ -1,12 +1,22 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Assets.sol";
+import "./Engine.sol";
 
 contract Leagues is Assets {
     
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
-    
+    Engine private _engine;
+
+    function setEngineAdress(address addr) public {
+        _engine = Engine(addr);
+    }
+
+    function getEngineAddress() public view returns (address) {
+        return address(_engine);
+    }
+
     function getTeamsInMatch(uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     {
         require(matchday < MATCHDAYS, "wrong match day");

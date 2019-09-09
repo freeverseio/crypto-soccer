@@ -6,23 +6,27 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 
 const Leagues = artifacts.require('Leagues');
+const Engine = artifacts.require('Engine');
 
 contract('Leagues', (accounts) => {
     let leagues = null;
+    let engine = null;
     let TEAMS_PER_LEAGUE = null;
     let MATCHDAYS = null;
     let MATCHES_PER_DAY = null;
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
-        encoding = leagues;
+        engine = await Engine.new().should.be.fulfilled;
         await leagues.init().should.be.fulfilled;
+        await leagues.setEngineAdress(engine.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await leagues.TEAMS_PER_LEAGUE().should.be.fulfilled;
         MATCHDAYS = await leagues.MATCHDAYS().should.be.fulfilled;
         MATCHES_PER_DAY = await leagues.MATCHES_PER_DAY().should.be.fulfilled;
-        });
+    });
 
     it('check initial constants', async () =>  {
+        engine = 0;
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
