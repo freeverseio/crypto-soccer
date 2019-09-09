@@ -19,7 +19,7 @@ describe('Validator', () => {
         signatureObject.signature.should.be.equal('0xcf0a59da3b50f2827d9b15fc83391cd5feaf9b25131c2f4f20e7ae2d4fba811b41f35b6b17ba566c38a5c3737a759018be1f9064b7c8f56daaf4c00e51c7df281b');
     });
 
-    it('get the signer address by message and signature', () => {
+    it('get the signer address by message hash and signature', () => {
         const msg = "ciao";
         const signatureObject = account.sign(msg);
         address = accounts.recover(signatureObject.messageHash, signatureObject.signature, true);
