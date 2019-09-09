@@ -14,6 +14,7 @@ contract('Engine', (accounts) => {
     const seed = 610106;
     const tactic0 = 0; // 442
     const tactic1 = 1; // 541
+    const PLAYERS_PER_TEAM_MAX = 25;
 
     const createTeamStateFromSinglePlayer = async (skills, engine) => {
         const playerStateTemp = await engine.encodePlayerSkills(
@@ -23,7 +24,7 @@ contract('Engine', (accounts) => {
         ).should.be.fulfilled;
 
         teamState = []
-        for (player = 0; player < 11; player++) {
+        for (player = 0; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
         }
         return teamState;
@@ -169,11 +170,11 @@ contract('Engine', (accounts) => {
 
     it('different team state => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        result.goalsHome.toNumber().should.be.equal(2);
-        result.goalsVisitor.toNumber().should.be.equal(1);
+        result[0].toNumber().should.be.equal(2);
+        result[1].toNumber().should.be.equal(1);
         result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
-        result.goalsHome.toNumber().should.be.equal(14);
-        result.goalsVisitor.toNumber().should.be.equal(0);
+        result[0].toNumber().should.be.equal(14);
+        result[1].toNumber().should.be.equal(0);
     });
 
     it('different seeds => different result', async () => {

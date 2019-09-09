@@ -51,31 +51,30 @@ contract Leagues is Assets {
     /// compute points per team in front of goals
     /// @return home and visitor points
     function computeEvolutionPoints(
-        uint256[] memory homeTeamState, 
-        uint256[] memory visitorTeamState,
-        uint8 homeGoals,
-        uint8 visitorGoals
+        uint256[PLAYERS_PER_TEAM_MAX] memory homeTeamState, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory visitorTeamState,
+        uint8[2] memory score
     )
         public
         pure
-        returns (uint8 homePoints, uint8 visitorPoints)
+        returns (uint8[2] memory)
     {
-        if (homeGoals == visitorGoals)
-            return (0, 0);
+        if (score[0] == score[1])
+            return [0, 0];
 
         uint256 homeTeamRating = computeTeamRating(homeTeamState);
         uint256 visitorTeamRating = computeTeamRating(visitorTeamState);
 
         if (homeTeamRating == visitorTeamRating)
-            return homeGoals > visitorGoals ? (5, 0) : (0, 5);
+            return score[0] > score[1] ? [5, 0] : [0, 5];
         else if (homeTeamRating > visitorTeamRating)
-            return homeGoals > visitorGoals ? (2, 0) : (0, 8);
+            return score[0] > score[1] ? [2, 0] : [0, 8];
         else 
-            return homeGoals > visitorGoals ? (8, 0) : (0, 2);
+            return score[0] > score[1] ? [8, 0] : [0, 2];
     }
 
-    function computeTeamRating(uint256[] memory teamState) public pure returns (uint256 rating) {
-        for(uint256 i = 0 ; i < teamState.length ; i++){
+    function computeTeamRating(uint256[PLAYERS_PER_TEAM_MAX] memory teamState) public pure returns (uint256 rating) {
+        for(uint256 i = 0 ; i < PLAYERS_PER_TEAM_MAX ; i++){
             uint256 playerSkills = teamState[i];
             if (getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID) {
                 uint16[5] memory skills = getSkillsVec(playerSkills);
@@ -85,6 +84,26 @@ contract Leagues is Assets {
             }
         }
     }
+
+    function computeMatchday(
+        uint8 matchday, 
+        uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState, 
+        uint8[TEAMS_PER_LEAGUE] memory tacticsIds
+    )
+        internal
+        view
+        returns (uint8[2][MATCHES_PER_DAY] memory scores, uint8[2][MATCHES_PER_DAY] memory evoPoints)
+    {
+        for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
+        {
+            (uint8 homeTeamIdx, uint8 visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
+            uint256[PLAYERS_PER_TEAM_MAX] memory homeTeamState = prevLeagueState[homeTeamIdx];
+            uint256[PLAYERS_PER_TEAM_MAX] memory visitorTeamState = prevLeagueState[visitorTeamIdx];
+            uint256 matchSeed = uint256(keccak256(abi.encode(getCurrentVerseSeed(), matchIdxInDay))); 
+            scores[matchIdxInDay] = _engine.playMatch(matchSeed, homeTeamState, visitorTeamState, tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]);
+            evoPoints[matchIdxInDay] = computeEvolutionPoints(homeTeamState, visitorTeamState, scores[matchIdxInDay]);
+        }
+    }    
 
 
 }

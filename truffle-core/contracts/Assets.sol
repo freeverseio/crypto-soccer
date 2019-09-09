@@ -56,9 +56,11 @@ contract Assets is Encoding {
     TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
+    bytes32 private _currentVerseSeed;
 
     function init() public {
-        gameDeployMonth = secsToMonths(now);
+         setCurrentVerseSeed(blockhash(block.number-1)); 
+         gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -70,6 +72,15 @@ contract Assets is Encoding {
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1; 
     }
+    
+    function setCurrentVerseSeed(bytes32 seed) public {
+        _currentVerseSeed = seed;
+    }
+        
+    function getCurrentVerseSeed() public view returns (bytes32) {
+        return _currentVerseSeed;
+    }
+        
         
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
         _assertTZExists(timeZone);

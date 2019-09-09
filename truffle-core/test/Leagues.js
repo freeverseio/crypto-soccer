@@ -11,6 +11,7 @@ const Engine = artifacts.require('Engine');
 contract('Leagues', (accounts) => {
     let leagues = null;
     let engine = null;
+    const PLAYERS_PER_TEAM_MAX = 25;
     let TEAMS_PER_LEAGUE = null;
     let MATCHDAYS = null;
     let MATCHES_PER_DAY = null;
@@ -25,7 +26,7 @@ contract('Leagues', (accounts) => {
         ).should.be.fulfilled;
 
         teamState = []
-        for (player = 0; player < 11; player++) {
+        for (player = 0; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
         }
         return teamState;
@@ -43,51 +44,51 @@ contract('Leagues', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
-    // it('check initial constants', async () =>  {
-    //     engine = 0;
-    //     MATCHDAYS.toNumber().should.be.equal(14);
-    //     MATCHES_PER_DAY.toNumber().should.be.equal(4);
-    //     TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
-    // });
+    it('check initial constants', async () =>  {
+        engine = 0;
+        MATCHDAYS.toNumber().should.be.equal(14);
+        MATCHES_PER_DAY.toNumber().should.be.equal(4);
+        TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
+    });
 
-    // it('get teams for match in wrong day', async () => {
-    //     matchIdxInDay = 0; 
-    //     day = MATCHDAYS-1; 
-    //     await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
-    //     day = MATCHDAYS; 
-    //     await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
-    // });
+    it('get teams for match in wrong day', async () => {
+        matchIdxInDay = 0; 
+        day = MATCHDAYS-1; 
+        await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        day = MATCHDAYS; 
+        await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
+    });
 
-    // it('get teams for match in wrong match in day', async () => {
-    //     day = 0;
-    //     matchIdxInDay = MATCHES_PER_DAY-1;
-    //     await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
-    //     matchIdxInDay = MATCHES_PER_DAY;
-    //     await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
-    // });
+    it('get teams for match in wrong match in day', async () => {
+        day = 0;
+        matchIdxInDay = MATCHES_PER_DAY-1;
+        await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        matchIdxInDay = MATCHES_PER_DAY;
+        await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
+    });
 
-    // it('get teams for match in league day', async () => {
-    //     day = 0;
-    //     matchIdxInDay = 0;
-    //     teams = await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
-    //     teams[0].toNumber().should.be.equal(0);
-    //     teams[1].toNumber().should.be.equal(1);
-    //     day = Math.floor(MATCHDAYS/2);
-    //     teams = await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
-    //     teams[0].toNumber().should.be.equal(1);
-    //     teams[1].toNumber().should.be.equal(0);
-    // });
+    it('get teams for match in league day', async () => {
+        day = 0;
+        matchIdxInDay = 0;
+        teams = await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        teams[0].toNumber().should.be.equal(0);
+        teams[1].toNumber().should.be.equal(1);
+        day = Math.floor(MATCHDAYS/2);
+        teams = await leagues.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        teams[0].toNumber().should.be.equal(1);
+        teams[1].toNumber().should.be.equal(0);
+    });
     
     it('compute points same rating', async () => {
-        let points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, 2, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, 2, 1).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(5);
-        points.visitorPoints.toNumber().should.be.equal(0);
-        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, 1, 2).should.be.fulfilled;
-        points.homePoints.toNumber().should.be.equal(0);
-        points.visitorPoints.toNumber().should.be.equal(5);
+        let points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [2, 2]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(0);
+        points[1].toNumber().should.be.equal(0);
+        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [2, 1]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(5);
+        points[1].toNumber().should.be.equal(0);
+        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [1, 2]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(0);
+        points[1].toNumber().should.be.equal(5);
     });
 
 

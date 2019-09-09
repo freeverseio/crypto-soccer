@@ -4,6 +4,7 @@ import "./Encoding.sol";
 
 contract Engine is Encoding{
     
+    uint8 private constant MAX_NPLAYERS     = 25;   // Number of accepted num of player by the current version of the Engine
     uint8 private constant ACCEPTED_NPLAYERS= 11;   // Number of accepted num of player by the current version of the Engine
     uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of relevant actions that happen during a game (18 equals one per 5 min)
     uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
@@ -28,15 +29,17 @@ contract Engine is Encoding{
      */
     function playMatch(
         uint256 seed,
-        uint256[ACCEPTED_NPLAYERS] memory state0,
-        uint256[ACCEPTED_NPLAYERS] memory state1, 
+        uint256[MAX_NPLAYERS] memory state0,
+        uint256[MAX_NPLAYERS] memory state1, 
         uint8 tacticId0, 
         uint8 tacticId1
     )
         public
         pure
-        returns (uint8 goalsHome, uint8 goalsVisitor) 
+        returns (uint8[2] memory teamGoals) 
     {
+        // TODO: This function will fail if one of the first 11 players has been sold.
+        //      ...this will be fixed when we define tactics properly.
         uint8[3] memory tactic0 = getTacticsArray(tacticId0);
         uint8[3] memory tactic1 = getTacticsArray(tacticId1);
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
@@ -50,7 +53,6 @@ contract Engine is Encoding{
         (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
         (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
         uint8 teamThatAttacks;
-        uint8[2] memory teamGoals;
 
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
@@ -72,7 +74,7 @@ contract Engine is Encoding{
                 }
             }
         }
-        return (teamGoals[0], teamGoals[1]);
+        return teamGoals;
     }
 
     function getTacticsArray(uint8 tacticsId) internal pure returns (uint8[3] memory) {
@@ -196,7 +198,7 @@ contract Engine is Encoding{
     // createShoot =    speed(attackers) + pass(attackers)
     // defendShoot =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[ACCEPTED_NPLAYERS] memory teamState, uint8[3] memory tactic)
+    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[3] memory tactic)
         public
         pure
         returns (
