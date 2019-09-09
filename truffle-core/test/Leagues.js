@@ -11,12 +11,14 @@ const Engine = artifacts.require('Engine');
 contract('Leagues', (accounts) => {
     let leagues = null;
     let engine = null;
-    const PLAYERS_PER_TEAM_MAX = 25;
+    let PLAYERS_PER_TEAM_MAX = null;
     let TEAMS_PER_LEAGUE = null;
     let MATCHDAYS = null;
     let MATCHES_PER_DAY = null;
     let teamStateAll50 = null;
     let teamStateAll1 = null;
+    const tactic442 = 0;
+    const tactic433 = 1;
 
     const createTeamStateFromSinglePlayer = async (skills, engine) => {
         const playerStateTemp = await engine.encodePlayerSkills(
@@ -32,12 +34,29 @@ contract('Leagues', (accounts) => {
         return teamState;
     };
     
+    const createLeagueStateFromSinglePlayer = async (skills, engine) => {
+        const teamState = await createTeamStateFromSinglePlayer(skills, engine).should.be.fulfilled;
+        leagueState = []
+        for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
+            leagueState.push(teamState)
+        }
+        return leagueState;
+    };
+    
+    function transpose(a) {
+        return Object.keys(a[0]).map(function(c) {
+            return a.map(function(r) { return r[c]; });
+        });
+    }
+    
+
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         await leagues.init().should.be.fulfilled;
         await leagues.setEngineAdress(engine.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await leagues.TEAMS_PER_LEAGUE().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = await leagues.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await leagues.MATCHDAYS().should.be.fulfilled;
         MATCHES_PER_DAY = await leagues.MATCHES_PER_DAY().should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
@@ -91,5 +110,35 @@ contract('Leagues', (accounts) => {
         points[1].toNumber().should.be.equal(5);
     });
 
+    
+    it('calculate a day in a league', async () => {
+        day = 0;
+        verseSeed = 0;
+        // verseSeed = await getCurrentVerseSeed().should.be.fulfilled;
+        leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
+        leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
+        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
+        expectedScores= [1, 0, 1, 2, 2, 1, 1, 2]
+        expectedEvoPoints = [5, 5, 0, 0, 5, 5, 0, 0]
+        for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
+            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
+        }
+        day = 3;
+        verseSeed = 432;
+        leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
+        leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
+        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
+        expectedScores= [2, 0, 2, 0, 2, 2, 1, 1]
+        expectedEvoPoints = [5, 5, 5, 5, 0, 0, 0, 0]
+        for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
+            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
+        }
+    });
 
 });

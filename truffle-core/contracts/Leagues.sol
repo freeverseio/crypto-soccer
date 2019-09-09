@@ -85,25 +85,43 @@ contract Leagues is Assets {
         }
     }
 
+    // returns [scoreHome, scoreAway, scoreHome, scoreAway,...]
+    // TODO: currentVerseSeed must be provided from getCurrentVerseSeed()
+    // TODO: likewise, matchday should be computed outside
     function computeMatchday(
-        uint8 matchday, 
-        uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState, 
-        uint8[TEAMS_PER_LEAGUE] memory tacticsIds
+        uint8 matchday,
+        uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
+        uint8[TEAMS_PER_LEAGUE] memory tacticsIds,
+        uint256 currentVerseSeed
     )
-        internal
+        public
         view
-        returns (uint8[2][MATCHES_PER_DAY] memory scores, uint8[2][MATCHES_PER_DAY] memory evoPoints)
+        returns (uint8[2 * MATCHES_PER_DAY] memory scores, uint8[2 * MATCHES_PER_DAY] memory evoPoints)
     {
+        uint8[2] memory score;
+        uint8[2] memory evoPoint;
+        uint8 homeTeamIdx;
+        uint8 visitorTeamIdx;
         for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
         {
-            (uint8 homeTeamIdx, uint8 visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
-            uint256[PLAYERS_PER_TEAM_MAX] memory homeTeamState = prevLeagueState[homeTeamIdx];
-            uint256[PLAYERS_PER_TEAM_MAX] memory visitorTeamState = prevLeagueState[visitorTeamIdx];
-            uint256 matchSeed = uint256(keccak256(abi.encode(getCurrentVerseSeed(), matchIdxInDay))); 
-            scores[matchIdxInDay] = _engine.playMatch(matchSeed, homeTeamState, visitorTeamState, tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]);
-            evoPoints[matchIdxInDay] = computeEvolutionPoints(homeTeamState, visitorTeamState, scores[matchIdxInDay]);
+            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
+            uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
+            score = _engine.playMatch(
+                matchSeed, 
+                prevLeagueState[homeTeamIdx], 
+                prevLeagueState[visitorTeamIdx], 
+                tacticsIds[homeTeamIdx], 
+                tacticsIds[visitorTeamIdx]
+            );
+            evoPoint = computeEvolutionPoints(
+                prevLeagueState[homeTeamIdx], 
+                prevLeagueState[visitorTeamIdx], 
+                score
+            );
+            scores[matchIdxInDay * 2] = score[0];
+            scores[matchIdxInDay * 2 +1 ] = score[1];
+            evoPoints[matchIdxInDay * 2] = evoPoint[0];
+            evoPoints[matchIdxInDay * 2 + 1] = evoPoint[0];
         }
     }    
-
-
 }
