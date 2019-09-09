@@ -1,6 +1,6 @@
 const fs = require('fs');
 const Assets = artifacts.require('Market');
-const AssetsLib = artifacts.require('AssetsLib');
+const Encoding = artifacts.require('Encoding');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
@@ -9,7 +9,7 @@ module.exports = function (deployer) {
     console.log("------------------------");
     config = {};
     config.assetsContractAddress = Assets.address;
-    config.assetsLibContractAddress = AssetsLib.address;
+    config.encodingContractAddress = Encoding.address;
     console.log(JSON.stringify(config, null, 4));
   })
     .catch(console.error);

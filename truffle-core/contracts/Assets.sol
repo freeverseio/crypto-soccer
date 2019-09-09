@@ -1,6 +1,6 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./AssetsLib.sol";
+import "./Encoding.sol";
  
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
@@ -53,13 +53,16 @@ contract Assets {
     
     mapping(uint256 => uint256) private _playerIdToState;
 
-    AssetsLib internal _assetsLib;
+    Encoding internal _encoding;
     TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
 
-    constructor(address playerState) public {
-        _assetsLib = AssetsLib(playerState);
+    constructor(address encoding) public {
+        _encoding = Encoding(encoding);
+    }
+    
+    function init() public {
         gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
@@ -97,7 +100,7 @@ contract Assets {
     }
 
     function teamExists(uint256 teamId) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         return _teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
@@ -106,7 +109,7 @@ contract Assets {
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
@@ -118,14 +121,14 @@ contract Assets {
     }
 
     function getOwnerTeam(uint256 teamId) public view returns(address) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         return getOwnerTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
 
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         require(playerExists(playerId), "unexistent player");
-        uint256 teamId = _assetsLib.getCurrentTeamId(getPlayerState(playerId));
+        uint256 teamId = _encoding.getCurrentTeamId(getPlayerState(playerId));
         return getOwnerTeam(teamId);
     }
 
@@ -147,7 +150,7 @@ contract Assets {
     function playerExists(uint256 playerId) public view returns (bool) {
         if (playerId == 0) return false;
         if (_playerIdToState[playerId] != 0) return true;
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _assetsLib.decodeTZCountryAndVal(playerId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _encoding.decodeTZCountryAndVal(playerId);
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
@@ -167,7 +170,7 @@ contract Assets {
     }
 
     function transferBotToAddr(uint256 teamId, address addr) public {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
     }
     
@@ -181,7 +184,7 @@ contract Assets {
     }
 
     function transferTeam(uint256 teamId, address addr) public {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         transferTeamInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
         emit TeamTransfer(teamId, addr);
     }
@@ -190,14 +193,14 @@ contract Assets {
         if (shirtNum >= PLAYERS_PER_TEAM_INIT) {
             return FREE_PLAYER_ID;
         } else {
-            return _assetsLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
+            return _encoding.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry * PLAYERS_PER_TEAM_INIT + shirtNum);
         }
     }
   
 
     // TODO: we really don't need this function. Only for external use. Consider removal
     function getPlayerIdsInTeam(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         if (isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry)) {
             for (uint8 shirtNum = 0 ; shirtNum < PLAYERS_PER_TEAM_MAX ; shirtNum++){
@@ -216,7 +219,7 @@ contract Assets {
     }
 
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _assetsLib.decodeTZCountryAndVal(playerId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _encoding.decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
@@ -225,16 +228,16 @@ contract Assets {
         uint256 playerCreationMonth = (gameDeployMonth * 30 + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND) / 30;
         uint256 monthOfBirth = computeBirthMonth(dna, playerCreationMonth);
         uint16[N_SKILLS] memory skills = computeSkills(dna);
-        return _assetsLib.encodePlayerSkills(skills, monthOfBirth, playerId);
+        return _encoding.encodePlayerSkills(skills, monthOfBirth, playerId);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _assetsLib.decodeTZCountryAndVal(playerId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = _encoding.decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
-        uint256 currentTeamId = _assetsLib.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
+        uint256 currentTeamId = _encoding.encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
-        return _assetsLib.encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
+        return _encoding.encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
@@ -285,7 +288,7 @@ contract Assets {
     }
     
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamId);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamId);
         require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
         return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum] == FREE_PLAYER_ID;
     }
@@ -299,7 +302,7 @@ contract Assets {
     }
 
     function getPlayerAgeInMonths(uint256 playerId) public view returns (uint256) {
-        return secsToMonths(now - monthsToSecs(_assetsLib.getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
+        return secsToMonths(now - monthsToSecs(_encoding.getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
@@ -317,21 +320,21 @@ contract Assets {
         require(playerExists(playerId) && teamExists(teamIdTarget), "unexistent player or team");
         uint256 state = getPlayerState(playerId);
         uint256 newState = state;
-        uint256 teamIdOrigin = _assetsLib.getCurrentTeamId(state);
+        uint256 teamIdOrigin = _encoding.getCurrentTeamId(state);
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-        uint256 shirtOrigin = _assetsLib.getCurrentShirtNum(state);
+        uint256 shirtOrigin = _encoding.getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
-        newState = _assetsLib.setCurrentTeamId(newState, teamIdTarget);
-        newState = _assetsLib.setCurrentShirtNum(newState, shirtTarget);
-        newState = _assetsLib.setLastSaleBlock(newState, block.number);
+        newState = _encoding.setCurrentTeamId(newState, teamIdTarget);
+        newState = _encoding.setCurrentShirtNum(newState, shirtTarget);
+        newState = _encoding.setLastSaleBlock(newState, block.number);
         _playerIdToState[playerId] = newState;
 
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamIdOrigin);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamIdOrigin);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
-        (timeZone, countryIdxInTZ, teamIdxInCountry) = _assetsLib.decodeTZCountryAndVal(teamIdTarget);
+        (timeZone, countryIdxInTZ, teamIdxInCountry) = _encoding.decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
     }
 
