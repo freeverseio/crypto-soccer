@@ -65,6 +65,10 @@ contract FreezableAssets is Assets {
         playerIdToTargetTeam[playerId] = buyerTeamId;
     }
 
+    function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) public pure returns (bytes32) {
+        return keccak256(abi.encode(currencyId, price, rnd));
+    }
+
     function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
         return keccak256(abi.encode(privHash, validUntil, playerId, typeOfTX));
     }

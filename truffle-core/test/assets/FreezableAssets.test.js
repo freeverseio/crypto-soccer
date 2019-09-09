@@ -150,10 +150,7 @@ contract("FreezableAssets", accounts => {
     recoveredBuyerAddr.should.be.equal(buyerAccount.address);
 
     // It can also be checked in the BC:
-    const privHash = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, rnd]
-    );
+    const privHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
     buyerTxMsgBC = await verifierLib.buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX).should.be.fulfilled;
     buyerTxMsgBC.should.be.equal(sigBuyer.message);
 
@@ -217,7 +214,7 @@ contract("FreezableAssets", accounts => {
     owner.should.be.equal(BOB);
   });
 
-  it('deterministic sign', () => {
+  it('deterministic sign', async () => {
     const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
     sellerAccount.address.should.be.equal('0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7');
 
