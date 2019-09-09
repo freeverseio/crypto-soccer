@@ -227,19 +227,10 @@ contract("FreezableAssets", accounts => {
     const rnd = 42321;
 
     const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
-    privateHash.should.be.equal('');
-
-    // mobile app does this:
-    sigSeller = signPutForSaleMTx(
-      currencyId,
-      price,
-      rnd,
-      validUntil,
-      playerId,
-      typeOfTX,
-      sellerAccount
-    );
-
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await verifierLib.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
+    message.should.be.equal('0xaadf12b0660c9a10f8e9b0baca620d55d648bcabb0718dade3b39c676f76cc4d');
+    const sigSeller = sellerAccount.sign(message);
     sigSeller.messageHash.should.be.equal('0x3f6c78029ebde952d76a5b4ffe415d074eb256156d0f0b44045057e809add696');
     sigSeller.signature.should.be.equal('0xbd7b906b16bfab0ac6007bb4699e82324e89f6d9f6a0e8476cb66bcf0c6dc013650c1667574a3821d7a2681b0b68e8615eeae4d05061ce54f94dce2f1ba8f3351b');
   })
