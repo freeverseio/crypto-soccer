@@ -46,4 +46,16 @@ describe('Validator', () => {
         const address = validator.recoverSignerAddress(msg, hashedMsg.signature);
         address.should.be.equal(account.address);
     });
+
+    it('recover r,s,v from signature', () => {
+        const accounts = new Accounts();
+        const account = accounts.privateKeyToAccount(privateKey);
+        const msg = "ciao";
+        const sigObject = account.sign(msg);
+        const validator = new Validator();
+        const rsv = validator.recoverRSV(sigObject.signature);
+        rsv.r.should.be.equal(sigObject.r);
+        rsv.s.should.be.equal(sigObject.s);
+        rsv.v.should.be.equal(sigObject.v);
+    })
 }) 
