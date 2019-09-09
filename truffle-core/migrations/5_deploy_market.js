@@ -1,8 +1,8 @@
-const Assets = artifacts.require('Assets');
+const Market = artifacts.require('Market');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-      await deployer.deploy(Assets);
+      await deployer.deploy(Market);
     })
     .catch(console.error);
 };

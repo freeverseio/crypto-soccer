@@ -1,8 +1,8 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Assets.sol";
+import "./Leagues.sol";
 
-contract Market is Assets {
+contract Market is Leagues {
     uint8 constant internal SELL_MSG = 0;
     uint8 constant internal SELL_r   = 1;
     uint8 constant internal SELL_s   = 2;
