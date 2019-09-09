@@ -5,8 +5,8 @@ class Validator {
         this.accounts = new Accounts();
     }
 
-    recoverSignerAddress(msg, signature) {
-        return this.accounts.recover(msg, signature);
+    recoverSignerAddress(msgHash, signature) {
+        return this.accounts.recover(msgHash, signature, true);
     }
 
     recoverRSV(signature) {

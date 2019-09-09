@@ -43,7 +43,7 @@ describe('Validator', () => {
         const msg = "ciao";
         const hashedMsg = account.sign(msg);
         const validator = new Validator();
-        const address = validator.recoverSignerAddress(msg, hashedMsg.signature);
+        const address = validator.recoverSignerAddress(hashedMsg.messageHash, hashedMsg.signature);
         address.should.be.equal(account.address);
     });
 
