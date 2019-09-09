@@ -261,6 +261,18 @@ contract("FreezableAssets", accounts => {
     // In this case, using web3:
     recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
     recoveredSellerAddr.should.be.equal(sellerAccount.address);
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller.messageHash, sigSeller.signature, true);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller.messageHash, sigSeller.v, sigSeller.r, sigSeller.s, true);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+
+    // recovering r,s,v from the signature
+    const signature = sigSeller.signature.substr(2); //remove 0x
+    const r = '0x' + signature.slice(0, 64)
+    const s = '0x' + signature.slice(64, 128)
+    const v = '0x' + signature.slice(128, 130)
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller.messageHash, v, r, s, true);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
     // It can also be checked in the BC:
     const privHash = concatHash(
