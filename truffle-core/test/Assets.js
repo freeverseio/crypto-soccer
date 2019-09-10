@@ -15,7 +15,6 @@ contract('Assets', (accounts) => {
     let LEAGUES_PER_DIV = null;
     let TEAMS_PER_LEAGUE = null;
     let FREE_PLAYER_ID = null;
-    let SEPT2019 = null;
     let NULL_ADDR = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
@@ -30,14 +29,12 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
         TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
-        SEPT2019 = await assets.SEPT2019().should.be.fulfilled;
         FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
         NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
-        SEPT2019 = SEPT2019.toNumber();
         });
 
     it('check cannot initialize contract twice', async () =>  {
@@ -45,24 +42,24 @@ contract('Assets', (accounts) => {
     });
 
     it('check BC has the correct time', async () =>  {
-        SEPT2019.should.be.equal(1567296000)
-        date = new Date(year = 2019, month = 8, date = 1, hours = 2, mins = 0, secs = 0, ms = 0)
-        date.getTime().should.be.equal(SEPT2019 * 1000)
-        date.getUTCDate().should.be.equal(1)
-        date.getUTCHours().should.be.equal(0)
-        date.getUTCMinutes().should.be.equal(0)
-        date.getUTCSeconds().should.be.equal(0)
         nextVerseTimestamp = await assets.nextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await assets.timeZoneForRound1().should.be.fulfilled;
         nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
         now = new Date()
+        if (now.getUTCMinutes() < 42) {
+            expectedHour = now.getUTCHours();
+        } else {
+            expectedHour = now.getUTCHours() + 1;
+        }
         nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
         nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
         nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
-        nextVerse.getUTCHours().should.be.equal(1 + now.getUTCHours())
-        nextVerse.getUTCMinutes().should.be.equal(0)
+        nextVerse.getUTCHours().should.be.equal(expectedHour)
+        nextVerse.getUTCMinutes().should.be.equal(45)
         nextVerse.getUTCSeconds().should.be.equal(0)
-        timeZoneForRound1.toNumber().should.be.equal(1 + now.getUTCHours())
+        timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
+        nowBC = await assets.getNow().should.be.fulfilled;
+        nowBC2 = new Date(nowBC.toNumber() * 1000)
     });
     
     it('check initial and max number of players per team', async () =>  {

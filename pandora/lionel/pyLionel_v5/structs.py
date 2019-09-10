@@ -523,9 +523,7 @@ class Storage(Counter):
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
 
-
-
-
+    # returns timeZoneForRound1, verseForRound1
     def initFirstRound(self):
         hours, minutes = self.getDeployHoursMinutes()
         quarter = minutes // 15 # = 0, 1, 2, 3

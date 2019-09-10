@@ -30,7 +30,7 @@ DIVS_PER_COUNTRY_AT_DEPLOY = 1
 assert VERSES_PER_ROUND == 1536
 
 # TIMEZONE UPDATE CODES
-TZ_NULL = 24 # (one more than allowed)
+TZ_NULL = 25 # (one more than allowed)
 
 
 # Time evolution

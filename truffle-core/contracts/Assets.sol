@@ -49,11 +49,12 @@ contract Assets is Encoding {
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
-    uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
+    // uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
-    uint8 constant VERSES_PER_DAY = 96;
+    uint8 constant VERSES_PER_DAY = 96; // 24 * 4
+    uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
     
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -72,15 +73,27 @@ contract Assets is Encoding {
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         // the call to the contract init() function.
-        uint256 hoursAfterSept19 = (now - SEPT2019) / 3600;
-        nextVerseTimestamp = SEPT2019 + (1 + hoursAfterSept19) * 3600;
-        timeZoneForRound1 = 1 + uint8(hoursAfterSept19 % 24);
+        uint256 secsOfDay   = now % (3600 * 24);
+        uint256 hour        = secsOfDay / 3600;  // 0, ..., 23
+        uint256 minute      = (secsOfDay - hour * 3600) / 60; // 0, ..., 59
+        uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); // 0, ..., 59
+        if (minute < 42) {
+            timeZoneForRound1 = 1 + uint8(hour);
+            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs);
+        } else {
+            timeZoneForRound1 = 2 + uint8(hour);
+            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs) + 3600;
+        }
         setCurrentVerseSeed(blockhash(block.number-1)); 
         gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
         _needsInit = false;
+    }
+    
+    function getNow() public view returns(uint256) {
+        return now;
     }
 
     function _initTimeZone(uint8 tz) private {
@@ -97,12 +110,16 @@ contract Assets is Encoding {
     // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
     // from these, all map easily to timeZones
     function timeZoneToUpdate(uint256 verse) public view returns (uint256 timeZone, uint8 day, uint8 turnInDay) {
-                
-        // uint256 hoursAfterSept19 = lastVerseTimestamp/(3600*24);
-
-        // if verse < self.verseForRound1:
-        //     return TZ_NULL, TZ_NULL, TZ_NULL
-
+        // if currentVerse = 0, we should be updating timeZoneForRound1
+        // // recall that timeZones range from 1...24 (not from 0...24)
+        // uint16 verseInRound = uint16(verse % 96)
+        // if (verseInRound < (VERSES_PER_DAY - 1)) {
+        //     timeZone = 1 + ((timeZoneForRound1-1) + (verseInRound / 4)) % 24;
+        //     day = 1;
+        //     turnInDay = verseInRound % 4;
+        // } else {
+            
+        // }
         // deltaVerse = ( verse - self.verseForRound1 ) % VERSES_PER_ROUND
         // if deltaVerse < VERSES_PER_DAY:
         //     timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
