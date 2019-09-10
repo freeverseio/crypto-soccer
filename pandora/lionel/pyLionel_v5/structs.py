@@ -646,16 +646,16 @@ class Storage(Counter):
         if deltaVerse < VERSES_PER_DAY:
             timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
             day         = 1
-            posInZone   = deltaVerse % 4
+            turnInDay   = deltaVerse % 4
         elif deltaVerse == VERSES_PER_DAY:
             timeZone    = TZ_NULL
             day         = TZ_NULL
-            posInZone   = TZ_NULL
+            turnInDay   = TZ_NULL
         else:
             timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
             day         = 1 + (deltaVerse - 1) // VERSES_PER_DAY
-            posInZone   = (deltaVerse - 1) % 4
-        return timeZone, day, posInZone
+            turnInDay   = (deltaVerse - 1) % 4
+        return timeZone, day, turnInDay
 
     def currentTimeZoneToUpdate(self):
         return self.verseToTimeZoneToUpdate(self.currentVerse)

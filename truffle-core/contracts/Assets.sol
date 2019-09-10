@@ -53,22 +53,30 @@ contract Assets is Encoding {
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
+    uint8 constant VERSES_PER_DAY = 96;
     
     mapping(uint256 => uint256) private _playerIdToState;
 
     TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
+    uint256 public currentVerse;
+    uint256 public currentRound;
     bytes32 private _currentVerseSeed;
     bool private _needsInit = true;
-    uint256 public lastVerseTimestamp;
+    uint256 public nextVerseTimestamp;
+    uint8 public timeZoneForRound1;
     
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
+        // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
+        // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
+        // the call to the contract init() function.
+        uint256 hoursAfterSept19 = (now - SEPT2019) / 3600;
+        nextVerseTimestamp = SEPT2019 + (1 + hoursAfterSept19) * 3600;
+        timeZoneForRound1 = 1 + uint8(hoursAfterSept19 % 24);
         setCurrentVerseSeed(blockhash(block.number-1)); 
         gameDeployMonth = secsToMonths(now);
-        uint256 hoursAfterSept19 = (now - SEPT2019) / 3600;
-        lastVerseTimestamp = SEPT2019 + hoursAfterSept19 * 3600;
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -81,6 +89,34 @@ contract Assets is Encoding {
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1; 
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH; 
+    }
+    
+    // each day has 24 hours, each with 4 verses => 96 verses per day.
+    // day = 1,..16
+    // turnInDay = 0, 1, 2, 3
+    // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
+    // from these, all map easily to timeZones
+    function timeZoneToUpdate(uint256 verse) public view returns (uint256 timeZone, uint8 day, uint8 turnInDay) {
+                
+        // uint256 hoursAfterSept19 = lastVerseTimestamp/(3600*24);
+
+        // if verse < self.verseForRound1:
+        //     return TZ_NULL, TZ_NULL, TZ_NULL
+
+        // deltaVerse = ( verse - self.verseForRound1 ) % VERSES_PER_ROUND
+        // if deltaVerse < VERSES_PER_DAY:
+        //     timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
+        //     day         = 1
+        //     turnInDay   = deltaVerse % 4
+        // elif deltaVerse == VERSES_PER_DAY:
+        //     timeZone    = TZ_NULL
+        //     day         = TZ_NULL
+        //     turnInDay   = TZ_NULL
+        // else:
+        //     timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
+        //     day         = 1 + (deltaVerse - 1) // VERSES_PER_DAY
+        //     turnInDay   = (deltaVerse - 1) % 4
+        // return timeZone, day, posInZone
     }
     
     function setCurrentVerseSeed(bytes32 seed) public {
