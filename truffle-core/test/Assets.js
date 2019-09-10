@@ -4,6 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const timeTravel = require('../utils/TimeTravel.js');
 
 const Assets = artifacts.require('Assets');
 
@@ -22,7 +23,10 @@ contract('Assets', (accounts) => {
     const N_SKILLS = 5;
     const VERSES_PER_DAY = 96;
     const VERSES_PER_ROUND = 96*16;
-
+    const jsonrpc = '2.0'
+    const testrpc = ''
+    const id = 0
+   
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         encoding = assets;
@@ -62,47 +66,75 @@ contract('Assets', (accounts) => {
     //     timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
     // });
 
-    it('timeZoneToUpdate selected edge choices', async () =>  {
-        result = await assets._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(1)
-        result.day.toNumber().should.be.equal(1);
-        result.turnInDay.toNumber().should.be.equal(0);
-        result = await assets._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(3);
-        result.day.toNumber().should.be.equal(1);
-        result.turnInDay.toNumber().should.be.equal(3);
-        result = await assets._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(0);
-        result = await assets._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(24);
-        result.day.toNumber().should.be.equal(2);
-        result.turnInDay.toNumber().should.be.equal(0);
-        result = await assets._timeZoneToUpdatePure.call(verse = 1535, TZ1 = 24).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(23);
-        result.day.toNumber().should.be.equal(16);
-        result.turnInDay.toNumber().should.be.equal(2);
+    it('update timezone too early', async () =>  {
+        await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
-    it('timeZoneToUpdate exhaustive', async () =>  {
-        TZ1 = 3;
-        // for day 1
-        for (verse = 0; verse < VERSES_PER_DAY; verse+=5){
-            result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
-            result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor(verse / 4))%24)
-            result.day.toNumber().should.be.equal(1);
-            result.turnInDay.toNumber().should.be.equal(verse % 4)
-        } 
-        // there is an empty spot at the end of day 1
-        result = await assets._timeZoneToUpdatePure(VERSES_PER_DAY, TZ1).should.be.fulfilled;
-        result.timeZone.toNumber().should.be.equal(0)
-        // beyond day 1
-        for (verse = VERSES_PER_DAY + 1; verse < VERSES_PER_ROUND; verse+=7){
-            result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
-            result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor((verse-1) / 4))%24);
-            result.day.toNumber().should.be.equal(1 + Math.floor((verse - 1) / VERSES_PER_DAY));
-            result.turnInDay.toNumber().should.be.equal( (verse-1) % 4);
-        } 
+    it('wait some minutes', async () =>  {
+        now = await assets.getNow().should.be.fulfilled;
+        console.log(now.toNumber())
+        current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        console.log(current)
+        await timeTravel.advanceTime(50).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        now = await assets.getNow().should.be.fulfilled;
+        console.log(now.toNumber())
+        current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        console.log(current)
     });
+
+
+    // it('update timezone', async () =>  {
+    //     // seed0 = assets.getCurrentVerseSeed().should.be.fulfilled;
+    //     // await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+    //     // seed1 = assets.getCurrentVerseSeed().should.be.fulfilled;
+    //     // seed1.should.not.be.equal(seed0);
+    //     // result.timeZone.toNumber().should.be.equal(1)
+    //     // result.day.toNumber().should.be.equal(1);
+
+    // });
+    
+    // it('timeZoneToUpdate selected edge choices', async () =>  {
+    //     result = await assets._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(1)
+    //     result.day.toNumber().should.be.equal(1);
+    //     result.turnInDay.toNumber().should.be.equal(0);
+    //     result = await assets._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(3);
+    //     result.day.toNumber().should.be.equal(1);
+    //     result.turnInDay.toNumber().should.be.equal(3);
+    //     result = await assets._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(0);
+    //     result = await assets._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(24);
+    //     result.day.toNumber().should.be.equal(2);
+    //     result.turnInDay.toNumber().should.be.equal(0);
+    //     result = await assets._timeZoneToUpdatePure.call(verse = 1535, TZ1 = 24).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(23);
+    //     result.day.toNumber().should.be.equal(16);
+    //     result.turnInDay.toNumber().should.be.equal(2);
+    // });
+
+    // it('timeZoneToUpdate exhaustive', async () =>  {
+    //     TZ1 = 3;
+    //     // for day 1
+    //     for (verse = 0; verse < VERSES_PER_DAY; verse+=5){
+    //         result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
+    //         result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor(verse / 4))%24)
+    //         result.day.toNumber().should.be.equal(1);
+    //         result.turnInDay.toNumber().should.be.equal(verse % 4)
+    //     } 
+    //     // there is an empty spot at the end of day 1
+    //     result = await assets._timeZoneToUpdatePure(VERSES_PER_DAY, TZ1).should.be.fulfilled;
+    //     result.timeZone.toNumber().should.be.equal(0)
+    //     // beyond day 1
+    //     for (verse = VERSES_PER_DAY + 1; verse < VERSES_PER_ROUND; verse+=7){
+    //         result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
+    //         result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor((verse-1) / 4))%24);
+    //         result.day.toNumber().should.be.equal(1 + Math.floor((verse - 1) / VERSES_PER_DAY));
+    //         result.turnInDay.toNumber().should.be.equal( (verse-1) % 4);
+    //     } 
+    // });
 
 
     return;
