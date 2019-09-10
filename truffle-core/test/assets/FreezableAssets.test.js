@@ -236,6 +236,9 @@ contract("FreezableAssets", accounts => {
 
     const oneShotMsg = await verifierLib.hashPutForSaleMsg(currencyId, price, rnd, validUntil, playerId, typeOfTX).should.be.fulfilled;
     oneShotMsg.should.be.equal(sigSeller.messageHash);
+
+    const buyerMsg = await verifierLib.hashAgreeToBuyMsg(oneShotMsg, team = 4).should.be.fulfilled;
+    buyerMsg.should.be.equal('0x99816c9f205d050b8e31a6a1e7071ed923711ec50760460e040f2ee5dc788c57');
   })
 
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
