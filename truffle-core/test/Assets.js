@@ -46,10 +46,25 @@ contract('Assets', (accounts) => {
 
     it('check BC has the correct time', async () =>  {
         SEPT2019.should.be.equal(1567296000)
-        var date3 = new Date(year = 2019, month = 8, date = 1, hours = 2, mins = 0, secs = 0, ms = 0)
-        // console.log("UTC:  year =", date3.getUTCFullYear(), " month = ", date3.getUTCMonth(), " date = ", date3.getUTCDate(), " hour = ", date3.getUTCHours(), "min = ", date3.getUTCMinutes(), " secs = ", date3.getUTCSeconds())
-        // console.log("Unx:  year =", date3.getFullYear(), " month = ", date3.getMonth(), " date = ", date3.getDate(), " hour = ", date3.getHours(), "min = ", date3.getMinutes(), " secs = ", date3.getSeconds())
-        date3.getTime().should.be.equal(SEPT2019 * 1000)
+        date = new Date(year = 2019, month = 8, date = 1, hours = 2, mins = 0, secs = 0, ms = 0)
+        // console.log("UTC:  year =", date.getUTCFullYear(), " month = ", date.getUTCMonth(), " date = ", date.getUTCDate(), " hour = ", date.getUTCHours(), "min = ", date.getUTCMinutes(), " secs = ", date.getUTCSeconds())
+        // console.log("Unx:  year =", date.getFullYear(), " month = ", date.getMonth(), " date = ", date.getDate(), " hour = ", date.getHours(), "min = ", date.getMinutes(), " secs = ", date.getSeconds())
+        date.getTime().should.be.equal(SEPT2019 * 1000)
+        date.getUTCDate().should.be.equal(1)
+        date.getUTCHours().should.be.equal(0)
+        date.getUTCMinutes().should.be.equal(0)
+        date.getUTCSeconds().should.be.equal(0)
+        lastVerseTimeStamp = await assets.lastVerseTimestamp().should.be.fulfilled;
+        verse = new Date(lastVerseTimeStamp.toNumber() * 1000)
+        now = new Date()
+        verse.getUTCFullYear().should.be.equal(verse.getUTCFullYear())
+        verse.getUTCMonth().should.be.equal(verse.getUTCMonth())
+        verse.getUTCDate().should.be.equal(verse.getUTCDate())
+        verse.getUTCHours().should.be.equal(verse.getUTCHours())
+        verse.getUTCMinutes().should.be.equal(0)
+        verse.getUTCSeconds().should.be.equal(0)
+        // console.log("UTC:  year =", verse.getUTCFullYear(), " month = ", verse.getUTCMonth(), " verse = ", verse.getUTCDate(), " hour = ", verse.getUTCHours(), "min = ", verse.getUTCMinutes(), " secs = ", verse.getUTCSeconds())
+        // console.log("UTC:  year =", now.getUTCFullYear(), " month = ", now.getUTCMonth(), " now = ", now.getUTCDate(), " hour = ", now.getUTCHours(), "min = ", now.getUTCMinutes(), " secs = ", now.getUTCSeconds())
     });
     
     it('check initial and max number of players per team', async () =>  {

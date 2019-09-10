@@ -49,7 +49,8 @@ contract Assets is Encoding {
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
-    uint256 constant public SEPT2019 = 1567296000;
+    uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
+    uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     address constant public NULL_ADDR = address(0);
     
     mapping(uint256 => uint256) private _playerIdToState;
@@ -59,11 +60,14 @@ contract Assets is Encoding {
     uint256 public gameDeployMonth;
     bytes32 private _currentVerseSeed;
     bool private _needsInit = true;
+    uint256 public lastVerseTimestamp;
     
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
         setCurrentVerseSeed(blockhash(block.number-1)); 
         gameDeployMonth = secsToMonths(now);
+        uint256 hoursAfterSept19 = (now - SEPT2019) / 3600;
+        lastVerseTimestamp = SEPT2019 + hoursAfterSept19 * 3600;
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
