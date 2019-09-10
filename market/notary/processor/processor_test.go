@@ -65,7 +65,7 @@ func TestProcess(t *testing.T) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
 	}
 	sto.CreateSellOrder(storage.SellOrder{
-		PlayerId:   1,
+		PlayerId:   big.NewInt(1),
 		Price:      100,
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),

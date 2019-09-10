@@ -20,7 +20,7 @@ func TestGetSellOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 	err = sto.CreateSellOrder(storage.SellOrder{
-		PlayerId:   1,
+		PlayerId:   big.NewInt(1),
 		Price:      100,
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
@@ -36,7 +36,7 @@ func TestGetSellOrders(t *testing.T) {
 	if len(result) != 1 {
 		t.Fatalf("Expected 1 got %v", len(result))
 	}
-	err = sto.DeleteSellOrder(1)
+	err = sto.DeleteSellOrder(big.NewInt(1))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -32,7 +32,7 @@ func (b *Processor) Process() error {
 
 	for _, order := range orders {
 		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
-		playerId := big.NewInt(int64(order.SellOrder.PlayerId))
+		playerId := order.SellOrder.PlayerId
 		teamId := big.NewInt(int64(order.BuyOrder.TeamId))
 		_, err = b.assets.TransferPlayer(bind.NewKeyedTransactor(b.freeverse), playerId, teamId)
 		if err != nil {
