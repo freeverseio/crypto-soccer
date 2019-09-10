@@ -4,6 +4,7 @@ CREATE TABLE player_sell_orders (
     rnd NUMERIC(78,0) NOT NULL,
     validUntil NUMERIC(78,0) NOT NULL,
     typeOfTx INT NOT NULL,
+    signature TEXT NOT NULL,
     PRIMARY KEY(playerId)
 );
 

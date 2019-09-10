@@ -13,16 +13,18 @@ type SellOrder struct {
 	Rnd        *big.Int
 	ValidUntil *big.Int
 	TypeOfTx   int8
+	Signature  string
 }
 
 func (b *Storage) CreateSellOrder(order SellOrder) error {
 	log.Infof("[DBMS] + create sell order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price, rnd, validUntil, typeOfTx) VALUES ($1, $2, $3, $4, $5);",
+	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price, rnd, validUntil, typeOfTx, signature) VALUES ($1, $2, $3, $4, $5, $6);",
 		order.PlayerId.String(),
 		order.Price,
 		order.Rnd.String(),
 		order.ValidUntil.String(),
 		order.TypeOfTx,
+		order.Signature,
 	)
 	return err
 }
