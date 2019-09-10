@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
@@ -19,7 +20,10 @@ func TestGetBuyOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBuyOrder(storage.BuyOrder{1, 2})
+	err = sto.CreateBuyOrder(storage.BuyOrder{
+		PlayerId: big.NewInt(1),
+		TeamId:   big.NewInt(2),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +35,7 @@ func TestGetBuyOrders(t *testing.T) {
 		t.Fatalf("Expected 1 got %v", len(result))
 	}
 
-	err = sto.DeleteBuyOrder(1)
+	err = sto.DeleteBuyOrder(big.NewInt(1))
 	if err != nil {
 		t.Fatal(err)
 	}

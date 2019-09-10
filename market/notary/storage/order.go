@@ -35,7 +35,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 
 func (b *Storage) findBuyOrder(orders []BuyOrder, playerId *big.Int) *BuyOrder {
 	for _, order := range orders {
-		if order.PlayerId == playerId.Uint64() {
+		if order.PlayerId.Cmp(playerId) == 0 {
 			return &order
 		}
 	}
@@ -44,7 +44,7 @@ func (b *Storage) findBuyOrder(orders []BuyOrder, playerId *big.Int) *BuyOrder {
 
 func (b *Storage) DeleteOrder(playerId *big.Int) error {
 	log.Infof("[DBMS] - delete order %v", playerId)
-	err := b.DeleteBuyOrder(playerId.Uint64())
+	err := b.DeleteBuyOrder(playerId)
 	if err != nil {
 		return err
 	}
