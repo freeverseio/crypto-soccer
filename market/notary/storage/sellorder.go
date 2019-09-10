@@ -1,17 +1,27 @@
 package storage
 
-import log "github.com/sirupsen/logrus"
+import (
+	"math/big"
+
+	log "github.com/sirupsen/logrus"
+)
 
 type SellOrder struct {
-	PlayerId uint64
-	Price    uint64
+	PlayerId   uint64
+	Price      uint64
+	Rnd        *big.Int
+	ValidUntil *big.Int
+	TypeOfTx   int8
 }
 
 func (b *Storage) CreateSellOrder(order SellOrder) error {
 	log.Infof("[DBMS] + create sell order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price) VALUES ($1, $2);",
+	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price, rnd, validUntil, typeOfTx) VALUES ($1, $2, $3, $4, $5);",
 		order.PlayerId,
 		order.Price,
+		order.Rnd.String(),
+		order.ValidUntil.String(),
+		order.TypeOfTx,
 	)
 	return err
 }

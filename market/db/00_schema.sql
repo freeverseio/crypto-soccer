@@ -1,6 +1,9 @@
 CREATE TABLE player_sell_orders (
-    playerId BIGINT NOT NULL,
+    playerId NUMERIC(78, 0) NOT NULL,
     price INT NOT NULL,
+    rnd NUMERIC(78,0) NOT NULL,
+    validUntil NUMERIC(78,0) NOT NULL,
+    typeOfTx INT NOT NULL,
     PRIMARY KEY(playerId)
 );
 
