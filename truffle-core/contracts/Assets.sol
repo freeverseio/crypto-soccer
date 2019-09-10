@@ -49,6 +49,7 @@ contract Assets is Encoding {
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
+    uint256 constant public SEPT2019 = 1567296000;
     address constant public NULL_ADDR = address(0);
     
     mapping(uint256 => uint256) private _playerIdToState;

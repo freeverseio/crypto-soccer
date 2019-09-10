@@ -15,6 +15,7 @@ contract('Assets', (accounts) => {
     let LEAGUES_PER_DIV = null;
     let TEAMS_PER_LEAGUE = null;
     let FREE_PLAYER_ID = null;
+    let SEPT2019 = null;
     let NULL_ADDR = null;
     const ALICE = accounts[1];
     const BOB = accounts[2];
@@ -29,16 +30,26 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
         TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
+        SEPT2019 = await assets.SEPT2019().should.be.fulfilled;
         FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
         NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        SEPT2019 = SEPT2019.toNumber();
         });
 
     it('check cannot initialize contract twice', async () =>  {
         await assets.init().should.be.rejected;
+    });
+
+    it('check BC has the correct time', async () =>  {
+        SEPT2019.should.be.equal(1567296000)
+        var date3 = new Date(year = 2019, month = 8, date = 1, hours = 2, mins = 0, secs = 0, ms = 0)
+        // console.log("UTC:  year =", date3.getUTCFullYear(), " month = ", date3.getUTCMonth(), " date = ", date3.getUTCDate(), " hour = ", date3.getUTCHours(), "min = ", date3.getUTCMinutes(), " secs = ", date3.getUTCSeconds())
+        // console.log("Unx:  year =", date3.getFullYear(), " month = ", date3.getMonth(), " date = ", date3.getDate(), " hour = ", date3.getHours(), "min = ", date3.getMinutes(), " secs = ", date3.getSeconds())
+        date3.getTime().should.be.equal(SEPT2019 * 1000)
     });
     
     it('check initial and max number of players per team', async () =>  {
