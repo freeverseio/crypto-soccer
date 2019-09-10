@@ -37,6 +37,10 @@ contract('Assets', (accounts) => {
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         });
 
+    it('check cannot initialize contract twice', async () =>  {
+        await assets.init().should.be.rejected;
+    });
+    
     it('check initial and max number of players per team', async () =>  {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
