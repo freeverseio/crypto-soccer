@@ -26,8 +26,8 @@ contract Assets is Encoding {
     struct TimeZone {
         Country[] countries;
         uint8 nCountriesToAdd;
-        uint256[2] orgMapHash;
-        uint256[2] skillsHash;
+        bytes32[2] orgMapHash;
+        bytes32[2] skillsHash;
         uint8 newestOrgMapIdx;
         uint8 newestSkillsIdx;
         uint256 scoresRoot;
@@ -52,6 +52,7 @@ contract Assets is Encoding {
     uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     address constant public NULL_ADDR = address(0);
+    bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
     
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -79,6 +80,7 @@ contract Assets is Encoding {
         country.nDivisions = 1;
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1; 
+        _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH; 
     }
     
     function setCurrentVerseSeed(bytes32 seed) public {
