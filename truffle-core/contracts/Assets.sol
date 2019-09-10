@@ -57,13 +57,16 @@ contract Assets is Encoding {
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
     bytes32 private _currentVerseSeed;
-
+    bool private _needsInit = true;
+    
     function init() public {
-         setCurrentVerseSeed(blockhash(block.number-1)); 
-         gameDeployMonth = secsToMonths(now);
+        require(_needsInit == true, "cannot initialize twice");
+        setCurrentVerseSeed(blockhash(block.number-1)); 
+        gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
+        _needsInit = false;
     }
 
     function _initTimeZone(uint8 tz) private {
