@@ -72,15 +72,19 @@ contract('Assets', (accounts) => {
 
     it('wait some minutes', async () =>  {
         now = await assets.getNow().should.be.fulfilled;
-        console.log(now.toNumber())
-        current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        console.log(current)
-        await timeTravel.advanceTime(50).should.be.fulfilled;
+        block = await web3.eth.getBlockNumber().should.be.fulfilled;
+        // console.log(now.toNumber())
+        // console.log(current)
+        extraTime = 3*60
+        await timeTravel.advanceTime(extraTime).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
-        now = await assets.getNow().should.be.fulfilled;
-        console.log(now.toNumber())
-        current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        console.log(current)
+        newNow = await assets.getNow().should.be.fulfilled;
+        newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
+        // console.log(now.toNumber())
+        // current = await web3.eth.getBlockNumber().should.be.fulfilled;
+        // console.log(current)
+        newBlock.should.be.equal(block+1);
+        newNow.toNumber().should.be.equal(now.toNumber()+extraTime);
     });
 
 
