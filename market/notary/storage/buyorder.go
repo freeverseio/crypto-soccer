@@ -4,15 +4,13 @@ import log "github.com/sirupsen/logrus"
 
 type BuyOrder struct {
 	PlayerId uint64
-	Price    uint64
 	TeamId   uint64
 }
 
 func (b *Storage) CreateBuyOrder(order BuyOrder) error {
 	log.Infof("[DBMS] + create buy order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_buy_orders (playerId, price, teamId) VALUES ($1, $2, $3);",
+	_, err := b.db.Exec("INSERT INTO player_buy_orders (playerId, teamId) VALUES ($1, $2);",
 		order.PlayerId,
-		order.Price,
 		order.TeamId,
 	)
 	return err
@@ -20,7 +18,7 @@ func (b *Storage) CreateBuyOrder(order BuyOrder) error {
 
 func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
 	var offers []BuyOrder
-	rows, err := b.db.Query("SELECT playerId, price, teamId FROM player_buy_orders;")
+	rows, err := b.db.Query("SELECT playerId, teamId FROM player_buy_orders;")
 	if err != nil {
 		return offers, err
 	}
@@ -29,7 +27,6 @@ func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
 		var offer BuyOrder
 		err = rows.Scan(
 			&offer.PlayerId,
-			&offer.Price,
 			&offer.TeamId,
 		)
 		if err != nil {

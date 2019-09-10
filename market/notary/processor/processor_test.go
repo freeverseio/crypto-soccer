@@ -77,7 +77,7 @@ func TestProcess(t *testing.T) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
 	}
 
-	sto.CreateBuyOrder(storage.BuyOrder{1, 100, 2})
+	sto.CreateBuyOrder(storage.BuyOrder{1, 2})
 	processor.Process()
 	targetOwner = ganache.GetPlayerOwner(player)
 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {

@@ -9,8 +9,7 @@ CREATE TABLE player_sell_orders (
 );
 
 CREATE TABLE player_buy_orders (
-    playerId BIGINT NOT NULL REFERENCES player_sell_orders(playerId),
-    price INT NOT NULL,
-    teamId BIGINT NOT NULL,
+    playerId NUMERIC(78,0) NOT NULL REFERENCES player_sell_orders(playerId),
+    teamId NUMERIC(78,0) NOT NULL,
     PRIMARY KEY(playerId)
 )
