@@ -234,11 +234,12 @@ contract("FreezableAssets", accounts => {
     sigSeller.messageHash.should.be.equal('0x3f6c78029ebde952d76a5b4ffe415d074eb256156d0f0b44045057e809add696');
     sigSeller.signature.should.be.equal('0xbd7b906b16bfab0ac6007bb4699e82324e89f6d9f6a0e8476cb66bcf0c6dc013650c1667574a3821d7a2681b0b68e8615eeae4d05061ce54f94dce2f1ba8f3351b');
 
-    const oneShotMsg = await verifierLib.hashPutForSaleMsg(currencyId, price, rnd, validUntil, playerId, typeOfTX).should.be.fulfilled;
-    oneShotMsg.should.be.equal(sigSeller.messageHash);
+    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(message, team = 4).should.be.fulfilled;
+    buyerMsg.should.be.equal('0xff8e60ad622b9a3cf8a65beeff3dd1a7f20a8fd4db12550a9cccd4e21d772b52');
 
-    const buyerMsg = await verifierLib.hashAgreeToBuyMsg(oneShotMsg, team = 4).should.be.fulfilled;
-    buyerMsg.should.be.equal('0x99816c9f205d050b8e31a6a1e7071ed923711ec50760460e040f2ee5dc788c57');
+    const sigBuyer = sellerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0x8a6d75a55ca8bd29131756ddc9f7810c52989d42649bfb363ac12d058be360bc');
+    sigBuyer.signature.should.be.equal('0xad32250c5fdebe7a282e431c86c72e555b14e3f2d138663cec2acf0b334a4fb061041c275cb28d51d2b88a92ea11b6ea54d71aabfbe22ea591511735794762521b');
   })
 
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
