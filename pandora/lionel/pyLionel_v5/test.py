@@ -76,6 +76,8 @@ def integrationTest():
     assert val1 == 1 and val2 == 3
     (tz, val1, val2) = ST.decodeZoneCountryAndVal(ST.encodeZoneCountryAndVal(timeZone, 500, 343))
     assert val1 == 500 and val2 == 343
+    (tz, val1, val2) = ST.decodeZoneCountryAndVal(ST.encodeZoneCountryAndVal(0, 0, 0))
+    encoded = ST.encodeZoneCountryAndVal(0, 0, 0)
 
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(1) == 0, "wrong getTeamIdx"
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(17) == 0, "wrong getTeamIdx"

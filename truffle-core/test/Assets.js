@@ -20,6 +20,8 @@ contract('Assets', (accounts) => {
     const BOB = accounts[2];
     const CAROL = accounts[3];
     const N_SKILLS = 5;
+    const VERSES_PER_DAY = 96;
+    const VERSES_PER_ROUND = 96*16;
 
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
@@ -41,34 +43,77 @@ contract('Assets', (accounts) => {
         await assets.init().should.be.rejected;
     });
 
-    it('check BC has the correct time', async () =>  {
-        nextVerseTimestamp = await assets.nextVerseTimestamp().should.be.fulfilled;
-        timeZoneForRound1 = await assets.timeZoneForRound1().should.be.fulfilled;
-        nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
-        now = new Date()
-        if (now.getUTCMinutes() < 42) {
-            expectedHour = now.getUTCHours();
-        } else {
-            expectedHour = now.getUTCHours() + 1;
-        }
-        nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
-        nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
-        nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
-        nextVerse.getUTCHours().should.be.equal(expectedHour)
-        nextVerse.getUTCMinutes().should.be.equal(45)
-        nextVerse.getUTCSeconds().should.be.equal(0)
-        timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
-        nowBC = await assets.getNow().should.be.fulfilled;
-        nowBC2 = new Date(nowBC.toNumber() * 1000)
+    // it('check BC has the correct time', async () =>  {
+    //     nextVerseTimestamp = await assets.nextVerseTimestamp().should.be.fulfilled;
+    //     timeZoneForRound1 = await assets.timeZoneForRound1().should.be.fulfilled;
+    //     nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
+    //     now = new Date()
+    //     if (now.getUTCMinutes() < 42) {
+    //         expectedHour = now.getUTCHours();
+    //     } else {
+    //         expectedHour = now.getUTCHours() + 1;
+    //     }
+    //     nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
+    //     nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
+    //     nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
+    //     nextVerse.getUTCHours().should.be.equal(expectedHour)
+    //     nextVerse.getUTCMinutes().should.be.equal(45)
+    //     nextVerse.getUTCSeconds().should.be.equal(0)
+    //     timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
+    // });
+
+    it('timeZoneToUpdate selected edge choices', async () =>  {
+        result = await assets._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(1)
+        result.day.toNumber().should.be.equal(1);
+        result.turnInDay.toNumber().should.be.equal(0);
+        result = await assets._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(3);
+        result.day.toNumber().should.be.equal(1);
+        result.turnInDay.toNumber().should.be.equal(3);
+        result = await assets._timeZoneToUpdatePure.call(verse = 96, TZ1 = 2).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(0);
+        result = await assets._timeZoneToUpdatePure.call(verse = 97, TZ1 = 24).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(24);
+        result.day.toNumber().should.be.equal(2);
+        result.turnInDay.toNumber().should.be.equal(0);
+        result = await assets._timeZoneToUpdatePure.call(verse = 1535, TZ1 = 24).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(23);
+        result.day.toNumber().should.be.equal(16);
+        result.turnInDay.toNumber().should.be.equal(2);
     });
-    
+
+    it('timeZoneToUpdate exhaustive', async () =>  {
+        TZ1 = 3;
+        // for day 1
+        for (verse = 0; verse < VERSES_PER_DAY; verse+=5){
+            result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
+            result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor(verse / 4))%24)
+            result.day.toNumber().should.be.equal(1);
+            result.turnInDay.toNumber().should.be.equal(verse % 4)
+        } 
+        // there is an empty spot at the end of day 1
+        result = await assets._timeZoneToUpdatePure(VERSES_PER_DAY, TZ1).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(0)
+        // beyond day 1
+        for (verse = VERSES_PER_DAY + 1; verse < VERSES_PER_ROUND; verse+=7){
+            result = await assets._timeZoneToUpdatePure.call(verse, TZ1).should.be.fulfilled;
+            result.timeZone.toNumber().should.be.equal(1+(TZ1 - 1 + Math.floor((verse-1) / 4))%24);
+            result.day.toNumber().should.be.equal(1 + Math.floor((verse - 1) / VERSES_PER_DAY));
+            result.turnInDay.toNumber().should.be.equal( (verse-1) % 4);
+        } 
+    });
+
+
+    return;
+
     it('check initial and max number of players per team', async () =>  {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);
         LEAGUES_PER_DIV.should.be.equal(16);
         TEAMS_PER_LEAGUE.should.be.equal(8);
     });
-return;
+
     it('check initial setup of timeZones', async () =>  {
         nCountries = await assets.getNCountriesInTZ(0).should.be.rejected;
         nCountries = await assets.getNCountriesInTZ(25).should.be.rejected;

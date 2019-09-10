@@ -55,6 +55,7 @@ contract Assets is Encoding {
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
     uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
+    uint8 constant NULL_TIMEZONE = 0;
     
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -109,32 +110,27 @@ contract Assets is Encoding {
     // turnInDay = 0, 1, 2, 3
     // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
     // from these, all map easily to timeZones
-    function timeZoneToUpdate(uint256 verse) public view returns (uint256 timeZone, uint8 day, uint8 turnInDay) {
-        // if currentVerse = 0, we should be updating timeZoneForRound1
-        // // recall that timeZones range from 1...24 (not from 0...24)
-        // uint16 verseInRound = uint16(verse % 96)
-        // if (verseInRound < (VERSES_PER_DAY - 1)) {
-        //     timeZone = 1 + ((timeZoneForRound1-1) + (verseInRound / 4)) % 24;
-        //     day = 1;
-        //     turnInDay = verseInRound % 4;
-        // } else {
-            
-        // }
-        // deltaVerse = ( verse - self.verseForRound1 ) % VERSES_PER_ROUND
-        // if deltaVerse < VERSES_PER_DAY:
-        //     timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
-        //     day         = 1
-        //     turnInDay   = deltaVerse % 4
-        // elif deltaVerse == VERSES_PER_DAY:
-        //     timeZone    = TZ_NULL
-        //     day         = TZ_NULL
-        //     turnInDay   = TZ_NULL
-        // else:
-        //     timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
-        //     day         = 1 + (deltaVerse - 1) // VERSES_PER_DAY
-        //     turnInDay   = (deltaVerse - 1) % 4
-        // return timeZone, day, posInZone
+    function timeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+        return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
     }
+
+    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+        // if currentVerse = 0, we should be updating timeZoneForRound1
+        // recall that timeZones range from 1...24 (not from 0...24)
+        uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
+        if (verseInRound < VERSES_PER_DAY) {
+            timeZone = 1 + uint8((TZForRound1 - 1 + (verseInRound / 4))% 24);
+            day = 1;
+            turnInDay = uint8(verseInRound % 4);
+        } else if (verseInRound == VERSES_PER_DAY) {
+            timeZone = NULL_TIMEZONE;
+        } else {
+            timeZone = 1 + uint8((TZForRound1 - 1 + ((verseInRound - 1) / 4))% 24);
+            day = 1 + uint8((verseInRound - 1) / VERSES_PER_DAY);
+            turnInDay = uint8((verseInRound - 1) % 4);
+        }
+    }
+
     
     function setCurrentVerseSeed(bytes32 seed) public {
         _currentVerseSeed = seed;
