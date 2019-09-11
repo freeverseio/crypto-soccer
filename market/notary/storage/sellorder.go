@@ -9,6 +9,7 @@ import (
 
 type SellOrder struct {
 	PlayerId   *big.Int
+	CurrencyId uint8
 	Price      uint64
 	Rnd        *big.Int
 	ValidUntil *big.Int
@@ -18,8 +19,9 @@ type SellOrder struct {
 
 func (b *Storage) CreateSellOrder(order SellOrder) error {
 	log.Infof("[DBMS] + create sell order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, price, rnd, validUntil, typeOfTx, signature) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, currencyId, price, rnd, validUntil, typeOfTx, signature) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		order.PlayerId.String(),
+		order.CurrencyId,
 		order.Price,
 		order.Rnd.String(),
 		order.ValidUntil.String(),

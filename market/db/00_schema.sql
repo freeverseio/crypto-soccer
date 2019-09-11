@@ -1,5 +1,6 @@
 CREATE TABLE player_sell_orders (
     playerId NUMERIC(78, 0) NOT NULL,
+    currencyId INT NOT NULL,
     price INT NOT NULL,
     rnd NUMERIC(78,0) NOT NULL,
     validUntil NUMERIC(78,0) NOT NULL,
