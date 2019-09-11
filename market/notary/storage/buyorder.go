@@ -8,22 +8,24 @@ import (
 )
 
 type BuyOrder struct {
-	PlayerId *big.Int
-	TeamId   *big.Int
+	PlayerId  *big.Int
+	TeamId    *big.Int
+	Signature string
 }
 
 func (b *Storage) CreateBuyOrder(order BuyOrder) error {
 	log.Infof("[DBMS] + create buy order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_buy_orders (playerId, teamId) VALUES ($1, $2);",
+	_, err := b.db.Exec("INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES ($1, $2, $3);",
 		order.PlayerId.String(),
 		order.TeamId.String(),
+		order.Signature,
 	)
 	return err
 }
 
 func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
 	var offers []BuyOrder
-	rows, err := b.db.Query("SELECT playerId, teamId FROM player_buy_orders;")
+	rows, err := b.db.Query("SELECT playerId, teamId, signature FROM player_buy_orders;")
 	if err != nil {
 		return offers, err
 	}
@@ -35,6 +37,7 @@ func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
 		err = rows.Scan(
 			&playerId,
 			&teamId,
+			&offer.Signature,
 		)
 		if err != nil {
 			return offers, err

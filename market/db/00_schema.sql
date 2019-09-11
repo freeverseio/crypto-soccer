@@ -11,5 +11,6 @@ CREATE TABLE player_sell_orders (
 CREATE TABLE player_buy_orders (
     playerId NUMERIC(78,0) NOT NULL REFERENCES player_sell_orders(playerId),
     teamId NUMERIC(78,0) NOT NULL,
+    signature TEXT NOT NULL,
     PRIMARY KEY(playerId)
 )
