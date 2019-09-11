@@ -15,9 +15,13 @@
     "express": "^4.17.1",
     "graphile-utils": "^4.4.4",
     "postgraphile": "^4.4.3",
-    "web3": "^1.2.1"
+    "web3": "^1.2.1",
+    "web3-eth-accounts": "^1.2.1"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bn": "^0.1.1",
     "mocha": "^6.2.0"
   }
 }

@@ -67,6 +67,7 @@ jobs:
     steps:
       - checkout
       - run: cd market/trader && npm install
+      - run: cd market/trader && npm test
   django-centauri:
     docker:
       - image: freeverseio/circleci

@@ -1,6 +1,10 @@
 package storage
 
-import log "github.com/sirupsen/logrus"
+import (
+	"math/big"
+
+	log "github.com/sirupsen/logrus"
+)
 
 type Order struct {
 	SellOrder SellOrder
@@ -9,29 +13,36 @@ type Order struct {
 
 func (b *Storage) GetOrders() ([]Order, error) {
 	var orders []Order
-	rows, err := b.db.Query("SELECT player_sell_orders.playerId, player_sell_orders.price, player_buy_orders.playerId, player_buy_orders.price, player_buy_orders.teamId FROM player_sell_orders INNER JOIN player_buy_orders ON player_sell_orders.playerId = player_buy_orders.playerId;")
+	sellOrders, err := b.GetSellOrders()
 	if err != nil {
 		return orders, err
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var order Order
-		err = rows.Scan(
-			&order.SellOrder.PlayerId,
-			&order.SellOrder.Price,
-			&order.BuyOrder.PlayerId,
-			&order.BuyOrder.Price,
-			&order.BuyOrder.TeamId,
-		)
-		if err != nil {
-			return orders, err
+	buyOrders, err := b.GetBuyOrders()
+	if err != nil {
+		return orders, err
+	}
+	for _, sellOrder := range sellOrders {
+		buyOrder := b.findBuyOrder(buyOrders, sellOrder.PlayerId)
+		if buyOrder != nil {
+			orders = append(orders, Order{
+				SellOrder: sellOrder,
+				BuyOrder:  *buyOrder,
+			})
 		}
-		orders = append(orders, order)
 	}
 	return orders, nil
 }
 
-func (b *Storage) DeleteOrder(playerId uint64) error {
+func (b *Storage) findBuyOrder(orders []BuyOrder, playerId *big.Int) *BuyOrder {
+	for _, order := range orders {
+		if order.PlayerId.Cmp(playerId) == 0 {
+			return &order
+		}
+	}
+	return nil
+}
+
+func (b *Storage) DeleteOrder(playerId *big.Int) error {
 	log.Infof("[DBMS] - delete order %v", playerId)
 	err := b.DeleteBuyOrder(playerId)
 	if err != nil {

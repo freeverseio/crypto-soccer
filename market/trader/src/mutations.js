@@ -7,17 +7,25 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
   return {
     typeDefs: gql`
        extend type Mutation {
-        createPlayerSellOrder(input: PlayerSellOrderInput!): BigInt
-        deletePlayerSellOrder(playerId: BigInt!): BigInt
-        createPlayerBuyOrder(input: PlayerBuyOrderInput!): BigInt
-        deletePlayerBuyOrder(playerId: BigInt!): BigInt
+        createPlayerSellOrder(input: PlayerSellOrderInput!): BigFloat
+        deletePlayerSellOrder(playerId: BigFloat!): BigFloat
+        createPlayerBuyOrder(input: PlayerBuyOrderInput!): BigFloat
+        deletePlayerBuyOrder(playerId: BigFloat!): BigFloat
       }
     `,
     resolvers: {
       Mutation: {
         createPlayerSellOrder: async (_, { input }, context) =>  {
-          const { playerid, price } = input;
-          const query = sql.query`INSERT INTO player_sell_orders (playerId, price) VALUES (${sql.value(playerid)}, ${sql.value(price)})`;
+          const { playerid, currencyid, price, rnd, validuntil, typeoftx, signature } = input;
+          const query = sql.query`INSERT INTO player_sell_orders (playerId, currencyId, price, rnd, validUntil, typeOfTx, signature) VALUES (
+            ${sql.value(playerid)}, 
+            ${sql.value(currencyid)}, 
+            ${sql.value(price)},
+            ${sql.value(rnd)},
+            ${sql.value(validuntil)},
+            ${sql.value(typeoftx)},
+            ${sql.value(signature)}
+            )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return playerid;
@@ -29,8 +37,12 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           return playerId;
         },
         createPlayerBuyOrder: async (_, {input}, context) => {
-          const { playerid, price, teamid } = input;
-          const query = sql.query`INSERT INTO player_buy_orders (playerId, price, teamId) VALUES (${sql.value(playerid)}, ${sql.value(price)}, ${sql.value(teamid)})`;
+          const { playerid, teamid, signature } = input;
+          const query = sql.query`INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES (
+            ${sql.value(playerid)}, 
+            ${sql.value(teamid)}, 
+            ${sql.value(signature)}
+            )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return playerid;
