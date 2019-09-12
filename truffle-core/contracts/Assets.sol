@@ -6,7 +6,7 @@ import "./Encoding.sol";
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(bytes32 seed, uint256 submissionTime);
+    event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -34,7 +34,7 @@ contract Assets is Encoding {
         uint256 scoresRoot;
         uint8 updateCycleIdx;
         uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateBlockNum;
+        uint256 lastUpdateTime;
         bytes32 actionsRoot;
         uint256 lastMarketClosureBlockNum;
     }    
@@ -57,6 +57,7 @@ contract Assets is Encoding {
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
     uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
     uint8 constant NULL_TIMEZONE = 0;
+    uint8 constant CHALLENGE_TIME = 60; // in secs
     bool dummy = false;
     
     mapping(uint256 => uint256) private _playerIdToState;
@@ -111,10 +112,11 @@ contract Assets is Encoding {
     function submitActionsRoot(bytes32 actionsRoot) public {
         require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 tz,,) = timeZoneToUpdate();
+        require(now - _timeZones[tz].lastUpdateTime > CHALLENGE_TIME, "last verse is still under challenge period");
         _timeZones[tz].actionsRoot = actionsRoot;
         _timeZones[tz].lastActionsSubmissionTime = block.number;
         setCurrentVerseSeed(blockhash(block.number-1)); 
-        emit ActionsSubmission(blockhash(block.number-1), now);
+        emit ActionsSubmission(tz, blockhash(block.number-1), now);
     }
     
     // each day has 24 hours, each with 4 verses => 96 verses per day.
