@@ -50,7 +50,7 @@ func (b *Processor) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.In
 	return privateHash, err
 }
 
-func (b *Processor) HashBuyerMessage(hashPrivateMessage [32]byte, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
+func (b *Processor) HashSellMessage(hashPrivateMessage [32]byte, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
 	hash, err := b.assets.BuildPutForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
@@ -88,7 +88,7 @@ func (b *Processor) Process() error {
 		rBuyer, sBuyer, vBuyer, err := RSV(order.BuyOrder.Signature)
 		var sigs [6][32]byte
 		var vs [2]uint8
-		sigs[0], err = b.HashBuyerMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
+		sigs[0], err = b.HashSellMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
 		sigs[1] = rSeller
 		sigs[2] = sSeller
 		vs[0] = vSeller
