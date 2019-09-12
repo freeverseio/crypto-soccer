@@ -31,12 +31,40 @@ func (b *Processor) Process() error {
 
 	for _, order := range orders {
 		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
-		playerId := order.SellOrder.PlayerId
-		teamId := order.BuyOrder.TeamId
-		_, err = b.assets.TransferPlayer(bind.NewKeyedTransactor(b.freeverse), playerId, teamId)
+
+		var privHash [32]byte
+		b.assets.HashPrivateMsg(
+			&bind.CallOpts{},
+			order.SellOrder.CurrencyId,
+			order.SellOrder.Price,
+			order.SellOrder.Rnd,
+		)
+		var sigs [6][32]byte
+		var vs [2]uint8
+		_, err = b.assets.FreezePlayer(
+			bind.NewKeyedTransactor(b.freeverse),
+			privHash,
+			order.SellOrder.ValidUntil,
+			order.SellOrder.PlayerId,
+			order.SellOrder.TypeOfTx,
+			order.BuyOrder.TeamId,
+			sigs,
+			vs,
+		)
 		if err != nil {
 			log.Error(err)
 		}
+		_, err = b.assets.CompleteFreeze(
+			bind.NewKeyedTransactor(b.freeverse),
+			order.SellOrder.PlayerId,
+		)
+		if err != nil {
+			log.Error(err)
+		}
+		// _, err = b.assets.TransferPlayer(bind.NewKeyedTransactor(b.freeverse), playerId, teamId)
+		// if err != nil {
+		// 	log.Error(err)
+		// }
 		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
 		if err != nil {
 			log.Error(err)
