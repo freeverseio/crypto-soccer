@@ -87,11 +87,11 @@ contract('Assets', (accounts) => {
     //     newNow.toNumber().should.be.equal(now.toNumber());
     // });
 
-    // it('update timezone too early', async () =>  {
+    // it('updsubmitActions to timezone too early', async () =>  {
     //     await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     // });
 
-    it('update timezone', async () =>  {
+    it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await assets.getCurrentVerseSeed().should.be.fulfilled;
         now = await assets.getNow().should.be.fulfilled;
@@ -112,6 +112,29 @@ contract('Assets', (accounts) => {
             return event.seed == seed1 && event.submissionTime.toNumber() == now.toNumber() && event.timeZone.toNumber() == timeZoneToUpdate[0].toNumber();
         });
         await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+    });
+
+    it('update Timezone', async () =>  {
+        timeZoneToUpdateBefore = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        seed0 = await assets.getCurrentVerseSeed().should.be.fulfilled;
+        now = await assets.getNow().should.be.fulfilled;
+        nextTime = await assets.nextVerseTimestamp().should.be.fulfilled;
+        (nextTime-now > 0).should.be.equal(true);
+        await timeTravel.advanceTime(nextTime-now);
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+        // await timeTravel.advanceTime(1);
+        // await timeTravel.advanceBlock().should.be.fulfilled;
+        // tx = await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys")).should.be.fulfilled;
+        // timeZoneToUpdate = await assets.nextTimeZoneToUpdate().should.be.fulfilled;
+        // timeZoneToUpdate[0].should.be.bignumber.equal(timeZoneToUpdateBefore[0]); // tz to update does not change until an updater updates the verse
+        // seed1 = await assets.getCurrentVerseSeed().should.be.fulfilled;
+        // seed1.should.not.be.equal(seed0);
+        // now = await assets.getNow().should.be.fulfilled;
+        // truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
+        //     return event.seed == seed1 && event.submissionTime.toNumber() == now.toNumber() && event.timeZone.toNumber() == timeZoneToUpdate[0].toNumber();
+        // });
+        // await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
     
     // it('timeZoneToUpdate selected edge choices', async () =>  {

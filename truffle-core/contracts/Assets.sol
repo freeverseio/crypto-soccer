@@ -7,6 +7,7 @@ import "./Encoding.sol";
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);
+    event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -31,7 +32,7 @@ contract Assets is Encoding {
         bytes32[2] skillsHash;
         uint8 newestOrgMapIdx;
         uint8 newestSkillsIdx;
-        uint256 scoresRoot;
+        bytes32 scoresRoot;
         uint8 updateCycleIdx;
         uint256 lastActionsSubmissionTime;
         uint256 lastUpdateTime;
@@ -113,20 +114,35 @@ contract Assets is Encoding {
         require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ,,) = nextTimeZoneToUpdate();
         (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        // make sure the last verse is settled
         if (prevTz != NULL_TIMEZONE) {
-            require(now - _timeZones[prevTz].lastUpdateTime > CHALLENGE_TIME, "last verse is still under challenge period");
+            require(now > _timeZones[prevTz].lastUpdateTime + CHALLENGE_TIME, "last verse is still under challenge period");
         }
+        // if we are precisely at a moment where nothing needs to be done, just move ahead
         if (newTZ == NULL_TIMEZONE) {
             nextVerseTimestamp += SECS_BETWEEN_VERSES;
             emit ActionsSubmission(NULL_TIMEZONE, 0, now);
             return;
         }
-        require(now - _timeZones[newTZ].lastUpdateTime > CHALLENGE_TIME, "new verse is under challenge period");
         _timeZones[newTZ].actionsRoot = actionsRoot;
-        _timeZones[newTZ].lastActionsSubmissionTime = block.number;
+        _timeZones[newTZ].lastActionsSubmissionTime = now;
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
         setCurrentVerseSeed(blockhash(block.number-1)); 
         emit ActionsSubmission(newTZ, blockhash(block.number-1), now);
+    }
+
+    function updateTZ(bytes32 root) public {
+        (uint8 tz,,) = nextTimeZoneToUpdate();
+        require(tz != NULL_TIMEZONE, "nothing to update in the current timeZone");
+        if (_timeZones[tz].lastUpdateTime > _timeZones[tz].lastActionsSubmissionTime) {
+            require(now < _timeZones[tz].lastUpdateTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
+        } else {
+            require(now < _timeZones[tz].lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
+        }
+        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
+        _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
+        _timeZones[tz].lastUpdateTime = now;
+        emit TimeZoneUpdate(tz, root, now);
     }
     
     // each day has 24 hours, each with 4 verses => 96 verses per day.
