@@ -41,6 +41,8 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        snapShot = await timeTravel.takeSnapshot();
+        snapshotId = snapShot['result'];
         });
 
     it('check cannot initialize contract twice', async () =>  {
@@ -73,18 +75,16 @@ contract('Assets', (accounts) => {
     it('wait some minutes', async () =>  {
         now = await assets.getNow().should.be.fulfilled;
         block = await web3.eth.getBlockNumber().should.be.fulfilled;
-        // console.log(now.toNumber())
-        // console.log(current)
         extraTime = 3*60
         await timeTravel.advanceTime(extraTime).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
         newNow = await assets.getNow().should.be.fulfilled;
         newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
-        // console.log(now.toNumber())
-        // current = await web3.eth.getBlockNumber().should.be.fulfilled;
-        // console.log(current)
         newBlock.should.be.equal(block+1);
         newNow.toNumber().should.be.equal(now.toNumber()+extraTime);
+        await timeTravel.revertToSnapShot(snapshotId);
+        newNow = await assets.getNow().should.be.fulfilled;
+        newNow.toNumber().should.be.equal(now.toNumber());
     });
 
 
