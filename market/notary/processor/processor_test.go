@@ -84,7 +84,7 @@ func TestHashPRivateMessage(t *testing.T) {
 	}
 }
 
-func TestBuildPufForSaleMessage(t *testing.T) {
+func TestBuildPutForSaleMessage(t *testing.T) {
 	ganache := testutils.NewGanache()
 	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
 	if err != nil {
@@ -120,6 +120,43 @@ func TestBuildPufForSaleMessage(t *testing.T) {
 	}
 }
 
+func TestHashAgreeToBuyMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTx := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+
+	privHash, err := processor.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, err := processor.HashBuyMessage(
+		privHash,
+		validUntil,
+		playerId,
+		typeOfTx,
+		big.NewInt(2),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
+
 func TestProcess(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
 	if err != nil {
@@ -127,6 +164,7 @@ func TestProcess(t *testing.T) {
 	}
 	ganache := testutils.NewGanache()
 	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bob, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 
 	if err != nil {
 		t.Fatal(err)
@@ -137,7 +175,10 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bob := ganache.Bob
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
 	if err != nil {
@@ -153,6 +194,7 @@ func TestProcess(t *testing.T) {
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
+	teamId := big.NewInt(2)
 
 	originOwner := ganache.GetPlayerOwner(playerId)
 	if originOwner != ganache.Public(alice) {
@@ -175,8 +217,8 @@ func TestProcess(t *testing.T) {
 
 	sto.CreateBuyOrder(storage.BuyOrder{
 		PlayerId:  playerId,
-		TeamId:    big.NewInt(2),
-		Signature: "0xd36c99c9f3077a3b24d4709399f0c034bdc99e56430019ac499f46195645fbd14f742c4cee9c99a10d15177ce322850244572d48d40558728a586711ed90a3af1c",
+		TeamId:    teamId,
+		Signature: "0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b",
 	})
 
 	processor.Process()
