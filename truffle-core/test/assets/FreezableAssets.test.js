@@ -284,15 +284,15 @@ contract("FreezableAssets", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    const sellerAccount = await web3.eth.accounts.create("iamaseller");
-    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
+    const sellerAccount = await web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
     await verifierLib.createTeam("Barca", sellerAccount.address).should.be.fulfilled;
     await verifierLib.createTeam("Madrid", buyerAccount.address).should.be.fulfilled;
 
     // Define params of the seller, and sign
     let now = await verifierLib.getBlockchainNowTime();
-    const validUntil = 2 * now.toNumber();
+    const validUntil = 2000000000;
     const playerId = 10;
     const typeOfTX = 1;
     const currencyId = 1;
@@ -309,6 +309,8 @@ contract("FreezableAssets", accounts => {
       typeOfTX,
       sellerAccount
     );
+
+    sigSeller.signature.should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b');
 
     // First of all, Freeverse and Buyer check the signature
     // In this case, using web3:
@@ -357,6 +359,8 @@ contract("FreezableAssets", accounts => {
       buyerAccount
     ).should.be.fulfilled;
 
+    sigBuyer.signature.should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b');
+
     isFrozen = await verifierLib.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(false);
 
@@ -374,6 +378,14 @@ contract("FreezableAssets", accounts => {
       sigBuyer.s
     ];
     const vs = [sigSeller.v, sigBuyer.v];
+    sigs[0].should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0')
+    sigs[1].should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce')
+    sigs[2].should.be.equal('0x229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400')
+    sigs[3].should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528')
+    sigs[4].should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc2')
+    sigs[5].should.be.equal('0x6951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca')
+    vs[0].should.be.equal('0x1b');
+    vs[1].should.be.equal('0x1b');
     await verifierLib.freezePlayer(
       privHash,
       validUntil,
