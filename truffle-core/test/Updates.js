@@ -13,6 +13,14 @@ contract('Updates', (accounts) => {
     const VERSES_PER_DAY = 96;
     const VERSES_PER_ROUND = 96*16;
    
+    const moveToNextVerse = async (updates, extraSecs = 0) => {
+        now = await updates.getNow().should.be.fulfilled;
+        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
+        await timeTravel.advanceTime(nextTime - now + extraSecs);
+        await timeTravel.advanceBlock().should.be.fulfilled;
+    };
+
+    
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         encoding = assets;
@@ -56,13 +64,13 @@ contract('Updates', (accounts) => {
         newNow = await updates.getNow().should.be.fulfilled;
         newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
         newBlock.should.be.equal(block+1);
-        newNow.toNumber().should.be.equal(now.toNumber()+extraTime);
+        (newNow.toNumber() - now.toNumber() - extraTime < 4).should.be.equal(true); // we should be within 4 secs of (before + exrtaTime)
         await timeTravel.revertToSnapShot(snapshotId);
         newNow = await updates.getNow().should.be.fulfilled;
         newNow.toNumber().should.be.equal(now.toNumber());
     });
 
-    it('updsubmitActions to timezone too early', async () =>  {
+    it('submitActions to timezone too early', async () =>  {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
@@ -92,7 +100,7 @@ contract('Updates', (accounts) => {
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
-    it('update Timezone', async () =>  {
+    it('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
@@ -114,11 +122,39 @@ contract('Updates', (accounts) => {
         submissionTime.should.be.bignumber.equal(now);        
     });
 
-    return;
-    
+    it('moveToNextVerse', async () =>  {
+        now = await updates.getNow().should.be.fulfilled;
+        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
+        (nextTime - now > 0).should.be.equal(true)
+        await moveToNextVerse(updates, extraSecs = 0);
+        now = await updates.getNow().should.be.fulfilled;
+        (nextTime - now > 0).should.be.equal(false)
+        
+    });
+
+    it('update Timezone many times', async () =>  {
+        timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+        for (verse = 0; verse < 4; verse++) {
+            await moveToNextVerse(updates, extraSecs = 10);
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+            await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+            timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
+            diff = timeZoneToUpdateAfter[0].toNumber() - timeZoneToUpdateBefore[0].toNumber();
+            console.log(verse, '  ', diff, '  ', timeZoneToUpdateAfter[0].toNumber())
+            // diff.should.be.equal(verse % 4);
+        }
+    });
+
     it('timeZoneToUpdate selected edge choices', async () =>  {
         result = await updates._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
         result.timeZone.toNumber().should.be.equal(1)
+        result.day.toNumber().should.be.equal(1);
+        result.turnInDay.toNumber().should.be.equal(0);
+        result = await updates._timeZoneToUpdatePure.call(verse = 3, TZ1 = 1).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(1)
+        result.day.toNumber().should.be.equal(1);
+        result = await updates._timeZoneToUpdatePure.call(verse = 4, TZ1 = 1).should.be.fulfilled;
+        result.timeZone.toNumber().should.be.equal(2)
         result.day.toNumber().should.be.equal(1);
         result.turnInDay.toNumber().should.be.equal(0);
         result = await updates._timeZoneToUpdatePure.call(verse = 95, TZ1 = 4).should.be.fulfilled;
@@ -137,6 +173,8 @@ contract('Updates', (accounts) => {
         result.turnInDay.toNumber().should.be.equal(2);
     });
 
+    return;
+    
     
     it('timeZoneToUpdate exhaustive', async () =>  {
         TZ1 = 3;
