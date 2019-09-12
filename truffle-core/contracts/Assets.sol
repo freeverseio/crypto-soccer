@@ -111,12 +111,22 @@ contract Assets is Encoding {
     
     function submitActionsRoot(bytes32 actionsRoot) public {
         require(now > nextVerseTimestamp, "too early to accept actions root");
-        (uint8 tz,,) = timeZoneToUpdate();
-        require(now - _timeZones[tz].lastUpdateTime > CHALLENGE_TIME, "last verse is still under challenge period");
-        _timeZones[tz].actionsRoot = actionsRoot;
-        _timeZones[tz].lastActionsSubmissionTime = block.number;
+        (uint8 newTZ,,) = nextTimeZoneToUpdate();
+        (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        if (prevTz != NULL_TIMEZONE) {
+            require(now - _timeZones[prevTz].lastUpdateTime > CHALLENGE_TIME, "last verse is still under challenge period");
+        }
+        if (newTZ == NULL_TIMEZONE) {
+            nextVerseTimestamp += SECS_BETWEEN_VERSES;
+            emit ActionsSubmission(NULL_TIMEZONE, 0, now);
+            return;
+        }
+        require(now - _timeZones[newTZ].lastUpdateTime > CHALLENGE_TIME, "new verse is under challenge period");
+        _timeZones[newTZ].actionsRoot = actionsRoot;
+        _timeZones[newTZ].lastActionsSubmissionTime = block.number;
+        nextVerseTimestamp += SECS_BETWEEN_VERSES;
         setCurrentVerseSeed(blockhash(block.number-1)); 
-        emit ActionsSubmission(tz, blockhash(block.number-1), now);
+        emit ActionsSubmission(newTZ, blockhash(block.number-1), now);
     }
     
     // each day has 24 hours, each with 4 verses => 96 verses per day.
@@ -124,8 +134,15 @@ contract Assets is Encoding {
     // turnInDay = 0, 1, 2, 3
     // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
     // from these, all map easily to timeZones
-    function timeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+    function nextTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
         return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
+    }
+
+    function prevTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
+        if (currentVerse == 0) {
+            return (NULL_TIMEZONE, 0, 0);
+        }
+        return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
     }
 
     function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
