@@ -97,16 +97,10 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
 
-	privHash, err := processor.HashPrivateMsg(
+	hash, err := processor.HashSellMessage(
 		currencyId,
 		price,
 		rnd,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash, err := processor.HashSellMessage(
-		privHash,
 		validUntil,
 		playerId,
 		typeOfTx,
@@ -133,16 +127,10 @@ func TestHashAgreeToBuyMessage(t *testing.T) {
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
 
-	privHash, err := processor.HashPrivateMsg(
+	hash, err := processor.HashBuyMessage(
 		currencyId,
 		price,
 		rnd,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash, err := processor.HashBuyMessage(
-		privHash,
 		validUntil,
 		playerId,
 		typeOfTx,

@@ -50,8 +50,18 @@ func (b *Processor) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.In
 	return privateHash, err
 }
 
-func (b *Processor) HashSellMessage(hashPrivateMessage [32]byte, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
-	hash, err := b.assets.BuildPutForSaleTxMsg(
+func (b *Processor) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
+	var hash [32]byte
+	hashPrivateMessage, err := b.assets.HashPrivateMsg(
+		&bind.CallOpts{},
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.BuildPutForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
 		validUntil,
@@ -65,8 +75,17 @@ func (b *Processor) HashSellMessage(hashPrivateMessage [32]byte, validUntil *big
 	return hash, err
 }
 
-func (b *Processor) HashBuyMessage(hashPrivateMessage [32]byte, validUntil *big.Int, playerId *big.Int, typeOfTx uint8, teamId *big.Int) ([32]byte, error) {
+func (b *Processor) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, typeOfTx uint8, teamId *big.Int) ([32]byte, error) {
 	var hash [32]byte
+	hashPrivateMessage, err := b.assets.HashPrivateMsg(
+		&bind.CallOpts{},
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		return hash, err
+	}
 	sellMsgHash, err := b.assets.BuildPutForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
@@ -112,18 +131,26 @@ func (b *Processor) Process() error {
 		if err != nil {
 			log.Error(err)
 		}
-		rSeller, sSeller, vSeller, err := RSV(order.SellOrder.Signature)
-		rBuyer, sBuyer, vBuyer, err := RSV(order.BuyOrder.Signature)
+
 		var sigs [6][32]byte
 		var vs [2]uint8
-		sigs[0], err = b.HashSellMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
-		sigs[1] = rSeller
-		sigs[2] = sSeller
-		vs[0] = vSeller
-		sigs[3], err = b.HashBuyMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx, order.BuyOrder.TeamId)
-		sigs[4] = rBuyer
-		sigs[5] = sBuyer
-		vs[1] = vBuyer
+		sigs[0], err = b.HashSellMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
+		if err != nil {
+			log.Error(err)
+		}
+		sigs[1], sigs[2], vs[0], err = RSV(order.SellOrder.Signature)
+		if err != nil {
+			log.Error(err)
+		}
+		sigs[3], err = b.HashBuyMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx, order.BuyOrder.TeamId)
+		if err != nil {
+			log.Error(err)
+		}
+		sigs[4], sigs[5], vs[1], err = RSV(order.BuyOrder.Signature)
+		if err != nil {
+			log.Error(err)
+		}
+
 		_, err = b.assets.FreezePlayer(
 			bind.NewKeyedTransactor(b.freeverse),
 			privHash,
@@ -144,10 +171,6 @@ func (b *Processor) Process() error {
 		if err != nil {
 			log.Error(err)
 		}
-		// _, err = b.assets.TransferPlayer(bind.NewKeyedTransactor(b.freeverse), playerId, teamId)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
 		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
 		if err != nil {
 			log.Error(err)
