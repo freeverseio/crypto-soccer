@@ -33,7 +33,7 @@ func (b *Storage) CreateSellOrder(order SellOrder) error {
 
 func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 	var orders []SellOrder
-	rows, err := b.db.Query("SELECT playerId, price FROM player_sell_orders;")
+	rows, err := b.db.Query("SELECT playerId, currencyId, price, rnd, validUntil, typeOfTx, signature FROM player_sell_orders;")
 	if err != nil {
 		return orders, err
 	}
@@ -41,14 +41,23 @@ func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 	for rows.Next() {
 		var order SellOrder
 		var playerId sql.NullString
+		var rnd sql.NullString
+		var validUntil sql.NullString
 		err = rows.Scan(
 			&playerId,
+			&order.CurrencyId,
 			&order.Price,
+			&rnd,
+			&validUntil,
+			&order.TypeOfTx,
+			&order.Signature,
 		)
 		if err != nil {
 			return orders, err
 		}
 		order.PlayerId, _ = new(big.Int).SetString(playerId.String, 10)
+		order.Rnd, _ = new(big.Int).SetString(rnd.String, 10)
+		order.ValidUntil, _ = new(big.Int).SetString(validUntil.String, 10)
 		orders = append(orders, order)
 	}
 	return orders, nil
