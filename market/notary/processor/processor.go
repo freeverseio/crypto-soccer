@@ -32,13 +32,15 @@ func (b *Processor) Process() error {
 	for _, order := range orders {
 		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
 
-		var privHash [32]byte
-		b.assets.HashPrivateMsg(
+		privHash, err := b.assets.HashPrivateMsg(
 			&bind.CallOpts{},
 			order.SellOrder.CurrencyId,
 			order.SellOrder.Price,
 			order.SellOrder.Rnd,
 		)
+		if err != nil {
+			log.Error(err)
+		}
 		var sigs [6][32]byte
 		var vs [2]uint8
 		_, err = b.assets.FreezePlayer(

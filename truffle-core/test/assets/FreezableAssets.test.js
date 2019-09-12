@@ -242,6 +242,34 @@ contract("FreezableAssets", accounts => {
     sigBuyer.signature.should.be.equal('0xad32250c5fdebe7a282e431c86c72e555b14e3f2d138663cec2acf0b334a4fb061041c275cb28d51d2b88a92ea11b6ea54d71aabfbe22ea591511735794762521b');
   })
 
+  it('deterministic sign (values used in market.notary test)', async () => {
+    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    sellerAccount.address.should.be.equal('0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7');
+
+    // Define params of the seller, and sign
+    const validUntil = 2000000000;
+    const playerId = 10;
+    const typeOfTX = 1;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
+
+    const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await verifierLib.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
+    message.should.be.equal('0x2fa9b87c209bb835fdc5ccaea632ed3b784f0db5957f6b5f0046f1e84c3e9b81');
+    const sigSeller = sellerAccount.sign(message);
+    sigSeller.messageHash.should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0');
+    sigSeller.signature.should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b');
+
+    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(message, team = 2).should.be.fulfilled;
+    buyerMsg.should.be.equal('0xbffa6e51a94ab7488c889510b368ac4b96c0cac8b3b57f96f4327dfe50fffb64');
+
+    const sigBuyer = sellerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0x5cc762883b029b9c58134d3296acf9912197cdce50c7f586e3c2a3cc2e8d0f0d');
+    sigBuyer.signature.should.be.equal('0xd36c99c9f3077a3b24d4709399f0c034bdc99e56430019ac499f46195645fbd14f742c4cee9c99a10d15177ce322850244572d48d40558728a586711ed90a3af1c');
+  });
+
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to seller: OK, failed
