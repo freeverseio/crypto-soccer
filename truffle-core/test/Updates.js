@@ -27,6 +27,8 @@ contract('Updates', (accounts) => {
         await assets.init().should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
         await updates.initUpdates(assets.address).should.be.fulfilled;
+        NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
+        NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
         });
@@ -132,16 +134,27 @@ contract('Updates', (accounts) => {
         
     });
 
-    it('update Timezone many times', async () =>  {
+    // verse = 95 works, diff = -1
+    // verse = 96 prints, diff = -17
+    it('update Timezone many times (takes about 20 secs!)', async () =>  {
+        console.log("warning: this test last for about 20 secs...")
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
-        for (verse = 0; verse < 4; verse++) {
-            await moveToNextVerse(updates, extraSecs = 10);
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
-            await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+        for (verse = 0; verse < 110; verse++) {
             timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
             diff = timeZoneToUpdateAfter[0].toNumber() - timeZoneToUpdateBefore[0].toNumber();
-            console.log(verse, '  ', diff, '  ', timeZoneToUpdateAfter[0].toNumber())
-            // diff.should.be.equal(verse % 4);
+            // timezone number wraps around: tz = 23, 24, 1, 2...
+            if (diff < 0) diff += 24;
+            // during the first day, you change timezone every 4 verses
+            if (verse < VERSES_PER_DAY)  {diff.should.be.equal(Math.floor(verse / 4));}
+            // exactly at verse = VERSES_PER_DAY, there is nothing to commit, it returns TZ = 0
+            if (verse == VERSES_PER_DAY) {timeZoneToUpdateAfter[0].toNumber().should.be.equal(0);}
+            // after that verse, you change again every 4 verses (with an offset of 1)
+            if (verse > VERSES_PER_DAY) {diff.should.be.equal(Math.floor( (verse - VERSES_PER_DAY - 1) / 4));}
+            await moveToNextVerse(updates, extraSecs = 10);
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+            if (timeZoneToUpdateAfter[0].toNumber() != NULL_TIMEZONE) {
+                await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
+            }
         }
     });
 

@@ -13,7 +13,7 @@ contract Updates is Encoding {
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
     uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
-    uint8 constant NULL_TIMEZONE = 0;
+    uint8 constant public NULL_TIMEZONE = 0;
     uint8 constant CHALLENGE_TIME = 60; // in secs
     
     uint256 public nextVerseTimestamp;
