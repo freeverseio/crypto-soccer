@@ -10,10 +10,10 @@ import (
 type SellOrder struct {
 	PlayerId   *big.Int
 	CurrencyId uint8
-	Price      uint64
+	Price      *big.Int
 	Rnd        *big.Int
 	ValidUntil *big.Int
-	TypeOfTx   int8
+	TypeOfTx   uint8
 	Signature  string
 }
 
@@ -22,7 +22,7 @@ func (b *Storage) CreateSellOrder(order SellOrder) error {
 	_, err := b.db.Exec("INSERT INTO player_sell_orders (playerId, currencyId, price, rnd, validUntil, typeOfTx, signature) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		order.PlayerId.String(),
 		order.CurrencyId,
-		order.Price,
+		order.Price.String(),
 		order.Rnd.String(),
 		order.ValidUntil.String(),
 		order.TypeOfTx,
@@ -33,7 +33,7 @@ func (b *Storage) CreateSellOrder(order SellOrder) error {
 
 func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 	var orders []SellOrder
-	rows, err := b.db.Query("SELECT playerId, price FROM player_sell_orders;")
+	rows, err := b.db.Query("SELECT playerId, currencyId, price, rnd, validUntil, typeOfTx, signature FROM player_sell_orders;")
 	if err != nil {
 		return orders, err
 	}
@@ -41,14 +41,25 @@ func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 	for rows.Next() {
 		var order SellOrder
 		var playerId sql.NullString
+		var price sql.NullString
+		var rnd sql.NullString
+		var validUntil sql.NullString
 		err = rows.Scan(
 			&playerId,
-			&order.Price,
+			&order.CurrencyId,
+			&price,
+			&rnd,
+			&validUntil,
+			&order.TypeOfTx,
+			&order.Signature,
 		)
 		if err != nil {
 			return orders, err
 		}
 		order.PlayerId, _ = new(big.Int).SetString(playerId.String, 10)
+		order.Price, _ = new(big.Int).SetString(price.String, 10)
+		order.Rnd, _ = new(big.Int).SetString(rnd.String, 10)
+		order.ValidUntil, _ = new(big.Int).SetString(validUntil.String, 10)
 		orders = append(orders, order)
 	}
 	return orders, nil

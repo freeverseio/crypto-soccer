@@ -21,7 +21,7 @@ func TestGetSellOrders(t *testing.T) {
 	}
 	err = sto.CreateSellOrder(storage.SellOrder{
 		PlayerId:   big.NewInt(1),
-		Price:      100,
+		Price:      big.NewInt(100),
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
 		TypeOfTx:   3,

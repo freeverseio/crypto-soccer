@@ -1,6 +1,7 @@
 package processor_test
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 
@@ -42,14 +43,130 @@ func TestChangeOwnership(t *testing.T) {
 	}
 }
 
+func TestRSV(t *testing.T) {
+	r, s, v, err := processor.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(r[:])
+	if result != "405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce" {
+		t.Fatalf("r error %v", result)
+	}
+	result = hex.EncodeToString(s[:])
+	if result != "229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400" {
+		t.Fatalf("s error %v", result)
+	}
+	if v != 0x1b {
+		t.Fatalf("Error in v %v", v)
+	}
+}
+
+func TestHashPRivateMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+	privHash, err := processor.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(privHash[:])
+	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
+		t.Fatalf("Hash private error %v", result)
+	}
+}
+
+func TestBuildPutForSaleMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTx := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+
+	hash, err := processor.HashSellMessage(
+		currencyId,
+		price,
+		rnd,
+		validUntil,
+		playerId,
+		typeOfTx,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "ff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
+
+func TestHashAgreeToBuyMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTx := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+
+	hash, err := processor.HashBuyMessage(
+		currencyId,
+		price,
+		rnd,
+		validUntil,
+		playerId,
+		typeOfTx,
+		big.NewInt(2),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
+
 func TestProcess(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
 	ganache := testutils.NewGanache()
-	alice := ganache.Alice
-	bob := ganache.Bob
+	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bob, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	value := new(big.Int)
+	value.SetString("50000000000000000000", 10)
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
 	if err != nil {
@@ -59,33 +176,43 @@ func TestProcess(t *testing.T) {
 	ganache.CreateTeam("Barca", alice)
 	ganache.CreateTeam("Madrid", bob)
 
-	var player = big.NewInt(1)
-	originOwner := ganache.GetPlayerOwner(player)
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTX := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+	teamId := big.NewInt(2)
+
+	originOwner := ganache.GetPlayerOwner(playerId)
 	if originOwner != ganache.Public(alice) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
 	}
 	sto.CreateSellOrder(storage.SellOrder{
-		PlayerId:   big.NewInt(1),
-		Price:      100,
-		Rnd:        big.NewInt(4353),
-		ValidUntil: big.NewInt(3),
-		TypeOfTx:   3,
+		PlayerId:   playerId,
+		CurrencyId: currencyId,
+		Price:      price,
+		Rnd:        rnd,
+		ValidUntil: validUntil,
+		TypeOfTx:   typeOfTX,
+		Signature:  "0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b",
 	})
 	processor.Process()
-	targetOwner := ganache.GetPlayerOwner(player)
+	targetOwner := ganache.GetPlayerOwner(playerId)
 	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
 	}
 
 	sto.CreateBuyOrder(storage.BuyOrder{
-		PlayerId: big.NewInt(1),
-		TeamId:   big.NewInt(2),
+		PlayerId:  playerId,
+		TeamId:    teamId,
+		Signature: "0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b",
 	})
 
 	processor.Process()
-	targetOwner = ganache.GetPlayerOwner(player)
+	targetOwner = ganache.GetPlayerOwner(playerId)
 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
-		t.Fatalf("Expectedf originOwner BOB but got %v", targetOwner)
+		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
 	}
 
 	buyOrders, err := sto.GetBuyOrders()

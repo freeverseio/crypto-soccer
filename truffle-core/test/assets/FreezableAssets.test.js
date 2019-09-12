@@ -214,33 +214,65 @@ contract("FreezableAssets", accounts => {
     owner.should.be.equal(BOB);
   });
 
-  it('deterministic sign', async () => {
+  it('deterministic sign (values used in market.notary test)', async () => {
     const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-    sellerAccount.address.should.be.equal('0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
     // Define params of the seller, and sign
-    const validUntil = 2;
+    const validUntil = 2000000000;
     const playerId = 10;
     const typeOfTX = 1;
     const currencyId = 1;
     const price = 41234;
     const rnd = 42321;
+    const teamId = 2;
 
     const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
     privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
     const message = await verifierLib.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
-    message.should.be.equal('0xaadf12b0660c9a10f8e9b0baca620d55d648bcabb0718dade3b39c676f76cc4d');
+    message.should.be.equal('0x2fa9b87c209bb835fdc5ccaea632ed3b784f0db5957f6b5f0046f1e84c3e9b81');
     const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0x3f6c78029ebde952d76a5b4ffe415d074eb256156d0f0b44045057e809add696');
-    sigSeller.signature.should.be.equal('0xbd7b906b16bfab0ac6007bb4699e82324e89f6d9f6a0e8476cb66bcf0c6dc013650c1667574a3821d7a2681b0b68e8615eeae4d05061ce54f94dce2f1ba8f3351b');
+    sigSeller.messageHash.should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0');
+    sigSeller.signature.should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b');
 
-    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(message, team = 4).should.be.fulfilled;
-    buyerMsg.should.be.equal('0xff8e60ad622b9a3cf8a65beeff3dd1a7f20a8fd4db12550a9cccd4e21d772b52');
+    const prefixed = await verifierLib.prefixed(message).should.be.fulfilled;
+    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(prefixed, teamId).should.be.fulfilled;
+    buyerMsg.should.be.equal('0x4daf7427f6445b0be6d591ae42a6dec2d516824e0f2fa757f291746ae7142952');
+    const sigBuyer = buyerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528');
+    sigBuyer.signature.should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b');
+  });
 
-    const sigBuyer = sellerAccount.sign(buyerMsg);
-    sigBuyer.messageHash.should.be.equal('0x8a6d75a55ca8bd29131756ddc9f7810c52989d42649bfb363ac12d058be360bc');
-    sigBuyer.signature.should.be.equal('0xad32250c5fdebe7a282e431c86c72e555b14e3f2d138663cec2acf0b334a4fb061041c275cb28d51d2b88a92ea11b6ea54d71aabfbe22ea591511735794762521b');
-  })
+  it('create buyer sign in blockchain', async () => {
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+    const validUntil = 2000000000;
+    const playerId = 10;
+    const typeOfTX = 1;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
+    const buyerTeamId = 2;
+
+    const sigBuyer = await signAgreeToBuyMTx(
+      currencyId,
+      price,
+      rnd,
+      validUntil,
+      playerId,
+      typeOfTX,
+      buyerTeamId,
+      buyerAccount
+    ).should.be.fulfilled;
+    sigBuyer.messageHash.should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528');
+    sigBuyer.signature.should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b');
+
+    const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+    const sellerMsgHash = await verifierLib.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
+    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(web3.eth.accounts.hashMessage(sellerMsgHash), buyerTeamId).should.be.fulfilled;
+    const sigBuyerBC = buyerAccount.sign(buyerMsg);
+    sigBuyerBC.messageHash.should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528');
+    sigBuyerBC.signature.should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b');
+  });
 
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
@@ -256,15 +288,15 @@ contract("FreezableAssets", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    const sellerAccount = await web3.eth.accounts.create("iamaseller");
-    const buyerAccount = await web3.eth.accounts.create("iamabuyer");
+    const sellerAccount = await web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
     await verifierLib.createTeam("Barca", sellerAccount.address).should.be.fulfilled;
     await verifierLib.createTeam("Madrid", buyerAccount.address).should.be.fulfilled;
 
     // Define params of the seller, and sign
     let now = await verifierLib.getBlockchainNowTime();
-    const validUntil = 2 * now.toNumber();
+    const validUntil = 2000000000;
     const playerId = 10;
     const typeOfTX = 1;
     const currencyId = 1;
@@ -281,6 +313,9 @@ contract("FreezableAssets", accounts => {
       typeOfTX,
       sellerAccount
     );
+
+    sigSeller.messageHash.should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0');
+    sigSeller.signature.should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b');
 
     // First of all, Freeverse and Buyer check the signature
     // In this case, using web3:
@@ -300,10 +335,9 @@ contract("FreezableAssets", accounts => {
     recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
     // It can also be checked in the BC:
-    const privHash = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, rnd]
-    );
+    const privHash = await verifierLib.hashPrivateMsg(
+      currencyId, price, rnd
+    ).should.be.fulfilled;
     sellerTxMsgBC = await verifierLib.buildPutForSaleTxMsg(
       privHash,
       validUntil,
@@ -328,6 +362,9 @@ contract("FreezableAssets", accounts => {
       buyerTeamId,
       buyerAccount
     ).should.be.fulfilled;
+    
+    sigBuyer.messageHash.should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528');
+    sigBuyer.signature.should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b');
 
     isFrozen = await verifierLib.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(false);
@@ -346,6 +383,14 @@ contract("FreezableAssets", accounts => {
       sigBuyer.s
     ];
     const vs = [sigSeller.v, sigBuyer.v];
+    sigs[0].should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0')
+    sigs[1].should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce')
+    sigs[2].should.be.equal('0x229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400')
+    sigs[3].should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528')
+    sigs[4].should.be.equal('0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc2')
+    sigs[5].should.be.equal('0x6951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca')
+    vs[0].should.be.equal('0x1b');
+    vs[1].should.be.equal('0x1b');
     await verifierLib.freezePlayer(
       privHash,
       validUntil,

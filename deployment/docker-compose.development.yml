@@ -29,7 +29,7 @@ services:
       - "4002:4000"
   market.notary:
     image: freeverseio/market.notary:dev
-    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable
+    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -assets_address "0xE5094517AeE4f34811838ef7493abe0527e3B2F5"
   relay:
     image: freeverseio/relay:dev
     ports:
