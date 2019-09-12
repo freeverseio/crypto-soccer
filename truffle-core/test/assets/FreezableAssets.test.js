@@ -225,6 +225,7 @@ contract("FreezableAssets", accounts => {
     const currencyId = 1;
     const price = 41234;
     const rnd = 42321;
+    const teamId = 2;
 
     const privateHash = await verifierLib.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
     privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
@@ -234,7 +235,8 @@ contract("FreezableAssets", accounts => {
     sigSeller.messageHash.should.be.equal('0xff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0');
     sigSeller.signature.should.be.equal('0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b');
 
-    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(web3.eth.accounts.hashMessage(message), team = 2).should.be.fulfilled;
+    const prefixed = await verifierLib.prefixed(message).should.be.fulfilled;
+    const buyerMsg = await verifierLib.buildAgreeToBuyTxMsg(prefixed, teamId).should.be.fulfilled;
     buyerMsg.should.be.equal('0x4daf7427f6445b0be6d591ae42a6dec2d516824e0f2fa757f291746ae7142952');
     const sigBuyer = buyerAccount.sign(buyerMsg);
     sigBuyer.messageHash.should.be.equal('0x0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528');
