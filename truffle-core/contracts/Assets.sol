@@ -59,37 +59,17 @@ contract Assets is Encoding {
     uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
     uint8 constant NULL_TIMEZONE = 0;
     uint8 constant CHALLENGE_TIME = 60; // in secs
-    bool dummy = false;
     
     mapping(uint256 => uint256) private _playerIdToState;
 
-    TimeZone[25] internal _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
+    TimeZone[25] public _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
-    uint256 public currentVerse;
     uint256 public currentRound;
-    bytes32 private _currentVerseSeed;
     bool private _needsInit = true;
-    uint256 public nextVerseTimestamp;
-    uint8 public timeZoneForRound1;
     
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
-        // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
-        // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
-        // the call to the contract init() function.
-        uint256 secsOfDay   = now % (3600 * 24);
-        uint256 hour        = secsOfDay / 3600;  // 0, ..., 23
-        uint256 minute      = (secsOfDay - hour * 3600) / 60; // 0, ..., 59
-        uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); // 0, ..., 59
-        if (minute < 42) {
-            timeZoneForRound1 = 1 + uint8(hour);
-            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs);
-        } else {
-            timeZoneForRound1 = 2 + uint8(hour);
-            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs) + 3600;
-        }
-        setCurrentVerseSeed(blockhash(block.number-1)); 
         gameDeployMonth = secsToMonths(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
@@ -97,9 +77,6 @@ contract Assets is Encoding {
         _needsInit = false;
     }
     
-    function getNow() public view returns(uint256) {
-        return now;
-    }
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;
@@ -109,88 +86,27 @@ contract Assets is Encoding {
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH; 
     }
     
-    
-    function submitActionsRoot(bytes32 actionsRoot) public {
-        require(now > nextVerseTimestamp, "too early to accept actions root");
-        (uint8 newTZ,,) = nextTimeZoneToUpdate();
-        (uint8 prevTz,,) = prevTimeZoneToUpdate();
-        // make sure the last verse is settled
-        if (prevTz != NULL_TIMEZONE) {
-            require(now > _timeZones[prevTz].lastUpdateTime + CHALLENGE_TIME, "last verse is still under challenge period");
-        }
-        // if we are precisely at a moment where nothing needs to be done, just move ahead
-        if (newTZ == NULL_TIMEZONE) {
-            nextVerseTimestamp += SECS_BETWEEN_VERSES;
-            emit ActionsSubmission(NULL_TIMEZONE, 0, now);
-            return;
-        }
-        _timeZones[newTZ].actionsRoot = actionsRoot;
-        _timeZones[newTZ].lastActionsSubmissionTime = now;
-        nextVerseTimestamp += SECS_BETWEEN_VERSES;
-        setCurrentVerseSeed(blockhash(block.number-1)); 
-        emit ActionsSubmission(newTZ, blockhash(block.number-1), now);
+    function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
+        _assertTZExists(timeZone);
+        return _timeZones[timeZone].lastUpdateTime;
     }
-
-    function updateTZ(bytes32 root) public {
-        (uint8 tz,,) = nextTimeZoneToUpdate();
-        require(tz != NULL_TIMEZONE, "nothing to update in the current timeZone");
-        if (_timeZones[tz].lastUpdateTime > _timeZones[tz].lastActionsSubmissionTime) {
-            require(now < _timeZones[tz].lastUpdateTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-        } else {
-            require(now < _timeZones[tz].lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-        }
+        
+    function getLastActionsSubmissionTime(uint8 timeZone) external view returns(uint256) {
+        _assertTZExists(timeZone);
+        return _timeZones[timeZone].lastActionsSubmissionTime;
+    }
+        
+    function setSkillsRoot(uint8 tz, bytes32 root) external returns(uint256) {
         _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
         _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].lastUpdateTime = now;
-        emit TimeZoneUpdate(tz, root, now);
-    }
-    
-    // each day has 24 hours, each with 4 verses => 96 verses per day.
-    // day = 1,..16
-    // turnInDay = 0, 1, 2, 3
-    // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
-    // from these, all map easily to timeZones
-    function nextTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
     }
 
-    function prevTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        if (currentVerse == 0) {
-            return (NULL_TIMEZONE, 0, 0);
-        }
-        return _timeZoneToUpdatePure(currentVerse - 1, timeZoneForRound1);
+    function setActionsRoot(uint8 timeZone, bytes32 root) external returns(uint256) {
+        _assertTZExists(timeZone);
+        _timeZones[timeZone].actionsRoot = root;
+        _timeZones[timeZone].lastActionsSubmissionTime = now;
     }
-
-    function _timeZoneToUpdatePure(uint256 verse, uint8 TZForRound1) public pure returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
-        // if currentVerse = 0, we should be updating timeZoneForRound1
-        // recall that timeZones range from 1...24 (not from 0...24)
-        uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
-        if (verseInRound < VERSES_PER_DAY) {
-            timeZone = 1 + uint8((TZForRound1 - 1 + (verseInRound / 4))% 24);
-            day = 1;
-            turnInDay = uint8(verseInRound % 4);
-        } else if (verseInRound == VERSES_PER_DAY) {
-            timeZone = NULL_TIMEZONE;
-        } else {
-            timeZone = 1 + uint8((TZForRound1 - 1 + ((verseInRound - 1) / 4))% 24);
-            day = 1 + uint8((verseInRound - 1) / VERSES_PER_DAY);
-            turnInDay = uint8((verseInRound - 1) % 4);
-        }
-    }
-
-    function wait() public returns (uint256) {
-        dummy = !dummy;
-        return now; 
-    }
-    
-    function setCurrentVerseSeed(bytes32 seed) public {
-        _currentVerseSeed = seed;
-    }
-        
-    function getCurrentVerseSeed() public view returns (bytes32) {
-        return _currentVerseSeed;
-    }
-        
         
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
         _assertTZExists(timeZone);
