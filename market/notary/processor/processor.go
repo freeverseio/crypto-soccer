@@ -2,6 +2,8 @@ package processor
 
 import (
 	"crypto/ecdsa"
+	"encoding/binary"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -21,6 +23,41 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
 }
 
+func RSV(signature string) (r [32]byte, s [32]byte, v uint8) {
+	signature = signature[2:] // remove 0x
+	copy(r[:], signature[0:64])
+	copy(s[:], signature[64:128])
+	var temp [2]byte
+	copy(temp[:], signature[128:130])
+	v = uint8(binary.BigEndian.Uint16(temp[:]))
+	return r, s, v
+}
+
+func (b *Processor) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) ([32]byte, error) {
+	privateHash, err := b.assets.HashPrivateMsg(
+		&bind.CallOpts{},
+		currencyId,
+		price,
+		rnd,
+	)
+	return privateHash, err
+}
+
+func (b *Processor) HashBuyerMessage(hashPrivateMessage [32]byte, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
+	hash, err := b.assets.BuildPutForSaleTxMsg(
+		&bind.CallOpts{},
+		hashPrivateMessage,
+		validUntil,
+		playerId,
+		typeOfTx,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+	return hash, err
+}
+
 func (b *Processor) Process() error {
 	log.Info("Processing")
 
@@ -32,8 +69,7 @@ func (b *Processor) Process() error {
 	for _, order := range orders {
 		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
 
-		privHash, err := b.assets.HashPrivateMsg(
-			&bind.CallOpts{},
+		privHash, err := b.HashPrivateMsg(
 			order.SellOrder.CurrencyId,
 			order.SellOrder.Price,
 			order.SellOrder.Rnd,
@@ -41,8 +77,17 @@ func (b *Processor) Process() error {
 		if err != nil {
 			log.Error(err)
 		}
+		rSeller, sSeller, vSeller := RSV(order.SellOrder.Signature)
+		rBuyer, sBuyer, vBuyer := RSV(order.BuyOrder.Signature)
 		var sigs [6][32]byte
 		var vs [2]uint8
+		sigs[0], err = b.HashBuyerMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
+		sigs[1] = rSeller
+		sigs[2] = sSeller
+		vs[0] = vSeller
+		sigs[4] = rBuyer
+		sigs[5] = sBuyer
+		vs[1] = vBuyer
 		_, err = b.assets.FreezePlayer(
 			bind.NewKeyedTransactor(b.freeverse),
 			privHash,
