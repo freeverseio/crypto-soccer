@@ -41,10 +41,23 @@ func TestChangeOwnership(t *testing.T) {
 	}
 }
 
-// func TestRSV(t *testing.T) {
-// 	r, s, v := processor.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
-// 	t.Fatalf("r = %v, s = %v, v = %v", r, s, v)
-// }
+func TestRSV(t *testing.T) {
+	r, s, v, err := processor.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(r[:])
+	if result != "405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce" {
+		t.Fatalf("r error %v", result)
+	}
+	result = hex.EncodeToString(s[:])
+	if result != "229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400" {
+		t.Fatalf("s error %v", result)
+	}
+	if v != 0x1b {
+		t.Fatalf("Error in v %v", v)
+	}
+}
 
 func TestHashPRivateMessage(t *testing.T) {
 	ganache := testutils.NewGanache()

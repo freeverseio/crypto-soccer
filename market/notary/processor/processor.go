@@ -2,7 +2,7 @@ package processor
 
 import (
 	"crypto/ecdsa"
-	"encoding/binary"
+	"encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -23,14 +23,21 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
 }
 
-func RSV(signature string) (r [32]byte, s [32]byte, v uint8) {
+func RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
 	signature = signature[2:] // remove 0x
-	copy(r[:], signature[0:64])
-	copy(s[:], signature[64:128])
-	var temp [2]byte
-	copy(temp[:], signature[128:130])
-	v = uint8(binary.BigEndian.Uint16(temp[:]))
-	return r, s, v
+	vect, err := hex.DecodeString(signature[0:64])
+	if err != nil {
+		return r, s, v, err
+	}
+	copy(r[:], vect)
+	vect, err = hex.DecodeString(signature[64:128])
+	if err != nil {
+		return r, s, v, err
+	}
+	copy(s[:], vect)
+	vect, err = hex.DecodeString(signature[128:130])
+	v = vect[0]
+	return r, s, v, err
 }
 
 func (b *Processor) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) ([32]byte, error) {
@@ -77,8 +84,8 @@ func (b *Processor) Process() error {
 		if err != nil {
 			log.Error(err)
 		}
-		rSeller, sSeller, vSeller := RSV(order.SellOrder.Signature)
-		rBuyer, sBuyer, vBuyer := RSV(order.BuyOrder.Signature)
+		rSeller, sSeller, vSeller, err := RSV(order.SellOrder.Signature)
+		rBuyer, sBuyer, vBuyer, err := RSV(order.BuyOrder.Signature)
 		var sigs [6][32]byte
 		var vs [2]uint8
 		sigs[0], err = b.HashBuyerMessage(privHash, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
