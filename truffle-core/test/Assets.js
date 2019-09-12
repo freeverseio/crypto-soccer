@@ -45,6 +45,10 @@ contract('Assets', (accounts) => {
         snapshotId = snapShot['result'];
         });
 
+    afterEach(async() => {
+        await timeTravel.revertToSnapShot(snapshotId);
+    });
+            
     it('check cannot initialize contract twice', async () =>  {
         await assets.init().should.be.rejected;
     });
@@ -68,35 +72,43 @@ contract('Assets', (accounts) => {
     //     timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
     // });
 
-    it('update timezone too early', async () =>  {
-        await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
-    });
-
-    it('wait some minutes', async () =>  {
-        now = await assets.getNow().should.be.fulfilled;
-        block = await web3.eth.getBlockNumber().should.be.fulfilled;
-        extraTime = 3*60
-        await timeTravel.advanceTime(extraTime).should.be.fulfilled;
-        await timeTravel.advanceBlock().should.be.fulfilled;
-        newNow = await assets.getNow().should.be.fulfilled;
-        newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
-        newBlock.should.be.equal(block+1);
-        newNow.toNumber().should.be.equal(now.toNumber()+extraTime);
-        await timeTravel.revertToSnapShot(snapshotId);
-        newNow = await assets.getNow().should.be.fulfilled;
-        newNow.toNumber().should.be.equal(now.toNumber());
-    });
-
-
-    // it('update timezone', async () =>  {
-    //     // seed0 = assets.getCurrentVerseSeed().should.be.fulfilled;
-    //     // await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
-    //     // seed1 = assets.getCurrentVerseSeed().should.be.fulfilled;
-    //     // seed1.should.not.be.equal(seed0);
-    //     // result.timeZone.toNumber().should.be.equal(1)
-    //     // result.day.toNumber().should.be.equal(1);
-
+    // it('wait some minutes', async () =>  {
+    //     now = await assets.getNow().should.be.fulfilled;
+    //     block = await web3.eth.getBlockNumber().should.be.fulfilled;
+    //     extraTime = 3*60
+    //     await timeTravel.advanceTime(extraTime).should.be.fulfilled;
+    //     await timeTravel.advanceBlock().should.be.fulfilled;
+    //     newNow = await assets.getNow().should.be.fulfilled;
+    //     newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
+    //     newBlock.should.be.equal(block+1);
+    //     newNow.toNumber().should.be.equal(now.toNumber()+extraTime);
+    //     await timeTravel.revertToSnapShot(snapshotId);
+    //     newNow = await assets.getNow().should.be.fulfilled;
+    //     newNow.toNumber().should.be.equal(now.toNumber());
     // });
+
+    // it('update timezone too early', async () =>  {
+    //     await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+    // });
+
+    it('update timezone', async () =>  {
+        seed0 = await assets.getCurrentVerseSeed().should.be.fulfilled;
+        now = await assets.getNow().should.be.fulfilled;
+        nextTime = await assets.nextVerseTimestamp().should.be.fulfilled;
+        (nextTime-now > 0).should.be.equal(true);
+        await timeTravel.advanceTime(nextTime-now);
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+        await timeTravel.advanceTime(1);
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        tx = await assets.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+        seed1 = await assets.getCurrentVerseSeed().should.be.fulfilled;
+        seed1.should.not.be.equal(seed0);
+        now = await assets.getNow().should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
+            return event.seed == seed1 && event.submissionTime.toNumber() == now.toNumber();
+        });
+    });
     
     // it('timeZoneToUpdate selected edge choices', async () =>  {
     //     result = await assets._timeZoneToUpdatePure.call(verse = 0, TZ1 = 1).should.be.fulfilled;
