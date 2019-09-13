@@ -4,7 +4,6 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"math/big"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -169,7 +168,6 @@ func (b *Processor) Process() error {
 		if err != nil {
 			log.Error(err)
 		}
-		time.Sleep(10 * time.Second)
 		log.Infof("(5) complete freeze")
 		_, err = b.assets.CompleteFreeze(
 			bind.NewKeyedTransactor(b.freeverse),
@@ -177,11 +175,12 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
-		}
-		log.Infof("(6) delete order")
-		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
-		if err != nil {
-			log.Error(err)
+		} else {
+			log.Infof("(6) delete order")
+			err = b.db.DeleteOrder(order.SellOrder.PlayerId)
+			if err != nil {
+				log.Error(err)
+			}
 		}
 	}
 
