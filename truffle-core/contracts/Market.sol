@@ -65,6 +65,10 @@ contract Market is Leagues {
         playerIdToTargetTeam[playerId] = buyerTeamId;
     }
 
+    function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) public pure returns (bytes32) {
+        return keccak256(abi.encode(currencyId, price, rnd));
+    }
+
     function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
         return keccak256(abi.encode(privHash, validUntil, playerId, typeOfTX));
     }
@@ -89,7 +93,7 @@ contract Market is Leagues {
     }
 
     // Builds a prefixed hash to mimic the behavior of eth_sign.
-    function prefixed(bytes32 hash) internal pure returns (bytes32) {
+    function prefixed(bytes32 hash) public pure returns (bytes32) {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
     }
 

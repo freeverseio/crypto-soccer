@@ -7,7 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/market/notary/contracts/market"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,11 +15,11 @@ import (
 type Processor struct {
 	db        *storage.Storage
 	client    *ethclient.Client
-	assets    *assets.Assets
+	assets    *market.Market
 	freeverse *ecdsa.PrivateKey
 }
 
-func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *assets.Assets, freeverse *ecdsa.PrivateKey) (*Processor, error) {
+func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *market.Market, freeverse *ecdsa.PrivateKey) (*Processor, error) {
 	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
 }
 
