@@ -194,6 +194,7 @@ contract Assets is Encoding {
     function transferBotToAddr(uint256 teamId, address addr) public {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        emit TeamTransfer(teamId, addr);
     }
     
     function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
