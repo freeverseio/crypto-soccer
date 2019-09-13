@@ -2,6 +2,9 @@ pragma solidity >=0.4.21 <0.6.0;
 
 import "./Assets.sol";
 import "./Engine.sol";
+/**
+ * @title Scheduling of leagues, and calls to Engine to resolve games.
+ */
 
 contract Leagues is Assets {
     

@@ -1,6 +1,9 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Leagues.sol";
+/**
+ * @title Entry point for changing ownership of assets, and managing bids and auctions.
+ */
 
 contract Market is Leagues {
     uint8 constant internal SELL_MSG = 0;

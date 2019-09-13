@@ -1,19 +1,17 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Encoding.sol";
- 
-/// teamId == 0 is invalid and represents the null team
-/// TODO: fix the playerPos <=> playerShirt doubt
+/**
+ * @title Creation of all game assets via creation of timezones, countries and divisions
+ * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
+ */
+
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
 
-    /// @dev The player skills in each team are obtained from hashing: name + userChoice
-    /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
-    /// @dev and select his favourite one.
-    /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds;
-        address owner; // timestamp as seconds since unix epoch
+        address owner;
     }
 
     struct Country {
@@ -49,13 +47,12 @@ contract Assets is Encoding {
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
-    // uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
     address constant public NULL_ADDR = address(0);
-    bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
+    bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
     mapping(uint256 => uint256) private _playerIdToState;
 
-    TimeZone[25] public _timeZones;  // the first timeZone is a dummy one, without any country. Forbidden to use timeZone[0].
+    TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployMonth;
     uint256 public currentRound;
@@ -367,7 +364,6 @@ contract Assets is Encoding {
         _assertTZExists(timeZone);
         return _timeZones[timeZone].countries.length;
     }
-
 
     function countTeams(uint8 timeZone, uint256 countryIdxInTZ) public view returns (uint256){
         _assertTZExists(timeZone);

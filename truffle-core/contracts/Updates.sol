@@ -2,9 +2,10 @@ pragma solidity >=0.4.21 <0.6.0;
 
 import "./Encoding.sol";
 import "./Assets.sol";
- 
-/// teamId == 0 is invalid and represents the null team
-/// TODO: fix the playerPos <=> playerShirt doubt
+ /**
+ * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
+ */
+
 contract Updates {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);

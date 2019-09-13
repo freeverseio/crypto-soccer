@@ -1,6 +1,8 @@
 pragma solidity >=0.4.21 <0.6.0;
+/**
+ * @title Library of functions to serialize values into uints, and deserialize back
+ */
 
-/// @title library of functions to encode-decode player states and skills, etc.
 contract Encoding {
 
     uint8 constant public MIN_PLAYER_AGE_AT_BIRTH = 16;
@@ -8,10 +10,10 @@ contract Encoding {
     uint8 constant public N_SKILLS = 5;
 
     /**
-     * @dev encoding a total of 43 bits:
-     * timeZone                  = 5 bits
-     * countryIdxInTZ            = 10 bits
-     * val (playerId or teamIdx) = 28 bits
+     * @dev encoding of a total of 43 bits:
+     *      timeZone                  = 5 bits
+     *      countryIdxInTZ            = 10 bits
+     *      val (playerId or teamIdx) = 28 bits
     **/
     function encodeTZCountryAndVal(uint8 timeZone, uint256 countryIdxInTZ, uint256 val) public pure returns (uint256)
     {
@@ -30,13 +32,12 @@ contract Encoding {
     }
 
     /**
-     * @dev encoding a total of 62 bits:
-     * 5 skills                  = 5 x 14 bits
-     *                           = defence, speed, pass, shoot, endurance
-     * monthOfBirth              = 14 bits  (since Unix time)
-     * playerId                  = 43 bits
+     * @dev encoding of a total of 62 bits:
+     *      5 skills                  = 5 x 14 bits
+     *                                = defence, speed, pass, shoot, endurance
+     *      monthOfBirth              = 14 bits  (since Unix time)
+     *      playerId                  = 43 bits
     **/
-    // TODO: avoid doing the uint256 for those variables that already are uint256
     function encodePlayerSkills(uint16[N_SKILLS] memory skills, uint256 monthOfBirth, uint256 playerId)
         public
         pure
@@ -98,11 +99,11 @@ contract Encoding {
     ////////////////////////////////
     /**
      * @dev encoding of playerState:
-     * playerId                = 43 bits
-     * currentTeamId           = 43 bits
-     * currentShirtNum         =  5 bits
-     * prevPlayerTeamId        = 43 bits
-     * lastSaleBlocknum        = 35 bits
+     *  playerId                = 43 bits
+     *  currentTeamId           = 43 bits
+     *  currentShirtNum         =  5 bits
+     *  prevPlayerTeamId        = 43 bits
+     *  lastSaleBlocknum        = 35 bits
      */
     function encodePlayerState(
         uint256 playerId,
@@ -173,17 +174,17 @@ contract Encoding {
     }
 
     /// @dev Sets the number at a given index in a serialized uint256
-    function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
-        internal
-        pure
-        returns(uint)
-    {
-        uint maxnum = 1<<bits; // 2**bits
-        require(value < maxnum, "Value too large to fit in available space");
-        uint b = bits*index;
-        uint mask = (1 << bits)-1; // (2**bits)-1
-        serialized &= ~(mask << b); // clear all bits at index
-        return serialized + (value << b);
-    }
+    // function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
+    //     internal
+    //     pure
+    //     returns(uint)
+    // {
+    //     uint maxnum = 1<<bits; // 2**bits
+    //     require(value < maxnum, "Value too large to fit in available space");
+    //     uint b = bits*index;
+    //     uint mask = (1 << bits)-1; // (2**bits)-1
+    //     serialized &= ~(mask << b); // clear all bits at index
+    //     return serialized + (value << b);
+    // }
 
 }
