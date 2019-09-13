@@ -91,13 +91,9 @@ contract('Updates', (accounts) => {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verseBefore = await updates.currentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
-        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
-        (nextTime-now > 0).should.be.equal(true);
-        await timeTravel.advanceTime(nextTime-now);
-        await timeTravel.advanceBlock().should.be.fulfilled;
+        await moveToNextVerse(updates, extraTime = -10)        
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
-        await timeTravel.advanceTime(1);
+        await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
         tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys")).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
@@ -116,15 +112,10 @@ contract('Updates', (accounts) => {
     it('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
-        now = await updates.getNow().should.be.fulfilled;
-        nextTime = await updates.nextVerseTimestamp().should.be.fulfilled;
-        (nextTime-now > 0).should.be.equal(true);
-        await timeTravel.advanceTime(nextTime-now);
-        await timeTravel.advanceBlock().should.be.fulfilled;
+        await moveToNextVerse(updates, extraSecs = -10);
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
-        await timeTravel.advanceTime(1);
-        await timeTravel.advanceBlock().should.be.fulfilled;
+        await timeTravel.advanceTime(20);
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
@@ -145,8 +136,6 @@ contract('Updates', (accounts) => {
         
     });
 
-    // verse = 95 works, diff = -1
-    // verse = 96 prints, diff = -17
     it('update Timezone many times', async () =>  {
         console.log("warning: the next test lasts about 20 secs...")
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
