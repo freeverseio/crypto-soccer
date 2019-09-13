@@ -293,7 +293,11 @@ contract('Assets', (accounts) => {
 
         await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
         await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
-        await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+        tx = await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
+        // teamId2.should.be.equal(false)
+        truffleAssert.eventEmitted(tx, "PlayerTransfer", (event) => {
+            return event.playerId == playerId.toNumber() && event.teamIdTarget == teamId2.toNumber();
+        });
 
         // state of player after selling:
         state = await assets.getPlayerState(playerId).should.be.fulfilled;

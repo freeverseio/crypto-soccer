@@ -8,6 +8,7 @@ import "./Encoding.sol";
 
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
+    event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
 
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds;
@@ -359,6 +360,7 @@ contract Assets is Encoding {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
         (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        emit PlayerTransfer(playerId, teamIdTarget);
     }
 
     function countCountries(uint8 timeZone) public view returns (uint256){
