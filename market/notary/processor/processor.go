@@ -123,6 +123,7 @@ func (b *Processor) Process() error {
 	for _, order := range orders {
 		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
 
+		log.Infof("(1) generate hash private msg")
 		privHash, err := b.HashPrivateMsg(
 			order.SellOrder.CurrencyId,
 			order.SellOrder.Price,
@@ -130,27 +131,35 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 
+		log.Infof("(2) generate hash sell message")
 		var sigs [6][32]byte
 		var vs [2]uint8
 		sigs[0], err = b.HashSellMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 		sigs[1], sigs[2], vs[0], err = RSV(order.SellOrder.Signature)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
+		log.Infof("(3) generate hash buy message")
 		sigs[3], err = b.HashBuyMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx, order.BuyOrder.TeamId)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 		sigs[4], sigs[5], vs[1], err = RSV(order.BuyOrder.Signature)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 
+		log.Infof("(4) freeze player")
 		_, err = b.assets.FreezePlayer(
 			bind.NewKeyedTransactor(b.freeverse),
 			privHash,
@@ -163,17 +172,22 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
+		log.Infof("(5) complete freeze")
 		_, err = b.assets.CompleteFreeze(
 			bind.NewKeyedTransactor(b.freeverse),
 			order.SellOrder.PlayerId,
 		)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
+		log.Infof("(6) delete order")
 		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
 		if err != nil {
 			log.Error(err)
+			continue
 		}
 	}
 
