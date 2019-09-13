@@ -2,10 +2,14 @@ package processor_test
 
 import (
 	"encoding/hex"
+	"log"
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
@@ -230,3 +234,241 @@ func TestProcess(t *testing.T) {
 		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
 	}
 }
+
+func TestProcess2(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ganache := testutils.NewGanache()
+	alice, err := crypto.HexToECDSA("431c142d0c66ffae950717d298066b338a8e43fd598a9e24211ca3c64606349e")
+	bob, err := crypto.HexToECDSA("3c53fcc079dd1cbc921d7f2a739ccbc47ad35a54f79c072eb9a002c764766e71")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	value := new(big.Int)
+	value.SetString("50000000000000000000", 10)
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	proc, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ganache.CreateTeam("Venezie", alice)
+	ganache.CreateTeam("Barca", bob)
+	ganache.CreateTeam("Madrid", bob)
+
+	validUntil := big.NewInt(156836459600)
+	playerId := big.NewInt(1)
+	typeOfTX := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(4)
+	rnd := big.NewInt(1988006456)
+	teamId := big.NewInt(3)
+	const singatureSeller = "0xbc4a5732af32c022c68ff8ca8d314ef49ec43b415b04233471cdbfc81e979eb7428fe7c411e9c7c315ff733081794925e781a54810006e7f7baf3683144613821b"
+	const singatureBuyer = "0x4ba63c8cb6315fd75658eb193a2f85c6d5114b5436caef42ecfa7188909ed6297a63c8178d964b2b16c5599c885020fe2ec04870f6ee3ed6b4b2da001d961c8d1c"
+
+	originOwner := ganache.GetPlayerOwner(playerId)
+	if originOwner != ganache.Public(alice) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+	}
+	sto.CreateSellOrder(storage.SellOrder{
+		PlayerId:   playerId,
+		CurrencyId: currencyId,
+		Price:      price,
+		Rnd:        rnd,
+		ValidUntil: validUntil,
+		TypeOfTx:   typeOfTX,
+		Signature:  singatureSeller,
+	})
+	proc.Process()
+	targetOwner := ganache.GetPlayerOwner(playerId)
+	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
+	}
+
+	sto.CreateBuyOrder(storage.BuyOrder{
+		PlayerId:  playerId,
+		TeamId:    teamId,
+		Signature: singatureBuyer,
+	})
+
+	proc.Process()
+	targetOwner = ganache.GetPlayerOwner(playerId)
+	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
+	}
+
+	buyOrders, err := sto.GetBuyOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buyOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
+	}
+	sellOrders, err := sto.GetSellOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sellOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+	}
+
+	// devnet
+	client, err := ethclient.Dial("https://devnet.busyverse.com/web3")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assetsContract, err := assets.NewAssets(common.HexToAddress("0xE5094517AeE4f34811838ef7493abe0527e3B2F5"), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	proc, err = processor.NewProcessor(sto, client, assetsContract, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sto.CreateSellOrder(storage.SellOrder{
+		PlayerId:   playerId,
+		CurrencyId: currencyId,
+		Price:      price,
+		Rnd:        rnd,
+		ValidUntil: validUntil,
+		TypeOfTx:   typeOfTX,
+		Signature:  "0xbc4a5732af32c022c68ff8ca8d314ef49ec43b415b04233471cdbfc81e979eb7428fe7c411e9c7c315ff733081794925e781a54810006e7f7baf3683144613821b",
+	})
+	proc.Process()
+
+	sto.CreateBuyOrder(storage.BuyOrder{
+		PlayerId:  playerId,
+		TeamId:    teamId,
+		Signature: "0x4ba63c8cb6315fd75658eb193a2f85c6d5114b5436caef42ecfa7188909ed6297a63c8178d964b2b16c5599c885020fe2ec04870f6ee3ed6b4b2da001d961c8d1c",
+	})
+
+	err = proc.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Fatal("ciao")
+}
+
+// func TestProcess3(t *testing.T) {
+// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	// ganache := testutils.NewGanache()
+// 	// alice, err := crypto.HexToECDSA("431c142d0c66ffae950717d298066b338a8e43fd598a9e24211ca3c64606349e")
+// 	// bob, err := crypto.HexToECDSA("3c53fcc079dd1cbc921d7f2a739ccbc47ad35a54f79c072eb9a002c764766e71")
+
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// value := new(big.Int)
+// 	// value.SetString("50000000000000000000", 10)
+// 	// _, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// _, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+
+// 	// log.Info("Dial the Ethereum client: ", ethereumClient)
+// 	client, err := ethclient.Dial("https://devnet.busyverse.com/web3")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	// t.Info("Creating Assets bindings to: ", assetsContractAddress)
+// 	assetsContract, err := assets.NewAssets(common.HexToAddress("0xE5094517AeE4f34811838ef7493abe0527e3B2F5"), client)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	privateKey, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+
+// 	processor, err := processor.NewProcessor(sto, client, assetsContract, privateKey)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+
+// 	// ganache.CreateTeam("Venezie", alice)
+// 	// ganache.CreateTeam("Barca", bob)
+// 	// ganache.CreateTeam("Madrid", bob)
+
+// 	validUntil := big.NewInt(156836459600)
+// 	playerId := big.NewInt(1)
+// 	typeOfTX := uint8(1)
+// 	currencyId := uint8(1)
+// 	price := big.NewInt(4)
+// 	rnd := big.NewInt(1988006456)
+// 	teamId := big.NewInt(3)
+
+// 	// originOwner := ganache.GetPlayerOwner(playerId)
+// 	// if originOwner != ganache.Public(alice) {
+// 	// 	t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+// 	// }
+// 	sto.CreateSellOrder(storage.SellOrder{
+// 		PlayerId:   playerId,
+// 		CurrencyId: currencyId,
+// 		Price:      price,
+// 		Rnd:        rnd,
+// 		ValidUntil: validUntil,
+// 		TypeOfTx:   typeOfTX,
+// 		Signature:  "0xbc4a5732af32c022c68ff8ca8d314ef49ec43b415b04233471cdbfc81e979eb7428fe7c411e9c7c315ff733081794925e781a54810006e7f7baf3683144613821b",
+// 	})
+// 	processor.Process()
+// 	// targetOwner := ganache.GetPlayerOwner(playerId)
+// 	// if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+// 	// 	t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
+// 	// }
+
+// 	sto.CreateBuyOrder(storage.BuyOrder{
+// 		PlayerId:  playerId,
+// 		TeamId:    teamId,
+// 		Signature: "0x4ba63c8cb6315fd75658eb193a2f85c6d5114b5436caef42ecfa7188909ed6297a63c8178d964b2b16c5599c885020fe2ec04870f6ee3ed6b4b2da001d961c8d1c",
+// 	})
+
+// 	err = processor.Process()
+// 	if err != nil {
+// 		t.Fatal(err)
+
+// 	}
+// 	t.Fatal("ciao")
+// 	// targetOwner = ganache.GetPlayerOwner(playerId)
+// 	// if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+// 	// 	t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
+// 	// }
+
+// 	// buyOrders, err := sto.GetBuyOrders()
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// if len(buyOrders) != 0 {
+// 	// 	t.Fatalf("Expercted 0 but got %v", len(buyOrders))
+// 	// }
+// 	// sellOrders, err := sto.GetSellOrders()
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// if len(sellOrders) != 0 {
+// 	// 	t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+// 	// }
+// }
