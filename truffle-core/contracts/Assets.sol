@@ -6,8 +6,6 @@ import "./Encoding.sol";
 /// TODO: fix the playerPos <=> playerShirt doubt
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);
-    event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
     /// @dev The player skills in each team are obtained from hashing: name + userChoice
     /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
@@ -52,13 +50,8 @@ contract Assets is Encoding {
     address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
     // uint256 constant public SEPT2019 = 1567296000; // UTC 1st of September, 2019, midnight, expressed in Unix Time
-    uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to compute externally and place here
-    uint8 constant VERSES_PER_DAY = 96; // 24 * 4
-    uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
-    uint8 constant NULL_TIMEZONE = 0;
-    uint8 constant CHALLENGE_TIME = 60; // in secs
     
     mapping(uint256 => uint256) private _playerIdToState;
 

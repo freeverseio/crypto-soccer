@@ -5,7 +5,7 @@ import "./Assets.sol";
  
 /// teamId == 0 is invalid and represents the null team
 /// TODO: fix the playerPos <=> playerShirt doubt
-contract Updates is Encoding {
+contract Updates {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
