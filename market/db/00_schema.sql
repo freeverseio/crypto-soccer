@@ -10,7 +10,7 @@ CREATE TABLE player_sell_orders (
 );
 
 CREATE TABLE player_buy_orders (
-    playerId NUMERIC(78,0) NOT NULL REFERENCES player_sell_orders(playerId),
+    playerId NUMERIC(78,0) NOT NULL REFERENCES player_sell_orders(playerId) ON DELETE CASCADE,
     teamId NUMERIC(78,0) NOT NULL,
     signature TEXT NOT NULL,
     PRIMARY KEY(playerId)
