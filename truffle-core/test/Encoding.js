@@ -6,9 +6,7 @@ require('chai')
 
 const Encoding = artifacts.require('Encoding');
 
-/// TODO: evaluate to extract the skills part
 contract('Encoding', (accounts) => {
-    let encoding = null;
 
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;

@@ -90,14 +90,6 @@ function getMessageHash(msg) {
 }
 
 contract("Market", accounts => {
-  let encoding = null;
-  let market = null;
-  let playerId = null;
-  let sellerTeamId = null;
-  let buyerTeamId = null;
-  let buyerAccount = null;
-  let sellerAccount = null;
-  let now = null;
 
   beforeEach(async () => {
     market = await Market.new().should.be.fulfilled;

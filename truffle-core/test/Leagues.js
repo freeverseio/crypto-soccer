@@ -9,14 +9,6 @@ const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
 
 contract('Leagues', (accounts) => {
-    let leagues = null;
-    let engine = null;
-    let PLAYERS_PER_TEAM_MAX = null;
-    let TEAMS_PER_LEAGUE = null;
-    let MATCHDAYS = null;
-    let MATCHES_PER_DAY = null;
-    let teamStateAll50 = null;
-    let teamStateAll1 = null;
     const tactic442 = 0;
     const tactic433 = 1;
 

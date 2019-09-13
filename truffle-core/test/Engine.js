@@ -8,9 +8,6 @@ const truffleAssert = require('truffle-assertions');
 const Engine = artifacts.require('Engine');
 
 contract('Engine', (accounts) => {
-    let engine = null;
-    let teamStateAll50 = null;
-    let teamStateAll1 = null;
     const seed = 610106;
     const tactic0 = 0; // 442
     const tactic1 = 1; // 541
@@ -29,7 +26,6 @@ contract('Engine', (accounts) => {
         }
         return teamState;
     };
-    
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
