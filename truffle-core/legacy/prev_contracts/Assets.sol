@@ -1,0 +1,321 @@
+pragma solidity >=0.4.21 <0.6.0;
+
+import "../state/PlayerState.sol";
+ 
+/// teamId == 0 is invalid and represents the null team
+/// TODO: fix the playerPos <=> playerShirt doubt
+contract Assets {
+    event TeamCreated (uint256 id);
+    event TeamTransfer(uint256 teamId, address to);
+
+    /// @dev The player skills in each team are obtained from hashing: name + userChoice
+    /// @dev So userChoice allows the user to inspect lots of teams compatible with his chosen name
+    /// @dev and select his favourite one.
+    /// @dev playerIdx serializes each player idx, allowing 20 bit for each (>1M players possible)
+    struct Team {
+        uint256[PLAYERS_PER_TEAM_MAX] playerIds;
+        address owner; // timestamp as seconds since unix epoch
+    }
+
+    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
+    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    uint256 constant public FREE_PLAYER_ID  = uint256(-1);
+    uint8 constant internal BITS_PER_SKILL = 14;
+    uint16 constant internal SKILL_MASK = 0x3fff;
+    uint8 constant public NUM_SKILLS = 5;
+
+    mapping(uint256 => uint256) private _playerIdToState;
+
+    PlayerState internal _playerState;
+
+    constructor(address playerState) public {
+        _playerState = PlayerState(playerState);
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
+    }
+
+    // function getTeamCreationTimestamp(uint256 teamId) public view returns (uint256) {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     return teams[teamId].creationTimestamp;
+    // }
+
+    // function getCurrentLeagueId(uint256 teamId) external view returns (uint256) {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     return teams[teamId].currentLeagueId;
+    // }
+
+    // /// get the current and previous team league and position in league
+    // function getTeamCurrentHistory(uint256 teamId) external view returns (
+    //     uint256 currentLeagueId,
+    //     uint8 posInCurrentLeague,
+    //     uint256 prevLeagueId,
+    //     uint8 posInPrevLeague
+    //     )
+    // {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     return (
+    //         teams[teamId].currentLeagueId,
+    //         teams[teamId].posInCurrentLeague,
+    //         teams[teamId].prevLeagueId,
+    //         teams[teamId].posInPrevLeague);
+    // }
+
+
+    // /// @dev Transfers a team to a new owner. 
+    // /// @dev This function should be called only when the transfer is legit, as checked elsewhere.
+    // function transferTeam(uint256 teamId, address newOwner) public {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     require(newOwner != address(0), "meaningless adress");
+    //     require(newOwner != _getTeamOwner(teams[teamId].name), "unable to transfer between the same user");
+    //     bytes32 nameHash = keccak256(abi.encode(teams[teamId].name));
+    //     _teamNameHashToOwner[nameHash] = newOwner;
+    //     emit TeamTransfer(teamId, newOwner);
+    // }
+
+    // function getFreeShirt(uint256 teamId) public view returns(uint8) {
+    //     for (uint8 shirtNum = PLAYERS_PER_TEAM_MAX-1; shirtNum >= 0; shirtNum--) {
+    //         if (isFreeShirt(teamId, shirtNum)) {
+    //             return shirtNum;
+    //         }
+    //     }
+    //     return PLAYERS_PER_TEAM_MAX;
+    // }
+
+    // function _transferPlayer(uint256 playerId, uint256 teamIdTarget) internal  {
+    //     // warning: check of ownership of players and teams should be done before calling this function
+    //     require(_playerExists(playerId) && _teamExists(teamIdTarget), "unexistent player or team");
+    //     uint256 state = getPlayerState(playerId);
+    //     uint256 newState = state;
+    //     uint256 teamIdOrigin = _playerState.getCurrentTeamId(state);
+    //     require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
+    //     uint256 shirtOrigin = _playerState.getCurrentShirtNum(state);
+    //     uint8 shirtTarget = getFreeShirt(teamIdTarget);
+    //     require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
+        
+    //     newState = _playerState.setCurrentTeamId(newState, teamIdTarget);
+    //     newState = _playerState.setCurrentShirtNum(newState, shirtTarget);
+    //     newState = _playerState.setLastSaleBlock(newState, block.number);
+
+    //     teams[teamIdTarget].playerIds[shirtTarget] = playerId;
+    //     teams[teamIdOrigin].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+
+    //     _setPlayerState(newState);
+    // }
+
+
+
+    // // TODO: exchange fails on playerId0 & playerId1 of the same team
+    // function exchangePlayersTeams(uint256 playerId0, uint256 playerId1) public {
+    //     // TODO: check ownership address
+    //     require(_playerExists(playerId0) && _playerExists(playerId1), "unexistent playerId");
+    //     uint256 state0 = getPlayerState(playerId0);
+    //     uint256 state1 = getPlayerState(playerId1);
+    //     uint256 newState0 = state0;
+    //     uint256 teamId0 = _playerState.getCurrentTeamId(state0);
+    //     uint256 teamId1 = _playerState.getCurrentTeamId(state1);
+    //     uint256 playerShirt0 = _playerState.getCurrentShirtNum(state0);
+    //     uint256 playerShirt1 = _playerState.getCurrentShirtNum(state1);
+    //     newState0 = _playerState.setCurrentTeamId(newState0, _playerState.getCurrentTeamId(state1));
+    //     newState0 = _playerState.setCurrentShirtNum(newState0, _playerState.getCurrentShirtNum(state1));
+    //     state1 = _playerState.setCurrentTeamId(state1,_playerState.getCurrentTeamId(state0));
+    //     state1 = _playerState.setCurrentShirtNum(state1,_playerState.getCurrentShirtNum(state0));
+    //     newState0 = _playerState.setLastSaleBlock(newState0, block.number);
+    //     state1 = _playerState.setLastSaleBlock(state1, block.number);
+
+    //     teams[teamId0].playerIds[playerShirt0] = playerId1;
+    //     teams[teamId1].playerIds[playerShirt1] = playerId0;
+
+    //     // TODO
+    //     // if getBlockNumForLastLeagueOfTeam(teamIdx1, ST) > state1.getLastSaleBlocknum():
+    //     //     state1.prevLeagueIdx = ST.teams[teamIdx1].currentLeagueIdx
+    //     //     state1.prevTeamPosInLeague = ST.teams[teamIdx1].teamPosInCurrentLeague
+
+    //     // if getBlockNumForLastLeagueOfTeam(teamIdx2, ST) > state2.getLastSaleBlocknum():
+    //     //     state2.prevLeagueIdx = ST.teams[teamIdx2].currentLeagueIdx
+    //     //     state2.prevTeamPosInLeague = ST.teams[teamIdx2].teamPosInCurrentLeague
+
+    //     _setPlayerState(newState0);
+    //     _setPlayerState(state1);
+    // }
+
+    // function createTeam(string memory name, address owner) public {
+    //     bytes32 nameHash = keccak256(abi.encode(name));
+    //     require(_teamNameHashToOwner[nameHash] == address(0), "team already exists");
+    //     _teamNameHashToOwner[nameHash] = owner;
+    //     uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
+    //     for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
+    //         playerIds[p] = FREE_PLAYER_ID;
+    //     }
+    //     teams.push(Team(name, 0, 0, 0, 0, playerIds, block.timestamp));
+    //     uint256 id = teams.length - 1;
+    //     emit TeamCreated(id);
+    // }
+
+    // function signToLeague(
+    //     uint256 teamId,
+    //     uint256 leagueId,
+    //     uint8 posInLeague
+    // )
+    // public
+    // {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     require(teams[teamId].currentLeagueId != leagueId, "cannot sign to a league twice");
+    //     teams[teamId].prevLeagueId = teams[teamId].currentLeagueId;
+    //     teams[teamId].posInPrevLeague = teams[teamId].posInCurrentLeague;
+    //     teams[teamId].currentLeagueId = leagueId;
+    //     teams[teamId].posInCurrentLeague = posInLeague;
+    // }
+
+    // // TODO: exception when not existent team
+    // function _getTeamOwner(string memory name) internal view returns (address) {
+    //     bytes32 nameHash = keccak256(abi.encode(name));
+    //     return _teamNameHashToOwner[nameHash];
+    // }
+
+    // function countTeams() public view returns (uint256){
+    //     return teams.length - 1;
+    // }
+
+    // function getTeamName(uint256 teamId) public view returns (string memory) {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     return teams[teamId].name;
+    // }
+
+    // function getTeamPlayerIds(uint256 teamId) public view returns (uint256[PLAYERS_PER_TEAM_MAX] memory playerIds) {
+    //     require(_teamExists(teamId), "invalid team id");
+    //     for (uint8 pos = 0 ; pos < PLAYERS_PER_TEAM_MAX ; pos++){
+    //         if (teams[teamId].playerIds[pos] == 0) // virtual player
+    //             playerIds[pos] = generateVirtualPlayerId(teamId, pos);
+    //         else
+    //             playerIds[pos] = teams[teamId].playerIds[pos];
+    //     }
+    // }
+
+    // function getPlayerState(uint256 playerId) public view returns (uint256) {
+    //     require(_playerExists(playerId), "unexistent player");
+    //     if (_isVirtual(playerId))
+    //         return generateVirtualPlayerState(playerId);
+    //     else
+    //         return _playerIdToState[playerId];
+    // }
+
+    // function generateVirtualPlayerId(uint256 teamId, uint8 posInTeam) public view returns (uint256) {
+    //     require(_teamExists(teamId), "unexistent team");
+    //     require(posInTeam < PLAYERS_PER_TEAM_MAX, "invalid player pos");
+    //     return PLAYERS_PER_TEAM_INIT * (teamId - 1) + 1 + posInTeam;
+    // }
+
+    // function generateVirtualPlayerState(uint256 playerId) public view returns (uint256) {
+    //         uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
+    //         uint256 posInTeam = playerId - PLAYERS_PER_TEAM_INIT * (teamId - 1) - 1;
+    //         string memory teamName = getTeamName(teamId);
+    //         uint256 seed = _computeSeed(teamName, posInTeam);
+    //         uint16[5] memory skills = _computeSkills(seed);
+    //         uint16 birth = _computeBirth(seed, getTeamCreationTimestamp(teamId));
+    //         return _playerState.playerStateCreate(
+    //             skills[0], // defence,
+    //             skills[1], // speed,
+    //             skills[2], // pass,
+    //             skills[3], // shoot,
+    //             skills[4], // endurance,
+    //             birth, // monthOfBirthInUnixTime,
+    //             playerId,
+    //             teamId,
+    //             posInTeam, // currentShirtNum,
+    //             0, // prevLeagueId,
+    //             0, // prevTeamPosInLeague,
+    //             0, // prevShirtNumInLeague,
+    //             0 // lastSaleBloc
+    //         );
+    // }
+
+    // function _setPlayerState(uint256 state) internal {
+    //     uint256 playerId = _playerState.getPlayerId(state);
+    //     require(_playerExists(playerId), "unexistent player");
+    //     uint256 teamId = _playerState.getCurrentTeamId(state);
+    //     require(_teamExists(teamId), "unexistent team");
+    //     uint256 shirtNumber = _playerState.getCurrentShirtNum(state);
+    //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
+    //     shirtNumber = _playerState.getPrevShirtNumInLeague(state);
+    //     require(shirtNumber < PLAYERS_PER_TEAM_MAX, "invalid shirt number");
+    //     uint256 saleBlock = _playerState.getLastSaleBlock(state);
+    //     require(saleBlock != 0 && saleBlock <= block.number, "invalid sale block");
+    //     _playerIdToState[playerId] = state;
+    // }
+
+    // function _teamExists(uint256 teamId) internal view returns (bool) {
+    //     return teamId != 0 && teamId < teams.length;
+    // }
+
+    // function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
+    //     return teams[teamId].playerIds[shirtNum] == FREE_PLAYER_ID;
+    // }
+
+    // function _playerExists(uint256 playerId) internal view returns (bool) {
+    //     if (playerId == 0) return false;
+    //     if (_playerIdToState[playerId] != 0) return true;
+    //     uint256 teamId = 1 + (playerId - 1) / PLAYERS_PER_TEAM_INIT;
+    //     return teamId <= countTeams();
+    // }
+
+    // function _isVirtual(uint256 playerId) internal view returns (bool) {
+    //     require(_playerExists(playerId), "unexistent player");
+    //     return _playerIdToState[playerId] == 0;
+    // }
+
+    // /// Compute a random age between 16 and 35
+    // /// @param rnd is a random number used as seed of the skills
+    // /// @param currentTime in seconds since unix epoch
+    // /// @return monthOfBirth in monthUnixTime
+    // function _computeBirth(uint256 rnd, uint256 currentTime) internal pure returns (uint16) {
+    //     rnd >>= BITS_PER_SKILL*NUM_SKILLS;
+    //     uint16 seed = uint16(rnd & SKILL_MASK);
+    //     /// @dev Ensure that age, in years at moment of creation, can vary between 16 and 35.
+    //     uint16 age = 16 + (seed % 20);
+
+    //     /// @dev Convert age to monthOfBirthAfterUnixEpoch.
+    //     /// @dev I leave it this way for clarity, for the time being.
+    //     uint years2secs = 365 * 24 * 3600; // TODO: make it a constant
+    //     uint month2secs = 30 * 24 * 3600; // TODO: make it a constant
+
+    //     return uint16((currentTime - age * years2secs) / month2secs);
+    // }
+
+    // /// Compute the pseudorandom skills, sum of the skills is 250
+    // /// @param rnd is a random number used as seed of the skills
+    // /// @return 5 skills
+    // function _computeSkills(uint256 rnd) internal pure returns (uint16[NUM_SKILLS] memory) {
+    //     uint16[5] memory skills;
+    //     for (uint8 i = 0; i<5; i++) {
+    //         skills[i] = uint16(rnd & SKILL_MASK);
+    //         rnd >>= BITS_PER_SKILL;
+    //     }
+
+    //     /// The next 5 are skills skills. Adjust them to so that they add up to, maximum, 5*50 = 250.
+    //     uint16 excess;
+    //     for (uint8 i = 0; i < 5; i++) {
+    //         skills[i] = skills[i] % 50;
+    //         excess += skills[i];
+    //     }
+
+    //     /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
+    //     uint16 delta = (250 - excess) / 5;
+    //     for (uint8 i = 0; i < 5; i++)
+    //         skills[i] = skills[i] + delta;
+
+    //     uint16 remainder = (250 - excess) % 5;
+    //     for (uint8 i = 0 ; i < remainder ; i++)
+    //         skills[i]++;
+
+    //     return skills;
+    // }
+
+    // /// @return seed
+    // function _computeSeed(string memory teamName, uint256 posInTeam) internal pure returns (uint256) {
+    //     return uint256(keccak256(abi.encode(teamName, posInTeam)));
+    // }
+
+    // /// @return hashed arg casted to uint256
+    // function _intHash(string memory arg) internal pure returns (uint256) {
+    //     return uint256(keccak256(abi.encode(arg)));
+    // }
+}

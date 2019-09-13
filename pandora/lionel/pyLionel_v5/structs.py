@@ -506,9 +506,6 @@ class Storage(Counter):
         # In Python, maps are closer to 'dictionaries'
         self.playerIdxToPlayerState = {}
 
-        # the obvious ownership map:
-        self.teamNameHashToOwnerAddr = {}
-
         self.blocksBetweenVerses = BLOCKS_BETWEEN_VERSES
         self.verseToLeagueCommits = {}
 
@@ -526,9 +523,7 @@ class Storage(Counter):
     # ----------      Functions common to both BC and CLIENT      ------------
     # ------------------------------------------------------------------------
 
-
-
-
+    # returns timeZoneForRound1, verseForRound1
     def initFirstRound(self):
         hours, minutes = self.getDeployHoursMinutes()
         quarter = minutes // 15 # = 0, 1, 2, 3
@@ -649,16 +644,16 @@ class Storage(Counter):
         if deltaVerse < VERSES_PER_DAY:
             timeZone    = (self.timeZoneForRound1 + deltaVerse//4) % 24
             day         = 1
-            posInZone   = deltaVerse % 4
+            turnInDay   = deltaVerse % 4
         elif deltaVerse == VERSES_PER_DAY:
             timeZone    = TZ_NULL
             day         = TZ_NULL
-            posInZone   = TZ_NULL
+            turnInDay   = TZ_NULL
         else:
             timeZone    = (self.timeZoneForRound1 + (deltaVerse - 1)//4) % 24
             day         = 1 + (deltaVerse - 1) // VERSES_PER_DAY
-            posInZone   = (deltaVerse - 1) % 4
-        return timeZone, day, posInZone
+            turnInDay   = (deltaVerse - 1) % 4
+        return timeZone, day, turnInDay
 
     def currentTimeZoneToUpdate(self):
         return self.verseToTimeZoneToUpdate(self.currentVerse)
@@ -1187,17 +1182,6 @@ class Storage(Counter):
 
             self.teams[teamIdx].currentLeagueIdx          = leagueIdx
             self.teams[teamIdx].teamPosInCurrentLeague    = team
-
-    # Minimal (virtual) team creation. The Name could be the concat of the given name, and user int choice
-    # e.g. teamName = "Barcelona5443"
-    def createTeam(self, teamName, ownerAddr):
-        assert pylio.intHash(teamName) not in self.teamNameHashToOwnerAddr, "You cannot create to teams with equal name!"
-        teamIdx = len(self.teams)
-        nowInMonthsUnixTime = 602
-        self.teams.append(Team(teamName, nowInMonthsUnixTime))
-        self.teamNameHashToOwnerAddr[pylio.intHash(teamName)] = ownerAddr
-        return teamIdx
-
 
     # ------------ LEAGUE STATUS --------------
     def isLeagueIsAboutToStart(self, leagueIdx):

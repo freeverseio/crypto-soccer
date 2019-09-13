@@ -1,8 +1,8 @@
-const States = artifacts.require('LeagueState');
+const Encoding = artifacts.require('Encoding');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-      await deployer.deploy(States);
+      await deployer.deploy(Encoding);
     })
     .catch(console.error);
 };
