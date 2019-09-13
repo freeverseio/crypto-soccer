@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -131,7 +132,6 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 
 		log.Infof("(2) generate hash sell message")
@@ -140,23 +140,19 @@ func (b *Processor) Process() error {
 		sigs[0], err = b.HashSellMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 		sigs[1], sigs[2], vs[0], err = RSV(order.SellOrder.Signature)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 		log.Infof("(3) generate hash buy message")
 		sigs[3], err = b.HashBuyMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx, order.BuyOrder.TeamId)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 		sigs[4], sigs[5], vs[1], err = RSV(order.BuyOrder.Signature)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 
 		log.Infof("(4) freeze player")
@@ -172,8 +168,8 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
+		time.Sleep(10 * time.Second)
 		log.Infof("(5) complete freeze")
 		_, err = b.assets.CompleteFreeze(
 			bind.NewKeyedTransactor(b.freeverse),
@@ -181,13 +177,11 @@ func (b *Processor) Process() error {
 		)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 		log.Infof("(6) delete order")
 		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
 		if err != nil {
 			log.Error(err)
-			continue
 		}
 	}
 
