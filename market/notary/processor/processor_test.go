@@ -22,7 +22,7 @@ func TestChangeOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId0, crypto.PubkeyToAddress(alice.PublicKey))
+	_, err = ganache.Market.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func TestChangeOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(bob), teamId1, crypto.PubkeyToAddress(bob.PublicKey))
+	_, err = ganache.Market.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestChangeOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId2, crypto.PubkeyToAddress(alice.PublicKey))
+	_, err = ganache.Market.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId0, crypto.PubkeyToAddress(alice.PublicKey))
+	_, err = ganache.Market.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(bob), teamId1, crypto.PubkeyToAddress(bob.PublicKey))
+	_, err = ganache.Market.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}

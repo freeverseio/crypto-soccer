@@ -147,16 +147,3 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	// ganache.deployAssets(owner)
 	ganache.deployMarket(owner)
 }
-
-func (ganache *Ganache) AssignTeam(timezone uint8, countryIdxInTZ *big.Int, teamIdxInCountry *big.Int, from *ecdsa.PrivateKey) {
-	teamId, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, teamIdxInCountry)
-	AssertNoErr(err, "Error creating team id ")
-
-	_, err = ganache.Market.TransferBotToAddr(
-		bind.NewKeyedTransactor(from),
-		teamId,
-		ganache.Public(from))
-	AssertNoErr(err, "Error assigning Team ", teamId)
-}
-func (ganache *Ganache) GetTeamId(timezone uint8, countryIdxInTZ *big.Int, teamIdxInCountry *big.Int) {
-}
