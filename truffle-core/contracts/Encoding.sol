@@ -19,8 +19,9 @@ contract Encoding {
     **/
     function encodePrefPos(uint8 forwardness, uint8 leftishness) public pure returns (uint8)
     {
-        require(forwardness < 2**3, "forwardness out of bound");
-        require(leftishness < 2**3, "leftishness out of bound");
+        require(forwardness < 6, "forwardness out of bound");
+        require(leftishness < 8, "leftishness out of bound");
+        if (leftishness == 0) require(forwardness == 0, "leftishnes can only be zero for goalkeepers");
         uint8 encoded  = forwardness << 3;
         return (encoded | leftishness);
     }
