@@ -317,7 +317,7 @@ contract Assets is Encoding {
         dna >>= 4; // log2(10) = 3.3 => ceil = 4
         if (shirtNum < 3) {
             // 3 GoalKeepers:
-            skills[SK_SHO] = 20 + uint16(dna % 50);
+            skills[SK_SHO] = 30 + uint16(dna % 40);
             return (skills, potential, encodePrefPos(IDX_GK, 0));
         } else if (shirtNum < 8) {
             // 5 Defenders
