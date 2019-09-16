@@ -269,7 +269,7 @@ contract Assets is Encoding {
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationMonth, uint256 playerId) internal pure returns (uint256) {
         uint256 monthOfBirth;
-        (playerCreationMonth, dna) = computeBirthMonth(dna, playerCreationMonth);
+        (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
         (uint16[N_SKILLS] memory skills, uint8 potential, uint8 prefPos) = computeSkills(dna, shirtNum);
         return encodePlayerSkills(skills, monthOfBirth, playerId, potential, prefPos);
     }
@@ -354,11 +354,18 @@ contract Assets is Encoding {
             prefPos = encodePrefPos(IDX_F, 3);                        
         }
         dna >>= 51; // log2(7) = 2.9 => ceil = 3, times 17 players => 51                       
-        
-        /// Apply correction factor, and adjust skills to so that they add up to, maximum, 5*50 = 250.
+
+        /// Compute initial skills, as a random with [0, 49] 
+        /// ...apply correction factor depending on preferred pos,
+        //  ...and adjust skills to so that they add up to, at least, 5*50 = 250.
         uint16 excess;
         for (uint8 i = 0; i < N_SKILLS; i++) {
-            if (correctFactor[i] != 0) skills[i] = (skills[i] * correctFactor[i])/100;
+            if (correctFactor[i] == 0) {
+                skills[i] = uint16(dna % 50);
+            } else {
+                skills[i] = (uint16(dna % 50) * correctFactor[i])/100;
+            }
+            dna >>= 6; // los2(50) -> ceil
             excess += skills[i];
         }
         if (excess < 250) {
