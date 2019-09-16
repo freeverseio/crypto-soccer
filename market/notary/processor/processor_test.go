@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
+	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
 )
 
@@ -171,197 +172,108 @@ func TestHashAgreeToBuyMessage(t *testing.T) {
 	}
 }
 
-// func TestProcess(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-// 	bob, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+func TestProcess(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ganache := testutils.NewGanache()
+	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bob, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	value := new(big.Int)
-// 	value.SetString("50000000000000000000", 10)
-// 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	if err != nil {
+		t.Fatal(err)
+	}
+	value := new(big.Int)
+	value.SetString("50000000000000000000", 10)
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	timezone := uint8(1)
-// 	countryIdxInTZ := big.NewInt(0)
-// 	teamId0, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId0, crypto.PubkeyToAddress(alice.PublicKey))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	teamId1, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(bob), teamId1, crypto.PubkeyToAddress(bob.PublicKey))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	team0PlayerIds, err := ganache.Market.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	timezone := uint8(1)
+	countryIdxInTZ := big.NewInt(0)
+	teamId0, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId0, crypto.PubkeyToAddress(alice.PublicKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+	teamId1, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(bob), teamId1, crypto.PubkeyToAddress(bob.PublicKey))
+	if err != nil {
+		t.Fatal(err)
+	}
+	team0PlayerIds, err := ganache.Market.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := team0PlayerIds[0]
-// 	typeOfTX := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
-// 	teamId := big.NewInt(2)
+	validUntil := big.NewInt(2000000000)
+	playerId := team0PlayerIds[0]
+	typeOfTX := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+	teamId := teamId1
 
-// 	originOwner := ganache.GetPlayerOwner(playerId)
-// 	if originOwner != ganache.Public(alice) {
-// 		t.Fatalf("Expected originOwner ALICE but got %v", originOwner)
-// 	}
-// 	sto.CreateSellOrder(storage.SellOrder{
-// 		PlayerId:   playerId,
-// 		CurrencyId: currencyId,
-// 		Price:      price,
-// 		Rnd:        rnd,
-// 		ValidUntil: validUntil,
-// 		TypeOfTx:   typeOfTX,
-// 		Signature:  "0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b",
-// 	})
-// 	processor.Process()
-// 	targetOwner := ganache.GetPlayerOwner(playerId)
-// 	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
-// 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
-// 	}
+	originOwner := ganache.GetPlayerOwner(playerId)
+	if originOwner != ganache.Public(alice) {
+		t.Fatalf("Expected originOwner ALICE but got %v", originOwner)
+	}
+	sto.CreateSellOrder(storage.SellOrder{
+		PlayerId:   playerId,
+		CurrencyId: currencyId,
+		Price:      price,
+		Rnd:        rnd,
+		ValidUntil: validUntil,
+		TypeOfTx:   typeOfTX,
+		Signature:  "0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c",
+	})
+	processor.Process()
+	targetOwner := ganache.GetPlayerOwner(playerId)
+	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
+		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
+	}
 
-// 	sto.CreateBuyOrder(storage.BuyOrder{
-// 		PlayerId:  playerId,
-// 		TeamId:    teamId,
-// 		Signature: "0x0f998640c4c2348dfcd0077be8673b34ce716e02af35d65792614294759a9bc26951b536f0dc481a9e1e4642bcf18a692d1bf673d911589031106f634df42cca1b",
-// 	})
+	sto.CreateBuyOrder(storage.BuyOrder{
+		PlayerId:  playerId,
+		TeamId:    teamId,
+		Signature: "0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b",
+	})
 
-// 	processor.Process()
-// 	targetOwner = ganache.GetPlayerOwner(playerId)
-// 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
-// 		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
-// 	}
+	processor.Process()
+	targetOwner = ganache.GetPlayerOwner(playerId)
+	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
+		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
+	}
 
-// 	buyOrders, err := sto.GetBuyOrders()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(buyOrders) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
-// 	}
-// 	sellOrders, err := sto.GetSellOrders()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(sellOrders) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
-// 	}
-// }
-
-// func TestProcess2(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	alice, err := crypto.HexToECDSA("431c142d0c66ffae950717d298066b338a8e43fd598a9e24211ca3c64606349e")
-// 	bob, err := crypto.HexToECDSA("3c53fcc079dd1cbc921d7f2a739ccbc47ad35a54f79c072eb9a002c764766e71")
-
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	value := new(big.Int)
-// 	value.SetString("50000000000000000000", 10)
-// 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	proc, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	ganache.AssignTeam(big.NewInt(0), alice)
-// 	ganache.AssignTeam(big.NewInt(1), bob)
-// 	ganache.AssignTeam(big.NewInt(2), bob)
-
-// 	validUntil := big.NewInt(156836459600)
-// 	playerId := big.NewInt(1)
-// 	typeOfTX := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(4)
-// 	rnd := big.NewInt(1988006456)
-// 	teamId := big.NewInt(3)
-// 	const singatureSeller = "0xbc4a5732af32c022c68ff8ca8d314ef49ec43b415b04233471cdbfc81e979eb7428fe7c411e9c7c315ff733081794925e781a54810006e7f7baf3683144613821b"
-// 	const singatureBuyer = "0x4ba63c8cb6315fd75658eb193a2f85c6d5114b5436caef42ecfa7188909ed6297a63c8178d964b2b16c5599c885020fe2ec04870f6ee3ed6b4b2da001d961c8d1c"
-
-// 	originOwner := ganache.GetPlayerOwner(playerId)
-// 	if originOwner != ganache.Public(alice) {
-// 		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
-// 	}
-// 	sto.CreateSellOrder(storage.SellOrder{
-// 		PlayerId:   playerId,
-// 		CurrencyId: currencyId,
-// 		Price:      price,
-// 		Rnd:        rnd,
-// 		ValidUntil: validUntil,
-// 		TypeOfTx:   typeOfTX,
-// 		Signature:  singatureSeller,
-// 	})
-// 	proc.Process()
-// 	targetOwner := ganache.GetPlayerOwner(playerId)
-// 	if targetOwner != crypto.PubkeyToAddress(alice.PublicKey) {
-// 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
-// 	}
-
-// 	sto.CreateBuyOrder(storage.BuyOrder{
-// 		PlayerId:  playerId,
-// 		TeamId:    teamId,
-// 		Signature: singatureBuyer,
-// 	})
-
-// 	proc.Process()
-// 	targetOwner = ganache.GetPlayerOwner(playerId)
-// 	if targetOwner != crypto.PubkeyToAddress(bob.PublicKey) {
-// 		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
-// 	}
-
-// 	buyOrders, err := sto.GetBuyOrders()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(buyOrders) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
-// 	}
-// 	sellOrders, err := sto.GetSellOrders()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(sellOrders) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
-// 	}
-// }
+	buyOrders, err := sto.GetBuyOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(buyOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(buyOrders))
+	}
+	sellOrders, err := sto.GetSellOrders()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sellOrders) != 0 {
+		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+	}
+}
