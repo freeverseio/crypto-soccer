@@ -1,7 +1,5 @@
 function Resolvers({
-  states,
-  assets,
-  leagues,
+  market,
   from
 }) {
   this.Query = {
@@ -9,18 +7,13 @@ function Resolvers({
   };
 
   this.Mutation = {
-    createLeague: async (_, { nTeams, initBlock, step }) => {
-      const gas = await leagues.methods
-        .create(nTeams, initBlock, step)
+    transferFirstBotToAddr: async (_, { timezone, countryIdxInTimezone, address }) => {
+      const gas = await market.methods
+        .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
         .estimateGas();
-      await leagues.methods
-        .create(nTeams, initBlock, step)
+      await market.methods
+        .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
         .send({ from, gas });
-      return true;
-    },
-    transferTeam: async (_, { teamId, owner }) => {
-      const gas = await assets.methods.transferTeam(teamId, owner).estimateGas();
-      await assets.methods.transferTeam(teamId, owner).send({ from, gas });
       return true;
     }
   };

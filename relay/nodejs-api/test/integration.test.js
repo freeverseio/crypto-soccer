@@ -21,9 +21,6 @@ const provider = ganache.provider({
 });
 
 describe('assets resolvers', () => {
-    let query = null;
-    let mutate = null;
-
     it("instantiate", async () => {
         // deploy contracts
         const { states, assets, leagues } = await genesis(provider, identity.address).should.be.fulfilled;
@@ -35,8 +32,6 @@ describe('assets resolvers', () => {
             from: identity.address
         });
         const server = new ApolloServer({ typeDefs, resolvers });
-        const testClient = createTestClient(server);
-        // query = testClient.query;
-        // mutate = testClient.mutate;
+        createTestClient(server);
     });
 }); 
