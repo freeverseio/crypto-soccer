@@ -432,6 +432,8 @@ contract('Assets', (accounts) => {
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
+        potential.toNumber().should.be.equal(0);
+        prefPos.toNumber().should.be.equal(0);
     });
 
     it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
@@ -441,6 +443,10 @@ contract('Assets', (accounts) => {
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
+        potential.toNumber().should.be.equal(0);
+        decodedPrefPos = await encoding.decodePrefPos(prefPos).should.be.fulfilled;
+        decodedPrefPos[0].toNumber().should.be.equal(1); // defender
+        decodedPrefPos[1].toNumber().should.be.equal(1 + shirtNum);
     });
 
     it('sum of computed skills is close to 250', async () => {
