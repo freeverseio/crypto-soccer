@@ -449,6 +449,19 @@ contract('Assets', (accounts) => {
         decodedPrefPos[1].toNumber().should.be.equal(1 + shirtNum);
     });
 
+
+    it('computed prefPos gives correct number of defenders, mids, etc', async () => {
+        expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
+        for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
+            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            decodedPrefPos = await encoding.decodePrefPos(computedSkills[2]).should.be.fulfilled;
+            decodedPrefPos[0].toNumber().should.be.equal(expectedPos[shirtNum]);
+        }
+    });
+
+
+
     it('sum of computed skills is close to 250', async () => {
         for (let i = 0; i < 10; i++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + i));
