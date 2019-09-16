@@ -111,6 +111,15 @@ contract('Assets', (accounts) => {
         isBot = await assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry).should.be.fulfilled;
         isBot.should.be.equal(true);            
     });
+
+    it('transfer first bot to address', async () => {
+        const tz = 1;
+        const countryIdxInTZ = 0;
+        const tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
+            return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
+        });
+    });
     
     it('transfer of bot teams', async () =>  {
         tz = 1;
@@ -119,8 +128,8 @@ contract('Assets', (accounts) => {
         teamIdxInCountry2 = 1;
         teamId1 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry1);
         teamId2 = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, teamIdxInCountry2);
-        await assets.transferBotInCountryToAddr(tz, countryIdxInTZ, teamIdxInCountry1, ALICE).should.be.fulfilled;
-        tx = await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
+        tx = await assets.transferFirstBotToAddr(tz, countryIdxInTZ, BOB).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
             return event.teamId.toNumber() == teamId2 && event.to == BOB;
         });
@@ -133,8 +142,7 @@ contract('Assets', (accounts) => {
         owner = await assets.getOwnerTeam(teamId2).should.be.fulfilled;
         owner.should.be.equal(BOB);
     });
-    
-    
+
     it('get team player ids', async () => {
         // for the first team we should find playerIdx = [0, 1,...,17, FREE, FREE, ...]
         teamId = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0);
@@ -254,7 +262,7 @@ contract('Assets', (accounts) => {
         // cannot query about a Bot Team
         isFree = await assets.isFreeShirt(teamId,shirtNum = 3).should.be.rejected
         // so transfer and query again
-        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
         isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
         isBot.should.be.equal(false);
         isFree = await assets.isFreeShirt(teamId, shirtNum = 3).should.be.fulfilled
@@ -271,7 +279,7 @@ contract('Assets', (accounts) => {
         // cannot query about a Bot Team
         shirtNum = await assets.getFreeShirt(teamId).should.be.rejected
         // so transfer and query again
-        await assets.transferBotToAddr(teamId, ALICE).should.be.fulfilled;
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, ALICE).should.be.fulfilled;
         isBot = await assets.isBotTeam(teamId).should.be.fulfilled;
         isBot.should.be.equal(false);
         shirtNum = await assets.getFreeShirt(teamId).should.be.fulfilled
@@ -282,7 +290,7 @@ contract('Assets', (accounts) => {
     it('transferPlayer', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
 
         // state before selling:
         state = await assets.getPlayerState(playerId).should.be.fulfilled;
@@ -318,7 +326,7 @@ contract('Assets', (accounts) => {
     it('get owner of player', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
 
         // state before selling:
         owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -345,7 +353,7 @@ contract('Assets', (accounts) => {
     it('transferPlayer different team works', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
         await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
         await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
@@ -418,7 +426,7 @@ contract('Assets', (accounts) => {
     it('isVirtual after sale', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
-        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
+        teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
         await assets.transferBotToAddr(teamId2, ALICE).should.be.fulfilled;
         isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;

@@ -179,7 +179,7 @@ contract Assets is Encoding {
         return _playerIdToState[playerId] == 0;
     }
 
-    function transferBotInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) public {
+    function _transferBotInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) internal {
         require(isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR, "invalid address");
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
@@ -191,8 +191,16 @@ contract Assets is Encoding {
 
     function transferBotToAddr(uint256 teamId, address addr) public {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        transferBotInCountryToAddr(timeZone, countryIdxInTZ, teamIdxInCountry, addr);
+        transferFirstBotToAddr(timeZone, countryIdxInTZ, addr);
+    }
+     
+    function transferFirstBotToAddr(uint8 timeZone, uint256 countryIdxInTZ, address addr) public returns (uint256) {
+        uint256 firstBotIdx = _timeZones[timeZone].countries[countryIdxInTZ].nTeams;
+        _transferBotInCountryToAddr(timeZone, countryIdxInTZ, firstBotIdx, addr);
+        _timeZones[timeZone].countries[countryIdxInTZ].nTeams++;
+        uint256 teamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, firstBotIdx);
         emit TeamTransfer(teamId, addr);
+        return firstBotIdx;
     }
     
     function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
