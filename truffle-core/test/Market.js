@@ -101,8 +101,8 @@ contract("Market", accounts => {
     playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     sellerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry1 = 0);
     buyerTeamId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry2 = 1);
-    await market.transferBotToAddr(sellerTeamId, sellerAccount.address).should.be.fulfilled;
-    await market.transferBotToAddr(buyerTeamId, buyerAccount.address).should.be.fulfilled;
+    await market.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, sellerAccount.address).should.be.fulfilled;
+    await market.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
   });
 
