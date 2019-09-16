@@ -1,11 +1,13 @@
 package processor_test
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
 )
 
@@ -67,107 +69,107 @@ func TestChangeOwnership(t *testing.T) {
 	}
 }
 
-// func TestRSV(t *testing.T) {
-// 	r, s, v, err := processor.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(r[:])
-// 	if result != "405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce" {
-// 		t.Fatalf("r error %v", result)
-// 	}
-// 	result = hex.EncodeToString(s[:])
-// 	if result != "229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400" {
-// 		t.Fatalf("s error %v", result)
-// 	}
-// 	if v != 0x1b {
-// 		t.Fatalf("Error in v %v", v)
-// 	}
-// }
+func TestRSV(t *testing.T) {
+	r, s, v, err := processor.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(r[:])
+	if result != "405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce" {
+		t.Fatalf("r error %v", result)
+	}
+	result = hex.EncodeToString(s[:])
+	if result != "229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c738400" {
+		t.Fatalf("s error %v", result)
+	}
+	if v != 0x1b {
+		t.Fatalf("Error in v %v", v)
+	}
+}
 
-// func TestHashPRivateMessage(t *testing.T) {
-// 	ganache := testutils.NewGanache()
-// 	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
-// 	privHash, err := processor.HashPrivateMsg(
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(privHash[:])
-// 	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
-// 		t.Fatalf("Hash private error %v", result)
-// 	}
-// }
+func TestHashPRivateMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
+	privHash, err := processor.HashPrivateMsg(
+		currencyId,
+		price,
+		rnd,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(privHash[:])
+	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
+		t.Fatalf("Hash private error %v", result)
+	}
+}
 
-// func TestBuildPutForSaleMessage(t *testing.T) {
-// 	ganache := testutils.NewGanache()
-// 	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
-// 	typeOfTx := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
+func TestBuildPutForSaleMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTx := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
 
-// 	hash, err := processor.HashSellMessage(
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 		validUntil,
-// 		playerId,
-// 		typeOfTx,
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(hash[:])
-// 	if result != "ff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0" {
-// 		t.Fatalf("Hash error %v", result)
-// 	}
-// }
+	hash, err := processor.HashSellMessage(
+		currencyId,
+		price,
+		rnd,
+		validUntil,
+		playerId,
+		typeOfTx,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "ff3497f25b47dbc25101237ad159a698f8fee96d1873b844dcac6d84a72b6dc0" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
 
-// func TestHashAgreeToBuyMessage(t *testing.T) {
-// 	ganache := testutils.NewGanache()
-// 	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
-// 	typeOfTx := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
+func TestHashAgreeToBuyMessage(t *testing.T) {
+	ganache := testutils.NewGanache()
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(10)
+	typeOfTx := uint8(1)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	rnd := big.NewInt(42321)
 
-// 	hash, err := processor.HashBuyMessage(
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 		validUntil,
-// 		playerId,
-// 		typeOfTx,
-// 		big.NewInt(2),
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(hash[:])
-// 	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
-// 		t.Fatalf("Hash error %v", result)
-// 	}
-// }
+	hash, err := processor.HashBuyMessage(
+		currencyId,
+		price,
+		rnd,
+		validUntil,
+		playerId,
+		typeOfTx,
+		big.NewInt(2),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
 
 // func TestProcess(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
@@ -197,11 +199,31 @@ func TestChangeOwnership(t *testing.T) {
 // 		t.Fatal(err)
 // 	}
 
-// 	ganache.AssignTeam(big.NewInt(0), alice)
-// 	ganache.AssignTeam(big.NewInt(1), bob)
+// 	timezone := uint8(1)
+// 	countryIdxInTZ := big.NewInt(0)
+// 	teamId0, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(alice), teamId0, crypto.PubkeyToAddress(alice.PublicKey))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	teamId1, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	_, err = ganache.Market.TransferBotToAddr(bind.NewKeyedTransactor(bob), teamId1, crypto.PubkeyToAddress(bob.PublicKey))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	team0PlayerIds, err := ganache.Market.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
 // 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
+// 	playerId := team0PlayerIds[0]
 // 	typeOfTX := uint8(1)
 // 	currencyId := uint8(1)
 // 	price := big.NewInt(41234)
@@ -210,7 +232,7 @@ func TestChangeOwnership(t *testing.T) {
 
 // 	originOwner := ganache.GetPlayerOwner(playerId)
 // 	if originOwner != ganache.Public(alice) {
-// 		t.Fatalf("Expectedf originOwner ALICE but got %v", originOwner)
+// 		t.Fatalf("Expected originOwner ALICE but got %v", originOwner)
 // 	}
 // 	sto.CreateSellOrder(storage.SellOrder{
 // 		PlayerId:   playerId,

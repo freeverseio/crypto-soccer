@@ -106,6 +106,39 @@ contract("Market", accounts => {
     now = await market.getBlockchainNowTime().should.be.fulfilled;
   });
 
+  it('deterministic sign (values used in market.notary test)', async () => {
+    sellerTeamId.should.be.bignumber.equal('274877906944');
+    buyerTeamId.should.be.bignumber.equal('274877906945');
+    sellerTeamPlayerIds = await market.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    const playerIdToSell = sellerTeamPlayerIds[0];
+    playerIdToSell.should.be.bignumber.equal('274877906944');
+
+    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+
+    // Define params of the seller, and sign
+    const validUntil = 2000000000;
+    const typeOfTX = 1;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
+
+    const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
+    message.should.be.equal('0x3b900e303b0af05e39951b8e9297bf2c9b7e271cd5bfc7d784046d90187b6b93');
+    const sigSeller = sellerAccount.sign(message);
+    sigSeller.messageHash.should.be.equal('0x25d3d9205102c7e3a1f6edbbe610b0fb8fdf996cc7b80c55f61a9c39dfe67586');
+    sigSeller.signature.should.be.equal('0x8e541257f5db4e4d0a581390040a43f382fdbb9fa67394cc58061e6ca3f6ab825acd8faafb6e63d347ed0cf4e1bf1db29e83fd9526b1b3271575dfbb58d357781c');
+
+    const prefixed = await market.prefixed(message).should.be.fulfilled;
+    const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerTeamId).should.be.fulfilled;
+    buyerMsg.should.be.equal('0x035f76e199b6f7bb8e3cb0aba22a2280551e9e3aec07c45d3a1313208859b72d');
+    const sigBuyer = buyerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0x1f1cd9aac2f38dd8576091e2ae11db8b1837c8f8d98e9fb669f9e009b6c58f55');
+    sigBuyer.signature.should.be.equal('0x207cf8afdb29dee046382da9249cac8d1d20fe3264982a28737fefac385b2f3334a451efd899bf21908888ea4dab9b36240340c86ed3d8ac0c5f85e81f4fe86d1b');
+  });
+
   it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
