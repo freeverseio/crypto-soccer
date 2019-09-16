@@ -10,4 +10,6 @@ contracts:
 clean: 
 	rm -rf ./truffle-core/build
 	rm -rf ./relay/nodejs-api/contracts
+	rm -rf ./go-synchronizer/contracts
+	rm -rf ./market/notary/contracts
 
