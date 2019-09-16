@@ -125,18 +125,18 @@ contract("Market", accounts => {
 
     const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
     privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerId, typeOfTX).should.be.fulfilled;
-    message.should.be.equal('0x3b900e303b0af05e39951b8e9297bf2c9b7e271cd5bfc7d784046d90187b6b93');
+    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell, typeOfTX).should.be.fulfilled;
+    message.should.be.equal('0xfa2289ff1375935f063219c2b2db02585be36f186eb27f70449339b9b1f3a6c0');
     const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0x25d3d9205102c7e3a1f6edbbe610b0fb8fdf996cc7b80c55f61a9c39dfe67586');
-    sigSeller.signature.should.be.equal('0x8e541257f5db4e4d0a581390040a43f382fdbb9fa67394cc58061e6ca3f6ab825acd8faafb6e63d347ed0cf4e1bf1db29e83fd9526b1b3271575dfbb58d357781c');
+    sigSeller.messageHash.should.be.equal('0x80e7e56ce2cd3e1c5fd2e63d04f5883303c36946557236b54ef258f6551521d1');
+    sigSeller.signature.should.be.equal('0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c');
 
     const prefixed = await market.prefixed(message).should.be.fulfilled;
     const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerTeamId).should.be.fulfilled;
-    buyerMsg.should.be.equal('0x035f76e199b6f7bb8e3cb0aba22a2280551e9e3aec07c45d3a1313208859b72d');
+    buyerMsg.should.be.equal('0x60b4511aa304b8a813714020eac0a8cf807e74c9731cc35267d3b8530c652db2');
     const sigBuyer = buyerAccount.sign(buyerMsg);
-    sigBuyer.messageHash.should.be.equal('0x1f1cd9aac2f38dd8576091e2ae11db8b1837c8f8d98e9fb669f9e009b6c58f55');
-    sigBuyer.signature.should.be.equal('0x207cf8afdb29dee046382da9249cac8d1d20fe3264982a28737fefac385b2f3334a451efd899bf21908888ea4dab9b36240340c86ed3d8ac0c5f85e81f4fe86d1b');
+    sigBuyer.messageHash.should.be.equal('0xd05a549335e18bc3a6d0544590ac44c5ce761a47ab2ad6175d3360a1757d0cf0');
+    sigBuyer.signature.should.be.equal('0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b');
   });
 
   it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
