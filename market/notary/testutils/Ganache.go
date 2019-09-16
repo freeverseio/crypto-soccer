@@ -142,26 +142,6 @@ func (ganache *Ganache) deployMarket(owner *ecdsa.PrivateKey) {
 	ganache.Market.Init(bind.NewKeyedTransactor(owner))
 }
 
-// func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
-// 	address, _, contract, err := assets.DeployAssets(
-// 		bind.NewKeyedTransactor(owner),
-// 		ganache.Client,
-// 		ganache.statesAddress,
-// 	)
-// 	AssertNoErr(err, "DeployAssets failed")
-// 	ganache.Assets = contract
-// 	fmt.Println("Assets deployed at:", address.Hex())
-// }
-// func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
-// 	address, _, contract, err := states.DeployStates(
-// 		bind.NewKeyedTransactor(owner),
-// 		ganache.Client,
-// 	)
-// 	AssertNoErr(err, "DeployStates failed")
-// 	ganache.States = contract
-// 	ganache.statesAddress = address
-// 	fmt.Println("States deployed at:", address.Hex())
-// }
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	// ganache.deployStates(owner)
 	// ganache.deployAssets(owner)
@@ -180,66 +160,3 @@ func (ganache *Ganache) AssignTeam(timezone uint8, countryIdxInTZ *big.Int, team
 }
 func (ganache *Ganache) GetTeamId(timezone uint8, countryIdxInTZ *big.Int, teamIdxInCountry *big.Int) {
 }
-
-// func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int64 {
-// 	playerId, err := ganache.Assets.GenerateVirtualPlayerId(
-// 		&bind.CallOpts{},
-// 		teamId,
-// 		posInTeam,
-// 	)
-// 	AssertNoErr(err, "Error getting virtual player id in pos ", posInTeam, " for team ", teamId)
-// 	return playerId.Int64()
-// }
-// func (ganache *Ganache) getVirtualPlayerState(playerId int64) *big.Int {
-// 	playerState, err := ganache.Assets.GenerateVirtualPlayerState(
-// 		&bind.CallOpts{},
-// 		big.NewInt(playerId),
-// 	)
-// 	AssertNoErr(err, "Error getting virtual player state for id ", playerId)
-// 	return playerState
-// }
-// func (ganache *Ganache) GetVirtualPlayers(teamId *big.Int) (players map[int64]*big.Int) {
-// 	players = make(map[int64]*big.Int)
-// 	for i := 0; i < 11; i++ {
-// 		playerId := ganache.getVirtualPlayerId(teamId, uint8(i))
-// 		playerState := ganache.getVirtualPlayerState(playerId)
-// 		players[playerId] = playerState
-// 	}
-// 	return
-// }
-
-// func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
-// 	leagueId := ganache.CountLeagues()
-// 	initBlock := big.NewInt(ganache.GetLastBlockNumber())
-// 	step := big.NewInt(1)
-// 	var tactics [][3]uint8 // {[3]uint8{4, 4, 2}, [3]uint8{4, 3, 3}},
-// 	var teamIdsBig []*big.Int
-// 	for _, teamId := range teamIds {
-// 		teamIdsBig = append(teamIdsBig, big.NewInt(teamId))
-// 		if teamId%3 == 0 {
-// 			tactics = append(tactics, [3]uint8{3, 4, 3})
-// 		} else if teamId%2 == 0 {
-// 			tactics = append(tactics, [3]uint8{4, 3, 3})
-// 		} else {
-// 			tactics = append(tactics, [3]uint8{4, 4, 2})
-// 		}
-// 	}
-// 	tx, err := ganache.Leagues.Create(
-// 		bind.NewKeyedTransactor(from),
-// 		leagueId,
-// 		initBlock,
-// 		step,
-// 		teamIdsBig,
-// 		tactics,
-// 	)
-// 	_ = tx
-// 	AssertNoErr(err)
-// }
-// func (ganache *Ganache) CountTeams() *big.Int {
-// 	count, err := ganache.Market.CountTeams(nil)
-// 	AssertNoErr(err, "Error calling CountTeams")
-// 	return count
-// }
-// func PrintTeamCreated(event market.AssetsTeamCreated, ganache *Ganache) {
-// 	fmt.Println("team id:", event.Id.Int64(), "players: ", ganache.GetVirtualPlayers(event.Id))
-// }
