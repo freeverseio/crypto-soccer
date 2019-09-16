@@ -16,8 +16,8 @@ func TestChangeOwnership(t *testing.T) {
 	alice := ganache.Alice
 	bob := ganache.Bob
 
-	ganache.CreateTeam("Barca", alice)
-	ganache.CreateTeam("Madrid", bob)
+	ganache.AssignTeam(big.NewInt(0), alice)
+	ganache.AssignTeam(big.NewInt(1), bob)
 
 	var player = big.NewInt(1)
 	owner := ganache.GetPlayerOwner(player)
@@ -32,7 +32,7 @@ func TestChangeOwnership(t *testing.T) {
 	if owner != ganache.Public(bob) {
 		t.Fatalf("Expectedf owner BOB but got %v", owner)
 	}
-	ganache.CreateTeam("Venice", alice)
+	ganache.AssignTeam(big.NewInt(3), alice)
 	err = ganache.TransferPlayer(player, big.NewInt(3))
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +63,7 @@ func TestRSV(t *testing.T) {
 
 func TestHashPRivateMessage(t *testing.T) {
 	ganache := testutils.NewGanache()
-	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +86,7 @@ func TestHashPRivateMessage(t *testing.T) {
 
 func TestBuildPutForSaleMessage(t *testing.T) {
 	ganache := testutils.NewGanache()
-	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +116,7 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 
 func TestHashAgreeToBuyMessage(t *testing.T) {
 	ganache := testutils.NewGanache()
-	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Assets, ganache.Owner)
+	processor, err := processor.NewProcessor(nil, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,13 +168,13 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
+	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ganache.CreateTeam("Barca", alice)
-	ganache.CreateTeam("Madrid", bob)
+	ganache.AssignTeam(big.NewInt(0), alice)
+	ganache.AssignTeam(big.NewInt(1), bob)
 
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(10)
@@ -254,14 +254,14 @@ func TestProcess2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	proc, err := processor.NewProcessor(sto, ganache.Client, ganache.Assets, ganache.Owner)
+	proc, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	ganache.CreateTeam("Venezie", alice)
-	ganache.CreateTeam("Barca", bob)
-	ganache.CreateTeam("Madrid", bob)
+	ganache.AssignTeam(big.NewInt(0), alice)
+	ganache.AssignTeam(big.NewInt(1), bob)
+	ganache.AssignTeam(big.NewInt(2), bob)
 
 	validUntil := big.NewInt(156836459600)
 	playerId := big.NewInt(1)
