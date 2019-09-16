@@ -189,7 +189,7 @@ contract Assets is Encoding {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry] = Team(playerIds, addr);
     }
 
-    function transferBotToAddr(uint256 teamId, address addr) public {
+    function transferBotToAddr(uint256 teamId, address addr) private {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         transferFirstBotToAddr(timeZone, countryIdxInTZ, addr);
     }
