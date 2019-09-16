@@ -10,6 +10,30 @@ contract Encoding {
     uint8 constant public N_SKILLS = 5;
 
     /**
+     * @dev encoding of a total of 10 bits:
+     *      forwardness            = 3 bits
+     *                               GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
+     *
+     *      leftishness            = 3 bits, in boolean triads: (L, C, R):
+     *                               0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+    **/
+    function encodePrefPos(uint8 forwardness, uint8 leftishness) public pure returns (uint8)
+    {
+        require(forwardness < 2**3, "forwardness out of bound");
+        require(leftishness < 2**3, "leftishness out of bound");
+        uint8 encoded  = forwardness << 3;
+        return (encoded | leftishness);
+    }
+
+    // @returns (uint8 forwardness, uint8 leftishness)
+    function decodePrefPos(uint8 prefPos) public pure returns (uint8, uint8)
+    {
+        // 2**3 - 1 = 7;  
+        return (prefPos >> 3, prefPos & 7);
+    }
+
+
+    /**
      * @dev encoding of a total of 43 bits:
      *      timeZone                  = 5 bits
      *      countryIdxInTZ            = 10 bits
@@ -34,11 +58,13 @@ contract Encoding {
     /**
      * @dev encoding of a total of 62 bits:
      *      5 skills                  = 5 x 14 bits
-     *                                = defence, speed, pass, shoot, endurance
+     *                                = shoot, speed, pass, defence, endurance
+     *      potential                 = 4 bits (number is limited to [0,...,9])
+     *      prefPos                   = 6 bits  
      *      monthOfBirth              = 14 bits  (since Unix time)
      *      playerId                  = 43 bits
     **/
-    function encodePlayerSkills(uint16[N_SKILLS] memory skills, uint256 monthOfBirth, uint256 playerId)
+    function encodePlayerSkills(uint16[N_SKILLS] memory skills, uint256 monthOfBirth, uint256 playerId, uint8 potential, uint8 prefPos)
         public
         pure
         returns (uint256 encoded)
@@ -46,16 +72,20 @@ contract Encoding {
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             require(skills[sk] < 2**14, "skill out of bound");
         }
+        require(potential < 10, "potential out of bound");
+        require(prefPos < 2**6, "prefPos out of bound");
         require(monthOfBirth < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             encoded |= uint256(skills[sk]) << 256 - (sk + 1) * 14;
         }
         encoded |= monthOfBirth << 172;
-        return (encoded | playerId << 129);
+        encoded |= playerId << 129;
+        encoded |= uint256(potential) << 125;
+        return (encoded | uint256(prefPos) << 119);
     }
     
-    function getDefence(uint256 encodedSkills) public pure returns (uint256) {
+    function getShoot(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 242 & 0x3fff); // 0x3fff = 2**14 - 1
     }
     
@@ -67,7 +97,7 @@ contract Encoding {
         return uint256(encodedSkills >> 214 & 0x3fff);
     }
 
-    function getShoot(uint256 encodedSkills) public pure returns (uint256) {
+    function getDefence(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 200 & 0x3fff);
     }
 
@@ -79,6 +109,14 @@ contract Encoding {
         return uint256(encodedSkills >> 172 & 0x3fff);
     }
 
+    function getPotential(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 125 & 15);
+    }
+
+    function getPrefPos(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 119 & 63);
+    }
+
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 129 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
@@ -88,10 +126,10 @@ contract Encoding {
     }
 
     function getSkillsVec(uint256 encodedSkills) public pure returns (uint16[5] memory skills) {
-        skills[0] = uint16(getDefence(encodedSkills));
+        skills[0] = uint16(getShoot(encodedSkills));
         skills[1] = uint16(getSpeed(encodedSkills));
         skills[2] = uint16(getPass(encodedSkills));
-        skills[3] = uint16(getShoot(encodedSkills));
+        skills[3] = uint16(getDefence(encodedSkills));
         skills[4] = uint16(getEndurance(encodedSkills));
     }
 

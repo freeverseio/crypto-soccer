@@ -40,8 +40,6 @@ contract Assets is Encoding {
     uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = uint256(-1);
-    uint8 constant internal BITS_PER_SKILL = 14;
-    uint16 constant internal SKILL_MASK = 0x3fff;
     uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -50,6 +48,21 @@ contract Assets is Encoding {
     uint256 constant public DAYS_PER_ROUND = 16;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
+    
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+    
+    // skills idxs: Defence, Speed, Pass, Shoot, Endurance
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;
     
     mapping(uint256 => uint256) private _playerIdToState;
 
@@ -250,9 +263,15 @@ contract Assets is Encoding {
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 dna = uint256(keccak256(abi.encode(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum)));
         uint256 playerCreationMonth = (gameDeployMonth * 30 + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND) / 30;
-        uint256 monthOfBirth = computeBirthMonth(dna, playerCreationMonth);
-        uint16[N_SKILLS] memory skills = computeSkills(dna);
-        return encodePlayerSkills(skills, monthOfBirth, playerId);
+        return computeSkillsAndEncode(dna, shirtNum, playerCreationMonth, playerId);
+    }
+
+    // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
+    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationMonth, uint256 playerId) internal pure returns (uint256) {
+        uint256 monthOfBirth;
+        (playerCreationMonth, dna) = computeBirthMonth(dna, playerCreationMonth);
+        (uint16[N_SKILLS] memory skills, uint8 potential, uint8 prefPos) = computeSkills(dna, shirtNum);
+        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, prefPos);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -277,38 +296,76 @@ contract Assets is Encoding {
     /// @param dna is a random number used as seed of the skills
     /// @param playerCreationMonth since unix epoch
     /// @return monthOfBirth since unix epoch
-    function computeBirthMonth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16) {
+    function computeBirthMonth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16, uint256) {
         require(playerCreationMonth > 40*12, "invalid playerCreationMonth");
-        dna >>= BITS_PER_SKILL*N_SKILLS;
-        uint16 seed = uint16(dna & SKILL_MASK);
-        uint16 age = 16 + (seed % 20);
-        return uint16(playerCreationMonth - age * 12);
+        uint16 age = 16 + uint16((dna % 20));
+        dna >>= 5; // log2(20) = 4.6.... ceil = 5
+        return ( uint16(playerCreationMonth - age * 12), dna);
     }
 
     /// Compute the pseudorandom skills, sum of the skills is 250
     /// @param dna is a random number used as seed of the skills
-    /// @return 5 skills
-    function computeSkills(uint256 dna) public pure returns (uint16[N_SKILLS] memory) {
+    /// skills have currently, 16bits each, and there are 5 of them
+    /// potential is a number between 0 and 9 => takes 4 bit
+    /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+    /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 prefPos
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8, uint8) {
         uint16[5] memory skills;
-        for (uint8 i = 0; i<5; i++) {
-            skills[i] = uint16(dna & SKILL_MASK);
-            dna >>= BITS_PER_SKILL;
+        uint16[N_SKILLS] memory correctFactor;
+        uint8 potential = uint8(dna % 10);
+        uint8 prefPos;
+        dna >>= 4; // log2(10) = 3.3 => ceil = 4
+        if (shirtNum < 3) {
+            // 3 GoalKeepers:
+            skills[SK_SHO] = 20 + uint16(dna % 50);
+            return (skills, potential, encodePrefPos(IDX_GK, 0));
+        } else if (shirtNum < 8) {
+            // 5 Defenders
+            correctFactor[SK_SHO] = 40;
+            correctFactor[SK_DEF] = 160;
+            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            prefPos = encodePrefPos(IDX_D, leftishness);
+        } else if (shirtNum < 10) {
+            // 2 Pure Midfielders
+            correctFactor[SK_PAS] = 160;
+            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            prefPos = encodePrefPos(IDX_M, leftishness);                        
+        } else if (shirtNum < 12) {
+            // 2 Defensive Midfielders
+            correctFactor[SK_PAS] = 130;
+            correctFactor[SK_SHO] = 70;
+            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            prefPos = encodePrefPos(IDX_MD, leftishness);                        
+        } else if (shirtNum < 14) {
+            // 2 Attachking Midfielders
+            correctFactor[SK_PAS] = 130;
+            correctFactor[SK_DEF] = 70;
+            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            prefPos = encodePrefPos(IDX_MF, leftishness);                        
+        } else if (shirtNum < 16) {
+            // 2 Forwards that play center-left
+            correctFactor[SK_SHO] = 160;
+            correctFactor[SK_DEF] = 70;
+            prefPos = encodePrefPos(IDX_F, 6);                        
+        } else {
+            // 2 Forwards that play center-right
+            correctFactor[SK_SHO] = 160;
+            correctFactor[SK_DEF] = 70;
+            prefPos = encodePrefPos(IDX_F, 3);                        
         }
-        /// Adjust skills to so that they add up to, maximum, 5*50 = 250.
+        dna >>= 51; // log2(7) = 2.9 => ceil = 3, times 17 players => 51                       
+        
+        /// Apply correction factor, and adjust skills to so that they add up to, maximum, 5*50 = 250.
         uint16 excess;
-        for (uint8 i = 0; i < 5; i++) {
-            skills[i] = skills[i] % 50;
+        for (uint8 i = 0; i < N_SKILLS; i++) {
+            if (correctFactor[i] != 0) skills[i] = (skills[i] * correctFactor[i])/100;
             excess += skills[i];
         }
-        /// At this point, at most, they add up to 5*49=245. Share the excess to reach 250:
-        uint16 delta = (250 - excess) / 5;
-        for (uint8 i = 0; i < 5; i++)
-            skills[i] = skills[i] + delta;
-
-        uint16 remainder = (250 - excess) % 5;
-        for (uint8 i = 0 ; i < remainder ; i++)
-            skills[i]++;
-        return skills;
+        if (excess < 250) {
+            uint16 delta = (250 - excess) / N_SKILLS;
+            for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
+        }
+        return (skills, potential, prefPos);
     }
     
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {

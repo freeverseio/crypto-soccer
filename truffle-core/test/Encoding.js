@@ -27,9 +27,15 @@ contract('Encoding', (accounts) => {
             sk,
             monthOfBirth = 4, 
             playerId = 143,
+            potential = 5,
+            prefPos = 3
         ).should.be.fulfilled;
         result = await encoding.getMonthOfBirth(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
+        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential);
+        result = await encoding.getPrefPos(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(prefPos);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
         result = await encoding.getSkillsVec(skills).should.be.fulfilled;
