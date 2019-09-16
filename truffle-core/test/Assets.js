@@ -444,7 +444,7 @@ contract('Assets', (accounts) => {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
         potential.toNumber().should.be.equal(0);
-        decodedPrefPos = await encoding.decodePrefPos(prefPos).should.be.fulfilled;
+        decodedPrefPos = await assets.decodePrefPos(prefPos).should.be.fulfilled;
         decodedPrefPos[0].toNumber().should.be.equal(1); // defender
         decodedPrefPos[1].toNumber().should.be.equal(1 + shirtNum);
     });
@@ -455,7 +455,7 @@ contract('Assets', (accounts) => {
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
             computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
-            decodedPrefPos = await encoding.decodePrefPos(computedSkills[2]).should.be.fulfilled;
+            decodedPrefPos = await assets.decodePrefPos(computedSkills[2]).should.be.fulfilled;
             decodedPrefPos[0].toNumber().should.be.equal(expectedPos[shirtNum]);
             // skills = computedSkills[0];
             // for (sk = 0; sk < N_SKILLS; sk++) console.log(shirtNum, ": ", skills[sk].toNumber());
