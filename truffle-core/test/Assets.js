@@ -321,21 +321,25 @@ contract('Assets', (accounts) => {
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 2).should.be.fulfilled; 
 
         // state before selling:
-        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
-        owner.should.be.equal(NULL_ADDR)
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(NULL_ADDR);
         // state after acquiring bot:
         await assets.transferBotToAddr(teamId1, ALICE).should.be.fulfilled;
         owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
-        owner.should.be.equal(ALICE)
+        owner.should.be.equal(ALICE);
         // state after selling player:
         await assets.transferBotToAddr(teamId2, BOB).should.be.fulfilled;
         await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
-        owner.should.be.equal(BOB)
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(BOB);
         // state after selling team:
         await assets.transferTeam(teamId2, CAROL).should.be.fulfilled;
-        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled
-        owner.should.be.equal(CAROL)
+        owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+        owner.should.be.equal(CAROL);
+    });
+
+    it('get owner invalid player', async () => {
+        await assets.getOwnerPlayer(playerId = 3).should.be.rejected;
     });
 
     it('transferPlayer different team works', async () => {

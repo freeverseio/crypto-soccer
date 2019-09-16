@@ -139,6 +139,7 @@ func (ganache *Ganache) deployMarket(owner *ecdsa.PrivateKey) {
 	AssertNoErr(err, "DeployAssets failed")
 	ganache.Market = contract
 	fmt.Println("Assets deployed at:", address.Hex())
+	ganache.Market.Init(bind.NewKeyedTransactor(owner))
 }
 
 // func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
@@ -167,12 +168,17 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.deployMarket(owner)
 }
 
-func (ganache *Ganache) AssignTeam(id *big.Int, from *ecdsa.PrivateKey) {
-	_, err := ganache.Market.TransferBotToAddr(
+func (ganache *Ganache) AssignTeam(timezone uint8, countryIdxInTZ *big.Int, teamIdxInCountry *big.Int, from *ecdsa.PrivateKey) {
+	teamId, err := ganache.Market.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, teamIdxInCountry)
+	AssertNoErr(err, "Error creating team id ")
+
+	_, err = ganache.Market.TransferBotToAddr(
 		bind.NewKeyedTransactor(from),
-		id,
+		teamId,
 		ganache.Public(from))
-	AssertNoErr(err, "Error assigning Team ", id)
+	AssertNoErr(err, "Error assigning Team ", teamId)
+}
+func (ganache *Ganache) GetTeamId(timezone uint8, countryIdxInTZ *big.Int, teamIdxInCountry *big.Int) {
 }
 
 // func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int64 {
