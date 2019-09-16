@@ -174,23 +174,23 @@ contract('Assets', (accounts) => {
         gameDeployMonth.toNumber().should.be.equal(currentMonth);
     });
 
-    it('get skills of player on creation', async () => {
+    it('get skills of a GoalKeeper on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         skills = await assets.getSkillsVec(encodedSkills).should.be.fulfilled; 
-        expected = [43, 57, 58, 61, 31];
+        expected = [44, 0, 0, 0, 0];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk])
         }
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         monthOfBirth =  await assets.getMonthOfBirth(encodedSkills).should.be.fulfilled; 
-        monthOfBirth.toNumber().should.be.equal(248);
+        monthOfBirth.toNumber().should.be.equal(236);
         ageInMonths = await assets.getPlayerAgeInMonths(playerId).should.be.fulfilled;
-        ageInMonths.toNumber().should.be.equal(348); // 29 years
+        ageInMonths.toNumber().should.be.equal(360);
     });
 
     it('get state of player on creation', async () => {
@@ -425,17 +425,52 @@ contract('Assets', (accounts) => {
     });
 
     
-    it('computed skills with rnd = 0 is 50 each', async () => {
-        let skills = await assets.computeSkills(0).should.be.fulfilled;
-        skills.forEach(skill => (skill.toNumber().should.be.equal(50)));
+    it('computed skills with rnd = 0 for a goal keeper', async () => {
+        let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
+        const {0: skills, 1: potential, 2: prefPos} = computedSkills;
+        expected = [30, 0, 0, 0, 0];
+        for (sk = 0; sk < N_SKILLS; sk++) {
+            skills[sk].toNumber().should.be.equal(expected[sk]);
+        }
+        potential.toNumber().should.be.equal(0);
+        prefPos.toNumber().should.be.equal(0);
     });
 
-    it('sum of computed skills is 250', async () => {
+    it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
+        let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
+        const {0: skills, 1: potential, 2: prefPos} = computedSkills;
+        expected = [50, 50, 50, 50, 50];
+        for (sk = 0; sk < N_SKILLS; sk++) {
+            skills[sk].toNumber().should.be.equal(expected[sk]);
+        }
+        potential.toNumber().should.be.equal(0);
+        decodedPrefPos = await assets.decodePrefPos(prefPos).should.be.fulfilled;
+        decodedPrefPos[0].toNumber().should.be.equal(1); // defender
+        decodedPrefPos[1].toNumber().should.be.equal(1 + shirtNum);
+    });
+
+
+    it('computed prefPos gives correct number of defenders, mids, etc', async () => {
+        expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
+        for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
+            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            decodedPrefPos = await assets.decodePrefPos(computedSkills[2]).should.be.fulfilled;
+            decodedPrefPos[0].toNumber().should.be.equal(expectedPos[shirtNum]);
+            // skills = computedSkills[0];
+            // for (sk = 0; sk < N_SKILLS; sk++) console.log(shirtNum, ": ", skills[sk].toNumber());
+        }
+    });
+
+
+    it('sum of computed skills is close to 250', async () => {
         for (let i = 0; i < 10; i++) {
-            const seed = 32123;
-            const skills = await assets.computeSkills(seed).should.be.fulfilled;
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + i));
+            shirtNum = 3 + (seed % 15); // avoid goalkeepers
+            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            skills = computedSkills[0];
             const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-            sum.should.be.equal(250);
+            (Math.abs(sum - 250) < 5).should.be.equal(true);
         }
     });
 

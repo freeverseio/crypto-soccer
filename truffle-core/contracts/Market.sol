@@ -5,7 +5,7 @@ import "./Leagues.sol";
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */
 
-contract Market is Leagues {
+contract Market {
     uint8 constant internal SELL_MSG = 0;
     uint8 constant internal SELL_r   = 1;
     uint8 constant internal SELL_s   = 2;
@@ -17,7 +17,13 @@ contract Market is Leagues {
     uint8 constant internal PUT_FOR_SALE  = 1;
     uint8 constant internal MAKE_AN_OFFER = 2;
 
+    Assets private _assets;
+
     mapping (uint256 => uint256) private playerIdToTargetTeam;
+
+    function setAssetsAddress(address addr) public {
+        _assets = Assets(addr);
+    }
 
     function freezePlayer(
         bytes32 privHash,
@@ -38,13 +44,13 @@ contract Market is Leagues {
         require(!isFrozen(playerId), "player already frozen");
 
         // check assets are owned by someone
-        require(getOwnerPlayer(playerId) != address(0), "player not owned by anyone");
-        require(getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
+        require(_assets.getOwnerPlayer(playerId) != address(0), "player not owned by anyone");
+        require(_assets.getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
 
         // check signatures are valid by requiring that they own the asset:
-        require(getOwnerPlayer(playerId) == recoverAddr(sigs[SELL_MSG], vs[SELLER], sigs[SELL_r], sigs[SELL_s]),
+        require(_assets.getOwnerPlayer(playerId) == recoverAddr(sigs[SELL_MSG], vs[SELLER], sigs[SELL_r], sigs[SELL_s]),
             "seller is not owner of player, or seller signature is not valid");
-        require(getOwnerTeam(buyerTeamId) == recoverAddr(sigs[BUY_MSG], vs[BUYER], sigs[BUY_r], sigs[BUY_s]),
+        require(_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sigs[BUY_MSG], vs[BUYER], sigs[BUY_r], sigs[BUY_s]),
             "buyer is not owner of team, or buyer signature not valid");
 
         // check that they signed what they input data says they signed:
@@ -98,7 +104,7 @@ contract Market is Leagues {
     }
 
     function isFrozen(uint256 playerId) public view returns (bool) {
-        require(playerExists(playerId), "unexistent player");
+        require(_assets.playerExists(playerId), "unexistent player");
         return playerIdToTargetTeam[playerId] != 0;
     }
 
@@ -109,7 +115,7 @@ contract Market is Leagues {
 
     function completeFreeze(uint256 playerId) public {
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
-        transferPlayer(playerId, playerIdToTargetTeam[playerId]);
+        _assets.transferPlayer(playerId, playerIdToTargetTeam[playerId]);
     }
 
 }
