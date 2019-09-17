@@ -29,9 +29,6 @@ contract('Updates', (accounts) => {
         return closeEnough;
     };
     
-
-
-    
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         encoding = assets;
@@ -80,7 +77,7 @@ contract('Updates', (accounts) => {
         await isCloseEnough(newNow.toNumber(), now.toNumber() + extraTime).should.be.equal(true);
         await timeTravel.revertToSnapShot(snapshotId);
         newNow = await updates.getNow().should.be.fulfilled;
-        newNow.toNumber().should.be.equal(now.toNumber());
+        isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
     it('submitActions to timezone too early', async () =>  {
@@ -123,7 +120,7 @@ contract('Updates', (accounts) => {
         submissionTime = await assets.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
         timeZoneToUpdateAfter = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         isCloseEnough(timeZoneToUpdate[0].toNumber(), timeZoneToUpdateBefore[0].toNumber()).should.be.equal(true)
-        submissionTime.should.be.bignumber.equal(now);        
+        isCloseEnough(submissionTime.toNumber(), now.toNumber()).should.be.equal(true)
     });
 
     it('moveToNextVerse', async () =>  {
