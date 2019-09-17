@@ -39,7 +39,7 @@ contract Assets is Encoding {
     
     uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint256 constant public FREE_PLAYER_ID  = uint256(-1);
+    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -199,9 +199,6 @@ contract Assets is Encoding {
         require(isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
         require(addr != NULL_ADDR);
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds;
-        for (uint p = PLAYERS_PER_TEAM_INIT; p < PLAYERS_PER_TEAM_MAX; p++) {
-            playerIds[p] = FREE_PLAYER_ID;
-        }
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry] = Team(playerIds, addr);
     }
 
@@ -378,7 +375,12 @@ contract Assets is Encoding {
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry),"cannot query about the shirt of a Bot Team");
-        return _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum] == FREE_PLAYER_ID;
+        uint256 writtenId = _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtNum];
+        if (shirtNum > PLAYERS_PER_TEAM_INIT - 1) {
+            return (writtenId == 0 || writtenId == FREE_PLAYER_ID);
+        } else {
+            return writtenId == FREE_PLAYER_ID;
+        }
     }
     
     function secsToMonths(uint256 secs) private pure returns (uint256) {
