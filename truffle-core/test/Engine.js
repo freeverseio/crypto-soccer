@@ -17,7 +17,9 @@ contract('Engine', (accounts) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
             monthOfBirth = 0, 
-            playerId = 1
+            playerId = 1,
+            potential = 3,
+            prefPos = 5
         ).should.be.fulfilled;
 
         teamState = []

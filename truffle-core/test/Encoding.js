@@ -11,7 +11,24 @@ contract('Encoding', (accounts) => {
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
     });
-    
+
+    it('encodePrefPos', async () =>  {
+        encoded = await encoding.encodePrefPos(forwardness = 1, leftishness = 3).should.be.fulfilled;
+        decoded = await encoding.decodePrefPos(encoded).should.be.fulfilled;
+        const {0: fwd, 1: left} = decoded;
+        fwd.toNumber().should.be.equal(forwardness);
+        left.toNumber().should.be.equal(leftishness);
+        // leftishness = 0 only possible for goalkeepers:
+        await encoding.encodePrefPos(forwardness = 0, leftishness = 0).should.be.fulfilled
+        await encoding.encodePrefPos(forwardness = 1, leftishness = 0).should.be.rejected
+        // forwardness is 5 at max:
+        await encoding.encodePrefPos(forwardness = 5, leftishness = 1).should.be.fulfilled
+        await encoding.encodePrefPos(forwardness = 6, leftishness = 0).should.be.rejected
+        // leftishness is 7 at max:
+        await encoding.encodePrefPos(forwardness = 5, leftishness = 7).should.be.fulfilled
+        await encoding.encodePrefPos(forwardness = 6, leftishness = 8).should.be.rejected
+    });
+
     it('encoding of TZ and country in teamId and playerId', async () =>  {
         encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
         decoded = await encoding.decodeTZCountryAndVal(encoded).should.be.fulfilled;
@@ -27,9 +44,15 @@ contract('Encoding', (accounts) => {
             sk,
             monthOfBirth = 4, 
             playerId = 143,
+            potential = 5,
+            prefPos = 3
         ).should.be.fulfilled;
         result = await encoding.getMonthOfBirth(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
+        result = await encoding.getPotential(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(potential);
+        result = await encoding.getPrefPos(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(prefPos);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
         result = await encoding.getSkillsVec(skills).should.be.fulfilled;
