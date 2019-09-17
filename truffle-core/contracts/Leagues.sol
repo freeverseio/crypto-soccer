@@ -109,12 +109,12 @@ contract Leagues is Assets {
         {
             (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
             uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
+            uint8[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
             score = _engine.playMatch(
                 matchSeed, 
                 prevLeagueState[homeTeamIdx], 
                 prevLeagueState[visitorTeamIdx], 
-                tacticsIds[homeTeamIdx], 
-                tacticsIds[visitorTeamIdx]
+                tactics
             );
             evoPoint = computeEvolutionPoints(
                 prevLeagueState[homeTeamIdx], 
