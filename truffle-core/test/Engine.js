@@ -36,8 +36,8 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
-        const tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
-        const tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
+        tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine).should.be.fulfilled;
         });
@@ -174,8 +174,6 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6);
-        decoded = await encoding.decodeTactics(tacticsWrong).should.be.fulfilled;
-        let {0: line, 1: tact} = decoded;
         await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1]).should.be.rejected;
     });
 
