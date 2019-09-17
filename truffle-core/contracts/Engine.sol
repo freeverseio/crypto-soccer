@@ -46,7 +46,7 @@ contract Engine is Encoding{
         uint256 seed,
         uint256[MAX_NPLAYERS] memory state0,
         uint256[MAX_NPLAYERS] memory state1, 
-        uint8[2] memory tactics
+        uint256[2] memory tactics
     )
         public
         pure
@@ -54,12 +54,14 @@ contract Engine is Encoding{
     {
         // TODO: This function will fail if one of the first 11 players has been sold.
         //      ...this will be fixed when we define tactics properly.
-        (uint8[11][2] memory lineups, uint8[6][2] memory playersPerZone) = getLineUpAndPlayerPerZone(tactics);
+        uint8[11][2] memory lineups;
+        uint8[6][2] memory playersPerZone;
+        (lineups[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
+        (lineups[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
-        uint8[2] memory nAttackers;
         (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0]);
         (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1]);
         uint8 teamThatAttacks;
@@ -103,18 +105,15 @@ contract Engine is Encoding{
     // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getLineUpAndPlayerPerZone(uint8[2] memory tactics) 
-        internal 
+    function getLineUpAndPlayerPerZone(uint256 tactics) 
+        public 
         pure 
-        returns (uint8[11][2] memory lineups, uint8[6][2] memory playersPerZone) 
+        returns (uint8[11] memory lineup, uint8[6] memory playersPerZone) 
     {
         uint8 tacticsId;
-        (lineups[0], tacticsId) = decodeTactics(tactics[0]);
-        playersPerZone[0] = getPlayersPerZone(tacticsId);
-        (lineups[1], tacticsId) = decodeTactics(tactics[1]);
-        playersPerZone[1] = getPlayersPerZone(tacticsId);
+        (lineup, tacticsId) = decodeTactics(tactics);
+        return (lineup, getPlayersPerZone(tacticsId));
     }
-
 
     // TODO: can this be expressed as
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many
