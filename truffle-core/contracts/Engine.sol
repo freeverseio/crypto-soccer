@@ -11,9 +11,9 @@ contract Engine is Encoding{
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
     uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
     uint256 private constant MASK           = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
-    // // Idxs for vector of globSkills: [0=move2attack, 1=createShoot, 2=defendShoot, 3=blockShoot, 4=currentEndurance]
+    // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
-    uint8 private constant IDX_CREATES_HOOT = 1; 
+    uint8 private constant IDX_CREATE_SHOOT = 1; 
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
@@ -52,8 +52,6 @@ contract Engine is Encoding{
         pure
         returns (uint8[2] memory teamGoals) 
     {
-        // TODO: This function will fail if one of the first 11 players has been sold.
-        //      ...this will be fixed when we define tactics properly.
         uint8[11][2] memory lineups;
         uint8[6][2] memory playersPerZone;
         (lineups[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
@@ -62,10 +60,9 @@ contract Engine is Encoding{
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0]);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1]);
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0], lineups[0]);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1], lineups[1]);
         uint8 teamThatAttacks;
-
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
@@ -201,8 +198,8 @@ contract Engine is Encoding{
         returns (bool)
     {
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // defendShoot of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATES_HOOT]*6)/10,  // createShoot of attacking team.
+            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  // globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }
@@ -238,10 +235,10 @@ contract Engine is Encoding{
     // move2attack =    defence(defenders + 2*midfields + attackers) +
     //                  speed(defenders + 2*midfields) +
     //                  pass(defenders + 3*midfields)
-    // createShoot =    speed(attackers) + pass(attackers)
-    // defendShoot =    speed(defenders) + defence(defenders);
+    // globSkills[IDX_CREATE_SHOOT] =    speed(attackers) + pass(attackers)
+    // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[6] memory playersPerZone)
+    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[6] memory playersPerZone, uint8[11] memory lineup)
         public
         pure
         returns (
@@ -253,55 +250,54 @@ contract Engine is Encoding{
         attackersSpeed = new uint[](getNAtackers(playersPerZone)); 
         attackersShoot = new uint[](getNAtackers(playersPerZone)); 
 
-        uint move2attack;
-        uint createShoot;
-        uint defendShoot;
-        uint blockShoot;
-        uint endurance;
-
-        uint8 p = 0;
-
+        uint8 p;
+        uint256 playerState = teamState[lineup[p]];
+        
         // for a keeper, the 'shoot skill' is interpreted as block skill
-        blockShoot  += getShoot(teamState[p]); 
-        endurance   += getEndurance(teamState[p]);
-        p++;
+        globSkills[IDX_BLOCK_SHOOT] += getShoot(playerState);
+        globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
 
+        p++;
+        
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            move2attack += getDefence(teamState[p]) + getSpeed(teamState[p]) + getPass(teamState[p]);
-            defendShoot += getDefence(teamState[p]) + getSpeed(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
+            playerState = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerState) + getSpeed(playerState) + getPass(playerState);
+            globSkills[IDX_DEFEND_SHOOT] += getDefence(playerState) + getSpeed(playerState);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
             p++;
         }
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            move2attack += 2*getDefence(teamState[p]) + 2*getSpeed(teamState[p]) + 3*getPass(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
+            playerState = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += 2*getDefence(playerState) + 2*getSpeed(playerState) + 3*getPass(playerState);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
             p++;
         }
         // loop over strikers
         for (uint8 i = 0; i < getNAtackers(playersPerZone); i++) {
-            move2attack += getDefence(teamState[p]) ;
-            createShoot += getSpeed(teamState[p]) + getPass(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
-            attackersSpeed[i] = getSpeed(teamState[p]); 
-            attackersShoot[i] = getShoot(teamState[p]); 
+            playerState = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerState) ;
+            globSkills[IDX_CREATE_SHOOT] += getSpeed(playerState) + getPass(playerState);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
+            attackersSpeed[i] = getSpeed(playerState); 
+            attackersShoot[i] = getShoot(playerState); 
             p++;
         }
 
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (endurance < 500) {
-            endurance = 70;
-        } else if (endurance < 1400) {
-            endurance = 100 - (1400-endurance)/30;
+        if (globSkills[IDX_ENDURANCE] < 500) {
+            globSkills[IDX_ENDURANCE] = 70;
+        } else if (globSkills[IDX_ENDURANCE] < 1400) {
+            globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
         } else {
-            endurance = 100;
+            globSkills[IDX_ENDURANCE] = 100;
         }
 
         return (
-            [move2attack, createShoot, defendShoot, blockShoot, endurance],
+            globSkills,
             attackersSpeed,
             attackersShoot
         );
