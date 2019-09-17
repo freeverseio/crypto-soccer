@@ -11,10 +11,11 @@ contract('Assets', (accounts) => {
     const BOB = accounts[2];
     const CAROL = accounts[3];
     const N_SKILLS = 5;
+    let initTx = null;
 
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
-        await assets.init().should.be.fulfilled;
+        initTx = await assets.init().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
@@ -26,6 +27,14 @@ contract('Assets', (accounts) => {
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         });
+
+    it('check division event on init', async () => {
+        let timezone = 0;
+        truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
+            timezone++;
+            return event.timezone.should.be.bignumber.equal(timezone.toString()) && event.countryIdxInTZ.should.be.bignumber.equal('0') && event.divisionIdxInCountry.should.be.bignumber.equal('0');
+        });
+    });
 
     it('check cannot initialize contract twice', async () =>  {
         await assets.init().should.be.rejected;
