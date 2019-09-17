@@ -9,7 +9,7 @@ import "./Encoding.sol";
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
     event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
-    event DivisionCreation(uint8 timezone, uint256 contryIdxInTZ, uint256 divisionIdxInCountry);
+    event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
 
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds;
