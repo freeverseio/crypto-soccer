@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/market/notary/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/market/notary/contracts/market"
 )
 
@@ -20,6 +21,7 @@ type Ganache struct {
 	time          *Testutils
 	statesAddress common.Address
 	engineAddress common.Address
+	Assets        *assets.Assets
 	Market        *market.Market
 	Owner         *ecdsa.PrivateKey
 	Alice         *ecdsa.PrivateKey
@@ -52,6 +54,7 @@ func NewGanache() *Ganache {
 		common.Address{},
 		common.Address{},
 		nil,
+		nil,
 		creatorPrivateKey,
 		nil,
 		nil,
@@ -82,12 +85,12 @@ func (ganache *Ganache) CreateAccountWithBalance(wei string) *ecdsa.PrivateKey {
 	return privateKey
 }
 func (ganache *Ganache) GetPlayerOwner(playerId *big.Int) common.Address {
-	address, err := ganache.Market.GetOwnerPlayer(&bind.CallOpts{}, playerId)
+	address, err := ganache.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerId)
 	AssertNoErr(err, "Getting the player owner")
 	return address
 }
 func (ganache *Ganache) TransferPlayer(playerId *big.Int, toTeam *big.Int) error {
-	_, err := ganache.Market.TransferPlayer(
+	_, err := ganache.Assets.TransferPlayer(
 		bind.NewKeyedTransactor(ganache.Owner),
 		playerId,
 		toTeam)
@@ -131,19 +134,30 @@ func (ganache *Ganache) GetBalance(address common.Address) *big.Int {
 	AssertNoErr(err, "Failed GetBalance")
 	return balance
 }
-func (ganache *Ganache) deployMarket(owner *ecdsa.PrivateKey) {
-	address, _, contract, err := market.DeployMarket(
-		bind.NewKeyedTransactor(owner),
-		ganache.Client,
-	)
-	AssertNoErr(err, "DeployAssets failed")
-	ganache.Market = contract
-	fmt.Println("Assets deployed at:", address.Hex())
-	ganache.Market.Init(bind.NewKeyedTransactor(owner))
-}
 
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	// ganache.deployStates(owner)
 	// ganache.deployAssets(owner)
-	ganache.deployMarket(owner)
+	assetsAddress, _, assetsContract, err := assets.DeployAssets(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployAssets failed")
+	fmt.Println("Assets deployed at:", assetsAddress.Hex())
+
+	_, err = assetsContract.Init(bind.NewKeyedTransactor(owner))
+	AssertNoErr(err, "Init Assets")
+
+	marketAddress, _, marketContract, err := market.DeployMarket(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployMarket failed")
+	fmt.Println("Assets deployed at:", marketAddress.Hex())
+
+	_, err = marketContract.SetAssetsAddress(bind.NewKeyedTransactor(owner), assetsAddress)
+	AssertNoErr(err, "Setting Assets contract address")
+
+	ganache.Assets = assetsContract
+	ganache.Market = marketContract
 }
