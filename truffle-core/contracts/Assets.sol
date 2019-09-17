@@ -9,6 +9,7 @@ import "./Encoding.sol";
 contract Assets is Encoding {
     event TeamTransfer(uint256 teamId, address to);
     event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
+    event DivisionCreation(uint8 timezone, uint256 contryIdxInTZ, uint256 divisionIdxInCountry);
 
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds;
@@ -88,6 +89,7 @@ contract Assets is Encoding {
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
+        emit DivisionCreation(tz, 0, 0);
     }
 
     function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
