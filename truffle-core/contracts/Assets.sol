@@ -47,14 +47,7 @@ contract Assets is Encoding {
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
-    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
-    uint8 constant public IDX_GK = 0;
-    uint8 constant public IDX_D  = 1;
-    uint8 constant public IDX_M  = 2;
-    uint8 constant public IDX_F  = 3;
-    uint8 constant public IDX_MD = 4;
-    uint8 constant public IDX_MF = 5;
-    
+   
     // skills idxs: Defence, Speed, Pass, Shoot, Endurance
     uint8 constant public SK_SHO = 0;
     uint8 constant public SK_SPE = 1;
@@ -265,8 +258,8 @@ contract Assets is Encoding {
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationMonth, uint256 playerId) internal pure returns (uint256) {
         uint256 monthOfBirth;
         (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
-        (uint16[N_SKILLS] memory skills, uint8 potential, uint8 prefPos) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, prefPos);
+        (uint16[N_SKILLS] memory skills, uint8 potential, uint8 forwardness, uint8 leftishness) = computeSkills(dna, shirtNum);
+        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -303,50 +296,53 @@ contract Assets is Encoding {
     /// skills have currently, 16bits each, and there are 5 of them
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-    /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 prefPos
-    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8, uint8) {
+    /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8, uint8, uint8) {
         uint16[5] memory skills;
         uint16[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
-        uint8 prefPos;
+        uint8 forwardness;
+        uint8 leftishness;
         dna >>= 4; // log2(10) = 3.3 => ceil = 4
         if (shirtNum < 3) {
             // 3 GoalKeepers:
             skills[SK_SHO] = 30 + uint16(dna % 40);
-            return (skills, potential, encodePrefPos(IDX_GK, 0));
+            return (skills, potential, IDX_GK, 0);
         } else if (shirtNum < 8) {
             // 5 Defenders
             correctFactor[SK_SHO] = 40;
             correctFactor[SK_DEF] = 160;
-            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
-            prefPos = encodePrefPos(IDX_D, leftishness);
+            forwardness = IDX_D;
+            leftishness = uint8(1+ ((dna + shirtNum) % 7));
         } else if (shirtNum < 10) {
             // 2 Pure Midfielders
             correctFactor[SK_PAS] = 160;
-            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
-            prefPos = encodePrefPos(IDX_M, leftishness);                        
+            forwardness = IDX_M;
+            leftishness = uint8(1+ ((dna + shirtNum) % 7));
         } else if (shirtNum < 12) {
             // 2 Defensive Midfielders
             correctFactor[SK_PAS] = 130;
             correctFactor[SK_SHO] = 70;
-            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
-            prefPos = encodePrefPos(IDX_MD, leftishness);                        
+            forwardness = IDX_MD;
+            leftishness = uint8(1+ ((dna + shirtNum) % 7));
         } else if (shirtNum < 14) {
             // 2 Attachking Midfielders
             correctFactor[SK_PAS] = 130;
             correctFactor[SK_DEF] = 70;
-            uint8 leftishness = uint8(1+ ((dna + shirtNum) % 7));
-            prefPos = encodePrefPos(IDX_MF, leftishness);                        
+            forwardness = IDX_MF;
+            leftishness = uint8(1+ ((dna + shirtNum) % 7));
         } else if (shirtNum < 16) {
             // 2 Forwards that play center-left
             correctFactor[SK_SHO] = 160;
             correctFactor[SK_DEF] = 70;
-            prefPos = encodePrefPos(IDX_F, 6);                        
+            forwardness = IDX_F;
+            leftishness = 6;
         } else {
             // 2 Forwards that play center-right
             correctFactor[SK_SHO] = 160;
             correctFactor[SK_DEF] = 70;
-            prefPos = encodePrefPos(IDX_F, 3);                        
+            forwardness = IDX_F;
+            leftishness = 3;
         }
         dna >>= 51; // log2(7) = 2.9 => ceil = 3, times 17 players => 51                       
 
@@ -367,7 +363,7 @@ contract Assets is Encoding {
             uint16 delta = (250 - excess) / N_SKILLS;
             for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
         }
-        return (skills, potential, prefPos);
+        return (skills, potential, forwardness, leftishness);
     }
     
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {

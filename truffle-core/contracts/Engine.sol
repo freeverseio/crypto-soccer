@@ -250,38 +250,38 @@ contract Engine is Encoding{
         attackersSpeed = new uint[](getNAtackers(playersPerZone)); 
         attackersShoot = new uint[](getNAtackers(playersPerZone)); 
 
-        uint8 p;
-        uint256 playerState = teamState[lineup[p]];
         
         // for a keeper, the 'shoot skill' is interpreted as block skill
-        globSkills[IDX_BLOCK_SHOOT] += getShoot(playerState);
-        globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
+        uint256 playerSkills = teamState[lineup[0]];
+        // require(getForwardness(playerSkills) == IDX_GK, "wrong lineup: the first idx should be a goalkeeper");
+        globSkills[IDX_BLOCK_SHOOT] += getShoot(playerSkills);
+        globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
 
-        p++;
         
+        uint8 p = 1;
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            playerState = teamState[lineup[p]];
-            globSkills[IDX_MOVE2ATTACK] += getDefence(playerState) + getSpeed(playerState) + getPass(playerState);
-            globSkills[IDX_DEFEND_SHOOT] += getDefence(playerState) + getSpeed(playerState);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills);
+            globSkills[IDX_DEFEND_SHOOT] += getDefence(playerSkills) + getSpeed(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
             p++;
         }
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            playerState = teamState[lineup[p]];
-            globSkills[IDX_MOVE2ATTACK] += 2*getDefence(playerState) + 2*getSpeed(playerState) + 3*getPass(playerState);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += 2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
             p++;
         }
         // loop over strikers
         for (uint8 i = 0; i < getNAtackers(playersPerZone); i++) {
-            playerState = teamState[lineup[p]];
-            globSkills[IDX_MOVE2ATTACK] += getDefence(playerState) ;
-            globSkills[IDX_CREATE_SHOOT] += getSpeed(playerState) + getPass(playerState);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerState);
-            attackersSpeed[i] = getSpeed(playerState); 
-            attackersShoot[i] = getShoot(playerState); 
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) ;
+            globSkills[IDX_CREATE_SHOOT] += getSpeed(playerSkills) + getPass(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
+            attackersSpeed[i] = getSpeed(playerSkills); 
+            attackersShoot[i] = getShoot(playerSkills); 
             p++;
         }
 

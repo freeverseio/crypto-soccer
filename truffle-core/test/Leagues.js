@@ -18,7 +18,8 @@ contract('Leagues', (accounts) => {
             monthOfBirth = 0, 
             playerId = 1,
             potential = 3,
-            prefPos = 6
+            forwardness = 3,
+            leftishness = 2
         ).should.be.fulfilled;
 
         teamState = []

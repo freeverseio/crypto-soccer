@@ -11,6 +11,14 @@ contract Encoding {
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
     uint8 constant public N_SKILLS = 5;
 
+    // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
+    uint8 constant public IDX_GK = 0;
+    uint8 constant public IDX_D  = 1;
+    uint8 constant public IDX_M  = 2;
+    uint8 constant public IDX_F  = 3;
+    uint8 constant public IDX_MD = 4;
+    uint8 constant public IDX_MF = 5;
+
 
     /**
      * @dev encoding of a total of 61 bits:
@@ -41,31 +49,6 @@ contract Encoding {
     }
     
     /**
-     * @dev encoding of a total of 10 bits:
-     *      forwardness            = 3 bits
-     *                               GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
-     *
-     *      leftishness            = 3 bits, in boolean triads: (L, C, R):
-     *                               0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
-    **/
-    function encodePrefPos(uint8 forwardness, uint8 leftishness) public pure returns (uint8)
-    {
-        require(forwardness < 6, "forwardness out of bound");
-        require(leftishness < 8, "leftishness out of bound");
-        if (leftishness == 0) require(forwardness == 0, "leftishnes can only be zero for goalkeepers");
-        uint8 encoded  = forwardness << 3;
-        return (encoded | leftishness);
-    }
-
-    // @returns (uint8 forwardness, uint8 leftishness)
-    function decodePrefPos(uint8 prefPos) public pure returns (uint8, uint8)
-    {
-        // 2**3 - 1 = 7;  
-        return (prefPos >> 3, prefPos & 7);
-    }
-
-
-    /**
      * @dev encoding of a total of 43 bits:
      *      timeZone                  = 5 bits
      *      countryIdxInTZ            = 10 bits
@@ -88,33 +71,49 @@ contract Encoding {
     }
 
     /**
-     * @dev encoding of a total of 62 bits:
+     * @dev encoding of a total of 137 bits:  6*14 + 4 + 3+ 3 + 43
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
      *      potential                 = 4 bits (number is limited to [0,...,9])
-     *      prefPos                   = 6 bits  
      *      monthOfBirth              = 14 bits  (since Unix time)
+     *      forwardness               = 3 bits
+     *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
+     *      leftishness               = 3 bits, in boolean triads: (L, C, R):
+     *                                  0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
      *      playerId                  = 43 bits
     **/
-    function encodePlayerSkills(uint16[N_SKILLS] memory skills, uint256 monthOfBirth, uint256 playerId, uint8 potential, uint8 prefPos)
+    function encodePlayerSkills(
+        uint16[N_SKILLS] memory skills, 
+        uint256 monthOfBirth, 
+        uint256 playerId, 
+        uint8 potential, 
+        uint8 forwardness, 
+        uint8 leftishness
+    )
         public
         pure
         returns (uint256 encoded)
     {
+        // checks:
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             require(skills[sk] < 2**14, "skill out of bound");
         }
         require(potential < 10, "potential out of bound");
-        require(prefPos < 2**6, "prefPos out of bound");
+        require(forwardness < 6, "prefPos out of bound");
+        require(leftishness < 8, "prefPos out of bound");
+        if (leftishness == 0) require(forwardness == 0, "leftishnes can only be zero for goalkeepers");
         require(monthOfBirth < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
+
+        // start encoding:
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             encoded |= uint256(skills[sk]) << 256 - (sk + 1) * 14;
         }
         encoded |= monthOfBirth << 172;
         encoded |= playerId << 129;
         encoded |= uint256(potential) << 125;
-        return (encoded | uint256(prefPos) << 119);
+        encoded |= uint256(forwardness) << 122;
+        return (encoded | uint256(leftishness) << 119);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -145,8 +144,12 @@ contract Encoding {
         return uint256(encodedSkills >> 125 & 15);
     }
 
-    function getPrefPos(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 119 & 63);
+    function getForwardness(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 122 & 7);
+    }
+
+    function getLeftishness(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 119 & 7);
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {

@@ -31,23 +31,6 @@ contract('Encoding', (accounts) => {
         encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
     });
     
-    it('encodePrefPos', async () =>  {
-        encoded = await encoding.encodePrefPos(forwardness = 1, leftishness = 3).should.be.fulfilled;
-        decoded = await encoding.decodePrefPos(encoded).should.be.fulfilled;
-        const {0: fwd, 1: left} = decoded;
-        fwd.toNumber().should.be.equal(forwardness);
-        left.toNumber().should.be.equal(leftishness);
-        // leftishness = 0 only possible for goalkeepers:
-        await encoding.encodePrefPos(forwardness = 0, leftishness = 0).should.be.fulfilled
-        await encoding.encodePrefPos(forwardness = 1, leftishness = 0).should.be.rejected
-        // forwardness is 5 at max:
-        await encoding.encodePrefPos(forwardness = 5, leftishness = 1).should.be.fulfilled
-        await encoding.encodePrefPos(forwardness = 6, leftishness = 0).should.be.rejected
-        // leftishness is 7 at max:
-        await encoding.encodePrefPos(forwardness = 5, leftishness = 7).should.be.fulfilled
-        await encoding.encodePrefPos(forwardness = 6, leftishness = 8).should.be.rejected
-    });
-
     it('encoding of TZ and country in teamId and playerId', async () =>  {
         encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
         decoded = await encoding.decodeTZCountryAndVal(encoded).should.be.fulfilled;
@@ -64,14 +47,17 @@ contract('Encoding', (accounts) => {
             monthOfBirth = 4, 
             playerId = 143,
             potential = 5,
-            prefPos = 3
+            forwardness = 3,
+            leftishness = 4
         ).should.be.fulfilled;
         result = await encoding.getMonthOfBirth(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
         result = await encoding.getPotential(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(potential);
-        result = await encoding.getPrefPos(skills).should.be.fulfilled;
-        result.toNumber().should.be.equal(prefPos);
+        result = await encoding.getForwardness(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(forwardness);
+        result = await encoding.getLeftishness(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(leftishness);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
         result = await encoding.getSkillsVec(skills).should.be.fulfilled;
@@ -80,6 +66,21 @@ contract('Encoding', (accounts) => {
         }
     });
 
+    it('encoding skills with wrong forwardness and leftishness', async () =>  {
+        sk = [16383, 13, 4, 56, 456];
+        monthOfBirth = 4;
+        playerId = 143;
+        potential = 5;
+        // leftishness = 0 only possible for goalkeepers:
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 0, leftishness = 0).should.be.fulfilled;
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 1, leftishness = 0).should.be.rejected;
+        // forwardness is 5 at max:
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 5, leftishness = 1).should.be.fulfilled;
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 6, leftishness = 1).should.be.rejected;
+        // leftishness is 7 at max:
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 5, leftishness = 7).should.be.fulfilled;
+        await encoding.encodePlayerSkills(sk, monthOfBirth, playerId, potential, forwardness = 5, leftishness = 8).should.be.rejected;
+    });
     
     it('encode decode player state', async () => {
         const playerId = 231;
