@@ -11,7 +11,7 @@ contract Assets is Encoding {
     event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
 
     struct Team {
-        uint256[PLAYERS_PER_TEAM_MAX] playerIds;
+        uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
         address owner;
     }
 
@@ -37,8 +37,6 @@ contract Assets is Encoding {
         uint256 lastMarketClosureBlockNum;
     }    
     
-    uint8 constant public PLAYERS_PER_TEAM_INIT = 18;
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 constant public N_SKILLS = 5;
     uint8 constant public LEAGUES_PER_DIV = 16;

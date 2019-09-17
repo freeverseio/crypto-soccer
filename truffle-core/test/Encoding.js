@@ -11,7 +11,26 @@ contract('Encoding', (accounts) => {
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
     });
-
+    
+    it('encodeTactics', async () =>  {
+        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
+        lineup = Array.from(new Array(11), (x,i) => i);
+        encoded = await encoding.encodeTactics(lineup, tacticsId = 2).should.be.fulfilled;
+        decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
+        let {0: line, 1: tact} = decoded;
+        tact.toNumber().should.be.equal(tacticsId);
+        for (p = 0; p < 11; p++) {
+            line[p].toNumber().should.be.equal(lineup[p]);
+        }
+        // try to provide a lineup beyond range
+        lineupWrong = lineup;
+        lineupWrong[4] = PLAYERS_PER_TEAM_MAX;
+        encoded = await encoding.encodeTactics(lineup, tacticsId = 2).should.be.rejected;
+        // try to provide a tacticsId beyond range
+        encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
+    });
+    
     it('encodePrefPos', async () =>  {
         encoded = await encoding.encodePrefPos(forwardness = 1, leftishness = 3).should.be.fulfilled;
         decoded = await encoding.decodePrefPos(encoded).should.be.fulfilled;

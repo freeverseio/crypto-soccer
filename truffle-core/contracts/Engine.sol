@@ -17,7 +17,23 @@ contract Engine is Encoding{
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
+    
+    bool dummyBoolToEstimateCost;
 
+    // mock up to estimate cost of a match.
+    // to be removed before deployment
+    function playMatchWithCost(
+        uint256 seed,
+        uint256[MAX_NPLAYERS] memory state0,
+        uint256[MAX_NPLAYERS] memory state1, 
+        uint8 tacticId0, 
+        uint8 tacticId1
+    )
+        public
+    {
+        playMatch(seed, state0, state1, tacticId0, tacticId1);
+        dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
+    }
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
@@ -38,51 +54,70 @@ contract Engine is Encoding{
         pure
         returns (uint8[2] memory teamGoals) 
     {
-        // TODO: This function will fail if one of the first 11 players has been sold.
-        //      ...this will be fixed when we define tactics properly.
-        uint8[3] memory tactic0 = getTacticsArray(tacticId0);
-        uint8[3] memory tactic1 = getTacticsArray(tacticId1);
-        uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
-        uint[5][2] memory globSkills;
-        uint[][2] memory attackersSpeed;
-        uint[][2] memory attackersShoot;
-        uint8[2] memory nAttackers;
-        // TODO: ugly
-        nAttackers[0] = tactic0[2];
-        nAttackers[1] = tactic1[2];
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
-        uint8 teamThatAttacks;
+        // // TODO: This function will fail if one of the first 11 players has been sold.
+        // //      ...this will be fixed when we define tactics properly.
+        // uint8[3] memory tactic0 = getTacticsArray(tacticId0);
+        // uint8[3] memory tactic1 = getTacticsArray(tacticId1);
+        // uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
+        // uint[5][2] memory globSkills;
+        // uint[][2] memory attackersSpeed;
+        // uint[][2] memory attackersShoot;
+        // uint8[2] memory nAttackers;
+        // // TODO: ugly
+        // nAttackers[0] = tactic0[2];
+        // nAttackers[1] = tactic1[2];
+        // (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
+        // (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
+        // uint8 teamThatAttacks;
 
-        for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
-            if ((round == 8) || (round == 13)) {
-                (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
-            }
-            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
-                if ( managesToScore(
-                    nAttackers[teamThatAttacks],
-                    attackersSpeed[teamThatAttacks],
-                    attackersShoot[teamThatAttacks],
-                    globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
-                    rnds[4*round+2],
-                    rnds[4*round+3]
-                    )
-                ) 
-                {
-                    teamGoals[teamThatAttacks]++;
-                }
-            }
-        }
-        return teamGoals;
+        // for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
+        //     if ((round == 8) || (round == 13)) {
+        //         (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
+        //     }
+        //     teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
+        //     if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+        //         if ( managesToScore(
+        //             nAttackers[teamThatAttacks],
+        //             attackersSpeed[teamThatAttacks],
+        //             attackersShoot[teamThatAttacks],
+        //             globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
+        //             rnds[4*round+2],
+        //             rnds[4*round+3]
+        //             )
+        //         ) 
+        //         {
+        //             teamGoals[teamThatAttacks]++;
+        //         }
+        //     }
+        // }
+        // return teamGoals;
     }
 
-    function getTacticsArray(uint8 tacticsId) internal pure returns (uint8[3] memory) {
-        require(tacticsId < 4);
-        if (tacticsId == 0) return [4,4,2];
-        if (tacticsId == 1) return [5,4,1];
-        if (tacticsId == 2) return [4,3,3];
-        if (tacticsId == 3) return [4,5,1];
+    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
+    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
+    // function getLineUpAndTactics(uint8 tactics) 
+    //     internal 
+    //     pure 
+    //     returns (uint8[PLAYERS_PER_TEAM_MAX] memory, uint8[6] memory) 
+    // {
+    //     (uint8[PLAYERS_PER_TEAM_MAX] memory lineup, uint8 tacticsId) = decodeTactics(tactics);
+    //     return (lineup, getPlayersPerZone(tacticsId));
+    // }
+
+
+    // TODO: can this be expressed as constants?
+    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
+    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
+    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[6] memory) {
+        require(tacticsId < 4, "we currently support only 4 different tactics");
+        if (tacticsId == 0) return [1,2,1,2,0,2];  // 0 = 442
+        if (tacticsId == 1) return [1,3,1,2,0,1];  // 0 = 541
+        if (tacticsId == 2) return [1,2,1,1,1,1];  // 0 = 433
+        if (tacticsId == 3) return [1,2,1,3,0,1];  // 0 = 451
     }
 
     /// @dev Rescales global skills of both teams according to their endurance

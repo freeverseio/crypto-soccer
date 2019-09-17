@@ -49,6 +49,10 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
 
+    // it('play a match to estimate cost', async () => {
+    //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+    // });
+
     it('play a match', async () => {
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
         result[0].toNumber().should.be.equal(17);
