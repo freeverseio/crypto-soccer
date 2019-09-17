@@ -1,4 +1,5 @@
 function Resolvers({
+  assets,
   market,
   from
 }) {
@@ -8,10 +9,10 @@ function Resolvers({
 
   this.Mutation = {
     transferFirstBotToAddr: async (_, { timezone, countryIdxInTimezone, address }) => {
-      const gas = await market.methods
+      const gas = await assets.methods
         .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
         .estimateGas();
-      await market.methods
+      await assets.methods
         .transferFirstBotToAddr(timezone, countryIdxInTimezone, address)
         .send({ from, gas });
       return true;
