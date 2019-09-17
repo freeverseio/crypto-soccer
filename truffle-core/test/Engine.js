@@ -9,8 +9,12 @@ const Engine = artifacts.require('Engine');
 
 contract('Engine', (accounts) => {
     const seed = 610106;
-    const tactic0 = 0; // 442
-    const tactic1 = 1; // 541
+    const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
+    const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
+    const tacticId0 = 0; // 442
+    const tacticId1 = 2; // 433
+    const playersPerZone0 = [1,2,1,2,0,2];
+    const playersPerZone1 = [1,2,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
 
     const createTeamStateFromSinglePlayer = async (skills, engine) => {
@@ -19,7 +23,8 @@ contract('Engine', (accounts) => {
             monthOfBirth = 0, 
             playerId = 1,
             potential = 3,
-            prefPos = 5
+            forwardness = 3,
+            leftishness = 2
         ).should.be.fulfilled;
 
         teamState = []
@@ -31,8 +36,10 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
-        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
+        tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
+        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine).should.be.fulfilled;
+        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine).should.be.fulfilled;
         });
 
     it('teams get tired', async () => {
@@ -49,8 +56,12 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
 
+    // it('play a match to estimate cost', async () => {
+    //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+    // });
+
     it('play a match', async () => {
-        const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+        const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(17);
         result[1].toNumber().should.be.equal(0);
     });
@@ -134,7 +145,8 @@ contract('Engine', (accounts) => {
         // endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
-        let result = await engine.getTeamGlobSkills(teamStateAll1, [4,4,2]).should.be.fulfilled;
+        
+        let result = await engine.getTeamGlobSkills(teamStateAll1, playersPerZone0, lineup0).should.be.fulfilled;
         result.attackersSpeed.length.should.be.equal(2);
         result.attackersShoot.length.should.be.equal(2);
         result.attackersSpeed[0].should.be.bignumber.equal("1");
@@ -148,38 +160,38 @@ contract('Engine', (accounts) => {
         result.globSkills[4].should.be.bignumber.equal("70");
     });
 
-    it('play match with less or more than 11 players', async () => {
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
-        wrongTeam = [0,1,2,3,4,5,6,7,8,9];
-        await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
-        wrongTeam = [0,1,2,3,4,5,6,7,8,9,10,11];
-        await engine.playMatch(seed, wrongTeam, teamStateAll50, tactic0, tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, wrongTeam, tactic0, tactic1).should.be.rejected;
+    it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
+        tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6).should.be.fulfilled;
+        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
+    });
+
+    it('getLineUpAndPlayerPerZone', async () => {
+        result = await engine.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
+        let {0: line, 1: playersPerZone} = result;
+        for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone1[p]);
+        for (p = 0; p < 11; p++) line[p].toNumber().should.be.equal(lineup1[p]);
     });
 
     it('play match with wrong tactic', async () => {
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 6, tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, 7, tactic1).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 8).should.be.rejected;
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, tactic0, 9).should.be.rejected;
+        tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6);
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1]).should.be.rejected;
     });
 
 
     it('different team state => different result', async () => {
-        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+        result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(14);
         result[1].toNumber().should.be.equal(0);
     });
 
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, tactic0, tactic1).should.be.fulfilled;
+        result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(1);
         result[1].toNumber().should.be.equal(0);
     });

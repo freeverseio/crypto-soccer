@@ -450,25 +450,22 @@ contract('Assets', (accounts) => {
 
     it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
-        const {0: skills, 1: potential, 2: prefPos} = computedSkills;
+        const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = computedSkills;
         expected = [50, 50, 50, 50, 50];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
         potential.toNumber().should.be.equal(0);
-        decodedPrefPos = await assets.decodePrefPos(prefPos).should.be.fulfilled;
-        decodedPrefPos[0].toNumber().should.be.equal(1); // defender
-        decodedPrefPos[1].toNumber().should.be.equal(1 + shirtNum);
+        forwardness.toNumber().should.be.equal(1); // defender
+        leftishness.toNumber().should.be.equal(1 + shirtNum);
     });
-
 
     it('computed prefPos gives correct number of defenders, mids, etc', async () => {
         expectedPos = [ 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 4, 4, 5, 5, 3, 3, 3, 3 ];
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
             computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
-            decodedPrefPos = await assets.decodePrefPos(computedSkills[2]).should.be.fulfilled;
-            decodedPrefPos[0].toNumber().should.be.equal(expectedPos[shirtNum]);
+            computedSkills[2].toNumber().should.be.equal(expectedPos[shirtNum]);
             // skills = computedSkills[0];
             // for (sk = 0; sk < N_SKILLS; sk++) console.log(shirtNum, ": ", skills[sk].toNumber());
         }
@@ -486,11 +483,11 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('get shirtNum in team for all players in a country', async () => {
-        tz = 0;
+    it('get shirtNum in team for many players in a country', async () => {
+        tz = 1;
         countryIdxInTZ = 0;
         playersInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT
-        for (let playerIdxInCountry = 0; playerId < playersInCountry ; playerId++){
+        for (let playerIdxInCountry = 0; playerIdxInCountry < playersInCountry ; playerIdxInCountry += 77){
             playerId    = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
             const playerState = await assets.getPlayerState(playerId).should.be.fulfilled;
             const shirtNum = await assets.getCurrentShirtNum(playerState).should.be.fulfilled;

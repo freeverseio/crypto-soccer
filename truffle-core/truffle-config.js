@@ -32,5 +32,12 @@ module.exports = {
     //   provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
     //   network_id: 3
     // },
-  }
+    
+  },
+  
+  // Set default mocha options here, use special reporters etc.
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   // timeout: 100000
+  // },
 }

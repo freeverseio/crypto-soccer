@@ -11,49 +11,58 @@ contract Engine is Encoding{
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
     uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
     uint256 private constant MASK           = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
-    // // Idxs for vector of globSkills: [0=move2attack, 1=createShoot, 2=defendShoot, 3=blockShoot, 4=currentEndurance]
+    // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
-    uint8 private constant IDX_CREATES_HOOT = 1; 
+    uint8 private constant IDX_CREATE_SHOOT = 1; 
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
+    
+    bool dummyBoolToEstimateCost;
 
+    // // mock up to estimate cost of a match.
+    // // to be removed before deployment
+    // function playMatchWithCost(
+    //     uint256 seed,
+    //     uint256[MAX_NPLAYERS] memory state0,
+    //     uint256[MAX_NPLAYERS] memory state1, 
+    //     uint8 tacticId0, 
+    //     uint8 tacticId1
+    // )
+    //     public
+    // {
+    //     playMatch(seed, state0, state1, tacticId0, tacticId1);
+    //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
+    // }
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
      * @param state0 a vector with the state of the players of team 0
      * @param state1 a vector with the state of the players of team 1
-     * @param tacticId0 a vector with the tacticId (ex. 0 for [4,4,2]) of team 0 
-     * @param tacticId1 a vector with the tacticId (ex. 0 for [4,4,2]) of team 1
+     * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
     function playMatch(
         uint256 seed,
         uint256[MAX_NPLAYERS] memory state0,
         uint256[MAX_NPLAYERS] memory state1, 
-        uint8 tacticId0, 
-        uint8 tacticId1
+        uint256[2] memory tactics
     )
         public
         pure
         returns (uint8[2] memory teamGoals) 
     {
-        // TODO: This function will fail if one of the first 11 players has been sold.
-        //      ...this will be fixed when we define tactics properly.
-        uint8[3] memory tactic0 = getTacticsArray(tacticId0);
-        uint8[3] memory tactic1 = getTacticsArray(tacticId1);
+        uint8[11][2] memory lineups;
+        uint8[6][2] memory playersPerZone;
+        (lineups[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
+        (lineups[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
-        uint8[2] memory nAttackers;
-        // TODO: ugly
-        nAttackers[0] = tactic0[2];
-        nAttackers[1] = tactic1[2];
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, tactic0);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, tactic1);
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0], lineups[0]);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1], lineups[1]);
         uint8 teamThatAttacks;
-
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
@@ -61,7 +70,7 @@ contract Engine is Encoding{
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(
-                    nAttackers[teamThatAttacks],
+                    getNAtackers(playersPerZone[teamThatAttacks]),
                     attackersSpeed[teamThatAttacks],
                     attackersShoot[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
@@ -76,13 +85,44 @@ contract Engine is Encoding{
         }
         return teamGoals;
     }
+    
+    function getNDefenders(uint8[6] memory playersPerZone) private pure returns (uint8) {
+        return 2 * playersPerZone[0] + playersPerZone[1];
+    }
 
-    function getTacticsArray(uint8 tacticsId) internal pure returns (uint8[3] memory) {
-        require(tacticsId < 4);
-        if (tacticsId == 0) return [4,4,2];
-        if (tacticsId == 1) return [5,4,1];
-        if (tacticsId == 2) return [4,3,3];
-        if (tacticsId == 3) return [4,5,1];
+    function getNMidfielders(uint8[6] memory playersPerZone) private pure returns (uint8) {
+        return 2 * playersPerZone[2] + playersPerZone[3];
+    }
+
+    function getNAtackers(uint8[6] memory playersPerZone) private pure returns (uint8) {
+        return 2 * playersPerZone[4] + playersPerZone[5];
+    }
+
+    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
+    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
+    function getLineUpAndPlayerPerZone(uint256 tactics) 
+        public 
+        pure 
+        returns (uint8[11] memory lineup, uint8[6] memory playersPerZone) 
+    {
+        uint8 tacticsId;
+        (lineup, tacticsId) = decodeTactics(tactics);
+        return (lineup, getPlayersPerZone(tacticsId));
+    }
+
+    // TODO: can this be expressed as
+    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
+    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
+    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
+    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
+    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[6] memory) {
+        require(tacticsId < 4, "we currently support only 4 different tactics");
+        if (tacticsId == 0) return [1,2,1,2,0,2];  // 0 = 442
+        if (tacticsId == 1) return [1,3,1,2,0,1];  // 0 = 541
+        if (tacticsId == 2) return [1,2,1,1,1,1];  // 0 = 433
+        if (tacticsId == 3) return [1,2,1,3,0,1];  // 0 = 451
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
@@ -158,8 +198,8 @@ contract Engine is Encoding{
         returns (bool)
     {
         return throwDice(
-            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // defendShoot of defending team against...
-            (globSkills[teamThatAttacks][IDX_CREATES_HOOT]*6)/10,  // createShoot of attacking team.
+            globSkills[1-teamThatAttacks][IDX_DEFEND_SHOOT],       // globSkills[IDX_DEFEND_SHOOT] of defending team against...
+            (globSkills[teamThatAttacks][IDX_CREATE_SHOOT]*6)/10,  // globSkills[IDX_CREATE_SHOOT] of attacking team.
             rndNum
         ) == 1 ? true : false;
     }
@@ -195,10 +235,10 @@ contract Engine is Encoding{
     // move2attack =    defence(defenders + 2*midfields + attackers) +
     //                  speed(defenders + 2*midfields) +
     //                  pass(defenders + 3*midfields)
-    // createShoot =    speed(attackers) + pass(attackers)
-    // defendShoot =    speed(defenders) + defence(defenders);
+    // globSkills[IDX_CREATE_SHOOT] =    speed(attackers) + pass(attackers)
+    // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[3] memory tactic)
+    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[6] memory playersPerZone, uint8[11] memory lineup)
         public
         pure
         returns (
@@ -207,58 +247,57 @@ contract Engine is Encoding{
             uint[] memory attackersShoot
         )
     {
-        attackersSpeed = new uint[](tactic[2]); 
-        attackersShoot = new uint[](tactic[2]); 
+        attackersSpeed = new uint[](getNAtackers(playersPerZone)); 
+        attackersShoot = new uint[](getNAtackers(playersPerZone)); 
 
-        uint move2attack;
-        uint createShoot;
-        uint defendShoot;
-        uint blockShoot;
-        uint endurance;
-
-        uint8 p = 0;
-
+        
         // for a keeper, the 'shoot skill' is interpreted as block skill
-        blockShoot  += getShoot(teamState[p]); 
-        endurance   += getEndurance(teamState[p]);
-        p++;
+        uint256 playerSkills = teamState[lineup[0]];
+        // require(getForwardness(playerSkills) == IDX_GK, "wrong lineup: the first idx should be a goalkeeper");
+        globSkills[IDX_BLOCK_SHOOT] += getShoot(playerSkills);
+        globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
 
+        
+        uint8 p = 1;
         // loop over defenders
-        for (uint8 i = 0; i < tactic[0]; i++) {
-            move2attack += getDefence(teamState[p]) + getSpeed(teamState[p]) + getPass(teamState[p]);
-            defendShoot += getDefence(teamState[p]) + getSpeed(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
+        for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills);
+            globSkills[IDX_DEFEND_SHOOT] += getDefence(playerSkills) + getSpeed(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
             p++;
         }
         // loop over midfielders
-        for (uint8 i = 0; i < tactic[1]; i++) {
-            move2attack += 2*getDefence(teamState[p]) + 2*getSpeed(teamState[p]) + 3*getPass(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
+        for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += 2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
             p++;
         }
         // loop over strikers
-        for (uint8 i = 0; i < tactic[2]; i++) {
-            move2attack += getDefence(teamState[p]) ;
-            createShoot += getSpeed(teamState[p]) + getPass(teamState[p]);
-            endurance   += getEndurance(teamState[p]);
-            attackersSpeed[i] = getSpeed(teamState[p]); 
-            attackersShoot[i] = getShoot(teamState[p]); 
+        for (uint8 i = 0; i < getNAtackers(playersPerZone); i++) {
+            playerSkills = teamState[lineup[p]];
+            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) ;
+            globSkills[IDX_CREATE_SHOOT] += getSpeed(playerSkills) + getPass(playerSkills);
+            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
+            attackersSpeed[i] = getSpeed(playerSkills); 
+            attackersShoot[i] = getShoot(playerSkills); 
             p++;
         }
 
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (endurance < 500) {
-            endurance = 70;
-        } else if (endurance < 1400) {
-            endurance = 100 - (1400-endurance)/30;
+        if (globSkills[IDX_ENDURANCE] < 500) {
+            globSkills[IDX_ENDURANCE] = 70;
+        } else if (globSkills[IDX_ENDURANCE] < 1400) {
+            globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
         } else {
-            endurance = 100;
+            globSkills[IDX_ENDURANCE] = 100;
         }
 
         return (
-            [move2attack, createShoot, defendShoot, blockShoot, endurance],
+            globSkills,
             attackersSpeed,
             attackersShoot
         );
