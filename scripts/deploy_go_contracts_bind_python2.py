@@ -7,67 +7,59 @@ import subprocess
 mydir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(mydir)
 abigen=os.path.join(os.getenv("HOME"), 'go', 'bin', 'abigen')
+truffle_contracts_dir=os.path.join(parentdir, 'truffle-core', 'build', 'contracts')
+
+def deploy_go_contract(jsonfile, pkgname, destinations):
+    print 'deployning ' + pkgname
+    base, ext = os.path.splitext(os.path.basename(jsonfile))
+    abifile = os.path.join(mydir, base + '.abi')
+    binfile = os.path.join(mydir, base + '.bin')
+    with open(os.path.join(truffle_contracts_dir, jsonfile), 'r') as fp:
+        contract = json.load(fp)
+    with open(abifile, 'w') as outfile:
+        json.dump(contract['abi'], outfile, ensure_ascii=False, indent=2)
+    with open(binfile, 'w') as outfile:
+        outfile.write(contract['bytecode'])
+
+    for dest in destinations:
+        outputdir = os.path.join(dest, pkgname)
+        if not os.path.exists(outputdir):
+            os.makedirs(outputdir)
+        cmd = [abigen,
+              '--abi',
+              abifile,
+              '--bin',
+              binfile,
+              '--pkg',
+              pkgname,
+              '-out',
+              os.path.join(outputdir, pkgname + '.go')]
+        run_cmd(cmd)
 
 def run_cmd(cmd, working_dir = os.getcwd()):
     try:
-        print 'running ' + ' '.join(cmd)
+        print ' '.join(cmd)
         output = subprocess.Popen(cmd, cwd=working_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
         print '"' + ' '.join(e.cmd) + '" failed with return code ' + str(e.returncode)
         sys.exit(e.returncode)
     return output.communicate()
 
-if not os.path.exists(abigen):
-    print 'Could not find abigen in ' + abigen
-    sys.exit(-1)
+if __name__ == "__main__":
 
-with open(os.path.join(parentdir, 'truffle-core', 'build', 'contracts', 'Assets.json'), 'r') as fp:
-    contract = json.load(fp)
-with open(os.path.join(mydir, 'Assets.abi'), 'w') as outfile:
-    json.dump(contract['abi'], outfile, ensure_ascii=False, indent=2)
-with open(os.path.join(mydir, 'Assets.bin'), 'w') as outfile:
-    outfile.write(contract['bytecode'])
+    if len(sys.argv) == 2:
+        abigen = sys.argv[1]
 
-assets_dests = [os.path.join(parentdir,'go-synchronizer','contracts','assets'),
-                os.path.join(parentdir,'market', 'notary', 'contracts','assets')]
+    if not os.path.exists(abigen):
+        print 'Could not find abigen in ' + abigen
+        print 'usage: python deploy_go_contracts_bind_python2.py [abigen_path]'
+        sys.exit(-1)
 
-for dest in assets_dests:
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    cmd = [abigen,
-          '--abi',
-          os.path.join(mydir,'Assets.abi'),
-          '--bin',
-          os.path.join(mydir, 'Assets.bin'),
-          '--pkg',
-          'assets',
-          '-out',
-          os.path.join(dest, 'assets.go')]
-    run_cmd(cmd)
+    dests = [os.path.join(parentdir,'go-synchronizer','contracts'),
+             os.path.join(parentdir,'market', 'notary', 'contracts')]
 
-with open(os.path.join(parentdir, 'truffle-core', 'build', 'contracts', 'Market.json'), 'r') as fp:
-    contract = json.load(fp)
-with open(os.path.join(mydir, 'Market.abi'), 'w') as outfile:
-    json.dump(contract['abi'], outfile, ensure_ascii=False, indent=2)
-with open(os.path.join(mydir,'Market.bin'), 'w') as outfile:
-    outfile.write(contract['bytecode'])
-
-market_dests = [os.path.join(parentdir, 'go-synchronizer', 'contracts', 'market'),
-               os.path.join(parentdir, 'market', 'notary', 'contracts', 'market')]
-
-for dest in market_dests:
-    if not os.path.exists(dest):
-        os.makedirs(dest)
-    cmd = [abigen,
-          '--abi',
-          os.path.join(mydir, 'Market.abi'),
-          '--bin',
-          os.path.join(mydir, 'Market.bin'),
-          '--pkg',
-          'market',
-          '-out',
-          os.path.join(dest, 'market.go')]
-    run_cmd(cmd)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Assets.json'), 'assets', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Market.json'), 'market', dests)
 
 # with open('../truffle-core/build/contracts/TeamState.json', 'r') as fp:
 #     contract = json.load(fp)
