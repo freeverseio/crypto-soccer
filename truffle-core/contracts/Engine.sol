@@ -11,7 +11,7 @@ contract Engine is Encoding{
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
     uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
     uint256 private constant MASK           = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
-    uint256 private constant MAX_PENALTY    = 10000; // Idx used to identify normal player acting as GK, or viceversa.
+    uint256 public constant MAX_PENALTY    = 10000; // Idx used to identify normal player acting as GK, or viceversa.
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -318,7 +318,6 @@ contract Engine is Encoding{
         pure
         returns (uint256 penalty) 
     {
-        require(lineupPos != 0, "wrong arg in computePenalty");
         require(lineupPos < 11, "wrong arg in computePenalty");
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);

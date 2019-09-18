@@ -64,15 +64,26 @@ contract('Engine', (accounts) => {
         tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
-        // teamStateAll50 = await createTeamState(seed, engine, assets, forceSkills= [50, 50, 50, 50, 50], forceFwd = 3, forceLeft = 2).should.be.fulfilled;
-        // teamStateAll1 = await createTeamState(seed, engine, assets, forceSkills= [1,1,1,1,1], forceFwd = 3, forceLeft = 2).should.be.fulfilled;
-        // teamStateProper = await createTeamState(seed, engine, assets).should.be.fulfilled; 
     });
 
     // it('play a match to estimate cost', async () => {
     //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
     // });
 
+    it('computePenalty', async () => {
+        teamState = await createTeamState(seed, engine, assets).should.be.fulfilled;
+        MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
+        MAX_PENALTY = MAX_PENALTY.toNumber();
+        // for a GK
+        expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
+        expected[0] = 0;
+        for (p=0; p<11;p++) {
+            penalty = await engine.computePenalty(p, playersPerZone0, teamState[0]).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(expected[p]);
+        }
+    });
+
+    return;
     it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
         result[0][0].toNumber().should.be.equal(10);
