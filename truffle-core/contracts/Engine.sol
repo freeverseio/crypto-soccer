@@ -255,9 +255,8 @@ contract Engine is Encoding{
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 playerSkills = teamState[lineup[0]];
         globSkills[IDX_ENDURANCE]   = getEndurance(playerSkills);
-        globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
-        // if(getForwardness(playerSkills) == IDX_GK) globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
-        // else globSkills[IDX_BLOCK_SHOOT] = 10;
+        if (getForwardness(playerSkills) == IDX_GK) globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
+        else globSkills[IDX_BLOCK_SHOOT] = 10;
         
         uint8 p = 1;
         // loop over defenders

@@ -19,11 +19,14 @@ contract('Engine', (accounts) => {
     const playersPerZone1 = [1,2,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
     
-    const createProperTeamState = async (seed, engine, assets) => {
+    const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
         teamState = []
         for (p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            result = await assets.computeSkills(seed, shirtNum = 0).should.be.fulfilled;
-            const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = result;
+            result = await assets.computeSkills(seed, shirtNum = p).should.be.fulfilled;
+            let {0: skills, 1: potential, 2: forwardness, 3: leftishness} = result;
+            if (forceSkills) skills = forceSkills;
+            if (forceFwd) forwardness = forceFwd;
+            if (forceLeft) leftishness = forceLeft;
             playerSkillsTemp = await engine.encodePlayerSkills(
                 skills, 
                 monthOfBirth = 0, 
@@ -36,7 +39,7 @@ contract('Engine', (accounts) => {
         }        
         return teamState;
     };
-    
+
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
@@ -61,31 +64,33 @@ contract('Engine', (accounts) => {
         tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
-        teamStateAll1GK = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 0, leftishness = 0).should.be.fulfilled;
-        teamStateProper = await createProperTeamState(seed, engine, assets).should.be.fulfilled; 
-    });
-
-    it('teams get tired', async () => {
-        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
-        result[0][0].toNumber().should.be.equal(10);
-        result[0][1].toNumber().should.be.equal(20);
-        result[0][2].toNumber().should.be.equal(30);
-        result[0][3].toNumber().should.be.equal(40);
-        result[0][4].toNumber().should.be.equal(100);
-        result[1][0].toNumber().should.be.equal(10);
-        result[1][1].toNumber().should.be.equal(20);
-        result[1][2].toNumber().should.be.equal(30);
-        result[1][3].toNumber().should.be.equal(40);
-        result[1][4].toNumber().should.be.equal(50);
+        // teamStateAll50 = await createTeamState(seed, engine, assets, forceSkills= [50, 50, 50, 50, 50], forceFwd = 3, forceLeft = 2).should.be.fulfilled;
+        // teamStateAll1 = await createTeamState(seed, engine, assets, forceSkills= [1,1,1,1,1], forceFwd = 3, forceLeft = 2).should.be.fulfilled;
+        // teamStateProper = await createTeamState(seed, engine, assets).should.be.fulfilled; 
     });
 
     // it('play a match to estimate cost', async () => {
     //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
     // });
 
+    // it('teams get tired', async () => {
+    //     const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+    //     result[0][0].toNumber().should.be.equal(10);
+    //     result[0][1].toNumber().should.be.equal(20);
+    //     result[0][2].toNumber().should.be.equal(30);
+    //     result[0][3].toNumber().should.be.equal(40);
+    //     result[0][4].toNumber().should.be.equal(100);
+    //     result[1][0].toNumber().should.be.equal(10);
+    //     result[1][1].toNumber().should.be.equal(20);
+    //     result[1][2].toNumber().should.be.equal(30);
+    //     result[1][3].toNumber().should.be.equal(40);
+    //     result[1][4].toNumber().should.be.equal(50);
+    // });
+    
+
     it('play a match', async () => {
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(16);
+        result[0].toNumber().should.be.equal(15);
         result[1].toNumber().should.be.equal(0);
     });
 
@@ -169,7 +174,8 @@ contract('Engine', (accounts) => {
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
         
-        let result = await engine.getTeamGlobSkills(teamStateAll1, playersPerZone0, lineup0).should.be.fulfilled;
+        teamStateProperAll1 = await createTeamState(seed, engine, assets, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        let result = await engine.getTeamGlobSkills(teamStateProperAll1, playersPerZone0, lineup0).should.be.fulfilled;
         result.attackersSpeed.length.should.be.equal(2);
         result.attackersShoot.length.should.be.equal(2);
         result.attackersSpeed[0].should.be.bignumber.equal("1");
@@ -179,7 +185,7 @@ contract('Engine', (accounts) => {
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) result.globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
-
+    
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
