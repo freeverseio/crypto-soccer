@@ -15,8 +15,8 @@ contract('Engine', (accounts) => {
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
     const tacticId0 = 0; // 442
     const tacticId1 = 2; // 433
-    const playersPerZone0 = [1,2,1,2,0,2];
-    const playersPerZone1 = [1,2,1,1,1,1];
+    const playersPerZone0 = [1,2,1,1,2,1,0,2,0];
+    const playersPerZone1 = [1,2,1,1,1,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
     
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {

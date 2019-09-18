@@ -11,6 +11,7 @@ contract Engine is Encoding{
     uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
     uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
     uint256 private constant MASK           = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
+    uint256 private constant MAX_PENALTY    = 10000; // Idx used to identify normal player acting as GK, or viceversa.
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -53,13 +54,14 @@ contract Engine is Encoding{
         returns (uint8[2] memory teamGoals) 
     {
         uint8[11][2] memory lineups;
-        uint8[6][2] memory playersPerZone;
+        uint8[9][2] memory playersPerZone;
         (lineups[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
         (lineups[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
+        
         (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0], lineups[0]);
         (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1], lineups[1]);
         uint8 teamThatAttacks;
@@ -86,16 +88,16 @@ contract Engine is Encoding{
         return teamGoals;
     }
     
-    function getNDefenders(uint8[6] memory playersPerZone) private pure returns (uint8) {
+    function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
     }
 
-    function getNMidfielders(uint8[6] memory playersPerZone) private pure returns (uint8) {
-        return 2 * playersPerZone[2] + playersPerZone[3];
+    function getNMidfielders(uint8[9] memory playersPerZone) private pure returns (uint8) {
+        return 2 * playersPerZone[3] + playersPerZone[4];
     }
 
-    function getNAtackers(uint8[6] memory playersPerZone) private pure returns (uint8) {
-        return 2 * playersPerZone[4] + playersPerZone[5];
+    function getNAtackers(uint8[9] memory playersPerZone) private pure returns (uint8) {
+        return 2 * playersPerZone[6] + playersPerZone[7];
     }
 
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many
@@ -105,7 +107,7 @@ contract Engine is Encoding{
     function getLineUpAndPlayerPerZone(uint256 tactics) 
         public 
         pure 
-        returns (uint8[11] memory lineup, uint8[6] memory playersPerZone) 
+        returns (uint8[11] memory lineup, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
         (lineup, tacticsId) = decodeTactics(tactics);
@@ -117,12 +119,12 @@ contract Engine is Encoding{
     // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[6] memory) {
+    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[9] memory) {
         require(tacticsId < 4, "we currently support only 4 different tactics");
-        if (tacticsId == 0) return [1,2,1,2,0,2];  // 0 = 442
-        if (tacticsId == 1) return [1,3,1,2,0,1];  // 0 = 541
-        if (tacticsId == 2) return [1,2,1,1,1,1];  // 0 = 433
-        if (tacticsId == 3) return [1,2,1,3,0,1];  // 0 = 451
+        if (tacticsId == 0) return [1,2,1,1,2,1,0,2,0];  // 0 = 442
+        if (tacticsId == 1) return [1,3,1,1,2,1,0,1,0];  // 0 = 541
+        if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  // 0 = 433
+        if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  // 0 = 451
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
@@ -238,19 +240,18 @@ contract Engine is Encoding{
     // globSkills[IDX_CREATE_SHOOT] =    speed(attackers) + pass(attackers)
     // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[6] memory playersPerZone, uint8[11] memory lineup)
+    function getTeamGlobSkills(uint256[MAX_NPLAYERS] memory teamState, uint8[9] memory playersPerZone, uint8[11] memory lineup)
         public
         pure
         returns (
-            uint[5] memory globSkills,
-            uint[] memory attackersSpeed, 
-            uint[] memory attackersShoot
+            uint256[5] memory globSkills,
+            uint256[] memory attackersSpeed, 
+            uint256[] memory attackersShoot
         )
     {
         attackersSpeed = new uint[](getNAtackers(playersPerZone)); 
         attackersShoot = new uint[](getNAtackers(playersPerZone)); 
 
-        
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 playerSkills = teamState[lineup[0]];
@@ -259,9 +260,11 @@ contract Engine is Encoding{
         else globSkills[IDX_BLOCK_SHOOT] = 10;
         
         uint8 p = 1;
+        // uint256 penalty;
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
+            // penalty = computePenalty(p, playersPerZone, playerSkills);
             globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills);
             globSkills[IDX_DEFEND_SHOOT] += getDefence(playerSkills) + getSpeed(playerSkills);
             globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
@@ -302,5 +305,99 @@ contract Engine is Encoding{
             attackersShoot
         );
     }
+    
+    // 0 penalty means no penalty
+    // 1000 penalty means 10% penalty
+    // etc... up to MAX_PENALTY
+    function computePenalty(
+        uint8 lineupPos, 
+        uint8[9] memory playersPerZone, 
+        uint256 playerSkills
+    ) 
+        public
+        pure
+        returns (uint256 penalty) 
+    {
+        require(lineupPos != 0, "wrong arg in computePenalty");
+        require(lineupPos < 11, "wrong arg in computePenalty");
+        uint256 forwardness = getForwardness(playerSkills);
+        uint256 leftishness = getLeftishness(playerSkills);
+        if (forwardness == IDX_GK && lineupPos > 0) return MAX_PENALTY;
+        uint8[9] memory playersBelow = playersBelowZones(playersPerZone);
+        lineupPos--; // remove the offset due to the GK
+        if (lineupPos < playersBelow[0]) { 
+            // assigned to defense left
+            penalty = penaltyForDefenders(forwardness);
+            penalty += penaltyForLefts(leftishness);
+        } else if (lineupPos < playersBelow[1]) { 
+            // assigned to defense center
+            penalty = penaltyForDefenders(forwardness);
+            penalty += penaltyForCenters(leftishness);
+        } else if (lineupPos < playersBelow[2]) { 
+            // assigned to defense left
+            penalty = penaltyForDefenders(forwardness);
+            penalty += penaltyForRights(leftishness);
+        } else if (lineupPos < playersBelow[3]) { 
+            // assigned to mid left
+            penalty = penaltyForMids(forwardness);
+            penalty += penaltyForLefts(leftishness);
+        } else if (lineupPos < playersBelow[4]) { 
+            // assigned to mid center
+            penalty = penaltyForMids(forwardness);
+            penalty += penaltyForCenters(leftishness);
+        } else if (lineupPos < playersBelow[5]) { 
+            // assigned to mid right
+            penalty = penaltyForMids(forwardness);
+            penalty += penaltyForRights(leftishness);
+        } else if (lineupPos < playersBelow[6]) { 
+            // assigned to attack left
+            penalty = penaltyForAttackers(forwardness);
+            penalty += penaltyForLefts(leftishness);
+        } else if (lineupPos < playersBelow[7]) { 
+            // assigned to attack center
+            penalty = penaltyForAttackers(forwardness);
+            penalty += penaltyForCenters(leftishness);
+        } else { 
+            // assigned to attack right
+            penalty = penaltyForAttackers(forwardness);
+            penalty += penaltyForRights(leftishness);
+        } 
+    }
+
+    function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {
+        playersBelow[0] = playersPerZone[0];    
+        for (uint8 z = 1; z < 9; z++) {
+            playersBelow[z] = playersBelow[z-1] + playersPerZone[z];
+        }
+    }
+
+    function penaltyForLefts(uint256 leftishness) private pure returns(uint16) {
+            if (leftishness == IDX_C || leftishness == IDX_CR) {return 1000;} 
+            else if (leftishness == IDX_R) {return 2000;}
+    }
+
+    function penaltyForCenters(uint256 leftishness) private pure returns(uint16) {
+            if (leftishness == IDX_L || leftishness == IDX_R) {return 1000;} 
+    }
+
+    function penaltyForRights(uint256 leftishness) private pure returns(uint16) {
+            if (leftishness == IDX_C || leftishness == IDX_LC) {return 1000;} 
+            else if (leftishness == IDX_L) {return 2000;}
+    }
+    
+    function penaltyForDefenders(uint256 forwardness) private pure returns(uint16) {
+            if (forwardness == IDX_M || forwardness == IDX_MF) {return 1000;}
+            else if (forwardness == IDX_F) {return 2000;}
+    }
+
+    function penaltyForMids(uint256 forwardness) private pure returns(uint16) {
+            if (forwardness == IDX_D || forwardness == IDX_F) {return 1000;}
+    }
+
+    function penaltyForAttackers(uint256 forwardness) private pure returns(uint16) {
+            if (forwardness == IDX_M || forwardness == IDX_MD) {return 1000;}
+            else if (forwardness == IDX_D) {return 2000;}
+    }
+
 }
 
