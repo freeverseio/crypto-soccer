@@ -73,19 +73,19 @@ contract('Engine', (accounts) => {
     //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
     // });
 
-    // it('teams get tired', async () => {
-    //     const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
-    //     result[0][0].toNumber().should.be.equal(10);
-    //     result[0][1].toNumber().should.be.equal(20);
-    //     result[0][2].toNumber().should.be.equal(30);
-    //     result[0][3].toNumber().should.be.equal(40);
-    //     result[0][4].toNumber().should.be.equal(100);
-    //     result[1][0].toNumber().should.be.equal(10);
-    //     result[1][1].toNumber().should.be.equal(20);
-    //     result[1][2].toNumber().should.be.equal(30);
-    //     result[1][3].toNumber().should.be.equal(40);
-    //     result[1][4].toNumber().should.be.equal(50);
-    // });
+    it('teams get tired', async () => {
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        result[0][0].toNumber().should.be.equal(10);
+        result[0][1].toNumber().should.be.equal(20);
+        result[0][2].toNumber().should.be.equal(30);
+        result[0][3].toNumber().should.be.equal(40);
+        result[0][4].toNumber().should.be.equal(100);
+        result[1][0].toNumber().should.be.equal(10);
+        result[1][1].toNumber().should.be.equal(20);
+        result[1][2].toNumber().should.be.equal(30);
+        result[1][3].toNumber().should.be.equal(40);
+        result[1][4].toNumber().should.be.equal(50);
+    });
     
 
     it('play a match', async () => {
@@ -207,18 +207,18 @@ contract('Engine', (accounts) => {
     it('different team state => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
-        result[1].toNumber().should.be.equal(1);
+        result[1].toNumber().should.be.equal(2);
         result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(14);
+        result[0].toNumber().should.be.equal(12);
         result[1].toNumber().should.be.equal(0);
     });
 
     it('different seeds => different result', async () => {
         let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
-        result[1].toNumber().should.be.equal(1);
+        result[1].toNumber().should.be.equal(2);
         result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(1);
+        result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(0);
     });
 });
