@@ -6,9 +6,11 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 
 const Engine = artifacts.require('Engine');
+const Assets = artifacts.require('Assets');
 
 contract('Engine', (accounts) => {
-    const seed = 610106;
+    // const seed = 610106;
+    const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
     const tacticId0 = 0; // 442
@@ -16,12 +18,25 @@ contract('Engine', (accounts) => {
     const playersPerZone0 = [1,2,1,2,0,2];
     const playersPerZone1 = [1,2,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
-    const IDX_MOVE2ATTACK  = 0;        
-    const IDX_CREATE_SHOOT = 1; 
-    const IDX_DEFEND_SHOOT = 2; 
-    const IDX_BLOCK_SHOOT  = 3; 
-    const IDX_ENDURANCE    = 4; 
-
+    
+    const createProperTeamState = async (seed, engine, assets) => {
+        teamState = []
+        for (p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            result = await assets.computeSkills(seed, shirtNum = 0).should.be.fulfilled;
+            const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = result;
+            playerSkillsTemp = await engine.encodePlayerSkills(
+                skills, 
+                monthOfBirth = 0, 
+                playerId = 1,
+                potential,
+                forwardness,
+                leftishness
+            ).should.be.fulfilled;            
+            teamState.push(playerSkillsTemp)
+        }        
+        return teamState;
+    };
+    
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
@@ -41,12 +56,14 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
         tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1GK = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 0, leftishness = 0).should.be.fulfilled;
-        });
+        teamStateProper = await createProperTeamState(seed, engine, assets).should.be.fulfilled; 
+    });
 
     it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
@@ -68,7 +85,7 @@ contract('Engine', (accounts) => {
 
     it('play a match', async () => {
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(17);
+        result[0].toNumber().should.be.equal(16);
         result[1].toNumber().should.be.equal(0);
     });
 
@@ -135,8 +152,8 @@ contract('Engine', (accounts) => {
         nRnds = 235;
         const result = await engine.getNRandsFromSeed(nRnds, seed).should.be.fulfilled;
         result.length.should.be.equal(nRnds);
-        result[0].should.be.bignumber.equal("6666");
-        result[nRnds-1].should.be.bignumber.equal("5318");
+        result[0].should.be.bignumber.equal("2433");
+        result[nRnds-1].should.be.bignumber.equal("7039");
     });
 
     it('computes team global skills by aggregating across all players in team', async () => {
@@ -163,8 +180,6 @@ contract('Engine', (accounts) => {
         for (g = 0; g < 5; g++) result.globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
 
-    return;
-    
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
