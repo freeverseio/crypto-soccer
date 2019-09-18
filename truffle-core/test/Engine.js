@@ -16,17 +16,22 @@ contract('Engine', (accounts) => {
     const playersPerZone0 = [1,2,1,2,0,2];
     const playersPerZone1 = [1,2,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
+    const IDX_MOVE2ATTACK  = 0;        
+    const IDX_CREATE_SHOOT = 1; 
+    const IDX_DEFEND_SHOOT = 2; 
+    const IDX_BLOCK_SHOOT  = 3; 
+    const IDX_ENDURANCE    = 4; 
 
-    const createTeamStateFromSinglePlayer = async (skills, engine) => {
+    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
             monthOfBirth = 0, 
             playerId = 1,
             potential = 3,
-            forwardness = 3,
-            leftishness = 2
+            forwardness,
+            leftishness
         ).should.be.fulfilled;
-
+        
         teamState = []
         for (player = 0; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
@@ -38,8 +43,9 @@ contract('Engine', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
-        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine).should.be.fulfilled;
-        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine).should.be.fulfilled;
+        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
+        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
+        teamStateAll1GK = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 0, leftishness = 0).should.be.fulfilled;
         });
 
     it('teams get tired', async () => {
@@ -153,13 +159,12 @@ contract('Engine', (accounts) => {
         result.attackersSpeed[1].should.be.bignumber.equal("1");
         result.attackersShoot[0].should.be.bignumber.equal("1");
         result.attackersShoot[1].should.be.bignumber.equal("1");
-        result.globSkills[0].should.be.bignumber.equal("42");
-        result.globSkills[1].should.be.bignumber.equal("4");
-        result.globSkills[2].should.be.bignumber.equal("8");
-        result.globSkills[3].should.be.bignumber.equal("1");
-        result.globSkills[4].should.be.bignumber.equal("70");
+        expectedGlob = [42, 4, 8, 1, 70];
+        for (g = 0; g < 5; g++) result.globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
 
+    return;
+    
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;

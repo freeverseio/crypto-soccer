@@ -252,11 +252,12 @@ contract Engine is Encoding{
 
         
         // for a keeper, the 'shoot skill' is interpreted as block skill
+        // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 playerSkills = teamState[lineup[0]];
-        // require(getForwardness(playerSkills) == IDX_GK, "wrong lineup: the first idx should be a goalkeeper");
-        globSkills[IDX_BLOCK_SHOOT] += getShoot(playerSkills);
-        globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
-
+        globSkills[IDX_ENDURANCE]   = getEndurance(playerSkills);
+        globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
+        // if(getForwardness(playerSkills) == IDX_GK) globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
+        // else globSkills[IDX_BLOCK_SHOOT] = 10;
         
         uint8 p = 1;
         // loop over defenders
