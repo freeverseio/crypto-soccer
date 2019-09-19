@@ -27,12 +27,11 @@ contract Engine is Encoding{
     //     uint256 seed,
     //     uint256[MAX_NPLAYERS] memory state0,
     //     uint256[MAX_NPLAYERS] memory state1, 
-    //     uint8 tacticId0, 
-    //     uint8 tacticId1
+    //     uint256[2] memory tactics
     // )
     //     public
     // {
-    //     playMatch(seed, state0, state1, tacticId0, tacticId1);
+    //     playMatch(seed, state0, state1, tactics);
     //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     // }
     /**

@@ -112,8 +112,9 @@ contract('Engine', (accounts) => {
     });
 
     // it('play a match to estimate cost', async () => {
-    //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
+    //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
     // });
+    // return;
 
     it('computePenalty for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
