@@ -202,6 +202,24 @@ contract Engine is Encoding{
     }
 
 
+    function selectShooter(
+        uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
+        uint8[9] memory playersPerZone,
+        uint8[11] memory lineup,
+        uint rndNum1
+    )
+        public
+        pure
+        returns (uint8)
+    {
+        /// attacker who actually shoots is selected weighted by his speed
+        uint256[11] memory weights;
+        for (uint8 p = 11 - getNAtackers(playersPerZone); p < 11; p++) {
+            weights[p] = getSpeed(teamState[lineup[p]]);
+        }
+        return throwDiceArray(weights, rndNum1);
+    }
+
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
@@ -216,12 +234,7 @@ contract Engine is Encoding{
         pure
         returns (bool)
     {
-        /// attacker who actually shoots is selected weighted by his speed
-        uint256[11] memory weights;
-        for (uint8 p = 11 - getNAtackers(playersPerZone); p < 11; p++) {
-            weights[p] = getSpeed(teamState[lineup[p]]);
-        }
-        uint8 shooter = throwDiceArray(weights, rndNum1);
+        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((getSpeed(teamState[lineup[shooter]])*7)/10, blockShoot, rndNum2) == 0;
