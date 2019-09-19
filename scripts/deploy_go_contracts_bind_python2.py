@@ -3,6 +3,7 @@
 import json
 import os,sys
 import subprocess
+from distutils.spawn import find_executable
 
 mydir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(mydir)
@@ -54,11 +55,13 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 2:
         abigen = sys.argv[1]
-
     if not os.path.exists(abigen):
-        print 'Could not find abigen in ' + abigen
-        print 'usage: python deploy_go_contracts_bind_python2.py [abigen_path]'
-        sys.exit(-1)
+        if find_executable('abigen'):
+            abigen = 'abigen'
+        else:
+            print 'Could not find abigen'
+            print 'usage: python deploy_go_contracts_bind_python2.py [abigen_path]'
+            sys.exit(-1)
 
     dests = [os.path.join(parentdir,'go-synchronizer','contracts'),
              os.path.join(parentdir,'market', 'notary', 'contracts')]
