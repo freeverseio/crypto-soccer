@@ -13,10 +13,10 @@ contract('Engine', (accounts) => {
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
-    const tacticId0 = 0; // 442
-    const tacticId1 = 2; // 433
-    const playersPerZone0 = [1,2,1,1,2,1,0,2,0];
-    const playersPerZone1 = [1,2,1,1,1,1,1,1,1];
+    const tacticId442 = 0; // 442
+    const tacticId433 = 2; // 433
+    const playersPerZone442 = [1,2,1,1,2,1,0,2,0];
+    const playersPerZone433 = [1,2,1,1,1,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
     
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
@@ -60,8 +60,8 @@ contract('Engine', (accounts) => {
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        tactics0 = await engine.encodeTactics(lineup0, tacticId0).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(lineup1, tacticId1).should.be.fulfilled;
+        tactics0 = await engine.encodeTactics(lineup0, tacticId442).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(lineup1, tacticId433).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
     });
@@ -70,16 +70,38 @@ contract('Engine', (accounts) => {
     //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
     // });
 
-    it('computePenalty', async () => {
-        teamState = await createTeamState(seed, engine, assets).should.be.fulfilled;
+    it('computePenalty ', async () => {
         MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
         MAX_PENALTY = MAX_PENALTY.toNumber();
-        // for a GK
+        // for a GK:
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 0, leftishness = 0
+        ).should.be.fulfilled;            
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
-        for (p=0; p<11;p++) {
-            penalty = await engine.computePenalty(p, playersPerZone0, teamState[0]).should.be.fulfilled;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(expected[p]);
+        }
+        // for a DL:
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 1, leftishness = 4
+        ).should.be.fulfilled;            
+        expected442 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 2000, 3000, 
+            3000, 3000 
+        ];
+        expected433 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 3000,  
+            2000, 3000, 4000
+        ];
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(expected433[p]);
         }
     });
 
@@ -186,7 +208,7 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamStateProperAll1 = await createTeamState(seed, engine, assets, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        let result = await engine.getTeamGlobSkills(teamStateProperAll1, playersPerZone0, lineup0).should.be.fulfilled;
+        let result = await engine.getTeamGlobSkills(teamStateProperAll1, playersPerZone442, lineup0).should.be.fulfilled;
         result.attackersSpeed.length.should.be.equal(2);
         result.attackersShoot.length.should.be.equal(2);
         result.attackersSpeed[0].should.be.bignumber.equal("1");
@@ -205,7 +227,7 @@ contract('Engine', (accounts) => {
     it('getLineUpAndPlayerPerZone', async () => {
         result = await engine.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
         let {0: line, 1: playersPerZone} = result;
-        for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone1[p]);
+        for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
         for (p = 0; p < 11; p++) line[p].toNumber().should.be.equal(lineup1[p]);
     });
 

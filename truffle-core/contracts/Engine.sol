@@ -321,7 +321,7 @@ contract Engine is Encoding{
         require(lineupPos < 11, "wrong arg in computePenalty");
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
-        if (forwardness == IDX_GK && lineupPos > 0) return MAX_PENALTY;
+        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return MAX_PENALTY;
         uint8[9] memory playersBelow = playersBelowZones(playersPerZone);
         lineupPos--; // remove the offset due to the GK
         if (lineupPos < playersBelow[0]) { 
