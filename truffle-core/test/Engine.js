@@ -190,7 +190,7 @@ contract('Engine', (accounts) => {
         result[0].toNumber().should.be.equal(17);
         result[1].toNumber().should.be.equal(0);
     });
-return;
+
     it('manages to score', async () => {
         // interface: 
         // managesToScore(uint8 nAttackers, uint[] attackersSpeed, uint[], attackersShoot, blockShoot, rndNum1,rndNum2)
@@ -302,20 +302,20 @@ return;
 
 
     it('different team state => different result', async () => {
-        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(2);
-        result = await engine.playMatch(123456, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
+        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(12);
         result[1].toNumber().should.be.equal(0);
     });
 
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch(123456, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(2);
-        result = await engine.playMatch(654321, teamStateAll50, teamStateAll50, [tactics0, tactics1]).should.be.fulfilled;
+        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
-        result[1].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(1);
     });
 });
