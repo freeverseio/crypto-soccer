@@ -16,6 +16,9 @@ contract Engine is Encoding{
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
+    uint256 private constant TENTHOUSAND    = uint256(10000); 
+    uint256 private constant TENTHOUSAND_SQ = uint256(100000000); 
+
     
     bool dummyBoolToEstimateCost;
 
@@ -56,8 +59,8 @@ contract Engine is Encoding{
         
         (lineups[0], fwdModifiers[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
         (lineups[1], fwdModifiers[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0]);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], fwdModifiers[0]);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], fwdModifiers[0]);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
@@ -248,7 +251,12 @@ contract Engine is Encoding{
     // globSkills[IDX_CREATE_SHOOT] =    speed(attackers) + pass(attackers)
     // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
     // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(uint256[PLAYERS_PER_TEAM_MAX] memory teamState, uint8[9] memory playersPerZone, uint8[11] memory lineup)
+    function getTeamGlobSkills(
+        uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
+        uint8[9] memory playersPerZone, 
+        uint8[11] memory lineup,
+        uint8[10] memory fwdModifiers
+    )
         public
         pure
         returns (
@@ -264,15 +272,17 @@ contract Engine is Encoding{
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
             
         
+        uint256[3] memory fwdModFactors;
         uint8 p = 1;
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
             if (penalty != 0) {
-                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty)/10000;
-                globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty)/10000;
-                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/10000;
+                fwdModFactors = getFwdModFactors(fwdModifiers[p-1]);
+                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+                globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
             } else {
                 globSkills[IDX_MOVE2ATTACK] += 30;
                 globSkills[IDX_DEFEND_SHOOT] += 20;
@@ -284,9 +294,11 @@ contract Engine is Encoding{
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
+            fwdModFactors = getFwdModFactors(fwdModifiers[p-1]);
             if (penalty != 0) {
-                globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty)/10000;
-                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/10000;
+                penalty = computePenalty(p, playersPerZone, playerSkills);
+                globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
             } else {
                 globSkills[IDX_MOVE2ATTACK] += 50;
                 globSkills[IDX_ENDURANCE]   += 10;
@@ -298,9 +310,10 @@ contract Engine is Encoding{
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
             if (penalty != 0) {
-                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty)/10000;
-                globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty)/10000;
-                globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/10000;
+                penalty = computePenalty(p, playersPerZone, playerSkills);
+                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+                globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+                globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
             } else {
                 globSkills[IDX_MOVE2ATTACK] += 10;
                 globSkills[IDX_CREATE_SHOOT] += 20;
@@ -320,7 +333,16 @@ contract Engine is Encoding{
             globSkills[IDX_ENDURANCE] = 100;
         }
     }
-    
+
+    // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]
+    // the forward modifier factors only change the first 3.
+    function getFwdModFactors(uint8 fwdModifier) public pure returns (uint256[3] memory fwdModFactors) {
+        if (fwdModifier == 0)       {fwdModFactors = [TENTHOUSAND, TENTHOUSAND, TENTHOUSAND];}
+        else if (fwdModifier == 1)  {fwdModFactors = [uint256(9500),  uint256(9500),  uint256(10500)];}
+        else if (fwdModifier == 2)  {fwdModFactors = [uint256(10500), uint256(10500), uint256(9500)];}
+    }
+
+  
     // 0 penalty means no penalty
     // 1000 penalty means 10% penalty
     // etc... up to MAX_PENALTY

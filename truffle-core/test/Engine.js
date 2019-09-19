@@ -279,7 +279,7 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive).should.be.fulfilled;
+        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive, fwdModifiersNull).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
