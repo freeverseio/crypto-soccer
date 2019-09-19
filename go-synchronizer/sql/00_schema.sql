@@ -7,28 +7,28 @@ CREATE TABLE params (
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
 CREATE TABLE timezones (
-    id INT NOT NULL,
-    PRIMARY KEY(id)
+    timezone_idx INT NOT NULL,
+    PRIMARY KEY(timezone_idx)
 );
 
 CREATE TABLE countries (
-    timezone_id INT NOT NULL REFERENCES timezones(id),
-    idx INT NOT NULL,
-    PRIMARY KEY(timezone_id, idx)
+    timezone_idx INT NOT NULL REFERENCES timezones(timezone_idx),
+    country_idx INT NOT NULL,
+    PRIMARY KEY(timezone_idx, country_idx)
 );
 
 CREATE TABLE teams (
-    id NUMERIC(78,0) NOT NULL,
-    timezone_id INT NOT NULL,
+    team_id NUMERIC(78,0) NOT NULL,
+    timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
-    PRIMARY KEY(id),
-    FOREIGN KEY (timezone_id, country_idx) REFERENCES country(timezone_id, idx)
+    PRIMARY KEY(team_id),
+    FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
 );
 
 CREATE TABLE players (
-    id NUMERIC(78,0) NOT NULL,
-    team_id NUMERIC(78,0) NOT NULL REFERENCES teams(id),
+    player_id NUMERIC(78,0) NOT NULL,
+    team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
     pass INT NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE players (
     -- blockNumber BIGINT NOT NULL,
     -- inBlockIndex INT NOT NULL,
     -- state TEXT NOT NULL,
-    PRIMARY KEY(id)
+    PRIMARY KEY(player_id)
 );
 
 -- CREATE TABLE teams_history (
