@@ -22,17 +22,16 @@ contract Engine is Encoding{
     
     bool dummyBoolToEstimateCost;
 
-    // // mock up to estimate cost of a match.
-    // // to be removed before deployment
+    // mock up to estimate cost of a match.
+    // to be removed before deployment
     // function playMatchWithCost(
     //     uint256 seed,
-    //     uint256[PLAYERS_PER_TEAM_MAX] memory state0,
-    //     uint256[PLAYERS_PER_TEAM_MAX] memory state1, 
+    //     uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
     //     uint256[2] memory tactics
     // )
     //     public
     // {
-    //     playMatch(seed, state0, state1, tactics);
+    //     playMatch(seed, states, tactics);
     //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     // }
     /**
