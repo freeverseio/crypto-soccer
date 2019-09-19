@@ -64,16 +64,15 @@ contract('Engine', (accounts) => {
         tactics1 = await engine.encodeTactics(lineup1, tacticId433).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
+        MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
+        MAX_PENALTY = MAX_PENALTY.toNumber();
     });
 
     // it('play a match to estimate cost', async () => {
     //     const result = await engine.playMatchWithCost(seed, teamStateAll50, teamStateAll1, tactic0, tactic1).should.be.fulfilled;
     // });
 
-    it('computePenalty ', async () => {
-        MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
-        MAX_PENALTY = MAX_PENALTY.toNumber();
-        // for a GK:
+    it('computePenalty for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
             forwardness = 0, leftishness = 0
         ).should.be.fulfilled;            
@@ -83,7 +82,10 @@ contract('Engine', (accounts) => {
             penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(expected[p]);
         }
-        // for a DL:
+    });
+
+    it('computePenalty for DL ', async () => {
+            // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
             forwardness = 1, leftishness = 4
         ).should.be.fulfilled;            
@@ -105,6 +107,27 @@ contract('Engine', (accounts) => {
         }
     });
 
+    it('computePenalty for MFLCR ', async () => {
+        // for a DL:
+    playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+        forwardness = 5, leftishness = 7
+    ).should.be.fulfilled;            
+    expected442 = [MAX_PENALTY, 
+        1000, 1000, 1000, 1000, 
+        0, 0, 0, 0, 
+        0, 0 
+    ];
+    expected433 = expected442;
+    for (p=0; p < 11; p++) {
+        penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+        penalty.toNumber().should.be.equal(expected442[p]);
+        penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+        penalty.toNumber().should.be.equal(expected433[p]);
+    }
+});
+
+
+    
     return;
     it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
