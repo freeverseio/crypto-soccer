@@ -26,7 +26,7 @@ func (b *Storage) CountryCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) CountryAdd(country Country) error {
+func (b *Storage) CountryCreate(country Country) error {
 	log.Infof("[DBMS] Adding country %v", country)
 	_, err := b.db.Exec("INSERT INTO countries (id, timezone_id) VALUES ($1, $2);",
 		country.ID,
