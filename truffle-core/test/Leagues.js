@@ -121,7 +121,6 @@ contract('Leagues', (accounts) => {
             result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
             result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
         }
-        console.log(" ")
         day = 3;
         verseSeed = 432;
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
