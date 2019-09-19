@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(client, assetsContract, statesContract, leaguesContract, marketContract sto)
+	process := process.BackgroundProcessNew(client, marketContract, sto)
 
 	log.Info("Start processing events ...")
 	process.Start()
