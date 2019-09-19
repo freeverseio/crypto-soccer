@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -16,6 +15,41 @@ type Team struct {
 	TimezoneIdx uint8
 	CountryIdx  uint16
 	State       TeamState
+}
+
+func (b *Storage) TeamCreate(team Team) error {
+	log.Infof("[DBMS] Adding team %v", team)
+	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner) VALUES ($1, $2, $3, $4);",
+		team.TeamID.String(),
+		team.TimezoneIdx,
+		team.CountryIdx,
+		team.State.Owner,
+	)
+	if err != nil {
+		return err
+	}
+
+	// err = b.teamHistoryAdd(team.Id, team.State)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
+}
+
+func (b *Storage) TeamCount() (uint64, error) {
+	rows, err := b.db.Query("SELECT COUNT(*) FROM teams;")
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var count uint64
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 // func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
@@ -60,59 +94,24 @@ type Team struct {
 // 	return nil
 // }
 
-func (b *Storage) TeamCreate(team Team) error {
-	log.Infof("[DBMS] Adding team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner) VALUES ($1, $2, $3, $4);",
-		team.TeamID.String(),
-		team.TimezoneIdx,
-		team.CountryIdx,
-		team.State.Owner,
-	)
-	if err != nil {
-		return err
-	}
-
-	// err = b.teamHistoryAdd(team.Id, team.State)
-	// if err != nil {
-	// 	return err
-	// }
-
-	return nil
-}
-
-func (b *Storage) TeamCount() (uint64, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM teams;")
-	if err != nil {
-		return 0, err
-	}
-	defer rows.Close()
-	rows.Next()
-	var count uint64
-	err = rows.Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
-func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
-	team := Team{}
-	rows, err := b.db.Query("SELECT team_id, timezone_idx, country_idx, owner owner WHERE (team_id = $1);", teamID)
-	if err != nil {
-		return team, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return team, errors.New("Unexistent team")
-	}
-	err = rows.Scan(
-		&team.TeamID,
-		&team.TimezoneIdx,
-		&team.CountryIdx,
-		&team.State.Owner,
-	)
-	if err != nil {
-		return team, err
-	}
-	return team, nil
-}
+// func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
+// 	team := Team{}
+// 	rows, err := b.db.Query("SELECT team_id, timezone_idx, country_idx, owner owner WHERE (team_id = $1);", teamID)
+// 	if err != nil {
+// 		return team, err
+// 	}
+// 	defer rows.Close()
+// 	if !rows.Next() {
+// 		return team, errors.New("Unexistent team")
+// 	}
+// 	err = rows.Scan(
+// 		&team.TeamID,
+// 		&team.TimezoneIdx,
+// 		&team.CountryIdx,
+// 		&team.State.Owner,
+// 	)
+// 	if err != nil {
+// 		return team, err
+// 	}
+// 	return team, nil
+// }
