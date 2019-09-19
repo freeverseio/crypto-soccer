@@ -28,8 +28,8 @@ func TestCountryCreate(t *testing.T) {
 	timezone := uint8(4)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	country := storage.Country{
-		TimezoneID: timezone,
-		Idx:        4,
+		TimezoneIdx: timezone,
+		CountryIdx:  4,
 	}
 	err = sto.CountryCreate(country)
 	if err != nil {
@@ -52,14 +52,14 @@ func TestGetCountry(t *testing.T) {
 	timezone := uint8(4)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	country := storage.Country{
-		TimezoneID: timezone,
-		Idx:        5,
+		TimezoneIdx: timezone,
+		CountryIdx:  5,
 	}
 	err = sto.CountryCreate(country)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetCountry(country.TimezoneID, country.Idx)
+	result, err := sto.GetCountry(country.TimezoneIdx, country.CountryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
