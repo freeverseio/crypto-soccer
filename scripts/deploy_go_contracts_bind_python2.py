@@ -9,16 +9,21 @@ parentdir = os.path.dirname(mydir)
 abigen=os.path.join(os.getenv("HOME"), 'go', 'bin', 'abigen')
 truffle_contracts_dir=os.path.join(parentdir, 'truffle-core', 'build', 'contracts')
 
+def openfile(filename, flags):
+    if sys.version_info[0] < 3:
+        return  open(filename, flags)
+    return  open(filename, flags, encoding='utf-8')
+
 def deploy_go_contract(jsonfile, pkgname, destinations):
     print 'deployning ' + pkgname
     base, ext = os.path.splitext(os.path.basename(jsonfile))
     abifile = os.path.join(mydir, base + '.abi')
     binfile = os.path.join(mydir, base + '.bin')
-    with open(os.path.join(truffle_contracts_dir, jsonfile), 'r') as fp:
+    with openfile(os.path.join(truffle_contracts_dir, jsonfile), 'r') as fp:
         contract = json.load(fp)
-    with open(abifile, 'w') as outfile:
+    with openfile(abifile, 'w') as outfile:
         json.dump(contract['abi'], outfile, ensure_ascii=False, indent=2)
-    with open(binfile, 'w') as outfile:
+    with openfile(binfile, 'w') as outfile:
         outfile.write(contract['bytecode'])
 
     for dest in destinations:
