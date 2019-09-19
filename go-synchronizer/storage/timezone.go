@@ -23,8 +23,5 @@ func (b *Storage) TimezoneCreate(timezone Timezone) error {
 	_, err := b.db.Exec("INSERT INTO timezones (id) VALUES ($1);",
 		timezone.ID,
 	)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

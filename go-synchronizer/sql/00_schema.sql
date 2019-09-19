@@ -14,34 +14,29 @@ CREATE TABLE timezones (
 CREATE TABLE countries (
     id INT NOT NULL,
     timezone_id INT NOT NULL REFERENCES timezones(id),
-    PRIMARY KEY(id)
-);
-
-CREATE TABLE leagues (
-    id NUMERIC(78,0) NOT NULL,
-    country_id INT NOT NULL REFERENCES countries(id),
+    idx_in_timezone INT NULL,
     PRIMARY KEY(id)
 );
 
 CREATE TABLE teams (
     id NUMERIC(78,0) NOT NULL,
-    league_id INT NOT NULL REFERENCES leagues(id),
+    country_id INT NOT NULL REFERENCES country(id),
     owner TEXT NOT NULL,
     PRIMARY KEY(id)
 );
 
 CREATE TABLE players (
     id NUMERIC(78,0) NOT NULL,
-    -- monthOfBirthInUnixTime TEXT NOT NULL,
-    -- blockNumber BIGINT NOT NULL,
-    -- inBlockIndex INT NOT NULL,
-    team_id BIGINT NOT NULL REFERENCES teams(id),
-    -- state TEXT NOT NULL,
+    team_id NUMERIC(78,0) NOT NULL REFERENCES teams(id),
     defence INT NOT NULL,
     speed INT NOT NULL,
     pass INT NOT NULL,
     shoot INT NOT NULL,
     endurance INT NOT NULL,
+    -- monthOfBirthInUnixTime TEXT NOT NULL,
+    -- blockNumber BIGINT NOT NULL,
+    -- inBlockIndex INT NOT NULL,
+    -- state TEXT NOT NULL,
     PRIMARY KEY(id)
 );
 
