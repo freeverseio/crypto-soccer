@@ -20,7 +20,7 @@ func TestCountryCount(t *testing.T) {
 	}
 }
 
-func TestCountryAdd(t *testing.T) {
+func TestCountryCreate(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
