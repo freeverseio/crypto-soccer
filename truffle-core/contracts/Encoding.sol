@@ -18,6 +18,14 @@ contract Encoding {
     uint8 constant public IDX_F  = 3;
     uint8 constant public IDX_MD = 4;
     uint8 constant public IDX_MF = 5;
+    //  Leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+    uint8 constant public IDX_R = 1;
+    uint8 constant public IDX_C = 2;
+    uint8 constant public IDX_CR = 3;
+    uint8 constant public IDX_L = 4;
+    uint8 constant public IDX_LR = 5;
+    uint8 constant public IDX_LC = 6;
+    uint8 constant public IDX_LCR = 7;
 
 
     /**

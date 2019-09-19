@@ -448,13 +448,14 @@ contract('Assets', (accounts) => {
     
     it('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
-        const {0: skills, 1: potential, 2: prefPos} = computedSkills;
+        const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = computedSkills;
         expected = [30, 0, 0, 0, 0];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
         potential.toNumber().should.be.equal(0);
-        prefPos.toNumber().should.be.equal(0);
+        forwardness.toNumber().should.be.equal(0); // shirtNum = 0 is a GK
+        leftishness.toNumber().should.be.equal(0);
     });
 
     it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
