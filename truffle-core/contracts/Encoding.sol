@@ -29,31 +29,39 @@ contract Encoding {
 
 
     /**
-     * @dev encoding of a total of 61 bits:
-     *      lineup[11]      = 5 bit each = [playerIdxInTeam1, ..., ]
-     *      tacticsId       = 6 bit (0 = 442, 1 = 541, ...
+     * @dev encoding of a total of 81 bits:
+     *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
+     *      fwdmodifiers[10]    = 2 bit each, 0: no modifier, 1: defensive, 2: attacking
+     *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
     **/
-    function encodeTactics(uint8[11] memory lineup, uint8 tacticsId) public pure returns (uint256) 
-    {
+    function encodeTactics(uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8 tacticsId) public pure returns (uint256) {
         require(tacticsId < 64, "tacticsId should fit in 6 bit");
-        uint256 encoded = uint256(tacticsId) << 55;
+        uint256 encoded = uint256(tacticsId);
+        for (uint8 p = 0; p < 10; p++) {
+            require(fwdModifiers[p] < 3, "incorrect fwd modifier");
+            encoded |= uint256(fwdModifiers[p]) << 6 + 2 * p;
+        }          
         for (uint8 p = 0; p < 11; p++) {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
-            encoded |= uint256(lineup[p]) << 5 * p;
+            encoded |= uint256(lineup[p]) << 26 + 5 * p;
         }          
         return encoded;
     }
 
-    // @returns (uint8 forwardness, uint8 leftishness)
-    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, uint8 tacticsId)
-    {
-        require(tactics < 2**61, "tacticsId should fit in 61 bit");
+    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8 tacticsId) {
+        require(tactics < 2**81, "tacticsId should fit in 61 bit");
+        tacticsId = uint8(tactics & 63);
+        tactics >>= 6;
+        for (uint8 p = 0; p < 10; p++) {
+            fwdModifiers[p] = uint8(tactics & 3); // 2^2 - 1
+            require(fwdModifiers[p] < 3, "incorrect fwd modifier");
+            tactics >>= 2;
+        }          
         for (uint8 p = 0; p < 11; p++) {
             lineup[p] = uint8(tactics & 31); // 2^5 - 1
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             tactics >>= 5;
         }          
-        return (lineup, uint8(tactics & 63));
     }
     
     /**

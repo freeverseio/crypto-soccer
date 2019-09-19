@@ -52,13 +52,12 @@ contract Engine is Encoding{
         uint8[9][2] memory playersPerZone;
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
-        uint[][2] memory attackersSpeed;
-        uint[][2] memory attackersShoot;
+        uint8[10][2] memory fwdModifiers;
         
-        (lineups[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
-        (lineups[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0]);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1]);
+        (lineups[0], fwdModifiers[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
+        (lineups[1], fwdModifiers[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0]);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1]);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
@@ -102,11 +101,11 @@ contract Engine is Encoding{
     function getLineUpAndPlayerPerZone(uint256 tactics) 
         public 
         pure 
-        returns (uint8[11] memory lineup, uint8[9] memory playersPerZone) 
+        returns (uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
-        (lineup, tacticsId) = decodeTactics(tactics);
-        return (lineup, getPlayersPerZone(tacticsId));
+        (lineup, fwdModifiers, tacticsId) = decodeTactics(tactics);
+        return (lineup, fwdModifiers, getPlayersPerZone(tacticsId));
     }
 
     // TODO: can this be expressed as
@@ -253,19 +252,14 @@ contract Engine is Encoding{
         public
         pure
         returns (
-            uint256[5] memory globSkills,
-            uint256[] memory attackersSpeed, 
-            uint256[] memory attackersShoot
+            uint256[5] memory globSkills
         )
     {
-        attackersSpeed = new uint[](getNAtackers(playersPerZone)); 
-        attackersShoot = new uint[](getNAtackers(playersPerZone)); 
-
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
         uint256 playerSkills = teamState[lineup[0]];
-        globSkills[IDX_ENDURANCE]   = getEndurance(playerSkills);
+        globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenalty(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
             
@@ -307,14 +301,10 @@ contract Engine is Encoding{
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty)/10000;
                 globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty)/10000;
                 globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/10000;
-                attackersSpeed[i] = ((getSpeed(playerSkills)) * penalty)/10000; 
-                attackersShoot[i] = ((getShoot(playerSkills)) * penalty)/10000;
             } else {
                 globSkills[IDX_MOVE2ATTACK] += 10;
                 globSkills[IDX_CREATE_SHOOT] += 20;
                 globSkills[IDX_ENDURANCE] += 10;
-                attackersSpeed[i] = 10;
-                attackersShoot[i] = 10;
             }
             p++;
         }
@@ -329,12 +319,6 @@ contract Engine is Encoding{
         } else {
             globSkills[IDX_ENDURANCE] = 100;
         }
-
-        return (
-            globSkills,
-            attackersSpeed,
-            attackersShoot
-        );
     }
     
     // 0 penalty means no penalty

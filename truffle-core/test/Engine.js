@@ -14,6 +14,7 @@ contract('Engine', (accounts) => {
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
     const lineupConsecutive =  Array.from(new Array(11), (x,i) => i);
+    const fwdModifiersNull =  Array.from(new Array(10), (x,i) => 0);
     const tacticId442 = 0; // 442
     const tacticId433 = 2; // 433
     const playersPerZone442 = [1,2,1,1,2,1,0,2,0];
@@ -103,8 +104,8 @@ contract('Engine', (accounts) => {
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        tactics0 = await engine.encodeTactics(lineup0, tacticId442).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(lineup1, tacticId433).should.be.fulfilled;
+        tactics0 = await engine.encodeTactics(lineup0, fwdModifiersNull, tacticId442).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(lineup1, fwdModifiersNull, tacticId433).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
@@ -278,31 +279,25 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        result = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive).should.be.fulfilled;
-        result.attackersSpeed.length.should.be.equal(2);
-        result.attackersShoot.length.should.be.equal(2);
-        result.attackersSpeed[0].should.be.bignumber.equal("1");
-        result.attackersSpeed[1].should.be.bignumber.equal("1");
-        result.attackersShoot[0].should.be.bignumber.equal("1");
-        result.attackersShoot[1].should.be.bignumber.equal("1");
+        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
-        for (g = 0; g < 5; g++) result.globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
+        for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
     
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
-        tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6).should.be.fulfilled;
+        tacticsWrong = await engine.encodeTactics(lineup1, fwdModifiersNull, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
         result = await engine.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
-        let {0: line, 1: playersPerZone} = result;
+        let {0: line, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
         for (p = 0; p < 11; p++) line[p].toNumber().should.be.equal(lineup1[p]);
     });
 
     it('play match with wrong tactic', async () => {
-        tacticsWrong = await engine.encodeTactics(lineup1, tacticIdTooLarge = 6);
+        tacticsWrong = await engine.encodeTactics(lineup1, fwdModifiersNull, tacticIdTooLarge = 6);
         await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1]).should.be.rejected;
     });
 
