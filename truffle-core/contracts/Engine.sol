@@ -171,14 +171,14 @@ contract Engine is Encoding{
 
     /// @dev Generalization of the previous to any number of input weights
     /// @dev It therefore throws any number of dice and returns the winner's idx.
-    function throwDiceArray(uint[11] memory weights, uint rndNum) public pure returns(uint8 w) {
+    function throwDiceArray11(uint[11] memory weights, uint rndNum) public pure returns(uint8 w) {
         uint uniformRndInSumOfWeights;
-        for (w = 0; w<weights.length; w++) {
+        for (w = 0; w < 11; w++) {
             uniformRndInSumOfWeights += weights[w];
         }
         uniformRndInSumOfWeights *= rndNum;
         uint cumSum = 0;
-        for (w = 0; w<weights.length-1; w++) {
+        for (w = 0; w < 10; w++) {
             cumSum += weights[w];
             if( uniformRndInSumOfWeights < ( cumSum * (MAX_RND-1) )) {
                 return w;
@@ -217,7 +217,7 @@ contract Engine is Encoding{
         for (uint8 p = 11 - getNAtackers(playersPerZone); p < 11; p++) {
             weights[p] = getSpeed(teamState[lineup[p]]);
         }
-        return throwDiceArray(weights, rndNum1);
+        return throwDiceArray11(weights, rndNum1);
     }
 
     /// @dev Decides if a team that creates a shoot manages to score.

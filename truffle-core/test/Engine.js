@@ -197,7 +197,6 @@ contract('Engine', (accounts) => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
         teamState[10] = messi;
-        //toni
         kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
         result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
@@ -211,16 +210,22 @@ contract('Engine', (accounts) => {
         result.should.be.equal(true);
     });
 
-    // it('throws dice array', async () => {
-    //     // interface: throwDiceArray(uint[] memory weights, uint rndNum)
-    //     let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
-    //     let result = await engine.throwDiceArray([1000,1,1],kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await engine.throwDiceArray([1,1000,1],kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    //     result = await engine.throwDiceArray([1,1,1000],kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(2);
-    // });
+    it('throws dice array11', async () => {
+        // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
+        let kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
+        weights = Array.from(new Array(11), (x,i) => 1);
+        weights[8] = 1000;
+        let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(8);
+        weights[8] = 1;
+        weights[9] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(9);
+        weights[9] = 1;
+        weights[10] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+    });
 
     // it('manages to shoot', async () => {
     //     // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
