@@ -37,15 +37,13 @@ contract Engine is Encoding{
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
-     * @param state0 a vector with the state of the players of team 0
-     * @param state1 a vector with the state of the players of team 1
+     * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
     function playMatch(
         uint256 seed,
-        uint256[MAX_NPLAYERS] memory state0,
-        uint256[MAX_NPLAYERS] memory state1, 
+        uint256[MAX_NPLAYERS][2] memory states,
         uint256[2] memory tactics
     )
         public
@@ -61,8 +59,8 @@ contract Engine is Encoding{
         uint[][2] memory attackersSpeed;
         uint[][2] memory attackersShoot;
         
-        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(state0, playersPerZone[0], lineups[0]);
-        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(state1, playersPerZone[1], lineups[1]);
+        (globSkills[0], attackersSpeed[0], attackersShoot[0]) = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0]);
+        (globSkills[1], attackersSpeed[1], attackersShoot[1]) = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1]);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {

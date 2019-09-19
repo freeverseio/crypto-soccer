@@ -94,13 +94,13 @@ contract('Leagues', (accounts) => {
     });
     
     it('compute points same rating', async () => {
-        let points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [2, 2]).should.be.fulfilled;
+        let points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [2, 2]).should.be.fulfilled;
         points[0].toNumber().should.be.equal(0);
         points[1].toNumber().should.be.equal(0);
-        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [2, 1]).should.be.fulfilled;
+        points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [2, 1]).should.be.fulfilled;
         points[0].toNumber().should.be.equal(5);
         points[1].toNumber().should.be.equal(0);
-        points = await leagues.computeEvolutionPoints(teamStateAll50, teamStateAll50, score = [1, 2]).should.be.fulfilled;
+        points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [1, 2]).should.be.fulfilled;
         points[0].toNumber().should.be.equal(0);
         points[1].toNumber().should.be.equal(5);
     });

@@ -54,8 +54,7 @@ contract Leagues is Assets {
     /// compute points per team in front of goals
     /// @return home and visitor points
     function computeEvolutionPoints(
-        uint256[PLAYERS_PER_TEAM_MAX] memory homeTeamState, 
-        uint256[PLAYERS_PER_TEAM_MAX] memory visitorTeamState,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint8[2] memory score
     )
         public
@@ -65,8 +64,8 @@ contract Leagues is Assets {
         if (score[0] == score[1])
             return [0, 0];
 
-        uint256 homeTeamRating = computeTeamRating(homeTeamState);
-        uint256 visitorTeamRating = computeTeamRating(visitorTeamState);
+        uint256 homeTeamRating = computeTeamRating(states[0]);
+        uint256 visitorTeamRating = computeTeamRating(states[1]);
 
         if (homeTeamRating == visitorTeamRating)
             return score[0] > score[1] ? [5, 0] : [0, 5];
@@ -110,15 +109,14 @@ contract Leagues is Assets {
             (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
             uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
             uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
+            uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
             score = _engine.playMatch(
                 matchSeed, 
-                prevLeagueState[homeTeamIdx], 
-                prevLeagueState[visitorTeamIdx], 
+                states,
                 tactics
             );
             evoPoint = computeEvolutionPoints(
-                prevLeagueState[homeTeamIdx], 
-                prevLeagueState[visitorTeamIdx], 
+                states,
                 score
             );
             scores[matchIdxInDay * 2] = score[0];
