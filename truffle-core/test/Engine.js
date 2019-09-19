@@ -13,11 +13,20 @@ contract('Engine', (accounts) => {
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
+    const lineupConsecutive =  Array.from(new Array(11), (x,i) => i);
     const tacticId442 = 0; // 442
     const tacticId433 = 2; // 433
     const playersPerZone442 = [1,2,1,1,2,1,0,2,0];
     const playersPerZone433 = [1,2,1,1,1,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
+    const IDX_R = 1;
+    const IDX_C = 2;
+    const IDX_CR = 3;
+    const IDX_L = 4;
+    const IDX_LR = 5;
+    const IDX_LC = 6;
+    const IDX_LCR = 7;
+
     
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
         teamState = []
@@ -39,6 +48,40 @@ contract('Engine', (accounts) => {
         }        
         return teamState;
     };
+
+    const createTeamState442 = async (engine, forceSkills) => {
+        teamState = [];
+        month = 0;
+        playerId = 1;
+        pot = 3;
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        teamState.push(pSkills)
+        for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
+            teamState.push(pSkills)
+        }        
+        return teamState;
+    };
+
 
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
@@ -80,7 +123,7 @@ contract('Engine', (accounts) => {
         expected[0] = 0;
         for (p=0; p < 11; p++) {
             penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(expected[p]);
+            penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
 
@@ -101,34 +144,31 @@ contract('Engine', (accounts) => {
         ];
         for (p=0; p < 11; p++) {
             penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(expected442[p]);
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
             penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(expected433[p]);
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
 
     it('computePenalty for MFLCR ', async () => {
         // for a DL:
-    playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-        forwardness = 5, leftishness = 7
-    ).should.be.fulfilled;            
-    expected442 = [MAX_PENALTY, 
-        1000, 1000, 1000, 1000, 
-        0, 0, 0, 0, 
-        0, 0 
-    ];
-    expected433 = expected442;
-    for (p=0; p < 11; p++) {
-        penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-        penalty.toNumber().should.be.equal(expected442[p]);
-        penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
-        penalty.toNumber().should.be.equal(expected433[p]);
-    }
-});
-
-
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 5, leftishness = 7
+        ).should.be.fulfilled;            
+        expected442 = [MAX_PENALTY, 
+            1000, 1000, 1000, 1000, 
+            0, 0, 0, 0, 
+            0, 0 
+        ];
+        expected433 = expected442;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
+        }
+    });
     
-    return;
     it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
         result[0][0].toNumber().should.be.equal(10);
@@ -146,7 +186,7 @@ contract('Engine', (accounts) => {
 
     it('play a match', async () => {
         const result = await engine.playMatch(seed, teamStateAll50, teamStateAll1, [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(15);
+        result[0].toNumber().should.be.equal(17);
         result[1].toNumber().should.be.equal(0);
     });
 
@@ -230,8 +270,8 @@ contract('Engine', (accounts) => {
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
         
-        teamStateProperAll1 = await createTeamState(seed, engine, assets, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        let result = await engine.getTeamGlobSkills(teamStateProperAll1, playersPerZone442, lineup0).should.be.fulfilled;
+        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        result = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive).should.be.fulfilled;
         result.attackersSpeed.length.should.be.equal(2);
         result.attackersShoot.length.should.be.equal(2);
         result.attackersSpeed[0].should.be.bignumber.equal("1");

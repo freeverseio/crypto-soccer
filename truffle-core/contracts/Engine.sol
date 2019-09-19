@@ -254,37 +254,59 @@ contract Engine is Encoding{
 
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
+        uint256 penalty;
         uint256 playerSkills = teamState[lineup[0]];
         globSkills[IDX_ENDURANCE]   = getEndurance(playerSkills);
-        if (getForwardness(playerSkills) == IDX_GK) globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
-        else globSkills[IDX_BLOCK_SHOOT] = 10;
+        if (computePenalty(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
+        else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
+            
         
         uint8 p = 1;
-        // uint256 penalty;
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            // penalty = computePenalty(p, playersPerZone, playerSkills);
-            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills);
-            globSkills[IDX_DEFEND_SHOOT] += getDefence(playerSkills) + getSpeed(playerSkills);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
+            penalty = computePenalty(p, playersPerZone, playerSkills);
+            if (penalty != 0) {
+                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty)/10000;
+                globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty)/10000;
+                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/10000;
+            } else {
+                globSkills[IDX_MOVE2ATTACK] += 30;
+                globSkills[IDX_DEFEND_SHOOT] += 20;
+                globSkills[IDX_ENDURANCE]   += 10;
+            }
             p++;
         }
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            globSkills[IDX_MOVE2ATTACK] += 2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
+            penalty = computePenalty(p, playersPerZone, playerSkills);
+            if (penalty != 0) {
+                globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty)/10000;
+                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/10000;
+            } else {
+                globSkills[IDX_MOVE2ATTACK] += 50;
+                globSkills[IDX_ENDURANCE]   += 10;
+            }
             p++;
         }
         // loop over strikers
         for (uint8 i = 0; i < getNAtackers(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            globSkills[IDX_MOVE2ATTACK] += getDefence(playerSkills) ;
-            globSkills[IDX_CREATE_SHOOT] += getSpeed(playerSkills) + getPass(playerSkills);
-            globSkills[IDX_ENDURANCE]   += getEndurance(playerSkills);
-            attackersSpeed[i] = getSpeed(playerSkills); 
-            attackersShoot[i] = getShoot(playerSkills); 
+            penalty = computePenalty(p, playersPerZone, playerSkills);
+            if (penalty != 0) {
+                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty)/10000;
+                globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty)/10000;
+                globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/10000;
+                attackersSpeed[i] = ((getSpeed(playerSkills)) * penalty)/10000; 
+                attackersShoot[i] = ((getShoot(playerSkills)) * penalty)/10000;
+            } else {
+                globSkills[IDX_MOVE2ATTACK] += 10;
+                globSkills[IDX_CREATE_SHOOT] += 20;
+                globSkills[IDX_ENDURANCE] += 10;
+                attackersSpeed[i] = 10;
+                attackersShoot[i] = 10;
+            }
             p++;
         }
 
@@ -321,7 +343,7 @@ contract Engine is Encoding{
         require(lineupPos < 11, "wrong arg in computePenalty");
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
-        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return MAX_PENALTY;
+        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 0;
         uint8[9] memory playersBelow = playersBelowZones(playersPerZone);
         lineupPos--; // remove the offset due to the GK
         if (lineupPos < playersBelow[0]) { 
@@ -360,7 +382,8 @@ contract Engine is Encoding{
             // assigned to attack right
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
-        } 
+        }
+        return 10000-penalty; 
     }
 
     function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {
