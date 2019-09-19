@@ -12,17 +12,18 @@ CREATE TABLE timezones (
 );
 
 CREATE TABLE countries (
-    id INT NOT NULL,
     timezone_id INT NOT NULL REFERENCES timezones(id),
-    idx_in_timezone INT NULL,
-    PRIMARY KEY(id)
+    idx INT NOT NULL,
+    PRIMARY KEY(timezone_id, idx)
 );
 
 CREATE TABLE teams (
     id NUMERIC(78,0) NOT NULL,
-    country_id INT NOT NULL REFERENCES country(id),
+    timezone_id INT NOT NULL,
+    country_idx INT NOT NULL,
     owner TEXT NOT NULL,
-    PRIMARY KEY(id)
+    PRIMARY KEY(id),
+    FOREIGN KEY (timezone_id, country_idx) REFERENCES country(timezone_id, idx)
 );
 
 CREATE TABLE players (

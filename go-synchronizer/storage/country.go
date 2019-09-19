@@ -7,8 +7,8 @@ import (
 )
 
 type Country struct {
-	ID         uint64
 	TimezoneID uint8
+	Idx        uint16
 }
 
 func (b *Storage) CountryCount() (uint64, error) {
@@ -28,9 +28,9 @@ func (b *Storage) CountryCount() (uint64, error) {
 
 func (b *Storage) CountryCreate(country Country) error {
 	log.Infof("[DBMS] Adding country %v", country)
-	_, err := b.db.Exec("INSERT INTO countries (id, timezone_id) VALUES ($1, $2);",
-		country.ID,
+	_, err := b.db.Exec("INSERT INTO countries (timezone_id, idx) VALUES ($1, $2);",
 		country.TimezoneID,
+		country.Idx,
 	)
 	if err != nil {
 		return err
@@ -38,9 +38,9 @@ func (b *Storage) CountryCreate(country Country) error {
 	return nil
 }
 
-func (b *Storage) GetCountry(id uint64) (Country, error) {
+func (b *Storage) GetCountry(timezone_id uint8, idx uint16) (Country, error) {
 	country := Country{}
-	rows, err := b.db.Query("SELECT id, timezone_id FROM countries WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT timezone_id, idx FROM countries WHERE (timezone_id = $1 AND idx = $2);", timezone_id, idx)
 	if err != nil {
 		return country, err
 	}
@@ -49,8 +49,8 @@ func (b *Storage) GetCountry(id uint64) (Country, error) {
 		return country, errors.New("Unexistent country")
 	}
 	err = rows.Scan(
-		&country.ID,
 		&country.TimezoneID,
+		&country.Idx,
 	)
 	if err != nil {
 		return country, err
