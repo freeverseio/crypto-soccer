@@ -23,27 +23,16 @@ describe('assets resolvers', () => {
     beforeEach(async () => {
         contracts = await genesis(provider, identity.address);
 
-        const { states, assets, leagues } = contracts;
+        const { market } = contracts;
         resolvers = new Resolvers({
-            states,
-            assets,
-            leagues,
+            market,
             from: identity.address
         });
     });
 
     describe('Mutation', () => {
-        it('createLeague', async () => {
-            const result = await resolvers.Mutation.createLeague(_, { nTeams: 4, initBlock: 10, step: 20 }).should.be.fulfilled;
-            result.should.be.equal(true);
-        });
-
-        it('transferTeam', async () => {
-            await resolvers.Mutation.transferTeam(_, { teamId: 1, owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.rejected;
-            const gas = await assets.methods.createTeam("Madrid", identity.address).estimateGas().should.be.fulfilled;
-            await assets.methods.createTeam("Madrid", identity.address).send({ from: identity.address, gas }).should.be.fulfilled;
-            const result = await resolvers.Mutation.transferTeam(_, { teamId: 1, owner: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C"}).should.be.fulfilled;
-            result.should.be.equal(true);
+        it('transferFirstBotToAddr', async () => {
+            await resolvers.Mutation.transferFirstBotToAddr(_, { timezone: 0, countryIdxInTimezone: 0, address: "0x8c221609CC1C92FF648F3187fb12F8f821b46d9C" }).should.be.rejected;
         })
     });
 });

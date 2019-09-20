@@ -13,6 +13,7 @@ type Config struct {
 	AssetsContractAddress  string `json:"assetsContractAddress`
 	StatesContractAddress  string `json:"statesContractAddress`
 	LeaguesContractAddress string `json:"leaguesContractAddress`
+	MarketContractAddress  string `json:"marketContractAddress`
 }
 
 func New(configFile string) (*Config, error) {
@@ -38,4 +39,5 @@ func (b *Config) Print() {
 	log.Info("[CONFIG] assetsContractAddress   : ", b.AssetsContractAddress)
 	log.Info("[CONFIG] statesContractAddress   : ", b.StatesContractAddress)
 	log.Info("[CONFIG] leaguesContractAddress  : ", b.LeaguesContractAddress)
+	log.Info("[CONFIG] marketContractAddress  : ", b.MarketContractAddress)
 }

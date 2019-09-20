@@ -2,9 +2,7 @@ const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
 const Resolvers = require("./resolvers");
 const Web3 = require("web3");
-const playerStateJSON = require("../contracts/PlayerState.json");
-const assetsJSON = require("../contracts/Assets.json");
-const leaguesJSON = require("../contracts/Leagues.json");
+const marketJSON = require("../contracts/Market.json");
 const HDWalletProvider = require("truffle-hdwallet-provider");
 const program = require("commander");
 const version = require("../package.json").version;
@@ -25,30 +23,22 @@ const {
   providerUrl,
   address,
   privateKey,
-  statesContractAddress,
-  assetsContractAddress,
-  leaguesContractAddress
+  marketContractAddress,
 } = config;
 
 console.log("--------------------------------------------------------");
 console.log("providerUrl       : ", providerUrl);
 console.log("account           : ", address);
-console.log("🔥  account p.k.  : ", privateKey);
-console.log("states address    : ", statesContractAddress);
-console.log("assets address    : ", assetsContractAddress);
-console.log("leagues address   : ", leaguesContractAddress);
+console.log("🔥  account p.k.   : ", privateKey);
+console.log("market address    : ", marketContractAddress);
 console.log("--------------------------------------------------------");
 
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
-const states = new web3.eth.Contract(playerStateJSON.abi, statesContractAddress);
-const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
-const leagues = new web3.eth.Contract(leaguesJSON.abi, leaguesContractAddress);
+const market = new web3.eth.Contract(marketJSON.abi, marketContractAddress);
 
 const resolvers = new Resolvers({
-  states,
-  assets,
-  leagues,
+  market,
   from: address
 });
 

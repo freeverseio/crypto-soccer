@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
 type BackgroundProcess struct {
@@ -19,13 +19,12 @@ type BackgroundProcess struct {
 
 func BackgroundProcessNew(
 	client *ethclient.Client,
-	assetsContract *assets.Assets,
-	statesContract *states.States,
-	leaguesContract *leagues.Leagues,
 	storage *storage.Storage,
+	marketContract *market.Market,
+	assetsContract *assets.Assets,
 ) *BackgroundProcess {
 	return &BackgroundProcess{
-		eventProcessor: NewEventProcessor(client, storage, assetsContract, statesContract, leaguesContract),
+		eventProcessor: NewEventProcessor(client, storage, marketContract, assetsContract),
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
 	}

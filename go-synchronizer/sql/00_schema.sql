@@ -6,76 +6,81 @@ CREATE TABLE params (
 
 INSERT INTO params (name, value) VALUES ('block_number', '0');
 
-CREATE TABLE countries (
-    id BIGINT NOT NULL,
-    name TEXT NOT NULL,
-    timezoneUTC INT NOT NULL,
-    PRIMARY KEY(id)
+CREATE TABLE timezones (
+    timezone_idx INT NOT NULL,
+    PRIMARY KEY(timezone_idx)
 );
 
-/* TODO: remove the following hardcoded countries when Liuonel5 is ready */
-INSERT INTO countries (id, name, timezoneUTC) VALUES ('1', 'Spain', '1');
-INSERT INTO countries (id, name, timezoneUTC) VALUES ('2', 'Italy', '1');
+CREATE TABLE countries (
+    timezone_idx INT NOT NULL REFERENCES timezones(timezone_idx),
+    country_idx INT NOT NULL,
+    PRIMARY KEY(timezone_idx, country_idx)
+);
 
 CREATE TABLE teams (
-    id BIGINT NOT NULL,
-    name TEXT NOT NULL,
-    countryId BIGINT NOT NULL REFERENCES countries(id),
-    creationTimestamp BIGINT NOT NULL,
-    blockNumber BIGINT NOT NULL,
-    inBlockIndex INT NOT NULL,
+    team_id NUMERIC(78,0) NOT NULL,
+    timezone_idx INT NOT NULL,
+    country_idx INT NOT NULL,
     owner TEXT NOT NULL,
-    currentLeagueId BIGINT NOT NULL,
-    posInCurrentLeagueId INT NOT NULL,
-    prevLeagueId BIGINT NOT NULL,
-    posInPrevLeagueId INT NOT NULL,
-    PRIMARY KEY(id)
-);
-
-CREATE TABLE teams_history (
-    teamId BIGINT NOT NULL REFERENCES teams(id),
-    blockNumber BIGINT NOT NULL,
-    inBlockIndex INT NOT NULL,
-    owner TEXT NOT NULL,
-    currentLeagueId BIGINT NOT NULL,
-    posInCurrentLeagueId INT NOT NULL,
-    prevLeagueId BIGINT NOT NULL,
-    posInPrevLeagueId INT NOT NULL,
-    PRIMARY KEY(teamId, blockNumber, inBlockIndex)
+    PRIMARY KEY(team_id),
+    FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
 );
 
 CREATE TABLE players (
-    id BIGINT NOT NULL,
-    monthOfBirthInUnixTime TEXT NOT NULL,
-    blockNumber BIGINT NOT NULL,
-    inBlockIndex INT NOT NULL,
-    teamId BIGINT NOT NULL REFERENCES teams(id),
-    state TEXT NOT NULL,
+    player_id NUMERIC(78,0) NOT NULL,
+    team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
     pass INT NOT NULL,
     shoot INT NOT NULL,
     endurance INT NOT NULL,
-    PRIMARY KEY(id)
+    -- monthOfBirthInUnixTime TEXT NOT NULL,
+    -- blockNumber BIGINT NOT NULL,
+    -- inBlockIndex INT NOT NULL,
+    -- state TEXT NOT NULL,
+    PRIMARY KEY(player_id)
 );
 
-CREATE TABLE players_history (
-    playerId BIGINT NOT NULL REFERENCES players(id),
-    blockNumber BIGINT NOT NULL,
-    inBlockIndex INT NOT NULL,
-    teamId BIGINT NOT NULL REFERENCES teams(id),
-    state TEXT NOT NULL,
-    defence INT NOT NULL,
-    speed INT NOT NULL,
-    pass INT NOT NULL,
-    shoot INT NOT NULL,
-    endurance INT NOT NULL,
-    PRIMARY KEY(playerId, blockNumber, inBlockIndex)
-);
+-- CREATE TABLE teams_history (
+--     teamId BIGINT NOT NULL REFERENCES teams(id),
+--     blockNumber BIGINT NOT NULL,
+--     inBlockIndex INT NOT NULL,
+--     owner TEXT NOT NULL,
+--     currentLeagueId BIGINT NOT NULL,
+--     posInCurrentLeagueId INT NOT NULL,
+--     prevLeagueId BIGINT NOT NULL,
+--     posInPrevLeagueId INT NOT NULL,
+--     PRIMARY KEY(teamId, blockNumber, inBlockIndex)
+-- );
 
-CREATE TABLE leagues (
-    id BIGINT NOT NULL,
-    PRIMARY KEY(id)
-);
+-- CREATE TABLE players (
+--     id BIGINT NOT NULL,
+--     monthOfBirthInUnixTime TEXT NOT NULL,
+--     blockNumber BIGINT NOT NULL,
+--     inBlockIndex INT NOT NULL,
+--     teamId BIGINT NOT NULL REFERENCES teams(id),
+--     state TEXT NOT NULL,
+--     defence INT NOT NULL,
+--     speed INT NOT NULL,
+--     pass INT NOT NULL,
+--     shoot INT NOT NULL,
+--     endurance INT NOT NULL,
+--     PRIMARY KEY(id)
+-- );
+
+-- CREATE TABLE players_history (
+--     playerId BIGINT NOT NULL REFERENCES players(id),
+--     blockNumber BIGINT NOT NULL,
+--     inBlockIndex INT NOT NULL,
+--     teamId BIGINT NOT NULL REFERENCES teams(id),
+--     state TEXT NOT NULL,
+--     defence INT NOT NULL,
+--     speed INT NOT NULL,
+--     pass INT NOT NULL,
+--     shoot INT NOT NULL,
+--     endurance INT NOT NULL,
+--     PRIMARY KEY(playerId, blockNumber, inBlockIndex)
+-- );
+
 
 

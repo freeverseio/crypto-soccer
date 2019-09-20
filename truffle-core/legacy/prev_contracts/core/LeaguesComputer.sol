@@ -159,22 +159,4 @@ contract LeaguesComputer is LeaguesScore {
             visitorGoals
         );
     }
-        
-    // function computeAllMatchleagueStates(
-    //     uint256 id, 
-    //     uint256[] memory initleagueState, 
-    //     uint256[3][] memory tacticsIds // TODO: optimize data type
-    // )
-    //     public 
-    //     view 
-    //     returns (uint16[] memory scores) 
-    // {
-    //     uint256 nLeagueDays = countLeagueDays(id);
-    //     for(uint256 day = 0 ; day < nLeagueDays ; day++)
-    //     {
-    //         bytes32 seed = getMatchDayBlockHash(id, day);
-    //         // uint16[] memory dayScores = computeStatesAtMatchday(id, day, initleagueState, tacticsIds, seed);
-    //         // scores = addToTournamentScores(scores, dayScores);
-    //     }
-    // }
 }

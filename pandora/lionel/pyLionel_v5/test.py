@@ -76,12 +76,18 @@ def integrationTest():
     assert val1 == 1 and val2 == 3
     (tz, val1, val2) = ST.decodeZoneCountryAndVal(ST.encodeZoneCountryAndVal(timeZone, 500, 343))
     assert val1 == 500 and val2 == 343
+    (tz, val1, val2) = ST.decodeZoneCountryAndVal(ST.encodeZoneCountryAndVal(0, 0, 0))
+    encoded = ST.encodeZoneCountryAndVal(0, 0, 0)
 
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(1) == 0, "wrong getTeamIdx"
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(17) == 0, "wrong getTeamIdx"
     assert ST.getTeamIdxInCountryFromPlayerIdxInCountry(18) == 1, "wrong getTeamIdx"
     (teamIdxInCountry, shirtNum) = ST.getTeamIdxInCountryAndShirtNumFromPlayerIdxInCountry(19)
     assert teamIdxInCountry == 1 and shirtNum == 1, "wrong team/shirtNum"
+
+    (tz, co, val) = ST.decodeZoneCountryAndVal(ST.getPlayerIdxInTeam(timeZone, 1, 4, 18))
+
+
 
     for div in range(0, DIVS_PER_COUNTRY_AT_DEPLOY):
         assert ST.getDivisionCreationDay(timeZone, 1, div) == 0, "Wrong creation time"

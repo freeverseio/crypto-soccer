@@ -6,14 +6,10 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    createLeague(
-      nTeams: Int!
-      initBlock: Int!
-      step: Int!
-    ): Boolean,
-    transferTeam(
-      teamId: Int,
-      owner: String!
+    transferFirstBotToAddr(
+      timezone: Int,
+      countryIdxInTimezone: ID!,
+      address: String!
     ): Boolean
   }`;
 

@@ -15,22 +15,23 @@ func TestCountryCount(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 2 {
-		t.Fatalf("Expected 2 result %v", count)
+	if count != 0 {
+		t.Fatalf("Expected 0 result %v", count)
 	}
 }
 
-func TestCountryAdd(t *testing.T) {
+func TestCountryCreate(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
+	timezone := uint8(4)
+	sto.TimezoneCreate(storage.Timezone{timezone})
 	country := storage.Country{
-		Id:          3,
-		Name:        "Georgia",
-		TimezoneUTC: 4,
+		TimezoneIdx: timezone,
+		CountryIdx:  4,
 	}
-	err = sto.CountryAdd(country)
+	err = sto.CountryCreate(country)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,8 +39,8 @@ func TestCountryAdd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 3 {
-		t.Fatalf("Expected 3 result %v", count)
+	if count != 1 {
+		t.Fatalf("Expected 1 result %v", count)
 	}
 }
 
@@ -48,16 +49,17 @@ func TestGetCountry(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	timezone := uint8(4)
+	sto.TimezoneCreate(storage.Timezone{timezone})
 	country := storage.Country{
-		Id:          3,
-		Name:        "Russia",
-		TimezoneUTC: 4,
+		TimezoneIdx: timezone,
+		CountryIdx:  5,
 	}
-	err = sto.CountryAdd(country)
+	err = sto.CountryCreate(country)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetCountry(country.Id)
+	result, err := sto.GetCountry(country.TimezoneIdx, country.CountryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

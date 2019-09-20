@@ -1,32 +1,25 @@
 const Web3 = require('web3');
-const statesJSON = require('../contracts/TeamState.json');
 const assetsJSON = require('../contracts/Assets.json');
-const engineJSON = require('../contracts/Engine.json');
-const leaguesJSON = require('../contracts/Leagues.json');
+const marketJSON = require('../contracts/Market.json');
 
 const Universe = async (provider, from) => {
     web3 = new Web3(provider, null, {});
 
-    const States = new web3.eth.Contract(statesJSON.abi);
-    let gas = await States.deploy({ data: statesJSON.bytecode }).estimateGas();
-    states = await States.deploy({ data: statesJSON.bytecode }).send({ from, gas });
-
     const Assets = new web3.eth.Contract(assetsJSON.abi);
-    gas = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [states.options.address] }).estimateGas();
-    assets = await Assets.deploy({ data: assetsJSON.bytecode, arguments: [states.options.address] }).send({ from, gas });
+    let gas = await Assets.deploy({ data: assetsJSON.bytecode }).estimateGas();
+    assets = await Assets.deploy({ data: assetsJSON.bytecode }).send({ from, gas });
+    await assets.methods.init().send({ from, gas });
 
-    const Engine = new web3.eth.Contract(engineJSON.abi);
-    gas = await Engine.deploy({ data: engineJSON.bytecode }).estimateGas();
-    engine = await Engine.deploy({ data: engineJSON.bytecode }).send({ from, gas });
+    const Market = new web3.eth.Contract(marketJSON.abi);
+    gas = await Market.deploy({ data: marketJSON.bytecode }).estimateGas();
+    market = await Market.deploy({ data: marketJSON.bytecode }).send({ from, gas });
 
-    const Leagues = new web3.eth.Contract(leaguesJSON.abi);
-    gas = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [states.options.address, engine.options.address] }).estimateGas();
-    leagues = await Leagues.deploy({ data: leaguesJSON.bytecode, arguments: [states.options.address, engine.options.address] }).send({ from, gas });
+    gas = await market.methods.setAssetsAddress(assets.options.address).estimateGas();
+    await market.methods.setAssetsAddress(assets.options.address).send({ from, gas });
 
     return {
-        states,
         assets,
-        leagues
+        market
     }
 }
 

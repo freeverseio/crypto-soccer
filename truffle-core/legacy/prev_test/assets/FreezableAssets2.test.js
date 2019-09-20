@@ -5,8 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 
-const Assets = artifacts.require('FreezableAssets');
-const PlayerStateLib = artifacts.require('PlayerState');
+const Assets = artifacts.require('Market');
 
 contract('FreezableAssets2', (accounts) => {
     let assets = null;
@@ -15,8 +14,7 @@ contract('FreezableAssets2', (accounts) => {
     const BOB = accounts[2];
 
     beforeEach(async () => {
-        playerStateLib = await PlayerStateLib.new().should.be.fulfilled;
-        assets = await Assets.new(playerStateLib.address).should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
     });
 
     it('change ownership', async () => {
