@@ -236,15 +236,30 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 	return nil
 }
 func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdx *big.Int) error {
-	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(nil)
+	opts := &bind.CallOpts{}
+	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
 	if err != nil {
 		return err
 	}
-	begin := divisionIdx.Uint64() * uint64(TEAMS_PER_DIVISION)
-	end := begin + uint64(TEAMS_PER_DIVISION-1)
+	begin := divisionIdx.Int64() * int64(TEAMS_PER_DIVISION)
+	end := begin + int64(TEAMS_PER_DIVISION)
 
 	for i := begin; i < end; i++ {
-		// TODO: call Assets.encodeTZCountryAndVal(timezone, countryIdx, i) to get TeamID
+		if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
+			return e
+		} else {
+			if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
+				return e
+			} else if e := p.db.TeamCreate(
+				storage.Team{
+					teamId,
+					timezone,
+					uint16(countryIdx.Uint64()),
+					storage.TeamState{teamOwner.Hex()}},
+			); e != nil {
+				return e
+			}
+		}
 	}
 	return err
 }
