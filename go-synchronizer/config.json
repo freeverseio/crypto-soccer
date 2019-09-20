@@ -1,6 +1,6 @@
 {
     "ethereumClient": "https://devnet.busyverse.com/web3",
-    "assetsContractAddress": "0xE5094517AeE4f34811838ef7493abe0527e3B2F5",
+    "assetsContractAddress": "0x51BcfbE2c751ddC288902Dd2B8d3B08F8B2cFFfC",
     "statesContractAddress": "0x8c2930b953f14Af0E2d034ec3354B8B032093405",
     "engineContractAddress": "0x2014B74DDccf72fcA2bEac38008A8b55380033Ca",
     "gameControllerContractAddress": "0x24D4139f30e024512EA17ABce506dfA48d77adaF",
