@@ -4,12 +4,10 @@ import "./Encoding.sol";
 
 contract Engine is Encoding{
     
-    uint8 private constant ROUNDS_PER_MATCH = 18;   // Number of relevant actions that happen during a game (18 equals one per 5 min)
-    uint8 private constant RNDS_PER_UINT    = 18;   // Num of short nums that fit in a bignum = (256/ BITS_PER_RND);
-    uint256 private constant BITS_PER_RND   = 14;   // Number of bits allowed for random numbers inside match decisisons
-    uint256 private constant MAX_RND        = 16383;// Max random number allowed inside match decisions = 2^BITS_PER_RND-1 
-    uint256 private constant MASK           = (1 << BITS_PER_RND)-1; // = (2**bits)-1, MASK used to extract short nums from bignum
-    uint256 public constant MAX_PENALTY    = 10000; // Idx used to identify normal player acting as GK, or viceversa.
+    uint8 public constant ROUNDS_PER_MATCH = 18;   // Number of relevant actions that happen during a game (18 equals one per 5 min)
+    uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
+    uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
+    uint256 public constant MAX_PENALTY     = 10000; // Idx used to identify normal player acting as GK, or viceversa.
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -52,7 +50,7 @@ contract Engine is Encoding{
     {
         uint8[11][2] memory lineups;
         uint8[9][2] memory playersPerZone;
-        uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
+        uint64[ROUNDS_PER_MATCH*4] memory rnds = getNRandsFromSeed(seed);
         uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
@@ -140,18 +138,17 @@ contract Engine is Encoding{
     }
 
 
-    function getNRandsFromSeed(uint16 nRands, uint256 seed) public pure returns (uint16[] memory rnds) {
-        rnds = new uint16[](nRands);
+    function getNRandsFromSeed(uint256 seed) public pure returns (uint64[ROUNDS_PER_MATCH*4] memory rnds) {
         uint256 currentBigRnd = uint256(keccak256(abi.encode(seed)));
-        uint8 rndsFromSameBigRnd = 0;
-        for (uint8 n = 0; n < nRands; n++) {
-            if (rndsFromSameBigRnd == RNDS_PER_UINT) {
-                currentBigRnd = uint256(keccak256(abi.encode(seed+1)));
-                rndsFromSameBigRnd = 0;
+        uint8 remainingBits = 255;
+        for (uint8 n = 0; n < ROUNDS_PER_MATCH*4; n++) {
+            if (remainingBits < BITS_PER_RND) {
+                currentBigRnd = uint256(keccak256(abi.encode(seed, n)));
+                remainingBits = 255;
             }
-            rnds[n] = uint16(currentBigRnd & MASK);
+            rnds[n] = uint64(currentBigRnd & MAX_RND);
             currentBigRnd >>= BITS_PER_RND;
-            rndsFromSameBigRnd ++;
+            remainingBits -= BITS_PER_RND;
         }
         return rnds;
     }
@@ -239,6 +236,7 @@ contract Engine is Encoding{
             weights[p] = 75000 * getSpeed(teamState[lineup[p]]);
             p++;
         }
+        for (uint8 i = 0; i < 11; i++) weights[i] = 50000;
         return throwDiceArray11(weights, rndNum1);
     }
 
