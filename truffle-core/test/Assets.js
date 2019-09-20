@@ -204,10 +204,11 @@ contract('Assets', (accounts) => {
         }
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
+        gameDeployMonth = await assets.gameDeployMonth().should.be.fulfilled;
         monthOfBirth =  await assets.getMonthOfBirth(encodedSkills).should.be.fulfilled; 
-        monthOfBirth.toNumber().should.be.equal(236);
         ageInMonths = await assets.getPlayerAgeInMonths(playerId).should.be.fulfilled;
         ageInMonths.toNumber().should.be.equal(360);
+        (gameDeployMonth.toNumber()-monthOfBirth.toNumber()).should.be.equal(ageInMonths.toNumber());
     });
 
     it('get state of player on creation', async () => {
