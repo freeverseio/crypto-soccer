@@ -191,56 +191,56 @@ contract('Engine', (accounts) => {
 
     // it('play a match', async () => {
     //     const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(17);
+    //     result[0].toNumber().should.be.equal(15);
     //     result[1].toNumber().should.be.equal(0);
     // });
 
-    // it('select shooter with modifiers', async () => {
-    //     // interface: 
-    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-    //     messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-    //     teamState[10] = messi;
-    //     kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
-    //     result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(10);
-    //     result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-    //     kMaxRndNumHalf = 1;
-    //     result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, 8000, 1).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
+    it('select shooter with modifiers', async () => {
+        // interface: 
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        teamState[10] = messi;
+        kMaxRndNumHalf = 8000; // the max allowed random number is 16383, so this is about half of it
+        result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
+        kMaxRndNumHalf = 1;
+        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, 8000, 1).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
+    
+    return;
     
     
     
-    // it('manages to score with select shoorter wihtout modifiers', async () => {
-    //     // interface: 
-    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-    //     messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-    //     teamState[10] = messi;
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     expectedRatios = [1,
-    //         15000, 5000, 5000, 15000,
-    //         25000, 50000, 50000, 25000,
-    //         75000, 75000
-    //     ]
-    //     expectedRatios =  Array.from(new Array(11), (x,i) => 50000);
-    //     sum = expectedRatios.reduce((a,b) => a + b, 0)
-    //     maxK = 2**36 - 1
-    //     k = 0;
-    //     for (p = 0; p < 11; p++) {
-    //         k += Math.floor(maxK*expectedRatios[p]/sum);
-    //         console.log(k, " ", k/maxK)
-    //         result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
-    //         console.log(result.toNumber());
-    //     }
-    // });
+    it('manages to score with select shoorter wihtout modifiers', async () => {
+        // interface: 
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        teamState[10] = messi;
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        expectedRatios = [1,
+            15000, 5000, 5000, 15000,
+            25000, 50000, 50000, 25000,
+            75000, 75000
+        ]
+        expectedRatios =  Array.from(new Array(11), (x,i) => 50000);
+        sum = expectedRatios.reduce((a,b) => a + b, 0)
+        maxK = 2**36 - 1
+        k = 0;
+        for (p = 0; p < 11; p++) {
+            k += Math.floor(maxK*expectedRatios[p]/sum);
+            result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
+        }
+    });
 
     it('throws dice array11 fine grained testing', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
@@ -359,7 +359,7 @@ contract('Engine', (accounts) => {
         result[0].toNumber().should.be.equal(16);
         result[1].toNumber().should.be.equal(0);
     });
-
+4
     it('different seeds => different result', async () => {
         let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
         result[0].toNumber().should.be.equal(3);
