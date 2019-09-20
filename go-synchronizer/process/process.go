@@ -5,7 +5,7 @@ import (
 	"errors"
 	//"fmt"
 	"math"
-	//"math/big"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -228,9 +228,25 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint16(countryIdx)}); err != nil {
 				return err
 			}
+			if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdx *big.Int) error {
+	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(nil)
+	if err != nil {
+		return err
+	}
+	begin := divisionIdx.Uint64() * uint64(TEAMS_PER_DIVISION)
+	end := begin + uint64(TEAMS_PER_DIVISION-1)
+
+	for i := begin; i < end; i++ {
+		// TODO: call Assets.encodeTZCountryAndVal(timezone, countryIdx, i) to get TeamID
+	}
+	return err
 }
 
 //func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
