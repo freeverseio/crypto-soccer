@@ -236,7 +236,6 @@ contract Engine is Encoding{
             weights[p] = 75000 * getSpeed(teamState[lineup[p]]);
             p++;
         }
-        for (uint8 i = 0; i < 11; i++) weights[i] = 50000;
         return throwDiceArray11(weights, rndNum1);
     }
 
@@ -259,7 +258,6 @@ contract Engine is Encoding{
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((getSpeed(teamState[lineup[shooter]])*7)/10, blockShoot, rndNum2) == 0;
-        // return false;
     }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
