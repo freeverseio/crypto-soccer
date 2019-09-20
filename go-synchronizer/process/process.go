@@ -2,6 +2,7 @@ package process
 
 import (
 	"context"
+	"errors"
 	//"fmt"
 	"math"
 	//"math/big"
@@ -216,6 +217,15 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
 		if event.CountryIdxInTZ.Uint64() == 0 {
 			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+				return err
+			}
+		}
+		if event.DivisionIdxInCountry.Uint64() == 0 {
+			countryIdx := event.CountryIdxInTZ.Uint64()
+			if countryIdx >= 65535 {
+				return errors.New("Cannot cast country idx to uint16: value is too large")
+			}
+			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint16(countryIdx)}); err != nil {
 				return err
 			}
 		}

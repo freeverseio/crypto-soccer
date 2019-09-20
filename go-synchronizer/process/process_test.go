@@ -59,10 +59,17 @@ func TestSyncTeams(t *testing.T) {
 		} else if count != 24 {
 			t.Fatalf("Expected 24 time zones at time of creation,  actual %v", count)
 		}
+
+		if count, err := storage.CountryCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 24 {
+			t.Fatalf("Expected 24 countries at time of creation,  actual %v", count)
+		}
+
 		if count, err := storage.TeamCount(); err != nil {
 			t.Fatal(err)
 		} else if count != 0 {
-			t.Fatalf("Expected 3 actual %v", count)
+			t.Fatalf("Expected 0 actual %v", count)
 		}
 	}
 
