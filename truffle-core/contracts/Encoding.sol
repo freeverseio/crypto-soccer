@@ -29,33 +29,31 @@ contract Encoding {
 
 
     /**
-     * @dev encoding of a total of 81 bits:
+     * @dev encoding of a total of 71 bits:
      *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
-     *      fwdmodifiers[10]    = 2 bit each, 0: no modifier, 1: defensive, 2: attacking
+     *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
     **/
-    function encodeTactics(uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8 tacticsId) public pure returns (uint256) {
+    function encodeTactics(uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) public pure returns (uint256) {
         require(tacticsId < 64, "tacticsId should fit in 6 bit");
         uint256 encoded = uint256(tacticsId);
         for (uint8 p = 0; p < 10; p++) {
-            require(fwdModifiers[p] < 3, "incorrect fwd modifier");
-            encoded |= uint256(fwdModifiers[p]) << 6 + 2 * p;
+            encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + 1 * p;
         }          
         for (uint8 p = 0; p < 11; p++) {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
-            encoded |= uint256(lineup[p]) << 26 + 5 * p;
+            encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
         return encoded;
     }
 
-    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8 tacticsId) {
+    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) {
         require(tactics < 2**81, "tacticsId should fit in 61 bit");
         tacticsId = uint8(tactics & 63);
         tactics >>= 6;
         for (uint8 p = 0; p < 10; p++) {
-            fwdModifiers[p] = uint8(tactics & 3); // 2^2 - 1
-            require(fwdModifiers[p] < 3, "incorrect fwd modifier");
-            tactics >>= 2;
+            extraAttack[p] = ((tactics & 1) == 1 ? true : false); // 2^1 - 1
+            tactics >>= 1;
         }          
         for (uint8 p = 0; p < 11; p++) {
             lineup[p] = uint8(tactics & 31); // 2^5 - 1

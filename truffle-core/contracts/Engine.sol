@@ -54,12 +54,12 @@ contract Engine is Encoding{
         uint8[9][2] memory playersPerZone;
         uint16[] memory rnds = getNRandsFromSeed(ROUNDS_PER_MATCH*4, seed);
         uint[5][2] memory globSkills;
-        uint8[10][2] memory fwdModifiers;
+        bool[10][2] memory extraAttack;
         
-        (lineups[0], fwdModifiers[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
-        (lineups[1], fwdModifiers[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], fwdModifiers[0]);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], fwdModifiers[0]);
+        (lineups[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
+        (lineups[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], extraAttack[0]);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], extraAttack[0]);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if ((round == 8) || (round == 13)) {
@@ -71,7 +71,7 @@ contract Engine is Encoding{
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     lineups[teamThatAttacks],
-                    fwdModifiers[teamThatAttacks],
+                    extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     rnds[4*round+2],
                     rnds[4*round+3]
@@ -104,11 +104,11 @@ contract Engine is Encoding{
     function getLineUpAndPlayerPerZone(uint256 tactics) 
         public 
         pure 
-        returns (uint8[11] memory lineup, uint8[10] memory fwdModifiers, uint8[9] memory playersPerZone) 
+        returns (uint8[11] memory lineup, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
-        (lineup, fwdModifiers, tacticsId) = decodeTactics(tactics);
-        return (lineup, fwdModifiers, getPlayersPerZone(tacticsId));
+        (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        return (lineup, extraAttack, getPlayersPerZone(tacticsId));
     }
 
     // TODO: can this be expressed as
@@ -208,7 +208,7 @@ contract Engine is Encoding{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         uint8[11] memory lineup,
-        uint8[10] memory fwdModifiers,
+        bool[10] memory extraAttack,
         uint rndNum1
     )
         public
@@ -220,7 +220,7 @@ contract Engine is Encoding{
         weights[0] = 1;
         uint p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            if (fwdModifiers[p-1] == 2) {
+            if (extraAttack[p-1]) {
                 weights[p] = 15000 * getSpeed(teamState[lineup[p]]);
             } else {
                 weights[p] = 5000 * getSpeed(teamState[lineup[p]]);
@@ -228,7 +228,7 @@ contract Engine is Encoding{
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            if (fwdModifiers[p-1] == 2) {
+            if (extraAttack[p-1]) {
                 weights[p] = 50000 * getSpeed(teamState[lineup[p]]);
             } else {
                 weights[p] = 25000 * getSpeed(teamState[lineup[p]]);
@@ -248,7 +248,7 @@ contract Engine is Encoding{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         uint8[11] memory lineup,
-        uint8[10] memory fwdModifiers,
+        bool[10] memory extraAttack,
         uint blockShoot,
         uint rndNum1,
         uint rndNum2
@@ -257,7 +257,7 @@ contract Engine is Encoding{
         pure
         returns (bool)
     {
-        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, fwdModifiers, rndNum1);
+        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, extraAttack, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((getSpeed(teamState[lineup[shooter]])*7)/10, blockShoot, rndNum2) == 0;
@@ -276,7 +276,7 @@ contract Engine is Encoding{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
         uint8[11] memory lineup,
-        uint8[10] memory fwdModifiers
+        bool[10] memory extraAttack
     )
         public
         pure
@@ -300,7 +300,7 @@ contract Engine is Encoding{
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
             if (penalty != 0) {
-                fwdModFactors = getFwdModFactors(fwdModifiers[p-1]);
+                fwdModFactors = getFwdModFactors(extraAttack[p-1]);
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
@@ -315,7 +315,7 @@ contract Engine is Encoding{
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
-            fwdModFactors = getFwdModFactors(fwdModifiers[p-1]);
+            fwdModFactors = getFwdModFactors(extraAttack[p-1]);
             if (penalty != 0) {
                 penalty = computePenalty(p, playersPerZone, playerSkills);
                 globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
@@ -357,12 +357,10 @@ contract Engine is Encoding{
 
     // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]
     // the forward modifier factors only change the first 3.
-    function getFwdModFactors(uint8 fwdModifier) public pure returns (uint256[3] memory fwdModFactors) {
-        if (fwdModifier == 0)       {fwdModFactors = [TENTHOUSAND, TENTHOUSAND, TENTHOUSAND];}
-        else if (fwdModifier == 1)  {fwdModFactors = [uint256(9500),  uint256(9500),  uint256(10500)];}
-        else if (fwdModifier == 2)  {fwdModFactors = [uint256(10500), uint256(10500), uint256(9500)];}
+    function getFwdModFactors(bool extraAttack) public pure returns (uint256[3] memory fwdModFactors) {
+        if (extraAttack)    {fwdModFactors = [uint256(10500), uint256(10500), uint256(9500)];}
+        else                {fwdModFactors = [TENTHOUSAND, TENTHOUSAND, TENTHOUSAND];}
     }
-
   
     // 0 penalty means no penalty
     // 1000 penalty means 10% penalty

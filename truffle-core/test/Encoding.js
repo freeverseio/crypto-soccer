@@ -16,13 +16,16 @@ contract('Encoding', (accounts) => {
         PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(11), (x,i) => i);
-        fwdModifiers = Array.from(new Array(10), (x,i) => 0);
-        encoded = await encoding.encodeTactics(lineup, fwdModifiers, tacticsId = 2).should.be.fulfilled;
+        extraAttack = Array.from(new Array(10), (x,i) => i%2);
+        encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
-        let {0: line, 1: fwd, 2: tact} = decoded;
+        let {0: line, 1: attk, 2: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
         for (p = 0; p < 11; p++) {
             line[p].toNumber().should.be.equal(lineup[p]);
+        }
+        for (p = 0; p < 10; p++) {
+            attk[p].should.be.equal(extraAttack[p] == 1 ? true : false);
         }
         // try to provide a lineup beyond range
         lineupWrong = lineup;
@@ -31,7 +34,7 @@ contract('Encoding', (accounts) => {
         // try to provide a tacticsId beyond range
         encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
     });
-
+    
     it('encoding of TZ and country in teamId and playerId', async () =>  {
         encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
         decoded = await encoding.decodeTZCountryAndVal(encoded).should.be.fulfilled;
