@@ -109,14 +109,13 @@ contract('Leagues', (accounts) => {
     it('calculate a day in a league', async () => {
         day = 0;
         verseSeed = 0;
-        // verseSeed = await getCurrentVerseSeed().should.be.fulfilled;
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
         leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
         result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
         result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
         result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
-        expectedScores= [2, 1, 2, 2, 3, 4, 1, 3]
-        expectedEvoPoints = [5, 5, 0, 0, 0, 0, 0, 0]
+        expectedScores      = [2, 1, 0, 2, 2, 5, 4, 1]
+        expectedEvoPoints   = [5, 5, 0, 0, 0, 0, 5, 5]
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
             result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
             result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
@@ -128,8 +127,8 @@ contract('Leagues', (accounts) => {
         result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
         result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
         result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
-        expectedScores= [2, 1, 3, 2, 2, 3, 5, 1]
-        expectedEvoPoints = [5, 5, 5, 5, 0, 0, 5, 5]
+        expectedScores      = [1, 4, 1, 4, 1, 1, 1, 3]
+        expectedEvoPoints   = [0, 0, 0, 0, 0, 0, 0, 0]
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
             result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
             result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);

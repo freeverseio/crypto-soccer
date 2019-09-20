@@ -120,80 +120,80 @@ contract('Engine', (accounts) => {
     // });
     // return;
 
-    // it('computePenalty for GK ', async () => {
-    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-    //         forwardness = 0, leftishness = 0
-    //     ).should.be.fulfilled;            
-    //     expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
-    //     expected[0] = 0;
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected[p]);
-    //     }
-    // });
+    it('computePenalty for GK ', async () => {
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 0, leftishness = 0
+        ).should.be.fulfilled;            
+        expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
+        expected[0] = 0;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected[p]);
+        }
+    });
 
-    // it('computePenalty for DL ', async () => {
-    //         // for a DL:
-    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-    //         forwardness = 1, leftishness = 4
-    //     ).should.be.fulfilled;            
-    //     expected442 = [MAX_PENALTY, 
-    //         0, 1000, 1000, 2000, 
-    //         1000, 2000, 2000, 3000, 
-    //         3000, 3000 
-    //     ];
-    //     expected433 = [MAX_PENALTY, 
-    //         0, 1000, 1000, 2000, 
-    //         1000, 2000, 3000,  
-    //         2000, 3000, 4000
-    //     ];
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
-    //         penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
-    //     }
-    // });
+    it('computePenalty for DL ', async () => {
+            // for a DL:
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 1, leftishness = 4
+        ).should.be.fulfilled;            
+        expected442 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 2000, 3000, 
+            3000, 3000 
+        ];
+        expected433 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 3000,  
+            2000, 3000, 4000
+        ];
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
+        }
+    });
 
-    // it('computePenalty for MFLCR ', async () => {
-    //     // for a DL:
-    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-    //         forwardness = 5, leftishness = 7
-    //     ).should.be.fulfilled;            
-    //     expected442 = [MAX_PENALTY, 
-    //         1000, 1000, 1000, 1000, 
-    //         0, 0, 0, 0, 
-    //         0, 0 
-    //     ];
-    //     expected433 = expected442;
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
-    //         penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
-    //     }
-    // });
+    it('computePenalty for MFLCR ', async () => {
+        // for a DL:
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+            forwardness = 5, leftishness = 7
+        ).should.be.fulfilled;            
+        expected442 = [MAX_PENALTY, 
+            1000, 1000, 1000, 1000, 
+            0, 0, 0, 0, 
+            0, 0 
+        ];
+        expected433 = expected442;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
+        }
+    });
     
-    // it('teams get tired', async () => {
-    //     const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
-    //     result[0][0].toNumber().should.be.equal(10);
-    //     result[0][1].toNumber().should.be.equal(20);
-    //     result[0][2].toNumber().should.be.equal(30);
-    //     result[0][3].toNumber().should.be.equal(40);
-    //     result[0][4].toNumber().should.be.equal(100);
-    //     result[1][0].toNumber().should.be.equal(10);
-    //     result[1][1].toNumber().should.be.equal(20);
-    //     result[1][2].toNumber().should.be.equal(30);
-    //     result[1][3].toNumber().should.be.equal(40);
-    //     result[1][4].toNumber().should.be.equal(50);
-    // });
+    it('teams get tired', async () => {
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        result[0][0].toNumber().should.be.equal(10);
+        result[0][1].toNumber().should.be.equal(20);
+        result[0][2].toNumber().should.be.equal(30);
+        result[0][3].toNumber().should.be.equal(40);
+        result[0][4].toNumber().should.be.equal(100);
+        result[1][0].toNumber().should.be.equal(10);
+        result[1][1].toNumber().should.be.equal(20);
+        result[1][2].toNumber().should.be.equal(30);
+        result[1][3].toNumber().should.be.equal(40);
+        result[1][4].toNumber().should.be.equal(50);
+    });
     
 
-    // it('play a match', async () => {
-    //     const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(15);
-    //     result[1].toNumber().should.be.equal(0);
-    // });
+    it('play a match', async () => {
+        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(15);
+        result[1].toNumber().should.be.equal(0);
+    });
 
     it('select shooter with modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
