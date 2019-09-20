@@ -54,11 +54,11 @@ func TestSyncTeams(t *testing.T) {
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
 	} else {
-		//	if count, err := storage.TeamCount(); err != nil {
-		//		t.Fatal(err)
-		//	} else if count != 3 {
-		//		t.Fatalf("Expected 3 actual %v", count)
-		//	}
+		if count, err := storage.TeamCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 0 {
+			t.Fatalf("Expected 3 actual %v", count)
+		}
 	}
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())

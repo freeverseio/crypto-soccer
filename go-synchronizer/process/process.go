@@ -52,14 +52,14 @@ func (p *EventProcessor) Process() error {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	//if events, err := p.scanTeamCreated(opts); err != nil {
-	//	return err
-	//} else {
-	//	err = p.storeTeamCreated(events)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
+	if events, err := p.scanDivisionCreation(opts); err != nil {
+		return err
+	} else {
+		err = p.storeDivisionCreation(events)
+		if err != nil {
+			return err
+		}
+	}
 
 	//if events, err := p.scanTeamTransfer(opts); err != nil {
 	//	return err
@@ -189,6 +189,33 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 		return 0, 0, err
 	}
 	return block.Time(), eventRaw.BlockNumber, nil
+}
+
+func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]assets.AssetsDivisionCreation, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterDivisionCreation(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsDivisionCreation{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
+func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCreation) error {
+	for _, event := range events {
+		log.Info(
+			"\ntime zone: ", event.Timezone,
+			"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
+			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+	}
+	return nil
 }
 
 //func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
