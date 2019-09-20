@@ -31,7 +31,7 @@ contract Engine is Encoding{
     // )
     //     public
     // {
-    //     playMatch(seed, states, tactics);
+    //     // playMatch(seed, states, tactics);
     //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     // }
     /**
@@ -71,6 +71,7 @@ contract Engine is Encoding{
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     lineups[teamThatAttacks],
+                    fwdModifiers[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     rnds[4*round+2],
                     rnds[4*round+3]
@@ -92,7 +93,7 @@ contract Engine is Encoding{
         return 2 * playersPerZone[3] + playersPerZone[4];
     }
 
-    function getNAtackers(uint8[9] memory playersPerZone) private pure returns (uint8) {
+    function getNAttackers(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[6] + playersPerZone[7];
     }
 
@@ -207,16 +208,36 @@ contract Engine is Encoding{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         uint8[11] memory lineup,
+        uint8[10] memory fwdModifiers,
         uint rndNum1
     )
         public
         pure
         returns (uint8)
     {
-        /// attacker who actually shoots is selected weighted by his speed
         uint256[11] memory weights;
-        for (uint8 p = 11 - getNAtackers(playersPerZone); p < 11; p++) {
-            weights[p] = getSpeed(teamState[lineup[p]]);
+        // GK has minimum weight
+        weights[0] = 1;
+        uint p = 1;
+        for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
+            if (fwdModifiers[p-1] == 2) {
+                weights[p] = 15000 * getSpeed(teamState[lineup[p]]);
+            } else {
+                weights[p] = 5000 * getSpeed(teamState[lineup[p]]);
+            }
+            p++;
+        }
+        for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
+            if (fwdModifiers[p-1] == 2) {
+                weights[p] = 50000 * getSpeed(teamState[lineup[p]]);
+            } else {
+                weights[p] = 25000 * getSpeed(teamState[lineup[p]]);
+            }
+            p++;
+        }
+        for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
+            weights[p] = 75000 * getSpeed(teamState[lineup[p]]);
+            p++;
         }
         return throwDiceArray11(weights, rndNum1);
     }
@@ -227,6 +248,7 @@ contract Engine is Encoding{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         uint8[11] memory lineup,
+        uint8[10] memory fwdModifiers,
         uint blockShoot,
         uint rndNum1,
         uint rndNum2
@@ -235,7 +257,7 @@ contract Engine is Encoding{
         pure
         returns (bool)
     {
-        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, rndNum1);
+        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, fwdModifiers, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         return throwDice((getSpeed(teamState[lineup[shooter]])*7)/10, blockShoot, rndNum2) == 0;
@@ -305,7 +327,7 @@ contract Engine is Encoding{
             p++;
         }
         // loop over strikers
-        for (uint8 i = 0; i < getNAtackers(playersPerZone); i++) {
+        for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             penalty = computePenalty(p, playersPerZone, playerSkills);
             if (penalty != 0) {
