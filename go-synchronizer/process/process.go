@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -21,6 +21,7 @@ type EventProcessor struct {
 	client      *ethclient.Client
 	db          *storage.Storage
 	market      *market.Market
+	assets      *assets.Assets
 }
 
 // *****************************************************************************
@@ -28,13 +29,13 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market) *EventProcessor {
-	return &EventProcessor{false, client, db, market}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
+	return &EventProcessor{false, client, db, market, assets}
 }
 
 // NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market) *EventProcessor {
-	return &EventProcessor{true, client, db, market}
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
+	return &EventProcessor{true, client, db, market, assets}
 }
 
 // Process processes all scanned events and stores them into the database db

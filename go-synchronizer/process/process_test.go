@@ -42,7 +42,6 @@ func TestSyncTeams(t *testing.T) {
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 
-	_ = storage
 	_ = alice
 	_ = bob
 	_ = carol
@@ -50,17 +49,17 @@ func TestSyncTeams(t *testing.T) {
 	//ganache.CreateTeam("B", bob)
 	//ganache.CreateTeam("C", carol)
 
-	//p := NewGanacheEventProcessor(ganache.Client, storage, ganache.Assets, ganache.States, ganache.Leagues)
+	p := NewGanacheEventProcessor(ganache.Client, storage, nil /*market*/, ganache.Assets)
 
-	//if err := p.Process(); err != nil {
-	//	t.Fatal(err)
-	//} else {
-	//	if count, err := storage.TeamCount(); err != nil {
-	//		t.Fatal(err)
-	//	} else if count != 3 {
-	//		t.Fatalf("Expected 3 actual %v", count)
-	//	}
-	//}
+	if err := p.Process(); err != nil {
+		t.Fatal(err)
+	} else {
+		//	if count, err := storage.TeamCount(); err != nil {
+		//		t.Fatal(err)
+		//	} else if count != 3 {
+		//		t.Fatalf("Expected 3 actual %v", count)
+		//	}
+	}
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
 	//fmt.Println("alice: ", ganache.Public(alice).Hex())
@@ -143,5 +142,5 @@ func TestSyncTeams(t *testing.T) {
 
 	//// ganache.CreateLeague([]int64{1, 2, 3, 4}, alice)
 	//ganache.Advance(3) // advance 3 blocks
-	//p.Process()
+	p.Process()
 }
