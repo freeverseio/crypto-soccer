@@ -54,6 +54,11 @@ func TestSyncTeams(t *testing.T) {
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
 	} else {
+		if count, err := storage.TimezoneCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 24 {
+			t.Fatalf("Expected 24 time zones at time of creation,  actual %v", count)
+		}
 		if count, err := storage.TeamCount(); err != nil {
 			t.Fatal(err)
 		} else if count != 0 {

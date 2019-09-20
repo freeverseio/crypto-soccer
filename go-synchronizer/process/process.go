@@ -214,6 +214,11 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 			"\ntime zone: ", event.Timezone,
 			"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
 			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+		if event.CountryIdxInTZ.Uint64() == 0 {
+			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
