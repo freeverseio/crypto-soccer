@@ -237,6 +237,36 @@ contract('Engine', (accounts) => {
             }
         }
     });
+    
+    it('select assister with modifiers', async () => {
+        // interface: 
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        // teamState[10] = messi;
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        expectedRatios = [0,
+            15, 5, 5, 15,
+            25, 50, 50, 25,
+            75, 75
+        ]
+        sum = expectedRatios.reduce((a,b) => a + b, 0)
+        expectedRatios[0] = Math.floor((sum*1000)/5000);
+        sum = expectedRatios.reduce((a,b) => a + b, 0)
+        k = 0;
+        for (p = 0; p < 11; p++) {
+            k += Math.floor(MAX_RND*expectedRatios[p]/sum);
+            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
+            result.toNumber().should.be.equal(p);
+            if (p < 10) {
+                result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
+                result.toNumber().should.be.equal(p+1);
+            }
+        }
+    });
 return;
     it('throws dice array11 fine grained testing', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)

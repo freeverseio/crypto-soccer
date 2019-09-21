@@ -200,20 +200,56 @@ contract Engine is Encoding{
         ) == 1 ? true : false;
     }
 
-
-    function selectShooter(
+    function selectAssister(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         uint8[11] memory lineup,
         bool[10] memory extraAttack,
-        uint256 rndNum1
+        uint256 rnd
     )
         public
         pure
         returns (uint8)
     {
         uint256[11] memory weights;
-        // GK has minimum weight
+        // GK has has absolutely no chance to be the assiter.
+        // We reserve the idx = 0 to mean that there was no assist => individual play by shoorter
+        weights[0] = 1;
+        uint8 p = 1;
+        for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
+            weights[p] = (extraAttack[p-1] ? 15 : 5 ) * getPass(teamState[lineup[p]]);
+            weights[0] += weights[p];
+            p++;
+        }
+        for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
+            weights[p] = (extraAttack[p-1] ? 50 : 25 ) * getPass(teamState[lineup[p]]);
+            weights[0] += weights[p];
+            p++;
+        }
+        for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
+            weights[p] = 75 * getPass(teamState[lineup[p]]);
+            weights[0] += weights[p];
+            p++;
+        }
+        // chances of being an individual play is 1 every 5.
+        weights[0] = (weights[0] * 1000) / 5000 ;
+        return throwDiceArray11(weights, rnd);
+    }
+
+
+    function selectShooter(
+        uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
+        uint8[9] memory playersPerZone,
+        uint8[11] memory lineup,
+        bool[10] memory extraAttack,
+        uint256 rnd
+    )
+        public
+        pure
+        returns (uint8)
+    {
+        uint256[11] memory weights;
+        // GK has minimum weight, all others are relative to this.
         weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
@@ -228,7 +264,7 @@ contract Engine is Encoding{
             weights[p] = 75000 * getSpeed(teamState[lineup[p]]);
             p++;
         }
-        return throwDiceArray11(weights, rndNum1);
+        return throwDiceArray11(weights, rnd);
     }
 
     /// @dev Decides if a team that creates a shoot manages to score.
