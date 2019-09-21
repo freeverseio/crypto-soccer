@@ -217,19 +217,11 @@ contract Engine is Encoding{
         weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            if (extraAttack[p-1]) {
-                weights[p] = 15000 * getSpeed(teamState[lineup[p]]);
-            } else {
-                weights[p] = 5000 * getSpeed(teamState[lineup[p]]);
-            }
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[lineup[p]]);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            if (extraAttack[p-1]) {
-                weights[p] = 50000 * getSpeed(teamState[lineup[p]]);
-            } else {
-                weights[p] = 25000 * getSpeed(teamState[lineup[p]]);
-            }
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[lineup[p]]);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
