@@ -210,39 +210,66 @@ contract('Engine', (accounts) => {
     //     result.should.be.equal(true);
     // });
     
-    it('select shooter with modifiers', async () => {
-        // interface: 
-        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-        // teamState[10] = messi;
-        extraAttack = [
-            true, false, false, true,
-            false, true, true, false,
-            true, false,
-        ];
-        expectedRatios = [1,
-            15000, 5000, 5000, 15000,
-            25000, 50000, 50000, 25000,
-            75000, 75000
-        ]
-        sum = expectedRatios.reduce((a,b) => a + b, 0)
-        k = 0;
-        for (p = 0; p < 11; p++) {
-            k += Math.floor(MAX_RND*expectedRatios[p]/sum);
-            result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
-            result.toNumber().should.be.equal(p);
-            if (p < 10) {
-                result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
-                result.toNumber().should.be.equal(p+1);
-            }
-        }
-    });
+    // it('select shooter with modifiers', async () => {
+    //     // interface: 
+    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+    //     // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+    //     // teamState[10] = messi;
+    //     extraAttack = [
+    //         true, false, false, true,
+    //         false, true, true, false,
+    //         true, false,
+    //     ];
+    //     expectedRatios = [1,
+    //         15000, 5000, 5000, 15000,
+    //         25000, 50000, 50000, 25000,
+    //         75000, 75000
+    //     ]
+    //     sum = expectedRatios.reduce((a,b) => a + b, 0)
+    //     k = 0;
+    //     for (p = 0; p < 11; p++) {
+    //         k += Math.floor(MAX_RND*expectedRatios[p]/sum);
+    //         result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
+    //         result.toNumber().should.be.equal(p);
+    //         if (p < 10) {
+    //             result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
+    //             result.toNumber().should.be.equal(p+1);
+    //         }
+    //     }
+    // });
     
+    // it('select assister with modifiers', async () => {
+    //     // interface: 
+    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+    //     // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+    //     // teamState[10] = messi;
+    //     extraAttack = [
+    //         true, false, false, true,
+    //         false, true, true, false,
+    //         true, false,
+    //     ];
+    //     expectedRatios = [1,
+    //         15, 5, 5, 15,
+    //         25, 50, 50, 25,
+    //         75, 75
+    //     ]
+    //     sum = expectedRatios.reduce((a,b) => a + b, 0)
+    //     k = 0;
+    //     shooter = 8;
+    //     expectedAssiters = [0, 1, 2, 3, 4 ,5, 6, 7, 9, 10, 10];
+    //     for (p = 0; p < 11; p++) {
+    //         k += Math.floor(MAX_RND*expectedRatios[p]/sum);
+    //         result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, k).should.be.fulfilled;
+    //         result.toNumber().should.be.equal(expectedAssiters[p]);
+    //     }
+    // });
+
+
     it('select assister with modifiers', async () => {
         // interface: 
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-        // teamState[10] = messi;
+        messi = await engine.encodePlayerSkills([1000,1000,1000,1000,1000], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        // teamState[8] = messi;
         extraAttack = [
             true, false, false, true,
             false, true, true, false,
@@ -253,41 +280,21 @@ contract('Engine', (accounts) => {
             25, 50, 50, 25,
             75, 75
         ]
-        sum = expectedRatios.reduce((a,b) => a + b, 0)
-        k = 0;
-        shooter = 8;
-        expectedAssiters = [0, 1, 2, 3, 4 ,5, 6, 7, 9, 10, 10];
-        for (p = 0; p < 11; p++) {
-            k += Math.floor(MAX_RND*expectedRatios[p]/sum);
+        nPartitions = 200;
+        prev = -1;
+        transtions = [];
+        t=0;
+        expectedTrans = [ 0, 5, 50, 70, 85, 130, 210, 365, 520, 535, 770 ];
+        for (p = 0; p < nPartitions; p++) {
+            k = Math.floor(p * MAX_RND/ nPartitions);
             result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, k).should.be.fulfilled;
-            result.toNumber().should.be.equal(expectedAssiters[p]);
-        }
-    });
-
-
-    it('select assister with modifiers', async () => {
-        // interface: 
-        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-        // teamState[10] = messi;
-        extraAttack = [
-            true, false, false, true,
-            false, true, true, false,
-            true, false,
-        ];
-        expectedRatios = [1,
-            15, 5, 5, 15,
-            25, 50, 50, 25,
-            75, 75
-        ]
-        sum = expectedRatios.reduce((a,b) => a + b, 0)
-        k = 0;
-        shooter = 8;
-        expectedAssiters = [0, 1, 2, 3, 4 ,5, 6, 7, 9, 10, 10];
-        for (p = 0; p < 11; p++) {
-            k += Math.floor(MAX_RND*expectedRatios[p]/sum);
-            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, k).should.be.fulfilled;
-            result.toNumber().should.be.equal(expectedAssiters[p]);
+            if (result.toNumber() != prev) {
+                console.log(p, k/MAX_RND*100, result.toNumber());
+                transtions.push(Math.round(k/MAX_RND*1000));
+                prev = result.toNumber();
+                (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+                t++;
+            }
         }
     });
 

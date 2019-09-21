@@ -238,7 +238,7 @@ contract Engine is Encoding{
         // so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/271 * <skills_shooter>/<pass>_team
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // this is to be compensated by an overall factor of about 1/4.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[lineup[shooter]]) * 271 )/ (N_SKILLS * teamPassCapacity * 4);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[lineup[shooter]]) * 271 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 4);
         return throwDiceArray11(weights, rnd);
     }
 
