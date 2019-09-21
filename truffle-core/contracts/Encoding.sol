@@ -182,6 +182,14 @@ contract Encoding {
         skills[4] = uint16(getEndurance(encodedSkills));
     }
 
+    function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
+        return      getShoot(encodedSkills) 
+                  + getSpeed(encodedSkills) 
+                  + getPass(encodedSkills)
+                  + getDefence(encodedSkills)
+                  + getEndurance(encodedSkills);
+    }
+
 
     ////////////////////////////////
     /**
