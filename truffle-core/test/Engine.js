@@ -266,37 +266,68 @@ contract('Engine', (accounts) => {
 
 
     it('select assister with modifiers', async () => {
-        // interface: 
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([1000,1000,1000,1000,1000], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-        // teamState[8] = messi;
         extraAttack = [
             true, false, false, true,
             false, true, true, false,
             true, false,
         ];
-        expectedRatios = [1,
-            15, 5, 5, 15,
-            25, 50, 50, 25,
-            75, 75
-        ]
         nPartitions = 200;
-        prev = -1;
+        expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
         transtions = [];
         t=0;
-        expectedTrans = [ 0, 5, 50, 70, 85, 130, 210, 365, 520, 535, 770 ];
+        rndOld = 0;
+        result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
         for (p = 0; p < nPartitions; p++) {
-            k = Math.floor(p * MAX_RND/ nPartitions);
-            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, k).should.be.fulfilled;
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd).should.be.fulfilled;
             if (result.toNumber() != prev) {
-                console.log(p, k/MAX_RND*100, result.toNumber());
-                transtions.push(Math.round(k/MAX_RND*1000));
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
                 prev = result.toNumber();
-                (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
                 t++;
+                rndOld = rnd;
             }
         }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+        // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
     });
+
+    // it('select assister with modifiers and one Messi', async () => {
+    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+    //     messi = await engine.encodePlayerSkills([10,10,10,10,10], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+    //     teamState[8] = messi;
+    //     extraAttack = [
+    //         true, false, false, true,
+    //         false, true, true, false,
+    //         true, false,
+    //     ];
+    //     nPartitions = 2000;
+    //     prev = -1;
+    //     transtions = [];
+    //     t=0;
+    //     expectedTrans = [ 0, 5, 50, 70, 85, 130, 210, 365, 520, 535, 770 ];
+    //     for (p = 0; p < nPartitions; p++) {
+    //         k = Math.floor(p * MAX_RND/ nPartitions);
+    //         result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, k).should.be.fulfilled;
+    //         if (result.toNumber() != prev) {
+    //             console.log(p, k/MAX_RND*100, result.toNumber());
+    //             transtions.push(Math.round(k/MAX_RND*1000));
+    //             prev = result.toNumber();
+    //             // (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+    //             t++;
+    //         }
+    //     }
+    // });
+
 
     return;
     it('throws dice array11 fine grained testing', async () => {

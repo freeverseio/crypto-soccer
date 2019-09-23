@@ -219,26 +219,27 @@ contract Engine is Encoding{
         uint256 teamPassCapacity = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15 : 5 ) * getPass(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[lineup[p]]);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50 : 25 ) * getPass(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[lineup[p]]);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75 * getPass(teamState[lineup[p]]);
+            weights[p] = 200 * getPass(teamState[lineup[p]]);
             teamPassCapacity += weights[p];
             p++;
         }
-        // on average: teamPassCapacity442 = (1 + 4 * 5 + 4 * 25 + 2 * 75) < getPass > = 271 <pass>_team
+        // on average: teamPassCapacity442 = (1 + 4 * 20 + 4 * 100 + 2 * 200) < getPass > = 881 <pass>_team
         // on average: shooterSumOfSkills = 5 * <skills>_shooter
-        // so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/271 * <skills_shooter>/<pass>_team
+        // so a good ratio is shooterSumOfSkills/teamPassCapacity442 = 5/881 * <skills_shooter>/<pass>_team
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
-        // this is to be compensated by an overall factor of about 1/4.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[lineup[shooter]]) * 271 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 4);
+        // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
+        // this is to be compensated by an overall factor of about.
+        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[lineup[shooter]]) * 8810 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray11(weights, rnd);
     }
 
