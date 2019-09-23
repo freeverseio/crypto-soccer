@@ -3,6 +3,7 @@ package process
 import (
 	"context"
 	"errors"
+
 	//"fmt"
 	"math"
 	"math/big"
@@ -11,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+
 	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -62,28 +64,28 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
-	//if events, err := p.scanTeamTransfer(opts); err != nil {
-	//	return err
-	//} else {
-	//	for _, event := range events { // TODO: next part to be recoded
-	//		_, blockNumber, err := p.getTimeOfEvent(event.Raw)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		teamId := event.TeamId.Uint64()
-	//		newOwner := event.To.String()
-	//		team, err := p.db.GetTeam(teamId)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		team.State.BlockNumber = blockNumber
-	//		team.State.Owner = newOwner
-	//		err = p.db.TeamStateUpdate(teamId, team.State)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	}
-	//}
+	if events, err := p.scanTeamTransfer(opts); err != nil {
+		return err
+	} else {
+		for _, event := range events { // TODO: next part to be recoded
+			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
+			// if err != nil {
+			// 	return err
+			// }
+			teamID := event.TeamId
+			newOwner := event.To.String()
+			team, err := p.db.GetTeam(teamID)
+			if err != nil {
+				return err
+			}
+			// team.State.BlockNumber = blockNumber
+			team.State.Owner = newOwner
+			err = p.db.TeamUpdate(teamID, team.State)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	//if events, err := p.scanPlayerTransfer(opts); err != nil {
 	//	return err
@@ -379,22 +381,23 @@ func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *b
 //	}
 //	return events, nil
 //}
-//func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.AssetsTeamTransfer, error) {
-//	if opts == nil {
-//		opts = &bind.FilterOpts{Start: 0}
-//	}
-//	iter, err := p.assets.FilterTeamTransfer(opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	events := []assets.AssetsTeamTransfer{}
-//
-//	for iter.Next() {
-//		events = append(events, *(iter.Event))
-//	}
-//	return events, nil
-//}
+func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.AssetsTeamTransfer, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterTeamTransfer(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsTeamTransfer{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
 //func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]assets.AssetsPlayerTransfer, error) {
 //	if opts == nil {
 //		opts = &bind.FilterOpts{Start: 0}
