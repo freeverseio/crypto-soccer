@@ -275,25 +275,11 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 	end := begin + int64(PLAYERS_PER_TEAM_INIT)
 
 	SK_SHO := uint8(0)
-	if err != nil {
-		return err
-	}
 	SK_SPE := uint8(0)
-	if err != nil {
-		return err
-	}
 	SK_PAS := uint8(0)
-	if err != nil {
-		return err
-	}
 	SK_DEF := uint8(0)
-	if err != nil {
-		return err
-	}
 	SK_END := uint8(0)
-	if err != nil {
-		return err
-	}
+
 	SK_SHO, err = p.assets.SKSHO(opts)
 	if err != nil {
 		return err
