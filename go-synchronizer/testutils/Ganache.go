@@ -155,13 +155,12 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	//ganache.deployStates(owner)
 	//ganache.deployEngine(owner)
 	ganache.deployAssets(owner)
-	ganache.initAssets(owner)
 	//ganache.deployLeagues(owner)
 }
 
-func (ganache *Ganache) initAssets(from *ecdsa.PrivateKey) {
-	_, err := ganache.Assets.Init(
-		bind.NewKeyedTransactor(from))
+func (ganache *Ganache) InitAssets(from *ecdsa.PrivateKey, tz uint8) {
+	_, err := ganache.Assets.InitSingleTZ(
+		bind.NewKeyedTransactor(from), tz)
 	//	ganache.Public(from))
 	AssertNoErr(err, "Error initializing assets contract")
 }
