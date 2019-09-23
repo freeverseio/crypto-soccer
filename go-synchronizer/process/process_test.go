@@ -68,8 +68,13 @@ func TestSyncTeams(t *testing.T) {
 
 		if count, err := storage.TeamCount(); err != nil {
 			t.Fatal(err)
-		} else if count != 0 {
-			t.Fatalf("Expected 0 actual %v", count)
+		} else if count != 128*24 {
+			t.Fatalf("Expected 128*24=3072 actual %v", count)
+		}
+		if count, err := storage.PlayerCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 128*24*18 {
+			t.Fatalf("Expected 128*24*18=55296 actual %v", count)
 		}
 	}
 
