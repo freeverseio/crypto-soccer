@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -52,6 +53,15 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
+func (b *Storage) UpdateTeamOwner(teamID *big.Int, owner string) error {
+	log.Debugf("[DBMS] Change team  %v owner %v", teamID.String(), owner)
+	_, err := b.db.Exec("UPDATE teams SET owner=$1 WHERE team_id=$2",
+		owner,
+		teamID.String(),
+	)
+	return err
+}
+
 // func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 // 	log.Infof("[DBMS] Updating team state %v", teamState)
 
@@ -94,24 +104,24 @@ func (b *Storage) TeamCount() (uint64, error) {
 // 	return nil
 // }
 
-// func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
-// 	team := Team{}
-// 	rows, err := b.db.Query("SELECT team_id, timezone_idx, country_idx, owner owner WHERE (team_id = $1);", teamID)
-// 	if err != nil {
-// 		return team, err
-// 	}
-// 	defer rows.Close()
-// 	if !rows.Next() {
-// 		return team, errors.New("Unexistent team")
-// 	}
-// 	err = rows.Scan(
-// 		&team.TeamID,
-// 		&team.TimezoneIdx,
-// 		&team.CountryIdx,
-// 		&team.State.Owner,
-// 	)
-// 	if err != nil {
-// 		return team, err
-// 	}
-// 	return team, nil
-// }
+func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
+	var team Team
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner FROM teams WHERE (team_id = $1);", teamID.String())
+	if err != nil {
+		return team, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return team, errors.New("Unexistent team")
+	}
+	team.TeamID = teamID
+	err = rows.Scan(
+		&team.TimezoneIdx,
+		&team.CountryIdx,
+		&team.State.Owner,
+	)
+	if err != nil {
+		return team, err
+	}
+	return team, nil
+}

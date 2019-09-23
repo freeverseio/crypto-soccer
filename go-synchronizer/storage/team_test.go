@@ -86,6 +86,37 @@ func TestTeamCreate(t *testing.T) {
 	}
 }
 
+func TestUpdateTeamOwner(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezone := uint8(1)
+	countryIdx := uint16(4)
+	sto.TimezoneCreate(storage.Timezone{timezone})
+	sto.CountryCreate(storage.Country{timezone, countryIdx})
+	var team storage.Team
+	team.TeamID = big.NewInt(4)
+	team.TimezoneIdx = timezone
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	err = sto.TeamCreate(team)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.UpdateTeamOwner(team.TeamID, "pippo")
+	if err != nil {
+		t.Fatal(err)
+	}
+	team, err = sto.GetTeam(team.TeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if team.State.Owner != "pippo" {
+		t.Fatalf("expected owner pippo but got %v", team.State.Owner)
+	}
+}
+
 // func TestTeamAddSameTimeTwice(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 // 	if err != nil {
