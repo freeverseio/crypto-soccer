@@ -29,7 +29,7 @@ contract Encoding {
 
 
     /**
-     * @dev encoding of a total of 71 bits:
+     * @dev Tactics serializes a total of 71 bits:
      *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
@@ -63,10 +63,10 @@ contract Encoding {
     }
     
     /**
-     * @dev encoding of a total of 43 bits:
-     *      timeZone                  = 5 bits
-     *      countryIdxInTZ            = 10 bits
-     *      val (playerId or teamIdx) = 28 bits
+     * @dev PlayerId and TeamId both serialize a total of 43 bits:
+     *      timeZone        = 5 bits
+     *      countryIdxInTZ  = 10 bits
+     *      val             = 28 bits (either  (playerIdxInCountry or teamIdxInCountry)
     **/
     function encodeTZCountryAndVal(uint8 timeZone, uint256 countryIdxInTZ, uint256 val) public pure returns (uint256)
     {
@@ -85,7 +85,7 @@ contract Encoding {
     }
 
     /**
-     * @dev encoding of a total of 137 bits:  6*14 + 4 + 3+ 3 + 43
+     * @dev PlayerSkills serializes a total of 137 bits:  6*14 + 4 + 3+ 3 + 43
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
      *      potential                 = 4 bits (number is limited to [0,...,9])
@@ -193,7 +193,7 @@ contract Encoding {
 
     ////////////////////////////////
     /**
-     * @dev encoding of playerState:
+     * @dev PlayerState serializes a total of 169 bits:
      *  playerId                = 43 bits
      *  currentTeamId           = 43 bits
      *  currentShirtNum         =  5 bits
@@ -267,19 +267,5 @@ contract Encoding {
     function getLastSaleBlock(uint256 playerState) public pure returns (uint256) {
         return uint256(playerState >> 87 & (2**35-1));
     }
-
-    /// @dev Sets the number at a given index in a serialized uint256
-    // function setNumAtIndex(uint value, uint serialized, uint8 index, uint bits)
-    //     internal
-    //     pure
-    //     returns(uint)
-    // {
-    //     uint maxnum = 1<<bits; // 2**bits
-    //     require(value < maxnum, "Value too large to fit in available space");
-    //     uint b = bits*index;
-    //     uint mask = (1 << bits)-1; // (2**bits)-1
-    //     serialized &= ~(mask << b); // clear all bits at index
-    //     return serialized + (value << b);
-    // }
 
 }
