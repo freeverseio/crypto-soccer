@@ -33,7 +33,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 }
 
 func (b *Storage) PlayerCreate(player Player) error {
-	log.Infof("[DBMS] Create player %v", player)
+	log.Debugf("[DBMS] Create player %v", player)
 	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),

@@ -235,13 +235,13 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 	}
 	return nil
 }
-func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdx *big.Int) error {
+func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
 	if err != nil {
 		return err
 	}
-	begin := divisionIdx.Int64() * int64(TEAMS_PER_DIVISION)
+	begin := divisionIdxInCountry.Int64() * int64(TEAMS_PER_DIVISION)
 	end := begin + int64(TEAMS_PER_DIVISION)
 
 	for i := begin; i < end; i++ {
@@ -258,10 +258,78 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 					storage.TeamState{teamOwner.Hex()}},
 			); e != nil {
 				return e
+			} else if e := p.storeVirtualPlayersForTeam(teamId, timezone, countryIdx, i); e != nil {
+				return e
 			}
 		}
 	}
 	return err
+}
+func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
+	opts := &bind.CallOpts{}
+	PLAYERS_PER_TEAM_INIT, err := p.assets.PLAYERSPERTEAMINIT(opts)
+	if err != nil {
+		return err
+	}
+	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
+	end := begin + int64(PLAYERS_PER_TEAM_INIT)
+
+	SK_SHO := uint8(0)
+	SK_SPE := uint8(0)
+	SK_PAS := uint8(0)
+	SK_DEF := uint8(0)
+	SK_END := uint8(0)
+
+	SK_SHO, err = p.assets.SKSHO(opts)
+	if err != nil {
+		return err
+	}
+	SK_SPE, err = p.assets.SKSPE(opts)
+	if err != nil {
+		return err
+	}
+	SK_PAS, err = p.assets.SKPAS(opts)
+	if err != nil {
+		return err
+	}
+	SK_DEF, err = p.assets.SKDEF(opts)
+	if err != nil {
+		return err
+	}
+	SK_END, err = p.assets.SKEND(opts)
+	if err != nil {
+		return err
+	}
+
+	for i := begin; i < end; i++ {
+		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
+			return e
+		} else if skills, e := p.getPlayerSkillsAtBirth(opts, playerId); e != nil {
+			return e
+		} else if e := p.db.PlayerCreate(
+			storage.Player{
+				playerId,
+				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
+					TeamId:    teamId,
+					Defence:   uint64(skills[SK_DEF]), // TODO: type should be uint16
+					Speed:     uint64(skills[SK_SPE]),
+					Pass:      uint64(skills[SK_PAS]),
+					Shoot:     uint64(skills[SK_SHO]),
+					Endurance: uint64(skills[SK_END]),
+				}},
+		); e != nil {
+			return e
+		}
+	}
+	return err
+}
+
+func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *big.Int) ([5]uint16, error) {
+	if skills, err := p.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+		return [5]uint16{0, 0, 0, 0, 0}, err
+	} else {
+		return p.assets.GetSkillsVec(opts, skills)
+	}
 }
 
 //func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {

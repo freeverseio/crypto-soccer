@@ -19,7 +19,7 @@ func (b *Storage) TimezoneCount() (uint64, error) {
 }
 
 func (b *Storage) TimezoneCreate(timezone Timezone) error {
-	log.Infof("[DBMS] Adding timezone %v", timezone)
+	log.Debugf("[DBMS] Create timezone %v", timezone)
 	_, err := b.db.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
 		timezone.TimezoneIdx,
 	)

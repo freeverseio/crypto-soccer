@@ -37,6 +37,7 @@ func TestSyncTeams(t *testing.T) {
 
 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
 	ganache.DeployContracts(owner)
+	ganache.InitAssets(owner, 1) // Init assets of timezone 1
 
 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
@@ -56,20 +57,25 @@ func TestSyncTeams(t *testing.T) {
 	} else {
 		if count, err := storage.TimezoneCount(); err != nil {
 			t.Fatal(err)
-		} else if count != 24 {
-			t.Fatalf("Expected 24 time zones at time of creation,  actual %v", count)
+		} else if count != 1 {
+			t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
 		}
 
 		if count, err := storage.CountryCount(); err != nil {
 			t.Fatal(err)
-		} else if count != 24 {
-			t.Fatalf("Expected 24 countries at time of creation,  actual %v", count)
+		} else if count != 1 {
+			t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
 		}
 
 		if count, err := storage.TeamCount(); err != nil {
 			t.Fatal(err)
-		} else if count != 128*24 {
-			t.Fatalf("Expected 128*24=3072 actual %v", count)
+		} else if count != 128 {
+			t.Fatalf("Expected 128 actual %v", count)
+		}
+		if count, err := storage.PlayerCount(); err != nil {
+			t.Fatal(err)
+		} else if count != 128*18 {
+			t.Fatalf("Expected 128*18=2304 actual %v", count)
 		}
 	}
 
