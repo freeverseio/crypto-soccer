@@ -40,11 +40,11 @@ func TestLeagueCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 	league := storage.League{
-		TimezoneIdx:     timezone,
-		CountryIdx:      countryIdx,
-		LeagueIdx:       2,
-		TeamIdxInLeague: 0,
-		TeamID:          team.TeamID,
+		TimezoneIdx: timezone,
+		CountryIdx:  countryIdx,
+		LeagueIdx:   2,
+		TeamID:      team.TeamID,
+		Points:      0,
 	}
 	err = sto.LeagueCreate(league)
 	if err != nil {

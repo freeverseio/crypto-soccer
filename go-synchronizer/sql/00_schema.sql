@@ -43,12 +43,25 @@ CREATE TABLE players (
 
 CREATE TABLE leagues (
     timezone_idx INT NOT NULL,
-    country_idx INT NOT NULL,   
+    country_idx INT NOT NULL,
     league_idx INT NOT NULL,
-    team_idx_in_league INT NOT NULL,
     team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
+    points INT NOT NULL,
     PRIMARY KEY(timezone_idx,country_idx, league_idx),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
+);
+
+CREATE TABLE calendars (
+    timezone_idx INT NOT NULL,
+    country_idx INT NOT NULL,
+    league_idx INT NOT NULL,
+    round_idx INT NOT NULL,
+    home_team_id NUMERIC(78,0) NOT NULL REFERENCES team(team_id),
+    visitor_team_id NUMERIC(78,0) NOT NULL REFERENCES team(team_id),
+    home_goals INT NOT NULL,
+    visitor_goals INT NOT NULL,
+    PRIMARY KEY(timezone_idx,country_idx, league_idx, round_idx),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES countries(timezone_idx, country_idx, league_idx)
 );
 
 -- CREATE TABLE teams_history (
