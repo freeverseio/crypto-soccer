@@ -1,7 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Assets.sol";
-import "./Engine.sol";
+import "./EngineHL.sol";
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
@@ -91,17 +91,19 @@ contract Leagues is Assets {
     // TODO: currentVerseSeed must be provided from getCurrentVerseSeed()
     // TODO: likewise, matchday should be computed outside
     function computeMatchday(
+        address engineHLAddr,
+        address engineAddr,
         uint8 matchday,
         uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
         uint256[TEAMS_PER_LEAGUE] memory tacticsIds,
         uint256 currentVerseSeed
     )
         public
-        view
+        pure
         returns (uint8[2 * MATCHES_PER_DAY] memory scores, uint8[2 * MATCHES_PER_DAY] memory evoPoints)
     {
         uint8[2] memory score;
-        uint8[2] memory evoPoint;
+        // uint8[2] memory evoPoint;
         uint8 homeTeamIdx;
         uint8 visitorTeamIdx;
         for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
@@ -110,21 +112,21 @@ contract Leagues is Assets {
             uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
             uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
             uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
-            score = _engine.playMatch(
+            score = EngineHL(engineHLAddr).playMatch(
+                engineAddr,
                 matchSeed, 
                 states,
                 tactics,
-                false,
-                false
+                [false, false]
             );
-            evoPoint = computeEvolutionPoints(
-                states,
-                score
-            );
+            // evoPoint = computeEvolutionPoints(
+            //     states,
+            //     score
+            // );
             scores[matchIdxInDay * 2] = score[0];
             scores[matchIdxInDay * 2 +1 ] = score[1];
-            evoPoints[matchIdxInDay * 2] = evoPoint[0];
-            evoPoints[matchIdxInDay * 2 + 1] = evoPoint[0];
+            // evoPoints[matchIdxInDay * 2] = evoPoint[0];
+            // evoPoints[matchIdxInDay * 2 + 1] = evoPoint[0];
         }
     }    
 }

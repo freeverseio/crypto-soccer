@@ -6,9 +6,10 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 
 const Engine = artifacts.require('Engine');
+const EngineHL = artifacts.require('EngineHL');
 const Assets = artifacts.require('Assets');
 
-contract('Engine', (accounts) => {
+contract('EngineHL', (accounts) => {
     // const seed = 610106;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
@@ -39,10 +40,10 @@ contract('Engine', (accounts) => {
             if (forceSkills) skills = forceSkills;
             if (forceFwd) forwardness = forceFwd;
             if (forceLeft) leftishness = forceLeft;
-            playerSkillsTemp = await engine.encodePlayerSkills(
+            playerSkillsTemp = await encoding.encodePlayerSkills(
                 skills, 
                 monthOfBirth = 0, 
-                playerId = 1,
+                playerId = 1321312,
                 potential,
                 forwardness,
                 leftishness
@@ -55,29 +56,29 @@ contract('Engine', (accounts) => {
     const createTeamState442 = async (engine, forceSkills) => {
         teamState = [];
         month = 0;
-        playerId = 1;
+        playerId = 3123123;
         pot = 3;
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
         teamState.push(pSkills)
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
             teamState.push(pSkills)
@@ -87,10 +88,10 @@ contract('Engine', (accounts) => {
 
 
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
-        const playerStateTemp = await engine.encodePlayerSkills(
+        const playerStateTemp = await encoding.encodePlayerSkills(
             skills, 
             monthOfBirth = 0, 
-            playerId = 1,
+            playerId = 231321,
             potential = 3,
             forwardness,
             leftishness
@@ -104,12 +105,14 @@ contract('Engine', (accounts) => {
     };
 
     beforeEach(async () => {
-        engine = await Engine.new().should.be.fulfilled;
-        assets = await Assets.new().should.be.fulfilled;
-        tactics0 = await engine.encodeTactics(lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
-        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
-        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
+        engine      = await Engine.new().should.be.fulfilled;
+        engineHL    = await EngineHL.new().should.be.fulfilled;
+        encoding    = engineHL;
+        assets      = await Assets.new().should.be.fulfilled;
+        tactics0 = await encoding.encodeTactics(lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics1 = await encoding.encodeTactics(lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
+        teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engineHL, forwardness = 3, leftishness = 2).should.be.fulfilled;
+        teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engineHL, forwardness = 3, leftishness = 2).should.be.fulfilled;
         MAX_PENALTY = await engine.MAX_PENALTY().should.be.fulfilled;
         MAX_PENALTY = MAX_PENALTY.toNumber();
         MAX_RND = await engine.MAX_RND().should.be.fulfilled;
@@ -123,22 +126,16 @@ contract('Engine', (accounts) => {
     // return;
 
     it('computePenalty for GK ', async () => {
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 0, leftishness = 0
-        ).should.be.fulfilled;            
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 0, left = 0).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
 
     it('computePenalty for DL ', async () => {
-            // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 1, leftishness = 4
-        ).should.be.fulfilled;            
+        // for a DL:
         expected442 = [MAX_PENALTY, 
             0, 1000, 1000, 2000, 
             1000, 2000, 2000, 3000, 
@@ -150,18 +147,15 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 1, left = 4).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone433, fwd = 1, left = 4).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
-
+    
     it('computePenalty for MFLCR ', async () => {
-        // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 5, leftishness = 7
-        ).should.be.fulfilled;            
+        // for a MFLCR:
         expected442 = [MAX_PENALTY, 
             1000, 1000, 1000, 1000, 
             0, 0, 0, 0, 
@@ -169,9 +163,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 5, left = 7).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone433, fwd = 5, left = 7).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -192,7 +186,7 @@ contract('Engine', (accounts) => {
     
 
     it('play a match', async () => {
-        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        const result = await engineHL.playMatch(engine.address, seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
@@ -200,7 +194,7 @@ contract('Engine', (accounts) => {
 
     it('manages to score with select shoorter wihtout modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        messi = await encoding.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
         teamState[10] = messi;
         result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
@@ -216,7 +210,7 @@ contract('Engine', (accounts) => {
     it('select shooter with modifiers', async () => {
         // interface: 
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        // messi = await encoding.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
         // teamState[10] = messi;
         extraAttack = [
             true, false, false, true,
@@ -281,7 +275,7 @@ contract('Engine', (accounts) => {
     it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
         teamState[8] = messi;
         extraAttack = [
             true, false, false, true,

@@ -158,12 +158,12 @@ contract Encoding {
         return uint256(encodedSkills >> 125 & 15);
     }
 
-    function getForwardness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 122 & 7);
+    function getForwardness(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 122 & 7);
     }
 
-    function getLeftishness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 119 & 7);
+    function getLeftishness(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 119 & 7);
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
