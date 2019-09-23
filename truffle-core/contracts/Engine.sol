@@ -292,7 +292,8 @@ contract Engine is Encoding{
         uint8 shooter = selectShooter(teamState, playersPerZone, lineup, extraAttack, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        return throwDice((getSpeed(teamState[lineup[shooter]])*7)/10, blockShoot, rndNum2) == 0;
+        uint256 shootPenalty = getForwardness(teamState[lineup[shooter]]) == IDX_GK ? 10 : 1;
+        return throwDice((getShoot(teamState[lineup[shooter]])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0;
     }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.

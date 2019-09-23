@@ -198,7 +198,7 @@ contract('Assets', (accounts) => {
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         skills = await assets.getSkillsVec(encodedSkills).should.be.fulfilled; 
-        expected = [44, 0, 0, 0, 0];
+        expected = [87, 37, 28, 60, 35];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk])
         }
@@ -450,7 +450,7 @@ contract('Assets', (accounts) => {
     it('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
         const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = computedSkills;
-        expected = [30, 0, 0, 0, 0];
+        expected = [50, 50, 50, 50, 50];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
