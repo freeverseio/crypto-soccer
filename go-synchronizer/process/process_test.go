@@ -2,6 +2,7 @@ package process
 
 import (
 	//	"fmt"
+
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -78,6 +79,13 @@ func TestSyncTeams(t *testing.T) {
 			t.Fatalf("Expected 128*18=2304 actual %v", count)
 		}
 	}
+
+	// ganache.Assets.TransferFirstBotToAddr(
+	// 	bind.NewKeyedTransactor(owner),
+	// 	1,
+	// 	big.NewInt(0),
+	// 	ganache.Public(alice),
+	// )
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
 	//fmt.Println("alice: ", ganache.Public(alice).Hex())
