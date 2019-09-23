@@ -20,6 +20,8 @@ contract('Engine', (accounts) => {
     const playersPerZone442 = [1,2,1,1,2,1,0,2,0];
     const playersPerZone433 = [1,2,1,1,1,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
+    const is2ndHalf = false;
+    const isHomeStadium = false;
     const IDX_R = 1;
     const IDX_C = 2;
     const IDX_CR = 3;
@@ -190,8 +192,9 @@ contract('Engine', (accounts) => {
     
 
     it('play a match', async () => {
-        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(15);
+        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
 
@@ -378,13 +381,18 @@ contract('Engine', (accounts) => {
     it('gets n rands from a seed', async () => {
         ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
         const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
-        // for (i=0; i<result.length; i++) {
-        //     console.log(result[i].toNumber())
-        // }
         expectLen = 4*ROUNDS_PER_MATCH.toNumber();
         result.length.should.be.equal(expectLen);
+        prevRnds = [];
+        // checks that all rnds are actually different:
+        for (r = 0; r < result.length; r++) {
+            for (prev = 0; prev < prevRnds.length; prev++){
+                result[r].should.be.bignumber.not.equal(prevRnds[prev]);
+            }
+            prevRnds.push(result[r]);
+        }
         result[0].should.be.bignumber.equal("32690506113");
-        result[expectLen-1].should.be.bignumber.equal("51871126086");
+        result[expectLen-1].should.be.bignumber.equal("62760289461");
     });
 
     it('computes team global skills by aggregating across all players in team', async () => {
@@ -420,25 +428,29 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1]).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], is2ndHalf, isHomeStadium).should.be.rejected;
     });
 
 
     it('different team state => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(3);
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(16);
+        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
 4
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(3);
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1]).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(1);
-        result[1].toNumber().should.be.equal(3);
+        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(0);
+        result[1].toNumber().should.be.equal(1);
     });
 });

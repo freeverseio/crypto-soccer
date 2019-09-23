@@ -4,7 +4,7 @@ import "./Encoding.sol";
 
 contract Engine is Encoding{
     
-    uint8 public constant ROUNDS_PER_MATCH = 18;   // Number of relevant actions that happen during a game (18 equals one per 5 min)
+    uint8 public constant ROUNDS_PER_MATCH = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
     uint256 public constant MAX_PENALTY     = 10000; // Idx used to identify normal player acting as GK, or viceversa.
@@ -42,7 +42,9 @@ contract Engine is Encoding{
     function playMatch(
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
-        uint256[2] memory tactics
+        uint256[2] memory tactics,
+        bool is2ndHalf,
+        bool isHomeStadium
     )
         public
         pure
@@ -58,9 +60,12 @@ contract Engine is Encoding{
         (lineups[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], extraAttack[0]);
+        if (isHomeStadium) {
+            globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
+        }
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
-            if ((round == 8) || (round == 13)) {
+            if (is2ndHalf && ((round == 0) || (round == 5))) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);

@@ -113,7 +113,9 @@ contract Leagues is Assets {
             score = _engine.playMatch(
                 matchSeed, 
                 states,
-                tactics
+                tactics,
+                false,
+                false
             );
             evoPoint = computeEvolutionPoints(
                 states,
