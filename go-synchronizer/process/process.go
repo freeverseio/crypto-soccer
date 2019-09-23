@@ -273,25 +273,78 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 	}
 	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
 	end := begin + int64(PLAYERS_PER_TEAM_INIT)
+
+	SK_SHO := uint8(0)
+	if err != nil {
+		return err
+	}
+	SK_SPE := uint8(0)
+	if err != nil {
+		return err
+	}
+	SK_PAS := uint8(0)
+	if err != nil {
+		return err
+	}
+	SK_DEF := uint8(0)
+	if err != nil {
+		return err
+	}
+	SK_END := uint8(0)
+	if err != nil {
+		return err
+	}
+	SK_SHO, err = p.assets.SKSHO(opts)
+	if err != nil {
+		return err
+	}
+	SK_SPE, err = p.assets.SKSPE(opts)
+	if err != nil {
+		return err
+	}
+	SK_PAS, err = p.assets.SKPAS(opts)
+	if err != nil {
+		return err
+	}
+	SK_DEF, err = p.assets.SKDEF(opts)
+	if err != nil {
+		return err
+	}
+	SK_END, err = p.assets.SKEND(opts)
+	if err != nil {
+		return err
+	}
+
 	for i := begin; i < end; i++ {
 		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
 			return e
+		} else if skills, e := p.getPlayerSkillsAtBirth(opts, playerId); e != nil {
+			return e
 		} else if e := p.db.PlayerCreate(
 			storage.Player{
-				playerId, // TODO: should be store as hex string
-				storage.PlayerState{
-					teamId,
-					uint64(0), // Defence
-					uint64(0), // Speed
-					uint64(0), // Pass
-					uint64(0), // Shoot
-					uint64(0), // Endurance
+				playerId,
+				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
+					TeamId:    teamId,
+					Defence:   uint64(skills[SK_DEF]),
+					Speed:     uint64(skills[SK_SPE]),
+					Pass:      uint64(skills[SK_PAS]),
+					Shoot:     uint64(skills[SK_SHO]),
+					Endurance: uint64(skills[SK_END]),
 				}},
 		); e != nil {
 			return e
 		}
 	}
 	return err
+}
+
+//encodedSkills Assets.getPlayerSkillsAtBirth(playerID)
+func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *big.Int) ([5]uint16, error) {
+	if skills, err := p.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+		return [5]uint16{0, 0, 0, 0, 0}, err
+	} else {
+		return p.assets.GetSkillsVec(opts, skills)
+	}
 }
 
 //func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
