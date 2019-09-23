@@ -267,7 +267,7 @@ contract Assets is Encoding {
         uint256 monthOfBirth;
         (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
         (uint16[N_SKILLS] memory skills, uint8 potential, uint8 forwardness, uint8 leftishness) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness);
+        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness, false, false, 0, 0);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {

@@ -45,7 +45,11 @@ contract('Engine', (accounts) => {
                 playerId = 1,
                 potential,
                 forwardness,
-                leftishness
+                leftishness,
+                alignedLastHalf = false,
+                redCardLastGame = false,
+                gamesNonStopping = 0,
+                injuryWeeksLeft = 0
             ).should.be.fulfilled;            
             teamState.push(playerSkillsTemp)
         }        
@@ -57,27 +61,42 @@ contract('Engine', (accounts) => {
         month = 0;
         playerId = 1;
         pot = 3;
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0).should.be.fulfilled 
+        alignedLastHalf = false;
+        redCardLastGame = false;
+        gamesNonStopping = 0;
+        injuryWeeksLeft = 0;
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C).should.be.fulfilled 
+        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C,
+            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
         teamState.push(pSkills)
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
             teamState.push(pSkills)
@@ -93,7 +112,11 @@ contract('Engine', (accounts) => {
             playerId = 1,
             potential = 3,
             forwardness,
-            leftishness
+            leftishness,
+            alignedLastHalf = false,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0
         ).should.be.fulfilled;
         
         teamState = []
@@ -124,7 +147,7 @@ contract('Engine', (accounts) => {
 
     it('computePenalty for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 0, leftishness = 0
+            forwardness = 0, leftishness = 0, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
@@ -137,7 +160,7 @@ contract('Engine', (accounts) => {
     it('computePenalty for DL ', async () => {
             // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 1, leftishness = 4
+            forwardness = 1, leftishness = 4, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected442 = [MAX_PENALTY, 
             0, 1000, 1000, 2000, 
@@ -160,7 +183,7 @@ contract('Engine', (accounts) => {
     it('computePenalty for MFLCR ', async () => {
         // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
-            forwardness = 5, leftishness = 7
+            forwardness = 5, leftishness = 7, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected442 = [MAX_PENALTY, 
             1000, 1000, 1000, 1000, 
@@ -200,7 +223,8 @@ contract('Engine', (accounts) => {
 
     it('manages to score with select shoorter wihtout modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7, 
+            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[10] = messi;
         result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
@@ -281,7 +305,8 @@ contract('Engine', (accounts) => {
     it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7, 
+            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[8] = messi;
         extraAttack = [
             true, false, false, true,
