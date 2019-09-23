@@ -235,13 +235,13 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 	}
 	return nil
 }
-func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdx *big.Int) error {
+func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
 	if err != nil {
 		return err
 	}
-	begin := divisionIdx.Int64() * int64(TEAMS_PER_DIVISION)
+	begin := divisionIdxInCountry.Int64() * int64(TEAMS_PER_DIVISION)
 	end := begin + int64(TEAMS_PER_DIVISION)
 
 	for i := begin; i < end; i++ {
@@ -258,7 +258,37 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 					storage.TeamState{teamOwner.Hex()}},
 			); e != nil {
 				return e
+			} else if e := p.storeVirtualPlayersForTeam(teamId, timezone, countryIdx, i); e != nil {
+				return e
 			}
+		}
+	}
+	return err
+}
+func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
+	opts := &bind.CallOpts{}
+	PLAYERS_PER_TEAM_INIT, err := p.assets.PLAYERSPERTEAMINIT(opts)
+	if err != nil {
+		return err
+	}
+	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
+	end := begin + int64(PLAYERS_PER_TEAM_INIT)
+	for i := begin; i < end; i++ {
+		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
+			return e
+		} else if e := p.db.PlayerCreate(
+			storage.Player{
+				playerId, // TODO: should be store as hex string
+				storage.PlayerState{
+					teamId,
+					uint64(0), // Defence
+					uint64(0), // Speed
+					uint64(0), // Pass
+					uint64(0), // Shoot
+					uint64(0), // Endurance
+				}},
+		); e != nil {
+			return e
 		}
 	}
 	return err
