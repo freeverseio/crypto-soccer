@@ -338,7 +338,6 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 	return err
 }
 
-//encodedSkills Assets.getPlayerSkillsAtBirth(playerID)
 func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *big.Int) ([5]uint16, error) {
 	if skills, err := p.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 		return [5]uint16{0, 0, 0, 0, 0}, err
