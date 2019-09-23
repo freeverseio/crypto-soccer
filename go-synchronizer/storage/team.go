@@ -53,15 +53,6 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) UpdateTeamOwner(teamID *big.Int, owner string) error {
-	log.Debugf("[DBMS] Change team  %v owner %v", teamID.String(), owner)
-	_, err := b.db.Exec("UPDATE teams SET owner=$1 WHERE team_id=$2",
-		owner,
-		teamID.String(),
-	)
-	return err
-}
-
 // func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
 // 	log.Infof("[DBMS] Updating team state %v", teamState)
 
@@ -76,14 +67,14 @@ func (b *Storage) UpdateTeamOwner(teamID *big.Int, owner string) error {
 // 	return nil
 // }
 
-// func (b *Storage) teamUpdate(id uint64, teamState TeamState) error {
-// 	log.Infof("[DBMS] + update team state %v", teamState)
-
-// 	_, err := b.db.Exec("UPDATE teams SET blockNumber=$1, currentLeagueId=$2, owner=$3, posInCurrentLeagueId=$4, posInPrevLeagueId=$5, prevLeagueId=$6, inBlockIndex=$7 WHERE id=$8;",
-// 		teamState.Owner,
-// 	)
-// 	return err
-// }
+func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
+	log.Debugf("[DBMS] + update team state %v", teamState)
+	_, err := b.db.Exec("UPDATE teams SET owner=$1 WHERE team_id=$2",
+		teamState.Owner,
+		teamID.String(),
+	)
+	return err
+}
 
 // func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 // 	log.Infof("[DBMS] + add team history %v", teamState)

@@ -104,16 +104,17 @@ func TestUpdateTeamOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = sto.UpdateTeamOwner(team.TeamID, "pippo")
+	team.State.Owner = "pippo"
+	err = sto.TeamUpdate(team.TeamID, team.State)
 	if err != nil {
 		t.Fatal(err)
 	}
-	team, err = sto.GetTeam(team.TeamID)
+	result, err := sto.GetTeam(team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if team.State.Owner != "pippo" {
-		t.Fatalf("expected owner pippo but got %v", team.State.Owner)
+	if team.State.Owner != result.State.Owner {
+		t.Fatalf("expected owner pippo but got %v", result.State.Owner)
 	}
 }
 
