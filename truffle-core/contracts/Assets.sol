@@ -74,6 +74,15 @@ contract Assets is Encoding {
         _needsInit = false;
     }
 
+    // hack for testing: we can init only one timezone
+    // at some point, remove this option
+    function initSingleTZ(uint8 tz) public {
+        require(_needsInit == true, "cannot initialize twice");
+        gameDeployMonth = secsToMonths(now);
+        _initTimeZone(tz);
+        _needsInit = false;
+    }
+
     function _initTimeZone(uint8 tz) private {
         Country memory country;
         country.nDivisions = 1;
