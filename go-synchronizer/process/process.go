@@ -325,7 +325,7 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 				playerId,
 				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:    teamId,
-					Defence:   uint64(skills[SK_DEF]),
+					Defence:   uint64(skills[SK_DEF]), // TODO: type should be uint16
 					Speed:     uint64(skills[SK_SPE]),
 					Pass:      uint64(skills[SK_PAS]),
 					Shoot:     uint64(skills[SK_SHO]),
