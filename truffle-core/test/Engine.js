@@ -145,19 +145,19 @@ contract('Engine', (accounts) => {
     // });
     // return;
 
-    it('computePenalty for GK ', async () => {
+    it('computePenaltyBadPosition for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
             forwardness = 0, leftishness = 0, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenaltyBadPosition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
 
-    it('computePenalty for DL ', async () => {
+    it('computePenaltyBadPosition for DL ', async () => {
             // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
             forwardness = 1, leftishness = 4, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
@@ -173,14 +173,14 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenaltyBadPosition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenaltyBadPosition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
 
-    it('computePenalty for MFLCR ', async () => {
+    it('computePenaltyBadPosition for MFLCR ', async () => {
         // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
             forwardness = 5, leftishness = 7, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
@@ -192,9 +192,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenaltyBadPosition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenalty(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await engine.computePenaltyBadPosition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
