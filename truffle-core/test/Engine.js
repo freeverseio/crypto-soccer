@@ -104,273 +104,268 @@ contract('EngineHL', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
     });
 
-    // it('play a match to estimate cost', async () => {
-    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
-    // });
-    // return;
+    it('computePenalty for GK ', async () => {
+        expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
+        expected[0] = 0;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 0, left = 0).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected[p]);
+        }
+    });
 
-    // it('computePenalty for GK ', async () => {
-    //     expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
-    //     expected[0] = 0;
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, fwd = 0, left = 0).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected[p]);
-    //     }
-    // });
-
-    // it('computePenalty for DL ', async () => {
-    //     // for a DL:
-    //     expected442 = [MAX_PENALTY, 
-    //         0, 1000, 1000, 2000, 
-    //         1000, 2000, 2000, 3000, 
-    //         3000, 3000 
-    //     ];
-    //     expected433 = [MAX_PENALTY, 
-    //         0, 1000, 1000, 2000, 
-    //         1000, 2000, 3000,  
-    //         2000, 3000, 4000
-    //     ];
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, fwd = 1, left = 4).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
-    //         penalty = await engine.computePenalty(p, playersPerZone433, fwd = 1, left = 4).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
-    //     }
-    // });
+    it('computePenalty for DL ', async () => {
+        // for a DL:
+        expected442 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 2000, 3000, 
+            3000, 3000 
+        ];
+        expected433 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 3000,  
+            2000, 3000, 4000
+        ];
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 1, left = 4).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, fwd = 1, left = 4).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
+        }
+    });
     
-    // it('computePenalty for MFLCR ', async () => {
-    //     // for a MFLCR:
-    //     expected442 = [MAX_PENALTY, 
-    //         1000, 1000, 1000, 1000, 
-    //         0, 0, 0, 0, 
-    //         0, 0 
-    //     ];
-    //     expected433 = expected442;
-    //     for (p=0; p < 11; p++) {
-    //         penalty = await engine.computePenalty(p, playersPerZone442, fwd = 5, left = 7).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
-    //         penalty = await engine.computePenalty(p, playersPerZone433, fwd = 5, left = 7).should.be.fulfilled;
-    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
-    //     }
-    // });
+    it('computePenalty for MFLCR ', async () => {
+        // for a MFLCR:
+        expected442 = [MAX_PENALTY, 
+            1000, 1000, 1000, 1000, 
+            0, 0, 0, 0, 
+            0, 0 
+        ];
+        expected433 = expected442;
+        for (p=0; p < 11; p++) {
+            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 5, left = 7).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected442[p]);
+            penalty = await engine.computePenalty(p, playersPerZone433, fwd = 5, left = 7).should.be.fulfilled;
+            penalty.toNumber().should.be.equal(10000 - expected433[p]);
+        }
+    });
     
-    // it('teams get tired', async () => {
-    //     const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
-    //     result[0][0].toNumber().should.be.equal(10);
-    //     result[0][1].toNumber().should.be.equal(20);
-    //     result[0][2].toNumber().should.be.equal(30);
-    //     result[0][3].toNumber().should.be.equal(40);
-    //     result[0][4].toNumber().should.be.equal(100);
-    //     result[1][0].toNumber().should.be.equal(10);
-    //     result[1][1].toNumber().should.be.equal(20);
-    //     result[1][2].toNumber().should.be.equal(30);
-    //     result[1][3].toNumber().should.be.equal(40);
-    //     result[1][4].toNumber().should.be.equal(50);
-    // });
+    it('teams get tired', async () => {
+        const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
+        result[0][0].toNumber().should.be.equal(10);
+        result[0][1].toNumber().should.be.equal(20);
+        result[0][2].toNumber().should.be.equal(30);
+        result[0][3].toNumber().should.be.equal(40);
+        result[0][4].toNumber().should.be.equal(100);
+        result[1][0].toNumber().should.be.equal(10);
+        result[1][1].toNumber().should.be.equal(20);
+        result[1][2].toNumber().should.be.equal(30);
+        result[1][3].toNumber().should.be.equal(40);
+        result[1][4].toNumber().should.be.equal(50);
+    });
     
 
-    // it('play a match', async () => {
-    //     const result = await engineHL.playMatch(engine.address, seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
-    //     // console.log(result[0].toNumber(), result[1].toNumber())
-    //     result[0].toNumber().should.be.equal(10);
-    //     result[1].toNumber().should.be.equal(0);
-    // });
+    it('play a match', async () => {
+        const result = await engineHL.playMatch(engine.address, seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(10);
+        result[1].toNumber().should.be.equal(0);
+    });
 
-    // it('manages to score with select shoorter wihtout modifiers', async () => {
-    //     skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-    //     skills[10] = [100,100,100,100,100]
-    //     result = await engine.selectShooter(skills, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(10);
-    //     result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     // // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-    //     result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
+    it('manages to score with select shoorter wihtout modifiers', async () => {
+        skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
+        skills[10] = [100,100,100,100,100]
+        result = await engine.selectShooter(skills, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+        result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        // // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
+        result = await engine.managesToScore(skills, playersPerZone442, extraAttackNull, forwardness442, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
     
-    // it('select shooter with modifiers', async () => {
-    //     skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     expectedRatios = [1,
-    //         15000, 5000, 5000, 15000,
-    //         25000, 50000, 50000, 25000,
-    //         75000, 75000
-    //     ]
-    //     sum = expectedRatios.reduce((a,b) => a + b, 0)
-    //     k = 0;
-    //     for (p = 0; p < 11; p++) {
-    //         k += Math.floor(MAX_RND*expectedRatios[p]/sum);
-    //         result = await engine.selectShooter(skills, playersPerZone442, extraAttack, k).should.be.fulfilled;
-    //         // result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
-    //         result.toNumber().should.be.equal(p);
-    //         if (p < 10) {
-    //             result = await engine.selectShooter(skills, playersPerZone442, extraAttack, k + p + 1).should.be.fulfilled;
-    //             // result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
-    //             result.toNumber().should.be.equal(p+1);
-    //         }
-    //     }
-    // });
+    it('select shooter with modifiers', async () => {
+        skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        expectedRatios = [1,
+            15000, 5000, 5000, 15000,
+            25000, 50000, 50000, 25000,
+            75000, 75000
+        ]
+        sum = expectedRatios.reduce((a,b) => a + b, 0)
+        k = 0;
+        for (p = 0; p < 11; p++) {
+            k += Math.floor(MAX_RND*expectedRatios[p]/sum);
+            result = await engine.selectShooter(skills, playersPerZone442, extraAttack, k).should.be.fulfilled;
+            // result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
+            result.toNumber().should.be.equal(p);
+            if (p < 10) {
+                result = await engine.selectShooter(skills, playersPerZone442, extraAttack, k + p + 1).should.be.fulfilled;
+                // result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
+                result.toNumber().should.be.equal(p+1);
+            }
+        }
+    });
     
-    // it('select assister with modifiers', async () => {
-    //     console.log("warning: This test takes a few secs...")
-    //     skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     nPartitions = 200;
-    //     expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
-    //     transtions = [];
-    //     t=0;
-    //     rndOld = 0;
-    //     result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     // result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     prev = result.toNumber();
-    //     for (p = 0; p < nPartitions; p++) {
-    //         rnd = Math.floor(p * MAX_RND/ nPartitions);
-    //         result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         // result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         if (result.toNumber() != prev) {
-    //             percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
-    //             // console.log(prev, percentageForPrevPlayer);
-    //             transtions.push(percentageForPrevPlayer);
-    //             prev = result.toNumber();
-    //             t++;
-    //             rndOld = rnd;
-    //         }
-    //     }
-    //     percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
-    //     // console.log(prev, percentageForPrevPlayer);
-    //     transtions.push(percentageForPrevPlayer);
-    //         // console.log(transtions)
-    //     for (t = 0; t < expectedTrans.length; t++) {
-    //         (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
-    //     }
-    // });
+    it('select assister with modifiers', async () => {
+        console.log("warning: This test takes a few secs...")
+        skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        nPartitions = 200;
+        expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
+        transtions = [];
+        t=0;
+        rndOld = 0;
+        result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        // result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
+        for (p = 0; p < nPartitions; p++) {
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            // result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            if (result.toNumber() != prev) {
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
+                prev = result.toNumber();
+                t++;
+                rndOld = rnd;
+            }
+        }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+            // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
+    });
 
-    // it('select assister with modifiers and one Messi', async () => {
-    //     console.log("warning: This test takes a few secs...")
-    //     skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-    //     messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-    //     skills[8] = [2,2,2,2,2];
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     nPartitions = 200;
-    //     expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
-    //     transtions = [];
-    //     t=0;
-    //     rndOld = 0;
-    //     result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     prev = result.toNumber();
-    //     for (p = 0; p < nPartitions; p++) {
-    //         rnd = Math.floor(p * MAX_RND/ nPartitions);
-    //         result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         if (result.toNumber() != prev) {
-    //             percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
-    //             // console.log(prev, percentageForPrevPlayer);
-    //             transtions.push(percentageForPrevPlayer);
-    //             prev = result.toNumber();
-    //             t++;
-    //             rndOld = rnd;
-    //         }
-    //     }
-    //     percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
-    //     // console.log(prev, percentageForPrevPlayer);
-    //     transtions.push(percentageForPrevPlayer);
-    //     // console.log(transtions)
-    //     for (t = 0; t < expectedTrans.length; t++) {
-    //         (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
-    //     }
-    // });
+    it('select assister with modifiers and one Messi', async () => {
+        console.log("warning: This test takes a few secs...")
+        skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
+        messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        skills[8] = [2,2,2,2,2];
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        nPartitions = 200;
+        expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
+        transtions = [];
+        t=0;
+        rndOld = 0;
+        result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
+        for (p = 0; p < nPartitions; p++) {
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            if (result.toNumber() != prev) {
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
+                prev = result.toNumber();
+                t++;
+                rndOld = rnd;
+            }
+        }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+        // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
+    });
 
-    // it('throws dice array11 fine grained testing', async () => {
-    //     // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
-    //     weights = Array.from(new Array(11), (x,i) => 100);
-    //     sum = 100 * 11;
-    //     k = 0;
-    //     for (p = 0; p < 11; p++) {
-    //         k += Math.floor(MAX_RND*weights[p]/sum);
-    //         result = await engine.throwDiceArray11(weights, k).should.be.fulfilled;
-    //         result.toNumber().should.be.equal(p);
-    //         if (p < 10) {
-    //             result = await engine.throwDiceArray11(weights, k+p+1).should.be.fulfilled;
-    //             result.toNumber().should.be.equal(p+1);
-    //         }
-    //     }
-    // });
+    it('throws dice array11 fine grained testing', async () => {
+        // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
+        weights = Array.from(new Array(11), (x,i) => 100);
+        sum = 100 * 11;
+        k = 0;
+        for (p = 0; p < 11; p++) {
+            k += Math.floor(MAX_RND*weights[p]/sum);
+            result = await engine.throwDiceArray11(weights, k).should.be.fulfilled;
+            result.toNumber().should.be.equal(p);
+            if (p < 10) {
+                result = await engine.throwDiceArray11(weights, k+p+1).should.be.fulfilled;
+                result.toNumber().should.be.equal(p+1);
+            }
+        }
+    });
 
-    // it('throws dice array11', async () => {
-    //     // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
-    //     weights = Array.from(new Array(11), (x,i) => 1);
-    //     weights[8] = 1000;
-    //     let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(8);
-    //     weights[8] = 1;
-    //     weights[9] = 1000;
-    //     result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(9);
-    //     weights[9] = 1;
-    //     weights[10] = 1000;
-    //     result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(10);
-    // });
+    it('throws dice array11', async () => {
+        // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
+        weights = Array.from(new Array(11), (x,i) => 1);
+        weights[8] = 1000;
+        let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(8);
+        weights[8] = 1;
+        weights[9] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(9);
+        weights[9] = 1;
+        weights[10] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+    });
     
-    // it('manages to shoot', async () => {
-    //     // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-    //     let  = 8000; // the max allowed random number is 16383, so this is about half of it
-    //     let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
-    //     let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
-    //     result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
+    it('manages to shoot', async () => {
+        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
+        let  = 8000; // the max allowed random number is 16383, so this is about half of it
+        let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
+        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
+        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
 
-    // it('throws dice', async () => {
-    //     // interface: throwDice(uint weight1, uint weight2, uint rndNum)
-    //     let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    //     result = await engine.throwDice(10,1,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await engine.throwDice(10,10,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await engine.throwDice(10,10,2*kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    // });
+    it('throws dice', async () => {
+        // interface: throwDice(uint weight1, uint weight2, uint rndNum)
+        let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await engine.throwDice(10,1,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,2*kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
 
 
-    // it('gets n rands from a seed', async () => {
-    //     ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
-    //     const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
-    //     expectLen = 4*ROUNDS_PER_MATCH.toNumber();
-    //     result.length.should.be.equal(expectLen);
-    //     prevRnds = [];
-    //     // checks that all rnds are actually different:
-    //     for (r = 0; r < result.length; r++) {
-    //         for (prev = 0; prev < prevRnds.length; prev++){
-    //             result[r].should.be.bignumber.not.equal(prevRnds[prev]);
-    //         }
-    //         prevRnds.push(result[r]);
-    //     }
-    //     result[0].should.be.bignumber.equal("32690506113");
-    //     result[expectLen-1].should.be.bignumber.equal("62760289461");
-    // });
+    it('gets n rands from a seed', async () => {
+        ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
+        const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
+        expectLen = 4*ROUNDS_PER_MATCH.toNumber();
+        result.length.should.be.equal(expectLen);
+        prevRnds = [];
+        // checks that all rnds are actually different:
+        for (r = 0; r < result.length; r++) {
+            for (prev = 0; prev < prevRnds.length; prev++){
+                result[r].should.be.bignumber.not.equal(prevRnds[prev]);
+            }
+            prevRnds.push(result[r]);
+        }
+        result[0].should.be.bignumber.equal("32690506113");
+        result[expectLen-1].should.be.bignumber.equal("62760289461");
+    });
 
     it('computes team global skills by aggregating across all players in team', async () => {
         // If all skills where 1 for all players, and tactics = 442 =>
@@ -384,50 +379,47 @@ contract('EngineHL', (accounts) => {
         // endurance   =    70;
         // attackersSpeed = [1,1]
         // attackersShoot = [1,1]
-        
-        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive, extraAttackNull).should.be.fulfilled;
+        skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
+        globSkills = await engine.getTeamGlobSkills(skills, playersPerZone442, extraAttackNull, forwardness442, leftishness442).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
     
-    return
-    
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
-        tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
+        tacticsWrong = await encoding.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
+        result = await engineHL.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
-        result = await engine.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
+        result = await engineHL.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
         let {0: line, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
         for (p = 0; p < 11; p++) line[p].toNumber().should.be.equal(lineup1[p]);
     });
 
     it('play match with wrong tactic', async () => {
-        tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], is2ndHalf, isHomeStadium).should.be.rejected;
+        tacticsWrong = await encoding.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6);
+        await engineHL.playMatch(engine.address, seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], [is2ndHalf, isHomeStadium]).should.be.rejected;
     });
 
 
     it('different team state => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        let result = await engineHL.playMatch(engine.address, 123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        result = await engineHL.playMatch(engine.address, 123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
 4
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        let result = await engineHL.playMatch(engine.address, 123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        result = await engineHL.playMatch(engine.address, 654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(0);
         result[1].toNumber().should.be.equal(1);
