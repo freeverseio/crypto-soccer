@@ -48,7 +48,11 @@ contract('EngineHL', (accounts) => {
                 playerId = 1321312,
                 potential,
                 forwardness,
-                leftishness
+                leftishness,
+                alignedLastHalf = false,
+                redCardLastGame = false,
+                gamesNonStopping = 0,
+                injuryWeeksLeft = 0
             ).should.be.fulfilled;            
             teamState.push(playerSkillsTemp)
         }        
@@ -60,8 +64,13 @@ contract('EngineHL', (accounts) => {
         month = 0;
         playerId = 3123123;
         pot = 3;
+        alignedLastHalf = false;
+        redCardLastGame = false;
+        gamesNonStopping = 0;
+        injuryWeeksLeft = 0;
         for (p = 0; p < 11; p++) {
-            pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, forwardness442[p], leftishness442[p]).should.be.fulfilled 
+            pSkills = await encoding.encodePlayerSkills(forceSkills, month, playerId, pot, forwardness442[p], leftishness442[p], 
+                alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
             teamState.push(pSkills)
         }
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
@@ -78,7 +87,11 @@ contract('EngineHL', (accounts) => {
             playerId = 231321,
             potential = 3,
             forwardness,
-            leftishness
+            leftishness, 
+            alignedLastHalf = false, 
+            redCardLastGame = false, 
+            gamesNonStopping = 0, 
+            injuryWeeksLeft = 0
         ).should.be.fulfilled;
         
         teamState = []
@@ -108,7 +121,10 @@ contract('EngineHL', (accounts) => {
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenalty(p, playersPerZone442, fwd = 0, left = 0).should.be.fulfilled;
+            penalty = await engine.computePenalty(p, playersPerZone442, 
+                forwardness = 0, leftishness = 0 
+                // alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+            ).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
@@ -254,7 +270,8 @@ contract('EngineHL', (accounts) => {
     it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-        messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, 
+            fwd = 3, left = 7, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         skills[8] = [2,2,2,2,2];
         extraAttack = [
             true, false, false, true,

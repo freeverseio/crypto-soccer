@@ -85,7 +85,7 @@ contract Encoding {
     }
 
     /**
-     * @dev PlayerSkills serializes a total of 137 bits:  6*14 + 4 + 3+ 3 + 43
+     * @dev PlayerSkills serializes a total of 145 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 +3
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
      *      potential                 = 4 bits (number is limited to [0,...,9])
@@ -95,6 +95,11 @@ contract Encoding {
      *      leftishness               = 3 bits, in boolean triads: (L, C, R):
      *                                  0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
      *      playerId                  = 43 bits
+     *      
+     *      alignedLastHalf           = 1 (bool)
+     *      redCardLastGame           = 1 (bool)
+     *      gamesNonStopping          = 3 (0, 1, ..., 6). Finally, 7 means more than 6.
+     *      injuryWeeksLeft           = 3 
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -102,7 +107,11 @@ contract Encoding {
         uint256 playerId, 
         uint8 potential, 
         uint8 forwardness, 
-        uint8 leftishness
+        uint8 leftishness,
+        bool alignedLastHalf, 
+        bool redCardLastGame, 
+        uint8 gamesNonStopping, 
+        uint8 injuryWeeksLeft
     )
         public
         pure
@@ -127,9 +136,13 @@ contract Encoding {
         encoded |= playerId << 129;
         encoded |= uint256(potential) << 125;
         encoded |= uint256(forwardness) << 122;
-        return (encoded | uint256(leftishness) << 119);
+        encoded |= uint256(leftishness) << 119;
+        encoded |= uint256(alignedLastHalf ? 1 : 0) << 118;
+        encoded |= uint256(redCardLastGame ? 1: 0 ) << 117;
+        encoded |= uint256(gamesNonStopping) << 114;
+        return (encoded | uint256(injuryWeeksLeft) << 111);
     }
-    
+
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 242 & 0x3fff); // 0x3fff = 2**14 - 1
     }
@@ -164,6 +177,22 @@ contract Encoding {
 
     function getLeftishness(uint256 encodedSkills) public pure returns (uint8) {
         return uint8(encodedSkills >> 119 & 7);
+    }
+
+   function getAlignedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+        return (encodedSkills >> 118 & 1) == 1;
+    }
+
+    function getRedCardLastGame(uint256 encodedSkills) public pure returns (bool) {
+        return (encodedSkills >> 117 & 1) == 1;
+    }
+
+    function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 114 & 7);
+    }
+
+    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 111 & 7);
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
