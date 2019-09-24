@@ -99,7 +99,6 @@ contract Leagues is Assets {
         uint256 currentVerseSeed
     )
         public
-        pure
         returns (uint8[2 * MATCHES_PER_DAY] memory scores, uint8[2 * MATCHES_PER_DAY] memory evoPoints)
     {
         uint8[2] memory score;
