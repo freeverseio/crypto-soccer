@@ -16,7 +16,7 @@ contract('Leagues', (accounts) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
             monthOfBirth = 0, 
-            playerId = 1,
+            playerId = 1321312,
             potential = 3,
             forwardness = 3,
             leftishness = 2,

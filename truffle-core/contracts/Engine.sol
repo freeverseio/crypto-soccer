@@ -4,7 +4,8 @@ import "./EncodingSkills.sol";
 
 contract Engine is EncodingSkills{
     
-    uint8 public constant ROUNDS_PER_MATCH = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
+    uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
     uint256 public constant MAX_PENALTY     = 10000; // Idx used to identify normal player acting as GK, or viceversa.
@@ -302,6 +303,7 @@ contract Engine is EncodingSkills{
     }
     
     function assertCanPlay(uint256 playerSkills) public pure {
+        require(getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID, "free player shirt has been aligned");
         require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
     }
 
