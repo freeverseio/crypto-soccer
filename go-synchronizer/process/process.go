@@ -2,14 +2,17 @@ package process
 
 import (
 	"context"
+	"errors"
+
 	//"fmt"
 	"math"
-	//"math/big"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+
 	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -21,6 +24,7 @@ type EventProcessor struct {
 	client      *ethclient.Client
 	db          *storage.Storage
 	market      *market.Market
+	assets      *assets.Assets
 }
 
 // *****************************************************************************
@@ -28,13 +32,13 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market) *EventProcessor {
-	return &EventProcessor{false, client, db, market}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
+	return &EventProcessor{false, client, db, market, assets}
 }
 
 // NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market) *EventProcessor {
-	return &EventProcessor{true, client, db, market}
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
+	return &EventProcessor{true, client, db, market, assets}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -51,37 +55,37 @@ func (p *EventProcessor) Process() error {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	//if events, err := p.scanTeamCreated(opts); err != nil {
-	//	return err
-	//} else {
-	//	err = p.storeTeamCreated(events)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
+	if events, err := p.scanDivisionCreation(opts); err != nil {
+		return err
+	} else {
+		err = p.storeDivisionCreation(events)
+		if err != nil {
+			return err
+		}
+	}
 
-	//if events, err := p.scanTeamTransfer(opts); err != nil {
-	//	return err
-	//} else {
-	//	for _, event := range events { // TODO: next part to be recoded
-	//		_, blockNumber, err := p.getTimeOfEvent(event.Raw)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		teamId := event.TeamId.Uint64()
-	//		newOwner := event.To.String()
-	//		team, err := p.db.GetTeam(teamId)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		team.State.BlockNumber = blockNumber
-	//		team.State.Owner = newOwner
-	//		err = p.db.TeamStateUpdate(teamId, team.State)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	}
-	//}
+	if events, err := p.scanTeamTransfer(opts); err != nil {
+		return err
+	} else {
+		for _, event := range events { // TODO: next part to be recoded
+			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
+			// if err != nil {
+			// 	return err
+			// }
+			teamID := event.TeamId
+			newOwner := event.To.String()
+			team, err := p.db.GetTeam(teamID)
+			if err != nil {
+				return err
+			}
+			// team.State.BlockNumber = blockNumber
+			team.State.Owner = newOwner
+			err = p.db.TeamUpdate(teamID, team.State)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	//if events, err := p.scanPlayerTransfer(opts); err != nil {
 	//	return err
@@ -190,6 +194,146 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 	return block.Time(), eventRaw.BlockNumber, nil
 }
 
+func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]assets.AssetsDivisionCreation, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterDivisionCreation(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsDivisionCreation{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
+func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCreation) error {
+	for _, event := range events {
+		log.Info(
+			"\ntime zone: ", event.Timezone,
+			"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
+			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+		if event.CountryIdxInTZ.Uint64() == 0 {
+			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+				return err
+			}
+		}
+		if event.DivisionIdxInCountry.Uint64() == 0 {
+			countryIdx := event.CountryIdxInTZ.Uint64()
+			if countryIdx >= 65535 {
+				return errors.New("Cannot cast country idx to uint16: value is too large")
+			}
+			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint16(countryIdx)}); err != nil {
+				return err
+			}
+			if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
+	opts := &bind.CallOpts{}
+	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
+	if err != nil {
+		return err
+	}
+	begin := divisionIdxInCountry.Int64() * int64(TEAMS_PER_DIVISION)
+	end := begin + int64(TEAMS_PER_DIVISION)
+
+	for i := begin; i < end; i++ {
+		if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
+			return e
+		} else {
+			if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
+				return e
+			} else if e := p.db.TeamCreate(
+				storage.Team{
+					teamId,
+					timezone,
+					uint16(countryIdx.Uint64()),
+					storage.TeamState{teamOwner.Hex()}},
+			); e != nil {
+				return e
+			} else if e := p.storeVirtualPlayersForTeam(teamId, timezone, countryIdx, i); e != nil {
+				return e
+			}
+		}
+	}
+	return err
+}
+func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
+	opts := &bind.CallOpts{}
+	PLAYERS_PER_TEAM_INIT, err := p.assets.PLAYERSPERTEAMINIT(opts)
+	if err != nil {
+		return err
+	}
+	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
+	end := begin + int64(PLAYERS_PER_TEAM_INIT)
+
+	SK_SHO := uint8(0)
+	SK_SPE := uint8(0)
+	SK_PAS := uint8(0)
+	SK_DEF := uint8(0)
+	SK_END := uint8(0)
+
+	SK_SHO, err = p.assets.SKSHO(opts)
+	if err != nil {
+		return err
+	}
+	SK_SPE, err = p.assets.SKSPE(opts)
+	if err != nil {
+		return err
+	}
+	SK_PAS, err = p.assets.SKPAS(opts)
+	if err != nil {
+		return err
+	}
+	SK_DEF, err = p.assets.SKDEF(opts)
+	if err != nil {
+		return err
+	}
+	SK_END, err = p.assets.SKEND(opts)
+	if err != nil {
+		return err
+	}
+
+	for i := begin; i < end; i++ {
+		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
+			return e
+		} else if skills, e := p.getPlayerSkillsAtBirth(opts, playerId); e != nil {
+			return e
+		} else if e := p.db.PlayerCreate(
+			storage.Player{
+				playerId,
+				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
+					TeamId:    teamId,
+					Defence:   uint64(skills[SK_DEF]), // TODO: type should be uint16
+					Speed:     uint64(skills[SK_SPE]),
+					Pass:      uint64(skills[SK_PAS]),
+					Shoot:     uint64(skills[SK_SHO]),
+					Endurance: uint64(skills[SK_END]),
+				}},
+		); e != nil {
+			return e
+		}
+	}
+	return err
+}
+
+func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *big.Int) ([5]uint16, error) {
+	if skills, err := p.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+		return [5]uint16{0, 0, 0, 0, 0}, err
+	} else {
+		return p.assets.GetSkillsVec(opts, skills)
+	}
+}
+
 //func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
 //	for _, event := range events {
 //		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
@@ -237,22 +381,23 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 //	}
 //	return events, nil
 //}
-//func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.AssetsTeamTransfer, error) {
-//	if opts == nil {
-//		opts = &bind.FilterOpts{Start: 0}
-//	}
-//	iter, err := p.assets.FilterTeamTransfer(opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	events := []assets.AssetsTeamTransfer{}
-//
-//	for iter.Next() {
-//		events = append(events, *(iter.Event))
-//	}
-//	return events, nil
-//}
+func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.AssetsTeamTransfer, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterTeamTransfer(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []assets.AssetsTeamTransfer{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
 //func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]assets.AssetsPlayerTransfer, error) {
 //	if opts == nil {
 //		opts = &bind.FilterOpts{Start: 0}
