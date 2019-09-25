@@ -1,6 +1,5 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Encoding.sol";
 import "./Assets.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.

@@ -1,12 +1,13 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Encoding.sol";
+import "./EncodingSkills.sol";
+import "./EncodingState.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Assets is Encoding {
+contract Assets is EncodingSkills, EncodingState {
     event TeamTransfer(uint256 teamId, address to);
     event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
@@ -276,7 +277,7 @@ contract Assets is Encoding {
         uint256 monthOfBirth;
         (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
         (uint16[N_SKILLS] memory skills, uint8 potential, uint8 forwardness, uint8 leftishness) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness);
+        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness, false, false, 0, 0);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -323,8 +324,9 @@ contract Assets is Encoding {
         dna >>= 4; // log2(10) = 3.3 => ceil = 4
         if (shirtNum < 3) {
             // 3 GoalKeepers:
-            skills[SK_SHO] = 30 + uint16(dna % 40);
-            return (skills, potential, IDX_GK, 0);
+            correctFactor[SK_SHO] = 200;
+            forwardness = IDX_GK;
+            leftishness = 0;
         } else if (shirtNum < 8) {
             // 5 Defenders
             correctFactor[SK_SHO] = 40;
