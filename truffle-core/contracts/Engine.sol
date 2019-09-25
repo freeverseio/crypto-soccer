@@ -26,13 +26,16 @@ contract Engine is EncodingSkills{
     // function playMatchWithCost(
     //     uint256 seed,
     //     uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
-    //     uint256[2] memory tactics
+    //     uint256[2] memory tactics,
+    //     bool is2ndHalf,
+    //     bool isHomeStadium
     // )
     //     public
     // {
-    //     // playMatch(seed, states, tactics);
+    //     playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
     //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     // }
+    
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match

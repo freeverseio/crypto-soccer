@@ -115,7 +115,7 @@ contract('Engine', (accounts) => {
     });
 
     // it('play a match to estimate cost', async () => {
-    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1]).should.be.fulfilled;
+    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
     // });
     // return;
 
