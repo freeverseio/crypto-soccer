@@ -118,18 +118,32 @@ contract('Engine', (accounts) => {
     // it('play a match to estimate cost', async () => {
     //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
     // });
-    // return;
 
     
-    it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
-        messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
-            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-        for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
+    // it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
+    //     messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+    //         alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+    //     for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
+    //     teamStateAll50[5] = messi; 
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
+    // });
+
+    it('play with an injured / red carded / free-slot player', async () => {
+        // legit works:
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
-        teamStateAll50[5] = messi; 
+        // red card fails:
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+            alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
+        // injured fails
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
     });
-    
+
+
+    return;    
     it('computePenaltyBadPositionAndCondition for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, potential = 1,
             forwardness = 0, leftishness = 0, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0

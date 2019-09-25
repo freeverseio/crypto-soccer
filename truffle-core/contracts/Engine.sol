@@ -118,6 +118,7 @@ contract Engine is EncodingSkills{
         for (uint8 p = 0; p < 11; p++) 
         {
             outStates[p] = states[lineup[p]];
+            assertCanPlay(outStates[p]);
         }
         return (states, extraAttack, getPlayersPerZone(tacticsId));
     }
@@ -335,10 +336,9 @@ contract Engine is EncodingSkills{
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
-        uint256 playerSkills = teamState[0];
         uint8 changes;
+        uint256 playerSkills = teamState[0];
         if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
-               
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
