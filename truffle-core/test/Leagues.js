@@ -7,17 +7,16 @@ const truffleAssert = require('truffle-assertions');
 
 const Leagues = artifacts.require('Leagues');
 const Engine = artifacts.require('Engine');
-const EngineHL = artifacts.require('EngineHL');
 
 contract('Leagues', (accounts) => {
     const tactic442 = 0;
     const tactic433 = 1;
 
     const createTeamStateFromSinglePlayer = async (skills, engine) => {
-        const playerStateTemp = await engineHL.encodePlayerSkills(
+        const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
             monthOfBirth = 0, 
-            playerId = 12132132,
+            playerId = 1,
             potential = 3,
             forwardness = 3,
             leftishness = 2
@@ -48,9 +47,9 @@ contract('Leagues', (accounts) => {
 
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
-        engineHL = await EngineHL.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         await leagues.init().should.be.fulfilled;
+        await leagues.setEngineAdress(engine.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await leagues.TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await leagues.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await leagues.MATCHDAYS().should.be.fulfilled;
@@ -94,30 +93,53 @@ contract('Leagues', (accounts) => {
         teams[1].toNumber().should.be.equal(0);
     });
     
+    it('compute points same rating', async () => {
+        let points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [2, 2]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(0);
+        points[1].toNumber().should.be.equal(0);
+        points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [2, 1]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(5);
+        points[1].toNumber().should.be.equal(0);
+        points = await leagues.computeEvolutionPoints([teamStateAll50, teamStateAll50], score = [1, 2]).should.be.fulfilled;
+        points[0].toNumber().should.be.equal(0);
+        points[1].toNumber().should.be.equal(5);
+    });
+
+    
     it('calculate a day in a league', async () => {
         day = 0;
         verseSeed = 0;
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
         leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-        result = await leagues.computeMatchday(engineHL.address, engine.address, day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
         expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
+        expectedEvoPoints   = [ 0, 0, 0, 0, 0, 0, 5, 5 ]
+        actualScores    = Array.from(new Array(result.scores.length), (x,i) => result.scores[i].toNumber());
+        actualEvoPoints = Array.from(new Array(result.evoPoints.length), (x,i) => result.evoPoints[i].toNumber());
         // console.log(actualScores);
-        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
+        // console.log(actualEvoPoints);
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
         }
         day = 3;
         verseSeed = 432;
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
         leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-        result = await leagues.computeMatchday(engineHL.address, engine.address, day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.evoPoints.length.should.be.equal(MATCHES_PER_DAY * 2);
         expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
-        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
+        expectedEvoPoints   = [ 0, 0, 0, 0, 5, 5, 0, 0 ]
+        actualScores    = Array.from(new Array(result.scores.length), (x,i) => result.scores[i].toNumber());
+        actualEvoPoints = Array.from(new Array(result.evoPoints.length), (x,i) => result.evoPoints[i].toNumber());
         // console.log(actualScores);
+        // console.log(actualEvoPoints);
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result.evoPoints[idx].toNumber().should.be.equal(expectedEvoPoints[idx]);
         }
     });
 
