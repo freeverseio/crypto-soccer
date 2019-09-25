@@ -23,18 +23,18 @@ contract Engine is EncodingSkills{
 
     // mock up to estimate cost of a match.
     // to be removed before deployment
-    // function playMatchWithCost(
-    //     uint256 seed,
-    //     uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
-    //     uint256[2] memory tactics,
-    //     bool is2ndHalf,
-    //     bool isHomeStadium
-    // )
-    //     public
-    // {
-    //     playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
-    //     dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
-    // }
+    function playMatchWithCost(
+        uint256 seed,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory tactics,
+        bool is2ndHalf,
+        bool isHomeStadium
+    )
+        public
+    {
+        playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
+        dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
+    }
     
     /**
      * @dev playMatch returns the result of a match
@@ -54,16 +54,15 @@ contract Engine is EncodingSkills{
         pure
         returns (uint8[2] memory teamGoals) 
     {
-        uint8[11][2] memory lineups;
         uint8[9][2] memory playersPerZone;
         uint64[ROUNDS_PER_MATCH*4] memory rnds = getNRandsFromSeed(seed);
         uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
-        (lineups[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
-        (lineups[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], extraAttack[0], is2ndHalf);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], extraAttack[0], is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0]);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], is2ndHalf);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0], is2ndHalf);
         if (isHomeStadium) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
@@ -77,7 +76,6 @@ contract Engine is EncodingSkills{
                 if ( managesToScore(
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
-                    lineups[teamThatAttacks],
                     extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     rnds[4*round+2],
@@ -108,14 +106,17 @@ contract Engine is EncodingSkills{
     // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getLineUpAndPlayerPerZone(uint256 tactics) 
+    // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
+    function getLineUpAndPlayerPerZone(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics) 
         public 
         pure 
-        returns (uint8[11] memory lineup, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
+        uint8[11] memory lineup;
         (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
-        return (lineup, extraAttack, getPlayersPerZone(tacticsId));
+        for (uint8 p = 0; p < 11; p++) outStates[p] = states[lineup[p]];
+        return (states, extraAttack, getPlayersPerZone(tacticsId));
     }
 
     // TODO: can this be expressed as
@@ -228,17 +229,17 @@ contract Engine is EncodingSkills{
         uint256 teamPassCapacity = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[p]);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[p]);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getPass(teamState[lineup[p]]);
+            weights[p] = 200 * getPass(teamState[p]);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -256,7 +257,6 @@ contract Engine is EncodingSkills{
     function selectShooter(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
-        uint8[11] memory lineup,
         bool[10] memory extraAttack,
         uint256 rnd
     )
@@ -269,15 +269,15 @@ contract Engine is EncodingSkills{
         weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[p]);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[lineup[p]]);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[p]);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75000 * getSpeed(teamState[lineup[p]]);
+            weights[p] = 75000 * getSpeed(teamState[p]);
             p++;
         }
         return throwDiceArray11(weights, rnd);
@@ -288,7 +288,6 @@ contract Engine is EncodingSkills{
     function managesToScore(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
-        uint8[11] memory lineup,
         bool[10] memory extraAttack,
         uint256 blockShoot,
         uint256 rndNum1,
@@ -298,11 +297,11 @@ contract Engine is EncodingSkills{
         pure
         returns (bool)
     {
-        uint8 shooter = selectShooter(teamState, playersPerZone, lineup, extraAttack, rndNum1);
+        uint8 shooter = selectShooter(teamState, playersPerZone, extraAttack, rndNum1);
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = getForwardness(teamState[lineup[shooter]]) == IDX_GK ? 10 : 1;
-        return throwDice((getShoot(teamState[lineup[shooter]])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0;
+        uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
+        return throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0;
     }
     
     function assertCanPlay(uint256 playerSkills) public pure {
@@ -321,7 +320,6 @@ contract Engine is EncodingSkills{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        uint8[11] memory lineup,
         bool[10] memory extraAttack,
         bool is2ndHalf
     )
@@ -334,7 +332,7 @@ contract Engine is EncodingSkills{
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
-        uint256 playerSkills = teamState[lineup[0]];
+        uint256 playerSkills = teamState[0];
         assertCanPlay(playerSkills);
         uint8 changes;
         if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
@@ -348,7 +346,7 @@ contract Engine is EncodingSkills{
         uint8 p = 1;
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            playerSkills = teamState[lineup[p]];
+            playerSkills = teamState[p];
             assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
@@ -366,7 +364,7 @@ contract Engine is EncodingSkills{
         }
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            playerSkills = teamState[lineup[p]];
+            playerSkills = teamState[p];
             assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
@@ -383,7 +381,7 @@ contract Engine is EncodingSkills{
         }
         // loop over strikers
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            playerSkills = teamState[lineup[p]];
+            playerSkills = teamState[p];
             assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
@@ -399,7 +397,6 @@ contract Engine is EncodingSkills{
             }
             p++;
         }
-    
         require(changes < 4, "max allowed changes during the break is 3");
 
         // endurance is converted to a percentage, 

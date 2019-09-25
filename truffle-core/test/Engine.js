@@ -241,14 +241,14 @@ contract('Engine', (accounts) => {
         messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[10] = messi;
-        result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
-        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(true);
-        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
         result.should.be.equal(false);
         // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-        result = await engine.managesToScore(teamState, playersPerZone442, lineupConsecutive, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
+        result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
         result.should.be.equal(true);
     });
     
@@ -268,10 +268,10 @@ contract('Engine', (accounts) => {
         k = 0;
         for (p = 0; p < 11; p++) {
             k += Math.floor(MAX_RND*expectedRatios[p]/sum);
-            result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k).should.be.fulfilled;
+            result = await engine.selectShooter(teamState, playersPerZone442, extraAttack, k).should.be.fulfilled;
             result.toNumber().should.be.equal(p);
             if (p < 10) {
-                result = await engine.selectShooter(teamState, playersPerZone442, lineupConsecutive, extraAttack, k + p + 1).should.be.fulfilled;
+                result = await engine.selectShooter(teamState, playersPerZone442, extraAttack, k + p + 1).should.be.fulfilled;
                 result.toNumber().should.be.equal(p+1);
             }
         }
@@ -446,7 +446,7 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, lineupConsecutive, extraAttackNull, is2ndHalf).should.be.fulfilled;
+        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, is2ndHalf).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
@@ -457,10 +457,11 @@ contract('Engine', (accounts) => {
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
-        result = await engine.getLineUpAndPlayerPerZone(tactics1).should.be.fulfilled;
-        let {0: line, 1:fwdMods , 2: playersPerZone} = result;
+        teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1).should.be.fulfilled;
+        let {0: states, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
-        for (p = 0; p < 11; p++) line[p].toNumber().should.be.equal(lineup1[p]);
+        for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[p]);
     });
 
     it('play match with wrong tactic', async () => {
