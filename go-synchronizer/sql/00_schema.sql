@@ -37,10 +37,7 @@ CREATE TABLE players (
     pass INT NOT NULL,
     shoot INT NOT NULL,
     endurance INT NOT NULL,
-    -- monthOfBirthInUnixTime TEXT NOT NULL,
-    -- blockNumber BIGINT NOT NULL,
-    -- inBlockIndex INT NOT NULL,
-    -- state TEXT NOT NULL,
+    shirt_number INT NOT NULL,
     PRIMARY KEY(player_id)
 );
 

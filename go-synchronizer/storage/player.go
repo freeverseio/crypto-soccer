@@ -12,12 +12,13 @@ type Player struct {
 }
 
 type PlayerState struct {
-	TeamId    *big.Int
-	Defence   uint64
-	Speed     uint64
-	Pass      uint64
-	Shoot     uint64
-	Endurance uint64
+	TeamId      *big.Int
+	Defence     uint64
+	Speed       uint64
+	Pass        uint64
+	Shoot       uint64
+	Endurance   uint64
+	ShirtNumber uint8
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -34,7 +35,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -42,6 +43,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.State.Pass,
 		player.State.Shoot,
 		player.State.Endurance,
+		player.State.ShirtNumber,
 	)
 	if err != nil {
 		return err
