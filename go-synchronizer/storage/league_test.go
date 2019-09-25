@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -30,21 +29,10 @@ func TestLeagueCreate(t *testing.T) {
 	countryIdx := uint16(4)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	sto.CountryCreate(storage.Country{timezone, countryIdx})
-	var team storage.Team
-	team.TeamID = big.NewInt(4)
-	team.TimezoneIdx = timezone
-	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	err = sto.TeamCreate(team)
-	if err != nil {
-		t.Fatal(err)
-	}
 	league := storage.League{
 		TimezoneIdx: timezone,
 		CountryIdx:  countryIdx,
 		LeagueIdx:   2,
-		TeamID:      team.TeamID,
-		Points:      0,
 	}
 	err = sto.LeagueCreate(league)
 	if err != nil {

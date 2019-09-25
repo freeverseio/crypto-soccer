@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"math/big"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -10,8 +8,6 @@ type League struct {
 	TimezoneIdx uint8
 	CountryIdx  uint16
 	LeagueIdx   uint8
-	TeamID      *big.Int
-	Points      uint8
 }
 
 func (b *Storage) LeagueCount() (uint64, error) {
@@ -31,12 +27,10 @@ func (b *Storage) LeagueCount() (uint64, error) {
 
 func (b *Storage) LeagueCreate(league League) error {
 	log.Debugf("[DBMS] Create league %v", league)
-	_, err := b.db.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx, team_id, points) VALUES ($1, $2, $3, $4, $5);",
+	_, err := b.db.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
 		league.TimezoneIdx,
 		league.CountryIdx,
 		league.LeagueIdx,
-		league.TeamID.String(),
-		league.Points,
 	)
 	if err != nil {
 		return err
