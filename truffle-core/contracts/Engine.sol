@@ -62,8 +62,8 @@ contract Engine is EncodingSkills{
         
         (lineups[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(tactics[0]);
         (lineups[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(tactics[1]);
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], extraAttack[0]);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], extraAttack[0]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], lineups[0], extraAttack[0], is2ndHalf);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], lineups[1], extraAttack[0], is2ndHalf);
         if (isHomeStadium) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
@@ -322,7 +322,8 @@ contract Engine is EncodingSkills{
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
         uint8[11] memory lineup,
-        bool[10] memory extraAttack
+        bool[10] memory extraAttack,
+        bool is2ndHalf
     )
         public
         pure
@@ -335,6 +336,9 @@ contract Engine is EncodingSkills{
         uint256 penalty;
         uint256 playerSkills = teamState[lineup[0]];
         assertCanPlay(playerSkills);
+        uint8 changes;
+        if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
+               
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
@@ -346,6 +350,7 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             assertCanPlay(playerSkills);
+            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
                 fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
@@ -363,6 +368,7 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             assertCanPlay(playerSkills);
+            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (penalty != 0) {
@@ -379,6 +385,7 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
             assertCanPlay(playerSkills);
+            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
                 penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
@@ -392,6 +399,8 @@ contract Engine is EncodingSkills{
             }
             p++;
         }
+    
+        require(changes < 4, "max allowed changes during the break is 3");
 
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
