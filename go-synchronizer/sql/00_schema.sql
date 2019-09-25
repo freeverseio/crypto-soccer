@@ -55,13 +55,13 @@ CREATE TABLE calendars (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     league_idx INT NOT NULL,
-    round_idx INT NOT NULL,
+    match_day_idx INT NOT NULL,
     home_team_id NUMERIC(78,0) NOT NULL REFERENCES team(team_id),
     visitor_team_id NUMERIC(78,0) NOT NULL REFERENCES team(team_id),
-    home_goals INT NOT NULL,
-    visitor_goals INT NOT NULL,
-    PRIMARY KEY(timezone_idx,country_idx, league_idx, round_idx),
-    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES countries(timezone_idx, country_idx, league_idx)
+    home_goals INT,
+    visitor_goals INT,
+    PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 
 -- CREATE TABLE teams_history (
