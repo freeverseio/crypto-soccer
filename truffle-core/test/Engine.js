@@ -115,9 +115,10 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
     });
 
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
-    });
+    // it('play a match to estimate cost', async () => {
+    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+    // });
+    // return
 
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
@@ -458,19 +459,19 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, is2ndHalf).should.be.fulfilled;
+        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
     
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong).should.be.rejected;
+        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, is2ndHalf).should.be.rejected;
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1).should.be.fulfilled;
+        result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1, is2ndHalf).should.be.fulfilled;
         let {0: states, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[p]);
@@ -492,7 +493,7 @@ contract('Engine', (accounts) => {
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
-4
+
     it('different seeds => different result', async () => {
         let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
