@@ -103,24 +103,24 @@ contract('Leagues', (accounts) => {
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
         leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
         result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.length.should.be.equal(MATCHES_PER_DAY * 2);
         expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
-        actualScores    = Array.from(new Array(result.scores.length), (x,i) => result.scores[i].toNumber());
+        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
         // console.log(actualScores);
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result[idx].toNumber().should.be.equal(expectedScores[idx]);
         }
         day = 3;
         verseSeed = 432;
         leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
         leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
         result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.scores.length.should.be.equal(MATCHES_PER_DAY * 2);
+        result.length.should.be.equal(MATCHES_PER_DAY * 2);
         expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
-        actualScores    = Array.from(new Array(result.scores.length), (x,i) => result.scores[i].toNumber());
+        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
         // console.log(actualScores);
         for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result.scores[idx].toNumber().should.be.equal(expectedScores[idx]);
+            result[idx].toNumber().should.be.equal(expectedScores[idx]);
         }
     });
 
