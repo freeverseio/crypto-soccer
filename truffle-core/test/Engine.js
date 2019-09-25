@@ -115,11 +115,9 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
     });
 
-    // it('play a match to estimate cost', async () => {
-    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
-    // });
-    // return
-
+    it('play a match to estimate cost', async () => {
+        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+    });
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
@@ -430,7 +428,7 @@ contract('Engine', (accounts) => {
 
     it('gets n rands from a seed', async () => {
         ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
-        const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
+        const result = await engine.getNRandsFromSeed(seed, 4*ROUNDS_PER_MATCH).should.be.fulfilled;
         expectLen = 4*ROUNDS_PER_MATCH.toNumber();
         result.length.should.be.equal(expectLen);
         prevRnds = [];

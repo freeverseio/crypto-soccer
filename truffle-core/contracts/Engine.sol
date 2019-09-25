@@ -55,12 +55,17 @@ contract Engine is EncodingSkills{
         returns (uint8[2] memory teamGoals) 
     {
         uint8[9][2] memory playersPerZone;
-        uint64[ROUNDS_PER_MATCH*4] memory rnds = getNRandsFromSeed(seed);
+        uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
+        
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
+
+        // uint16[16] memory events = computeExceptionalEvents(states, seed);
+
+
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0]);
         if (isHomeStadium) {
@@ -101,6 +106,13 @@ contract Engine is EncodingSkills{
     function getNAttackers(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[6] + playersPerZone[7];
     }
+
+
+    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 seed) public pure returns (uint16[16] memory events) {
+                        
+    }
+    
+
 
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many
     // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
@@ -155,10 +167,11 @@ contract Engine is EncodingSkills{
     }
 
 
-    function getNRandsFromSeed(uint256 seed) public pure returns (uint64[ROUNDS_PER_MATCH*4] memory rnds) {
+    function getNRandsFromSeed(uint256 seed, uint8 nRnds) public pure returns (uint64[] memory) {
         uint256 currentBigRnd = uint256(keccak256(abi.encode(seed)));
         uint8 remainingBits = 255;
-        for (uint8 n = 0; n < ROUNDS_PER_MATCH*4; n++) {
+        uint64[] memory rnds = new uint64[](nRnds);
+        for (uint8 n = 0; n < nRnds; n++) {
             if (remainingBits < BITS_PER_RND) {
                 currentBigRnd = uint256(keccak256(abi.encode(seed, n)));
                 remainingBits = 255;
