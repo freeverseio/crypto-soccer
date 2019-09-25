@@ -7,8 +7,9 @@ import (
 )
 
 type Player struct {
-	PlayerId *big.Int
-	State    PlayerState
+	PlayerId          *big.Int
+	PreferredPosition string
+	State             PlayerState
 }
 
 type PlayerState struct {
@@ -35,7 +36,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -44,6 +45,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.State.Shoot,
 		player.State.Endurance,
 		player.State.ShirtNumber,
+		player.PreferredPosition,
 	)
 	if err != nil {
 		return err

@@ -38,6 +38,7 @@ CREATE TABLE players (
     shoot INT NOT NULL,
     endurance INT NOT NULL,
     shirt_number INT NOT NULL,
+    preferred_position TEXT NOT NULL,
     PRIMARY KEY(player_id)
 );
 
