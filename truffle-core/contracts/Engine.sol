@@ -300,6 +300,10 @@ contract Engine is Encoding{
         uint256 shootPenalty = getForwardness(teamState[lineup[shooter]]) == IDX_GK ? 10 : 1;
         return throwDice((getShoot(teamState[lineup[shooter]])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0;
     }
+    
+    function assertCanPlay(uint256 playerSkills) public pure {
+        require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
+    }
 
     /// @dev Computes basic data, including globalSkills, needed during the game.
     /// @dev Basically implements the formulas:
@@ -325,8 +329,9 @@ contract Engine is Encoding{
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
         uint256 playerSkills = teamState[lineup[0]];
+        assertCanPlay(playerSkills);
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
-        if (computePenalty(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
+        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
             
         
@@ -335,7 +340,8 @@ contract Engine is Encoding{
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            penalty = computePenalty(p, playersPerZone, playerSkills);
+            assertCanPlay(playerSkills);
+            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
                 fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
@@ -351,10 +357,11 @@ contract Engine is Encoding{
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            penalty = computePenalty(p, playersPerZone, playerSkills);
+            assertCanPlay(playerSkills);
+            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (penalty != 0) {
-                penalty = computePenalty(p, playersPerZone, playerSkills);
+                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
                 globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
             } else {
@@ -366,9 +373,10 @@ contract Engine is Encoding{
         // loop over strikers
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[lineup[p]];
-            penalty = computePenalty(p, playersPerZone, playerSkills);
+            assertCanPlay(playerSkills);
+            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
-                penalty = computePenalty(p, playersPerZone, playerSkills);
+                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
@@ -402,7 +410,7 @@ contract Engine is Encoding{
     // 0 penalty means no penalty
     // 1000 penalty means 10% penalty
     // etc... up to MAX_PENALTY
-    function computePenalty(
+    function computePenaltyBadPositionAndCondition(
         uint8 lineupPos, 
         uint8[9] memory playersPerZone, 
         uint256 playerSkills
@@ -411,7 +419,7 @@ contract Engine is Encoding{
         pure
         returns (uint256 penalty) 
     {
-        require(lineupPos < 11, "wrong arg in computePenalty");
+        require(lineupPos < 11, "wrong arg in computePenaltyBadPositionAndCondition");
         uint256 forwardness = getForwardness(playerSkills);
         uint256 leftishness = getLeftishness(playerSkills);
         if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 0;
@@ -454,7 +462,10 @@ contract Engine is Encoding{
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
         }
-        return 10000-penalty; 
+        uint256 penaltyFreshnessExponent = getGamesNonStopping(playerSkills);
+        require(penaltyFreshnessExponent < 8, "value of gamesNonStopping beyond allowed");
+        // diminish all player capabilities by 10% every game he played without resting
+        return ((10000 * (9 ** penaltyFreshnessExponent))/(10 ** penaltyFreshnessExponent)) - penalty;
     }
 
     function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {

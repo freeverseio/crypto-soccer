@@ -29,7 +29,7 @@ contract Encoding {
 
 
     /**
-     * @dev Tactics serializes a total of 71 bits:
+     * @dev Tactics serializes a total of 71 bits = 55 + 10 + 6:
      *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
@@ -116,6 +116,7 @@ contract Encoding {
         require(forwardness < 6, "prefPos out of bound");
         require(leftishness < 8, "prefPos out of bound");
         if (leftishness == 0) require(forwardness == 0, "leftishnes can only be zero for goalkeepers");
+        require(gamesNonStopping < 8, "gamesNonStopping out of bound");
         require(monthOfBirth < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
 
