@@ -59,10 +59,10 @@ contract Engine is EncodingSkills{
         uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
-        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0]);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1]);
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], is2ndHalf);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0], is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0]);
         if (isHomeStadium) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
@@ -107,19 +107,22 @@ contract Engine is EncodingSkills{
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
-    function getLineUpAndPlayerPerZone(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics) 
+    function getLineUpAndPlayerPerZone(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics, bool is2ndHalf) 
         public 
         pure 
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
         uint8[11] memory lineup;
+        uint8 changes;
         (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) 
         {
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
+            if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
         }
+        require(changes < 4, "max allowed changes during the break is 3");
         return (states, extraAttack, getPlayersPerZone(tacticsId));
     }
 
@@ -324,8 +327,7 @@ contract Engine is EncodingSkills{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack,
-        bool is2ndHalf
+        bool[10] memory extraAttack
     )
         public
         pure
@@ -336,9 +338,7 @@ contract Engine is EncodingSkills{
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
-        uint8 changes;
         uint256 playerSkills = teamState[0];
-        if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
@@ -349,7 +349,6 @@ contract Engine is EncodingSkills{
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[p];
-            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
                 fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
@@ -366,7 +365,6 @@ contract Engine is EncodingSkills{
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[p];
-            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (penalty != 0) {
@@ -382,7 +380,6 @@ contract Engine is EncodingSkills{
         // loop over strikers
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[p];
-            if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
                 penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
@@ -396,7 +393,6 @@ contract Engine is EncodingSkills{
             }
             p++;
         }
-        require(changes < 4, "max allowed changes during the break is 3");
 
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
