@@ -180,6 +180,34 @@ contract('Engine', (accounts) => {
         }
     });
 
+    it('computePenaltyBadPositionAndCondition for DL with gamesNonStopping', async () => {
+        // for a DL:
+        expected442 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 2000, 3000, 
+            3000, 3000 
+        ];
+        expected433 = [MAX_PENALTY, 
+            0, 1000, 1000, 2000, 
+            1000, 2000, 3000,  
+            2000, 3000, 4000
+        ];
+        for (games = 1; games < 9; games+=2) {
+            playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,
+                forwardness = 1, leftishness = 4, alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
+            ).should.be.fulfilled;            
+            for (p=0; p < 11; p+=3) {
+                penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                if (expected442[p] == MAX_PENALTY) {
+                    penalty.toNumber().should.be.equal(0);
+                } else {
+                    penalty.toNumber().should.be.equal(10000 - Math.min(5000, games*1000) - expected442[p]);
+                }
+            }
+        }
+    });
+
+
     it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
         // for a DL:
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1, potential = 1,

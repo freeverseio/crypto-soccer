@@ -462,10 +462,12 @@ contract Engine is EncodingSkills{
             penalty = penaltyForAttackers(forwardness);
             penalty += penaltyForRights(leftishness);
         }
-        uint256 penaltyFreshnessExponent = getGamesNonStopping(playerSkills);
-        require(penaltyFreshnessExponent < 8, "value of gamesNonStopping beyond allowed");
-        // diminish all player capabilities by 10% every game he played without resting
-        return ((10000 * (9 ** penaltyFreshnessExponent))/(10 ** penaltyFreshnessExponent)) - penalty;
+        uint256 gamesNonStop = getGamesNonStopping(playerSkills);
+        if (gamesNonStop > 5) {
+            return 5000 - penalty;
+        } else {
+            return 10000 - gamesNonStop * 1000 - penalty;
+        }
     }
 
     function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {
