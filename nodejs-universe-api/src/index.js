@@ -27,7 +27,6 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       disableDefaultMutations: true,
-      simpleCollections: "both", // TODO: remove
     }
   )
 );

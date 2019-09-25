@@ -3,7 +3,7 @@ package storage
 import log "github.com/sirupsen/logrus"
 
 type Timezone struct {
-	ID uint8
+	TimezoneIdx uint8
 }
 
 func (b *Storage) TimezoneCount() (uint64, error) {
@@ -19,12 +19,9 @@ func (b *Storage) TimezoneCount() (uint64, error) {
 }
 
 func (b *Storage) TimezoneCreate(timezone Timezone) error {
-	log.Infof("[DBMS] Adding timezone %v", timezone)
-	_, err := b.db.Exec("INSERT INTO timezones (id) VALUES ($1);",
-		timezone.ID,
+	log.Debugf("[DBMS] Create timezone %v", timezone)
+	_, err := b.db.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
+		timezone.TimezoneIdx,
 	)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

@@ -37,7 +37,7 @@ const main = async () => {
 
   const linkTypeDefs = `
     extend type Player {
-      sellOrderByPlayerid: PlayerSellOrder
+      sellOrderByPlayerId: PlayerSellOrder
     }
 
     extend type PlayerSellOrder {
@@ -47,15 +47,15 @@ const main = async () => {
 
   const resolvers = {
     Player: {
-      sellOrderByPlayerid: {
-        fragment: `... on Player { id }`,
+      sellOrderByPlayerId: {
+        fragment: `... on Player { playerId }`,
         resolve(player, args, context, info) {
           return info.mergeInfo.delegateToSchema({
             schema: marketRemoteSchema,
             operation: 'query',
             fieldName: 'playerSellOrderByPlayerid',
             args: {
-              playerid: player.id,
+              playerid: player.playerId,
             },
             context,
             info,
@@ -70,9 +70,9 @@ const main = async () => {
           return info.mergeInfo.delegateToSchema({
             schema: universeRemoteSchema,
             operation: 'query',
-            fieldName: 'playerById',
+            fieldName: 'playerByPlayerId',
             args: {
-              id: playerSellOrder.playerid,
+              playerId: playerSellOrder.playerid,
             },
             context,
             info,
