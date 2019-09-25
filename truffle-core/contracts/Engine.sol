@@ -1,8 +1,8 @@
 pragma solidity ^0.5.0;
 
-import "./Encoding.sol";
+import "./EncodingSkills.sol";
 
-contract Engine is Encoding{
+contract Engine is EncodingSkills{
     
     uint8 public constant ROUNDS_PER_MATCH = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
