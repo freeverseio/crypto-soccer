@@ -17,13 +17,16 @@ CREATE TABLE countries (
     PRIMARY KEY(timezone_idx, country_idx)
 );
 
+
 CREATE TABLE teams (
     team_id NUMERIC(78,0) NOT NULL,
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
+    -- league_idx INT NOT NULL,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
+    -- FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 
 CREATE TABLE players (
