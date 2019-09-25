@@ -29,6 +29,8 @@ contract('Engine', (accounts) => {
     const IDX_LR = 5;
     const IDX_LC = 6;
     const IDX_LCR = 7;
+    const fwd442 =  [0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
+    const left442 = [0, IDX_L, IDX_C, IDX_C, IDX_R, IDX_L, IDX_C, IDX_C, IDX_R, IDX_C, IDX_C];
 
     
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
@@ -65,39 +67,11 @@ contract('Engine', (accounts) => {
         redCardLastGame = false;
         gamesNonStopping = 0;
         injuryWeeksLeft = 0;
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 0, left = 0,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_L,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 1, left = IDX_R,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_L,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 2, left = IDX_R,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
-        pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd = 3, left = IDX_C,
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
-        teamState.push(pSkills)
+        for (p = 0; p < 11; p++) {
+            pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd442[p], left442[p],
+                alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
+            teamState.push(pSkills)
+        }
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
             teamState.push(pSkills)
         }        
@@ -266,10 +240,7 @@ contract('Engine', (accounts) => {
     });
     
     it('select shooter with modifiers', async () => {
-        // interface: 
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        // messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-        // teamState[10] = messi;
         extraAttack = [
             true, false, false, true,
             false, true, true, false,
