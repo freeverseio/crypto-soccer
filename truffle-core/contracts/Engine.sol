@@ -115,7 +115,10 @@ contract Engine is EncodingSkills{
         uint8 tacticsId;
         uint8[11] memory lineup;
         (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
-        for (uint8 p = 0; p < 11; p++) outStates[p] = states[lineup[p]];
+        for (uint8 p = 0; p < 11; p++) 
+        {
+            outStates[p] = states[lineup[p]];
+        }
         return (states, extraAttack, getPlayersPerZone(tacticsId));
     }
 
@@ -333,7 +336,6 @@ contract Engine is EncodingSkills{
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
         uint256 penalty;
         uint256 playerSkills = teamState[0];
-        assertCanPlay(playerSkills);
         uint8 changes;
         if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
                
@@ -347,7 +349,6 @@ contract Engine is EncodingSkills{
         // loop over defenders
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[p];
-            assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
@@ -365,7 +366,6 @@ contract Engine is EncodingSkills{
         // loop over midfielders
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[p];
-            assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
@@ -382,7 +382,6 @@ contract Engine is EncodingSkills{
         // loop over strikers
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[p];
-            assertCanPlay(playerSkills);
             if (is2ndHalf && !getAlignedLastHalf(playerSkills)) changes++;
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
