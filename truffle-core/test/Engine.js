@@ -413,7 +413,7 @@ contract('EngineHL', (accounts) => {
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
-
+4
     it('different seeds => different result', async () => {
         let result = await engineHL.playMatch(engine.address, 123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
