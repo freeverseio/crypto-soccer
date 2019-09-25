@@ -108,9 +108,9 @@ contract Engine is EncodingSkills{
     }
 
 
-    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 seed) public pure returns (uint16[16] memory events) {
-                        
-    }
+    // function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 seed) public pure returns (uint16[16] memory events) {
+    //     uint64[] memory rnds = getNRandsFromSeed(seed + 42, 16);
+    // }
     
 
 
