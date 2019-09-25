@@ -256,121 +256,122 @@ contract('EngineHL', (accounts) => {
     //     }
     // });
 
-    // it('select assister with modifiers and one Messi', async () => {
-    //     console.log("warning: This test takes a few secs...")
-    //     skills = Array.from(new Array(11), (x,i) => [1,1,1,1,1]);
-    //     messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
-    //     skills[8] = [2,2,2,2,2];
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     nPartitions = 200;
-    //     expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
-    //     transtions = [];
-    //     t=0;
-    //     rndOld = 0;
-    //     result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     prev = result.toNumber();
-    //     for (p = 0; p < nPartitions; p++) {
-    //         rnd = Math.floor(p * MAX_RND/ nPartitions);
-    //         result = await engine.selectAssister(skills, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         if (result.toNumber() != prev) {
-    //             percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
-    //             // console.log(prev, percentageForPrevPlayer);
-    //             transtions.push(percentageForPrevPlayer);
-    //             prev = result.toNumber();
-    //             t++;
-    //             rndOld = rnd;
-    //         }
-    //     }
-    //     percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
-    //     // console.log(prev, percentageForPrevPlayer);
-    //     transtions.push(percentageForPrevPlayer);
-    //     // console.log(transtions)
-    //     for (t = 0; t < expectedTrans.length; t++) {
-    //         (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
-    //     }
-    // });
+    it('select assister with modifiers and one Messi', async () => {
+        console.log("warning: This test takes a few secs...")
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        messi = await encoding.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1, pot = 3, fwd = 3, left = 7).should.be.fulfilled;            
+        teamState[8] = messi;
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        nPartitions = 200;
+        expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
+        transtions = [];
+        t=0;
+        rndOld = 0;
+        result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
+        for (p = 0; p < nPartitions; p++) {
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            if (result.toNumber() != prev) {
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
+                prev = result.toNumber();
+                t++;
+                rndOld = rnd;
+            }
+        }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+        // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
+    });
 
-    // it('throws dice array11 fine grained testing', async () => {
-    //     // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
-    //     weights = Array.from(new Array(11), (x,i) => 100);
-    //     sum = 100 * 11;
-    //     k = 0;
-    //     for (p = 0; p < 11; p++) {
-    //         k += Math.floor(MAX_RND*weights[p]/sum);
-    //         result = await engine.throwDiceArray11(weights, k).should.be.fulfilled;
-    //         result.toNumber().should.be.equal(p);
-    //         if (p < 10) {
-    //             result = await engine.throwDiceArray11(weights, k+p+1).should.be.fulfilled;
-    //             result.toNumber().should.be.equal(p+1);
-    //         }
-    //     }
-    // });
 
-    // it('throws dice array11', async () => {
-    //     // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
-    //     weights = Array.from(new Array(11), (x,i) => 1);
-    //     weights[8] = 1000;
-    //     let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(8);
-    //     weights[8] = 1;
-    //     weights[9] = 1000;
-    //     result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(9);
-    //     weights[9] = 1;
-    //     weights[10] = 1000;
-    //     result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(10);
-    // });
+    it('throws dice array11 fine grained testing', async () => {
+        // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
+        weights = Array.from(new Array(11), (x,i) => 100);
+        sum = 100 * 11;
+        k = 0;
+        for (p = 0; p < 11; p++) {
+            k += Math.floor(MAX_RND*weights[p]/sum);
+            result = await engine.throwDiceArray11(weights, k).should.be.fulfilled;
+            result.toNumber().should.be.equal(p);
+            if (p < 10) {
+                result = await engine.throwDiceArray11(weights, k+p+1).should.be.fulfilled;
+                result.toNumber().should.be.equal(p+1);
+            }
+        }
+    });
+
+    it('throws dice array11', async () => {
+        // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
+        weights = Array.from(new Array(11), (x,i) => 1);
+        weights[8] = 1000;
+        let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(8);
+        weights[8] = 1;
+        weights[9] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(9);
+        weights[9] = 1;
+        weights[10] = 1000;
+        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+    });
     
-    // it('manages to shoot', async () => {
-    //     // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
-    //     let  = 8000; // the max allowed random number is 16383, so this is about half of it
-    //     let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
-    //     let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
-    //     result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
+    it('manages to shoot', async () => {
+        // interface: managesToShoot(uint8 teamThatAttacks, uint[5][2] memory globSkills, uint rndNum)
+        let  = 8000; // the max allowed random number is 16383, so this is about half of it
+        let globSkills = [[100,100,100,100,100], [1,1,1,1,1]];
+        let result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        globSkills = [[1,1,1,1,1], [100,100,100,100,100]];
+        result = await engine.managesToShoot(0,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(false);
+        result = await engine.managesToShoot(1,globSkills,kMaxRndNumHalf).should.be.fulfilled;
+        result.should.be.equal(true);
+    });
 
-    // it('throws dice', async () => {
-    //     // interface: throwDice(uint weight1, uint weight2, uint rndNum)
-    //     let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    //     result = await engine.throwDice(10,1,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await engine.throwDice(10,10,kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     result = await engine.throwDice(10,10,2*kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(1);
-    // });
+    it('throws dice', async () => {
+        // interface: throwDice(uint weight1, uint weight2, uint rndNum)
+        let result = await engine.throwDice(1,10,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+        result = await engine.throwDice(10,1,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        result = await engine.throwDice(10,10,2*kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(1);
+    });
 
 
-    // it('gets n rands from a seed', async () => {
-    //     ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
-    //     const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
-    //     expectLen = 4*ROUNDS_PER_MATCH.toNumber();
-    //     result.length.should.be.equal(expectLen);
-    //     prevRnds = [];
-    //     // checks that all rnds are actually different:
-    //     for (r = 0; r < result.length; r++) {
-    //         for (prev = 0; prev < prevRnds.length; prev++){
-    //             result[r].should.be.bignumber.not.equal(prevRnds[prev]);
-    //         }
-    //         prevRnds.push(result[r]);
-    //     }
-    //     result[0].should.be.bignumber.equal("32690506113");
-    //     result[expectLen-1].should.be.bignumber.equal("62760289461");
-    // });
+    it('gets n rands from a seed', async () => {
+        ROUNDS_PER_MATCH = await engine.ROUNDS_PER_MATCH().should.be.fulfilled
+        const result = await engine.getNRandsFromSeed(seed).should.be.fulfilled;
+        expectLen = 4*ROUNDS_PER_MATCH.toNumber();
+        result.length.should.be.equal(expectLen);
+        prevRnds = [];
+        // checks that all rnds are actually different:
+        for (r = 0; r < result.length; r++) {
+            for (prev = 0; prev < prevRnds.length; prev++){
+                result[r].should.be.bignumber.not.equal(prevRnds[prev]);
+            }
+            prevRnds.push(result[r]);
+        }
+        result[0].should.be.bignumber.equal("32690506113");
+        result[expectLen-1].should.be.bignumber.equal("62760289461");
+    });
 
     it('computes team global skills by aggregating across all players in team', async () => {
         // If all skills where 1 for all players, and tactics = 442 =>
@@ -390,8 +391,6 @@ contract('EngineHL', (accounts) => {
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
-    
-    return
     
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
