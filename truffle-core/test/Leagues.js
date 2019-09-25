@@ -19,7 +19,11 @@ contract('Leagues', (accounts) => {
             playerId = 1,
             potential = 3,
             forwardness = 3,
-            leftishness = 2
+            leftishness = 2,
+            alignedLastHalf = false,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0
         ).should.be.fulfilled;
 
         teamState = []
