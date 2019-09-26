@@ -73,10 +73,12 @@ contract Leagues is Assets {
             uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
             uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
             uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
+            uint16[7][2] memory events1stHalf;
             score = _engine.playMatch(
                 matchSeed, 
                 states,
                 tactics,
+                events1stHalf,
                 false,
                 false
             );

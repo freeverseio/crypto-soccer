@@ -31,7 +31,6 @@ contract('Engine', (accounts) => {
     const IDX_LCR = 7;
     const fwd442 =  [0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
     const left442 = [0, IDX_L, IDX_C, IDX_C, IDX_R, IDX_L, IDX_C, IDX_C, IDX_R, IDX_C, IDX_C];
-
     
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
         teamState = []
@@ -116,10 +115,12 @@ contract('Engine', (accounts) => {
         MAX_RND = await engine.MAX_RND().should.be.fulfilled;
         MAX_RND = MAX_RND.toNumber();
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
+        events1Half = Array.from(new Array(7), (x,i) => 0);
+        events1Half = [events1Half,events1Half];
     });
 
     it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], events1Half, is2ndHalf, isHomeStadium).should.be.fulfilled;
     });
     return;
     it('encode decode special events', async () => {

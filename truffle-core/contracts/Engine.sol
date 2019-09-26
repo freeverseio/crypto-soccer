@@ -27,12 +27,13 @@ contract Engine is EncodingSkills{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
+        uint16[7][2] memory events1stHalf,
         bool is2ndHalf,
         bool isHomeStadium
     )
         public
     {
-        playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
+        playMatch(seed, states, tactics, events1stHalf, is2ndHalf, isHomeStadium);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -47,6 +48,7 @@ contract Engine is EncodingSkills{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
+        uint16[7][2] memory events1stHalf,
         bool is2ndHalf,
         bool isHomeStadium
     )
@@ -64,8 +66,8 @@ contract Engine is EncodingSkills{
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
         uint16[7][2] memory events;
-        events[0] = computeExceptionalEvents(states[0], seed);
-        events[1] = computeExceptionalEvents(states[1], seed);
+        events[0] = computeExceptionalEvents(states[0], events1stHalf[0], seed);
+        events[1] = computeExceptionalEvents(states[1], events1stHalf[1], seed);
 
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
@@ -139,7 +141,19 @@ contract Engine is EncodingSkills{
     //          events[3, 4] = [round, player (from 0 to 11)]
     //          events[5, 6] = [round, player (from 0 to 11)]
     //  These entries can be zero if no event took place
-    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 seed) public pure returns (uint16[7] memory events) {
+    function computeExceptionalEvents
+    (
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint16[7] memory events1stHalf,
+        uint256 seed
+    ) 
+        public 
+        pure 
+        returns 
+    (
+        uint16[7] memory events
+    ) 
+    {
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
