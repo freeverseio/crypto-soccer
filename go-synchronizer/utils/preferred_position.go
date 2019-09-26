@@ -2,6 +2,18 @@ package utils
 
 import "errors"
 
+func PreferredPosition(forwardness uint8, leftishness uint8) (string, error) {
+	f, err := ForwardnessToString(forwardness)
+	if err != nil {
+		return "", err
+	}
+	l, err := LeftishnessToString(leftishness)
+	if err != nil {
+		return "", err
+	}
+	return f + " " + l, nil
+}
+
 func ForwardnessToString(value uint8) (string, error) {
 	switch value {
 	case 0:

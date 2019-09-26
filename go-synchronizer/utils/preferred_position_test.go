@@ -6,6 +6,19 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
 )
 
+func TestPreferredPosition(t *testing.T) {
+	expected := "D CR"
+	result, _ := utils.PreferredPosition(0x1, 0x3)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "MD LCR"
+	result, _ = utils.PreferredPosition(0x5, 0x7)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+}
+
 func TestForwardnessToString(t *testing.T) {
 	expected := "GK"
 	result, _ := utils.ForwardnessToString(0)
