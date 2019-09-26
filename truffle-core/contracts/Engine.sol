@@ -63,7 +63,9 @@ contract Engine is EncodingSkills{
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
-        // uint8[6] memory events = computeExceptionalEvents(states, seed);
+        uint8[6][2] memory events;
+        events[0] = computeExceptionalEvents(states[0], seed);
+        events[1] = computeExceptionalEvents(states[1], seed);
 
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
@@ -106,16 +108,39 @@ contract Engine is EncodingSkills{
     function getNAttackers(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[6] + playersPerZone[7];
     }
+    
+    // encodes: round (from 0 to 11), linedUpPos (from 0 to 10), eventType (from 1 to 3: redCard, softInjury, HardInjury)
+    // encodes: returns 0 <==> no event
+    function encodeEvent(uint8 linedUpPos, uint8 round, uint8 eventType) public pure returns (uint16) {
+        return uint16(linedUpPos) + uint16(round << 4) + uint16(eventType << 8);
+    }
+    
+    function decodeEvent(uint16 code) public pure returns (uint16[3] memory) {
+        return [code & 7, (code >> 4) & 7, (code >> 8) & 3];
+    }
 
-
-    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 seed) public pure returns (uint8[6] memory events) {
-        uint256[] memory aggressiveness = new uint256[](11);
+    // Over a game, we would like:
+    //      - injuryHard = 1 per 100 games => 0.01 per game per player => 0.02 per game
+    //      - injuryLow = 0.7 per 100 games => 0.007 per game per player => 0.04 per game
+    //      - redCard 1/10 = 0.1 per game
+    //      - yellowCard 2.5 per game 
+    // So things that get a player out-of-the-field = 0.07 per game = 0.035 per half
+    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 seed) public pure returns (uint8[6] memory events) {
+        uint256[] memory aggressiveness = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 16);
         uint256 sumAggressiveness;
         for (uint8 p = 0; p < 11; p++) {
-            aggressiveness[p] = uint256(keccak256(abi.encode(getPlayerIdFromSkills(states[0][p])))) % 3;
+            aggressiveness[p] = 1 + getAggressiveness(states[p]);
             sumAggressiveness += aggressiveness[p];
         }
+        // average sumAggressiveness = 11 * 2.5 = 27.5
+        // if we want prob = 0.035 => final weight = 758
+        // aggressiveness[11] = 758;
+        // uint8 outOfField = throwDiceArray(aggressiveness, rnds[0]);
+        // if (outOfField != 11) {
+        //     events[0] = 
+        // }
+        
         // so, for a given half, it's half of that.
         for (uint8 round = 0; round < 6; round++) {
             // event types: 0 = none, 1 = injuryHard, 2 = injuryLow, 3 = redCard, 4 = yellowCard
