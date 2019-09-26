@@ -20,3 +20,20 @@ func ForwardnessToString(value uint8) (string, error) {
 		return "", errors.New("unexistent forwardness")
 	}
 }
+
+func LeftishnessToString(value uint8) (string, error) {
+	if value >= 8 {
+		return "", errors.New("unexistent leftishness")
+	}
+	var result string
+	if (value & (0x1 << 2)) != 0 {
+		result += "L"
+	}
+	if (value & (0x1 << 1)) != 0 {
+		result += "C"
+	}
+	if (value & 0x1) != 0 {
+		result += "R"
+	}
+	return result, nil
+}

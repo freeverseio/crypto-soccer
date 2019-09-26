@@ -42,3 +42,40 @@ func TestForwardnessToString(t *testing.T) {
 		t.Fatal("Expected error with forwardness 6")
 	}
 }
+
+func TestLeftishnessToString(t *testing.T) {
+	expected := ""
+	result, _ := utils.LeftishnessToString(0x0)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "R"
+	result, _ = utils.LeftishnessToString(0x1)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "C"
+	result, _ = utils.LeftishnessToString(0x2)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "CR"
+	result, _ = utils.LeftishnessToString(0x3)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "L"
+	result, _ = utils.LeftishnessToString(0x4)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "LCR"
+	result, _ = utils.LeftishnessToString(0x7)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	_, err := utils.LeftishnessToString(0x8)
+	if err == nil {
+		t.Fatal("Expected error with leftishness 8")
+	}
+}
