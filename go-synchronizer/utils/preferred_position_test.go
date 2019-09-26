@@ -1,0 +1,44 @@
+package utils_test
+
+import (
+	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
+)
+
+func TestForwardnessToString(t *testing.T) {
+	expected := "GK"
+	result, _ := utils.ForwardnessToString(0)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "D"
+	result, _ = utils.ForwardnessToString(1)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "M"
+	result, _ = utils.ForwardnessToString(2)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "F"
+	result, _ = utils.ForwardnessToString(3)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "MF"
+	result, _ = utils.ForwardnessToString(4)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "MD"
+	result, _ = utils.ForwardnessToString(5)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	_, err := utils.ForwardnessToString(6)
+	if err == nil {
+		t.Fatal("Expected error with forwardness 6")
+	}
+}
