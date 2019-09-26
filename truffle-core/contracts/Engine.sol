@@ -63,7 +63,7 @@ contract Engine is EncodingSkills{
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
-        uint8[6][2] memory events;
+        uint16[7][2] memory events;
         events[0] = computeExceptionalEvents(states[0], seed);
         events[1] = computeExceptionalEvents(states[1], seed);
 
@@ -109,14 +109,22 @@ contract Engine is EncodingSkills{
         return 2 * playersPerZone[6] + playersPerZone[7];
     }
     
-    // encodes: round (from 0 to 11), linedUpPos (from 0 to 10), eventType (from 1 to 3: redCard, softInjury, HardInjury)
-    // encodes: returns 0 <==> no event
-    function encodeEvent(uint8 linedUpPos, uint8 round, uint8 eventType) public pure returns (uint16) {
-        return uint16(linedUpPos) + uint16(round << 4) + uint16(eventType << 8);
-    }
+    // // encodes: round (from 0 to 11), linedUpPos (from 0 to 10), eventType (from 1 to 3: redCard, softInjury, HardInjury)
+    // // encoded value = 0 <==> no event
+    // function encodeEvent(uint16 linedUpPos, uint16 round, uint16 eventType) public pure returns (uint16) {
+    //     return (linedUpPos) + (round << 4) + (eventType << 8);
+    // }
     
-    function decodeEvent(uint16 code) public pure returns (uint16[3] memory) {
-        return [code & 7, (code >> 4) & 7, (code >> 8) & 3];
+    // function decodeEvent(uint16 code) public pure returns (uint16[3] memory) {
+    //     return [code & 15, (code >> 4) & 15, (code >> 8) & 3];
+    // }
+    
+    function computeTypeOfEvent(uint256 rnd) private pure returns (uint8) {
+        uint256[] memory weights = new uint256[](3);
+        weights[0] = 1; // injuryHard   
+        weights[1] = 2; // injuryLow
+        weights[2] = 5; // redCard
+        return 1 + throwDiceArray(weights, rnd);
     }
 
     // Over a game, we would like:
@@ -124,46 +132,43 @@ contract Engine is EncodingSkills{
     //      - injuryLow = 0.7 per 100 games => 0.007 per game per player => 0.04 per game
     //      - redCard 1/10 = 0.1 per game
     //      - yellowCard 2.5 per game 
-    // So things that get a player out-of-the-field = 0.07 per game = 0.035 per half
-    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 seed) public pure returns (uint8[6] memory events) {
-        uint256[] memory aggressiveness = new uint256[](12);
-        uint64[] memory rnds = getNRandsFromSeed(seed + 42, 16);
-        uint256 sumAggressiveness;
+    // We encode this in uint16[3] events, which applies to 1 half of the game only.
+    //  - 1 possible event that leaves a player out of the match, encoded in:
+    //          events[0, 1, 2] = [round, player (from 0 to 11), eventType (injuryHard, injuryLow, redCard)]
+    //  - 2 possible events for yellow card:
+    //          events[3, 4] = [round, player (from 0 to 11)]
+    //          events[5, 6] = [round, player (from 0 to 11)]
+    //  These entries can be zero if no event took place
+    function computeExceptionalEvents(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 seed) public pure returns (uint16[7] memory events) {
+        uint256[] memory weights = new uint256[](12);
+        uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
-            aggressiveness[p] = 1 + getAggressiveness(states[p]);
-            sumAggressiveness += aggressiveness[p];
+            weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
+        // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
-        // if we want prob = 0.035 => final weight = 758
-        // aggressiveness[11] = 758;
-        // uint8 outOfField = throwDiceArray(aggressiveness, rnds[0]);
-        // if (outOfField != 11) {
-        //     events[0] = 
-        // }
-        
-        // so, for a given half, it's half of that.
-        for (uint8 round = 0; round < 6; round++) {
-            // event types: 0 = none, 1 = injuryHard, 2 = injuryLow, 3 = redCard, 4 = yellowCard
-            // Over a game, we would like:
-            //      - injuryHard = 1 per 100 games => 0.01 per game per player => 0.02 per game
-            //      - injuryLow = 0.7 per 100 games => 0.007 per game per player => 0.04 per game
-            //      - redCard 1/10 = 0.1 per game
-            //      - yellowCard 2.5 per game 
-            // So weight ratios are (1, 2, 5, 125)
-            // There are 6 rounds in each half, so the average per game is 12 * prob(each event).
-            // So, p(injHard) = 1 / (1+2+5+125 + weight(none)) = 0.02/12 => weight(none) = 467 
-            // To weight them by how aggressive the teams are... 467 * 11 = 5137
-            // ...since the average aggr sum for 11 players (who can have aggr = 0, 1, 2) is 11
-            uint256[] memory weightsTypeOfEvent = new uint256[](5);
-            weightsTypeOfEvent[0] = 5137;
-            weightsTypeOfEvent[0] = sumAggressiveness;
-            weightsTypeOfEvent[0] = 2 * sumAggressiveness;
-            weightsTypeOfEvent[0] = 5 * sumAggressiveness;
-            weightsTypeOfEvent[0] = 125 * sumAggressiveness;
-            uint8 typeOfEvent = throwDiceArray(weightsTypeOfEvent, rnds[0]);
-            if (typeOfEvent > 0) {
-                events[round] = throwDiceArray(aggressiveness, rnds[round]);
-            }
+        // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
+        weights[11] = 758;
+        uint8 outOfFieldPlayer = throwDiceArray(weights, rnds[0]);
+        if (outOfFieldPlayer != 11) {
+            events[0] = uint8(rnds[0] % ROUNDS_PER_MATCH);
+            events[1] = outOfFieldPlayer;
+            events[2] = computeTypeOfEvent(rnds[1]);
+        }
+        // two events for yellow cards
+        // average sumAggressiveness = 11 * 2.5 = 27.5
+        // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
+        // weight nothing happens = 9
+        weights[11] = 9;
+        outOfFieldPlayer = throwDiceArray(weights, rnds[2]);
+        if (outOfFieldPlayer != 11) {
+            events[3] = uint16(rnds[2] % ROUNDS_PER_MATCH);
+            events[4] = outOfFieldPlayer;
+        }
+        outOfFieldPlayer = throwDiceArray(weights, rnds[3]);
+        if (outOfFieldPlayer != 11) {
+            events[5] = uint16(rnds[3] % ROUNDS_PER_MATCH);
+            events[6] = outOfFieldPlayer;
         }
     }
     
