@@ -45,9 +45,10 @@ contract('Engine', (accounts) => {
                 skills, 
                 monthOfBirth = 0, 
                 playerId = 1312312,
-                potential,
+                [potential,
                 forwardness,
                 leftishness,
+                aggressiveness = 0],
                 alignedLastHalf = true,
                 redCardLastGame = false,
                 gamesNonStopping = 0,
@@ -63,12 +64,13 @@ contract('Engine', (accounts) => {
         month = 0;
         playerId = 123121;
         pot = 3;
+        aggr = 0;
         alignedLastHalf = true;
         redCardLastGame = false;
         gamesNonStopping = 0;
         injuryWeeksLeft = 0;
         for (p = 0; p < 11; p++) {
-            pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, pot, fwd442[p], left442[p],
+            pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, [pot, fwd442[p], left442[p], aggr],
                 alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
             teamState.push(pSkills)
         }
@@ -84,9 +86,10 @@ contract('Engine', (accounts) => {
             skills, 
             monthOfBirth = 0, 
             playerId = 2132321,
-            potential = 3,
+            [potential = 3,
             forwardness,
             leftishness,
+            aggr = 0],
             alignedLastHalf = true,
             redCardLastGame = false,
             gamesNonStopping = 0,
@@ -120,7 +123,7 @@ contract('Engine', (accounts) => {
     });
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
-        messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+        messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
@@ -132,18 +135,18 @@ contract('Engine', (accounts) => {
         // legit works:
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
         // red card fails:
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
         // injured fails
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
         result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
     });
 
     it('computePenaltyBadPositionAndCondition for GK ', async () => {
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, potential = 1,
-            forwardness = 0, leftishness = 0, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, [potential = 1,
+            forwardness = 0, leftishness = 0, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
@@ -155,8 +158,8 @@ contract('Engine', (accounts) => {
 
     it('computePenaltyBadPositionAndCondition for DL ', async () => {
             // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, potential = 1,
-            forwardness = 1, leftishness = 4, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
+            forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected442 = [MAX_PENALTY, 
             0, 1000, 1000, 2000, 
@@ -189,8 +192,8 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (games = 1; games < 9; games+=2) {
-            playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1323121, potential = 1,
-                forwardness = 1, leftishness = 4, alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
+            playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1323121, [potential = 1,
+                forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
                 penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
@@ -206,8 +209,8 @@ contract('Engine', (accounts) => {
 
     it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
         // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, potential = 1,
-            forwardness = 5, leftishness = 7, alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
+            forwardness = 5, leftishness = 7, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
         ).should.be.fulfilled;            
         expected442 = [MAX_PENALTY, 
             1000, 1000, 1000, 1000, 
@@ -249,7 +252,7 @@ contract('Engine', (accounts) => {
     
     it('manages to score with select shoorter wihtout modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, pot = 3, fwd = 3, left = 7, 
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[10] = messi;
         result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
@@ -328,7 +331,7 @@ contract('Engine', (accounts) => {
     it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1323121, pot = 3, fwd = 3, left = 7, 
+        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[8] = messi;
         extraAttack = [
@@ -373,10 +376,10 @@ contract('Engine', (accounts) => {
         k = 0;
         for (p = 0; p < 11; p++) {
             k += Math.floor(MAX_RND*weights[p]/sum);
-            result = await engine.throwDiceArray11(weights, k).should.be.fulfilled;
+            result = await engine.throwDiceArray(weights, k).should.be.fulfilled;
             result.toNumber().should.be.equal(p);
             if (p < 10) {
-                result = await engine.throwDiceArray11(weights, k+p+1).should.be.fulfilled;
+                result = await engine.throwDiceArray(weights, k+p+1).should.be.fulfilled;
                 result.toNumber().should.be.equal(p+1);
             }
         }
@@ -386,15 +389,15 @@ contract('Engine', (accounts) => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
         weights = Array.from(new Array(11), (x,i) => 1);
         weights[8] = 1000;
-        let result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        let result = await engine.throwDiceArray(weights, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(8);
         weights[8] = 1;
         weights[9] = 1000;
-        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.throwDiceArray(weights, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(9);
         weights[9] = 1;
         weights[10] = 1000;
-        result = await engine.throwDiceArray11(weights, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.throwDiceArray(weights, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
     });
     

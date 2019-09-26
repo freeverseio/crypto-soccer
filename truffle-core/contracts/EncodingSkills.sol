@@ -11,6 +11,11 @@ contract EncodingSkills {
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
     uint8 constant public N_SKILLS = 5;
 
+    // Birth Traits: potential, forwardness, leftishness, aggressiveness
+    uint8 constant private IDX_POT = 0;
+    uint8 constant private IDX_FWD = 1;
+    uint8 constant private IDX_LEF = 2;
+    uint8 constant private IDX_AGG = 3;
     // prefPosition idxs: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     uint8 constant public IDX_GK = 0;
     uint8 constant public IDX_D  = 1;
@@ -85,15 +90,17 @@ contract EncodingSkills {
     }
 
     /**
-     * @dev PlayerSkills serializes a total of 145 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 +3
+     * @dev PlayerSkills serializes a total of 148 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 + 3 + 3
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
-     *      potential                 = 4 bits (number is limited to [0,...,9])
      *      monthOfBirth              = 14 bits  (since Unix time)
+     *      birthTraits               = [potential, forwardness, leftishness, aggressiveness]
+     *      potential                 = 4 bits (number is limited to [0,...,9])
      *      forwardness               = 3 bits
      *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
      *      leftishness               = 3 bits, in boolean triads: (L, C, R):
      *                                  0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
+     *      aggressiveness            = 3 bits
      *      playerId                  = 43 bits
      *      
      *      alignedLastHalf           = 1 (bool)
@@ -105,9 +112,7 @@ contract EncodingSkills {
         uint16[N_SKILLS] memory skills, 
         uint256 monthOfBirth, 
         uint256 playerId, 
-        uint8 potential, 
-        uint8 forwardness, 
-        uint8 leftishness,
+        uint8[4] memory birthTraits,
         bool alignedLastHalf, 
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
@@ -121,10 +126,11 @@ contract EncodingSkills {
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
             require(skills[sk] < 2**14, "skill out of bound");
         }
-        require(potential < 10, "potential out of bound");
-        require(forwardness < 6, "prefPos out of bound");
-        require(leftishness < 8, "prefPos out of bound");
-        if (leftishness == 0) require(forwardness == 0, "leftishnes can only be zero for goalkeepers");
+        require(birthTraits[IDX_POT] < 10, "potential out of bound");
+        require(birthTraits[IDX_FWD] < 6, "forwardness out of bound");
+        require(birthTraits[IDX_LEF] < 8, "lefitshness out of bound");
+        require(birthTraits[IDX_AGG] < 8, "aggressiveness out of bound");
+        if (birthTraits[IDX_LEF] == 0) require(birthTraits[IDX_FWD] == 0, "leftishnes can only be zero for goalkeepers");
         require(gamesNonStopping < 8, "gamesNonStopping out of bound");
         require(monthOfBirth < 2**14, "monthOfBirthInUnixTime out of bound");
         require(playerId > 0 && playerId < 2**43, "playerId out of bound");
@@ -135,13 +141,14 @@ contract EncodingSkills {
         }
         encoded |= monthOfBirth << 172;
         encoded |= playerId << 129;
-        encoded |= uint256(potential) << 125;
-        encoded |= uint256(forwardness) << 122;
-        encoded |= uint256(leftishness) << 119;
+        encoded |= uint256(birthTraits[IDX_POT]) << 125;
+        encoded |= uint256(birthTraits[IDX_FWD]) << 122;
+        encoded |= uint256(birthTraits[IDX_LEF]) << 119;
         encoded |= uint256(alignedLastHalf ? 1 : 0) << 118;
-        encoded |= uint256(redCardLastGame ? 1: 0 ) << 117;
+        encoded |= uint256(redCardLastGame ? 1 : 0) << 117;
         encoded |= uint256(gamesNonStopping) << 114;
-        return (encoded | uint256(injuryWeeksLeft) << 111);
+        encoded |= uint256(injuryWeeksLeft) << 111;
+        return (encoded | uint256(birthTraits[IDX_AGG]) << 108);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -178,6 +185,10 @@ contract EncodingSkills {
 
     function getLeftishness(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 119 & 7);
+    }
+
+    function getAggressiveness(uint256 encodedSkills) public pure returns (uint256) {
+        return uint256(encodedSkills >> 108 & 7);
     }
 
     function getAlignedLastHalf(uint256 encodedSkills) public pure returns (bool) {
