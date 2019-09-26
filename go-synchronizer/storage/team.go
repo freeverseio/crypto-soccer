@@ -20,7 +20,7 @@ type Team struct {
 }
 
 func (b *Storage) TeamCreate(team Team) error {
-	log.Debugf("[DBMS] Create team %v", team)
+	log.Infof("------------------- [DBMS] Create team %v", team)
 	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx) VALUES ($1, $2, $3, $4, $5);",
 		team.TeamID.String(),
 		team.TimezoneIdx,

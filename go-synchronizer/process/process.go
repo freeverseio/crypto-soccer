@@ -240,34 +240,33 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 }
 func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
-	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
-	if err != nil {
-		return err
-	}
 
-	//LEAGUES_PER_DIV, err := p.assets.LEAGUESPERDIV(opts)
-	//leagueBegin = divisionIdxInCountry.Int64() * int64(LEAGUESPERDIV)
-	//leagueEnd = leagueBegin + int64(LEAGUESPERDIV)
+	LEAGUES_PER_DIV, err := p.assets.LEAGUESPERDIV(opts)
+	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(LEAGUES_PER_DIV)
+	leagueIdxEnd := leagueIdxBegin + int64(LEAGUES_PER_DIV)
 
-	begin := divisionIdxInCountry.Int64() * int64(TEAMS_PER_DIVISION)
-	end := begin + int64(TEAMS_PER_DIVISION)
+	TEAMS_PER_LEAGUE, err := p.assets.TEAMSPERLEAGUE(opts)
 
-	for i := begin; i < end; i++ {
-		if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
-			return e
-		} else {
-			if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
+	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
+		teamIdxBegin := leagueIdx
+		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
+		for teamIdx := teamIdxBegin; teamIdx < teamIdxEnd; teamIdx++ {
+			if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); e != nil {
 				return e
-			} else if e := p.db.TeamCreate(
-				storage.Team{
-					teamId,
-					timezone,
-					uint16(countryIdx.Uint64()),
-					storage.TeamState{teamOwner.Hex(), 0}}, // TODO: leagueIdx uint8
-			); e != nil {
-				return e
-			} else if e := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, i); e != nil {
-				return e
+			} else {
+				if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
+					return e
+				} else if e := p.db.TeamCreate(
+					storage.Team{
+						teamId,
+						timezone,
+						uint16(countryIdx.Uint64()),
+						storage.TeamState{teamOwner.Hex(), uint8(leagueIdx)}},
+				); e != nil {
+					return e
+				} else if e := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); e != nil {
+					return e
+				}
 			}
 		}
 	}
