@@ -276,8 +276,8 @@ contract Assets is EncodingSkills, EncodingState {
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationMonth, uint256 playerId) internal pure returns (uint256) {
         uint256 monthOfBirth;
         (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
-        (uint16[N_SKILLS] memory skills, uint8 potential, uint8 forwardness, uint8 leftishness) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, monthOfBirth, playerId, potential, forwardness, leftishness, false, false, 0, 0);
+        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits) = computeSkills(dna, shirtNum);
+        return encodePlayerSkills(skills, monthOfBirth, playerId, birthTraits, false, false, 0, 0);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -315,12 +315,13 @@ contract Assets is EncodingSkills, EncodingState {
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8, uint8, uint8) {
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory) {
         uint16[5] memory skills;
         uint16[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
         uint8 forwardness;
         uint8 leftishness;
+        uint8 aggressiveness = uint8((dna % 87343)%4);
         dna >>= 4; // log2(10) = 3.3 => ceil = 4
         if (shirtNum < 3) {
             // 3 GoalKeepers:
@@ -382,7 +383,7 @@ contract Assets is EncodingSkills, EncodingState {
             uint16 delta = (250 - excess) / N_SKILLS;
             for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
         }
-        return (skills, potential, forwardness, leftishness);
+        return (skills, [potential, forwardness, leftishness, aggressiveness]);
     }
 
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {

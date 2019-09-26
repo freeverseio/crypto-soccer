@@ -449,26 +449,30 @@ contract('Assets', (accounts) => {
     
     it('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
-        const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = computedSkills;
+        const {0: skills, 1: birthTraits} = computedSkills;
         expected = [50, 50, 50, 50, 50];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
-        potential.toNumber().should.be.equal(0);
-        forwardness.toNumber().should.be.equal(0); // shirtNum = 0 is a GK
-        leftishness.toNumber().should.be.equal(0);
+        // birthTraits = [potential, forwardness, leftishness, aggressiveness]
+        birthTraits[0].toNumber().should.be.equal(0);
+        birthTraits[1].toNumber().should.be.equal(0); // shirtNum = 0 is a GK
+        birthTraits[2].toNumber().should.be.equal(0);
+        birthTraits[3].toNumber().should.be.equal(0);
     });
 
     it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
-        const {0: skills, 1: potential, 2: forwardness, 3: leftishness} = computedSkills;
+        const {0: skills, 1: birthTraits} = computedSkills;
         expected = [50, 50, 50, 50, 50];
         for (sk = 0; sk < N_SKILLS; sk++) {
             skills[sk].toNumber().should.be.equal(expected[sk]);
         }
-        potential.toNumber().should.be.equal(0);
-        forwardness.toNumber().should.be.equal(1); // defender
-        leftishness.toNumber().should.be.equal(1 + shirtNum);
+        // birthTraits = [potential, forwardness, leftishness, aggressiveness]
+        birthTraits[0].toNumber().should.be.equal(0);
+        birthTraits[1].toNumber().should.be.equal(1); // defender
+        birthTraits[2].toNumber().should.be.equal(1 + shirtNum);
+        birthTraits[3].toNumber().should.be.equal(0);
     });
 
     it('computed prefPos gives correct number of defenders, mids, etc', async () => {
@@ -476,12 +480,20 @@ contract('Assets', (accounts) => {
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
             computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
-            computedSkills[2].toNumber().should.be.equal(expectedPos[shirtNum]);
-            // skills = computedSkills[0];
-            // for (sk = 0; sk < N_SKILLS; sk++) console.log(shirtNum, ": ", skills[sk].toNumber());
+            birthTraits = computedSkills[1];
+            birthTraits[1].toNumber().should.be.equal(expectedPos[shirtNum]);
         }
     });
 
+    it('testing aggressiveness', async () => { 
+        expectedAggr = [ 1, 3, 3, 1, 2, 1, 2, 1, 3, 0, 2, 2, 1, 1, 1, 2, 0, 2 ];
+        for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
+            seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
+            computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
+            birthTraits = computedSkills[1];
+            birthTraits[3].toNumber().should.be.equal(expectedAggr[shirtNum]);
+        }
+    });
 
     it('sum of computed skills is close to 250', async () => {
         for (let i = 0; i < 10; i++) {
