@@ -111,26 +111,6 @@ func (p *EventProcessor) Process() error {
 	//	}
 	//}
 
-	//if p.leagues != nil {
-	//	if events, err := p.scanLeagueCreated(opts); err != nil {
-	//		return err
-	//	} else {
-	//		for _, event := range events { // TODO: next part to be recoded
-	//			p.db.LeagueAdd(storage.League{
-	//				Id: event.LeagueId.Uint64(),
-	//			})
-	//			// log.Info(
-	//			// 	"Found league ", event.LeagueId.Int64(),
-	//			// 	"\n\tdays: ", p.getLeagueDaysCount(event.LeagueId),
-	//			// 	"\n\tfinished: ", p.hasLeagueFinished(event.LeagueId),
-	//			// 	"\n\tupdated: ", p.isLeagueUpdated(event.LeagueId),
-	//			// )
-	//		}
-	//	}
-	//} else {
-	//	log.Warn("Contract leagues not set. Skipping scanning for leagues")
-	//}
-
 	// store the last block that was scanned
 	p.db.SetBlockNumber(*opts.End)
 	return nil
@@ -367,53 +347,6 @@ func (p *EventProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, playerI
 	}
 }
 
-//func (p *EventProcessor) storeTeamCreated(events []assets.AssetsTeamCreated) error {
-//	for _, event := range events {
-//		if name, err := p.assets.GetTeamName(nil, event.Id); err != nil {
-//			return err
-//		} else if owner, err := p.assets.GetTeamOwner(nil, event.Id); err != nil {
-//			return err
-//		} else if blockTime, blockNumber, err := p.getTimeOfEvent(event.Raw); err != nil {
-//			return err
-//		} else if err := p.db.TeamAdd(storage.Team{
-//			Id:                event.Id.Uint64(),
-//			Name:              name,
-//			CreationTimestamp: blockTime,
-//			CountryId:         1, // TODO: get it from blockchain
-//			State: storage.TeamState{
-//				BlockNumber:          blockNumber,
-//				Owner:                owner.Hex(),
-//				CurrentLeagueId:      1, // TODO: uint64
-//				PosInCurrentLeagueId: 0, // TODO: uint64
-//				PrevLeagueId:         0, // TODO: uint64
-//				PosInPrevLeagueId:    0, // TODO: uint64
-//			},
-//		}); err != nil {
-//			return err
-//		}
-//		if err := p.storeVirtualPlayers(event.Id); err != nil {
-//			return err
-//		}
-//	}
-//	return nil
-//}
-
-//func (p *EventProcessor) scanTeamCreated(opts *bind.FilterOpts) ([]assets.AssetsTeamCreated, error) {
-//	if opts == nil {
-//		opts = &bind.FilterOpts{Start: 0}
-//	}
-//	iter, err := p.assets.FilterTeamCreated(opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	events := []assets.AssetsTeamCreated{}
-//
-//	for iter.Next() {
-//		events = append(events, *(iter.Event))
-//	}
-//	return events, nil
-//}
 func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.AssetsTeamTransfer, error) {
 	if opts == nil {
 		opts = &bind.FilterOpts{Start: 0}
@@ -431,96 +364,19 @@ func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]assets.Asset
 	return events, nil
 }
 
-//func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]assets.AssetsPlayerTransfer, error) {
-//	if opts == nil {
-//		opts = &bind.FilterOpts{Start: 0}
-//	}
-//	iter, err := p.assets.FilterPlayerTransfer(opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	events := []assets.AssetsPlayerTransfer{}
-//
-//	for iter.Next() {
-//		events = append(events, *(iter.Event))
-//	}
-//	return events, nil
-//}
+func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]assets.AssetsPlayerTransfer, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.assets.FilterPlayerTransfer(opts)
+	if err != nil {
+		return nil, err
+	}
 
-//func (p *EventProcessor) storeVirtualPlayers(teamId *big.Int) error {
-//	// TODO: move to a single run place ...  constructor
-//	nPlayersAtCreation, err := p.assets.PLAYERSPERTEAMINIT(&bind.CallOpts{})
-//	if err != nil {
-//		return err
-//	}
-//
-//	for i := 0; i < int(nPlayersAtCreation); i++ {
-//		if id, err := p.assets.GenerateVirtualPlayerId(&bind.CallOpts{}, teamId, uint8(i)); err != nil {
-//			return err
-//		} else if state, err := p.assets.GenerateVirtualPlayerState(&bind.CallOpts{}, id); err != nil {
-//			return err
-//		} else {
-//			if skills, err := p.states.GetSkillsVec(&bind.CallOpts{}, state); err != nil {
-//				return err
-//			} else {
-//				player := storage.Player{
-//					Id:                     id.Uint64(),
-//					MonthOfBirthInUnixTime: "0", // TODO
-//					State: storage.PlayerState{
-//						TeamId:    teamId.Uint64(),
-//						State:     state.String(),
-//						Defence:   uint64(skills[0]),
-//						Speed:     uint64(skills[1]),
-//						Pass:      uint64(skills[2]),
-//						Shoot:     uint64(skills[3]),
-//						Endurance: uint64(skills[4]),
-//					},
-//				}
-//				p.db.PlayerAdd(player)
-//			}
-//		}
-//	}
-//	return nil
-//}
+	events := []assets.AssetsPlayerTransfer{}
 
-//func (p *EventProcessor) scanLeagueCreated(opts *bind.FilterOpts) ([]leagues.LeaguesLeagueCreated, error) {
-//	if opts == nil {
-//		opts = &bind.FilterOpts{Start: 0}
-//	}
-//	iter, err := p.leagues.FilterLeagueCreated(opts)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	events := []leagues.LeaguesLeagueCreated{}
-//
-//	for iter.Next() {
-//		events = append(events, *(iter.Event))
-//	}
-//	return events, nil
-//}
-//func (p *EventProcessor) isLeagueUpdated(leagueId *big.Int) bool {
-//	result, err := p.leagues.IsUpdated(nil, leagueId)
-//	if err != nil {
-//		log.Fatal(err)
-//		return false
-//	}
-//	return result
-//}
-//func (p *EventProcessor) hasLeagueFinished(leagueId *big.Int) bool {
-//	result, err := p.leagues.HasFinished(nil, leagueId)
-//	if err != nil {
-//		log.Fatal(err)
-//		return false
-//	}
-//	return result
-//}
-//func (p *EventProcessor) getLeagueDaysCount(leagueId *big.Int) int64 {
-//	result, err := p.leagues.CountLeagueDays(nil, leagueId)
-//	if err != nil {
-//		log.Fatal(err)
-//		return 0
-//	}
-//	return result.Int64()
-//}
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
