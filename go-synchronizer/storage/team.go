@@ -10,6 +10,7 @@ import (
 type TeamState struct {
 	Owner     string
 	LeagueIdx uint8
+	Points    uint8
 }
 
 type Team struct {
@@ -71,9 +72,10 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
-	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2  WHERE team_id=$3",
+	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, points=$3 WHERE team_id=$4",
 		teamState.Owner,
 		teamState.LeagueIdx,
+		teamState.Points,
 		teamID.String(),
 	)
 	return err
