@@ -7,8 +7,13 @@ import (
 )
 
 func TestPreferredPosition(t *testing.T) {
-	expected := "D CR"
-	result, _ := utils.PreferredPosition(0x1, 0x3)
+	expected := "GK"
+	result, _ := utils.PreferredPosition(0x0, 0x0)
+	if result != expected {
+		t.Fatalf("Expected %v but got %v", expected, result)
+	}
+	expected = "D CR"
+	result, _ = utils.PreferredPosition(0x1, 0x3)
 	if result != expected {
 		t.Fatalf("Expected %v but got %v", expected, result)
 	}

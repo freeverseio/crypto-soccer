@@ -11,6 +11,9 @@ func PreferredPosition(forwardness uint8, leftishness uint8) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if len(l) == 0 {
+		return f, nil
+	}
 	return f + " " + l, nil
 }
 
