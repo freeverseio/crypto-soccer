@@ -3,8 +3,10 @@ package process
 import (
 	//	"fmt"
 
+	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
@@ -45,6 +47,21 @@ func TestSyncTeams(t *testing.T) {
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
 	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
+		nil,
+		timezoneIdx,
+		countryIdx,
+		big.NewInt(0),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if firstTeamID.String() != "274877906944" {
+		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
+	}
+
 	_ = alice
 	_ = bob
 	_ = carol
@@ -81,12 +98,37 @@ func TestSyncTeams(t *testing.T) {
 		}
 	}
 
-	// ganache.Assets.TransferFirstBotToAddr(
-	// 	bind.NewKeyedTransactor(owner),
-	// 	1,
-	// 	big.NewInt(0),
-	// 	ganache.Public(alice),
-	// )
+	_, err = ganache.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(owner),
+		timezoneIdx,
+		countryIdx,
+		ganache.Public(alice),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	teamOwner, err := ganache.Assets.GetOwnerTeam(nil, firstTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if teamOwner != ganache.Public(alice) {
+		t.Fatalf("first team owner is %v", teamOwner.String())
+	}
+
+	err = p.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	team, err := storage.GetTeam(firstTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if team.State.Owner != ganache.Public(alice).String() {
+		t.Fatalf("database owner of the first team is %v", team.State.Owner)
+	}
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
 	//fmt.Println("alice: ", ganache.Public(alice).Hex())
