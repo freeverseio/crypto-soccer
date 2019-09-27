@@ -27,6 +27,7 @@ const updates = new web3.eth.Contract(updatesJSON.abi, updatesContractAddress);
 const loop = () => {
   setTimeout(() => {
     console.log("tick");
+    updates.submitActionsRoot("0x0");
     loop();
   }, 3000);
 };
