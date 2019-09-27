@@ -34,53 +34,36 @@ contract EncodingSkills {
 
 
     /**
-     * @dev Tactics serializes a total of 102 bits = 12 + 14*5 + 14 + 6:
-     *      changedPositions[3] = 4 bit each = [posIn1stHalf1, posIn1stHalf2, posIn1stHalf3];
-     *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
-     *      extraAttack[14]     = 1 bit each, 0: normal, 1: player has extra attack duties
+     * @dev Tactics serializes a total of 71 bits = 55 + 10 + 6:
+     *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
+     *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
     **/
-    function encodeTactics(uint8[14] memory lineup, bool[14] memory extraAttack, uint8 tacticsId, uint8[3] memory changedPositions) public pure returns (uint256) {
+    function encodeTactics(uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) public pure returns (uint256) {
         require(tacticsId < 64, "tacticsId should fit in 6 bit");
-        uint256 encoded = uint256(tacticsId & 63);
-        for (uint8 p = 0; p < 14; p++) {
+        uint256 encoded = uint256(tacticsId);
+        for (uint8 p = 0; p < 10; p++) {
             encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + 1 * p;
         }          
-        for (uint8 p = 0; p < 14; p++) {
+        for (uint8 p = 0; p < 11; p++) {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
-            encoded |= uint256(lineup[p]) << 20 + 5 * p;
-        }          
-        for (uint8 p = 0; p < 3; p++) {
-            require(changedPositions[p] < 11, "incorrect changedPositions entry");
-            encoded |= uint256(changedPositions[p]) << 90 + 4 * p;
+            encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
         return encoded;
     }
 
-    function decodeTactics(uint256 tactics) public pure returns 
-    (
-        uint8[14] memory lineup, 
-        bool[14] memory extraAttack, 
-        uint8 tacticsId,
-        uint8[3] memory changedPositions
-    ) 
-    {
-        require(tactics < 2**102, "tacticsId should fit in 102 bit");
+    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) {
+        require(tactics < 2**81, "tacticsId should fit in 61 bit");
         tacticsId = uint8(tactics & 63);
         tactics >>= 6;
-        for (uint8 p = 0; p < 14; p++) {
+        for (uint8 p = 0; p < 10; p++) {
             extraAttack[p] = ((tactics & 1) == 1 ? true : false); // 2^1 - 1
             tactics >>= 1;
         }          
-        for (uint8 p = 0; p < 14; p++) {
+        for (uint8 p = 0; p < 11; p++) {
             lineup[p] = uint8(tactics & 31); // 2^5 - 1
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             tactics >>= 5;
-        }          
-        for (uint8 p = 0; p < 3; p++) {
-            changedPositions[p] = uint8(tactics & 15); // 2^4 - 1
-            require(changedPositions[p] < 11, "incorrect changedPositions entry");
-            tactics >>= 4;
         }          
     }
     

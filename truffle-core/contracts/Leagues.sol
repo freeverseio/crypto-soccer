@@ -6,10 +6,8 @@ import "./Engine.sol";
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Leagues {
+contract Leagues is Assets {
     
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     Engine private _engine;

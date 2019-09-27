@@ -53,6 +53,7 @@ contract('Leagues', (accounts) => {
     beforeEach(async () => {
         leagues = await Leagues.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
+        await leagues.init().should.be.fulfilled;
         await leagues.setEngineAdress(engine.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await leagues.TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await leagues.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;

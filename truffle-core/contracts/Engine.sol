@@ -59,11 +59,11 @@ contract Engine is EncodingSkills{
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
-        bool[14][2] memory extraAttack;
+        bool[10][2] memory extraAttack;
         
         
-        (states[0], extraAttack[0], playersPerZone[0]) = getLinedUpData(states[0], tactics[0], is2ndHalf);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLinedUpData(states[1], tactics[1], is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
         uint16[7][2] memory events;
         events[0] = computeExceptionalEvents(states[0], events1stHalf[0], seed);
@@ -193,16 +193,15 @@ contract Engine is EncodingSkills{
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
-    function getLinedUpData(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics, bool is2ndHalf) 
+    function getLineUpAndPlayerPerZone(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics, bool is2ndHalf) 
         public 
         pure 
-        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[14] memory extraAttack, uint8[9] memory playersPerZone) 
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
-        uint8[14] memory lineup;
+        uint8[11] memory lineup;
         uint8 changes;
-        uint8[3] memory changedPos;
-        (lineup, extraAttack, tacticsId, changedPos) = decodeTactics(tactics);
+        (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) 
         {
             outStates[p] = states[lineup[p]];
@@ -308,7 +307,8 @@ contract Engine is EncodingSkills{
     function selectAssister(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
-        bool[14] memory extraAttack,
+        uint8[11] memory lineup,
+        bool[10] memory extraAttack,
         uint8 shooter,
         uint256 rnd
     )
@@ -323,12 +323,12 @@ contract Engine is EncodingSkills{
         uint256 teamPassCapacity = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p] ? 90 : 20 ) * getPass(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[p]);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p] ? 150 : 100 ) * getPass(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[p]);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -343,7 +343,7 @@ contract Engine is EncodingSkills{
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[shooter]) * 8810 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[lineup[shooter]]) * 8810 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
 
@@ -351,7 +351,7 @@ contract Engine is EncodingSkills{
     function selectShooter(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
-        bool[14] memory extraAttack,
+        bool[10] memory extraAttack,
         uint256 rnd
     )
         public
@@ -363,11 +363,11 @@ contract Engine is EncodingSkills{
         weights[0] = 1;
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p] ? 15000 : 5000 ) * getSpeed(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[p]);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p] ? 50000 : 25000 ) * getSpeed(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[p]);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
@@ -382,7 +382,7 @@ contract Engine is EncodingSkills{
     function managesToScore(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
-        bool[14] memory extraAttack,
+        bool[10] memory extraAttack,
         uint256 blockShoot,
         uint256 rndNum1,
         uint256 rndNum2
@@ -414,7 +414,7 @@ contract Engine is EncodingSkills{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        bool[14] memory extraAttack
+        bool[10] memory extraAttack
     )
         public
         pure
@@ -438,7 +438,7 @@ contract Engine is EncodingSkills{
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             if (penalty != 0) {
-                fwdModFactors = getExtraAttackFactors(extraAttack[p]);
+                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
@@ -453,7 +453,7 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p]);
+            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (penalty != 0) {
                 penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
                 globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
