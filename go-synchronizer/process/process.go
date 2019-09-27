@@ -266,6 +266,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 		}
 		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)
 		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
+		points := uint8(0)
 		for teamIdx := teamIdxBegin; teamIdx < teamIdxEnd; teamIdx++ {
 			if teamId, err := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
@@ -277,7 +278,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 						teamId,
 						timezone,
 						uint16(countryIdx.Uint64()),
-						storage.TeamState{teamOwner.Hex(), uint8(leagueIdx)}},
+						storage.TeamState{teamOwner.Hex(), uint8(leagueIdx), points}},
 				); err != nil {
 					return err
 				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
