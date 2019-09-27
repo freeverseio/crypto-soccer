@@ -88,28 +88,27 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
-	//if events, err := p.scanPlayerTransfer(opts); err != nil {
-	//	return err
-	//} else {
-	//	for _, event := range events { // TODO: next part to be recoded
-	//		_, blockNumber, err := p.getTimeOfEvent(event.Raw)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		playerId := event.PlayerId.Uint64()
-	//		toTeamId := event.ToTeamId.Uint64()
-	//		player, err := p.db.GetPlayer(playerId)
-	//		if err != nil {
-	//			return err
-	//		}
-	//		player.State.BlockNumber = blockNumber
-	//		player.State.TeamId = toTeamId
-	//		err = p.db.PlayerStateUpdate(playerId, player.State)
-	//		if err != nil {
-	//			return err
-	//		}
-	//	}
-	//}
+	if events, err := p.scanPlayerTransfer(opts); err != nil {
+		return err
+	} else {
+		for _, event := range events { // TODO: next part to be recoded
+			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
+			// if err != nil {
+			// 	return err
+			// }
+			playerID := event.PlayerId
+			toTeamId := event.TeamIdTarget
+			player, err := p.db.GetPlayer(playerID)
+			if err != nil {
+				return err
+			}
+			player.State.TeamId = toTeamId
+			err = p.db.PlayerUpdate(playerID, player.State)
+			if err != nil {
+				return err
+			}
+		}
+	}
 
 	// store the last block that was scanned
 	p.db.SetBlockNumber(*opts.End)
