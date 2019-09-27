@@ -24,3 +24,12 @@ const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
 const updates = new web3.eth.Contract(updatesJSON.abi, updatesContractAddress);
 
+const loop = () => {
+  setTimeout(() => {
+    console.log("tick");
+    loop();
+  }, 3000);
+};
+
+loop();
+
