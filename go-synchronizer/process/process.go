@@ -242,10 +242,16 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 	opts := &bind.CallOpts{}
 
 	LEAGUES_PER_DIV, err := p.assets.LEAGUESPERDIV(opts)
+	if err != nil {
+		return err
+	}
 	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(LEAGUES_PER_DIV)
 	leagueIdxEnd := leagueIdxBegin + int64(LEAGUES_PER_DIV)
 
 	TEAMS_PER_LEAGUE, err := p.assets.TEAMSPERLEAGUE(opts)
+	if err != nil {
+		return err
+	}
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
 		teamIdxBegin := leagueIdx
