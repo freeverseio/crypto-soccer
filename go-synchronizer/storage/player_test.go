@@ -57,17 +57,17 @@ func TestPlayerCreate(t *testing.T) {
 	}
 }
 
-// func TestPlayerStateUpdate(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	var playerState storage.PlayerState
-// 	err = sto.PlayerStateUpdate(1, playerState)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
+func TestPlayerUpdate(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var playerState storage.PlayerState
+	err = sto.PlayerUpdate(big.NewInt(1), playerState)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
 // func TestGetPlayer(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")

@@ -59,19 +59,21 @@ func (b *Storage) PlayerCreate(player Player) error {
 	return nil
 }
 
-// func (b *Storage) PlayerStateUpdate(id uint64, playerState PlayerState) error {
-// 	log.Infof("[DBMS] Adding player state %v", playerState)
+func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error {
+	log.Debugf("[DBMS] + update player state %v", playerState)
 
-// 	err := b.playerUpdate(id, playerState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	err = b.playerHistoryAdd(id, playerState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	_, err := b.db.Exec("UPDATE players SET team_id=$1, defence=$2, speed=$3, pass=$4, shoot=$5, endurance=$6, shirt_number=$7 WHERE player_id=$8;",
+		playerState.TeamId.String(),
+		playerState.Defence,
+		playerState.Speed,
+		playerState.Pass,
+		playerState.Shoot,
+		playerState.Endurance,
+		playerState.ShirtNumber,
+		playerID.String(),
+	)
+	return err
+}
 
 // func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
 // 	log.Infof("[DBMS] + update player state %v", playerState)
