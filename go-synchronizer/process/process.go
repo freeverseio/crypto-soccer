@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
+
 	//"fmt"
 	"math"
 	"math/big"
@@ -26,6 +28,7 @@ type EventProcessor struct {
 	db          *storage.Storage
 	market      *market.Market
 	assets      *assets.Assets
+	updates     *updates.Updates
 }
 
 // *****************************************************************************
@@ -33,13 +36,13 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
-	return &EventProcessor{false, client, db, market, assets}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets, updates *updates.Updates) *EventProcessor {
+	return &EventProcessor{false, client, db, market, assets, updates}
 }
 
 // NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets) *EventProcessor {
-	return &EventProcessor{true, client, db, market, assets}
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, assets *assets.Assets, updates *updates.Updates) *EventProcessor {
+	return &EventProcessor{true, client, db, market, assets, updates}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -109,6 +112,14 @@ func (p *EventProcessor) Process() error {
 			}
 		}
 	}
+
+	// if events, err := p.scanActionsSubmission(opts); err != nil {
+	// 	return err
+	// } else {
+	// 	for _, event := range events { // TODO: next part to be recoded
+
+	// 	}
+	// }
 
 	// store the last block that was scanned
 	p.db.SetBlockNumber(*opts.End)
@@ -184,6 +195,23 @@ func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]assets.A
 	}
 
 	events := []assets.AssetsDivisionCreation{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
+func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates.UpdatesActionsSubmission, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.updates.FilterActionsSubmission(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []updates.UpdatesActionsSubmission{}
 
 	for iter.Next() {
 		events = append(events, *(iter.Event))

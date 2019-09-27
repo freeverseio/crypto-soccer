@@ -13,9 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/states"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
 
 type Ganache struct {
@@ -24,6 +22,7 @@ type Ganache struct {
 	statesAddress common.Address // unused
 	engineAddress common.Address // unused
 	Assets        *assets.Assets
+	Updates       *updates.Updates
 	//States        *states.States
 	//Leagues       *leagues.Leagues
 	Owner *ecdsa.PrivateKey
@@ -48,7 +47,7 @@ func NewGanache() *Ganache {
 		common.Address{},
 		common.Address{},
 		nil,
-		//nil,
+		nil,
 		//nil,
 		creatorPrivateKey,
 	}
@@ -109,123 +108,31 @@ func (ganache *Ganache) GetBalance(address common.Address) *big.Int {
 	return balance
 }
 
-//func (ganache *Ganache) deployStates(owner *ecdsa.PrivateKey) {
-//	address, _, contract, err := states.DeployStates(
-//		bind.NewKeyedTransactor(owner),
-//		ganache.Client,
-//	)
-//	AssertNoErr(err, "DeployStates failed")
-//	ganache.States = contract
-//	ganache.statesAddress = address
-//	fmt.Println("States deployed at:", address.Hex())
-//}
-//func (ganache *Ganache) deployEngine(owner *ecdsa.PrivateKey) {
-//	address, _, contract, err := engine.DeployEngine(
-//		bind.NewKeyedTransactor(owner),
-//		ganache.Client,
-//	)
-//	AssertNoErr(err, "DeployEngine failed")
-//	_ = contract
-//	ganache.engineAddress = address
-//	fmt.Println("Engine deployed at:", address.Hex())
-//}
-func (ganache *Ganache) deployAssets(owner *ecdsa.PrivateKey) {
-	address, _, contract, err := assets.DeployAssets(
+func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
+	assetsAddress, _, assetsContract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
 		ganache.Client,
-		//ganache.statesAddress,
 	)
 	AssertNoErr(err, "DeployAssets failed")
-	ganache.Assets = contract
-	fmt.Println("Assets deployed at:", address.Hex())
-}
+	fmt.Println("Assets deployed at:", assetsAddress.Hex())
 
-//func (ganache *Ganache) deployLeagues(owner *ecdsa.PrivateKey) {
-//	address, _, contract, err := leagues.DeployLeagues(
-//		bind.NewKeyedTransactor(owner),
-//		ganache.Client,
-//		ganache.engineAddress,
-//		ganache.statesAddress,
-//	)
-//	AssertNoErr(err, "DeployStates failed")
-//	ganache.Leagues = contract
-//	fmt.Println("Leagues deployed at:", address.Hex())
-//}
-func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
-	//ganache.deployStates(owner)
-	//ganache.deployEngine(owner)
-	ganache.deployAssets(owner)
-	//ganache.deployLeagues(owner)
-}
+	updatesAddress, _, updatesContract, err := updates.DeployUpdates(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployUpdates failed")
+	fmt.Println("Updates deployed at:", updatesAddress.Hex())
 
-func (ganache *Ganache) InitAssets(from *ecdsa.PrivateKey, tz uint8) {
-	_, err := ganache.Assets.InitSingleTZ(
-		bind.NewKeyedTransactor(from), tz)
-	//	ganache.Public(from))
+	// Initing
+	_, err = assetsContract.InitSingleTZ(bind.NewKeyedTransactor(owner), 1)
 	AssertNoErr(err, "Error initializing assets contract")
+	_, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), assetsAddress)
+	AssertNoErr(err, "Updates::InitUpdates(assets) failed")
+
+	ganache.Assets = assetsContract
+	ganache.Updates = updatesContract
 }
 
-//func (ganache *Ganache) CreateTeam(name string, from *ecdsa.PrivateKey) {
-//	_, err := ganache.Assets.CreateTeam(
-//		bind.NewKeyedTransactor(from),
-//		name,
-//		ganache.Public(from))
-//	AssertNoErr(err, "Error creating Team ", name)
-//}
-//func (ganache *Ganache) getVirtualPlayerId(teamId *big.Int, posInTeam uint8) int64 {
-//	playerId, err := ganache.Assets.GenerateVirtualPlayerId(
-//		&bind.CallOpts{},
-//		teamId,
-//		posInTeam,
-//	)
-//	AssertNoErr(err, "Error getting virtual player id in pos ", posInTeam, " for team ", teamId)
-//	return playerId.Int64()
-//}
-//func (ganache *Ganache) getVirtualPlayerState(playerId int64) *big.Int {
-//	playerState, err := ganache.Assets.GenerateVirtualPlayerState(
-//		&bind.CallOpts{},
-//		big.NewInt(playerId),
-//	)
-//	AssertNoErr(err, "Error getting virtual player state for id ", playerId)
-//	return playerState
-//}
-//func (ganache *Ganache) GetVirtualPlayers(teamId *big.Int) (players map[int64]*big.Int) {
-//	players = make(map[int64]*big.Int)
-//	for i := 0; i < 11; i++ {
-//		playerId := ganache.getVirtualPlayerId(teamId, uint8(i))
-//		playerState := ganache.getVirtualPlayerState(playerId)
-//		players[playerId] = playerState
-//	}
-//	return
-//}
-
-// func (ganache *Ganache) CreateLeague(teamIds []int64, from *ecdsa.PrivateKey) {
-// 	leagueId := ganache.CountLeagues()
-// 	initBlock := big.NewInt(ganache.GetLastBlockNumber())
-// 	step := big.NewInt(1)
-// 	var tactics [][3]uint8 // {[3]uint8{4, 4, 2}, [3]uint8{4, 3, 3}},
-// 	var teamIdsBig []*big.Int
-// 	for _, teamId := range teamIds {
-// 		teamIdsBig = append(teamIdsBig, big.NewInt(teamId))
-// 		if teamId%3 == 0 {
-// 			tactics = append(tactics, [3]uint8{3, 4, 3})
-// 		} else if teamId%2 == 0 {
-// 			tactics = append(tactics, [3]uint8{4, 3, 3})
-// 		} else {
-// 			tactics = append(tactics, [3]uint8{4, 4, 2})
-// 		}
-// 	}
-// 	tx, err := ganache.Leagues.Create(
-// 		bind.NewKeyedTransactor(from),
-// 		leagueId,
-// 		initBlock,
-// 		step,
-// 		teamIdsBig,
-// 		tactics,
-// 	)
-// 	_ = tx
-// 	AssertNoErr(err)
-// }
 //func (ganache *Ganache) CountTeams() *big.Int {
 //	count, err := ganache.Assets.CountTeams(nil)
 //	AssertNoErr(err, "Error calling CountTeams")

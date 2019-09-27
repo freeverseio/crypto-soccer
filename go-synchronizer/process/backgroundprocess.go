@@ -8,6 +8,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
@@ -22,9 +23,10 @@ func BackgroundProcessNew(
 	storage *storage.Storage,
 	marketContract *market.Market,
 	assetsContract *assets.Assets,
+	updatesContract *updates.Updates,
 ) *BackgroundProcess {
 	return &BackgroundProcess{
-		eventProcessor: NewEventProcessor(client, storage, marketContract, assetsContract),
+		eventProcessor: NewEventProcessor(client, storage, marketContract, assetsContract, updatesContract),
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
 	}

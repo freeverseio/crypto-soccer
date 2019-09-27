@@ -43,5 +43,8 @@ services:
     command: -u http://universeapi:4000/graphql -m http://market.trader:4000/graphql -r http://relay:4000/graphql
     ports:
       - "4000:4000"
+  staker:
+    image: freeverseio/staker:dev
+    command: --updatesContractAddress "0x08b0317CA2a4eAF39d5F8FbA8fda72f33932d128" -i 5
 volumes:
   centauri-data:

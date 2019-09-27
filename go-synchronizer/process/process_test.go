@@ -41,7 +41,6 @@ func TestSyncTeams(t *testing.T) {
 
 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
 	ganache.DeployContracts(owner)
-	ganache.InitAssets(owner, 1) // Init assets of timezone 1
 
 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
@@ -69,7 +68,7 @@ func TestSyncTeams(t *testing.T) {
 	//ganache.CreateTeam("B", bob)
 	//ganache.CreateTeam("C", carol)
 
-	p := NewGanacheEventProcessor(ganache.Client, storage, nil /*market*/, ganache.Assets)
+	p := NewGanacheEventProcessor(ganache.Client, storage, nil /*market*/, ganache.Assets, ganache.Updates)
 
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
