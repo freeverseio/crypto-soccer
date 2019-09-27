@@ -453,14 +453,9 @@ contract Engine is EncodingSkills{
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (penalty != 0) {
-                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-                globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
-            } else {
-                globSkills[IDX_MOVE2ATTACK] += 50;
-                globSkills[IDX_ENDURANCE]   += 10;
-            }
+            deltaSkills = computeMidfielderGlobSkills(playerSkills, penalty, fwdModFactors);
+            globSkills[IDX_MOVE2ATTACK] += deltaSkills[IDX_MOVE2ATTACK];
+            globSkills[IDX_ENDURANCE]   += deltaSkills[IDX_ENDURANCE];
             p++;
         }
         // loop over strikers
@@ -468,15 +463,10 @@ contract Engine is EncodingSkills{
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (penalty != 0) {
-                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-                globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-                globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
-            } else {
-                globSkills[IDX_MOVE2ATTACK] += 10;
-                globSkills[IDX_CREATE_SHOOT] += 20;
-                globSkills[IDX_ENDURANCE] += 10;
-            }
+            deltaSkills = computeForwardsGlobSkills(playerSkills, penalty, fwdModFactors);
+            globSkills[IDX_MOVE2ATTACK] += deltaSkills[IDX_MOVE2ATTACK];
+            globSkills[IDX_CREATE_SHOOT]+= deltaSkills[IDX_CREATE_SHOOT];
+            globSkills[IDX_ENDURANCE]   += deltaSkills[IDX_ENDURANCE];
             p++;
         }
 
@@ -511,6 +501,51 @@ contract Engine is EncodingSkills{
             deltaSkills[IDX_ENDURANCE]   += 10;
         }
     }
+
+
+    function computeMidfielderGlobSkills(
+        uint256 playerSkills, 
+        uint256 penalty, 
+        uint256[3] memory fwdModFactors
+    ) 
+        private 
+        pure
+        returns (uint256[5] memory deltaSkills) 
+    {
+        if (penalty != 0) {
+            deltaSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            deltaSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+        } else {
+            deltaSkills[IDX_MOVE2ATTACK] += 50;
+            deltaSkills[IDX_ENDURANCE]   += 10;
+        }
+    }
+    
+    
+    function computeForwardsGlobSkills(
+        uint256 playerSkills, 
+        uint256 penalty, 
+        uint256[3] memory fwdModFactors
+    ) 
+        private 
+        pure
+        returns (uint256[5] memory deltaSkills) 
+    {
+        if (penalty != 0) {
+            deltaSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            deltaSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            deltaSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+        } else {
+            deltaSkills[IDX_MOVE2ATTACK] += 10;
+            deltaSkills[IDX_CREATE_SHOOT] += 20;
+            deltaSkills[IDX_ENDURANCE] += 10;
+        }
+    }
+    
+    
+    
+    
+
 
 
     // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]

@@ -122,7 +122,7 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], events1Half, is2ndHalf, isHomeStadium).should.be.fulfilled;
     });
-    
+
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
