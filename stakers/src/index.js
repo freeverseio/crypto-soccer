@@ -23,11 +23,27 @@ console.log("--------------------------------------------------------");
 const provider = new HDWalletProvider(privateKey, providerUrl);
 const web3 = new Web3(provider, null, {});
 const updates = new web3.eth.Contract(updatesJSON.abi, updatesContractAddress);
+const from = provider.addresses[0];
 
-const loop = () => {
+const root = "0x0";
+const loop = async () => {
+  try {
+    const currentVerse = await updates.methods.currentVerse().call();
+    process.stdout.write("[VERSE: " + currentVerse + "] ");
+
+    process.stdout.write("submitActionsRoot ... ");
+    let gas = await updates.methods.submitActionsRoot(root).estimateGas();
+    await updates.methods.submitActionsRoot(root).send({ from, gas });
+
+    process.stdout.write(", updateTZ ... ")
+    gas = await updates.methods.updateTZ(root).estimateGas();
+    await updates.methods.updateTZ(root).send({ from, gas });
+    console.log("done")
+  } catch (err) {
+    console.log("FAILED")
+  }
+
   setTimeout(() => {
-    console.log("tick");
-    updates.submitActionsRoot("0x0");
     loop();
   }, 3000);
 };
