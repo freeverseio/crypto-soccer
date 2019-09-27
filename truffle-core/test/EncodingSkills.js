@@ -15,24 +15,27 @@ contract('Encoding', (accounts) => {
     it('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        lineup = Array.from(new Array(11), (x,i) => i);
-        extraAttack = Array.from(new Array(10), (x,i) => i%2);
-        encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        lineup = Array.from(new Array(14), (x,i) => i);
+        extraAttack = Array.from(new Array(14), (x,i) => i%2);
+        changedPos = [4, 7, 9];
+        encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 2, changedPos).should.be.fulfilled;
         decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
-        let {0: line, 1: attk, 2: tact} = decoded;
+        let {0: line, 1: attk, 2: tact, 3: chgPos} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
         for (p = 0; p < 11; p++) {
             line[p].toNumber().should.be.equal(lineup[p]);
         }
-        for (p = 0; p < 10; p++) {
+        for (p = 0; p < 11; p++) {
             attk[p].should.be.equal(extraAttack[p] == 1 ? true : false);
         }
-        // try to provide a lineup beyond range
-        lineupWrong = lineup;
-        lineupWrong[4] = PLAYERS_PER_TEAM_MAX;
-        encoded = await encoding.encodeTactics(lineup, tacticsId = 2).should.be.rejected;
+        for (p = 0; p < 3; p++) {
+            chgPos[p].toNumber().should.be.equal(changedPos[p]);
+        }
         // try to provide a tacticsId beyond range
-        encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
+        encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 64, changedPos).should.be.rejected;
+        // try to provide a lineup beyond range
+        lineup[4] = PLAYERS_PER_TEAM_MAX;
+        encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 2, changedPos).should.be.rejected;
     });
     
     it('encoding of TZ and country in teamId and playerId', async () =>  {
