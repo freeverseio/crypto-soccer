@@ -122,8 +122,6 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], events1Half, is2ndHalf, isHomeStadium).should.be.fulfilled;
     });
-
-    // return;
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
@@ -347,12 +345,12 @@ contract('Engine', (accounts) => {
         transtions = [];
         t=0;
         rndOld = 0;
-        result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         prev = result.toNumber();
         for (p = 0; p < nPartitions; p++) {
             rnd = Math.floor(p * MAX_RND/ nPartitions);
-            result = await engine.selectAssister(teamState, playersPerZone442, lineupConsecutive, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
             if (result.toNumber() != prev) {
                 percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
                 // console.log(prev, percentageForPrevPlayer);
@@ -463,19 +461,20 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull).should.be.fulfilled;
+        result = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, outOfGamePlayerPos = 11).should.be.fulfilled;
+        globSkills = result[0];
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
     
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, is2ndHalf).should.be.rejected;
+        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, events1Half, is2ndHalf).should.be.rejected;
     });
 
     it('getLineUpAndPlayerPerZone', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1, is2ndHalf).should.be.fulfilled;
+        result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1, events1Half, is2ndHalf).should.be.fulfilled;
         let {0: states, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[p]);

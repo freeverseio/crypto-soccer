@@ -17,6 +17,7 @@ contract Engine is EncodingSkills{
     uint8 private constant IDX_ENDURANCE    = 4; 
     uint256 private constant TENTHOUSAND    = uint256(10000); 
     uint256 private constant TENTHOUSAND_SQ = uint256(100000000); 
+    uint16 private constant NO_EVENT        = 11; 
 
     
     bool dummyBoolToEstimateCost;
@@ -59,19 +60,21 @@ contract Engine is EncodingSkills{
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
+        uint256[5][2] memory deltaSkills;
         bool[10][2] memory extraAttack;
         
         
-        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], events1stHalf, is2ndHalf);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], events1stHalf, is2ndHalf);
 
         uint16[7][2] memory events;
         events[0] = computeExceptionalEvents(states[0], events1stHalf[0], seed);
         events[1] = computeExceptionalEvents(states[1], events1stHalf[1], seed);
 
-
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0]);
+        // events[0,1,2] contain the [playerPos, round, typeOfOutOfGame] data for a possible outOfGamePlayer. It is zero otherwise
+        // - playerPos is set to NO_EVENT if nothing happened.
+        (globSkills[0], deltaSkills[0]) = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], events[0][0]);
+        (globSkills[1], deltaSkills[1]) = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], events[1][0]);
         if (isHomeStadium) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
@@ -136,11 +139,11 @@ contract Engine is EncodingSkills{
     //      - yellowCard 2.5 per game 
     // We encode this in uint16[3] events, which applies to 1 half of the game only.
     //  - 1 possible event that leaves a player out of the match, encoded in:
-    //          events[0, 1, 2] = [round, player (from 0 to 11), eventType (injuryHard, injuryLow, redCard)]
+    //          events[0, 1, 2] = [player (from 0 to 11), round, eventType (injuryHard, injuryLow, redCard)]
     //  - 2 possible events for yellow card:
-    //          events[3, 4] = [round, player (from 0 to 11)]
-    //          events[5, 6] = [round, player (from 0 to 11)]
-    //  These entries can be zero if no event took place
+    //          events[3, 4] = [player (from 0 to 11), round]
+    //          events[5, 6] = [player (from 0 to 11), round]
+    //  The player value is set to NO_EVENT ( = 11) if no event took place
     function computeExceptionalEvents
     (
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
@@ -164,26 +167,20 @@ contract Engine is EncodingSkills{
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[11] = 758;
         uint8 outOfFieldPlayer = throwDiceArray(weights, rnds[0]);
-        if (outOfFieldPlayer != 11) {
-            events[0] = uint8(rnds[0] % ROUNDS_PER_MATCH);
-            events[1] = outOfFieldPlayer;
-            events[2] = computeTypeOfEvent(rnds[1]);
-        }
+        events[0] = outOfFieldPlayer;
+        events[1] = uint8(rnds[0] % ROUNDS_PER_MATCH);
+        events[2] = computeTypeOfEvent(rnds[1]);
         // two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[11] = 9;
         outOfFieldPlayer = throwDiceArray(weights, rnds[2]);
-        if (outOfFieldPlayer != 11) {
-            events[3] = uint16(rnds[2] % ROUNDS_PER_MATCH);
-            events[4] = outOfFieldPlayer;
-        }
+        events[3] = outOfFieldPlayer;
+        events[4] = uint16(rnds[2] % ROUNDS_PER_MATCH);
         outOfFieldPlayer = throwDiceArray(weights, rnds[3]);
-        if (outOfFieldPlayer != 11) {
-            events[5] = uint16(rnds[3] % ROUNDS_PER_MATCH);
-            events[6] = outOfFieldPlayer;
-        }
+        events[5] = outOfFieldPlayer;
+        events[6] = uint16(rnds[3] % ROUNDS_PER_MATCH);
     }
     
 
@@ -193,7 +190,12 @@ contract Engine is EncodingSkills{
     // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
     // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
     // this function returns an array of (still) size 25, but only with the correctly linedup first 11 entries filled.
-    function getLineUpAndPlayerPerZone(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint256 tactics, bool is2ndHalf) 
+    function getLineUpAndPlayerPerZone(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256 tactics,
+        uint16[7][2] memory events1stHalf,
+        bool is2ndHalf
+    ) 
         public 
         pure 
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
@@ -413,13 +415,16 @@ contract Engine is EncodingSkills{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack
+        bool[10] memory extraAttack,
+        uint16 outOfGamePlayerPos
     )
         public
         pure
-        returns (
-            uint256[5] memory globSkills
-        )
+        returns 
+    (
+            uint256[5] memory globSkills,
+            uint256[5] memory deltaSkills
+    )
     {
         // for a keeper, the 'shoot skill' is interpreted as block skill
         // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
@@ -436,16 +441,11 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-            if (penalty != 0) {
-                fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-                globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-                globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-                globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
-            } else {
-                globSkills[IDX_MOVE2ATTACK] += 30;
-                globSkills[IDX_DEFEND_SHOOT] += 20;
-                globSkills[IDX_ENDURANCE]   += 10;
-            }
+            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+            deltaSkills = computeDefenderGlobSkills(playerSkills, penalty, fwdModFactors);
+            globSkills[IDX_MOVE2ATTACK]  += deltaSkills[IDX_MOVE2ATTACK];
+            globSkills[IDX_DEFEND_SHOOT] += deltaSkills[IDX_DEFEND_SHOOT];
+            globSkills[IDX_ENDURANCE]    += deltaSkills[IDX_ENDURANCE];
             p++;
         }
         // loop over midfielders
@@ -467,8 +467,8 @@ contract Engine is EncodingSkills{
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
+            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (penalty != 0) {
-                penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
                 globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
                 globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
@@ -491,6 +491,27 @@ contract Engine is EncodingSkills{
             globSkills[IDX_ENDURANCE] = 100;
         }
     }
+
+    function computeDefenderGlobSkills(
+        uint256 playerSkills, 
+        uint256 penalty, 
+        uint256[3] memory fwdModFactors
+    ) 
+        private 
+        pure
+        returns (uint256[5] memory deltaSkills) 
+    {
+        if (penalty != 0) {
+            deltaSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            deltaSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            deltaSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+        } else {
+            deltaSkills[IDX_MOVE2ATTACK] += 30;
+            deltaSkills[IDX_DEFEND_SHOOT] += 20;
+            deltaSkills[IDX_ENDURANCE]   += 10;
+        }
+    }
+
 
     // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]
     // the forward modifier factors only change the first 3.
