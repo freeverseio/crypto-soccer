@@ -260,21 +260,21 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)
 		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
 		for teamIdx := teamIdxBegin; teamIdx < teamIdxEnd; teamIdx++ {
-			if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); e != nil {
-				return e
+			if teamId, err := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
+				return err
 			} else {
-				if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
-					return e
-				} else if e := p.db.TeamCreate(
+				if teamOwner, err := p.assets.GetOwnerTeam(opts, teamId); err != nil {
+					return err
+				} else if err := p.db.TeamCreate(
 					storage.Team{
 						teamId,
 						timezone,
 						uint16(countryIdx.Uint64()),
 						storage.TeamState{teamOwner.Hex(), uint8(leagueIdx)}},
-				); e != nil {
-					return e
-				} else if e := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); e != nil {
-					return e
+				); err != nil {
+					return err
+				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
+					return err
 				}
 			}
 		}
@@ -317,13 +317,13 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId 
 	}
 
 	for i := begin; i < end; i++ {
-		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
-			return e
-		} else if skills, e := p.getPlayerSkillsAtBirth(opts, playerId); e != nil {
-			return e
-		} else if preferredPosition, e := p.getPlayerPreferredPosition(opts, playerId); e != nil {
-			return e
-		} else if e := p.db.PlayerCreate(
+		if playerId, err := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
+			return err
+		} else if skills, err := p.getPlayerSkillsAtBirth(opts, playerId); err != nil {
+			return err
+		} else if preferredPosition, err := p.getPlayerPreferredPosition(opts, playerId); err != nil {
+			return err
+		} else if err := p.db.PlayerCreate(
 			storage.Player{
 				playerId,
 				preferredPosition,
@@ -335,8 +335,8 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId 
 					Shoot:     uint64(skills[SK_SHO]),
 					Endurance: uint64(skills[SK_END]),
 				}},
-		); e != nil {
-			return e
+		); err != nil {
+			return err
 		}
 	}
 	return err
