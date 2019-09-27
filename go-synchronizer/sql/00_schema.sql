@@ -31,6 +31,7 @@ CREATE TABLE teams (
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
     league_idx INT NOT NULL,
+    points INT NOT NULL,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)

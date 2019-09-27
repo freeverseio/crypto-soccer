@@ -10,6 +10,7 @@ import (
 type TeamState struct {
 	Owner     string
 	LeagueIdx uint8
+	Points    uint8
 }
 
 type Team struct {
@@ -21,12 +22,13 @@ type Team struct {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx) VALUES ($1, $2, $3, $4, $5);",
+	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, points) VALUES ($1, $2, $3, $4, $5, $6);",
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
 		team.State.Owner,
 		team.State.LeagueIdx,
+		team.State.Points,
 	)
 	if err != nil {
 		return err
@@ -55,25 +57,12 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
-// func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
-// 	log.Infof("[DBMS] Updating team state %v", teamState)
-
-// 	err := b.teamUpdate(id, teamState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	err = b.teamHistoryAdd(id, teamState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
-	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2  WHERE team_id=$3",
+	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, points=$3 WHERE team_id=$4",
 		teamState.Owner,
 		teamState.LeagueIdx,
+		teamState.Points,
 		teamID.String(),
 	)
 	return err
