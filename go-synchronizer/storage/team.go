@@ -22,12 +22,13 @@ type Team struct {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx) VALUES ($1, $2, $3, $4, $5);",
+	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, points) VALUES ($1, $2, $3, $4, $5, $6);",
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
 		team.State.Owner,
 		team.State.LeagueIdx,
+		team.State.Points,
 	)
 	if err != nil {
 		return err
