@@ -58,13 +58,13 @@ contract Updates {
     }
     
     function submitActionsRoot(bytes32 actionsRoot) public {
-        require(now > nextVerseTimestamp, "too early to accept actions root");
+        // require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
-        (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        // (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
-        if (prevTz != NULL_TIMEZONE) {
-            require(now > _assets.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
-        }
+        // if (prevTz != NULL_TIMEZONE) {
+        //     require(now > _assets.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
+        // }
         // if we are precisely at a moment where nothing needs to be done, just move ahead
         if (newTZ == NULL_TIMEZONE) {
             incrementVerse() ;
