@@ -113,6 +113,14 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
+	// if events, err := p.scanActionsSubmission(opts); err != nil {
+	// 	return err
+	// } else {
+	// 	for _, event := range events { // TODO: next part to be recoded
+
+	// 	}
+	// }
+
 	// store the last block that was scanned
 	p.db.SetBlockNumber(*opts.End)
 	return nil
@@ -187,6 +195,23 @@ func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]assets.A
 	}
 
 	events := []assets.AssetsDivisionCreation{}
+
+	for iter.Next() {
+		events = append(events, *(iter.Event))
+	}
+	return events, nil
+}
+
+func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates.UpdatesActionsSubmission, error) {
+	if opts == nil {
+		opts = &bind.FilterOpts{Start: 0}
+	}
+	iter, err := p.updates.FilterActionsSubmission(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	events := []updates.UpdatesActionsSubmission{}
 
 	for iter.Next() {
 		events = append(events, *(iter.Event))
