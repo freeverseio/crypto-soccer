@@ -56,20 +56,6 @@ func (b *Storage) TeamCount() (uint64, error) {
 	return count, nil
 }
 
-// func (b *Storage) TeamStateUpdate(id uint64, teamState TeamState) error {
-// 	log.Infof("[DBMS] Updating team state %v", teamState)
-
-// 	err := b.teamUpdate(id, teamState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	err = b.teamHistoryAdd(id, teamState)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
 	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, points=$3 WHERE team_id=$4",
