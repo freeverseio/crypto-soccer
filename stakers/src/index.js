@@ -10,14 +10,16 @@ program
   .option("-p, --providerUrl <url>", "Ethereum node url", "https://devnet.busyverse.com/web3")
   .option("-k, --privateKey <pk>", "private key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
   .option("-u, --updatesContractAddress <address>", "updates contract address", "0xB3F24a605312b744973823194267A99F059e8936")
+  .option("-i, --interval <sec>", "interval in sec", "5")
   .parse(process.argv)
 
-const { providerUrl, privateKey, updatesContractAddress } = program;
+const { providerUrl, privateKey, updatesContractAddress, interval } = program;
 
 console.log("--------------------------------------------------------");
 console.log("providerUrl        : ", providerUrl);
 console.log("🔥  account p.k.    : ", privateKey);
 console.log("updates address    : ", updatesContractAddress);
+console.log("interval           : ", interval, "sec");
 console.log("--------------------------------------------------------");
 
 const provider = new HDWalletProvider(privateKey, providerUrl);
@@ -35,9 +37,10 @@ const loop = async () => {
     let gas = await updates.methods.submitActionsRoot(root).estimateGas();
     await updates.methods.submitActionsRoot(root).send({ from, gas });
 
-    process.stdout.write(", updateTZ ... ")
-    gas = await updates.methods.updateTZ(root).estimateGas();
-    await updates.methods.updateTZ(root).send({ from, gas });
+    // process.stdout.write(", updateTZ ... ")
+    // gas = await updates.methods.updateTZ(root).estimateGas();
+    // await updates.methods.updateTZ(root).send({ from, gas });
+
     console.log("done")
   } catch (err) {
     console.log("FAILED")
@@ -45,7 +48,7 @@ const loop = async () => {
 
   setTimeout(() => {
     loop();
-  }, 3000);
+  }, interval * 1000);
 };
 
 loop();
