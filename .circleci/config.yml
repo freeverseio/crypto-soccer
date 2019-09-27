@@ -61,6 +61,14 @@ jobs:
       - run: make setup contracts
       - run: cd relay/nodejs-api && npm install
       - run: cd relay/nodejs-api && npm test
+  staker:
+    docker:
+      - image: freeverseio/circleci
+    steps:
+      - checkout
+      - run: make setup contracts
+      - run: cd relay/nodejs-api && npm install
+      - run: cd relay/nodejs-api && npm test
   market.trader:
     docker:
       - image: freeverseio/circleci
