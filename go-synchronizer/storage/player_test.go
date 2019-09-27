@@ -69,47 +69,59 @@ func TestPlayerUpdate(t *testing.T) {
 	}
 }
 
-// func TestGetPlayer(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	var player storage.Player
-// 	player.Id = 1
-// 	player.MonthOfBirthInUnixTime = "ff"
-// 	player.State.BlockNumber = 33
-// 	player.State.Defence = 4
-// 	player.State.Endurance = 5
-// 	player.State.Pass = 6
-// 	player.State.Shoot = 7
-// 	player.State.Speed = 8
-// 	player.State.State = "23"
-// 	player.State.TeamId = 99
-// 	err = sto.PlayerAdd(player)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result, err := sto.GetPlayer(player.Id)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if result != player {
-// 		t.Fatalf("Expected %v got %v", player, result)
-// 	}
-// 	player.State.BlockNumber = 366
-// 	player.State.Defence = 6
-// 	err = sto.PlayerStateUpdate(player.Id, player.State)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result, err = sto.GetPlayer(player.Id)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if result != player {
-// 		t.Fatalf("Expected %v got %v", player, result)
-// 	}
-// }
+func TestGetPlayer(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	countryIdx := uint16(4)
+	leagueIdx := uint8(0)
+	var team storage.Team
+	team.TeamID = big.NewInt(10)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	sto.TeamCreate(team)
+	team.TeamID = big.NewInt(11)
+	sto.TeamCreate(team)
+	var player storage.Player
+	player.PlayerId = big.NewInt(1)
+	player.State.Defence = 4
+	player.State.Endurance = 5
+	player.State.Pass = 6
+	player.State.Shoot = 7
+	player.State.Speed = 8
+	player.State.TeamId = big.NewInt(10)
+	err = sto.PlayerCreate(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err := sto.GetPlayer(player.PlayerId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Equal(player) {
+		t.Fatalf("Expected %v got %v", player, result)
+	}
+	player.State.Defence = 6
+	player.State.TeamId = big.NewInt(11)
+	err = sto.PlayerUpdate(player.PlayerId, player.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = sto.GetPlayer(player.PlayerId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Equal(player) {
+		t.Fatalf("Expected %v got %v", player, result)
+	}
+}
 
 // func TestPlayerAddTwiceSameTeam(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")

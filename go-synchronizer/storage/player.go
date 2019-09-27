@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"database/sql"
+	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -20,6 +22,18 @@ type PlayerState struct {
 	Shoot       uint64
 	Endurance   uint64
 	ShirtNumber uint8
+}
+
+func (b *Player) Equal(player Player) bool {
+	return b.PlayerId.String() == player.PlayerId.String() &&
+		b.PreferredPosition == player.PreferredPosition &&
+		b.State.TeamId.String() == player.State.TeamId.String() &&
+		b.State.Defence == player.State.Defence &&
+		b.State.Speed == player.State.Speed &&
+		b.State.Pass == player.State.Pass &&
+		b.State.Shoot == player.State.Shoot &&
+		b.State.Endurance == player.State.Endurance &&
+		b.State.ShirtNumber == player.State.ShirtNumber
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -75,6 +89,32 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 	return err
 }
 
+func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
+	player := Player{}
+	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position FROM players WHERE (player_id = $1);", playerID.String())
+	if err != nil {
+		return player, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return player, errors.New("Unexistent player " + playerID.String())
+	}
+	var teamID sql.NullString
+	err = rows.Scan(
+		&teamID,
+		&player.State.Defence,
+		&player.State.Speed,
+		&player.State.Pass,
+		&player.State.Shoot,
+		&player.State.Endurance,
+		&player.State.ShirtNumber,
+		&player.PreferredPosition,
+	)
+	player.PlayerId = playerID
+	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
+	return player, err
+}
+
 // func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
 // 	log.Infof("[DBMS] + update player state %v", playerState)
 
@@ -112,18 +152,4 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 // 	}
 
 // 	return nil
-// }
-
-// func (b *Storage) GetPlayer(id uint64) (Player, error) {
-// 	player := Player{}
-// 	rows, err := b.db.Query("SELECT id, monthOfBirthInUnixTime, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex FROM players WHERE (id = $1);", id)
-// 	if err != nil {
-// 		return player, err
-// 	}
-// 	defer rows.Close()
-// 	if !rows.Next() {
-// 		return player, errors.New("Unexistent player " + strconv.FormatUint(id, 10))
-// 	}
-// 	err = rows.Scan(&player.Id, &player.MonthOfBirthInUnixTime, &player.State.BlockNumber, &player.State.TeamId, &player.State.State, &player.State.Defence, &player.State.Speed, &player.State.Pass, &player.State.Shoot, &player.State.Endurance, &player.State.InBlockIndex)
-// 	return player, err
 // }
