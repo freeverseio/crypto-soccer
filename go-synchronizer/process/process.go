@@ -97,12 +97,12 @@ func (p *EventProcessor) Process() error {
 			// 	return err
 			// }
 			playerID := event.PlayerId
-			toTeamId := event.TeamIdTarget
+			toTeamID := event.TeamIdTarget
 			player, err := p.db.GetPlayer(playerID)
 			if err != nil {
 				return err
 			}
-			player.State.TeamId = toTeamId
+			player.State.TeamId = toTeamID
 			err = p.db.PlayerUpdate(playerID, player.State)
 			if err != nil {
 				return err
