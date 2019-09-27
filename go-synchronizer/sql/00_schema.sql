@@ -50,7 +50,7 @@ CREATE TABLE leagues (
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
 );
 
-CREATE TABLE calendars (
+CREATE TABLE calendars_match_days (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     league_idx INT NOT NULL,
