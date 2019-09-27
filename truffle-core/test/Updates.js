@@ -46,39 +46,39 @@ contract('Updates', (accounts) => {
     });
             
 
-    // it('check BC has the correct time', async () =>  {
-    //     nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
-    //     timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;
-    //     nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
-    //     now = new Date()
-    //     if (now.getUTCMinutes() < 42) {
-    //         expectedHour = now.getUTCHours();
-    //     } else {
-    //         expectedHour = now.getUTCHours() + 1;
-    //     }
-    //     nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
-    //     nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
-    //     nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
-    //     nextVerse.getUTCHours().should.be.equal(expectedHour)
-    //     nextVerse.getUTCMinutes().should.be.equal(45)
-    //     nextVerse.getUTCSeconds().should.be.equal(0)
-    //     timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
-    // });
+    it('check BC has the correct time', async () =>  {
+        nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
+        timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;
+        nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
+        now = new Date()
+        if (now.getUTCMinutes() < 42) {
+            expectedHour = now.getUTCHours();
+        } else {
+            expectedHour = now.getUTCHours() + 1;
+        }
+        nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
+        nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
+        nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
+        nextVerse.getUTCHours().should.be.equal(expectedHour)
+        nextVerse.getUTCMinutes().should.be.equal(45)
+        nextVerse.getUTCSeconds().should.be.equal(0)
+        timeZoneForRound1.toNumber().should.be.equal(1 + expectedHour)
+    });
     
-    // it('wait some minutes', async () =>  {
-    //     now = await updates.getNow().should.be.fulfilled;
-    //     block = await web3.eth.getBlockNumber().should.be.fulfilled;
-    //     extraTime = 3*60
-    //     await timeTravel.advanceTime(extraTime).should.be.fulfilled;
-    //     await timeTravel.advanceBlock().should.be.fulfilled;
-    //     newNow = await updates.getNow().should.be.fulfilled;
-    //     newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
-    //     newBlock.should.be.equal(block+1);
-    //     await isCloseEnough(newNow.toNumber(), now.toNumber() + extraTime).should.be.equal(true);
-    //     await timeTravel.revertToSnapShot(snapshotId);
-    //     newNow = await updates.getNow().should.be.fulfilled;
-    //     isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
-    // });
+    it('wait some minutes', async () =>  {
+        now = await updates.getNow().should.be.fulfilled;
+        block = await web3.eth.getBlockNumber().should.be.fulfilled;
+        extraTime = 3*60
+        await timeTravel.advanceTime(extraTime).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        newNow = await updates.getNow().should.be.fulfilled;
+        newBlock = await web3.eth.getBlockNumber().should.be.fulfilled;
+        newBlock.should.be.equal(block+1);
+        await isCloseEnough(newNow.toNumber(), now.toNumber() + extraTime).should.be.equal(true);
+        await timeTravel.revertToSnapShot(snapshotId);
+        newNow = await updates.getNow().should.be.fulfilled;
+        isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
+    });
     
     // it('submitActions to timezone too early', async () =>  {
     //     await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
@@ -89,7 +89,7 @@ contract('Updates', (accounts) => {
         verseBefore = await updates.currentVerse().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraTime = -10)        
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
         tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys")).should.be.fulfilled;
@@ -103,17 +103,17 @@ contract('Updates', (accounts) => {
         truffleAssert.eventEmitted(tx, "ActionsSubmission", (event) => {
             return event.seed == seed1 && isCloseEnough(event.submissionTime.toNumber(), now.toNumber());
         });
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
     });
 
     it('update Timezone once', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         seed0 = await updates.getCurrentVerseSeed().should.be.fulfilled;
         await moveToNextVerse(updates, extraSecs = -10);
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
+        // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
-        await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
+        // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
         await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
