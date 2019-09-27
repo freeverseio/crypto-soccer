@@ -30,13 +30,16 @@ func TestPlayerCreate(t *testing.T) {
 	}
 	timezoneIdx := uint8(1)
 	countryIdx := uint16(4)
+	leagueIdx := uint8(0)
 	var team storage.Team
 	team.TeamID = big.NewInt(10)
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
 	sto.TeamCreate(team)
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)

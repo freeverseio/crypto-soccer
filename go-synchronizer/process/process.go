@@ -16,6 +16,7 @@ import (
 	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -224,8 +225,8 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 		}
 		if event.DivisionIdxInCountry.Uint64() == 0 {
 			countryIdx := event.CountryIdxInTZ.Uint64()
-			if countryIdx >= 65535 {
-				return errors.New("Cannot cast country idx to uint16: value is too large")
+			if countryIdx > 65535 {
+				return errors.New("Cannot cast country idx to uint16: value too large")
 			}
 			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint16(countryIdx)}); err != nil {
 				return err
@@ -239,36 +240,48 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 }
 func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
-	TEAMS_PER_DIVISION, err := p.assets.TEAMSPERDIVISION(opts)
+
+	LEAGUES_PER_DIV, err := p.assets.LEAGUESPERDIV(opts)
 	if err != nil {
 		return err
 	}
-	begin := divisionIdxInCountry.Int64() * int64(TEAMS_PER_DIVISION)
-	end := begin + int64(TEAMS_PER_DIVISION)
+	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(LEAGUES_PER_DIV)
+	leagueIdxEnd := leagueIdxBegin + int64(LEAGUES_PER_DIV)
 
-	for i := begin; i < end; i++ {
-		if teamId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
-			return e
-		} else {
-			if teamOwner, e := p.assets.GetOwnerTeam(opts, teamId); e != nil {
-				return e
-			} else if e := p.db.TeamCreate(
-				storage.Team{
-					teamId,
-					timezone,
-					uint16(countryIdx.Uint64()),
-					storage.TeamState{teamOwner.Hex()}},
-			); e != nil {
-				return e
-			} else if e := p.storeVirtualPlayersForTeam(teamId, timezone, countryIdx, i); e != nil {
-				return e
+	TEAMS_PER_LEAGUE, err := p.assets.TEAMSPERLEAGUE(opts)
+	if err != nil {
+		return err
+	}
+
+	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
+		if err := p.db.LeagueCreate(storage.League{timezone, uint16(countryIdx.Uint64()), uint8(leagueIdx)}); err != nil {
+			return err
+		}
+		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)
+		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
+		for teamIdx := teamIdxBegin; teamIdx < teamIdxEnd; teamIdx++ {
+			if teamId, err := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
+				return err
+			} else {
+				if teamOwner, err := p.assets.GetOwnerTeam(opts, teamId); err != nil {
+					return err
+				} else if err := p.db.TeamCreate(
+					storage.Team{
+						teamId,
+						timezone,
+						uint16(countryIdx.Uint64()),
+						storage.TeamState{teamOwner.Hex(), uint8(leagueIdx)}},
+				); err != nil {
+					return err
+				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
+					return err
+				}
 			}
 		}
 	}
 	return err
 }
-func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
-	opts := &bind.CallOpts{}
+func (p *EventProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
 	PLAYERS_PER_TEAM_INIT, err := p.assets.PLAYERSPERTEAMINIT(opts)
 	if err != nil {
 		return err
@@ -304,13 +317,16 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 	}
 
 	for i := begin; i < end; i++ {
-		if playerId, e := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); e != nil {
-			return e
-		} else if skills, e := p.getPlayerSkillsAtBirth(opts, playerId); e != nil {
-			return e
-		} else if e := p.db.PlayerCreate(
+		if playerId, err := p.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
+			return err
+		} else if skills, err := p.getPlayerSkillsAtBirth(opts, playerId); err != nil {
+			return err
+		} else if preferredPosition, err := p.getPlayerPreferredPosition(opts, playerId); err != nil {
+			return err
+		} else if err := p.db.PlayerCreate(
 			storage.Player{
 				playerId,
+				preferredPosition,
 				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:    teamId,
 					Defence:   uint64(skills[SK_DEF]), // TODO: type should be uint16
@@ -319,8 +335,8 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(teamId *big.Int, timezone ui
 					Shoot:     uint64(skills[SK_SHO]),
 					Endurance: uint64(skills[SK_END]),
 				}},
-		); e != nil {
-			return e
+		); err != nil {
+			return err
 		}
 	}
 	return err
@@ -331,6 +347,23 @@ func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *b
 		return [5]uint16{0, 0, 0, 0, 0}, err
 	} else {
 		return p.assets.GetSkillsVec(opts, skills)
+	}
+}
+
+func (p *EventProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, playerId *big.Int) (string, error) {
+	if encodedSkills, err := p.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+		return "", err
+	} else if forwardness, err := p.assets.GetForwardness(opts, encodedSkills); err != nil {
+		return "", err
+	} else if leftishness, err := p.assets.GetLeftishness(opts, encodedSkills); err != nil {
+		return "", err
+	} else {
+		if forwardness.Uint64() > 255 {
+			return "", errors.New("Cannot cast forwardness to uint8: value too large")
+		} else if leftishness.Uint64() > 255 {
+			return "", errors.New("Cannot cast leftishness to uint8: value too large")
+		}
+		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
 	}
 }
 

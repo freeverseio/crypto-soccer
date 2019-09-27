@@ -7,7 +7,7 @@ import "./Assets.sol";
 
 contract Updates {
     event TeamTransfer(uint256 teamId, address to);
-    event ActionsSubmission(uint8 timeZone, bytes32 seed, uint256 submissionTime);
+    event ActionsSubmission(uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
 
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
@@ -59,7 +59,7 @@ contract Updates {
     
     function submitActionsRoot(bytes32 actionsRoot) public {
         require(now > nextVerseTimestamp, "too early to accept actions root");
-        (uint8 newTZ,,) = nextTimeZoneToUpdate();
+        (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
         (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
         if (prevTz != NULL_TIMEZONE) {
@@ -68,13 +68,13 @@ contract Updates {
         // if we are precisely at a moment where nothing needs to be done, just move ahead
         if (newTZ == NULL_TIMEZONE) {
             incrementVerse() ;
-            emit ActionsSubmission(NULL_TIMEZONE, 0, now);
+            emit ActionsSubmission(NULL_TIMEZONE, 0, 0, 0, now);
             return;
         }
         _assets.setActionsRoot(newTZ, actionsRoot);
         incrementVerse() ;
         setCurrentVerseSeed(blockhash(block.number-1)); 
-        emit ActionsSubmission(newTZ, blockhash(block.number-1), now);
+        emit ActionsSubmission(newTZ, day, turnInDay, blockhash(block.number-1), now);
     }
 
     function updateTZ(bytes32 root) public {

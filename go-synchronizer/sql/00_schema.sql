@@ -17,13 +17,16 @@ CREATE TABLE countries (
     PRIMARY KEY(timezone_idx, country_idx)
 );
 
+
 CREATE TABLE teams (
     team_id NUMERIC(78,0) NOT NULL,
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
+    league_idx INT NOT NULL,
     PRIMARY KEY(team_id),
-    FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
+    FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 
 CREATE TABLE players (
@@ -34,10 +37,8 @@ CREATE TABLE players (
     pass INT NOT NULL,
     shoot INT NOT NULL,
     endurance INT NOT NULL,
-    -- monthOfBirthInUnixTime TEXT NOT NULL,
-    -- blockNumber BIGINT NOT NULL,
-    -- inBlockIndex INT NOT NULL,
-    -- state TEXT NOT NULL,
+    shirt_number INT NOT NULL,
+    preferred_position TEXT NOT NULL,
     PRIMARY KEY(player_id)
 );
 
@@ -49,7 +50,7 @@ CREATE TABLE leagues (
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx)
 );
 
-CREATE TABLE calendars (
+CREATE TABLE calendars_match_days (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     league_idx INT NOT NULL,

@@ -35,6 +35,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache := testutils.NewGanache()
+	_ = storage
 
 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
 	ganache.DeployContracts(owner)
