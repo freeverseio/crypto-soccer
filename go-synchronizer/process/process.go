@@ -302,17 +302,20 @@ func (p *EventProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId 
 			return err
 		} else if preferredPosition, err := p.getPlayerPreferredPosition(opts, playerId); err != nil {
 			return err
+		} else if shirtNumber, err := p.getShirtNumber(opts, playerId); err != nil {
+			return err
 		} else if err := p.db.PlayerCreate(
 			storage.Player{
 				playerId,
 				preferredPosition,
 				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
-					TeamId:    teamId,
-					Defence:   uint64(skills[SK_DEF]), // TODO: type should be uint16
-					Speed:     uint64(skills[SK_SPE]),
-					Pass:      uint64(skills[SK_PAS]),
-					Shoot:     uint64(skills[SK_SHO]),
-					Endurance: uint64(skills[SK_END]),
+					TeamId:      teamId,
+					Defence:     uint64(skills[SK_DEF]), // TODO: type should be uint16
+					Speed:       uint64(skills[SK_SPE]),
+					Pass:        uint64(skills[SK_PAS]),
+					Shoot:       uint64(skills[SK_SHO]),
+					Endurance:   uint64(skills[SK_END]),
+					ShirtNumber: shirtNumber,
 				}},
 		); err != nil {
 			return err
@@ -326,6 +329,16 @@ func (p *EventProcessor) getPlayerSkillsAtBirth(opts *bind.CallOpts, playerId *b
 		return [5]uint16{0, 0, 0, 0, 0}, err
 	} else {
 		return p.assets.GetSkillsVec(opts, skills)
+	}
+}
+
+func (p *EventProcessor) getShirtNumber(opts *bind.CallOpts, playerId *big.Int) (uint8, error) {
+	if playerState, err := p.assets.GetPlayerState(opts, playerId); err != nil {
+		return 0, err
+	} else if shirtNumber, err := p.assets.GetCurrentShirtNum(opts, playerState); err != nil {
+		return 0, err
+	} else {
+		return uint8(shirtNumber.Uint64()), nil
 	}
 }
 
