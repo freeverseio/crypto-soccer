@@ -18,14 +18,14 @@ func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/market?sslmode=disable", "postgres url")
 	ethereumClient := flag.String("ethereum_client", "https://devnet.busyverse.com/web3", "ethereum node")
-	assetsContractAddress := flag.String("assets_address", "0x83f7082312A668C6da08f9608C378D4726aB582D", "assets contract address")
+	marketContractAddress := flag.String("market_address", "", "market contract address")
 	debug := flag.Bool("debug", false, "print debug logs")
 	flag.Parse()
 
 	log.Infof("[PARAM] memory            : %v", *inMemoryDatabase)
 	log.Infof("[PARAM] postgres          : %v", *postgresURL)
 	log.Infof("[PARAM] ethereum_client   : %v", *ethereumClient)
-	log.Infof("[PARAM] assets_address    : %v", *assetsContractAddress)
+	log.Infof("[PARAM] market_address    : %v", *marketContractAddress)
 	log.Infof("[PARAM] debug             : %v", *debug)
 	log.Infof("-------------------------------------------------------------------")
 
@@ -52,8 +52,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Infof("Creating Assets bindings to: %v", *assetsContractAddress)
-	assetsContract, err := market.NewMarket(common.HexToAddress(*assetsContractAddress), client)
+	log.Infof("Creating Market bindings to: %v", *marketContractAddress)
+	marketContract, err := market.NewMarket(common.HexToAddress(*marketContractAddress), client)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	processor, err := processor.NewProcessor(sto, client, assetsContract, privateKey)
+	processor, err := processor.NewProcessor(sto, client, marketContract, privateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
