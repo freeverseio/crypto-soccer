@@ -56,7 +56,7 @@ func main() {
 	}
 
 	log.Info("Creating Updates bindings to: ", config.UpdatesContractAddress)
-	_, err = updates.NewUpdates(common.HexToAddress(config.UpdatesContractAddress), client)
+	updatesContract, err := updates.NewUpdates(common.HexToAddress(config.UpdatesContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(client, sto, marketContract, assetsContract)
+	process := process.BackgroundProcessNew(client, sto, marketContract, assetsContract, updatesContract)
 
 	log.Info("Start processing events ...")
 	process.Start()
