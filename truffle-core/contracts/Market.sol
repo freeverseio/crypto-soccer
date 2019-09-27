@@ -1,6 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Leagues.sol";
+import "./Assets.sol";
+
 /**
  * @title Entry point for changing ownership of assets, and managing bids and auctions.
  */
