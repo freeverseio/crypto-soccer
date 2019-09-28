@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
 
@@ -23,6 +24,7 @@ type Ganache struct {
 	engineAddress common.Address // unused
 	Assets        *assets.Assets
 	Updates       *updates.Updates
+	Leagues       *leagues.Leagues
 	//States        *states.States
 	//Leagues       *leagues.Leagues
 	Owner *ecdsa.PrivateKey
@@ -48,7 +50,7 @@ func NewGanache() *Ganache {
 		common.Address{},
 		nil,
 		nil,
-		//nil,
+		nil,
 		creatorPrivateKey,
 	}
 }
@@ -109,12 +111,12 @@ func (ganache *Ganache) GetBalance(address common.Address) *big.Int {
 }
 
 func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
-	assetsAddress, _, assetsContract, err := assets.DeployAssets(
+	leaguesAddress, _, leaguesContract, err := leagues.DeployLeagues(
 		bind.NewKeyedTransactor(owner),
 		ganache.Client,
 	)
-	AssertNoErr(err, "DeployAssets failed")
-	fmt.Println("Assets deployed at:", assetsAddress.Hex())
+	AssertNoErr(err, "DeployLeagues failed")
+	fmt.Println("Leagues deployed at:", leaguesAddress.Hex())
 
 	updatesAddress, _, updatesContract, err := updates.DeployUpdates(
 		bind.NewKeyedTransactor(owner),
@@ -124,13 +126,17 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	fmt.Println("Updates deployed at:", updatesAddress.Hex())
 
 	// Initing
-	_, err = assetsContract.InitSingleTZ(bind.NewKeyedTransactor(owner), 1)
-	AssertNoErr(err, "Error initializing assets contract")
-	_, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), assetsAddress)
-	AssertNoErr(err, "Updates::InitUpdates(assets) failed")
+	_, err = leaguesContract.InitSingleTZ(bind.NewKeyedTransactor(owner), 1)
+	AssertNoErr(err, "Error initializing leagues contract")
+	_, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
+	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
+
+	assetsContract, err := assets.NewAssets(leaguesAddress, ganache.Client)
+	AssertNoErr(err, "Assets binding creation failed")
 
 	ganache.Assets = assetsContract
 	ganache.Updates = updatesContract
+	ganache.Leagues = leaguesContract
 }
 
 //func (ganache *Ganache) CountTeams() *big.Int {
