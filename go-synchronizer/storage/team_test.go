@@ -65,8 +65,8 @@ func TestTeamCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezone := uint8(1)
-	countryIdx := uint16(4)
-	leagueIdx := uint8(0)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	sto.CountryCreate(storage.Country{timezone, countryIdx})
 	sto.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})
@@ -95,8 +95,8 @@ func TestUpdateTeamOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezone := uint8(1)
-	countryIdx := uint16(4)
-	leagueIdx := uint8(0)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	sto.CountryCreate(storage.Country{timezone, countryIdx})
 	sto.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})

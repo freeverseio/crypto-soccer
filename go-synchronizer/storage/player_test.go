@@ -29,8 +29,8 @@ func TestPlayerCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezoneIdx := uint8(1)
-	countryIdx := uint16(4)
-	leagueIdx := uint8(0)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
 	var team storage.Team
 	team.TeamID = big.NewInt(10)
 	team.TimezoneIdx = timezoneIdx
@@ -75,8 +75,8 @@ func TestGetPlayer(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezoneIdx := uint8(1)
-	countryIdx := uint16(4)
-	leagueIdx := uint8(0)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
 	var team storage.Team
 	team.TeamID = big.NewInt(10)
 	team.TimezoneIdx = timezoneIdx

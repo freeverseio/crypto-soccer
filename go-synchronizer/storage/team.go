@@ -9,14 +9,14 @@ import (
 
 type TeamState struct {
 	Owner     string
-	LeagueIdx uint8
+	LeagueIdx uint32
 	Points    uint8
 }
 
 type Team struct {
 	TeamID      *big.Int
 	TimezoneIdx uint8
-	CountryIdx  uint16
+	CountryIdx  uint32
 	State       TeamState
 }
 

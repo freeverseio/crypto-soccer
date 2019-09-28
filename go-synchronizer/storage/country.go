@@ -38,7 +38,7 @@ func (b *Storage) CountryCreate(country Country) error {
 	return nil
 }
 
-func (b *Storage) GetCountry(timezone_id uint8, idx uint16) (Country, error) {
+func (b *Storage) GetCountry(timezone_id uint8, idx uint32) (Country, error) {
 	country := Country{}
 	rows, err := b.db.Query("SELECT timezone_idx, country_idx FROM countries WHERE (timezone_idx = $1 AND country_idx = $2);", timezone_id, idx)
 	if err != nil {
