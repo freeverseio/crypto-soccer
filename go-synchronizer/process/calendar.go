@@ -12,8 +12,8 @@ import (
 type Calendar struct {
 	leagues     *leagues.Leagues
 	storage     *storage.Storage
-	matchDays   uint8
-	matchPerDay uint8
+	MatchDays   uint8
+	MatchPerDay uint8
 }
 
 func NewCalendar(leagues *leagues.Leagues, storage *storage.Storage) (*Calendar, error) {
@@ -37,6 +37,5 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint16, leagueIdx uint
 		return errors.New("Unexistent league")
 	}
 
-	// b.league.
 	return nil
 }
