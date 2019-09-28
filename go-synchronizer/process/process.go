@@ -261,7 +261,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 	}
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
-		if err := p.db.LeagueCreate(storage.League{timezone, uint16(countryIdx.Uint64()), uint8(leagueIdx)}); err != nil {
+		if err := p.db.LeagueCreate(storage.League{timezone, uint16(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
 			return err
 		}
 		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)

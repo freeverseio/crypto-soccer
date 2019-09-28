@@ -7,7 +7,7 @@ import (
 type League struct {
 	TimezoneIdx uint8
 	CountryIdx  uint16
-	LeagueIdx   uint8
+	LeagueIdx   uint32
 }
 
 func (b *Storage) LeagueCount() (uint32, error) {
@@ -39,7 +39,7 @@ func (b *Storage) LeagueCreate(league League) error {
 }
 
 func (b *Storage) GetLeague(id uint32) (*League, error) {
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (id = $1);", id)
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
 	if err != nil {
 		return nil, err
 	}
