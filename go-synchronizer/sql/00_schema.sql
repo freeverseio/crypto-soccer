@@ -53,7 +53,7 @@ CREATE TABLE players (
     PRIMARY KEY(player_id)
 );
 
-CREATE TABLE calendars_match_days (
+CREATE TABLE calendar_match_days (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     league_idx INT NOT NULL,
