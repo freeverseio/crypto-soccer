@@ -247,6 +247,10 @@ func (p *EventProcessor) storeDivisionCreation(events []leagues.LeaguesDivisionC
 }
 func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
+	calendarProcessor, err := NewCalendar(p.leagues, p.db)
+	if err != nil {
+		return err
+	}
 
 	LEAGUES_PER_DIV, err := p.leagues.LEAGUESPERDIV(opts)
 	if err != nil {
@@ -286,10 +290,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 				}
 			}
 		}
-		calendarProcessor, err := NewCalendar(p.leagues, p.db)
-		if err != nil {
-			return err
-		}
+
 		err = calendarProcessor.Generate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
 		if err != nil {
 			return err
