@@ -8,9 +8,10 @@ import (
 
 type CalendarMatchDay struct {
 	TimezoneIdx   uint8
-	CountryIdx    uint16
-	LeagueIdx     uint8
+	CountryIdx    uint32
+	LeagueIdx     uint32
 	MatchDayIdx   uint8
+	MatchIdx      uint8
 	HomeTeamID    *big.Int
 	VisitorTeamID *big.Int
 	HomeGoals     uint8
@@ -18,6 +19,6 @@ type CalendarMatchDay struct {
 }
 
 func (b *Storage) CalendarMatchDayCreate(day CalendarMatchDay) error {
-	log.Debugf("[DBMS] Create Match Day %v", day)
+	log.Infof("[DBMS] Create Match Day %v", day)
 	return nil
 }

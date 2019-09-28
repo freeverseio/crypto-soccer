@@ -37,5 +37,17 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 		return errors.New("Unexistent league")
 	}
 
+	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
+		for match := uint8(0); match < b.MatchPerDay; match++ {
+			b.storage.CalendarMatchDayCreate(storage.CalendarMatchDay{
+				TimezoneIdx: timezoneIdx,
+				CountryIdx:  countryIdx,
+				LeagueIdx:   leagueIdx,
+				MatchDayIdx: matchDay,
+				MatchIdx:    match,
+			})
+		}
+	}
+
 	return nil
 }
