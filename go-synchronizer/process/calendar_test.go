@@ -54,7 +54,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	matches, err := sto.GetLeagueMatches(timezoneIdx, countryIdx, leagueIdx)
+	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
