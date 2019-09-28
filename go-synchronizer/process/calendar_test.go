@@ -38,7 +38,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	ganache := testutils.NewGanache()
 	ganache.DeployContracts(ganache.Owner)
 
-	calendar, err := process.NewCalendar(ganache.Leagues, sto)
+	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,9 +49,13 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
 	leagueIdx := uint32(0)
 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	err = calendar.Generate(timezoneIdx, countryIdx, leagueIdx)
+	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	calendar, err := sto.GetCalendar(leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

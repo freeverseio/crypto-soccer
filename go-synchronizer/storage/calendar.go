@@ -18,3 +18,7 @@ type Match struct {
 	HomeGoals     uint8
 	VisitorGoals  uint8
 }
+
+func (b *Storage) GetCalendar(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*Calendar, error) {
+	return nil, nil
+}
