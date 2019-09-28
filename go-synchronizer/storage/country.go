@@ -8,7 +8,7 @@ import (
 
 type Country struct {
 	TimezoneIdx uint8
-	CountryIdx  uint16
+	CountryIdx  uint32
 }
 
 func (b *Storage) CountryCount() (uint64, error) {

@@ -22,7 +22,7 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 	}
 
 	timezoneIdx := uint8(1)
-	countryIdx := uint16(0)
+	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	err = calendar.Generate(timezoneIdx, countryIdx, leagueIdx)
 	if err == nil {
@@ -45,7 +45,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 
 	timezoneIdx := uint8(1)
 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-	countryIdx := uint16(0)
+	countryIdx := uint32(0)
 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
 	leagueIdx := uint32(0)
 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
@@ -54,8 +54,11 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	calendar, err := sto.GetCalendar(leagueIdx)
+	calendar, err := sto.GetCalendar(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if calendar == nil {
+		t.Fatal("Calendar not generated")
 	}
 }

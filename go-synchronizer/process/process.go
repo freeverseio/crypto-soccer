@@ -235,7 +235,7 @@ func (p *EventProcessor) storeDivisionCreation(events []assets.AssetsDivisionCre
 			if countryIdx > 65535 {
 				return errors.New("Cannot cast country idx to uint16: value too large")
 			}
-			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint16(countryIdx)}); err != nil {
+			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
 				return err
 			}
 			if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
@@ -261,7 +261,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 	}
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
-		if err := p.db.LeagueCreate(storage.League{timezone, uint16(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
+		if err := p.db.LeagueCreate(storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
 			return err
 		}
 		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)

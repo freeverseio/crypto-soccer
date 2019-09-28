@@ -6,7 +6,7 @@ import (
 
 type League struct {
 	TimezoneIdx uint8
-	CountryIdx  uint16
+	CountryIdx  uint32
 	LeagueIdx   uint32
 }
 

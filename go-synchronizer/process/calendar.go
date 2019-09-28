@@ -28,7 +28,7 @@ func NewCalendar(leagues *leagues.Leagues, storage *storage.Storage) (*Calendar,
 	return &Calendar{leagues, storage, matchDays, matchPerDay}, nil
 }
 
-func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint16, leagueIdx uint32) error {
+func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
 	league, err := b.storage.GetLeague(leagueIdx)
 	if err != nil {
 		return err
