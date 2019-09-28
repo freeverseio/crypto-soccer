@@ -39,7 +39,7 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			err = b.storage.LeagueMatchCreate(storage.LeagueMatch{
+			err = b.storage.MatchCreate(storage.Match{
 				TimezoneIdx: timezoneIdx,
 				CountryIdx:  countryIdx,
 				LeagueIdx:   leagueIdx,
