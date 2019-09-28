@@ -53,14 +53,14 @@ CREATE TABLE players (
     PRIMARY KEY(player_id)
 );
 
-CREATE TABLE calendar_match_days (
+CREATE TABLE calendar_matches (
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     league_idx INT NOT NULL,
     match_day_idx INT NOT NULL,
     match_idx INT NOT NULL,
-    home_team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
-    visitor_team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
+    home_team_id NUMERIC(78,0) REFERENCES teams(team_id),
+    visitor_team_id NUMERIC(78,0) REFERENCES teams(team_id),
     home_goals INT,
     visitor_goals INT,
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
