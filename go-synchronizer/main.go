@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
@@ -43,8 +43,8 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Assets bindings to: ", config.AssetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(config.AssetsContractAddress), client)
+	log.Info("Creating Leagues bindings to: ", config.LeaguesContractAddress)
+	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(config.LeaguesContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -73,7 +73,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process := process.BackgroundProcessNew(client, sto, marketContract, assetsContract, updatesContract)
+	process := process.BackgroundProcessNew(client, sto, marketContract, leaguesContract, updatesContract)
 
 	log.Info("Start processing events ...")
 	process.Start()

@@ -26,7 +26,7 @@ func TestLeagueCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 	timezone := uint8(1)
-	countryIdx := uint16(4)
+	countryIdx := uint32(4)
 	sto.TimezoneCreate(storage.Timezone{timezone})
 	sto.CountryCreate(storage.Country{timezone, countryIdx})
 	league := storage.League{
