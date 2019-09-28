@@ -18,16 +18,12 @@ import (
 )
 
 type Ganache struct {
-	Client        *ethclient.Client
-	time          *Testutils
-	statesAddress common.Address // unused
-	engineAddress common.Address // unused
-	Assets        *assets.Assets
-	Updates       *updates.Updates
-	Leagues       *leagues.Leagues
-	//States        *states.States
-	//Leagues       *leagues.Leagues
-	Owner *ecdsa.PrivateKey
+	Client  *ethclient.Client
+	time    *Testutils
+	Assets  *assets.Assets
+	Updates *updates.Updates
+	Leagues *leagues.Leagues
+	Owner   *ecdsa.PrivateKey
 }
 
 func NewGanache() *Ganache {
@@ -46,8 +42,6 @@ func NewGanache() *Ganache {
 	return &Ganache{
 		client,
 		time,
-		common.Address{},
-		common.Address{},
 		nil,
 		nil,
 		nil,

@@ -14,7 +14,12 @@ func TestGenerateCalendar(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache := testutils.NewGanache()
-	calendar := process.NewCalendar(ganache.Leagues, storage)
+	ganache.DeployContracts(ganache.Owner)
+
+	calendar, err := process.NewCalendar(ganache.Leagues, storage)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	timezoneIdx := uint8(1)
 	countryIdx := uint16(0)
