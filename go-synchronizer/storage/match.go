@@ -35,7 +35,7 @@ func (b *Storage) MatchCreate(match Match) error {
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*[]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $1);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx FROM matches WHERE (timezone_idx == $1 AND country_idx == $2 AND league_idx == $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
