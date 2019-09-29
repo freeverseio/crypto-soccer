@@ -66,39 +66,39 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	}
 }
 
-func TestPopulateCalendarOfExistingLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache := testutils.NewGanache()
-	ganache.DeployContracts(ganache.Owner)
+// func TestPopulateCalendarOfExistingLeague(t *testing.T) {
+// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	ganache := testutils.NewGanache()
+// 	ganache.DeployContracts(ganache.Owner)
 
-	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	timezoneIdx := uint8(1)
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-	countryIdx := uint32(0)
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-	leagueIdx := uint32(0)
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	match := (*matches)[0]
-	if match.HomeTeamID == nil {
-		t.Fatal("Home team is nil")
-	}
-}
+// 	timezoneIdx := uint8(1)
+// 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+// 	countryIdx := uint32(0)
+// 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+// 	leagueIdx := uint32(0)
+// 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+// 	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	err = calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	match := (*matches)[0]
+// 	if match.HomeTeamID == nil {
+// 		t.Fatal("Home team is nil")
+// 	}
+// }

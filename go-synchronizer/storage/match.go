@@ -36,7 +36,22 @@ func (b *Storage) MatchCreate(match Match) error {
 }
 
 func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint32, matchIdx uint32, homeTeamID *big.Int, visitorTeamID *big.Int) error {
-	return errors.New("porca")
+	if homeTeamID == nil {
+		return errors.New("nill home team id")
+	}
+	if visitorTeamID == nil {
+		return errors.New("nill visitor team id")
+	}
+	_, err := b.db.Exec("UPDATE matches SET home_team_id = $1, visitor_team_id = $2 WHERE (timezone_idx == $3 AND country_idx == $4 AND league_idx == $5 AND match_day_idx == $6 AND match_idx == $7);",
+		homeTeamID.String(),
+		visitorTeamID.String(),
+		timezoneIdx,
+		countryIdx,
+		leagueIdx,
+		matchDayIdx,
+		matchIdx,
+	)
+	return err
 }
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*[]Match, error) {
