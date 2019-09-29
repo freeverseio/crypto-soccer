@@ -24,13 +24,25 @@ contract Championships {
     // groupIdx = 0,...,15
     // posInGroup = 0, ...7
     // teamIdx  = 0,...,128
-    function getTeamIdxInCup(uint8 groupIdx, uint8 posInGroup) public pure returns(uint8 teamIdxInCup) {
+    function getTeamIdxInCup(uint8 groupIdx, uint8 posInGroup) public pure returns(uint8) {
         if (groupIdx % 2 == 0) {
                 return 8 * posInGroup + groupIdx / 2;
         } else {
                 return 8 * posInGroup + (groupIdx - 1) / 2 + 64;
         }
     }
+
+    function getGroupAndPosInGroup(uint8 teamIdxInCup) public pure returns(uint8 groupIdx, uint8 posInGroup) {
+        if (teamIdxInCup < 64) {
+            posInGroup = teamIdxInCup / 8;
+            groupIdx = 2 * (teamIdxInCup % 8);
+        } else {
+            posInGroup = (teamIdxInCup-64) / 8;
+            groupIdx = 2 * (1 + (teamIdxInCup % 8));
+        }
+    }
+
+
 
     // function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     // {

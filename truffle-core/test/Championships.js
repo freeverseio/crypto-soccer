@@ -73,15 +73,22 @@ contract('Championships', (accounts) => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
         for (t = 0; t < teams.length; t++) {
             team = await champs.getTeamIdxInCup(groupIdx = 0, posInGroup = t).should.be.fulfilled;
-            team[t].toNumber().should.be.equal(teamsExpected[t])
+            team[t].toNumber().should.be.equal(teamsExpected[t]);
+            result = await champs.getGroupAndPosInGroup(team[t].toNumber()).should.be.fulfilled;
+            result[0].toNumber().should.be.equal(groupIdx);
+            result[1].toNumber().should.be.equal(posInGroup);
         }
         teamsExpected = [71, 79, 87, 95, 103, 111, 119, 127 ]
         for (t = 0; t < teams.length; t++) {
             team = await champs.getTeamIdxInCup(groupIdx = 15, posInGroup = t).should.be.fulfilled;
             team[t].toNumber().should.be.equal(teamsExpected[t])
+            result = await champs.getGroupAndPosInGroup(team[t].toNumber()).should.be.fulfilled;
+            result[0].toNumber().should.be.equal(groupIdx);
+            result[1].toNumber().should.be.equal(posInGroup);
         }
     });
 
+    return;
     it('get teams for match in wrong day', async () => {
         matchIdxInDay = 0; 
         day = MATCHDAYS-1; 
