@@ -69,43 +69,43 @@ contract('Championships', (accounts) => {
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
     });
 
-    it('get teams for groups', async () => {
-        teams = await champs.getTeamsInGroup(groupIdx = 0).should.be.fulfilled;
+    it('get all teams for groups', async () => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
         for (t = 0; t < teams.length; t++) {
-            teams[t].toNumber().should.be.equal(teamsExpected[t])
+            team = await champs.getTeamIdxInCup(groupIdx = 0, posInGroup = t).should.be.fulfilled;
+            team[t].toNumber().should.be.equal(teamsExpected[t])
         }
-        teams = await champs.getTeamsInGroup(groupIdx = 15).should.be.fulfilled;
         teamsExpected = [71, 79, 87, 95, 103, 111, 119, 127 ]
         for (t = 0; t < teams.length; t++) {
-            teams[t].toNumber().should.be.equal(teamsExpected[t])
+            team = await champs.getTeamIdxInCup(groupIdx = 15, posInGroup = t).should.be.fulfilled;
+            team[t].toNumber().should.be.equal(teamsExpected[t])
         }
     });
 
     it('get teams for match in wrong day', async () => {
         matchIdxInDay = 0; 
         day = MATCHDAYS-1; 
-        await champs.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
         day = MATCHDAYS; 
-        await champs.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
+        await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.rejected;
     });
 
     it('get teams for match in wrong match in day', async () => {
         day = 0;
         matchIdxInDay = MATCHES_PER_DAY-1;
-        await champs.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
         matchIdxInDay = MATCHES_PER_DAY;
-        await champs.getTeamsInMatch(day, matchIdxInDay).should.be.rejected;
+        await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.rejected;
     });
 
     it('get teams for match in league day', async () => {
         day = 0;
         matchIdxInDay = 0;
-        teams = await champs.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        teams = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(1);
         day = Math.floor(MATCHDAYS/2);
-        teams = await champs.getTeamsInMatch(day, matchIdxInDay).should.be.fulfilled;
+        teams = await champs.getTeamsInLeagueMatch(day, matchIdxInDay).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(1);
         teams[1].toNumber().should.be.equal(0);
     });

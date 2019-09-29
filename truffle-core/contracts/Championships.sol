@@ -22,20 +22,31 @@ contract Championships {
     }
 
     // groupIdx = 0,...,15
+    // posInGroup = 0, ...7
     // teamIdx  = 0,...,128
-    function getTeamsInGroup(uint8 groupIdx) public pure returns(uint8[8] memory teamIdxs) {
+    function getTeamIdxInCup(uint8 groupIdx, uint8 posInGroup) public pure returns(uint8 teamIdxInCup) {
         if (groupIdx % 2 == 0) {
-            for (uint8 t = 0; t < 8; t++) {
-                teamIdxs[t] = 8 * t + groupIdx / 2;
-            }
+                return 8 * posInGroup + groupIdx / 2;
         } else {
-            for (uint8 t = 0; t < 8; t++) {
-                teamIdxs[t] = 8 * t + (groupIdx - 1) / 2 + 64;
-            }
+                return 8 * posInGroup + (groupIdx - 1) / 2 + 64;
         }
     }
+
+    // function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
+    // {
+    //     require(matchday < MATCHDAYS, "wrong match day");
+    //     require(matchIdxInDay < MATCHES_PER_DAY, "wrong match");
+        
+    //     if (matchday < (TEAMS_PER_LEAGUE - 1))
+    //         (homeIdx, visitorIdx) = _getTeamsInMatchFirstHalf(matchday, matchIdxInDay);
+    //     else
+    //         (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
+    // }
+
+
+
     
-    function getTeamsInMatch(uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
+    function getTeamsInLeagueMatch(uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     {
         require(matchday < MATCHDAYS, "wrong match day");
         require(matchIdxInDay < MATCHES_PER_DAY, "wrong match");
@@ -84,7 +95,7 @@ contract Championships {
     //     uint8 visitorTeamIdx;
     //     for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
     //     {
-    //         (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
+    //         (homeTeamIdx, visitorTeamIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);
     //         uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
     //         uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
     //         uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
