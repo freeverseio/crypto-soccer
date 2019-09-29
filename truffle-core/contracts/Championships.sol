@@ -5,7 +5,7 @@ import "./Engine.sol";
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Leagues {
+contract Championships {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -21,6 +21,20 @@ contract Leagues {
         return address(_engine);
     }
 
+    // groupIdx = 0,...,15
+    // teamIdx  = 0,...,128
+    function getTeamsInGroup(uint8 groupIdx) public pure returns(uint8[8] memory teamIdxs) {
+        if (groupIdx % 2 == 0) {
+            for (uint8 t = 0; t < 8; t++) {
+                teamIdxs[t] = 8 * t + groupIdx / 2;
+            }
+        } else {
+            for (uint8 t = 0; t < 8; t++) {
+                teamIdxs[t] = 8 * t + (groupIdx - 1) / 2 + 64;
+            }
+        }
+    }
+    
     function getTeamsInMatch(uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     {
         require(matchday < MATCHDAYS, "wrong match day");
