@@ -294,6 +294,10 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 		if err != nil {
 			return err
 		}
+		err = calendarProcessor.Populate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
+		if err != nil {
+			return err
+		}
 	}
 	return err
 }
