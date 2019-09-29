@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Calendar struct {
@@ -51,6 +52,26 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 			}
 		}
 	}
+	return nil
+}
 
+func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	league, err := b.storage.GetLeague(leagueIdx)
+	if err != nil {
+		return err
+	}
+	if league == nil {
+		return errors.New("Unexistent league")
+	}
+
+	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
+		for match := uint8(0); match < b.MatchPerDay; match++ {
+			teams, err := b.leagues.GetTeamsInMatch(&bind.CallOpts{}, matchDay, match)
+			if err != nil {
+				return nil
+			}
+			log.Info(teams)
+		}
+	}
 	return nil
 }
