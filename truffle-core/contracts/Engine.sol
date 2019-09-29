@@ -28,13 +28,12 @@ contract Engine is EncodingSkills{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint16[7][2] memory events1stHalf,
         bool is2ndHalf,
         bool isHomeStadium
     )
         public
     {
-        playMatch(seed, states, tactics, events1stHalf, is2ndHalf, isHomeStadium);
+        playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -49,32 +48,26 @@ contract Engine is EncodingSkills{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint16[7][2] memory events1stHalf,
         bool is2ndHalf,
         bool isHomeStadium
     )
         public
         pure
-        returns (uint8[2] memory teamGoals) 
+        returns (uint8[2] memory teamGoals, uint8[4] memory events0, uint8[4] memory events1)
     {
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
-        uint256[5][2] memory deltaSkills;
         bool[10][2] memory extraAttack;
         
-        
-        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], events1stHalf, is2ndHalf);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], events1stHalf, is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
-        uint16[7][2] memory events;
-        events[0] = computeExceptionalEvents(states[0], events1stHalf[0], seed);
-        events[1] = computeExceptionalEvents(states[1], events1stHalf[1], seed);
+        events0 = computeExceptionalEvents(states[0], seed);
+        events1 = computeExceptionalEvents(states[1], seed);
 
-        // events[0,1,2] contain the [playerPos, round, typeOfOutOfGame] data for a possible outOfGamePlayer. It is zero otherwise
-        // - playerPos is set to NO_EVENT if nothing happened.
-        (globSkills[0], deltaSkills[0]) = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], events[0][0]);
-        (globSkills[1], deltaSkills[1]) = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], events[1][0]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
         if (isHomeStadium) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
@@ -99,7 +92,7 @@ contract Engine is EncodingSkills{
                 }
             }
         }
-        return teamGoals;
+        return (teamGoals, events0, events1);
     }
     
     function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
@@ -139,22 +132,21 @@ contract Engine is EncodingSkills{
     //      - yellowCard 2.5 per game 
     // We encode this in uint16[3] events, which applies to 1 half of the game only.
     //  - 1 possible event that leaves a player out of the match, encoded in:
-    //          events[0, 1, 2] = [player (from 0 to 11), round, eventType (injuryHard, injuryLow, redCard)]
+    //          events[0, 1] = [player (from 0 to 11), eventType (injuryHard, injuryLow, redCard)]
     //  - 2 possible events for yellow card:
-    //          events[3, 4] = [player (from 0 to 11), round]
-    //          events[5, 6] = [player (from 0 to 11), round]
+    //          events[2] = player (from 0 to 11)
+    //          events[3] = player (from 0 to 11)
     //  The player value is set to NO_EVENT ( = 11) if no event took place
     function computeExceptionalEvents
     (
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
-        uint16[7] memory events1stHalf,
         uint256 seed
     ) 
         public 
         pure 
         returns 
     (
-        uint16[7] memory events
+        uint8[4] memory events
     ) 
     {
         uint256[] memory weights = new uint256[](12);
@@ -166,21 +158,15 @@ contract Engine is EncodingSkills{
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[11] = 758;
-        uint8 outOfFieldPlayer = throwDiceArray(weights, rnds[0]);
-        events[0] = outOfFieldPlayer;
-        events[1] = uint8(rnds[0] % ROUNDS_PER_MATCH);
-        events[2] = computeTypeOfEvent(rnds[1]);
-        // two events for yellow cards
+        events[0] = throwDiceArray(weights, rnds[0]);
+        events[1] = computeTypeOfEvent(rnds[1]);
+        // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[11] = 9;
-        outOfFieldPlayer = throwDiceArray(weights, rnds[2]);
-        events[3] = outOfFieldPlayer;
-        events[4] = uint16(rnds[2] % ROUNDS_PER_MATCH);
-        outOfFieldPlayer = throwDiceArray(weights, rnds[3]);
-        events[5] = outOfFieldPlayer;
-        events[6] = uint16(rnds[3] % ROUNDS_PER_MATCH);
+        events[2] = throwDiceArray(weights, rnds[2]);
+        events[3] = throwDiceArray(weights, rnds[3]);
     }
     
 
@@ -193,7 +179,6 @@ contract Engine is EncodingSkills{
     function getLineUpAndPlayerPerZone(
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
         uint256 tactics,
-        uint16[7][2] memory events1stHalf,
         bool is2ndHalf
     ) 
         public 
@@ -209,6 +194,9 @@ contract Engine is EncodingSkills{
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
             if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
+            for (uint8 pp = 0; pp < p; pp++) {
+                require(lineup[p] != lineup[pp], "player appears twice in lineup!");
+            }
         }
         require(changes < 4, "max allowed changes during the break is 3");
         return (states, extraAttack, getPlayersPerZone(tacticsId));
@@ -415,15 +403,13 @@ contract Engine is EncodingSkills{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack,
-        uint16 outOfGamePlayerPos
+        bool[10] memory extraAttack
     )
         public
         pure
         returns 
     (
-            uint256[5] memory globSkills,
-            uint256[5] memory deltaSkills
+            uint256[5] memory globSkills
     )
     {
         // for a keeper, the 'shoot skill' is interpreted as block skill
@@ -435,6 +421,7 @@ contract Engine is EncodingSkills{
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
             
         
+        uint256[5] memory deltaSkills;
         uint256[3] memory fwdModFactors;
         uint8 p = 1;
         // loop over defenders
