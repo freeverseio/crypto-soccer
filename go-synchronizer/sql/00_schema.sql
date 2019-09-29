@@ -31,6 +31,7 @@ CREATE TABLE teams (
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
     league_idx INT NOT NULL,
+    team_idx_in_league INT NOT NULL,
     points INT NOT NULL DEFAULT 0,
     w INT NOT NULL DEFAULT 0,
     d INT NOT NULL DEFAULT 0,

@@ -8,9 +8,9 @@ import (
 )
 
 type TeamState struct {
-	Owner     string
-	LeagueIdx uint32
-	Points    uint8
+	Owner           string
+	LeagueIdx       uint32
+	TeamIdxInLeague uint32
 }
 
 type Team struct {
@@ -22,13 +22,13 @@ type Team struct {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, points) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league) VALUES ($1, $2, $3, $4, $5, $6);",
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
 		team.State.Owner,
 		team.State.LeagueIdx,
-		team.State.Points,
+		team.State.TeamIdxInLeague,
 	)
 	if err != nil {
 		return err
@@ -59,10 +59,10 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
-	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, points=$3 WHERE team_id=$4",
+	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, team_idx_in_league=$3 WHERE team_id=$4",
 		teamState.Owner,
 		teamState.LeagueIdx,
-		teamState.Points,
+		teamState.TeamIdxInLeague,
 		teamID.String(),
 	)
 	return err
