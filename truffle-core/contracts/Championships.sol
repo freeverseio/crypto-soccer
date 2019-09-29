@@ -42,21 +42,11 @@ contract Championships {
         }
     }
 
-
-
-    // function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
-    // {
-    //     require(matchday < MATCHDAYS, "wrong match day");
-    //     require(matchIdxInDay < MATCHES_PER_DAY, "wrong match");
-        
-    //     if (matchday < (TEAMS_PER_LEAGUE - 1))
-    //         (homeIdx, visitorIdx) = _getTeamsInMatchFirstHalf(matchday, matchIdxInDay);
-    //     else
-    //         (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
-    // }
-
-
-
+    function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8, uint8) 
+    {
+        (uint8 homeIdx, uint8 visitorIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);
+        return (getTeamIdxInCup(groupIdx, homeIdx), getTeamIdxInCup(groupIdx, visitorIdx)); 
+    }
     
     function getTeamsInLeagueMatch(uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8 homeIdx, uint8 visitorIdx) 
     {
