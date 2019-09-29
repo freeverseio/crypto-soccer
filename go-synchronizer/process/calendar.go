@@ -70,6 +70,18 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 			if err != nil {
 				return nil
 			}
+			homeTeamID, err := b.storage.GetTeamID(timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
+			if err != nil {
+				return err
+			}
+			visitorTeamID, err := b.storage.GetTeamID(timezoneIdx, countryIdx, leagueIdx, uint32(teams.VisitorIdx))
+			if err != nil {
+				return err
+			}
+			err = b.storage.MatchSetTeams(timezoneIdx, countryIdx, leagueIdx, uint32(matchDay), uint32(match), homeTeamID, visitorTeamID)
+			if err != nil {
+				return err
+			}
 			log.Info(teams)
 		}
 	}

@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -32,6 +33,10 @@ func (b *Storage) MatchCreate(match Match) error {
 		return err
 	}
 	return nil
+}
+
+func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint32, matchIdx uint32, homeTeamID *big.Int, visitorTeamID *big.Int) error {
+	return errors.New("porca")
 }
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*[]Match, error) {
