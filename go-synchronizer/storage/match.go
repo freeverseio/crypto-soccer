@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -14,8 +15,8 @@ type Match struct {
 	MatchIdx      uint8
 	HomeTeamID    *big.Int
 	VisitorTeamID *big.Int
-	HomeGoals     uint8
-	VisitorGoals  uint8
+	HomeGoals     *uint8
+	VisitorGoals  *uint8
 }
 
 func (b *Storage) MatchCreate(match Match) error {
@@ -35,7 +36,7 @@ func (b *Storage) MatchCreate(match Match) error {
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*[]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx FROM matches WHERE (timezone_idx == $1 AND country_idx == $2 AND league_idx == $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx == $1 AND country_idx == $2 AND league_idx == $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
@@ -43,16 +44,24 @@ func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uin
 	var matches []Match
 	for rows.Next() {
 		var match Match
+		var homeTeamID sql.NullString
+		var visitorTeamID sql.NullString
 		err = rows.Scan(
 			&match.TimezoneIdx,
 			&match.CountryIdx,
 			&match.LeagueIdx,
 			&match.MatchDayIdx,
 			&match.MatchIdx,
+			&homeTeamID,
+			&visitorTeamID,
+			&match.HomeGoals,
+			&match.VisitorGoals,
 		)
 		if err != nil {
 			return nil, err
 		}
+		match.HomeTeamID, _ = new(big.Int).SetString(homeTeamID.String, 10)
+		match.VisitorTeamID, _ = new(big.Int).SetString(visitorTeamID.String, 10)
 		matches = append(matches, match)
 	}
 
