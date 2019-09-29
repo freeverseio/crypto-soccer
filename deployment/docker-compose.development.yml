@@ -34,6 +34,7 @@ services:
     image: freeverseio/relay:dev
     ports:
       - "4003:4000"
+    command: --assetsContractAddress "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C"
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
