@@ -42,7 +42,7 @@ func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx 
 	if visitorTeamID == nil {
 		return errors.New("nill visitor team id")
 	}
-	_, err := b.db.Exec("UPDATE matches SET home_team_id = $1, visitor_team_id = $2 WHERE (timezone_idx == $3 AND country_idx == $4 AND league_idx == $5 AND match_day_idx == $6 AND match_idx == $7);",
+	_, err := b.db.Exec("UPDATE matches SET home_team_id = $1, visitor_team_id = $2 WHERE (timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);",
 		homeTeamID.String(),
 		visitorTeamID.String(),
 		timezoneIdx,
@@ -56,7 +56,7 @@ func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx 
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) (*[]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx == $1 AND country_idx == $2 AND league_idx == $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
