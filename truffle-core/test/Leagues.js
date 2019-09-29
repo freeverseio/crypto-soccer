@@ -97,31 +97,31 @@ contract('Leagues', (accounts) => {
         teams[1].toNumber().should.be.equal(0);
     });
     
-    it('calculate a day in a league', async () => {
-        day = 0;
-        verseSeed = 0;
-        leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-        leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.length.should.be.equal(MATCHES_PER_DAY * 2);
-        expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
-        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-        // console.log(actualScores);
-        for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result[idx].toNumber().should.be.equal(expectedScores[idx]);
-        }
-        day = 3;
-        verseSeed = 432;
-        leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-        leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-        result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-        result.length.should.be.equal(MATCHES_PER_DAY * 2);
-        expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
-        actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-        // console.log(actualScores);
-        for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-            result[idx].toNumber().should.be.equal(expectedScores[idx]);
-        }
-    });
+    // it('calculate a day in a league', async () => {
+    //     day = 0;
+    //     verseSeed = 0;
+    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
+    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
+    //     result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
+    //     expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
+    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
+    //     // console.log(actualScores);
+    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
+    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
+    //     }
+    //     day = 3;
+    //     verseSeed = 432;
+    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
+    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
+    //     result = await leagues.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
+    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
+    //     expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
+    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
+    //     // console.log(actualScores);
+    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
+    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
+    //     }
+    // });
 
 });

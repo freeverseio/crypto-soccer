@@ -55,35 +55,35 @@ contract Leagues {
     // returns [scoreHome, scoreAway, scoreHome, scoreAway,...]
     // TODO: currentVerseSeed must be provided from getCurrentVerseSeed()
     // TODO: likewise, matchday should be computed outside
-    function computeMatchday(
-        uint8 matchday,
-        uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
-        uint256[TEAMS_PER_LEAGUE] memory tacticsIds,
-        uint256 currentVerseSeed
-    )
-        public
-        view
-        returns (uint8[2 * MATCHES_PER_DAY] memory scores)
-    {
-        uint8[2] memory score;
-        uint8 homeTeamIdx;
-        uint8 visitorTeamIdx;
-        for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
-        {
-            (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
-            uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
-            uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
-            uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
-            uint8[4] memory events0;
-            (score, events0, events0) = _engine.playMatch(
-                matchSeed, 
-                states,
-                tactics,
-                false,
-                false
-            );
-            scores[matchIdxInDay * 2] = score[0];
-            scores[matchIdxInDay * 2 +1 ] = score[1];
-        }
-    }    
+    // function computeMatchday(
+    //     uint8 matchday,
+    //     uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
+    //     uint256[TEAMS_PER_LEAGUE] memory tacticsIds,
+    //     uint256 currentVerseSeed
+    // )
+    //     public
+    //     view
+    //     returns (uint8[2 * MATCHES_PER_DAY] memory scores)
+    // {
+    //     uint8[2] memory score;
+    //     uint8 homeTeamIdx;
+    //     uint8 visitorTeamIdx;
+    //     for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
+    //     {
+    //         (homeTeamIdx, visitorTeamIdx) = getTeamsInMatch(matchday, matchIdxInDay);
+    //         uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
+    //         uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
+    //         uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
+    //         uint8[4] memory events0;
+    //         (score, events0, events0) = _engine.playMatch(
+    //             matchSeed, 
+    //             states,
+    //             tactics,
+    //             false,
+    //             false
+    //         );
+    //         scores[matchIdxInDay * 2] = score[0];
+    //         scores[matchIdxInDay * 2 +1 ] = score[1];
+    //     }
+    // }    
 }
