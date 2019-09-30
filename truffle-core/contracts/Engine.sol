@@ -58,7 +58,6 @@ contract Engine is EncodingSkills, Sort{
         pure
         returns (uint256)
     {
-        uint8[2] memory teamGoals;
         uint8[8][2] memory events;
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
@@ -68,6 +67,7 @@ contract Engine is EncodingSkills, Sort{
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
+        uint8[2] memory teamGoals = getGoalsFromLog(firstHalfLog);
         events[0] = computeExceptionalEvents(states[0], matchBools[IDX_IS_2ND_HALF], seed);
         events[1] = computeExceptionalEvents(states[1], matchBools[IDX_IS_2ND_HALF], seed);
 
@@ -111,8 +111,10 @@ contract Engine is EncodingSkills, Sort{
     }
     
     function getGoalsFromLog(uint256 gameLog) public pure returns (uint8[2] memory goals) {
-        goals[0] = uint8(gameLog & 15);
-        goals[1] = uint8(gameLog >> 4 & 15);
+        if (gameLog != 0) {
+            goals[0] = uint8(gameLog & 15);
+            goals[1] = uint8(gameLog >> 4 & 15);
+        }
     }
     
     function getEventsFromLog(uint256 gameLog) public pure returns (uint8[8] memory events0, uint8[8] memory events1) {

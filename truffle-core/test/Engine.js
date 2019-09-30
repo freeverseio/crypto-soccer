@@ -134,6 +134,23 @@ contract('Engine', (accounts) => {
         for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
     });
 
+    it('goals from 1st half are added in the 2nd half', async () => {
+        log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium]).should.be.fulfilled;
+        log1 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = true, isHomeStadium]).should.be.fulfilled;
+        go0 = await engine.getGoalsFromLog(log0).should.be.fulfilled;
+        go1 = await engine.getGoalsFromLog(log1).should.be.fulfilled;
+        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium]).should.be.fulfilled;
+        go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
+        for (i = 0; i < 2; i++) {
+            // for this seed, both halfs end up with one goal per team
+            go0[i].toNumber().should.be.equal(1);
+            go1[i].toNumber().should.be.equal(1);
+            // so the result should be 2-2:
+            go12[i].toNumber().should.be.equal(go0[i].toNumber() + go1[i].toNumber());
+        }
+    });
+
+    
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
