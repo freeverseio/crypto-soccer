@@ -99,10 +99,11 @@ contract Engine is EncodingSkills, Sort{
                 }
             }
         }
+        bool[14] memory penaltiesGoals;
         // if (matchBools[IDX_IS_PLAYOFF] && (teamGoals[0] == teamGoals[1])) {
-        //     bool[14] memory penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], rnds[ROUNDS_PER_MATCH*4]);
+        //     penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], rnds[ROUNDS_PER_MATCH*4]);
         // }
-        return encodeGameLog(teamGoals, events[0], events[1]);
+        return encodeGameLog(teamGoals, events[0], events[1], penaltiesGoals);
     }
     
     function computePenalties(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 block0, uint256 block1, uint64 seed) public pure returns(bool[14] memory goals) {
@@ -131,12 +132,24 @@ contract Engine is EncodingSkills, Sort{
 
     
     // teamGoals: 4 bit each entry. Events: 6 bit each entry
-    function encodeGameLog(uint8[2] memory teamGoals, uint8[8] memory events0, uint8[8] memory events1) public pure returns(uint256 log) {
+    function encodeGameLog(
+        uint8[2] memory teamGoals, 
+        uint8[8] memory events0, 
+        uint8[8] memory events1,
+        bool[14] memory penaltiesGoals
+    ) 
+    public 
+    pure 
+    returns(uint256 log) 
+    {
         log  = uint256(teamGoals[0]);
         log |= uint256(teamGoals[1]) << 4;
         for (uint8 ev = 0; ev < 8; ev++) {
             log |= (uint256(events0[ev]) << ( 8 + ev * 6));
             log |= (uint256(events1[ev]) << (56 + ev * 6));
+        }
+        for (uint8 p = 0; p < 14; p++) {
+            if (penaltiesGoals[p]) log |= uint256(1) << 104 + p;
         }
     }
     
@@ -154,7 +167,11 @@ contract Engine is EncodingSkills, Sort{
         }
     }
     
-    
+    function getPenaltiesFromLog(uint256 gameLog) public pure returns (bool[14] memory goals) {
+        for (uint8 p = 0; p < 14; p++) {
+            goals[p] = (gameLog >> 104 + p & 1) == 1 ? true : false;
+        }
+    }
     
     function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];

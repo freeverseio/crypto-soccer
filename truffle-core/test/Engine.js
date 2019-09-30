@@ -123,6 +123,25 @@ contract('Engine', (accounts) => {
     });
 
     
+    it('check that penalties are played in playoff games', async () => {
+        // this game ends up in a tie if there are no penalties:
+        log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, playoff = false]).should.be.fulfilled;
+        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        // check that the game would end 2-2
+        expectedGoals = [2, 2];
+        go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
+        for (i = 0; i < 2; i++) {
+            go12[i].toNumber().should.be.equal(2);
+        }
+        // check that there were no penalties
+        pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
+        for (i = 0; i < 14; i++) pens[i].should.be.equal(false);
+        // now play the game in 'playoff mode'
+        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
+        pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
+        console.log(pens)
+    });
+    
     it('computePenalties', async () => {
         // one team much better than the other:
         result = await engine.computePenalties([teamStateAll50, teamStateAll1], 50, 1, seed);
@@ -142,14 +161,17 @@ contract('Engine', (accounts) => {
     it('encode decode gameLog', async () => {
         events0 = [1,2,3,4,5,6,7,8];
         events1 = [10,9,8,7,6,5,4,3];
+        penalties = [true, true, true, false, false, false, false, false, true, true, false, false, false, false];
         goals = [3,5];
-        result = await engine.encodeGameLog(goals, events0, events1).should.be.fulfilled;
+        result = await engine.encodeGameLog(goals, events0, events1, penalties).should.be.fulfilled;
         go = await engine.getGoalsFromLog(result).should.be.fulfilled;
+        pens = await engine.getPenaltiesFromLog(result).should.be.fulfilled;
         evs = await engine.getEventsFromLog(result).should.be.fulfilled;
         let {0: ev0, 1: ev1} = evs;
         for (i = 0; i < 2; i++) go[i].toNumber().should.be.equal(goals[i]);
         for (i = 0; i < 8; i++) ev0[i].toNumber().should.be.equal(events0[i]);
         for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
+        for (i = 0; i < 14; i++) pens[i].should.be.equal(penalties[i]);
     });
 
     it('goals from 1st half are added in the 2nd half', async () => {
