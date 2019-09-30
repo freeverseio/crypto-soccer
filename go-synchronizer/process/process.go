@@ -113,13 +113,14 @@ func (p *EventProcessor) Process() error {
 		}
 	}
 
-	// if events, err := p.scanActionsSubmission(opts); err != nil {
-	// 	return err
-	// } else {
-	// 	for _, event := range events { // TODO: next part to be recoded
-
-	// 	}
-	// }
+	if events, err := p.scanActionsSubmission(opts); err != nil {
+		return err
+	} else {
+		leagueProcessor := NewLeagueProcessor()
+		for _, event := range events {
+			leagueProcessor.Process(event)
+		}
+	}
 
 	// store the last block that was scanned
 	p.db.SetBlockNumber(*opts.End)
