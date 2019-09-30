@@ -35,7 +35,7 @@ func TestCountryCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.CountryCount()
+	count, err := sto.CountryInTimezoneCount(timezone)
 	if err != nil {
 		t.Fatal(err)
 	}

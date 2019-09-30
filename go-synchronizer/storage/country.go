@@ -26,6 +26,21 @@ func (b *Storage) CountryCount() (uint64, error) {
 	return count, nil
 }
 
+func (b *Storage) CountryInTimezoneCount(timezoneIdx uint8) (uint64, error) {
+	rows, err := b.db.Query("SELECT COUNT(*) FROM countries WHERE timezone_idx = $1;", timezoneIdx)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var count uint64
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (b *Storage) CountryCreate(country Country) error {
 	log.Debugf("[DBMS] Create country %v", country)
 	_, err := b.db.Exec("INSERT INTO countries (timezone_idx, country_idx) VALUES ($1, $2);",
