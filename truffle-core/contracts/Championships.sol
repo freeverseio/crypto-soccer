@@ -38,7 +38,7 @@ contract Championships {
             groupIdx = 2 * (teamIdxInCup % 8);
         } else {
             posInGroup = (teamIdxInCup-64) / 8;
-            groupIdx = 2 * (1 + (teamIdxInCup % 8));
+            groupIdx = 1 + 2 * (teamIdxInCup % 8);
         }
     }
 

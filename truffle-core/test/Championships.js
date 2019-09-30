@@ -43,13 +43,6 @@ contract('Championships', (accounts) => {
         return leagueState;
     };
     
-    function transpose(a) {
-        return Object.keys(a[0]).map(function(c) {
-            return a.map(function(r) { return r[c]; });
-        });
-    }
-    
-
     beforeEach(async () => {
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
@@ -71,23 +64,23 @@ contract('Championships', (accounts) => {
 
     it('get all teams for groups', async () => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
-        for (t = 0; t < teams.length; t++) {
+        for (t = 0; t < teamsExpected.length; t++) {
             team = await champs.getTeamIdxInCup(groupIdx = 0, posInGroup = t).should.be.fulfilled;
-            team[t].toNumber().should.be.equal(teamsExpected[t]);
-            result = await champs.getGroupAndPosInGroup(team[t].toNumber()).should.be.fulfilled;
+            team.toNumber().should.be.equal(teamsExpected[t]);
+            result = await champs.getGroupAndPosInGroup(team.toNumber()).should.be.fulfilled;
             result[0].toNumber().should.be.equal(groupIdx);
             result[1].toNumber().should.be.equal(posInGroup);
         }
         teamsExpected = [71, 79, 87, 95, 103, 111, 119, 127 ]
-        for (t = 0; t < teams.length; t++) {
+        for (t = 0; t < teamsExpected.length; t++) {
             team = await champs.getTeamIdxInCup(groupIdx = 15, posInGroup = t).should.be.fulfilled;
-            team[t].toNumber().should.be.equal(teamsExpected[t])
-            result = await champs.getGroupAndPosInGroup(team[t].toNumber()).should.be.fulfilled;
+            team.toNumber().should.be.equal(teamsExpected[t])
+            result = await champs.getGroupAndPosInGroup(team.toNumber()).should.be.fulfilled;
             result[0].toNumber().should.be.equal(groupIdx);
             result[1].toNumber().should.be.equal(posInGroup);
         }
     });
-
+return
 
     it('get all teams for particular matches', async () => {
         teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
