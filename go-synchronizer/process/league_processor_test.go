@@ -43,5 +43,4 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Fatal()
 }
