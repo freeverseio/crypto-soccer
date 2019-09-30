@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
+
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ type EventProcessor struct {
 	usesGanache bool
 	client      *ethclient.Client
 	db          *storage.Storage
-	market      *market.Market
+	engine      *engine.Engine
 	leagues     *leagues.Leagues
 	updates     *updates.Updates
 }
@@ -36,13 +37,13 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
-	return &EventProcessor{false, client, db, market, leagues, updates}
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
+	return &EventProcessor{false, client, db, engine, leagues, updates}
 }
 
 // NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, market *market.Market, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
-	return &EventProcessor{true, client, db, market, leagues, updates}
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
+	return &EventProcessor{true, client, db, engine, leagues, updates}
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -116,7 +117,7 @@ func (p *EventProcessor) Process() error {
 	if events, err := p.scanActionsSubmission(opts); err != nil {
 		return err
 	} else {
-		leagueProcessor := NewLeagueProcessor()
+		leagueProcessor := NewLeagueProcessor(p.engine, p.db)
 		for _, event := range events {
 			leagueProcessor.Process(event)
 		}
