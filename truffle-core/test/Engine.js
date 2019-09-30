@@ -119,10 +119,23 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
 
+    it('encode decode gameLog', async () => {
+        events0 = [1,2,3,4,5,6,7,8];
+        events1 = [10,9,8,7,6,5,4,3];
+        goals = [3,5];
+        result = await engine.encodeGameLog(goals, events0, events1).should.be.fulfilled;
+        go = await engine.getGoalsFromLog(result).should.be.fulfilled;
+        evs = await engine.getEventsFromLog(result).should.be.fulfilled;
+        let {0: ev0, 1: ev1} = evs;
+        for (i = 0; i < 2; i++) go[i].toNumber().should.be.equal(goals[i]);
+        for (i = 0; i < 8; i++) ev0[i].toNumber().should.be.equal(events0[i]);
+        for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
+    });
+
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
     });
-
+    
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
@@ -245,11 +258,10 @@ contract('Engine', (accounts) => {
     it('play a match', async () => {
         const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
-        score = result[0];
+        score = await engine.getGoalsFromLog(result).should.be.fulfilled;
         score[0].toNumber().should.be.equal(10);
         score[1].toNumber().should.be.equal(0);
     });
-
 
     
     it('manages to score with select shoorter wihtout modifiers', async () => {
@@ -489,12 +501,12 @@ contract('Engine', (accounts) => {
     it('different team state => different result', async () => {
         let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
-        result = result[0];  
+        result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
         result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
-        result = result[0];  
+        result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
@@ -502,12 +514,12 @@ contract('Engine', (accounts) => {
     it('different seeds => different result', async () => {
         let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
-        result = result[0];  
+        result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
         result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
-        result = result[0];  
+        result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);
         result[1].toNumber().should.be.equal(1);
     });

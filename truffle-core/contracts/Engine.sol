@@ -54,8 +54,11 @@ contract Engine is EncodingSkills, Sort{
     )
         public
         pure
-        returns (uint8[2] memory teamGoals, uint8[4] memory events0, uint8[4] memory events1)
+        returns (uint256)
     {
+        uint8[2] memory teamGoals;
+        uint8[8] memory events0;
+        uint8[8] memory events1;
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
@@ -64,8 +67,8 @@ contract Engine is EncodingSkills, Sort{
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
 
-        events0 = computeExceptionalEvents(states[0], seed);
-        events1 = computeExceptionalEvents(states[1], seed);
+        events0 = computeExceptionalEvents(states[0], is2ndHalf, seed);
+        events1 = computeExceptionalEvents(states[1], is2ndHalf, seed);
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
@@ -93,8 +96,32 @@ contract Engine is EncodingSkills, Sort{
                 }
             }
         }
-        return (teamGoals, events0, events1);
+        return encodeGameLog(teamGoals, events0, events1);
     }
+    
+    // teamGoals: 4 bit each entry. Events: 6 bit each entry
+    function encodeGameLog(uint8[2] memory teamGoals, uint8[8] memory events0, uint8[8] memory events1) public pure returns(uint256 log) {
+        log  = uint256(teamGoals[0]);
+        log |= uint256(teamGoals[1]) << 4;
+        for (uint8 ev = 0; ev < 8; ev++) {
+            log |= (uint256(events0[ev]) << ( 8 + ev * 6));
+            log |= (uint256(events1[ev]) << (56 + ev * 6));
+        }
+    }
+    
+    function getGoalsFromLog(uint256 gameLog) public pure returns (uint8[2] memory goals) {
+        goals[0] = uint8(gameLog & 15);
+        goals[1] = uint8(gameLog >> 4 & 15);
+    }
+    
+    function getEventsFromLog(uint256 gameLog) public pure returns (uint8[8] memory events0, uint8[8] memory events1) {
+        for (uint8 ev = 0; ev < 8; ev++) {
+            events0[ev] = uint8((gameLog >> 8 + ev * 6) & 63);
+            events1[ev] = uint8((gameLog >> 56 + ev * 6) & 63);
+        }
+    }
+    
+    
     
     function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
@@ -137,19 +164,22 @@ contract Engine is EncodingSkills, Sort{
     //  - 2 possible events for yellow card:
     //          events[2] = player (from 0 to 11)
     //          events[3] = player (from 0 to 11)
-    //  The player value is set to NO_EVENT ( = 11) if no event took place
+    // The player value is set to NO_EVENT ( = 11) if no event took place
+    // If we're on the 2nd half, the idx are events[4,5,6,7]
     function computeExceptionalEvents
     (
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        bool is2ndHalf,
         uint256 seed
     ) 
         public 
         pure 
         returns 
     (
-        uint8[4] memory events
+        uint8[8] memory events
     ) 
     {
+        uint8 offset = is2ndHalf ? 4 : 0;
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
@@ -159,15 +189,15 @@ contract Engine is EncodingSkills, Sort{
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[11] = 758;
-        events[0] = throwDiceArray(weights, rnds[0]);
-        events[1] = computeTypeOfEvent(rnds[1]);
+        events[0 + offset] = throwDiceArray(weights, rnds[0]);
+        events[1 + offset] = computeTypeOfEvent(rnds[1]);
         // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[11] = 9;
-        events[2] = throwDiceArray(weights, rnds[2]);
-        events[3] = throwDiceArray(weights, rnds[3]);
+        events[2 + offset] = throwDiceArray(weights, rnds[2]);
+        events[3 + offset] = throwDiceArray(weights, rnds[3]);
     }
     
 
