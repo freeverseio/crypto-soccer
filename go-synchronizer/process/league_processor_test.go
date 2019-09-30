@@ -27,13 +27,21 @@ func TestProcess(t *testing.T) {
 	ganache := testutils.NewGanache()
 	ganache.DeployContracts(ganache.Owner)
 
+	timezoneIdx := uint8(1)
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	countryIdx := uint32(0)
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	leagueIdx := uint32(0)
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+
 	processor := process.NewLeagueProcessor(ganache.Engine, sto)
 	var event updates.UpdatesActionsSubmission
 	event.Day = 1
-	event.TimeZone = 1
+	event.TimeZone = timezoneIdx
 	event.TurnInDay = 1
 	err = processor.Process(event)
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Fatal()
 }
