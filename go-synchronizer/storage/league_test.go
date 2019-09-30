@@ -38,7 +38,7 @@ func TestLeagueCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.LeagueCount()
+	count, err := sto.LeagueInCountryCount(timezone, countryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
