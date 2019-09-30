@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 
@@ -14,11 +15,12 @@ import (
 
 type LeagueProcessor struct {
 	engine  *engine.Engine
+	leagues *leagues.Leagues
 	storage *storage.Storage
 }
 
-func NewLeagueProcessor(engine *engine.Engine, storage *storage.Storage) *LeagueProcessor {
-	return &LeagueProcessor{engine, storage}
+func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) *LeagueProcessor {
+	return &LeagueProcessor{engine, leagues, storage}
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
@@ -54,17 +56,17 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				return err
 			}
 			for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
-				matchSeed := big.NewInt(0) // TODO ??? what's this
-				var states [2][25]*big.Int
-				for i := 0; i < 25; i++ {
-					states[0][i] = big.NewInt(0)
-					states[1][i] = big.NewInt(0)
+				match := matches[matchIdx]
+				matchSeed := big.NewInt(4) // TODO ??? what's this
+				states, err := b.getMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+				if err != nil {
+					return nil
 				}
 				var tactics [2]*big.Int
 				tactics[0] = big.NewInt(0)
 				tactics[1] = big.NewInt(0)
 				is2ndHalf := false
-				isHomeStadium := true
+				isHomeStadium := false
 				result, err := b.engine.PlayMatch(
 					&bind.CallOpts{},
 					matchSeed,
@@ -81,6 +83,28 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			}
 		}
 	}
-
 	return nil
+}
+
+func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
+	var states [2][25]*big.Int
+	homeTeamState, err := b.getTeamState(homeTeamID)
+	if err != nil {
+		return states, err
+	}
+	visitorTeamState, err := b.getTeamState(visitorTeamID)
+	if err != nil {
+		return states, err
+	}
+	states[0] = homeTeamState
+	states[1] = visitorTeamState
+	return states, nil
+}
+
+func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
+	var state [25]*big.Int
+	for i := 0; i < 25; i++ {
+		state[i] = big.NewInt(435253)
+	}
+	return state, nil
 }
