@@ -42,7 +42,32 @@ contract Championships {
         }
     }
 
-    function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8, uint8) 
+    // sortedTeamIdxInCup contains 64 teams, made up from the top 4 in each of the 16 leagues.
+    // they are flattened by groupIdx, and then by final classifications in that group.
+    // [groupIdx0_1st, ..., groupIdx0_4th; groupIdx1_1st, ...,]
+    // so the index of the array is  groupIdx * 4 + classInGroup
+    //      M(2m) 	= L(m mod M, 0) vs L(m+1 mod M, 3), 	m = 0,..., M-1,  M = 16
+    //      M(2m+1) = L(m+2 mod M, 1) vs L(m+3 mod M, 2),	m = 0,..., M-1,  M = 16
+    // returns indices in sortedTeamIdxInCup
+    function getTeamsInCupPlayoffMatch(uint8 matchIdxInDay) public pure returns (uint8 team0, uint8 team1) {
+        require(matchIdxInDay < 32, "there are only 32 mathches on day 9 of a cup");
+        if (matchIdxInDay % 2 == 0) {
+            team0 = (matchIdxInDay/2 % 16) * 4;
+            team1 = ((matchIdxInDay/2 + 1) % 16) * 4 + 3;
+        } else {
+            team0 = (((matchIdxInDay-1)/2 + 2) % 16) * 4 + 1;
+            team1 = (((matchIdxInDay-1)/2 + 3) % 16) * 4 + 2;
+        }
+    }
+    
+    function getTeamsInCupPlayoffMatch(uint8 matchIdxInDay, uint8[64] memory sortedTeamIdxInCup) public pure returns (uint8 team0, uint8 team1) {
+        (team0, team1) = getTeamsInCupPlayoffMatch(matchIdxInDay);
+        return (sortedTeamIdxInCup[team0], sortedTeamIdxInCup[team1]);
+    }
+
+
+
+    function getTeamsInCupLeagueMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8, uint8) 
     {
         require(matchday < MATCHDAYS/2, "wrong match day");
         (uint8 homeIdx, uint8 visitorIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);

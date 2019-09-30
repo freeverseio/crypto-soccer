@@ -62,6 +62,19 @@ contract('Championships', (accounts) => {
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
     });
 
+    it('getTeamsInCupPlayoffMatch', async () => {
+        teamsExpected = [0,7,9,14,4,11,13,18,8,15,17,22,12,19,21,26,16,23,25,30,20,27,29,34,24,31,33,38,28,35,37,42,32,39,41,46,36,43,45,50,40,47,49,54,44,51,53,58,48,55,57,62,52,59,61,2,56,63,1,6,60,3,5,10];
+        for (t = 0; t < 32; t++) {
+            team = await champs.getTeamsInCupPlayoffMatch(matchIdxInDay = t).should.be.fulfilled;
+            team[0].toNumber().should.be.equal(teamsExpected[2*t]);
+            team[1].toNumber().should.be.equal(teamsExpected[2*t+1]);
+        }
+        teamsExpected.sort((a, b) => a - b);
+        for (t = 1; t < 64; t++) {
+            (team[0]*0 + teamsExpected[t] > teamsExpected[t-1]).should.be.equal(true);
+        }
+    });
+    
     it('get all teams for groups', async () => {
         teamsExpected = [ 0, 8, 16, 24, 32, 40, 48, 56 ]
         for (t = 0; t < teamsExpected.length; t++) {
@@ -80,14 +93,13 @@ contract('Championships', (accounts) => {
             result[1].toNumber().should.be.equal(posInGroup);
         }
     });
-return
 
     it('get all teams for particular matches', async () => {
-        teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
+        teams = await champs.getTeamsInCupLeagueMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(8);
-        teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = day = Math.floor(MATCHDAYS/2), matchIdxInDay = 0).should.be.rejected;
-        teams = await champs.getTeamsInCupMatch(groupIdx = 15, day = 0, matchIdxInDay = 0).should.be.fulfilled;
+        teams = await champs.getTeamsInCupLeagueMatch(groupIdx = 0, day = day = Math.floor(MATCHDAYS/2), matchIdxInDay = 0).should.be.rejected;
+        teams = await champs.getTeamsInCupLeagueMatch(groupIdx = 15, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(71);
         teams[1].toNumber().should.be.equal(79);
     });
