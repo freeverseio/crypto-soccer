@@ -58,11 +58,8 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if matches == nil {
-		t.Fatal("Calendar not generated")
-	}
-	if len(*matches) != int(calendarProcessor.MatchDays*calendarProcessor.MatchPerDay) {
-		t.Fatalf("Wrong matches %v", len(*matches))
+	if len(matches) != int(calendarProcessor.MatchDays*calendarProcessor.MatchPerDay) {
+		t.Fatalf("Wrong matches %v", len(matches))
 	}
 }
 
