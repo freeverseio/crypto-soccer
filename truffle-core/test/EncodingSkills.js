@@ -71,10 +71,6 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(aggressiveness);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
-        result = await encoding.getSkillsVec(skills).should.be.fulfilled;
-        for (s=0; s < sk.length; s++) {
-            result[s].toNumber().should.be.equal(sk[s]);
-        }
         result = await encoding.getAlignedLastHalf(skills).should.be.fulfilled;
         result.should.be.equal(alignedLastHalf);
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;

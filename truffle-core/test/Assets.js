@@ -197,11 +197,16 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        skills = await assets.getSkillsVec(encodedSkills).should.be.fulfilled; 
-        expected = [87, 37, 28, 60, 35];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            skills[sk].toNumber().should.be.equal(expected[sk])
-        }
+        shoot = await assets.getShoot(encodedSkills).should.be.fulfilled; 
+        shoot.toNumber().should.be.equal(87);
+        speed = await assets.getSpeed(encodedSkills).should.be.fulfilled; 
+        speed.toNumber().should.be.equal(37);
+        pass = await assets.getPass(encodedSkills).should.be.fulfilled; 
+        pass.toNumber().should.be.equal(28);
+        defence = await assets.getDefence(encodedSkills).should.be.fulfilled; 
+        defence.toNumber().should.be.equal(60);
+        endurance = await assets.getEndurance(encodedSkills).should.be.fulfilled; 
+        endurance.toNumber().should.be.equal(35);
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         gameDeployMonth = await assets.gameDeployMonth().should.be.fulfilled;
@@ -241,7 +246,7 @@ contract('Assets', (accounts) => {
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(0);
     });
-    
+
     it('get player state of unexistent player', async () => {
         tz = 1;
         countryIdxInTZ = 0;

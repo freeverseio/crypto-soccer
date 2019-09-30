@@ -211,9 +211,9 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 129 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 
-    function getSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return encodedSkills >> 186;
-    }
+    // function getSkills(uint256 encodedSkills) public pure returns (uint256) {
+    //     return encodedSkills >> 186;
+    // }
 
     // function getSkillsVec(uint256 encodedSkills) public pure returns (uint16[5] memory skills) {
     //     skills[0] = uint16(getShoot(encodedSkills));
