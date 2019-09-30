@@ -19,8 +19,10 @@ contract Engine is EncodingSkills, Sort{
     uint256 private constant TENTHOUSAND    = uint256(10000); 
     uint256 private constant TENTHOUSAND_SQ = uint256(100000000); 
     uint16 private constant NO_EVENT        = 11; 
-    uint8 private constant IDX_IS_2ND_HALF  = 0; 
-    uint8 private constant IDX_IS_HOME_STADIUM = 1; 
+    //
+    uint8 private constant IDX_IS_2ND_HALF      = 0; 
+    uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
+    uint8 private constant IDX_IS_PLAYOFF       = 2; 
 
     
     bool dummyBoolToEstimateCost;
@@ -32,7 +34,7 @@ contract Engine is EncodingSkills, Sort{
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256 firstHalfLog,
-        bool[2] memory matchBools // [is2ndHalf, isHomeStadium]
+        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
     {
@@ -52,7 +54,7 @@ contract Engine is EncodingSkills, Sort{
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256 firstHalfLog,
-        bool[2] memory matchBools // [is2ndHalf, isHomeStadium]
+        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
         pure
@@ -97,8 +99,36 @@ contract Engine is EncodingSkills, Sort{
                 }
             }
         }
+        // if (matchBools[IDX_IS_PLAYOFF] && (teamGoals[0] == teamGoals[1])) {
+        //     bool[14] memory penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], rnds[ROUNDS_PER_MATCH*4]);
+        // }
         return encodeGameLog(teamGoals, events[0], events[1]);
     }
+    
+    function computePenalties(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 block0, uint256 block1, uint64 seed) public pure returns(bool[14] memory goals) {
+        uint64[] memory rnds = getNRandsFromSeed(seed / 7, 14);
+        uint8[2] memory totalGoals;
+        for (uint8 round = 0; round < 6; round++) {
+            if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
+                goals[2 * round] = true;
+                totalGoals[0] += 1;
+            }
+            if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
+                goals[2 * round + 1] = true;
+                totalGoals[1] += 1;
+            }
+            if ((round > 3) && (totalGoals[0] != totalGoals[1])) return goals;
+        }
+        if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
+            goals[12] = true;
+            totalGoals[0] += 1;
+        } else {
+            goals[13] = true;
+            totalGoals[1] += 1;
+        }
+        return goals;
+    }
+
     
     // teamGoals: 4 bit each entry. Events: 6 bit each entry
     function encodeGameLog(uint8[2] memory teamGoals, uint8[8] memory events0, uint8[8] memory events1) public pure returns(uint256 log) {
@@ -453,7 +483,6 @@ contract Engine is EncodingSkills, Sort{
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
-            
         
         uint256[5] memory deltaSkills;
         uint256[3] memory fwdModFactors;
