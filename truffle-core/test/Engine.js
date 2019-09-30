@@ -20,8 +20,10 @@ contract('Engine', (accounts) => {
     const playersPerZone442 = [1,2,1,1,2,1,0,2,0];
     const playersPerZone433 = [1,2,1,1,1,1,1,1,1];
     const PLAYERS_PER_TEAM_MAX = 25;
+    const firstHalfLog = 0;
     const is2ndHalf = false;
     const isHomeStadium = false;
+    const matchBools = [is2ndHalf, isHomeStadium]
     const IDX_R = 1;
     const IDX_C = 2;
     const IDX_CR = 3;
@@ -133,29 +135,29 @@ contract('Engine', (accounts) => {
     });
 
     it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium]).should.be.fulfilled;
         teamStateAll50[5] = messi; 
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium]).should.be.rejected;
     });
 
     it('play with an injured / red carded / free-slot player', async () => {
         // legit works:
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.fulfilled;
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium]).should.be.fulfilled;
         // red card fails:
         teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium]).should.be.rejected;
         // injured fails
         teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], is2nd = true, isHomeStadium).should.be.rejected;
+        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium]).should.be.rejected;
     });
 
     it('computePenaltyBadPositionAndCondition for GK ', async () => {
@@ -256,7 +258,7 @@ contract('Engine', (accounts) => {
     
 
     it('play a match', async () => {
-        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         score = await engine.getGoalsFromLog(result).should.be.fulfilled;
         score[0].toNumber().should.be.equal(10);
@@ -494,17 +496,17 @@ contract('Engine', (accounts) => {
 
     it('play match with wrong tactic', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6);
-        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], is2ndHalf, isHomeStadium).should.be.rejected;
+        await engine.playMatch(seed, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.rejected;
     });
 
 
     it('different team state => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(10);
@@ -512,12 +514,12 @@ contract('Engine', (accounts) => {
     });
 
     it('different seeds => different result', async () => {
-        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(2);
         result[1].toNumber().should.be.equal(1);
-        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
+        result = await engine.playMatch(654321, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium]).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result = await engine.getGoalsFromLog(result).should.be.fulfilled;
         result[0].toNumber().should.be.equal(0);

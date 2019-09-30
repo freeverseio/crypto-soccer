@@ -19,6 +19,8 @@ contract Engine is EncodingSkills, Sort{
     uint256 private constant TENTHOUSAND    = uint256(10000); 
     uint256 private constant TENTHOUSAND_SQ = uint256(100000000); 
     uint16 private constant NO_EVENT        = 11; 
+    uint8 private constant IDX_IS_2ND_HALF  = 0; 
+    uint8 private constant IDX_IS_HOME_STADIUM = 1; 
 
     
     bool dummyBoolToEstimateCost;
@@ -29,12 +31,12 @@ contract Engine is EncodingSkills, Sort{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        bool is2ndHalf,
-        bool isHomeStadium
+        uint256 firstHalfLog,
+        bool[2] memory matchBools // [is2ndHalf, isHomeStadium]
     )
         public
     {
-        playMatch(seed, states, tactics, is2ndHalf, isHomeStadium);
+        playMatch(seed, states, tactics, firstHalfLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -49,35 +51,34 @@ contract Engine is EncodingSkills, Sort{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        bool is2ndHalf,
-        bool isHomeStadium
+        uint256 firstHalfLog,
+        bool[2] memory matchBools // [is2ndHalf, isHomeStadium]
     )
         public
         pure
         returns (uint256)
     {
         uint8[2] memory teamGoals;
-        uint8[8] memory events0;
-        uint8[8] memory events1;
+        uint8[8][2] memory events;
         uint8[9][2] memory playersPerZone;
         uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
         uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
-        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], is2ndHalf);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], is2ndHalf);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
-        events0 = computeExceptionalEvents(states[0], is2ndHalf, seed);
-        events1 = computeExceptionalEvents(states[1], is2ndHalf, seed);
+        events[0] = computeExceptionalEvents(states[0], matchBools[IDX_IS_2ND_HALF], seed);
+        events[1] = computeExceptionalEvents(states[1], matchBools[IDX_IS_2ND_HALF], seed);
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
-        if (isHomeStadium) {
+        if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
         }
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
-            if (is2ndHalf && ((round == 0) || (round == 5))) {
+            if (matchBools[IDX_IS_2ND_HALF] && ((round == 0) || (round == 5))) {
                 (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
@@ -96,7 +97,7 @@ contract Engine is EncodingSkills, Sort{
                 }
             }
         }
-        return encodeGameLog(teamGoals, events0, events1);
+        return encodeGameLog(teamGoals, events[0], events[1]);
     }
     
     // teamGoals: 4 bit each entry. Events: 6 bit each entry
