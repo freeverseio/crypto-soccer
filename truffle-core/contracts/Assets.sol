@@ -1,13 +1,14 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./EncodingSkills.sol";
+import "./EncodingIDs.sol";
 import "./EncodingState.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Assets is EncodingSkills, EncodingState {
+contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     event TeamTransfer(uint256 teamId, address to);
     event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
