@@ -122,7 +122,14 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
 
-    
+    it('play a match to estimate cost', async () => {
+        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
+    });
+
+    it('play a match with penalties to estimate cost', async () => {
+        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
+    });
+
     it('check that penalties are played in playoff games', async () => {
         // this game ends up in a tie if there are no penalties:
         log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, playoff = false]).should.be.fulfilled;
@@ -139,7 +146,8 @@ contract('Engine', (accounts) => {
         // now play the game in 'playoff mode'
         log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
         pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
-        console.log(pens)
+        expected = [true, true, true, true, true, true, true, true, true, true, true, true, true, false]
+        for (i = 0; i < 14; i++) pens[i].should.be.equal(expected[i]);
     });
     
     it('computePenalties', async () => {
@@ -149,7 +157,7 @@ contract('Engine', (accounts) => {
         for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
         // both teams similar:
         result = await engine.computePenalties([teamStateAll50, teamStateAll50], 50, 50, seed);
-        expected = [true, true, true, false, false, false, false, false, true, true, false, false, false, false];
+        expected = [false, true, true, true, true, true, true, true, true, true, false, false, false, false];
         for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
         // both teams really incredible goalkeepers:
         result = await engine.computePenalties([teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
@@ -191,9 +199,6 @@ contract('Engine', (accounts) => {
     });
 
     
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
-    });
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
@@ -313,6 +318,13 @@ contract('Engine', (accounts) => {
         result[1][4].toNumber().should.be.equal(50);
     });
     
+    it('play a match in home stadium', async () => {
+        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHome = true, isPlayoff]).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        score = await engine.getGoalsFromLog(result).should.be.fulfilled;
+        score[0].toNumber().should.be.equal(10);
+        score[1].toNumber().should.be.equal(0);
+    });
 
     it('play a match', async () => {
         const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;

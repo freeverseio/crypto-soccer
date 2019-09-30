@@ -76,7 +76,7 @@ contract Engine is EncodingSkills, Sort{
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
-            globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
+            globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
@@ -100,14 +100,15 @@ contract Engine is EncodingSkills, Sort{
             }
         }
         bool[14] memory penaltiesGoals;
-        // if (matchBools[IDX_IS_PLAYOFF] && (teamGoals[0] == teamGoals[1])) {
-        //     penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], rnds[ROUNDS_PER_MATCH*4]);
-        // }
+        if (matchBools[IDX_IS_PLAYOFF] && (teamGoals[0] == teamGoals[1])) {
+            penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], rnds[ROUNDS_PER_MATCH*4-1]);
+            
+        }
         return encodeGameLog(teamGoals, events[0], events[1], penaltiesGoals);
     }
     
     function computePenalties(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 block0, uint256 block1, uint64 seed) public pure returns(bool[14] memory goals) {
-        uint64[] memory rnds = getNRandsFromSeed(seed / 7, 14);
+        uint64[] memory rnds = getNRandsFromSeed(seed * 7, 14);
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
             if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {

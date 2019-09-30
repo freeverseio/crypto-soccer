@@ -215,13 +215,13 @@ contract EncodingSkills {
         return encodedSkills >> 186;
     }
 
-    function getSkillsVec(uint256 encodedSkills) public pure returns (uint16[5] memory skills) {
-        skills[0] = uint16(getShoot(encodedSkills));
-        skills[1] = uint16(getSpeed(encodedSkills));
-        skills[2] = uint16(getPass(encodedSkills));
-        skills[3] = uint16(getDefence(encodedSkills));
-        skills[4] = uint16(getEndurance(encodedSkills));
-    }
+    // function getSkillsVec(uint256 encodedSkills) public pure returns (uint16[5] memory skills) {
+    //     skills[0] = uint16(getShoot(encodedSkills));
+    //     skills[1] = uint16(getSpeed(encodedSkills));
+    //     skills[2] = uint16(getPass(encodedSkills));
+    //     skills[3] = uint16(getDefence(encodedSkills));
+    //     skills[4] = uint16(getEndurance(encodedSkills));
+    // }
 
     function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
         return      getShoot(encodedSkills) 
