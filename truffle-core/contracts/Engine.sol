@@ -81,11 +81,12 @@ contract Engine is EncodingSkills, Sort{
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if (matchBools[IDX_IS_2ND_HALF] && ((round == 0) || (round == 5))) {
-                (globSkills[0], globSkills[1]) = teamsGetTired(globSkills[0], globSkills[1]);
+                teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 if ( managesToScore(
+                    // teamGoals[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
@@ -301,7 +302,7 @@ contract Engine is EncodingSkills, Sort{
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public
         pure
-        returns (uint256[5] memory, uint256[5] memory)
+         returns (uint256[5] memory , uint256[5] memory ) 
     {
         uint256 currentEnduranceA = skillsTeamA[IDX_ENDURANCE];
         uint256 currentEnduranceB = skillsTeamB[IDX_ENDURANCE];
@@ -309,7 +310,7 @@ contract Engine is EncodingSkills, Sort{
             skillsTeamA[sk] = (skillsTeamA[sk] * currentEnduranceA) / 100;
             skillsTeamB[sk] = (skillsTeamB[sk] * currentEnduranceB) / 100;
         }
-        return(skillsTeamA, skillsTeamB);
+        return (skillsTeamA, skillsTeamB);
     }
 
 
