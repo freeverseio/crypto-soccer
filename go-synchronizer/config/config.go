@@ -12,7 +12,7 @@ type Config struct {
 	EthereumClient         string `json:"ethereumClient`
 	AssetsContractAddress  string `json:"assetsContractAddress`
 	LeaguesContractAddress string `json:"leaguesContractAddress`
-	MarketContractAddress  string `json:"marketContractAddress`
+	EngineContractAddress  string `json:"engineContractAddress`
 	UpdatesContractAddress string `json:"updatesContractAddress`
 }
 
@@ -38,6 +38,6 @@ func (b *Config) Print() {
 	log.Info("[CONFIG] ethereumClient          : ", b.EthereumClient)
 	log.Info("[CONFIG] assetsContractAddress   : ", b.AssetsContractAddress)
 	log.Info("[CONFIG] leaguesContractAddress  : ", b.LeaguesContractAddress)
-	log.Info("[CONFIG] marketContractAddress   : ", b.MarketContractAddress)
+	log.Info("[CONFIG] engineContractAddress   : ", b.EngineContractAddress)
 	log.Info("[CONFIG] updatesContractAddress  : ", b.UpdatesContractAddress)
 }

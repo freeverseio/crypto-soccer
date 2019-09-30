@@ -11,14 +11,29 @@ type Country struct {
 	CountryIdx  uint32
 }
 
-func (b *Storage) CountryCount() (uint64, error) {
+func (b *Storage) CountryCount() (uint32, error) {
 	rows, err := b.db.Query("SELECT COUNT(*) FROM countries;")
 	if err != nil {
 		return 0, err
 	}
 	defer rows.Close()
 	rows.Next()
-	var count uint64
+	var count uint32
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (b *Storage) CountryInTimezoneCount(timezoneIdx uint8) (uint32, error) {
+	rows, err := b.db.Query("SELECT COUNT(*) FROM countries WHERE timezone_idx = $1;", timezoneIdx)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var count uint32
 	err = rows.Scan(&count)
 	if err != nil {
 		return 0, err

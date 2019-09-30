@@ -7,7 +7,6 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 type Calendar struct {
@@ -82,7 +81,6 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 			if err != nil {
 				return err
 			}
-			log.Info(teams)
 		}
 	}
 	return nil

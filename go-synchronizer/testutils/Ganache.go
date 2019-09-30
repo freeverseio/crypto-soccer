@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
@@ -23,6 +24,7 @@ type Ganache struct {
 	Assets  *assets.Assets
 	Updates *updates.Updates
 	Leagues *leagues.Leagues
+	Engine  *engine.Engine
 	Owner   *ecdsa.PrivateKey
 }
 
@@ -42,6 +44,7 @@ func NewGanache() *Ganache {
 	return &Ganache{
 		client,
 		time,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -119,6 +122,17 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	AssertNoErr(err, "DeployUpdates failed")
 	fmt.Println("Updates deployed at:", updatesAddress.Hex())
 
+	engineAddress, _, engineContract, err := engine.DeployEngine(
+		bind.NewKeyedTransactor(owner),
+		ganache.Client,
+	)
+	AssertNoErr(err, "DeployEngine failed")
+	fmt.Println("Engine deployed at:", engineAddress.Hex())
+
+	// setup
+	_, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
+	AssertNoErr(err, "Error setting engine contract in league contract")
+
 	// Initing
 	_, err = leaguesContract.InitSingleTZ(bind.NewKeyedTransactor(owner), 1)
 	AssertNoErr(err, "Error initializing leagues contract")
@@ -131,6 +145,7 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	ganache.Assets = assetsContract
 	ganache.Updates = updatesContract
 	ganache.Leagues = leaguesContract
+	ganache.Engine = engineContract
 }
 
 //func (ganache *Ganache) CountTeams() *big.Int {

@@ -68,7 +68,7 @@ func TestSyncTeams(t *testing.T) {
 	//ganache.CreateTeam("B", bob)
 	//ganache.CreateTeam("C", carol)
 
-	p := NewGanacheEventProcessor(ganache.Client, storage, nil /*market*/, ganache.Leagues, ganache.Updates)
+	p := NewGanacheEventProcessor(ganache.Client, storage, ganache.Engine, ganache.Leagues, ganache.Updates)
 
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
@@ -128,6 +128,20 @@ func TestSyncTeams(t *testing.T) {
 	if team.State.Owner != ganache.Public(alice).String() {
 		t.Fatalf("database owner of the first team is %v", team.State.Owner)
 	}
+
+	// play
+	for i := 0; i < 24*4; i++ {
+		var root [32]byte
+		_, err = ganache.Updates.SubmitActionsRoot(
+			bind.NewKeyedTransactor(owner),
+			root,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	p.Process()
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
 	//fmt.Println("alice: ", ganache.Public(alice).Hex())
