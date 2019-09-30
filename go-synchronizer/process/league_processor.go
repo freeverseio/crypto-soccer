@@ -42,16 +42,13 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	if err != nil {
 		return err
 	}
-	log.Infof("countryCount %v", countryCount)
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 		leagueCount, err := b.storage.LeagueInCountryCount(timezoneIdx, countryIdx)
 		if err != nil {
 			return err
 		}
-		log.Infof("leagueCount %v", leagueCount)
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day-1)
-			log.Infof("matches count %v", len(matches))
 			if err != nil {
 				return err
 			}
@@ -79,7 +76,10 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					log.Fatal(err)
 					return err
 				}
-				log.Infof("result %v - %v", result[0], result[1])
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day-1), uint32(matchIdx), result[0], result[1])
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

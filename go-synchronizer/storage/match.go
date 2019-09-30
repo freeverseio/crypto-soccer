@@ -54,6 +54,20 @@ func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx 
 	return err
 }
 
+func (b *Storage) MatchSetResult(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint32, matchIdx uint32, homeGoals uint8, visitorGoals uint8) error {
+	log.Infof("[DBMS] Set result timezoneIdx %v, countryIdx %v, leagueIdx %v [ %v - %v ]", timezoneIdx, countryIdx, leagueIdx, homeGoals, visitorGoals)
+	_, err := b.db.Exec("UPDATE matches SET home_goals = $1, visitor_goals = $2 WHERE (timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);",
+		homeGoals,
+		visitorGoals,
+		timezoneIdx,
+		countryIdx,
+		leagueIdx,
+		matchDayIdx,
+		matchIdx,
+	)
+	return err
+}
+
 func (b *Storage) GetMatchesInDay(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
 	rows, err := b.db.Query("SELECT match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4);", timezoneIdx, countryIdx, leagueIdx, matchDayIdx)
