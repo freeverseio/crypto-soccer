@@ -84,20 +84,17 @@ contract Engine is EncodingSkills, Sort{
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
-                if ( managesToScore(
-                    // teamGoals[teamThatAttacks],
+            if (managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+                managesToScore(
+                    teamThatAttacks,
+                    teamGoals,
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     rnds[4*round+2],
                     rnds[4*round+3]
-                    )
-                ) 
-                {
-                    teamGoals[teamThatAttacks]++;
-                }
+                );
             }
         }
         bool[14] memory penaltiesGoals;
@@ -299,6 +296,8 @@ contract Engine is EncodingSkills, Sort{
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
+    // TODO: there is no need for this function to return any value, as it changes them by reference
+    // => remove this when 'mocking' stage
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public
         pure
@@ -452,6 +451,8 @@ contract Engine is EncodingSkills, Sort{
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
+        uint8 teamThatAttacks,
+        uint8[2] memory teamGoals,
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -467,7 +468,8 @@ contract Engine is EncodingSkills, Sort{
 
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
-        return throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0;
+        if (throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rndNum2) == 0) teamGoals[teamThatAttacks]++;
+        teamGoals[teamThatAttacks] = 7;
     }
     
     function assertCanPlay(uint256 playerSkills) public pure {
