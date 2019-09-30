@@ -60,6 +60,7 @@ contract Championships {
         }
     }
     
+    // same as above, but returns teamIdxInCup as correctly provided by sortedTeamIdxInCup
     function getTeamsInCupPlayoffMatch(uint8 matchIdxInDay, uint8[64] memory sortedTeamIdxInCup) public pure returns (uint8 team0, uint8 team1) {
         (team0, team1) = getTeamsInCupPlayoffMatch(matchIdxInDay);
         return (sortedTeamIdxInCup[team0], sortedTeamIdxInCup[team1]);

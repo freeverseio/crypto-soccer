@@ -195,10 +195,8 @@ contract Engine is EncodingSkills, Sort{
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
             if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
-            // for (uint8 pp = 0; pp < p; pp++) {
-            //     require(lineup[p] != lineup[pp], "player appears twice in lineup!");
-            // }
         }
+        // check that there are no cases of player aligned twice (all lineup entries must be different) 
         lineup = sort11(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
         require(changes < 4, "max allowed changes during the break is 3");

@@ -69,6 +69,7 @@ contract('Championships', (accounts) => {
             team[0].toNumber().should.be.equal(teamsExpected[2*t]);
             team[1].toNumber().should.be.equal(teamsExpected[2*t+1]);
         }
+        // check that all teams are included, and only once (e.g. by sorting and requiring monotonic growing series)
         teamsExpected.sort((a, b) => a - b);
         for (t = 1; t < 64; t++) {
             (team[0]*0 + teamsExpected[t] > teamsExpected[t-1]).should.be.equal(true);
