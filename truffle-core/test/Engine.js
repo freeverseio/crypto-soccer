@@ -241,14 +241,19 @@ contract('Engine', (accounts) => {
     });
     
 
+    it('play a match in home stadium', async () => {
+        const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHome = true).should.be.fulfilled;
+        // console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].toNumber().should.be.equal(10);
+        result[1].toNumber().should.be.equal(0);
+    });
+
     it('play a match', async () => {
         const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
         // console.log(result[0].toNumber(), result[1].toNumber())
         result[0].toNumber().should.be.equal(10);
         result[1].toNumber().should.be.equal(0);
     });
-
-
     
     it('manages to score with select shoorter wihtout modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
