@@ -115,6 +115,33 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	return player, err
 }
 
+func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
+	var players []Player
+	rows, err := b.db.Query("SELECT player_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position FROM players WHERE (team_id = $1);", teamID.String())
+	if err != nil {
+		return players, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var player Player
+		var playerID sql.NullString
+		err = rows.Scan(
+			&playerID,
+			&player.State.Defence,
+			&player.State.Speed,
+			&player.State.Pass,
+			&player.State.Shoot,
+			&player.State.Endurance,
+			&player.State.ShirtNumber,
+			&player.PreferredPosition,
+		)
+		player.State.TeamId = teamID
+		player.PlayerId, _ = new(big.Int).SetString(playerID.String, 10)
+		players = append(players, player)
+	}
+	return players, err
+}
+
 // func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
 // 	log.Infof("[DBMS] + update player state %v", playerState)
 

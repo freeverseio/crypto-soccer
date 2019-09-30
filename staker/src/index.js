@@ -41,9 +41,9 @@ const loop = async () => {
     // gas = await updates.methods.updateTZ(root).estimateGas();
     // await updates.methods.updateTZ(root).send({ from, gas });
 
-    console.log("done")
+    console.log("done");
   } catch (err) {
-    console.log("FAILED")
+    console.error(err);
   }
 
   setTimeout(() => {

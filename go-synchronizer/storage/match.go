@@ -55,7 +55,7 @@ func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx 
 }
 
 func (b *Storage) MatchSetResult(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint32, matchIdx uint32, homeGoals uint8, visitorGoals uint8) error {
-	log.Infof("[DBMS] Set result timezoneIdx %v, countryIdx %v, leagueIdx %v [ %v - %v ]", timezoneIdx, countryIdx, leagueIdx, homeGoals, visitorGoals)
+	log.Infof("[DBMS] Set result tz %v, c %v, l %v, matchDayIdx %v, matchIdx %v [ %v - %v ]", timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, homeGoals, visitorGoals)
 	_, err := b.db.Exec("UPDATE matches SET home_goals = $1, visitor_goals = $2 WHERE (timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);",
 		homeGoals,
 		visitorGoals,

@@ -57,11 +57,13 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				matchSeed := big.NewInt(4) // TODO ??? what's this
 				states, err := b.getMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
 				if err != nil {
-					return nil
+					log.Error(err)
+					return err
 				}
-				var tactics [2]*big.Int
-				tactics[0] = big.NewInt(0)
-				tactics[1] = big.NewInt(0)
+				tactics, err := b.getMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+				if err != nil {
+					return err
+				}
 				is2ndHalf := false
 				isHomeStadium := false
 				result, err := b.engine.PlayMatch(
@@ -86,6 +88,13 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
+func (b *LeagueProcessor) getMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
+	var tactics [2]*big.Int
+	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
+	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
+	return tactics, nil
+}
+
 func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
 	var states [2][25]*big.Int
 	homeTeamState, err := b.getTeamState(homeTeamID)
@@ -104,7 +113,23 @@ func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
-		state[i] = big.NewInt(435253)
+		// playerSkills, err := b.leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, big.NewInt(1)) // TODO remove 1 with something better
+		// if err != nil {
+		// 	return state, err
+		// }
+		state[i] = big.NewInt(0)
+	}
+	players, err := b.storage.GetPlayersOfTeam(teamID)
+	if err != nil {
+		return state, err
+	}
+	for i := 0; i < len(players); i++ {
+		playerID := players[i].PlayerId
+		playerSkills, err := b.leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerID)
+		if err != nil {
+			return state, err
+		}
+		state[i] = playerSkills
 	}
 	return state, nil
 }
