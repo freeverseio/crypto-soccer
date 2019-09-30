@@ -89,19 +89,14 @@ contract('Championships', (accounts) => {
     });
 
 
-    it('get all teams for groups', async () => {
+    it('get all teams for particular matches', async () => {
         teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(0);
         teams[1].toNumber().should.be.equal(8);
-        teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = day = Math.floor(MATCHDAYS/2), matchIdxInDay = 0).should.be.fulfilled;
-        teams[0].toNumber().should.be.equal(8);
-        teams[1].toNumber().should.be.equal(0);
+        teams = await champs.getTeamsInCupMatch(groupIdx = 0, day = day = Math.floor(MATCHDAYS/2), matchIdxInDay = 0).should.be.rejected;
         teams = await champs.getTeamsInCupMatch(groupIdx = 15, day = 0, matchIdxInDay = 0).should.be.fulfilled;
         teams[0].toNumber().should.be.equal(71);
         teams[1].toNumber().should.be.equal(79);
-        teams = await champs.getTeamsInCupMatch(groupIdx = 15, day = day = Math.floor(MATCHDAYS/2), matchIdxInDay = 0).should.be.fulfilled;
-        teams[0].toNumber().should.be.equal(79);
-        teams[1].toNumber().should.be.equal(71);
     });
 
     it('get teams for match in wrong day', async () => {

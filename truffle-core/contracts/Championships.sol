@@ -44,6 +44,7 @@ contract Championships {
 
     function getTeamsInCupMatch(uint8 groupIdx, uint8 matchday, uint8 matchIdxInDay) public pure returns (uint8, uint8) 
     {
+        require(matchday < MATCHDAYS/2, "wrong match day");
         (uint8 homeIdx, uint8 visitorIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);
         return (getTeamIdxInCup(groupIdx, homeIdx), getTeamIdxInCup(groupIdx, visitorIdx)); 
     }

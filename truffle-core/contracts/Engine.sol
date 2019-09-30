@@ -1,8 +1,9 @@
 pragma solidity ^0.5.0;
 
 import "./EncodingSkills.sol";
+import "./Sort.sol";
 
-contract Engine is EncodingSkills{
+contract Engine is EncodingSkills, Sort{
     
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
@@ -194,10 +195,12 @@ contract Engine is EncodingSkills{
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
             if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
-            for (uint8 pp = 0; pp < p; pp++) {
-                require(lineup[p] != lineup[pp], "player appears twice in lineup!");
-            }
+            // for (uint8 pp = 0; pp < p; pp++) {
+            //     require(lineup[p] != lineup[pp], "player appears twice in lineup!");
+            // }
         }
+        lineup = sort11(lineup);
+        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
         require(changes < 4, "max allowed changes during the break is 3");
         return (states, extraAttack, getPlayersPerZone(tacticsId));
     }
