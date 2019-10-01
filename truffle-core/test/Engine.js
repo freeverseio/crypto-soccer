@@ -345,32 +345,49 @@ contract('Engine', (accounts) => {
 
     
     it('manages to score with select shoorter wihtout modifiers', async () => {
+        // lets put a Messi and check that it surely scores:
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[10] = messi;
-    //     uint256[2] memory matchLog,
-    //     uint8 teamThatAttacks,
-    //     uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
-    //     uint8[9] memory playersPerZone,
-    //     bool[10] memory extraAttack,
-    //     uint256 blockShoot,
-    //     uint64[2] memory rnds
-    // )
         result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
-        // result = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
-        // result.should.be.equal(true);
-        // result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-        // result.should.be.equal(false);
-        // // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-        // result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
-        // result.should.be.equal(true);
+        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        // for this case, there should be a goal, so: 1-0    
+        expectedGoals       = [1, 0];
+        expectedShooters    = [10, 0];
+        expectedAssisters   = [10, 0];
+        for (team = 0; team < 2; team++) {
+            decodedLog = await encodingLog.decodeMatchLog(log[team]);
+            decodedLog.nGoals.toNumber().should.be.equal(expectedGoals[team]);
+            decodedLog.shootersIdx[0].toNumber().should.be.equal(expectedShooters[team]);
+            decodedLog.assistersIdx[0].toNumber().should.be.equal(expectedAssisters[team]);
+        }
+        // let's put a radically good GK, and check that it doesn't score
+        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        expectedGoals       = [0, 0];
+        expectedShooters    = [0, 0];
+        expectedAssisters   = [0, 0];
+        for (team = 0; team < 2; team++) {
+            decodedLog = await encodingLog.decodeMatchLog(log[team]);
+            decodedLog.nGoals.toNumber().should.be.equal(expectedGoals[team]);
+            decodedLog.shootersIdx[0].toNumber().should.be.equal(expectedShooters[team]);
+            decodedLog.assistersIdx[0].toNumber().should.be.equal(expectedAssisters[team]);
+        }
+        // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
+        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        expectedGoals       = [1, 0];
+        expectedShooters    = [10, 0];
+        expectedAssisters   = [10, 0];
+        for (team = 0; team < 2; team++) {
+            decodedLog = await encodingLog.decodeMatchLog(log[team]);
+            decodedLog.nGoals.toNumber().should.be.equal(expectedGoals[team]);
+            decodedLog.shootersIdx[0].toNumber().should.be.equal(expectedShooters[team]);
+            decodedLog.assistersIdx[0].toNumber().should.be.equal(expectedAssisters[team]);
+        }
     });
 
-    
-    
     it('select shooter with modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         extraAttack = [

@@ -97,14 +97,14 @@ contract Engine is EncodingSkills, Sort{
         private
         pure
     {
-        uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*4);
+        uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if (is2ndHalf && ((round == 0) || (round == 5))) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
-            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
+            teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
+            if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
                 managesToScore(
                     matchLog,
                     teamThatAttacks,
@@ -112,7 +112,7 @@ contract Engine is EncodingSkills, Sort{
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
-                    [rnds[4*round+2], rnds[4*round+3]]
+                    [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
             }
         }
@@ -436,7 +436,7 @@ contract Engine is EncodingSkills, Sort{
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
         uint256 blockShoot,
-        uint64[2] memory rnds
+        uint64[3] memory rnds
     )
         public
         pure
@@ -449,7 +449,7 @@ contract Engine is EncodingSkills, Sort{
         uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
         bool isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
-            uint8 assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[1]);
+            uint8 assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
             matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
             matchLog[teamThatAttacks]++;
