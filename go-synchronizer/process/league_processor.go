@@ -38,6 +38,8 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	}
 	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 
+	day-- // cause we use 0 starting indexes
+
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
 		return err
@@ -48,7 +50,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day-1)
+			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 			if err != nil {
 				return err
 			}
@@ -65,7 +67,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					return err
 				}
 				is2ndHalf := false
-				isHomeStadium := false
+				isHomeStadium := false // TODO change to true
 				result, err := b.engine.PlayMatch(
 					&bind.CallOpts{},
 					matchSeed,
@@ -78,12 +80,58 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					log.Fatal(err)
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day-1), uint32(matchIdx), result[0], result[1])
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
+				if err != nil {
+					return err
+				}
+				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, result[0], result[1])
 				if err != nil {
 					return err
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
+	homeTeam, err := b.storage.GetTeam(homeTeamID)
+	if err != nil {
+		return err
+	}
+	visitorTeam, err := b.storage.GetTeam(visitorTeamID)
+	if err != nil {
+		return err
+	}
+
+	homeTeam.State.GoalsForward += uint32(homeGoals)
+	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
+	visitorTeam.State.GoalsForward += uint32(visitorGoals)
+	visitorTeam.State.GoalsAgainst += uint32(homeGoals)
+
+	deltaGoals := int(homeGoals) - int(visitorGoals)
+	if deltaGoals > 0 {
+		homeTeam.State.W++
+		visitorTeam.State.L++
+		homeTeam.State.Points += 3
+	} else if deltaGoals < 0 {
+		homeTeam.State.L++
+		visitorTeam.State.W++
+		visitorTeam.State.Points += 3
+	} else {
+		homeTeam.State.D++
+		visitorTeam.State.D++
+		homeTeam.State.Points++
+		visitorTeam.State.Points++
+	}
+
+	err = b.storage.TeamUpdate(homeTeamID, homeTeam.State)
+	if err != nil {
+		return err
+	}
+	err = b.storage.TeamUpdate(visitorTeamID, visitorTeam.State)
+	if err != nil {
+		return err
 	}
 	return nil
 }

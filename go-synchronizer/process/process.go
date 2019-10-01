@@ -283,7 +283,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 						teamId,
 						timezone,
 						uint32(countryIdx.Uint64()),
-						storage.TeamState{teamOwner.Hex(), uint32(leagueIdx), teamIdxInLeague}},
+						storage.TeamState{teamOwner.Hex(), uint32(leagueIdx), teamIdxInLeague, 0, 0, 0, 0, 0, 0}},
 				); err != nil {
 					return err
 				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
