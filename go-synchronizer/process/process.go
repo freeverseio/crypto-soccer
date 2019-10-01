@@ -87,9 +87,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
 		log.Debug("Success dispatching LeaguesDivisionCreation event: ", v)
-		if err := p.storeDivisionCreation(v); err != nil {
-			return err
-		}
+		return p.storeDivisionCreation(v)
 	case leagues.LeaguesTeamTransfer:
 		log.Info("Success dispatching LeaguesTeamTransfer event: ", v)
 		teamID := v.TeamId
