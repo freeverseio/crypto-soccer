@@ -509,8 +509,8 @@ contract Engine is EncodingSkills, Sort{
             playerSkills = teamState[p];
             penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (p < getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else if (p < getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+            if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+            else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
             else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
         }
         // endurance is converted to a percentage, 
