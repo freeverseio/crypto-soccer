@@ -36,6 +36,8 @@ CREATE TABLE teams (
     w INT NOT NULL DEFAULT 0,
     d INT NOT NULL DEFAULT 0,
     l INT NOT NULL DEFAULT 0,
+    goals_forward INT NOT NULL DEFAULT 0,
+    goals_against INT NOT NULL DEFAULT 0,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
