@@ -60,66 +60,18 @@ func (p *EventProcessor) Process() error {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	if events, err := p.scanDivisionCreation(opts); err != nil {
+	scanner := NewEventScanner(p.leagues, p.updates)
+	if err := scanner.Process(opts); err != nil {
+		log.Error("scanner.Process failed with error ", err)
 		return err
 	} else {
-		err = p.storeDivisionCreation(events)
-		if err != nil {
+		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
+	}
+
+	for _, v := range scanner.Events {
+		if err := p.dispatch(v); err != nil {
+			log.Error(err)
 			return err
-		}
-	}
-
-	if events, err := p.scanTeamTransfer(opts); err != nil {
-		return err
-	} else {
-		for _, event := range events { // TODO: next part to be recoded
-			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
-			// if err != nil {
-			// 	return err
-			// }
-			teamID := event.TeamId
-			newOwner := event.To.String()
-			team, err := p.db.GetTeam(teamID)
-			if err != nil {
-				return err
-			}
-			// team.State.BlockNumber = blockNumber
-			team.State.Owner = newOwner
-			err = p.db.TeamUpdate(teamID, team.State)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if events, err := p.scanPlayerTransfer(opts); err != nil {
-		return err
-	} else {
-		for _, event := range events { // TODO: next part to be recoded
-			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
-			// if err != nil {
-			// 	return err
-			// }
-			playerID := event.PlayerId
-			toTeamID := event.TeamIdTarget
-			player, err := p.db.GetPlayer(playerID)
-			if err != nil {
-				return err
-			}
-			player.State.TeamId = toTeamID
-			err = p.db.PlayerUpdate(playerID, player.State)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	if events, err := p.scanActionsSubmission(opts); err != nil {
-		return err
-	} else {
-		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
-		for _, event := range events {
-			leagueProcessor.Process(event)
 		}
 	}
 
@@ -131,6 +83,47 @@ func (p *EventProcessor) Process() error {
 // *****************************************************************************
 // private
 // *****************************************************************************
+func (p *EventProcessor) dispatch(e *AbstractEvent) error {
+	switch v := e.Value.(type) {
+	case leagues.LeaguesDivisionCreation:
+		log.Debug("Success dispatching LeaguesDivisionCreation event: ", v)
+		if err := p.storeDivisionCreation(v); err != nil {
+			return err
+		}
+	case leagues.LeaguesTeamTransfer:
+		log.Debug("Success dispatching LeaguesTeamTransfer event: ", v)
+		teamID := v.TeamId
+		newOwner := v.To.String()
+		team, err := p.db.GetTeam(teamID)
+		if err != nil {
+			return err
+		}
+		// team.State.BlockNumber = blockNumber
+		team.State.Owner = newOwner
+		err = p.db.TeamUpdate(teamID, team.State)
+		if err != nil {
+			return err
+		}
+	case leagues.LeaguesPlayerTransfer:
+		log.Debug("Success dispatching LeaguesPlayerTransfer event: ", v)
+		playerID := v.PlayerId
+		toTeamID := v.TeamIdTarget
+		player, err := p.db.GetPlayer(playerID)
+		if err != nil {
+			return err
+		}
+		player.State.TeamId = toTeamID
+		err = p.db.PlayerUpdate(playerID, player.State)
+		if err != nil {
+			return err
+		}
+	case updates.UpdatesActionsSubmission:
+		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
+		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		leagueProcessor.Process(v)
+	}
+	return errors.New("Error dispatching Unknown event type")
+}
 func (p *EventProcessor) nextRange() *bind.FilterOpts {
 	start := p.dbLastBlockNumber()
 	if start != 0 {
@@ -221,28 +214,26 @@ func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates
 	return events, nil
 }
 
-func (p *EventProcessor) storeDivisionCreation(events []leagues.LeaguesDivisionCreation) error {
-	for _, event := range events {
-		log.Info(
-			"\ntime zone: ", event.Timezone,
-			"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
-			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
-		if event.CountryIdxInTZ.Uint64() == 0 {
-			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
-				return err
-			}
+func (p *EventProcessor) storeDivisionCreation(event leagues.LeaguesDivisionCreation) error {
+	log.Info(
+		"\ntime zone: ", event.Timezone,
+		"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
+		"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+	if event.CountryIdxInTZ.Uint64() == 0 {
+		if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+			return err
 		}
-		if event.DivisionIdxInCountry.Uint64() == 0 {
-			countryIdx := event.CountryIdxInTZ.Uint64()
-			if countryIdx > 65535 {
-				return errors.New("Cannot cast country idx to uint16: value too large")
-			}
-			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
-				return err
-			}
-			if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
-				return err
-			}
+	}
+	if event.DivisionIdxInCountry.Uint64() == 0 {
+		countryIdx := event.CountryIdxInTZ.Uint64()
+		if countryIdx > 65535 {
+			return errors.New("Cannot cast country idx to uint16: value too large")
+		}
+		if err := p.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
+			return err
+		}
+		if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+			return err
 		}
 	}
 	return nil
