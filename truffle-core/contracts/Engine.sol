@@ -33,12 +33,12 @@ contract Engine is EncodingSkills, Sort{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint256 firstHalfLog,
+        uint256[2] memory matchLog,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
     {
-        playMatch(seed, states, tactics, firstHalfLog, matchBools);
+        playMatch(seed, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -53,7 +53,7 @@ contract Engine is EncodingSkills, Sort{
         uint256 seed,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
-        uint256 firstHalfLog,
+        uint256[2] memory matchLog,
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
@@ -61,16 +61,18 @@ contract Engine is EncodingSkills, Sort{
         returns (uint256)
     {
         uint256[5][2] memory globSkills;
-        uint8[8][2] memory events;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
         
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
-        uint8[2] memory teamGoals = getGoalsFromLog(firstHalfLog);
-        events[0] = computeExceptionalEvents(states[0], matchBools[IDX_IS_2ND_HALF], seed);
-        events[1] = computeExceptionalEvents(states[1], matchBools[IDX_IS_2ND_HALF], seed);
+        matchLog[0] = computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seed);
+        matchLog[1] = computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
+
+        uint8[2] memory teamGoals;
+        teamGoals[0] = uint8(matchLog[0] & 15);
+        teamGoals[1] = uint8(matchLog[1] & 15);
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
@@ -83,6 +85,7 @@ contract Engine is EncodingSkills, Sort{
             penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], uint64(seed)); // TODO seed
             
         }
+        uint8[8][2] memory events; 
         return encodeGameLog(teamGoals, events[0], events[1], penaltiesGoals);
     }
     
@@ -232,6 +235,7 @@ contract Engine is EncodingSkills, Sort{
     // If we're on the 2nd half, the idx are events[4,5,6,7]
     function computeExceptionalEvents
     (
+        uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         bool is2ndHalf,
         uint256 seed
@@ -240,10 +244,10 @@ contract Engine is EncodingSkills, Sort{
         pure 
         returns 
     (
-        uint8[8] memory events
+        uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 4 : 0;
+        uint8 offset = is2ndHalf ? 31 : 34;
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
@@ -253,15 +257,16 @@ contract Engine is EncodingSkills, Sort{
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[11] = 758;
-        events[0 + offset] = throwDiceArray(weights, rnds[0]);
-        events[1 + offset] = computeTypeOfEvent(rnds[1]);
+        matchLog |= uint256(throwDiceArray(weights, rnds[0])) << offset;
+        matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 4);
         // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[11] = 9;
-        events[2 + offset] = throwDiceArray(weights, rnds[2]);
-        events[3 + offset] = throwDiceArray(weights, rnds[3]);
+        matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 6);
+        matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 10);
+        return matchLog;
     }
     
 
