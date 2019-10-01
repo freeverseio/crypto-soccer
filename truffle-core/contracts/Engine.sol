@@ -208,7 +208,7 @@ contract Engine is EncodingSkills, Sort{
         uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 137 : 123;
+        uint8 offset = is2ndHalf ? 165 : 151;
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {

@@ -147,9 +147,8 @@ contract('Engine', (accounts) => {
         // and that there are no penalties
         for (team = 0; team < 2; team++) {
             decodedLog = await encodingLog.decodeMatchLog(log12[team]);
-            decodedLog.penalties[team].should.be.equal(false);
+            for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(false);
         }
-
         // now play the game in 'playoff mode'
         log12 = await engine.playMatch(seedDraw, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
         expected = [true, true, true, true, true, true, false]
