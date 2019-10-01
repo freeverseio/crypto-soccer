@@ -150,49 +150,6 @@ contract Engine is EncodingSkills, Sort{
         }
         return matchLog;
     }
-
-    
-    // teamGoals: 4 bit each entry. Events: 6 bit each entry
-    function encodeGameLog(
-        uint8[2] memory teamGoals, 
-        uint8[8] memory events0, 
-        uint8[8] memory events1,
-        bool[14] memory penaltiesGoals
-    ) 
-    public 
-    pure 
-    returns(uint256 log) 
-    {
-        log  = uint256(teamGoals[0]);
-        log |= uint256(teamGoals[1]) << 4;
-        for (uint8 ev = 0; ev < 8; ev++) {
-            log |= (uint256(events0[ev]) << ( 8 + ev * 6));
-            log |= (uint256(events1[ev]) << (56 + ev * 6));
-        }
-        for (uint8 p = 0; p < 14; p++) {
-            if (penaltiesGoals[p]) log |= uint256(1) << 104 + p;
-        }
-    }
-    
-    function getGoalsFromLog(uint256 gameLog) public pure returns (uint8[2] memory goals) {
-        if (gameLog != 0) {
-            goals[0] = uint8(gameLog & 15);
-            goals[1] = uint8(gameLog >> 4 & 15);
-        }
-    }
-    
-    function getEventsFromLog(uint256 gameLog) public pure returns (uint8[8] memory events0, uint8[8] memory events1) {
-        for (uint8 ev = 0; ev < 8; ev++) {
-            events0[ev] = uint8((gameLog >> 8 + ev * 6) & 63);
-            events1[ev] = uint8((gameLog >> 56 + ev * 6) & 63);
-        }
-    }
-    
-    function getPenaltiesFromLog(uint256 gameLog) public pure returns (bool[14] memory goals) {
-        for (uint8 p = 0; p < 14; p++) {
-            goals[p] = (gameLog >> 104 + p & 1) == 1 ? true : false;
-        }
-    }
     
     function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];

@@ -188,22 +188,6 @@ contract('Engine', (accounts) => {
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
     });
     
-    it('encode decode gameLog', async () => {
-        events0 = [1,2,3,4,5,6,7,8];
-        events1 = [10,9,8,7,6,5,4,3];
-        penalties = [true, true, true, false, false, false, false, false, true, true, false, false, false, false];
-        goals = [3,5];
-        result = await engine.encodeGameLog(goals, events0, events1, penalties).should.be.fulfilled;
-        go = await engine.getGoalsFromLog(result).should.be.fulfilled;
-        pens = await engine.getPenaltiesFromLog(result).should.be.fulfilled;
-        evs = await engine.getEventsFromLog(result).should.be.fulfilled;
-        let {0: ev0, 1: ev1} = evs;
-        for (i = 0; i < 2; i++) go[i].toNumber().should.be.equal(goals[i]);
-        for (i = 0; i < 8; i++) ev0[i].toNumber().should.be.equal(events0[i]);
-        for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
-        for (i = 0; i < 14; i++) pens[i].should.be.equal(penalties[i]);
-    });
-
     it('goals from 1st half are added in the 2nd half', async () => {
         log0 =  await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log1 =  await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
