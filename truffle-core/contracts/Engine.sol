@@ -69,7 +69,7 @@ contract Engine is EncodingSkills{
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[0]);
         if (isHomeStadium) {
-            globSkills[IDX_ENDURANCE][0] = (globSkills[IDX_ENDURANCE][0] * 11500)/10000;
+            globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
