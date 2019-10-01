@@ -80,12 +80,28 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					log.Fatal(err)
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
+				err = b.setResult(timezoneIdx, countryIdx, leagueIdx, day, matchIdx, result[0], result[1])
 				if err != nil {
 					return err
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func (b *LeagueProcessor) setResult(
+	timezoneIdx uint8,
+	countryIdx uint32,
+	leagueIdx uint32,
+	day uint8,
+	matchIdx int,
+	homeGoals uint8,
+	visitorGoals uint8,
+) error {
+	err := b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), homeGoals, visitorGoals)
+	if err != nil {
+		return err
 	}
 	return nil
 }
