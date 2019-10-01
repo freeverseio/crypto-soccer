@@ -452,13 +452,13 @@ contract Engine is EncodingSkills, Sort{
             uint8 assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
             matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
-            matchLog[teamThatAttacks] |= getForwardPos(shooter, playersPerZone) << (116 + 2 * currentGoals);
+            matchLog[teamThatAttacks] |= uint256(getForwardPos(shooter, playersPerZone)) << (116 + 2 * currentGoals);
             matchLog[teamThatAttacks]++;
         }
         return matchLog;
     }
     
-    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint256) {
+    function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint8) {
         if (posInLineUp == 0) return 0;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)) return 1;
         else if (posInLineUp < 1 + getNDefenders(playersPerZone)+ getNMidfielders(playersPerZone)) return 2;

@@ -188,7 +188,7 @@ contract('Engine', (accounts) => {
         decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
     });
-    
+
     it('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playMatch(seedDraw, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
