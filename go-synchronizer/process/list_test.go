@@ -5,6 +5,7 @@ import (
 	//"errors"
 	"math/rand"
 	"sort"
+	"strconv"
 	"testing"
 )
 
@@ -13,38 +14,29 @@ type Time struct {
 	Seconds int
 }
 
-func (t *Time) Add() {
-
-	t.Seconds += 1
-	if t.Seconds >= 5 {
-		t.Seconds = 0
-		t.Minutes += 1
-	}
-}
-
 type Event1 struct {
+	Time Time
 	X    int
 	Y    int
 	Name string
-	Time Time
-}
-
-func NewEvent1(x int, y int, t Time) *Event1 {
-	return &Event1{x, y, "event1", t}
-}
-
-func NewEvent2(value string, t Time) *Event2 {
-	return &Event2{value, "Event2", t}
 }
 
 type Event2 struct {
+	Time  Time
 	Value string
 	Name  string
-	Time  Time
 }
 type GenericEvent struct {
 	Time  Time
 	Value interface{}
+}
+
+func NewEvent1(x int, y int, t Time) *Event1 {
+	return &Event1{t, x, y, "event1"}
+}
+
+func NewEvent2(value string, t Time) *Event2 {
+	return &Event2{t, value, "Event2"}
 }
 
 func NewGenericEvent(t Time, x interface{}) *GenericEvent {
@@ -78,7 +70,7 @@ func NewEventList(count int) *EventList {
 		if i&1 == 0 {
 			l.Array[i] = NewEvent1(i, i*2, t)
 		} else {
-			l.Array[i] = NewEvent2(string(i), t)
+			l.Array[i] = NewEvent2(strconv.Itoa(i), t)
 		}
 	}
 	return &l
@@ -116,7 +108,7 @@ func TestList(test *testing.T) {
 	genericEvents := []*GenericEvent{}
 	test.Log("========= creating events ==========")
 	for i, v := range eventList.Array {
-		test.Logf("event %v is %v", i, v)
+		test.Logf("adding event %v is %v", i, v)
 		if e, ok := Cast(v, test); ok {
 			genericEvents = append(genericEvents, e)
 		} else {
@@ -136,6 +128,14 @@ func TestList(test *testing.T) {
 
 	test.Log("========= sorted events ===========")
 	for i, v := range genericEvents {
-		test.Logf("event %v is %v", i, v)
+		// casting back to original type
+		switch v := v.Value.(type) {
+		case *Event1:
+			test.Logf("event %v is %v", i, *v)
+		case *Event2:
+			test.Logf("event %v is %v", i, *v)
+		default:
+			test.Fatalf("Could not cast type %v:", v)
+		}
 	}
 }
