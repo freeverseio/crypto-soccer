@@ -440,17 +440,21 @@ contract Engine is EncodingSkills, Sort{
     )
         public
         pure
-        returns (bool isGoal, uint8 shooter, uint8 assister)
+        returns (uint256[2] memory)
     {
-        shooter = selectShooter(teamState, playersPerZone, extraAttack, rnds[0]);
-
+        uint256 currentGoals = matchLog[teamThatAttacks] & 15;
+        if (currentGoals > 13) return matchLog;
+        uint8 shooter = selectShooter(teamState, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
-        isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
+        bool isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
+            uint8 assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[1]);
+            matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
+            matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
             matchLog[teamThatAttacks]++;
-            assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[1]);
         }
+        return matchLog;
     }
     
     function assertCanPlay(uint256 playerSkills) public pure {

@@ -146,7 +146,7 @@ contract('Engine', (accounts) => {
         // and that there are no penalties
         for (team = 0; team < 2; team++) {
             decodedLog = await encodingLog.decodeMatchLog(log12[team]);
-            decodedLog.penalties[p].should.be.equal(false);
+            decodedLog.penalties[team].should.be.equal(false);
         }
 
         // now play the game in 'playoff mode'
@@ -158,7 +158,7 @@ contract('Engine', (accounts) => {
         decodedLog = await encodingLog.decodeMatchLog(log12[team = 1]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
     });
-    
+
     it('computePenalties', async () => {
         // one team much better than the other:
         log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
@@ -344,21 +344,32 @@ contract('Engine', (accounts) => {
     });
 
     
-    // it('manages to score with select shoorter wihtout modifiers', async () => {
-    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-    //     messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
-    //         alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-    //     teamState[10] = messi;
-    //     result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(10);
-    //     result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    //     result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
-    //     result.should.be.equal(false);
-    //     // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-    //     result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
-    //     result.should.be.equal(true);
-    // });
+    it('manages to score with select shoorter wihtout modifiers', async () => {
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
+            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+        teamState[10] = messi;
+    //     uint256[2] memory matchLog,
+    //     uint8 teamThatAttacks,
+    //     uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
+    //     uint8[9] memory playersPerZone,
+    //     bool[10] memory extraAttack,
+    //     uint256 blockShoot,
+    //     uint64[2] memory rnds
+    // )
+        result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
+        result.toNumber().should.be.equal(10);
+        teamThatAttacks = 0;
+        // result = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        // result.should.be.equal(true);
+        // result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, kMaxRndNumHalf).should.be.fulfilled;
+        // result.should.be.equal(false);
+        // // even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
+        // result = await engine.managesToScore(teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, kMaxRndNumHalf, 1).should.be.fulfilled;
+        // result.should.be.equal(true);
+    });
+
+    
     
     it('select shooter with modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
