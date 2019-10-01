@@ -89,7 +89,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		log.Debug("Success dispatching LeaguesDivisionCreation event: ", v)
 		return p.storeDivisionCreation(v)
 	case leagues.LeaguesTeamTransfer:
-		log.Info("Success dispatching LeaguesTeamTransfer event: ", v)
+		log.Debug("Success dispatching LeaguesTeamTransfer event: ", v)
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.db.GetTeam(teamID)
@@ -100,7 +100,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
-		log.Info("Success dispatching LeaguesPlayerTransfer event: ", v)
+		log.Debug("Success dispatching LeaguesPlayerTransfer event: ", v)
 		playerID := v.PlayerId
 		toTeamID := v.TeamIdTarget
 		player, err := p.db.GetPlayer(playerID)
@@ -110,7 +110,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.TeamId = toTeamID
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Info("Success dispatching UpdatesActionsSubmission event: ", v)
+		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
 		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
 		return leagueProcessor.Process(v)
 	}
