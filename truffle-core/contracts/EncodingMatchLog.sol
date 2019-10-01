@@ -11,6 +11,7 @@ contract EncodingMatchLog {
         uint8 nGoals, // 4b
         uint8[14] memory assistersIdx, // 4b each
         uint8[14] memory shootersIdx, // 4b each
+        uint8[14] memory shooterForwardPos, // 2b each
         bool[7] memory penalties, // 1b each
         uint8[2] memory outOfGames,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
@@ -24,20 +25,21 @@ contract EncodingMatchLog {
         for (uint8 p = 0; p < 14; p++) {
             log |= uint256(assistersIdx[p]) << 4 + 4 * p;
             log |= uint256(shootersIdx[p]) << 60 + 4 * p;
+            log |= uint256(shooterForwardPos[p]) << 116 + 2 * p;
         }            
         for (uint8 p = 0; p < 7; p++) {
-            log |= uint256(penalties[p] ? 1: 0) << 116 + p;
+            log |= uint256(penalties[p] ? 1: 0) << 144 + p;
         }            
         // 1st half
-        log |= uint256(outOfGames[0]) << 123;
-        log |= uint256(typesOutOfGames[0]) << 127;
-        log |= uint256(yellowCards[0]) << 129;
-        log |= uint256(yellowCards[1]) << 133;
+        log |= uint256(outOfGames[0]) << 151;
+        log |= uint256(typesOutOfGames[0]) << 155;
+        log |= uint256(yellowCards[0]) << 157;
+        log |= uint256(yellowCards[1]) << 161;
         // 2nd half
-        log |= uint256(outOfGames[1]) << 137;
-        log |= uint256(typesOutOfGames[1]) << 141;
-        log |= uint256(yellowCards[2]) << 143;
-        log |= uint256(yellowCards[3]) << 147;
+        log |= uint256(outOfGames[1]) << 165;
+        log |= uint256(typesOutOfGames[1]) << 169;
+        log |= uint256(yellowCards[2]) << 171;
+        log |= uint256(yellowCards[3]) << 175;
     }
     
     
@@ -45,6 +47,7 @@ contract EncodingMatchLog {
         uint8 nGoals, // 4b
         uint8[14] memory assistersIdx, // 4b each
         uint8[14] memory shootersIdx, // 4b each
+        uint8[14] memory shooterForwardPos, // 2b each
         bool[15] memory penalties, // 1b each
         uint8[2] memory outOfGames,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
@@ -55,20 +58,21 @@ contract EncodingMatchLog {
         for (uint8 p = 0; p < 14; p++) {
             assistersIdx[p] = uint8((log >> 4 + 4 * p) & 15);
             shootersIdx[p] = uint8((log >> 60 + 4 * p) & 15);
+            shooterForwardPos[p] = uint8((log >> 116 + 2 * p) & 3);
         }    
         for (uint8 p = 0; p < 7; p++) {
-            penalties[p] = ((log >> 116 + p) & 1) == 1;
+            penalties[p] = ((log >> 144 + p) & 1) == 1;
         }            
         // 1st half
-        outOfGames[0] = uint8((log >> 123) & 15);
-        typesOutOfGames[0] = uint8((log >> 127) & 3);
-        yellowCards[0] = uint8((log >> 129) & 15);
-        yellowCards[1] = uint8((log >> 133) & 15);
+        outOfGames[0] = uint8((log >> 151) & 15);
+        typesOutOfGames[0] = uint8((log >> 155) & 3);
+        yellowCards[0] = uint8((log >> 157) & 15);
+        yellowCards[1] = uint8((log >> 161) & 15);
         // 2nd half
-        outOfGames[1] = uint8((log >> 137) & 15);
-        typesOutOfGames[1] = uint8((log >> 141) & 3);
-        yellowCards[2] = uint8((log >> 143) & 15);
-        yellowCards[3] = uint8((log >> 147) & 15);
+        outOfGames[1] = uint8((log >> 165) & 15);
+        typesOutOfGames[1] = uint8((log >> 169) & 3);
+        yellowCards[2] = uint8((log >> 171) & 15);
+        yellowCards[3] = uint8((log >> 175) & 15);
     }
 
 
