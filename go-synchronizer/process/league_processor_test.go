@@ -10,10 +10,13 @@ import (
 )
 
 func TestProcessInvalidTimezone(t *testing.T) {
-	processor := process.NewLeagueProcessor(nil, nil, nil)
+	processor, err := process.NewLeagueProcessor(nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 0
-	err := processor.Process(event)
+	err = processor.Process(event)
 	if err == nil {
 		t.Fatal("processing invalid timezone")
 	}
@@ -34,7 +37,10 @@ func TestProcess(t *testing.T) {
 	leagueIdx := uint32(0)
 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
 
-	processor := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, sto)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, sto)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var event updates.UpdatesActionsSubmission
 	event.Day = 1
 	event.TimeZone = timezoneIdx

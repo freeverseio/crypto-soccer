@@ -117,7 +117,10 @@ func (p *EventProcessor) Process() error {
 	if events, err := p.scanActionsSubmission(opts); err != nil {
 		return err
 	} else {
-		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		if err != nil {
+			return err
+		}
 		for _, event := range events {
 			leagueProcessor.Process(event)
 		}

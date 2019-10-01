@@ -14,13 +14,18 @@ import (
 )
 
 type LeagueProcessor struct {
-	engine  *engine.Engine
-	leagues *leagues.Leagues
-	storage *storage.Storage
+	engine            *engine.Engine
+	leagues           *leagues.Leagues
+	storage           *storage.Storage
+	calendarProcessor *Calendar
 }
 
-func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) *LeagueProcessor {
-	return &LeagueProcessor{engine, leagues, storage}
+func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) (*LeagueProcessor, error) {
+	calendarProcessor, err := NewCalendar(leagues, storage)
+	if err != nil {
+		return nil, err
+	}
+	return &LeagueProcessor{engine, leagues, storage, calendarProcessor}, nil
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
@@ -50,6 +55,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+			if day == 0 {
+				err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
+				if err != nil {
+					return err
+				}
+			}
 			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 			if err != nil {
 				return err
@@ -90,6 +101,18 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				}
 			}
 		}
+	}
+	return nil
+}
+
+func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	err := b.calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return err
+	}
+	err = b.calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return err
 	}
 	return nil
 }
