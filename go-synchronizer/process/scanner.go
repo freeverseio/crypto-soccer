@@ -1,6 +1,8 @@
 package process
 
 import (
+	"sort"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
@@ -30,6 +32,33 @@ func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates) *EventS
 	return &EventScanner{leagues, updates, []*AbstractEvent{}}
 }
 
+type byFunction func(p1, p2 *AbstractEvent) bool
+
+func (b byFunction) Sort(events []*AbstractEvent) {
+	ps := &abstractEventSorter{
+		events: events,
+		by:     b,
+	}
+	sort.Sort(ps)
+}
+
+type abstractEventSorter struct {
+	events []*AbstractEvent
+	by     func(p1, p2 *AbstractEvent) bool // Closure used in the Less method.
+}
+
+func (s *abstractEventSorter) Len() int {
+	return len(s.events)
+}
+
+func (s *abstractEventSorter) Swap(i, j int) {
+	s.events[i], s.events[j] = s.events[j], s.events[i]
+}
+
+func (s *abstractEventSorter) Less(i, j int) bool {
+	return s.by(s.events[i], s.events[j])
+}
+
 // Process: scans all events types and puts them in the Events slice
 // types of events it listens
 // leagues.LeaguesDivisionCreation
@@ -52,6 +81,14 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 	}
 
 	// TODO: sort all events
+	sortFunction := func(p1, p2 *AbstractEvent) bool {
+		if p1.BlockNumber == p2.BlockNumber {
+			return p1.TxIndexInBlock < p2.TxIndexInBlock
+		}
+		return p1.BlockNumber < p2.BlockNumber
+
+	}
+	byFunction(sortFunction).Sort(s.Events)
 
 	return nil
 }

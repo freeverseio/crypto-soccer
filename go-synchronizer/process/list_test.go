@@ -9,37 +9,37 @@ import (
 	"testing"
 )
 
-type time struct {
+type mytime struct {
 	Minutes int
 	Seconds int
 }
 
 type event1 struct {
-	Time time
+	Time mytime
 	X    int
 	Y    int
 	Name string
 }
 
 type event2 struct {
-	Time  time
+	Time  mytime
 	Value string
 	Name  string
 }
 type genericEvent struct {
-	Time  time
+	Time  mytime
 	Value interface{}
 }
 
-func newEvent1(x int, y int, t time) *event1 {
+func newEvent1(x int, y int, t mytime) *event1 {
 	return &event1{t, x, y, "event1"}
 }
 
-func newEvent2(value string, t time) *event2 {
+func newEvent2(value string, t mytime) *event2 {
 	return &event2{t, value, "event2"}
 }
 
-func newGenericEvent(t time, x interface{}) *genericEvent {
+func newGenericEvent(t mytime, x interface{}) *genericEvent {
 	return &genericEvent{t, x}
 }
 
@@ -63,7 +63,7 @@ type eventList struct {
 
 func newEventList(count int) *eventList {
 	l := eventList{make([]interface{}, count)}
-	t := time{0, 0}
+	t := mytime{0, 0}
 	for i := 0; i < count; i++ {
 		t.Minutes = rand.Intn(60)
 		t.Seconds = rand.Intn(60)
@@ -116,7 +116,7 @@ func TestList(test *testing.T) {
 		}
 	}
 
-	time := func(p1, p2 *genericEvent) bool {
+	mytime := func(p1, p2 *genericEvent) bool {
 		if p1.Time.Minutes == p2.Time.Minutes {
 			return p1.Time.Seconds < p2.Time.Seconds
 		}
@@ -124,7 +124,7 @@ func TestList(test *testing.T) {
 
 	}
 
-	by(time).Sort(genericEvents)
+	by(mytime).Sort(genericEvents)
 
 	test.Log("========= sorted events ===========")
 	for i, v := range genericEvents {
