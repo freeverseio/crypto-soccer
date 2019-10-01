@@ -68,10 +68,6 @@ func (b *Storage) MatchSetResult(timezoneIdx uint8, countryIdx uint32, leagueIdx
 	return err
 }
 
-func (b *Storage) ResetAllMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	log.Infof("[DBMS] Reset matches of timezone %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-}
-
 func (b *Storage) GetMatchesInDay(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
 	rows, err := b.db.Query("SELECT match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4);", timezoneIdx, countryIdx, leagueIdx, matchDayIdx)
