@@ -1,8 +1,8 @@
 {
     "ethereumClient": "https://devnet.busyverse.com/web3",
-    "engineContractAddress": "0x5185bC1Bb4c4b08289c9Da3Ef70C98760BC16E47",
-    "assetsContractAddress": "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C",
-    "leaguesContractAddress": "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C",
-    "marketContractAddress": "0xE4519A2e8D295712f3a1cAB608be329F0c0F952C",
-    "updatesContractAddress": "0xB26aD93b869F0fe7cf26B012140dEFe902Cc0571" 
+    "engineContractAddress": "0x694dA4331476cBb5b7b2f69e9B0E08d441c07235",
+    "assetsContractAddress": "0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B",
+    "leaguesContractAddress": "0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B",
+    "marketContractAddress": "0xE995621Ca05a79504EFA4193A9934Db4A92d38F5",
+    "updatesContractAddress": "0xEFB926e542BB03182343aEe29ff8B36889327Acb"
 }
