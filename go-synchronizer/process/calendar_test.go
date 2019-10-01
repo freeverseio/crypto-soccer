@@ -30,6 +30,35 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 	}
 }
 
+func TestResetCalendar(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ganache := testutils.NewGanache()
+	ganache.DeployContracts(ganache.Owner)
+
+	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timezoneIdx := uint8(1)
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	countryIdx := uint32(0)
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	leagueIdx := uint32(0)
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
