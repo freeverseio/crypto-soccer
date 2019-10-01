@@ -107,7 +107,7 @@ func (b *LeagueProcessor) setResult(
 }
 
 func (b *LeagueProcessor) getMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
-	var tactics [2]*big.Int
+	var tactics [2]*big.Int // TODO: set real tactics
 	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	return tactics, nil
