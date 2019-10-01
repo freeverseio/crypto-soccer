@@ -52,7 +52,7 @@ services:
       - "4000:4000"
   staker:
     image: freeverseio/staker:dev
-    command: --updatesContractAddress "0xEFB926e542BB03182343aEe29ff8B36889327Acb" -i 60 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27"
+    command: --updatesContractAddress "0xEFB926e542BB03182343aEe29ff8B36889327Acb" -i 3 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27"
 volumes:
   centauri-data:
   ethereum-data:
