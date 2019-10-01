@@ -226,10 +226,7 @@ func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates
 
 func (p *EventProcessor) storeDivisionCreation(events []leagues.LeaguesDivisionCreation) error {
 	for _, event := range events {
-		log.Info(
-			"\ntime zone: ", event.Timezone,
-			"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
-			"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+		log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 		if event.CountryIdxInTZ.Uint64() == 0 {
 			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
 				return err
