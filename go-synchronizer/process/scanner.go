@@ -80,6 +80,10 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 		return err
 	}
 
+	if len(s.Events) > 10000 {
+		log.Info("sorting ", len(s.Events), " be patient...")
+	}
+
 	sortFunction := func(p1, p2 *AbstractEvent) bool {
 		if p1.BlockNumber == p2.BlockNumber {
 			return p1.TxIndexInBlock < p2.TxIndexInBlock
@@ -87,6 +91,8 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 		return p1.BlockNumber < p2.BlockNumber
 
 	}
+	// TODO: maybe use a parallel sort strategy to improve performance
+	// https://hackernoon.com/parallel-merge-sort-in-go-fe14c1bc006
 	byFunction(sortFunction).Sort(s.Events)
 
 	return nil
