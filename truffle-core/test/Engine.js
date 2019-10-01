@@ -125,184 +125,184 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
-return;
-    it('play a match with penalties to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
-    });
 
-    it('check that penalties are played in playoff games', async () => {
-        // this game ends up in a tie if there are no penalties:
-        log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, playoff = false]).should.be.fulfilled;
-        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
-        // check that the game would end 2-2
-        expectedGoals = [2, 2];
-        go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
-        for (i = 0; i < 2; i++) {
-            go12[i].toNumber().should.be.equal(2);
-        }
-        // check that there were no penalties
-        pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
-        for (i = 0; i < 14; i++) pens[i].should.be.equal(false);
-        // now play the game in 'playoff mode'
-        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
-        pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
-        expected = [true, true, true, true, true, true, true, true, true, true, true, true, true, false]
-        for (i = 0; i < 14; i++) pens[i].should.be.equal(expected[i]);
-    });
-    
-    it('computePenalties', async () => {
-        // one team much better than the other:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll1], 50, 1, seed);
-        expected = [true, false, true, false, true, false, true, false, true, false, false, false, false, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
-        // both teams similar:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll50], 50, 50, seed);
-        expected = [false, true, true, true, true, true, true, true, true, true, false, false, false, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
-        // both teams really incredible goalkeepers:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
-        expected = [false, false, false, false, false, false, false, false, false, false, false, false, true, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
-    });
-    
-    
-    it('encode decode gameLog', async () => {
-        events0 = [1,2,3,4,5,6,7,8];
-        events1 = [10,9,8,7,6,5,4,3];
-        penalties = [true, true, true, false, false, false, false, false, true, true, false, false, false, false];
-        goals = [3,5];
-        result = await engine.encodeGameLog(goals, events0, events1, penalties).should.be.fulfilled;
-        go = await engine.getGoalsFromLog(result).should.be.fulfilled;
-        pens = await engine.getPenaltiesFromLog(result).should.be.fulfilled;
-        evs = await engine.getEventsFromLog(result).should.be.fulfilled;
-        let {0: ev0, 1: ev1} = evs;
-        for (i = 0; i < 2; i++) go[i].toNumber().should.be.equal(goals[i]);
-        for (i = 0; i < 8; i++) ev0[i].toNumber().should.be.equal(events0[i]);
-        for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
-        for (i = 0; i < 14; i++) pens[i].should.be.equal(penalties[i]);
-    });
+    // it('play a match with penalties to estimate cost', async () => {
+    //     const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
+    // });
 
-    it('goals from 1st half are added in the 2nd half', async () => {
-        log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        log1 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        go0 = await engine.getGoalsFromLog(log0).should.be.fulfilled;
-        go1 = await engine.getGoalsFromLog(log1).should.be.fulfilled;
-        log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
-        for (i = 0; i < 2; i++) {
-            // for this seed, both halfs end up with one goal per team
-            go0[i].toNumber().should.be.equal(1);
-            go1[i].toNumber().should.be.equal(1);
-            // so the result should be 2-2:
-            go12[i].toNumber().should.be.equal(go0[i].toNumber() + go1[i].toNumber());
-        }
-    });
-
+    // it('check that penalties are played in playoff games', async () => {
+    //     // this game ends up in a tie if there are no penalties:
+    //     log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, playoff = false]).should.be.fulfilled;
+    //     log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
+    //     // check that the game would end 2-2
+    //     expectedGoals = [2, 2];
+    //     go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
+    //     for (i = 0; i < 2; i++) {
+    //         go12[i].toNumber().should.be.equal(2);
+    //     }
+    //     // check that there were no penalties
+    //     pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
+    //     for (i = 0; i < 14; i++) pens[i].should.be.equal(false);
+    //     // now play the game in 'playoff mode'
+    //     log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
+    //     pens = await engine.getPenaltiesFromLog(log12).should.be.fulfilled;
+    //     expected = [true, true, true, true, true, true, true, true, true, true, true, true, true, false]
+    //     for (i = 0; i < 14; i++) pens[i].should.be.equal(expected[i]);
+    // });
+    
+    // it('computePenalties', async () => {
+    //     // one team much better than the other:
+    //     result = await engine.computePenalties([teamStateAll50, teamStateAll1], 50, 1, seed);
+    //     expected = [true, false, true, false, true, false, true, false, true, false, false, false, false, false];
+    //     for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+    //     // both teams similar:
+    //     result = await engine.computePenalties([teamStateAll50, teamStateAll50], 50, 50, seed);
+    //     expected = [false, true, true, true, true, true, true, true, true, true, false, false, false, false];
+    //     for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+    //     // both teams really incredible goalkeepers:
+    //     result = await engine.computePenalties([teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
+    //     expected = [false, false, false, false, false, false, false, false, false, false, false, false, true, false];
+    //     for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+    // });
     
     
-    it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
-        messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
-            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-        for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        teamStateAll50[5] = messi; 
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
-    });
+    // it('encode decode gameLog', async () => {
+    //     events0 = [1,2,3,4,5,6,7,8];
+    //     events1 = [10,9,8,7,6,5,4,3];
+    //     penalties = [true, true, true, false, false, false, false, false, true, true, false, false, false, false];
+    //     goals = [3,5];
+    //     result = await engine.encodeGameLog(goals, events0, events1, penalties).should.be.fulfilled;
+    //     go = await engine.getGoalsFromLog(result).should.be.fulfilled;
+    //     pens = await engine.getPenaltiesFromLog(result).should.be.fulfilled;
+    //     evs = await engine.getEventsFromLog(result).should.be.fulfilled;
+    //     let {0: ev0, 1: ev1} = evs;
+    //     for (i = 0; i < 2; i++) go[i].toNumber().should.be.equal(goals[i]);
+    //     for (i = 0; i < 8; i++) ev0[i].toNumber().should.be.equal(events0[i]);
+    //     for (i = 0; i < 8; i++) ev1[i].toNumber().should.be.equal(events1[i]);
+    //     for (i = 0; i < 14; i++) pens[i].should.be.equal(penalties[i]);
+    // });
 
-    it('play with an injured / red carded / free-slot player', async () => {
-        // legit works:
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        // red card fails:
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
-            alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
-        // injured fails
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
-            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
-        result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
-    });
+    // it('goals from 1st half are added in the 2nd half', async () => {
+    //     log0 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+    //     log1 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log = 0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+    //     go0 = await engine.getGoalsFromLog(log0).should.be.fulfilled;
+    //     go1 = await engine.getGoalsFromLog(log1).should.be.fulfilled;
+    //     log12 = await engine.playMatch(seed, [teamStateAll50, teamStateAll50], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+    //     go12 = await engine.getGoalsFromLog(log12).should.be.fulfilled;
+    //     for (i = 0; i < 2; i++) {
+    //         // for this seed, both halfs end up with one goal per team
+    //         go0[i].toNumber().should.be.equal(1);
+    //         go1[i].toNumber().should.be.equal(1);
+    //         // so the result should be 2-2:
+    //         go12[i].toNumber().should.be.equal(go0[i].toNumber() + go1[i].toNumber());
+    //     }
+    // });
 
-    it('computePenaltyBadPositionAndCondition for GK ', async () => {
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, [potential = 1,
-            forwardness = 0, leftishness = 0, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
-        ).should.be.fulfilled;            
-        expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
-        expected[0] = 0;
-        for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(10000 - expected[p]);
-        }
-    });
+    
+    
+    // it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
+    //     messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
+    //         alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+    //     for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+    //     teamStateAll50[5] = messi; 
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+    // });
 
-    it('computePenaltyBadPositionAndCondition for DL ', async () => {
-            // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
-            forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
-        ).should.be.fulfilled;            
-        expected442 = [MAX_PENALTY, 
-            0, 1000, 1000, 2000, 
-            1000, 2000, 2000, 3000, 
-            3000, 3000 
-        ];
-        expected433 = [MAX_PENALTY, 
-            0, 1000, 1000, 2000, 
-            1000, 2000, 3000,  
-            2000, 3000, 4000
-        ];
-        for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(10000 - expected433[p]);
-        }
-    });
+    // it('play with an injured / red carded / free-slot player', async () => {
+    //     // legit works:
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+    //     // red card fails:
+    //     teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
+    //         alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+    //     // injured fails
+    //     teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
+    //         alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
+    //     result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+    // });
 
-    it('computePenaltyBadPositionAndCondition for DL with gamesNonStopping', async () => {
-        // for a DL:
-        expected442 = [MAX_PENALTY, 
-            0, 1000, 1000, 2000, 
-            1000, 2000, 2000, 3000, 
-            3000, 3000 
-        ];
-        expected433 = [MAX_PENALTY, 
-            0, 1000, 1000, 2000, 
-            1000, 2000, 3000,  
-            2000, 3000, 4000
-        ];
-        for (games = 1; games < 9; games+=2) {
-            playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1323121, [potential = 1,
-                forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
-            ).should.be.fulfilled;            
-            for (p=0; p < 11; p+=3) {
-                penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
-                if (expected442[p] == MAX_PENALTY) {
-                    penalty.toNumber().should.be.equal(0);
-                } else {
-                    penalty.toNumber().should.be.equal(10000 - Math.min(5000, games*1000) - expected442[p]);
-                }
-            }
-        }
-    });
+    // it('computePenaltyBadPositionAndCondition for GK ', async () => {
+    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, [potential = 1,
+    //         forwardness = 0, leftishness = 0, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+    //     ).should.be.fulfilled;            
+    //     expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
+    //     expected[0] = 0;
+    //     for (p=0; p < 11; p++) {
+    //         penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+    //         penalty.toNumber().should.be.equal(10000 - expected[p]);
+    //     }
+    // });
+
+    // it('computePenaltyBadPositionAndCondition for DL ', async () => {
+    //         // for a DL:
+    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
+    //         forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+    //     ).should.be.fulfilled;            
+    //     expected442 = [MAX_PENALTY, 
+    //         0, 1000, 1000, 2000, 
+    //         1000, 2000, 2000, 3000, 
+    //         3000, 3000 
+    //     ];
+    //     expected433 = [MAX_PENALTY, 
+    //         0, 1000, 1000, 2000, 
+    //         1000, 2000, 3000,  
+    //         2000, 3000, 4000
+    //     ];
+    //     for (p=0; p < 11; p++) {
+    //         penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
+    //         penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
+    //     }
+    // });
+
+    // it('computePenaltyBadPositionAndCondition for DL with gamesNonStopping', async () => {
+    //     // for a DL:
+    //     expected442 = [MAX_PENALTY, 
+    //         0, 1000, 1000, 2000, 
+    //         1000, 2000, 2000, 3000, 
+    //         3000, 3000 
+    //     ];
+    //     expected433 = [MAX_PENALTY, 
+    //         0, 1000, 1000, 2000, 
+    //         1000, 2000, 3000,  
+    //         2000, 3000, 4000
+    //     ];
+    //     for (games = 1; games < 9; games+=2) {
+    //         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 1323121, [potential = 1,
+    //             forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
+    //         ).should.be.fulfilled;            
+    //         for (p=0; p < 11; p+=3) {
+    //             penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+    //             if (expected442[p] == MAX_PENALTY) {
+    //                 penalty.toNumber().should.be.equal(0);
+    //             } else {
+    //                 penalty.toNumber().should.be.equal(10000 - Math.min(5000, games*1000) - expected442[p]);
+    //             }
+    //         }
+    //     }
+    // });
 
 
-    it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
-        // for a DL:
-        playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
-            forwardness = 5, leftishness = 7, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
-        ).should.be.fulfilled;            
-        expected442 = [MAX_PENALTY, 
-            1000, 1000, 1000, 1000, 
-            0, 0, 0, 0, 
-            0, 0 
-        ];
-        expected433 = expected442;
-        for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
-            penalty.toNumber().should.be.equal(10000 - expected433[p]);
-        }
-    });
+    // it('computePenaltyBadPositionAndCondition for MFLCR ', async () => {
+    //     // for a DL:
+    //     playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 312321, [potential = 1,
+    //         forwardness = 5, leftishness = 7, aggr = 0], alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0
+    //     ).should.be.fulfilled;            
+    //     expected442 = [MAX_PENALTY, 
+    //         1000, 1000, 1000, 1000, 
+    //         0, 0, 0, 0, 
+    //         0, 0 
+    //     ];
+    //     expected433 = expected442;
+    //     for (p=0; p < 11; p++) {
+    //         penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+    //         penalty.toNumber().should.be.equal(10000 - expected442[p]);
+    //         penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+    //         penalty.toNumber().should.be.equal(10000 - expected433[p]);
+    //     }
+    // });
     
     it('teams get tired', async () => {
         const result = await engine.teamsGetTired([10,20,30,40,100], [20,40,60,80,50]).should.be.fulfilled;
@@ -318,6 +318,7 @@ return;
         result[1][4].toNumber().should.be.equal(50);
     });
     
+    return
     
     it('play a match in home stadium', async () => {
         const result = await engine.playMatch(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHome = true, isPlayoff]).should.be.fulfilled;
@@ -377,82 +378,82 @@ return;
         }
     });
     
-    // it('select assister with modifiers', async () => {
-    //     console.log("warning: This test takes a few secs...")
-    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     nPartitions = 200;
-    //     expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
-    //     transtions = [];
-    //     t=0;
-    //     rndOld = 0;
-    //     result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     prev = result.toNumber();
-    //     for (p = 0; p < nPartitions; p++) {
-    //         rnd = Math.floor(p * MAX_RND/ nPartitions);
-    //         result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         if (result.toNumber() != prev) {
-    //             percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
-    //             // console.log(prev, percentageForPrevPlayer);
-    //             transtions.push(percentageForPrevPlayer);
-    //             prev = result.toNumber();
-    //             t++;
-    //             rndOld = rnd;
-    //         }
-    //     }
-    //     percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
-    //     // console.log(prev, percentageForPrevPlayer);
-    //     transtions.push(percentageForPrevPlayer);
-    //         // console.log(transtions)
-    //     for (t = 0; t < expectedTrans.length; t++) {
-    //         (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
-    //     }
-    // });
+    it('select assister with modifiers', async () => {
+        console.log("warning: This test takes a few secs...")
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        nPartitions = 200;
+        expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
+        transtions = [];
+        t=0;
+        rndOld = 0;
+        result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
+        for (p = 0; p < nPartitions; p++) {
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            if (result.toNumber() != prev) {
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
+                prev = result.toNumber();
+                t++;
+                rndOld = rnd;
+            }
+        }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+            // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
+    });
 
-    // it('select assister with modifiers and one Messi', async () => {
-    //     console.log("warning: This test takes a few secs...")
-    //     teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-    //     messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
-    //         alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
-    //     teamState[8] = messi;
-    //     extraAttack = [
-    //         true, false, false, true,
-    //         false, true, true, false,
-    //         true, false,
-    //     ];
-    //     nPartitions = 200;
-    //     expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
-    //     transtions = [];
-    //     t=0;
-    //     rndOld = 0;
-    //     result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
-    //     result.toNumber().should.be.equal(0);
-    //     prev = result.toNumber();
-    //     for (p = 0; p < nPartitions; p++) {
-    //         rnd = Math.floor(p * MAX_RND/ nPartitions);
-    //         result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
-    //         if (result.toNumber() != prev) {
-    //             percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
-    //             // console.log(prev, percentageForPrevPlayer);
-    //             transtions.push(percentageForPrevPlayer);
-    //             prev = result.toNumber();
-    //             t++;
-    //             rndOld = rnd;
-    //         }
-    //     }
-    //     percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
-    //     // console.log(prev, percentageForPrevPlayer);
-    //     transtions.push(percentageForPrevPlayer);
-    //     // console.log(transtions)
-    //     for (t = 0; t < expectedTrans.length; t++) {
-    //         (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
-    //     }
-    // });
+    it('select assister with modifiers and one Messi', async () => {
+        console.log("warning: This test takes a few secs...")
+        teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
+        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
+            alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
+        teamState[8] = messi;
+        extraAttack = [
+            true, false, false, true,
+            false, true, true, false,
+            true, false,
+        ];
+        nPartitions = 200;
+        expectedTrans = [ 5, 40, 10, 10, 40, 45, 70, 70, 530, 90, 90 ];
+        transtions = [];
+        t=0;
+        rndOld = 0;
+        result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(0);
+        prev = result.toNumber();
+        for (p = 0; p < nPartitions; p++) {
+            rnd = Math.floor(p * MAX_RND/ nPartitions);
+            result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            if (result.toNumber() != prev) {
+                percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
+                // console.log(prev, percentageForPrevPlayer);
+                transtions.push(percentageForPrevPlayer);
+                prev = result.toNumber();
+                t++;
+                rndOld = rnd;
+            }
+        }
+        percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
+        // console.log(prev, percentageForPrevPlayer);
+        transtions.push(percentageForPrevPlayer);
+        // console.log(transtions)
+        for (t = 0; t < expectedTrans.length; t++) {
+            (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
+        }
+    });
 
 
     it('throws dice array11 fine grained testing', async () => {
