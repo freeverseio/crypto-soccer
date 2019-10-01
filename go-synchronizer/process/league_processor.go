@@ -67,7 +67,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					return err
 				}
 				is2ndHalf := false
-				isHomeStadium := false
+				isHomeStadium := false // TODO change to true
 				result, err := b.engine.PlayMatch(
 					&bind.CallOpts{},
 					matchSeed,
