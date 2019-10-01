@@ -491,7 +491,7 @@ contract Engine is EncodingSkills, Sort{
         uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
         isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
-            matchLog[teamThatAttacks] |= (matchLog[teamThatAttacks] & 15) + 1;
+            matchLog[teamThatAttacks]++;
             assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[1]);
         }
     }
