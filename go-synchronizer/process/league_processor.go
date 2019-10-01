@@ -80,7 +80,11 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					log.Fatal(err)
 					return err
 				}
-				err = b.setResult(timezoneIdx, countryIdx, leagueIdx, day, matchIdx, result[0], result[1])
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
+				if err != nil {
+					return err
+				}
+				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, result[0], result[1])
 				if err != nil {
 					return err
 				}
@@ -90,16 +94,42 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) setResult(
-	timezoneIdx uint8,
-	countryIdx uint32,
-	leagueIdx uint32,
-	day uint8,
-	matchIdx int,
-	homeGoals uint8,
-	visitorGoals uint8,
-) error {
-	err := b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), homeGoals, visitorGoals)
+func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
+	homeTeam, err := b.storage.GetTeam(homeTeamID)
+	if err != nil {
+		return err
+	}
+	visitorTeam, err := b.storage.GetTeam(visitorTeamID)
+	if err != nil {
+		return err
+	}
+
+	homeTeam.State.GoalsForward += uint32(homeGoals)
+	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
+	visitorTeam.State.GoalsForward += uint32(visitorGoals)
+	visitorTeam.State.GoalsAgainst += uint32(homeGoals)
+
+	deltaGoals := int(homeGoals) - int(visitorGoals)
+	if deltaGoals > 0 {
+		homeTeam.State.W++
+		visitorTeam.State.L++
+		homeTeam.State.Points += 3
+	} else if deltaGoals < 0 {
+		homeTeam.State.L++
+		visitorTeam.State.W++
+		visitorTeam.State.Points += 3
+	} else {
+		homeTeam.State.D++
+		visitorTeam.State.D++
+		homeTeam.State.Points++
+		visitorTeam.State.Points++
+	}
+
+	err = b.storage.TeamUpdate(homeTeamID, homeTeam.State)
+	if err != nil {
+		return err
+	}
+	err = b.storage.TeamUpdate(visitorTeamID, visitorTeam.State)
 	if err != nil {
 		return err
 	}
@@ -107,7 +137,7 @@ func (b *LeagueProcessor) setResult(
 }
 
 func (b *LeagueProcessor) getMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
-	var tactics [2]*big.Int // TODO: set real tactics
+	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	return tactics, nil
