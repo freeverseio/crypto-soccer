@@ -40,7 +40,7 @@ services:
     image: freeverseio/relay:dev
     ports:
       - "4003:4000"
-    command: --assetsContractAddress "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C" --privateKey "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d05" --ethereum "http://ethereum:8545"
+    command: --assetsContractAddress "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C" --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" --ethereum "http://ethereum:8545"
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
@@ -52,7 +52,7 @@ services:
       - "4000:4000"
   staker:
     image: freeverseio/staker:dev
-    command: --updatesContractAddress "0xB26aD93b869F0fe7cf26B012140dEFe902Cc0571" -i 60 --privateKey "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d07"
+    command: --updatesContractAddress "0xB26aD93b869F0fe7cf26B012140dEFe902Cc0571" -i 60 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27"
 volumes:
   centauri-data:
   ethereum-data:
