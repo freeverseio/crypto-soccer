@@ -8,7 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 
-	//"fmt"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -91,7 +91,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 			return err
 		}
 	case leagues.LeaguesTeamTransfer:
-		log.Debug("Success dispatching LeaguesTeamTransfer event: ", v)
+		log.Info("Success dispatching LeaguesTeamTransfer event: ", v)
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.db.GetTeam(teamID)
@@ -102,7 +102,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
-		log.Debug("Success dispatching LeaguesPlayerTransfer event: ", v)
+		log.Info("Success dispatching LeaguesPlayerTransfer event: ", v)
 		playerID := v.PlayerId
 		toTeamID := v.TeamIdTarget
 		player, err := p.db.GetPlayer(playerID)
@@ -112,11 +112,12 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.TeamId = toTeamID
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
+		log.Info("Success dispatching UpdatesActionsSubmission event: ", v)
 		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
 		return leagueProcessor.Process(v)
 	}
-	return errors.New("Error dispatching Unknown event type")
+	//return errors.New("Error dispatching Unknown event type")
+	return fmt.Errorf("Error dispatching unkown event type: %s", e.Name)
 }
 func (p *EventProcessor) nextRange() *bind.FilterOpts {
 	start := p.dbLastBlockNumber()
