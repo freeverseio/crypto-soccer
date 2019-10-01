@@ -80,7 +80,6 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 		return err
 	}
 
-	// TODO: sort all events
 	sortFunction := func(p1, p2 *AbstractEvent) bool {
 		if p1.BlockNumber == p2.BlockNumber {
 			return p1.TxIndexInBlock < p2.TxIndexInBlock

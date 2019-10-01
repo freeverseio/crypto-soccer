@@ -100,10 +100,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		}
 		// team.State.BlockNumber = blockNumber
 		team.State.Owner = newOwner
-		err = p.db.TeamUpdate(teamID, team.State)
-		if err != nil {
-			return err
-		}
+		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
 		log.Debug("Success dispatching LeaguesPlayerTransfer event: ", v)
 		playerID := v.PlayerId
@@ -113,14 +110,11 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 			return err
 		}
 		player.State.TeamId = toTeamID
-		err = p.db.PlayerUpdate(playerID, player.State)
-		if err != nil {
-			return err
-		}
+		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
 		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
-		leagueProcessor.Process(v)
+		return leagueProcessor.Process(v)
 	}
 	return errors.New("Error dispatching Unknown event type")
 }
