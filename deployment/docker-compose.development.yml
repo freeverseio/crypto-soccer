@@ -38,7 +38,7 @@ services:
     image: freeverseio/market.notary:dev
     depends_on:
       - ethereum
-    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "0xE995621Ca05a79504EFA4193A9934Db4A92d38F5" -private_key "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d06" -ethereum http://ethereum:8545
+    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "0xE995621Ca05a79504EFA4193A9934Db4A92d38F5" -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" -ethereum http://ethereum:8545
   relay:
     image: freeverseio/relay:dev
     depends_on:
