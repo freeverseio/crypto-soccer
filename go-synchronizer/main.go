@@ -23,6 +23,7 @@ func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
+	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	flag.Parse()
 
 	if *debug {
@@ -37,8 +38,8 @@ func main() {
 	}
 	config.Print()
 
-	log.Info("Dial the Ethereum client: ", config.EthereumClient)
-	client, err := ethclient.Dial(config.EthereumClient)
+	log.Info("Dial the Ethereum client: ", *ethereumClient)
+	client, err := ethclient.Dial(*ethereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}

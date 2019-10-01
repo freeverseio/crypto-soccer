@@ -1,5 +1,11 @@
 version: '3'
 services:
+  ethereum: 
+    image: freeverseio/ethereum:dev
+    ports: 
+      - "8545:8545"
+    volumes:
+      - ethereum-data:/test
   centauri:
     image: freeverseio/centauri:dev
     ports: 
@@ -10,7 +16,7 @@ services:
     image: freeverseio/postgres:dev
   synchronizer:
     image: freeverseio/synchronizer:dev
-    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable -ethereum http://ethereum:8545
     depends_on:
       - postgres
   universeapi:
@@ -29,12 +35,12 @@ services:
       - "4002:4000"
   market.notary:
     image: freeverseio/market.notary:dev
-    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "0xE4519A2e8D295712f3a1cAB608be329F0c0F952C" --private_key "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d06"
+    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "0xE4519A2e8D295712f3a1cAB608be329F0c0F952C" -private_key "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d06" -ethereum http://ethereum:8545
   relay:
     image: freeverseio/relay:dev
     ports:
       - "4003:4000"
-    command: --assetsContractAddress "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C" --privateKey "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d05"
+    command: --assetsContractAddress "0xc4e3c20bD90E0DBF6eF2b48F102A74038173Ca7C" --privateKey "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d05" --ethereum "http://ethereum:8545"
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
@@ -49,3 +55,4 @@ services:
     command: --updatesContractAddress "0xB26aD93b869F0fe7cf26B012140dEFe902Cc0571" -i 60 --privateKey "6cb0ca1a9699ca981d6a8efe2771e616439bf02122ce65c5ba551dbfe1347d07"
 volumes:
   centauri-data:
+  ethereum-data:
