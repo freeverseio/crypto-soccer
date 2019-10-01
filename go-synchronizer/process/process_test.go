@@ -1,4 +1,4 @@
-package process
+package process_test
 
 import (
 	//	"fmt"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 )
@@ -68,7 +69,7 @@ func TestSyncTeams(t *testing.T) {
 	//ganache.CreateTeam("B", bob)
 	//ganache.CreateTeam("C", carol)
 
-	p := NewGanacheEventProcessor(ganache.Client, storage, ganache.Engine, ganache.Leagues, ganache.Updates)
+	p := process.NewGanacheEventProcessor(ganache.Client, storage, ganache.Engine, ganache.Leagues, ganache.Updates)
 
 	if err := p.Process(); err != nil {
 		t.Fatal(err)
