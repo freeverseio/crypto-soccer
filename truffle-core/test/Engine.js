@@ -571,18 +571,20 @@ contract('Engine', (accounts) => {
     // });
 
 
-    // it('different team state => different result', async () => {
-    //     let result = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-    //     // console.log(result[0].toNumber(), result[1].toNumber())
-    //     result = await engine.getGoalsFromLog(result).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(2);
-    //     result[1].toNumber().should.be.equal(1);
-    //     result = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
-    //     // console.log(result[0].toNumber(), result[1].toNumber())
-    //     result = await engine.getGoalsFromLog(result).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(10);
-    //     result[1].toNumber().should.be.equal(0);
-    // });
+    it('different team state => different result', async () => {
+        matchLog = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expectedResult = [2, 1];
+        for (team = 0; team < 2; team++) {
+            decodedLog = await encodingLog.decodeMatchLog(matchLog[team]);
+            decodedLog[0].toNumber().should.be.equal(expectedResult[team]);
+        }
+        matchLog = await engine.playMatch(123456, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expectedResult = [10, 0];
+        for (team = 0; team < 2; team++) {
+            decodedLog = await encodingLog.decodeMatchLog(matchLog[team]);
+            decodedLog[0].toNumber().should.be.equal(expectedResult[team]);
+        }
+    });
 
     it('different seeds => different result', async () => {
         matchLog = await engine.playMatch(123456, [teamStateAll50, teamStateAll50], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
