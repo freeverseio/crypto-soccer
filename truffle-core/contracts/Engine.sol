@@ -60,9 +60,9 @@ contract Engine is EncodingSkills, Sort{
         pure
         returns (uint256)
     {
+        uint256[5][2] memory globSkills;
         uint8[8][2] memory events;
         uint8[9][2] memory playersPerZone;
-        uint256[5][2] memory globSkills;
         bool[10][2] memory extraAttack;
         
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
