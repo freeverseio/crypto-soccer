@@ -503,42 +503,16 @@ contract Engine is EncodingSkills, Sort{
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
         else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
         
-        uint256[5] memory deltaSkills;
         uint256[3] memory fwdModFactors;
-        uint8 p = 1;
-        // loop over defenders
-        for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            playerSkills = teamState[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            deltaSkills = computeDefenderGlobSkills(playerSkills, penalty, fwdModFactors);
-            globSkills[IDX_MOVE2ATTACK]  += deltaSkills[IDX_MOVE2ATTACK];
-            globSkills[IDX_DEFEND_SHOOT] += deltaSkills[IDX_DEFEND_SHOOT];
-            globSkills[IDX_ENDURANCE]    += deltaSkills[IDX_ENDURANCE];
-            p++;
-        }
-        // loop over midfielders
-        for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            playerSkills = teamState[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            deltaSkills = computeMidfielderGlobSkills(playerSkills, penalty, fwdModFactors);
-            globSkills[IDX_MOVE2ATTACK] += deltaSkills[IDX_MOVE2ATTACK];
-            globSkills[IDX_ENDURANCE]   += deltaSkills[IDX_ENDURANCE];
-            p++;
-        }
-        // loop over strikers
-        for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            playerSkills = teamState[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            deltaSkills = computeForwardsGlobSkills(playerSkills, penalty, fwdModFactors);
-            globSkills[IDX_MOVE2ATTACK] += deltaSkills[IDX_MOVE2ATTACK];
-            globSkills[IDX_CREATE_SHOOT]+= deltaSkills[IDX_CREATE_SHOOT];
-            globSkills[IDX_ENDURANCE]   += deltaSkills[IDX_ENDURANCE];
-            p++;
-        }
 
+        for (uint8 p = 1; p < 11; p++){
+            playerSkills = teamState[p];
+            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
+            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
+            if (p < getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+            else if (p < getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
+            else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
+        }
         // endurance is converted to a percentage, 
         // used to multiply (and hence decrease) the start endurance.
         // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
@@ -552,62 +526,62 @@ contract Engine is EncodingSkills, Sort{
     }
 
     function computeDefenderGlobSkills(
+        uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
         uint256[3] memory fwdModFactors
     ) 
         private 
         pure
-        returns (uint256[5] memory deltaSkills) 
     {
         if (penalty != 0) {
-            deltaSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            deltaSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            deltaSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
         } else {
-            deltaSkills[IDX_MOVE2ATTACK] += 30;
-            deltaSkills[IDX_DEFEND_SHOOT] += 20;
-            deltaSkills[IDX_ENDURANCE]   += 10;
+            globSkills[IDX_MOVE2ATTACK] += 30;
+            globSkills[IDX_DEFEND_SHOOT] += 20;
+            globSkills[IDX_ENDURANCE]   += 10;
         }
     }
 
 
     function computeMidfielderGlobSkills(
+        uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
         uint256[3] memory fwdModFactors
     ) 
         private 
         pure
-        returns (uint256[5] memory deltaSkills) 
     {
         if (penalty != 0) {
-            deltaSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            deltaSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
         } else {
-            deltaSkills[IDX_MOVE2ATTACK] += 50;
-            deltaSkills[IDX_ENDURANCE]   += 10;
+            globSkills[IDX_MOVE2ATTACK] += 50;
+            globSkills[IDX_ENDURANCE]   += 10;
         }
     }
     
     
     function computeForwardsGlobSkills(
+        uint256[5] memory globSkills,
         uint256 playerSkills, 
         uint256 penalty, 
         uint256[3] memory fwdModFactors
     ) 
         private 
         pure
-        returns (uint256[5] memory deltaSkills) 
     {
         if (penalty != 0) {
-            deltaSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            deltaSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            deltaSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
+            globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
         } else {
-            deltaSkills[IDX_MOVE2ATTACK] += 10;
-            deltaSkills[IDX_CREATE_SHOOT] += 20;
-            deltaSkills[IDX_ENDURANCE] += 10;
+            globSkills[IDX_MOVE2ATTACK] += 10;
+            globSkills[IDX_CREATE_SHOOT] += 20;
+            globSkills[IDX_ENDURANCE] += 10;
         }
     }
     
