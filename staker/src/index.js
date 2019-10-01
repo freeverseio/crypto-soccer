@@ -7,22 +7,22 @@ const version = require("../package.json").version;
 // Parsing command line arguments
 program
   .version(version)
-  .option("-p, --providerUrl <url>", "Ethereum node url", "https://devnet.busyverse.com/web3")
+  .option("-e, --ethereum <url>", "Ethereum node url", "http://localhost:8545")
   .option("-k, --privateKey <pk>", "private key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
   .option("-u, --updatesContractAddress <address>", "updates contract address", "0xB3F24a605312b744973823194267A99F059e8936")
   .option("-i, --interval <sec>", "interval in sec", "5")
   .parse(process.argv)
 
-const { providerUrl, privateKey, updatesContractAddress, interval } = program;
+const { ethereum, privateKey, updatesContractAddress, interval } = program;
 
 console.log("--------------------------------------------------------");
-console.log("providerUrl        : ", providerUrl);
+console.log("ethereum           : ", ethereum);
 console.log("🔥  account p.k.    : ", privateKey);
 console.log("updates address    : ", updatesContractAddress);
 console.log("interval           : ", interval, "sec");
 console.log("--------------------------------------------------------");
 
-const provider = new HDWalletProvider(privateKey, providerUrl);
+const provider = new HDWalletProvider(privateKey, ethereum);
 const web3 = new Web3(provider, null, {});
 const updates = new web3.eth.Contract(updatesJSON.abi, updatesContractAddress);
 const from = provider.addresses[0];
