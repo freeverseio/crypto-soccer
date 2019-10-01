@@ -9,86 +9,86 @@ import (
 	"testing"
 )
 
-type Time struct {
+type time struct {
 	Minutes int
 	Seconds int
 }
 
-type Event1 struct {
-	Time Time
+type event1 struct {
+	Time time
 	X    int
 	Y    int
 	Name string
 }
 
-type Event2 struct {
-	Time  Time
+type event2 struct {
+	Time  time
 	Value string
 	Name  string
 }
-type GenericEvent struct {
-	Time  Time
+type genericEvent struct {
+	Time  time
 	Value interface{}
 }
 
-func NewEvent1(x int, y int, t Time) *Event1 {
-	return &Event1{t, x, y, "event1"}
+func newEvent1(x int, y int, t time) *event1 {
+	return &event1{t, x, y, "event1"}
 }
 
-func NewEvent2(value string, t Time) *Event2 {
-	return &Event2{t, value, "Event2"}
+func newEvent2(value string, t time) *event2 {
+	return &event2{t, value, "event2"}
 }
 
-func NewGenericEvent(t Time, x interface{}) *GenericEvent {
-	return &GenericEvent{t, x}
+func newGenericEvent(t time, x interface{}) *genericEvent {
+	return &genericEvent{t, x}
 }
 
-func Cast(x interface{}, test *testing.T) (*GenericEvent, bool) {
+func cast(x interface{}, test *testing.T) (*genericEvent, bool) {
 	switch v := x.(type) {
-	case *Event1:
-		ev, _ := x.(*Event1)
-		return NewGenericEvent(ev.Time, ev), true
-	case *Event2:
-		ev, _ := x.(*Event2)
-		return NewGenericEvent(ev.Time, ev), true
+	case *event1:
+		ev, _ := x.(*event1)
+		return newGenericEvent(ev.Time, ev), true
+	case *event2:
+		ev, _ := x.(*event2)
+		return newGenericEvent(ev.Time, ev), true
 	default:
 		test.Logf("Could not cast type %v:", v)
 		return nil, false
 	}
 }
 
-type EventList struct {
+type eventList struct {
 	Array []interface{}
 }
 
-func NewEventList(count int) *EventList {
-	l := EventList{make([]interface{}, count)}
-	t := Time{0, 0}
+func newEventList(count int) *eventList {
+	l := eventList{make([]interface{}, count)}
+	t := time{0, 0}
 	for i := 0; i < count; i++ {
 		t.Minutes = rand.Intn(60)
 		t.Seconds = rand.Intn(60)
 		if i&1 == 0 {
-			l.Array[i] = NewEvent1(i, i*2, t)
+			l.Array[i] = newEvent1(i, i*2, t)
 		} else {
-			l.Array[i] = NewEvent2(strconv.Itoa(i), t)
+			l.Array[i] = newEvent2(strconv.Itoa(i), t)
 		}
 	}
 	return &l
 }
 
-type By func(p1, p2 *GenericEvent) bool
+type by func(p1, p2 *genericEvent) bool
 
-func (by By) Sort(events []*GenericEvent) {
+func (b by) Sort(events []*genericEvent) {
 	ps := &eventSorter{
 		events: events,
-		by:     by,
+		by:     b,
 	}
 	sort.Sort(ps)
 }
 
 type eventSorter struct {
-	events []*GenericEvent
-	by     func(p1, p2 *GenericEvent) bool // Closure used in the Less method.
+	events []*genericEvent
+	by     func(p1, p2 *genericEvent) bool // Closure used in the Less method.
 }
 
 func (s *eventSorter) Len() int {
@@ -104,19 +104,19 @@ func (s *eventSorter) Less(i, j int) bool {
 }
 
 func TestList(test *testing.T) {
-	eventList := NewEventList(10)
-	genericEvents := []*GenericEvent{}
+	eventList := newEventList(10)
+	genericEvents := []*genericEvent{}
 	test.Log("========= creating events ==========")
 	for i, v := range eventList.Array {
 		test.Logf("adding event %v is %v", i, v)
-		if e, ok := Cast(v, test); ok {
+		if e, ok := cast(v, test); ok {
 			genericEvents = append(genericEvents, e)
 		} else {
 			test.Fatal("Unknown event type")
 		}
 	}
 
-	time := func(p1, p2 *GenericEvent) bool {
+	time := func(p1, p2 *genericEvent) bool {
 		if p1.Time.Minutes == p2.Time.Minutes {
 			return p1.Time.Seconds < p2.Time.Seconds
 		}
@@ -124,15 +124,15 @@ func TestList(test *testing.T) {
 
 	}
 
-	By(time).Sort(genericEvents)
+	by(time).Sort(genericEvents)
 
 	test.Log("========= sorted events ===========")
 	for i, v := range genericEvents {
 		// casting back to original type
 		switch v := v.Value.(type) {
-		case *Event1:
+		case *event1:
 			test.Logf("event %v is %v", i, *v)
-		case *Event2:
+		case *event2:
 			test.Logf("event %v is %v", i, *v)
 		default:
 			test.Fatalf("Could not cast type %v:", v)
