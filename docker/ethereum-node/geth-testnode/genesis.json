@@ -9,7 +9,7 @@
     "byzantiumBlock": 4,
     "constantinopleBlock": 5,
     "clique": {
-      "period": 1,
+      "period": 5,
       "epoch": 30000
     }
   },
@@ -22,6 +22,19 @@
   "coinbase": "0x0000000000000000000000000000000000000000",
   "alloc": {
     "83a909262608c650bd9b0ae06e29d90d0f67ac5e": {
+      "pk": "FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85",
+      "balance": "100000000000000000000000"
+    },
+    "291081e5a1bF0b9dF6633e4868C88e1FA48900e7": {
+      "pk": "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54",
+      "balance": "100000000000000000000000"
+    },    
+    "F18f912F221Dac73d30Ab8f0364d50c06Ff7FFeD": {
+      "pk": "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480",
+      "balance": "100000000000000000000000"
+    }, 
+    "E31392b83C2808054865DC070023A3657475A53F": {
+      "pk": "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27",
       "balance": "100000000000000000000000"
     }
   },
