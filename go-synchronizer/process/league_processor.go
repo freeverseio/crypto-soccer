@@ -38,6 +38,8 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	}
 	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 
+	day-- // cause we use 0 starting indexes
+
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
 		return err
@@ -48,7 +50,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day-1)
+			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 			if err != nil {
 				return err
 			}
@@ -78,7 +80,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					log.Fatal(err)
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day-1), uint32(matchIdx), result[0], result[1])
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
 				if err != nil {
 					return err
 				}
