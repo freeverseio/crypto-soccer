@@ -159,22 +159,41 @@ contract('Engine', (accounts) => {
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
     });
     
-    return;
     it('computePenalties', async () => {
         // one team much better than the other:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll1], 50, 1, seed);
-        expected = [true, false, true, false, true, false, true, false, true, false, false, false, false, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
+        expected = [true, true, true, true, true, false, false]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        expected = [false, false, false, false, false, false, false]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        
         // both teams similar:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll50], 50, 50, seed);
-        expected = [false, true, true, true, true, true, true, true, true, true, false, false, false, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 50, 50, seed);
+        expected = [false, true, true, true, true, false, false]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        expected = [true, true, true, true, true, false, false]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+
         // both teams really incredible goalkeepers:
-        result = await engine.computePenalties([teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
-        expected = [false, false, false, false, false, false, false, false, false, false, false, false, true, false];
-        for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
+        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
+        expected = [false, false, false, false, false, false, true]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        expected = [false, false, false, false, false, false, false]
+        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
+        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+
+
+
+        // result = await engine.computePenalties([teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
+        // expected = [false, false, false, false, false, false, false, false, false, false, false, false, true, false];
+        // for (g = 0; g < expected.length; g++) result[g].should.be.equal(expected[g]);
     });
-    
+    return
     
     it('encode decode gameLog', async () => {
         events0 = [1,2,3,4,5,6,7,8];
