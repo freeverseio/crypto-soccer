@@ -134,19 +134,19 @@ contract Engine is EncodingSkills, Sort{
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
             if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
-                matchLog[0] |= (ONE256 << 116 + round);
+                matchLog[0] |= (ONE256 << 144 + round);
                 totalGoals[0] += 1;
             }
             if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
-                matchLog[1] |= (ONE256 << 116 + round);
+                matchLog[1] |= (ONE256 << 144 + round);
                 totalGoals[1] += 1;
             }
             if ((round > 3) && (totalGoals[0] != totalGoals[1])) return matchLog;
         }
         if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
-            matchLog[0] |= (ONE256 << 116 + 6);
+            matchLog[0] |= (ONE256 << 144 + 6);
         } else {
-            matchLog[1] |= (ONE256 << 116 + 6);
+            matchLog[1] |= (ONE256 << 144 + 6);
         }
         return matchLog;
     }
