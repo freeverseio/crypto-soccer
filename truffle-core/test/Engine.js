@@ -125,7 +125,7 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
-    
+
     it('play a match with penalties to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
     });

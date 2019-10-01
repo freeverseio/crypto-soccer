@@ -23,6 +23,8 @@ contract Engine is EncodingSkills, Sort{
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
+    //
+    uint256 private constant ONE256       = 1; 
 
     
     bool dummyBoolToEstimateCost;
@@ -58,7 +60,7 @@ contract Engine is EncodingSkills, Sort{
     )
         public
         pure
-        returns (uint256)
+        returns (uint256[2] memory)
     {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
@@ -70,32 +72,26 @@ contract Engine is EncodingSkills, Sort{
         matchLog[0] = computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seed);
         matchLog[1] = computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
 
-        uint8[2] memory teamGoals;
-        teamGoals[0] = uint8(matchLog[0] & 15);
-        teamGoals[1] = uint8(matchLog[1] & 15);
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
         globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(seed, states, playersPerZone, extraAttack, globSkills, teamGoals, matchBools[IDX_IS_2ND_HALF]);
-        bool[14] memory penaltiesGoals;
-        if (matchBools[IDX_IS_PLAYOFF] && (teamGoals[0] == teamGoals[1])) {
-            penaltiesGoals = computePenalties(states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], uint64(seed)); // TODO seed
-            
+        computeRounds(matchLog, seed, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
+            computePenalties(matchLog, states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], uint64(seed)); // TODO seed
         }
-        uint8[8][2] memory events; 
-        return encodeGameLog(teamGoals, events[0], events[1], penaltiesGoals);
+        return matchLog;
     }
     
     function computeRounds(
+        uint256[2] memory matchLog,
         uint256 seed, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
         uint256[5][2] memory globSkills, 
-        uint8[2] memory teamGoals,
         bool is2ndHalf
     ) 
         private
@@ -110,7 +106,7 @@ contract Engine is EncodingSkills, Sort{
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[4*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[4*round+1])) {
                 managesToScore(
-                    teamGoals,
+                    matchLog,
                     teamThatAttacks,
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
@@ -123,28 +119,36 @@ contract Engine is EncodingSkills, Sort{
     }
     
     
-    function computePenalties(uint256[PLAYERS_PER_TEAM_MAX][2] memory states, uint256 block0, uint256 block1, uint64 seed) public pure returns(bool[14] memory goals) {
+    function computePenalties(
+        uint256[2] memory matchLog, 
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
+        uint256 block0, 
+        uint256 block1, 
+        uint64 seed
+    )
+        public 
+        pure 
+        returns(uint256[2] memory) 
+    {
         uint64[] memory rnds = getNRandsFromSeed(seed * 7, 14);
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
             if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
-                goals[2 * round] = true;
+                matchLog[0] |= (ONE256 << 116 + round);
                 totalGoals[0] += 1;
             }
             if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
-                goals[2 * round + 1] = true;
+                matchLog[1] |= (ONE256 << 116 + round);
                 totalGoals[1] += 1;
             }
-            if ((round > 3) && (totalGoals[0] != totalGoals[1])) return goals;
+            if ((round > 3) && (totalGoals[0] != totalGoals[1])) return matchLog;
         }
         if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
-            goals[12] = true;
-            totalGoals[0] += 1;
+            matchLog[0] |= (ONE256 << 116 + 6);
         } else {
-            goals[13] = true;
-            totalGoals[1] += 1;
+            matchLog[1] |= (ONE256 << 116 + 6);
         }
-        return goals;
+        return matchLog;
     }
 
     
@@ -247,7 +251,7 @@ contract Engine is EncodingSkills, Sort{
         uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 31 : 34;
+        uint8 offset = is2ndHalf ? 137 : 123;
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
@@ -469,7 +473,7 @@ contract Engine is EncodingSkills, Sort{
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
-        uint8[2] memory teamGoals,
+        uint256[2] memory matchLog,
         uint8 teamThatAttacks,
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
@@ -487,7 +491,7 @@ contract Engine is EncodingSkills, Sort{
         uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
         isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
-            teamGoals[teamThatAttacks]++;
+            matchLog[teamThatAttacks] |= (matchLog[teamThatAttacks] & 15) + 1;
             assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[1]);
         }
     }
