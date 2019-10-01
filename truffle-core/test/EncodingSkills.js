@@ -35,15 +35,6 @@ contract('Encoding', (accounts) => {
         encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
     });
     
-    it('encoding of TZ and country in teamId and playerId', async () =>  {
-        encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
-        decoded = await encoding.decodeTZCountryAndVal(encoded).should.be.fulfilled;
-        const {0: timeZone, 1: country, 2: value} = decoded;
-        timeZone.toNumber().should.be.equal(tz);
-        country.toNumber().should.be.equal(countryIdxInTZ);
-        value.toNumber().should.be.equal(val);
-    });
-
     it('encoding and decoding skills', async () => {
         const sk = [16383, 13, 4, 56, 456]
         const skills = await encoding.encodePlayerSkills(
