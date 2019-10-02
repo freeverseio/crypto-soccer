@@ -32,117 +32,117 @@ import (
 // 	}
 // }
 
-func TestSyncTeams(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache := testutils.NewGanache()
-	_ = storage
+// func TestSyncTeams(t *testing.T) {
+// 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	ganache := testutils.NewGanache()
+// 	_ = storage
 
-	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
-	ganache.DeployContracts(owner)
+// 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
+// 	ganache.DeployContracts(owner)
 
-	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
-	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
-	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+// 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+// 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
+// 	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
 
-	timezoneIdx := uint8(1)
-	countryIdx := big.NewInt(0)
-	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
-		nil,
-		timezoneIdx,
-		countryIdx,
-		big.NewInt(0),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if firstTeamID.String() != "274877906944" {
-		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
-	}
+// 	timezoneIdx := uint8(1)
+// 	countryIdx := big.NewInt(0)
+// 	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
+// 		nil,
+// 		timezoneIdx,
+// 		countryIdx,
+// 		big.NewInt(0),
+// 	)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if firstTeamID.String() != "274877906944" {
+// 		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
+// 	}
 
-	_ = alice
-	_ = bob
-	_ = carol
-	//ganache.CreateTeam("A", alice)
-	//ganache.CreateTeam("B", bob)
-	//ganache.CreateTeam("C", carol)
+// 	_ = alice
+// 	_ = bob
+// 	_ = carol
+// 	//ganache.CreateTeam("A", alice)
+// 	//ganache.CreateTeam("B", bob)
+// 	//ganache.CreateTeam("C", carol)
 
-	p := process.NewGanacheEventProcessor(ganache.Client, storage, ganache.Engine, ganache.Leagues, ganache.Updates)
+// 	p := process.NewGanacheEventProcessor(ganache.Client, storage, ganache.Engine, ganache.Leagues, ganache.Updates)
 
-	if err := p.Process(); err != nil {
-		t.Fatal(err)
-	} else {
-		if count, err := storage.TimezoneCount(); err != nil {
-			t.Fatal(err)
-		} else if count != 1 {
-			t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
-		}
+// 	if err := p.Process(); err != nil {
+// 		t.Fatal(err)
+// 	} else {
+// 		if count, err := storage.TimezoneCount(); err != nil {
+// 			t.Fatal(err)
+// 		} else if count != 1 {
+// 			t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
+// 		}
 
-		if count, err := storage.CountryCount(); err != nil {
-			t.Fatal(err)
-		} else if count != 1 {
-			t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
-		}
+// 		if count, err := storage.CountryCount(); err != nil {
+// 			t.Fatal(err)
+// 		} else if count != 1 {
+// 			t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
+// 		}
 
-		if count, err := storage.TeamCount(); err != nil {
-			t.Fatal(err)
-		} else if count != 128 {
-			t.Fatalf("Expected 128 actual %v", count)
-		}
-		if count, err := storage.PlayerCount(); err != nil {
-			t.Fatal(err)
-		} else if count != 128*18 {
-			t.Fatalf("Expected 128*18=2304 actual %v", count)
-		}
-	}
+// 		if count, err := storage.TeamCount(); err != nil {
+// 			t.Fatal(err)
+// 		} else if count != 128 {
+// 			t.Fatalf("Expected 128 actual %v", count)
+// 		}
+// 		if count, err := storage.PlayerCount(); err != nil {
+// 			t.Fatal(err)
+// 		} else if count != 128*18 {
+// 			t.Fatalf("Expected 128*18=2304 actual %v", count)
+// 		}
+// 	}
 
-	_, err = ganache.Assets.TransferFirstBotToAddr(
-		bind.NewKeyedTransactor(owner),
-		timezoneIdx,
-		countryIdx,
-		ganache.Public(alice),
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	_, err = ganache.Assets.TransferFirstBotToAddr(
+// 		bind.NewKeyedTransactor(owner),
+// 		timezoneIdx,
+// 		countryIdx,
+// 		ganache.Public(alice),
+// 	)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	teamOwner, err := ganache.Assets.GetOwnerTeam(nil, firstTeamID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if teamOwner != ganache.Public(alice) {
-		t.Fatalf("first team owner is %v", teamOwner.String())
-	}
+// 	teamOwner, err := ganache.Assets.GetOwnerTeam(nil, firstTeamID)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if teamOwner != ganache.Public(alice) {
+// 		t.Fatalf("first team owner is %v", teamOwner.String())
+// 	}
 
-	err = p.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	err = p.Process()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	team, err := storage.GetTeam(firstTeamID)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	team, err := storage.GetTeam(firstTeamID)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	if team.State.Owner != ganache.Public(alice).String() {
-		t.Fatalf("database owner of the first team is %v", team.State.Owner)
-	}
+// 	if team.State.Owner != ganache.Public(alice).String() {
+// 		t.Fatalf("database owner of the first team is %v", team.State.Owner)
+// 	}
 
-	// play
-	for i := 0; i < 24*4; i++ {
-		var root [32]byte
-		_, err = ganache.Updates.SubmitActionsRoot(
-			bind.NewKeyedTransactor(owner),
-			root,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
+// 	// play
+// 	for i := 0; i < 24*4; i++ {
+// 		var root [32]byte
+// 		_, err = ganache.Updates.SubmitActionsRoot(
+// 			bind.NewKeyedTransactor(owner),
+// 			root,
+// 		)
+// 		if err != nil {
+// 			t.Fatal(err)
+// 		}
+// 	}
 
-	p.Process()
+// 	p.Process()
 
 	//fmt.Println("owner: ", ganache.Public(ganache.Owner).Hex())
 	//fmt.Println("alice: ", ganache.Public(alice).Hex())
