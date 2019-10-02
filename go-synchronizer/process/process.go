@@ -106,7 +106,13 @@ func (p *EventProcessor) Process() error {
 			if err != nil {
 				return err
 			}
+			playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
+			if err != nil {
+				return err
+			}
+			shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
 			player.State.TeamId = toTeamID
+			player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 			err = p.db.PlayerUpdate(playerID, player.State)
 			if err != nil {
 				return err
