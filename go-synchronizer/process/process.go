@@ -48,7 +48,10 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	opts := p.nextRange()
+	opts, err := p.nextRange()
+	if err != nil {
+		panic(err)
+	}
 
 	if opts == nil {
 		log.Info("No new blocks to scan.")
@@ -62,21 +65,24 @@ func (p *EventProcessor) Process() error {
 
 	scanner := NewEventScanner(p.leagues, p.updates)
 	if err := scanner.Process(opts); err != nil {
-		log.Error("scanner.Process failed with error ", err)
-		return err
+		// log.Error("scanner.Process failed with error ", err)
+		panic(err)
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
-			log.Error(err)
-			return err
+			// log.Error(err)
+			panic(err)
 		}
 	}
 
 	// store the last block that was scanned
-	p.db.SetBlockNumber(*opts.End)
+	err = p.db.SetBlockNumber(*opts.End)
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
@@ -86,10 +92,10 @@ func (p *EventProcessor) Process() error {
 func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
-		log.Debug("Success dispatching LeaguesDivisionCreation event: ", v)
+		log.Info("Success dispatching LeaguesDivisionCreation event")
 		return p.storeDivisionCreation(v)
 	case leagues.LeaguesTeamTransfer:
-		log.Debug("Success dispatching LeaguesTeamTransfer event: ", v)
+		log.Info("Success dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.db.GetTeam(teamID)
@@ -100,7 +106,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
-		log.Debug("Success dispatching LeaguesPlayerTransfer event: ", v)
+		log.Info("Success dispatching LeaguesPlayerTransfer event")
 		playerID := v.PlayerId
 		toTeamID := v.TeamIdTarget
 		player, err := p.db.GetPlayer(playerID)
@@ -112,11 +118,14 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 			return err
 		}
 		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
+		if err != nil {
+			return err
+		}
 		player.State.TeamId = toTeamID
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
+		log.Info("Success dispatching UpdatesActionsSubmission event")
 		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
 		if err != nil {
 			return err
@@ -124,10 +133,13 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		return leagueProcessor.Process(v)
 	}
 	//return errors.New("Error dispatching Unknown event type")
-	return fmt.Errorf("Error dispatching unkown event type: %s", e.Name)
+	return fmt.Errorf("Error dispatching unknown event type: %s", e.Name)
 }
-func (p *EventProcessor) nextRange() *bind.FilterOpts {
-	start := p.dbLastBlockNumber()
+func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
+	start, err := p.dbLastBlockNumber()
+	if err != nil {
+		return nil, err
+	}
 	if start != 0 {
 		// unless this is the very first execution,
 		// the block number that is stored in the db
@@ -136,19 +148,19 @@ func (p *EventProcessor) nextRange() *bind.FilterOpts {
 		if start < math.MaxUint64 {
 			start += 1
 		} else {
-			log.Error("Block range overflow")
-			return nil
+			return nil, errors.New("Block range overflow")
 		}
 	}
 	end := p.clientLastBlockNumber()
+	end = uint64(math.Min(float64(start+10), float64(end)))
 	if start > end {
-		return nil
+		return nil, nil
 	}
 	return &bind.FilterOpts{
 		Start:   start,
 		End:     &end,
 		Context: context.Background(),
-	}
+	}, nil
 }
 
 func (p *EventProcessor) clientLastBlockNumber() uint64 {
@@ -163,13 +175,12 @@ func (p *EventProcessor) clientLastBlockNumber() uint64 {
 	}
 	return header.Number.Uint64()
 }
-func (p *EventProcessor) dbLastBlockNumber() uint64 {
+func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
 	storedLastBlockNumber, err := p.db.GetBlockNumber()
 	if err != nil {
-		log.Warn("Could not get database last block")
-		return 0
+		return 0, err
 	}
-	return storedLastBlockNumber
+	return storedLastBlockNumber, err
 }
 func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
 	if p.usesGanache {
