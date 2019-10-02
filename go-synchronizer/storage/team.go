@@ -109,6 +109,32 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 
 // 	return nil
 // }
+func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
+	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teams []Team
+	for rows.Next() {
+		var team Team
+		var teamID sql.NullString
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		id, _ := new(big.Int).SetString(teamID.String, 10)
+		team, err = b.GetTeam(id)
+		if err != nil {
+			return teams, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
 func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
 	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {

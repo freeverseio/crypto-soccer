@@ -106,7 +106,24 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 }
 
 func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	err := b.calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
+	teams, err := b.storage.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(teams); i++ {
+		team := teams[i]
+		team.State.D = 0
+		team.State.W = 0
+		team.State.L = 0
+		team.State.GoalsAgainst = 0
+		team.State.GoalsForward = 0
+		team.State.Points = 0
+		err = b.storage.TeamUpdate(team.TeamID, team.State)
+		if err != nil {
+			return err
+		}
+	}
+	err = b.calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
