@@ -46,7 +46,14 @@ func (b *Processor) Process() error {
 		log.Infof("(2) generate hash sell message")
 		var sigs [6][32]byte
 		var vs [2]uint8
-		sigs[0], err = b.signer.HashSellMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx)
+		sigs[0], err = b.signer.HashSellMessage(
+			order.SellOrder.CurrencyId,
+			order.SellOrder.Price,
+			order.SellOrder.Rnd,
+			order.SellOrder.ValidUntil,
+			order.SellOrder.PlayerId,
+			order.SellOrder.TypeOfTx,
+		)
 		if err != nil {
 			log.Error(err)
 		}
@@ -55,7 +62,15 @@ func (b *Processor) Process() error {
 			log.Error(err)
 		}
 		log.Infof("(3) generate hash buy message")
-		sigs[3], err = b.signer.HashBuyMessage(order.SellOrder.CurrencyId, order.SellOrder.Price, order.SellOrder.Rnd, order.SellOrder.ValidUntil, order.SellOrder.PlayerId, order.SellOrder.TypeOfTx, order.BuyOrder.TeamId)
+		sigs[3], err = b.signer.HashBuyMessage(
+			order.SellOrder.CurrencyId,
+			order.SellOrder.Price,
+			order.SellOrder.Rnd,
+			order.SellOrder.ValidUntil,
+			order.SellOrder.PlayerId,
+			order.SellOrder.TypeOfTx,
+			order.BuyOrder.TeamId,
+		)
 		if err != nil {
 			log.Error(err)
 		}
