@@ -61,16 +61,16 @@ func (p *EventProcessor) Process() error {
 	}).Info("Syncing ...")
 
 	if events, err := p.scanDivisionCreation(opts); err != nil {
-		return err
+		panic(err)
 	} else {
 		err = p.storeDivisionCreation(events)
 		if err != nil {
-			return err
+			panic(err)
 		}
 	}
 
 	if events, err := p.scanTeamTransfer(opts); err != nil {
-		return err
+		panic(err)
 	} else {
 		for _, event := range events { // TODO: next part to be recoded
 			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
@@ -81,19 +81,19 @@ func (p *EventProcessor) Process() error {
 			newOwner := event.To.String()
 			team, err := p.db.GetTeam(teamID)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			// team.State.BlockNumber = blockNumber
 			team.State.Owner = newOwner
 			err = p.db.TeamUpdate(teamID, team.State)
 			if err != nil {
-				return err
+				panic(err)
 			}
 		}
 	}
 
 	if events, err := p.scanPlayerTransfer(opts); err != nil {
-		return err
+		panic(err)
 	} else {
 		for _, event := range events { // TODO: next part to be recoded
 			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
@@ -104,36 +104,45 @@ func (p *EventProcessor) Process() error {
 			toTeamID := event.TeamIdTarget
 			player, err := p.db.GetPlayer(playerID)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
 			if err != nil {
-				return err
+				panic(err)
 			}
 			shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
+			if err != nil {
+				panic(err)
+			}
 			player.State.TeamId = toTeamID
 			player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 			err = p.db.PlayerUpdate(playerID, player.State)
 			if err != nil {
-				return err
+				panic(err)
 			}
 		}
 	}
 
 	if events, err := p.scanActionsSubmission(opts); err != nil {
-		return err
+		panic(err)
 	} else {
 		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		for _, event := range events {
-			leagueProcessor.Process(event)
+			err = leagueProcessor.Process(event)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
 	// store the last block that was scanned
-	p.db.SetBlockNumber(*opts.End)
+	err := p.db.SetBlockNumber(*opts.End)
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
