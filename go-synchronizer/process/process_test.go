@@ -10,6 +10,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO commented cause I dunno what's happening
@@ -33,6 +35,7 @@ import (
 // }
 
 func TestSyncTeams(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
