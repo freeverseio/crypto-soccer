@@ -43,6 +43,7 @@ func (b *BackgroundProcess) Start() {
 				err := b.eventProcessor.Process()
 				if err != nil {
 					log.Error(err)
+					panic(err)
 				}
 				time.Sleep(2 * time.Second)
 			}

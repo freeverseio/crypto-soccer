@@ -50,7 +50,7 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 func (p *EventProcessor) Process() error {
 	opts, err := p.nextRange()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if opts == nil {
@@ -65,25 +65,19 @@ func (p *EventProcessor) Process() error {
 
 	scanner := NewEventScanner(p.leagues, p.updates)
 	if err := scanner.Process(opts); err != nil {
-		// log.Error("scanner.Process failed with error ", err)
-		panic(err)
+		return err
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
-			// log.Error(err)
-			panic(err)
+			return err
 		}
 	}
 
 	// store the last block that was scanned
-	err = p.db.SetBlockNumber(*opts.End)
-	if err != nil {
-		panic(err)
-	}
-	return nil
+	return p.db.SetBlockNumber(*opts.End)
 }
 
 // *****************************************************************************
@@ -115,7 +109,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		}
 		playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
 		if err != nil {
@@ -132,7 +126,6 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		}
 		return leagueProcessor.Process(v)
 	}
-	//return errors.New("Error dispatching Unknown event type")
 	return fmt.Errorf("Error dispatching unknown event type: %s", e.Name)
 }
 func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
@@ -191,40 +184,6 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 		return 0, 0, err
 	}
 	return block.Time(), eventRaw.BlockNumber, nil
-}
-
-func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]leagues.LeaguesDivisionCreation, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterDivisionCreation(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesDivisionCreation{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
-
-func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates.UpdatesActionsSubmission, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.updates.FilterActionsSubmission(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []updates.UpdatesActionsSubmission{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
 }
 
 func (p *EventProcessor) storeDivisionCreation(event leagues.LeaguesDivisionCreation) error {
@@ -401,38 +360,4 @@ func (p *EventProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, playerI
 		}
 		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
 	}
-}
-
-func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]leagues.LeaguesTeamTransfer, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterTeamTransfer(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesTeamTransfer{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
-
-func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]leagues.LeaguesPlayerTransfer, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterPlayerTransfer(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesPlayerTransfer{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
 }
