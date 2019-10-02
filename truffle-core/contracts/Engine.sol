@@ -26,6 +26,7 @@ contract Engine is EncodingSkills, Sort{
     //
     uint256 private constant ONE256       = 1; 
     uint256 private constant SECS_IN_YEAR  = 31536000; 
+    uint256 private constant SECS_IN_DAY  = 86400; // 24 * 3600 
 
     
     bool dummyBoolToEstimateCost;
@@ -34,7 +35,7 @@ contract Engine is EncodingSkills, Sort{
     // to be removed before deployment
     function playMatchWithCost(
         uint256 seed,
-        // uint256 matchStartTime,
+        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -42,7 +43,7 @@ contract Engine is EncodingSkills, Sort{
     )
         public
     {
-        // playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
+        playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -55,7 +56,7 @@ contract Engine is EncodingSkills, Sort{
      */
     function playMatch(
         uint256 seed,
-        // uint256 matchStartTime, //actionsSubmissionTime,
+        uint256 matchStartTime, //actionsSubmissionTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -65,7 +66,6 @@ contract Engine is EncodingSkills, Sort{
         pure
         returns (uint256[2] memory)
     {
-        uint256 matchStartTime;
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
@@ -527,13 +527,13 @@ contract Engine is EncodingSkills, Sort{
         }
     }
     
-    // for each month that passes over 31 years (=372 months), we subtract 8.4%, so that you get 10.08% less per year
-    // so, 119 months after 31 (ten years minus one month), he will reach penalty 0. He'll be useless when reaching 41.
+    // for each day that passes over 31 years (=11315 days), we subtract 0,0274%, so that you get 10.001% less per year
+    // on a max of 1M, this is 274 per day.
+    // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
     function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
-        return uint256(1);
-        uint256 ageMonths = (7 * matchStartTime * 12)/SECS_IN_YEAR - 7 * getBirthDay(playerSkills);
-        if (ageMonths > 491) return 0;
-        return ageMonths;// < 373 ? 10000 : 10000 - 84 * (ageMonths - 372);
+        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
+        if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
+        return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
 
     function computeDefenderGlobSkills(

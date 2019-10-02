@@ -62,12 +62,12 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-    function monthsToSecs(months) {
-        return (months * 31536000) / 12; // 31536000 = 3600 * 24 * 365
+    function daysToSecs(dayz) {
+        return (dayz * 24 * 3600); 
     }
 
-    function secsToMonths(secs) {
-        return (secs * 12)/ 31536000; // 31536000 = 3600 * 24 * 365
+    function secsToDays(secs) {
+        return secs/ (24 * 3600);
     }
 
     
@@ -133,32 +133,31 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
 
-    // it('getPlayerAge', async () => {
-    //     now = new Date()
-    //     now = Math.floor(now/1000);
-
-    //     agesInMonths = [31*12 -1, 31*12, 31*12+1];
-    //     for (i = 0; i < agesInMonths.length; i++) {
-    //         // monthOfBirth = Math.round( secsToMonths(now - monthsToSecs(agesInMonths[i])/7) );
-    //         monthOfBirth =  Math.round(secsToMonths(now)) - monthsToSecs(agesInMonths[i])/7;
-    //         playerSkills = await engine.encodePlayerSkills(
-    //             skills, 
-    //             monthOfBirth, 
-    //             playerId = 2132321,
-    //             [potential = 3,
-    //             forwardness,
-    //             leftishness,
-    //             aggr = 0],
-    //             alignedLastHalf = true,
-    //             redCardLastGame = false,
-    //             gamesNonStopping = 0,
-    //             injuryWeeksLeft = 0
-    //         ).should.be.fulfilled;
-    //         result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
-    //         console.log(agesInMonths[i], monthOfBirth, result.toNumber())
-    //     }
-    // });
-    
+    it('penaltyPerAge', async () => {
+        now = new Date()
+        now = Math.floor(now/1000);
+        agesInDays      = [31*365 -1, 31*365,  41*365-4, 41*365-3];
+        expectedPenalty = [1000000, 999178, 1818, 0]
+        for (i = 0; i < agesInDays.length; i++) {
+            dayOfBirth =  Math.round(secsToDays(now) - agesInDays[i]/7);
+            playerSkills = await engine.encodePlayerSkills(
+                skills, 
+                dayOfBirth, 
+                playerId = 2132321,
+                [potential = 3,
+                forwardness,
+                leftishness,
+                aggr = 0],
+                alignedLastHalf = true,
+                redCardLastGame = false,
+                gamesNonStopping = 0,
+                injuryWeeksLeft = 0
+            ).should.be.fulfilled;
+            result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
+            result.toNumber().should.be.equal(expectedPenalty[i]);
+        }
+    });
+    return
     
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
