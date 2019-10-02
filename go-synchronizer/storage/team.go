@@ -156,6 +156,7 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 }
 
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
+	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
 	var team Team
 	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against FROM teams WHERE (team_id = $1);", teamID.String())
 	if err != nil {

@@ -115,7 +115,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		}
 		playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
 		if err != nil {
-			return err
+			panic(err)
 		}
 		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
 		if err != nil {
