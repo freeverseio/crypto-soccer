@@ -62,6 +62,15 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
+    function monthsToSecs(months) {
+        return (months * 31536000) / 12; // 31536000 = 3600 * 24 * 365
+    }
+
+    function secsToMonths(secs) {
+        return (secs * 12)/ 31536000; // 31536000 = 3600 * 24 * 365
+    }
+
+    
     const createTeamState442 = async (engine, forceSkills) => {
         teamState = [];
         month = 0;
@@ -124,6 +133,33 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
 
+    // it('getPlayerAge', async () => {
+    //     now = new Date()
+    //     now = Math.floor(now/1000);
+
+    //     agesInMonths = [31*12 -1, 31*12, 31*12+1];
+    //     for (i = 0; i < agesInMonths.length; i++) {
+    //         // monthOfBirth = Math.round( secsToMonths(now - monthsToSecs(agesInMonths[i])/7) );
+    //         monthOfBirth =  Math.round(secsToMonths(now)) - monthsToSecs(agesInMonths[i])/7;
+    //         playerSkills = await engine.encodePlayerSkills(
+    //             skills, 
+    //             monthOfBirth, 
+    //             playerId = 2132321,
+    //             [potential = 3,
+    //             forwardness,
+    //             leftishness,
+    //             aggr = 0],
+    //             alignedLastHalf = true,
+    //             redCardLastGame = false,
+    //             gamesNonStopping = 0,
+    //             injuryWeeksLeft = 0
+    //         ).should.be.fulfilled;
+    //         result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
+    //         console.log(agesInMonths[i], monthOfBirth, result.toNumber())
+    //     }
+    // });
+    
+    
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });

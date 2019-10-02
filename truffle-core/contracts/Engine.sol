@@ -25,6 +25,7 @@ contract Engine is EncodingSkills, Sort{
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
     //
     uint256 private constant ONE256       = 1; 
+    uint256 private constant SECS_IN_YEAR  = 31536000; 
 
     
     bool dummyBoolToEstimateCost;
@@ -33,6 +34,7 @@ contract Engine is EncodingSkills, Sort{
     // to be removed before deployment
     function playMatchWithCost(
         uint256 seed,
+        // uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -40,7 +42,7 @@ contract Engine is EncodingSkills, Sort{
     )
         public
     {
-        playMatch(seed, states, tactics, matchLog, matchBools);
+        // playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
     
@@ -53,6 +55,7 @@ contract Engine is EncodingSkills, Sort{
      */
     function playMatch(
         uint256 seed,
+        // uint256 matchStartTime, //actionsSubmissionTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -62,6 +65,7 @@ contract Engine is EncodingSkills, Sort{
         pure
         returns (uint256[2] memory)
     {
+        uint256 matchStartTime;
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
@@ -73,8 +77,8 @@ contract Engine is EncodingSkills, Sort{
         matchLog[1] = computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
 
 
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0]);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1]);
+        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], matchStartTime);
+        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], matchStartTime);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
@@ -481,7 +485,8 @@ contract Engine is EncodingSkills, Sort{
     function getTeamGlobSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState, 
         uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack
+        bool[10] memory extraAttack,
+        uint256 matchStartTime
     )
         public
         pure
@@ -495,14 +500,16 @@ contract Engine is EncodingSkills, Sort{
         uint256 penalty;
         uint256 playerSkills = teamState[0];
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
-        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {globSkills[IDX_BLOCK_SHOOT] = 10;}
-        else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills);
+        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
+            globSkills[IDX_BLOCK_SHOOT] = 10 * penaltyPerAge(playerSkills, matchStartTime);
+        }
+        else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
         
         uint256[3] memory fwdModFactors;
 
         for (uint8 p = 1; p < 11; p++){
             playerSkills = teamState[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills);
+            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
             fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
             if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
             else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
@@ -518,6 +525,15 @@ contract Engine is EncodingSkills, Sort{
         } else {
             globSkills[IDX_ENDURANCE] = 100;
         }
+    }
+    
+    // for each month that passes over 31 years (=372 months), we subtract 8.4%, so that you get 10.08% less per year
+    // so, 119 months after 31 (ten years minus one month), he will reach penalty 0. He'll be useless when reaching 41.
+    function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
+        return uint256(1);
+        uint256 ageMonths = (7 * matchStartTime * 12)/SECS_IN_YEAR - 7 * getBirthDay(playerSkills);
+        if (ageMonths > 491) return 0;
+        return ageMonths;// < 373 ? 10000 : 10000 - 84 * (ageMonths - 372);
     }
 
     function computeDefenderGlobSkills(
