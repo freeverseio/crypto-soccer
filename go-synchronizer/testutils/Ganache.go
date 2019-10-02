@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
@@ -20,6 +21,7 @@ import (
 type Ganache struct {
 	Client  *ethclient.Client
 	time    *Testutils
+	Assets  *assets.Assets
 	Updates *updates.Updates
 	Leagues *leagues.Leagues
 	Engine  *engine.Engine
@@ -42,6 +44,7 @@ func NewGanache() *Ganache {
 	return &Ganache{
 		client,
 		time,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -136,6 +139,10 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	_, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 
+	assetsContract, err := assets.NewAssets(leaguesAddress, ganache.Client)
+	AssertNoErr(err, "Assets binding creation failed")
+
+	ganache.Assets = assetsContract
 	ganache.Updates = updatesContract
 	ganache.Leagues = leaguesContract
 	ganache.Engine = engineContract

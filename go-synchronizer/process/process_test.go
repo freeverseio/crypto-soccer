@@ -49,7 +49,7 @@ func TestSyncTeams(t *testing.T) {
 
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
-	firstTeamID, err := ganache.Leagues.EncodeTZCountryAndVal(
+	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
 		nil,
 		timezoneIdx,
 		countryIdx,
@@ -98,7 +98,7 @@ func TestSyncTeams(t *testing.T) {
 		}
 	}
 
-	_, err = ganache.Leagues.TransferFirstBotToAddr(
+	_, err = ganache.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(owner),
 		timezoneIdx,
 		countryIdx,
@@ -108,7 +108,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	teamOwner, err := ganache.Leagues.GetOwnerTeam(nil, firstTeamID)
+	teamOwner, err := ganache.Assets.GetOwnerTeam(nil, firstTeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
