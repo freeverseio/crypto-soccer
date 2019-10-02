@@ -18,8 +18,8 @@ type AbstractEvent struct {
 	Value          interface{}
 }
 
-func NewAbstractEvent(log types.Log, name string, x interface{}) *AbstractEvent {
-	return &AbstractEvent{log.BlockNumber, log.TxIndex, name, x}
+func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface{}) *AbstractEvent {
+	return &AbstractEvent{blockNumber, txIndex, name, x}
 }
 
 type EventScanner struct {
@@ -91,18 +91,18 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 		return p1.BlockNumber < p2.BlockNumber
 
 	}
-	// TODO: maybe use a parallel sort strategy to improve performance
-	// https://hackernoon.com/parallel-merge-sort-in-go-fe14c1bc006
+
 	byFunction(sortFunction).Sort(s.Events)
 
 	return nil
 }
 
-// TODO: abstract away all scan functions by passing the Filterfunction and name
+func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
+	log.Debug("Add event ", name)
+	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.TxIndex, name, event))
+}
+
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
 	iter, err := s.leagues.FilterDivisionCreation(opts)
 	if err != nil {
 		return err
@@ -110,15 +110,12 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 
 	for iter.Next() {
 		e := *(iter.Event)
-		s.Events = append(s.Events, NewAbstractEvent(e.Raw, "LeaguesDivisionCreation", e))
+		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
 	}
 	return nil
 }
 
 func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
 	iter, err := s.leagues.FilterTeamTransfer(opts)
 	if err != nil {
 		return err
@@ -126,16 +123,12 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 
 	for iter.Next() {
 		e := *(iter.Event)
-		s.Events = append(s.Events, NewAbstractEvent(e.Raw, "LeaguesTeamTransfer", e))
-		log.Debug("Adding event in scanner.scanTeamTransfer")
+		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
 	}
 	return nil
 }
 
 func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
 	iter, err := s.leagues.FilterPlayerTransfer(opts)
 	if err != nil {
 		return err
@@ -143,16 +136,12 @@ func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
 
 	for iter.Next() {
 		e := *(iter.Event)
-		s.Events = append(s.Events, NewAbstractEvent(e.Raw, "LeaguesPlayerTransfer", e))
-		log.Debug("Adding event in scanner.scanPlayerTransfer")
+		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
 	}
 	return nil
 }
 
 func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
 	iter, err := s.updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return err
@@ -160,8 +149,7 @@ func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
 
 	for iter.Next() {
 		e := *(iter.Event)
-		s.Events = append(s.Events, NewAbstractEvent(e.Raw, "UpdatesActionsSubmission", e))
-		log.Debug("Adding event in scanner.scanActionsSubmission")
+		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)
 	}
 	return nil
 }
