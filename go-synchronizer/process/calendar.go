@@ -85,3 +85,23 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 	}
 	return nil
 }
+
+func (b *Calendar) Reset(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	league, err := b.storage.GetLeague(leagueIdx)
+	if err != nil {
+		return err
+	}
+	if league == nil {
+		return errors.New("Unexistent league")
+	}
+
+	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
+		for match := uint8(0); match < b.MatchPerDay; match++ {
+			err = b.storage.MatchReset(timezoneIdx, countryIdx, leagueIdx, uint32(matchDay), uint32(match))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

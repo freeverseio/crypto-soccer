@@ -107,11 +107,20 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
+		playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
+		if err != nil {
+			return err
+		}
+		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
 		player.State.TeamId = toTeamID
+		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Debug("Success dispatching UpdatesActionsSubmission event: ", v)
-		leagueProcessor := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		if err != nil {
+			return err
+		}
 		return leagueProcessor.Process(v)
 	}
 	//return errors.New("Error dispatching Unknown event type")
@@ -208,10 +217,7 @@ func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates
 }
 
 func (p *EventProcessor) storeDivisionCreation(event leagues.LeaguesDivisionCreation) error {
-	log.Info(
-		"\ntime zone: ", event.Timezone,
-		"\nCountry idx: ", event.CountryIdxInTZ.Uint64(),
-		"\ndivision idx: ", event.DivisionIdxInCountry.Uint64())
+	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
 			return err
@@ -267,7 +273,7 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 						teamId,
 						timezone,
 						uint32(countryIdx.Uint64()),
-						storage.TeamState{teamOwner.Hex(), uint32(leagueIdx), teamIdxInLeague}},
+						storage.TeamState{teamOwner.Hex(), uint32(leagueIdx), teamIdxInLeague, 0, 0, 0, 0, 0, 0}},
 				); err != nil {
 					return err
 				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {

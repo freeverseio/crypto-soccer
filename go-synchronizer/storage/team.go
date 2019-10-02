@@ -12,6 +12,12 @@ type TeamState struct {
 	Owner           string
 	LeagueIdx       uint32
 	TeamIdxInLeague uint32
+	Points          uint32
+	W               uint32
+	D               uint32
+	L               uint32
+	GoalsForward    uint32
+	GoalsAgainst    uint32
 }
 
 type Team struct {
@@ -60,10 +66,26 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
-	_, err := b.db.Exec("UPDATE teams SET owner=$1, league_idx=$2, team_idx_in_league=$3 WHERE team_id=$4",
+	_, err := b.db.Exec(`UPDATE teams SET 
+						owner=$1, 
+						league_idx=$2, 
+						team_idx_in_league=$3,
+						points=$4,
+						w=$5,
+						d=$6,
+						l=$7,
+						goals_forward=$8,
+						goals_against=$9
+						WHERE team_id=$10`,
 		teamState.Owner,
 		teamState.LeagueIdx,
 		teamState.TeamIdxInLeague,
+		teamState.Points,
+		teamState.W,
+		teamState.D,
+		teamState.L,
+		teamState.GoalsForward,
+		teamState.GoalsAgainst,
 		teamID.String(),
 	)
 	return err
@@ -87,6 +109,32 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 
 // 	return nil
 // }
+func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
+	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var teams []Team
+	for rows.Next() {
+		var team Team
+		var teamID sql.NullString
+		err = rows.Scan(
+			&teamID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		id, _ := new(big.Int).SetString(teamID.String, 10)
+		team, err = b.GetTeam(id)
+		if err != nil {
+			return teams, err
+		}
+		teams = append(teams, team)
+	}
+	return teams, nil
+}
+
 func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
 	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {
@@ -109,7 +157,7 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	var team Team
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx FROM teams WHERE (team_id = $1);", teamID.String())
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against FROM teams WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return team, err
 	}
@@ -123,6 +171,13 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.CountryIdx,
 		&team.State.Owner,
 		&team.State.LeagueIdx,
+		&team.State.TeamIdxInLeague,
+		&team.State.Points,
+		&team.State.W,
+		&team.State.D,
+		&team.State.L,
+		&team.State.GoalsForward,
+		&team.State.GoalsAgainst,
 	)
 	if err != nil {
 		return team, err
