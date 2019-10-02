@@ -16,8 +16,8 @@ contract Engine is EncodingSkills, Sort{
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
-    uint256 private constant TENTHOUSAND    = uint256(10000); 
-    uint256 private constant TENTHOUSAND_SQ = uint256(100000000); 
+    uint256 private constant TENTHOUSAND_TIMES_1M    = uint256(10000000000); 
+    uint256 private constant TENTHOUSAND_SQ_TIMES_1M = uint256(100000000000000); 
     uint16 private constant NO_EVENT        = 11; 
     //
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
@@ -501,9 +501,9 @@ contract Engine is EncodingSkills, Sort{
         uint256 playerSkills = teamState[0];
         globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
         if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
-            globSkills[IDX_BLOCK_SHOOT] = 10 * penaltyPerAge(playerSkills, matchStartTime);
+            globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
         }
-        else globSkills[IDX_BLOCK_SHOOT] = getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
+        else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
         
         uint256[3] memory fwdModFactors;
 
@@ -531,6 +531,7 @@ contract Engine is EncodingSkills, Sort{
     // on a max of 1M, this is 274 per day.
     // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
     function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
+        return 1000000;
         uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
         if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
         return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
@@ -546,9 +547,9 @@ contract Engine is EncodingSkills, Sort{
         pure
     {
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ_TIMES_1M;
+            globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ_TIMES_1M;
+            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND_TIMES_1M;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 30;
             globSkills[IDX_DEFEND_SHOOT] += 20;
@@ -567,8 +568,8 @@ contract Engine is EncodingSkills, Sort{
         pure
     {
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ_TIMES_1M;
+            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND_TIMES_1M;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 50;
             globSkills[IDX_ENDURANCE]   += 10;
@@ -586,9 +587,9 @@ contract Engine is EncodingSkills, Sort{
         pure
     {
         if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ;
-            globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND;
+            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ_TIMES_1M;
+            globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TENTHOUSAND_SQ_TIMES_1M;
+            globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TENTHOUSAND_TIMES_1M;
         } else {
             globSkills[IDX_MOVE2ATTACK] += 10;
             globSkills[IDX_CREATE_SHOOT] += 20;
@@ -606,7 +607,7 @@ contract Engine is EncodingSkills, Sort{
     // the forward modifier factors only change the first 3.
     function getExtraAttackFactors(bool extraAttack) public pure returns (uint256[3] memory fwdModFactors) {
         if (extraAttack)    {fwdModFactors = [uint256(10500), uint256(10500), uint256(9500)];}
-        else                {fwdModFactors = [TENTHOUSAND, TENTHOUSAND, TENTHOUSAND];}
+        else                {fwdModFactors = [TENTHOUSAND_TIMES_1M, TENTHOUSAND_TIMES_1M, TENTHOUSAND_TIMES_1M];}
     }
   
     // 0 penalty means no penalty
