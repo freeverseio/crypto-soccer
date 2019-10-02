@@ -304,10 +304,10 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     /// @param playerCreationMonth since unix epoch
     /// @return monthOfBirth since unix epoch
     function computeBirthMonth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16, uint256) {
-        require(playerCreationMonth > 40*12, "invalid playerCreationMonth");
+        require(playerCreationMonth > 40 * 12, "invalid playerCreationMonth");
         uint16 age = 16 + uint16((dna % 20));
         dna >>= 5; // log2(20) = 4.6.... ceil = 5
-        return ( uint16(playerCreationMonth - age * 12), dna);
+        return (uint16(playerCreationMonth - (age * 12) / 7), dna);
     }
 
     /// Compute the pseudorandom skills, sum of the skills is 250
@@ -407,7 +407,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerAgeInMonths(uint256 playerId) public view returns (uint256) {
-        return secsToMonths(now - monthsToSecs(getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
+        return secsToMonths(7 * (now - monthsToSecs(getMonthOfBirth(getPlayerSkillsAtBirth(playerId)))));
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {
