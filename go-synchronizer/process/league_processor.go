@@ -212,12 +212,14 @@ func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 		return state, err
 	}
 	for i := 0; i < len(players); i++ {
-		playerID := players[i].PlayerId
+		player := players[i]
+		playerID := player.PlayerId
 		playerSkills, err := b.leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerID)
 		if err != nil {
 			return state, err
 		}
-		state[i] = playerSkills
+		shirtNumber := player.State.ShirtNumber
+		state[shirtNumber] = playerSkills
 	}
 	return state, nil
 }
