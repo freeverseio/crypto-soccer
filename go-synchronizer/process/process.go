@@ -152,7 +152,7 @@ func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
 		}
 	}
 	end := p.clientLastBlockNumber()
-	end = uint64(math.Min(float64(start+10), float64(end)))
+	end = uint64(math.Min(float64(start+100), float64(end)))
 	if start > end {
 		return nil, nil
 	}

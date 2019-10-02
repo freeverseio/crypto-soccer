@@ -3,6 +3,7 @@ package process
 import (
 	"errors"
 	"math/big"
+	"strconv"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
@@ -32,8 +33,10 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	day := event.Day
 	turnInDay := event.TurnInDay
 	timezoneIdx := event.TimeZone
+	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
+
 	if timezoneIdx < 1 || timezoneIdx > 24 {
-		return errors.New("Wront timezone " + string(timezoneIdx))
+		return errors.New("Wront timezone " + strconv.FormatInt(int64(timezoneIdx), 10))
 	}
 	if (turnInDay > 1) ||
 		(turnInDay == 1 && day != 1) ||
@@ -41,8 +44,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		log.Warnf("[LeagueProcessor] Skipping timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 		return nil
 	}
-	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
-
 	day-- // cause we use 0 starting indexes
 
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
