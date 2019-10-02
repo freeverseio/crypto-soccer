@@ -89,6 +89,18 @@ func TestTeamCreate(t *testing.T) {
 	}
 }
 
+func TestGetTeamOfUnexistenTeamID(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	teamID := big.NewInt(434)
+	_, err = sto.GetTeam(teamID)
+	if err == nil {
+		t.Fatal("Not error on unsexistent team")
+	}
+}
+
 func TestUpdateTeamOwner(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
