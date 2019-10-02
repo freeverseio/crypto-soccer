@@ -21,7 +21,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	var event updates.UpdatesActionsSubmission
-	event.TimeZone = 0
+	event.TimeZone = 25
 	err = processor.Process(event)
 	if err == nil {
 		t.Fatal("processing invalid timezone")

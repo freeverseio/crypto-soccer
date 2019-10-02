@@ -32,16 +32,18 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	day := event.Day
 	turnInDay := event.TurnInDay
 	timezoneIdx := event.TimeZone
-	if timezoneIdx < 1 || timezoneIdx > 24 {
-		return errors.New("Wront timezone " + string(timezoneIdx))
+	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
+
+	if timezoneIdx > 24 {
+		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
-	if (turnInDay > 1) ||
+	if (timezoneIdx == 0) ||
+		(turnInDay > 1) ||
 		(turnInDay == 1 && day != 1) ||
 		(turnInDay == 0 && (day < 2 || day > 14)) {
-		log.Warnf("[LeagueProcessor] Skipping timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
+		log.Warnf("[LeagueProcessor] ... skipping")
 		return nil
 	}
-	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 
 	day-- // cause we use 0 starting indexes
 
