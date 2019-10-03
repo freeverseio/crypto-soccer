@@ -39,11 +39,13 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				err := b.eventProcessor.Process()
+				processedBlocks, err := b.eventProcessor.Process()
 				if err != nil {
 					panic(err)
 				}
-				time.Sleep(2 * time.Second)
+				if processedBlocks == 0 {
+					time.Sleep(2 * time.Second)
+				}
 			}
 		}
 		b.stopped <- true

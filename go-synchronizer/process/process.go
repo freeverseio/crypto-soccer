@@ -47,15 +47,15 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process() error {
+func (p *EventProcessor) Process() (uint64, error) {
 	opts, err := p.nextRange()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if opts == nil {
 		log.Info("No new blocks to scan.")
-		return nil
+		return 0, nil
 	}
 
 	log.WithFields(log.Fields{
@@ -65,19 +65,21 @@ func (p *EventProcessor) Process() error {
 
 	scanner := NewEventScanner(p.leagues, p.updates)
 	if err := scanner.Process(opts); err != nil {
-		return err
+		return 0, err
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
-			return err
+			return 0, err
 		}
 	}
 
+	deltaBlock := *opts.End - opts.Start
+
 	// store the last block that was scanned
-	return p.db.SetBlockNumber(*opts.End)
+	return deltaBlock, p.db.SetBlockNumber(*opts.End)
 }
 
 // *****************************************************************************
