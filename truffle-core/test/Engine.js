@@ -35,7 +35,9 @@ contract('Engine', (accounts) => {
     const IDX_LCR = 7;
     const fwd442 =  [0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
     const left442 = [0, IDX_L, IDX_C, IDX_C, IDX_R, IDX_L, IDX_C, IDX_C, IDX_R, IDX_C, IDX_C];
-    
+    const now = Math.floor(new Date()/1000);
+    const dayOfBirth21 = Math.round(secsToDays(now) - 21/7);
+
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
         teamState = []
         for (p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
@@ -73,7 +75,6 @@ contract('Engine', (accounts) => {
     
     const createTeamState442 = async (engine, forceSkills) => {
         teamState = [];
-        month = 0;
         playerId = 123121;
         pot = 3;
         aggr = 0;
@@ -82,7 +83,7 @@ contract('Engine', (accounts) => {
         gamesNonStopping = 0;
         injuryWeeksLeft = 0;
         for (p = 0; p < 11; p++) {
-            pSkills = await engine.encodePlayerSkills(forceSkills, month, playerId, [pot, fwd442[p], left442[p], aggr],
+            pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, playerId, [pot, fwd442[p], left442[p], aggr],
                 alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
             teamState.push(pSkills)
         }
@@ -96,7 +97,7 @@ contract('Engine', (accounts) => {
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
-            monthOfBirth = 0, 
+            dayOfBirth21,
             playerId = 2132321,
             [potential = 3,
             forwardness,
@@ -131,8 +132,6 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
-        now = new Date()
-        now = Math.floor(now/1000);
     });
 
     it('penaltyPerAge', async () => {
@@ -242,7 +241,7 @@ contract('Engine', (accounts) => {
     });
     
     it('play 2nd half with 3 changes is OK, but more than 3 is rejected', async () => {
-        messi = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
+        messi = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         for (p = 0; p < 3; p++) teamStateAll50[p] = messi; 
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
@@ -254,11 +253,11 @@ contract('Engine', (accounts) => {
         // legit works:
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // red card fails:
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
         // injured fails
-        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
+        teamStateAll50[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 2).should.be.fulfilled;            
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
     });
@@ -377,16 +376,16 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it('manages to score with select shoorter wihtout modifiers', async () => {
+    it('manages to score with select shooter without modifiers', async () => {
         // lets put a Messi and check that it surely scores:
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([100,100,100,100,100], month = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
+        messi = await engine.encodePlayerSkills([100,100,100,100,100], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[10] = messi;
-        result = await engine.selectShooter(teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
+        result = await engine.selectShooter(now, teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
-        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
@@ -400,7 +399,7 @@ contract('Engine', (accounts) => {
             decodedLog.shooterForwardPos[0].toNumber().should.be.equal(expectedFwd[team]);
         }
         // let's put a radically good GK, and check that it doesn't score
-        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
         expectedAssisters   = [0, 0];
@@ -413,7 +412,7 @@ contract('Engine', (accounts) => {
             decodedLog.shooterForwardPos[0].toNumber().should.be.equal(expectedFwd[team]);
         }
         // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-        log = await engine.managesToScore(log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         expectedAssisters   = [10, 0];
@@ -426,7 +425,7 @@ contract('Engine', (accounts) => {
             decodedLog.shooterForwardPos[0].toNumber().should.be.equal(expectedFwd[team]);
         }
     });
-    
+
     it('select shooter with modifiers', async () => {
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         extraAttack = [
@@ -443,10 +442,10 @@ contract('Engine', (accounts) => {
         k = 0;
         for (p = 0; p < 11; p++) {
             k += Math.floor(MAX_RND*expectedRatios[p]/sum);
-            result = await engine.selectShooter(teamState, playersPerZone442, extraAttack, k).should.be.fulfilled;
+            result = await engine.selectShooter(now, teamState, playersPerZone442, extraAttack, k).should.be.fulfilled;
             result.toNumber().should.be.equal(p);
             if (p < 10) {
-                result = await engine.selectShooter(teamState, playersPerZone442, extraAttack, k + p + 1).should.be.fulfilled;
+                result = await engine.selectShooter(now, teamState, playersPerZone442, extraAttack, k + p + 1).should.be.fulfilled;
                 result.toNumber().should.be.equal(p+1);
             }
         }
@@ -461,16 +460,16 @@ contract('Engine', (accounts) => {
             true, false,
         ];
         nPartitions = 200;
-        expectedTrans = [ 5, 65, 15, 20, 65, 80, 115, 110, 220, 155, 150 ];
+        expectedTrans = [ 5, 65, 15, 20, 65, 80, 110, 115, 220, 155, 150 ];
         transtions = [];
         t=0;
         rndOld = 0;
-        result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result = await engine.selectAssister(now, teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         prev = result.toNumber();
         for (p = 0; p < nPartitions; p++) {
             rnd = Math.floor(p * MAX_RND/ nPartitions);
-            result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            result = await engine.selectAssister(now, teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
             if (result.toNumber() != prev) {
                 percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
                 // console.log(prev, percentageForPrevPlayer);
@@ -492,7 +491,7 @@ contract('Engine', (accounts) => {
     it('select assister with modifiers and one Messi', async () => {
         console.log("warning: This test takes a few secs...")
         teamState = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        messi = await engine.encodePlayerSkills([2,2,2,2,2], month = 0, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
+        messi = await engine.encodePlayerSkills([2,2,2,2,2], dayOfBirth21, id = 1323121, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamState[8] = messi;
         extraAttack = [
@@ -505,12 +504,12 @@ contract('Engine', (accounts) => {
         transtions = [];
         t=0;
         rndOld = 0;
-        result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
+        result = await engine.selectAssister(now, teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         prev = result.toNumber();
         for (p = 0; p < nPartitions; p++) {
             rnd = Math.floor(p * MAX_RND/ nPartitions);
-            result = await engine.selectAssister(teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
+            result = await engine.selectAssister(now, teamState, playersPerZone442, extraAttack, shooter = 8, rnd).should.be.fulfilled;
             if (result.toNumber() != prev) {
                 percentageForPrevPlayer = Math.round((rnd-rndOld)/MAX_RND*1000);
                 // console.log(prev, percentageForPrevPlayer);

@@ -83,7 +83,7 @@ contract Engine is EncodingSkills, Sort{
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLog, seed, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        computeRounds(matchLog, seed, matchStartTime, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
         if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
             computePenalties(matchLog, states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], uint64(seed)); // TODO seed
         }
@@ -93,6 +93,7 @@ contract Engine is EncodingSkills, Sort{
     function computeRounds(
         uint256[2] memory matchLog,
         uint256 seed, 
+        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
@@ -111,6 +112,7 @@ contract Engine is EncodingSkills, Sort{
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
                 managesToScore(
+                    matchStartTime,
                     matchLog,
                     teamThatAttacks,
                     states[teamThatAttacks],
@@ -361,6 +363,7 @@ contract Engine is EncodingSkills, Sort{
     }
 
     function selectAssister(
+        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -374,21 +377,21 @@ contract Engine is EncodingSkills, Sort{
         uint256[] memory weights = new uint256[](11);
         // if selected assister == selected shooter =>  
         //  there was no assist => individual play by shoorter
-        weights[0] = 1;
-        uint256 teamPassCapacity = 1;
+        weights[0] = penaltyPerAge(teamState[0], matchStartTime);
+        uint256 teamPassCapacity = weights[0];
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 90 : 20 ) * getPass(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 150 : 100 ) * getPass(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 200 * getPass(teamState[p]);
+            weights[p] = 200 * getPass(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             teamPassCapacity += weights[p];
             p++;
         }
@@ -398,12 +401,13 @@ contract Engine is EncodingSkills, Sort{
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[shooter]) * 8810 )/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[shooter]) * 8810 * penaltyPerAge(shooter, matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
 
 
     function selectShooter(
+        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -415,18 +419,18 @@ contract Engine is EncodingSkills, Sort{
     {
         uint256[] memory weights = new uint256[](11);
         // GK has minimum weight, all others are relative to this.
-        weights[0] = 1;
+        weights[0] = penaltyPerAge(teamState[0], matchStartTime);
         uint8 p = 1;
         for (uint8 i = 0; i < getNDefenders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 15000 : 5000 ) * getSpeed(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNMidfielders(playersPerZone); i++) {
-            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[p]);
+            weights[p] = (extraAttack[p-1] ? 50000 : 25000 ) * getSpeed(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             p++;
         }
         for (uint8 i = 0; i < getNAttackers(playersPerZone); i++) {
-            weights[p] = 75000 * getSpeed(teamState[p]);
+            weights[p] = 75000 * getSpeed(teamState[p]) * penaltyPerAge(teamState[p], matchStartTime);
             p++;
         }
         return throwDiceArray(weights, rnd);
@@ -435,6 +439,7 @@ contract Engine is EncodingSkills, Sort{
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
+        uint256 matchStartTime,
         uint256[2] memory matchLog,
         uint8 teamThatAttacks,
         uint256[PLAYERS_PER_TEAM_MAX] memory teamState,
@@ -449,12 +454,12 @@ contract Engine is EncodingSkills, Sort{
     {
         uint256 currentGoals = matchLog[teamThatAttacks] & 15;
         if (currentGoals > 13) return matchLog;
-        uint8 shooter = selectShooter(teamState, playersPerZone, extraAttack, rnds[0]);
+        uint8 shooter = selectShooter(matchStartTime, teamState, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1;
+        uint256 shootPenalty = ( getForwardness(teamState[shooter]) == IDX_GK ? 10 : 1) * penaltyPerAge(teamState[shooter], matchStartTime)/1000000;
         bool isGoal = throwDice((getShoot(teamState[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
-            uint8 assister = selectAssister(teamState, playersPerZone, extraAttack, shooter, rnds[2]);
+            uint8 assister = selectAssister(matchStartTime, teamState, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
             matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
             matchLog[teamThatAttacks] |= uint256(getForwardPos(shooter, playersPerZone)) << (116 + 2 * currentGoals);
@@ -532,10 +537,10 @@ contract Engine is EncodingSkills, Sort{
     // on a max of 1M, this is 274 per day.
     // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
     function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
-        // return 1000000;
-        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
-        if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
-        return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
+        return 1000000;
+        // uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
+        // if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
+        // return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
 
     function computeDefenderGlobSkills(
