@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
@@ -42,7 +41,6 @@ func (b *BackgroundProcess) Start() {
 			default:
 				err := b.eventProcessor.Process()
 				if err != nil {
-					log.Error(err)
 					panic(err)
 				}
 				time.Sleep(2 * time.Second)
