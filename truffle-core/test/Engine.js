@@ -136,12 +136,12 @@ contract('Engine', (accounts) => {
     });
 
     it('penaltyPerAge', async () => {
-        agesInDays      = [31*365 -1, 31*365,  41*365-4, 41*365-3];
-        expectedPenalty = [1000000, 999178, 1818, 0]
+        agesInDays      = [31*365+2, 31*365 + 3,  41*365-1, 41*365];
+        expectedPenalty = [1000000, 998356, 996, 0]
         for (i = 0; i < agesInDays.length; i++) {
             dayOfBirth =  Math.round(secsToDays(now) - agesInDays[i]/7);
             playerSkills = await engine.encodePlayerSkills(
-                skills, 
+                skills = [1,1,1,1,1], 
                 dayOfBirth, 
                 playerId = 2132321,
                 [potential = 3,
@@ -157,7 +157,7 @@ contract('Engine', (accounts) => {
             result.toNumber().should.be.equal(expectedPenalty[i]);
         }
     });
-    
+
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
