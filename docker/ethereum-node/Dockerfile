@@ -18,5 +18,6 @@ RUN geth --datadir /test/data init /test/genesis.json
 VOLUME /test 
 
 EXPOSE 8545
+EXPOSE 30303
 
 CMD ["geth", "--datadir", "/test/data", "--mine", "--unlock", "0x83a909262608c650bd9b0ae06e29d90d0f67ac5e", "--password", "/test/passwd", "--keystore", "/test/keystore", "--rpc", "--rpcapi", "personal,db,eth,net,web3,txpool,miner,debug", "--rpcvhosts", "*", "--rpccorsdomain", "*", "--rpcaddr", "0.0.0.0", "--networkid", "63819", "--nodiscover"]
