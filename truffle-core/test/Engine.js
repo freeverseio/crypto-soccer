@@ -35,8 +35,10 @@ contract('Engine', (accounts) => {
     const IDX_LCR = 7;
     const fwd442 =  [0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3];
     const left442 = [0, IDX_L, IDX_C, IDX_C, IDX_R, IDX_L, IDX_C, IDX_C, IDX_R, IDX_C, IDX_C];
-    const now = Math.floor(new Date()/1000);
-    const dayOfBirth21 = Math.round(secsToDays(now) - 21/7);
+    // const now = Math.floor(new Date()/1000);
+    // const dayOfBirth21 = Math.round(secsToDays(now) - 21/7);
+    const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
+    const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
 
     const createTeamState = async (seed, engine, assets, forceSkills, forceFwd, forceLeft) => {
         teamState = []
@@ -93,7 +95,6 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2) => {
         const playerStateTemp = await engine.encodePlayerSkills(
             skills, 
@@ -135,10 +136,10 @@ contract('Engine', (accounts) => {
     });
 
     it('penaltyPerAge', async () => {
-        agesInDays      = [31*365+2, 31*365 + 3,  41*365-1, 41*365];
-        expectedPenalty = [1000000, 998356, 996, 0]
-        for (i = 0; i < agesInDays.length; i++) {
-            dayOfBirth =  Math.round(secsToDays(now) - agesInDays[i]/7);
+        ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
+        expectedPenalty = [1000000, 998904, 998904, 1544, 1544, 0, 0, 0]
+        for (i = 0; i < ageInDays.length; i++) {
+            dayOfBirth = Math.round(secsToDays(now) - ageInDays[i]/7);
             playerSkills = await engine.encodePlayerSkills(
                 skills = [1,1,1,1,1], 
                 dayOfBirth, 
@@ -156,7 +157,7 @@ contract('Engine', (accounts) => {
             result.toNumber().should.be.equal(expectedPenalty[i]);
         }
     });
-
+    
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });

@@ -538,9 +538,10 @@ contract Engine is EncodingSkills, Sort{
     // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
     function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
         return 1000000;
-        // uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
-        // if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
-        // return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
+        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
+        // return ageDays;
+        if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
+        return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
 
     function computeDefenderGlobSkills(
