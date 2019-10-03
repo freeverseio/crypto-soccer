@@ -53,6 +53,10 @@ CREATE TABLE players (
     endurance INT NOT NULL,
     shirt_number INT NOT NULL,
     preferred_position TEXT NOT NULL,
+    -- TODO remove default
+    potential INT NOT NULL DEFAULT 0, 
+    -- TODO remove DEFAULT
+    age INT NOT NULL DEFAULT 0, 
     PRIMARY KEY(player_id)
 );
 
