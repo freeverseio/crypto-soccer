@@ -135,28 +135,28 @@ contract('Engine', (accounts) => {
         now = Math.floor(now/1000);
     });
 
-    // it('penaltyPerAge', async () => {
-    //     agesInDays      = [31*365 -1, 31*365,  41*365-4, 41*365-3];
-    //     expectedPenalty = [1000000, 999178, 1818, 0]
-    //     for (i = 0; i < agesInDays.length; i++) {
-    //         dayOfBirth =  Math.round(secsToDays(now) - agesInDays[i]/7);
-    //         playerSkills = await engine.encodePlayerSkills(
-    //             skills, 
-    //             dayOfBirth, 
-    //             playerId = 2132321,
-    //             [potential = 3,
-    //             forwardness,
-    //             leftishness,
-    //             aggr = 0],
-    //             alignedLastHalf = true,
-    //             redCardLastGame = false,
-    //             gamesNonStopping = 0,
-    //             injuryWeeksLeft = 0
-    //         ).should.be.fulfilled;
-    //         result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
-    //         result.toNumber().should.be.equal(expectedPenalty[i]);
-    //     }
-    // });
+    it('penaltyPerAge', async () => {
+        agesInDays      = [31*365 -1, 31*365,  41*365-4, 41*365-3];
+        expectedPenalty = [1000000, 999178, 1818, 0]
+        for (i = 0; i < agesInDays.length; i++) {
+            dayOfBirth =  Math.round(secsToDays(now) - agesInDays[i]/7);
+            playerSkills = await engine.encodePlayerSkills(
+                skills, 
+                dayOfBirth, 
+                playerId = 2132321,
+                [potential = 3,
+                forwardness,
+                leftishness,
+                aggr = 0],
+                alignedLastHalf = true,
+                redCardLastGame = false,
+                gamesNonStopping = 0,
+                injuryWeeksLeft = 0
+            ).should.be.fulfilled;
+            result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
+            result.toNumber().should.be.equal(expectedPenalty[i]);
+        }
+    });
     
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
@@ -625,7 +625,7 @@ contract('Engine', (accounts) => {
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
-    
+
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
         tacticsWrong = await engine.encodeTactics(lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, is2ndHalf).should.be.rejected;
