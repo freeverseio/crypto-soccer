@@ -8,7 +8,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 
-	//"fmt"
+	"fmt"
 	"math"
 	"math/big"
 
@@ -48,7 +48,10 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process() error {
-	opts := p.nextRange()
+	opts, err := p.nextRange()
+	if err != nil {
+		return err
+	}
 
 	if opts == nil {
 		log.Info("No new blocks to scan.")
@@ -60,97 +63,76 @@ func (p *EventProcessor) Process() error {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	if events, err := p.scanDivisionCreation(opts); err != nil {
-		panic(err)
+	scanner := NewEventScanner(p.leagues, p.updates)
+	if err := scanner.Process(opts); err != nil {
+		return err
 	} else {
-		err = p.storeDivisionCreation(events)
-		if err != nil {
-			panic(err)
-		}
+		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
-	if events, err := p.scanTeamTransfer(opts); err != nil {
-		panic(err)
-	} else {
-		for _, event := range events { // TODO: next part to be recoded
-			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
-			// if err != nil {
-			// 	return err
-			// }
-			teamID := event.TeamId
-			newOwner := event.To.String()
-			team, err := p.db.GetTeam(teamID)
-			if err != nil {
-				panic(err)
-			}
-			// team.State.BlockNumber = blockNumber
-			team.State.Owner = newOwner
-			err = p.db.TeamUpdate(teamID, team.State)
-			if err != nil {
-				panic(err)
-			}
-		}
-	}
-
-	if events, err := p.scanPlayerTransfer(opts); err != nil {
-		panic(err)
-	} else {
-		for _, event := range events { // TODO: next part to be recoded
-			// _, blockNumber, err := p.getTimeOfEvent(event.Raw)
-			// if err != nil {
-			// 	return err
-			// }
-			playerID := event.PlayerId
-			toTeamID := event.TeamIdTarget
-			player, err := p.db.GetPlayer(playerID)
-			if err != nil {
-				panic(err)
-			}
-			playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
-			if err != nil {
-				panic(err)
-			}
-			shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
-			if err != nil {
-				panic(err)
-			}
-			player.State.TeamId = toTeamID
-			player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-			err = p.db.PlayerUpdate(playerID, player.State)
-			if err != nil {
-				panic(err)
-			}
-		}
-	}
-
-	if events, err := p.scanActionsSubmission(opts); err != nil {
-		panic(err)
-	} else {
-		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
-		if err != nil {
-			panic(err)
-		}
-		for _, event := range events {
-			err = leagueProcessor.Process(event)
-			if err != nil {
-				panic(err)
-			}
+	for _, v := range scanner.Events {
+		if err := p.dispatch(v); err != nil {
+			return err
 		}
 	}
 
 	// store the last block that was scanned
-	err := p.db.SetBlockNumber(*opts.End)
-	if err != nil {
-		panic(err)
-	}
-	return nil
+	return p.db.SetBlockNumber(*opts.End)
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) nextRange() *bind.FilterOpts {
-	start := p.dbLastBlockNumber()
+func (p *EventProcessor) dispatch(e *AbstractEvent) error {
+	switch v := e.Value.(type) {
+	case leagues.LeaguesDivisionCreation:
+		log.Info("Success dispatching LeaguesDivisionCreation event")
+		return p.storeDivisionCreation(v)
+	case leagues.LeaguesTeamTransfer:
+		log.Info("Success dispatching LeaguesTeamTransfer event")
+		teamID := v.TeamId
+		newOwner := v.To.String()
+		team, err := p.db.GetTeam(teamID)
+		if err != nil {
+			return err
+		}
+		// team.State.BlockNumber = blockNumber
+		team.State.Owner = newOwner
+		return p.db.TeamUpdate(teamID, team.State)
+	case leagues.LeaguesPlayerTransfer:
+		log.Info("Success dispatching LeaguesPlayerTransfer event")
+		playerID := v.PlayerId
+		toTeamID := v.TeamIdTarget
+		player, err := p.db.GetPlayer(playerID)
+		if err != nil {
+			return err
+		}
+		playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
+		if err != nil {
+			return err
+		}
+		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
+		if err != nil {
+			return err
+		}
+		player.State.TeamId = toTeamID
+		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
+		return p.db.PlayerUpdate(playerID, player.State)
+	case updates.UpdatesActionsSubmission:
+		log.Info("Success dispatching UpdatesActionsSubmission event")
+		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
+		if err != nil {
+			return err
+		}
+		return leagueProcessor.Process(v)
+	}
+	return fmt.Errorf("Error dispatching unknown event type: %s", e.Name)
+}
+func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
+	start, err := p.dbLastBlockNumber()
+	if err != nil {
+		return nil, err
+	}
 	if start != 0 {
 		// unless this is the very first execution,
 		// the block number that is stored in the db
@@ -159,19 +141,19 @@ func (p *EventProcessor) nextRange() *bind.FilterOpts {
 		if start < math.MaxUint64 {
 			start += 1
 		} else {
-			log.Error("Block range overflow")
-			return nil
+			return nil, errors.New("Block range overflow")
 		}
 	}
 	end := p.clientLastBlockNumber()
+	end = uint64(math.Min(float64(start+100), float64(end)))
 	if start > end {
-		return nil
+		return nil, nil
 	}
 	return &bind.FilterOpts{
 		Start:   start,
 		End:     &end,
 		Context: context.Background(),
-	}
+	}, nil
 }
 
 func (p *EventProcessor) clientLastBlockNumber() uint64 {
@@ -186,13 +168,12 @@ func (p *EventProcessor) clientLastBlockNumber() uint64 {
 	}
 	return header.Number.Uint64()
 }
-func (p *EventProcessor) dbLastBlockNumber() uint64 {
+func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
 	storedLastBlockNumber, err := p.db.GetBlockNumber()
 	if err != nil {
-		log.Warn("Could not get database last block")
-		return 0
+		return 0, err
 	}
-	return storedLastBlockNumber
+	return storedLastBlockNumber, err
 }
 func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
 	if p.usesGanache {
@@ -205,59 +186,23 @@ func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, err
 	return block.Time(), eventRaw.BlockNumber, nil
 }
 
-func (p *EventProcessor) scanDivisionCreation(opts *bind.FilterOpts) ([]leagues.LeaguesDivisionCreation, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterDivisionCreation(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesDivisionCreation{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
-
-func (p *EventProcessor) scanActionsSubmission(opts *bind.FilterOpts) ([]updates.UpdatesActionsSubmission, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.updates.FilterActionsSubmission(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []updates.UpdatesActionsSubmission{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
-
-func (p *EventProcessor) storeDivisionCreation(events []leagues.LeaguesDivisionCreation) error {
-	for _, event := range events {
-		log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
-		if event.CountryIdxInTZ.Uint64() == 0 {
-			if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
-				return err
-			}
+func (p *EventProcessor) storeDivisionCreation(event leagues.LeaguesDivisionCreation) error {
+	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
+	if event.CountryIdxInTZ.Uint64() == 0 {
+		if err := p.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+			return err
 		}
-		if event.DivisionIdxInCountry.Uint64() == 0 {
-			countryIdx := event.CountryIdxInTZ.Uint64()
-			if countryIdx > 65535 {
-				return errors.New("Cannot cast country idx to uint16: value too large")
-			}
-			if err := p.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
-				return err
-			}
-			if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
-				return err
-			}
+	}
+	if event.DivisionIdxInCountry.Uint64() == 0 {
+		countryIdx := event.CountryIdxInTZ.Uint64()
+		if countryIdx > 65535 {
+			return errors.New("Cannot cast country idx to uint16: value too large")
+		}
+		if err := p.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
+			return err
+		}
+		if err := p.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -415,38 +360,4 @@ func (p *EventProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, playerI
 		}
 		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
 	}
-}
-
-func (p *EventProcessor) scanTeamTransfer(opts *bind.FilterOpts) ([]leagues.LeaguesTeamTransfer, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterTeamTransfer(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesTeamTransfer{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
-}
-
-func (p *EventProcessor) scanPlayerTransfer(opts *bind.FilterOpts) ([]leagues.LeaguesPlayerTransfer, error) {
-	if opts == nil {
-		opts = &bind.FilterOpts{Start: 0}
-	}
-	iter, err := p.leagues.FilterPlayerTransfer(opts)
-	if err != nil {
-		return nil, err
-	}
-
-	events := []leagues.LeaguesPlayerTransfer{}
-
-	for iter.Next() {
-		events = append(events, *(iter.Event))
-	}
-	return events, nil
 }

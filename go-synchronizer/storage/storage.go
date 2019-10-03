@@ -28,6 +28,7 @@ func NewPostgres(url string) (*Storage, error) {
 		log.Infof("[DBMS] wainting %v sec ...", pause)
 		time.Sleep(pause * time.Second)
 	}
+	log.Info("[DBMS] ... connected")
 	return storage, nil
 }
 

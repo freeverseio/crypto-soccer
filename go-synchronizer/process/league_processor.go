@@ -44,7 +44,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		log.Warnf("[LeagueProcessor] ... skipping")
 		return nil
 	}
-
 	day-- // cause we use 0 starting indexes
 
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
@@ -202,12 +201,18 @@ func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 
 func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
+	playerIDHack := big.NewInt(274877906946)                                                  // TODO remove
+	playerHackSkills, err := b.leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerIDHack) // TODO remove
+	if err != nil {
+		return state, err
+	}
 	for i := 0; i < 25; i++ {
 		// playerSkills, err := b.leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, big.NewInt(1)) // TODO remove 1 with something better
 		// if err != nil {
 		// 	return state, err
 		// }
-		state[i] = big.NewInt(0)
+		state[i] = playerHackSkills
+
 	}
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {
