@@ -47,15 +47,15 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process() error {
+func (p *EventProcessor) Process() (uint64, error) {
 	opts, err := p.nextRange()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	if opts == nil {
 		log.Info("No new blocks to scan.")
-		return nil
+		return 0, nil
 	}
 
 	log.WithFields(log.Fields{
@@ -65,19 +65,21 @@ func (p *EventProcessor) Process() error {
 
 	scanner := NewEventScanner(p.leagues, p.updates)
 	if err := scanner.Process(opts); err != nil {
-		return err
+		return 0, err
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
-			return err
+			return 0, err
 		}
 	}
 
+	deltaBlock := *opts.End - opts.Start
+
 	// store the last block that was scanned
-	return p.db.SetBlockNumber(*opts.End)
+	return deltaBlock, p.db.SetBlockNumber(*opts.End)
 }
 
 // *****************************************************************************
@@ -86,10 +88,10 @@ func (p *EventProcessor) Process() error {
 func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
-		log.Info("Success dispatching LeaguesDivisionCreation event")
+		log.Info("[processor] Dispatching LeaguesDivisionCreation event")
 		return p.storeDivisionCreation(v)
 	case leagues.LeaguesTeamTransfer:
-		log.Info("Success dispatching LeaguesTeamTransfer event")
+		log.Info("[processor] dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.db.GetTeam(teamID)
@@ -100,7 +102,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
-		log.Info("Success dispatching LeaguesPlayerTransfer event")
+		log.Info("[processor] dispatching LeaguesPlayerTransfer event")
 		playerID := v.PlayerId
 		toTeamID := v.TeamIdTarget
 		player, err := p.db.GetPlayer(playerID)
@@ -119,14 +121,14 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Info("Success dispatching UpdatesActionsSubmission event")
+		log.Info("[processor] Dispatching UpdatesActionsSubmission event")
 		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
 		if err != nil {
 			return err
 		}
 		return leagueProcessor.Process(v)
 	}
-	return fmt.Errorf("Error dispatching unknown event type: %s", e.Name)
+	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
 func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
 	start, err := p.dbLastBlockNumber()

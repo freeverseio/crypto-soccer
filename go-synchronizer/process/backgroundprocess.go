@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
@@ -40,12 +39,13 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				err := b.eventProcessor.Process()
+				processedBlocks, err := b.eventProcessor.Process()
 				if err != nil {
-					log.Error(err)
 					panic(err)
 				}
-				time.Sleep(2 * time.Second)
+				if processedBlocks == 0 {
+					time.Sleep(2 * time.Second)
+				}
 			}
 		}
 		b.stopped <- true
