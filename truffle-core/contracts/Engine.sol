@@ -401,7 +401,7 @@ contract Engine is EncodingSkills, Sort{
         // or better, to have an avg of 1: (shooterSumOfSkills*271)/(teamPassCapacity * 5) = <skills_shooter>/<pass>_team
         // or to have a 50% change, multiply by 10, and to have say, 1/3, multiply by 10/3
         // this is to be compensated by an overall factor of about.
-        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[shooter]) * 8810 * penaltyPerAge(shooter, matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
+        weights[shooter] = (weights[shooter] * getSumOfSkills(teamState[shooter]) * 8810 * penaltyPerAge(teamState[shooter], matchStartTime))/ (N_SKILLS * (teamPassCapacity - weights[shooter]) * 3);
         return throwDiceArray(weights, rnd);
     }
 
@@ -537,9 +537,7 @@ contract Engine is EncodingSkills, Sort{
     // on a max of 1M, this is 274 per day.
     // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.
     function penaltyPerAge(uint256 playerSkills, uint256 matchStartTime) public pure returns (uint256) {
-        return 1000000;
         uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(playerSkills);
-        // return ageDays;
         if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
         return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }

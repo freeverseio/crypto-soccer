@@ -464,7 +464,7 @@ contract('Engine', (accounts) => {
         expectedTrans = [ 5, 65, 15, 20, 65, 80, 110, 115, 220, 155, 150 ];
         transtions = [];
         t=0;
-        rndOld = 0;
+        rndOld = 0; 
         result = await engine.selectAssister(now, teamState, playersPerZone442, extraAttack, shooter = 8, rnd = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         prev = result.toNumber();
@@ -483,7 +483,6 @@ contract('Engine', (accounts) => {
         percentageForPrevPlayer = Math.round((MAX_RND-rndOld)/MAX_RND*1000);
         // console.log(prev, percentageForPrevPlayer);
         transtions.push(percentageForPrevPlayer);
-            // console.log(transtions)
         for (t = 0; t < expectedTrans.length; t++) {
             (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
         }
@@ -528,7 +527,6 @@ contract('Engine', (accounts) => {
             (result.toNumber()*0 + transtions[t]).should.be.equal(expectedTrans[t]);
         }
     });
-
 
     it('throws dice array11 fine grained testing', async () => {
         // interface: throwDiceArray(uint[11] memory weights, uint rndNum)
