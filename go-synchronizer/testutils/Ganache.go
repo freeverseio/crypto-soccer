@@ -129,16 +129,24 @@ func (ganache *Ganache) DeployContracts(owner *ecdsa.PrivateKey) {
 	// setup
 	_, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in league contract")
-
-	// Initing
-	_, err = leaguesContract.InitSingleTZ(bind.NewKeyedTransactor(owner), 1)
-	AssertNoErr(err, "Error initializing leagues contract")
 	_, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 
 	ganache.Updates = updatesContract
 	ganache.Leagues = leaguesContract
 	ganache.Engine = engineContract
+}
+
+func (ganache *Ganache) Init() {
+	// Initing
+	_, err := ganache.Leagues.Init(bind.NewKeyedTransactor(ganache.Owner))
+	AssertNoErr(err, "Error initializing leagues contract")
+}
+
+func (ganache *Ganache) InitOneTimezone() {
+	// Initing
+	_, err := ganache.Leagues.InitSingleTZ(bind.NewKeyedTransactor(ganache.Owner), 1)
+	AssertNoErr(err, "Error initializing leagues contract")
 }
 
 //func (ganache *Ganache) CountTeams() *big.Int {

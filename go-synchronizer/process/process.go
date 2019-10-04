@@ -93,7 +93,7 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	if err := scanner.ScanPlayerTransfer(playerTransferIter); err != nil {
 		return 0, err
 	}
-	if err := scanner.Process(opts); err != nil {
+	if err := scanner.Process(); err != nil {
 		return 0, err
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")

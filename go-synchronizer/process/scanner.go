@@ -3,7 +3,6 @@ package process
 import (
 	"sort"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 
@@ -64,7 +63,7 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // leagues.LeaguesPlayerTransfer
 // updates.UpdatesActionsSubmission
 
-func (s *EventScanner) Process(opts *bind.FilterOpts) error {
+func (s *EventScanner) Process() error {
 	if len(s.Events) > 10000 {
 		log.Info("sorting ", len(s.Events), " be patient...")
 	}
