@@ -115,6 +115,8 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 // private
 // *****************************************************************************
 func (p *EventProcessor) dispatch(e *AbstractEvent) error {
+	log.Infof("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
+
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
 		log.Info("[processor] Dispatching LeaguesDivisionCreation event")

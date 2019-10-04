@@ -82,13 +82,13 @@ func (s *EventScanner) Process() error {
 }
 
 func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
-	log.Info("Add event ", name)
-	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.TxIndex, name, event))
+	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
 }
 
 func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreationIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanDivisionCreation timezone %v", e.Timezone)
 		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
 	}
 	return nil
@@ -97,6 +97,7 @@ func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreatio
 func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Infof("[scanner] ScanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
 		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
 	}
 	return nil
@@ -105,6 +106,7 @@ func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterato
 func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Infof("[scanner] ScanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
 		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
 	}
 	return nil
@@ -113,6 +115,7 @@ func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIte
 func (s *EventScanner) ScanActionsSubmission(iter *updates.UpdatesActionsSubmissionIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanActionSubmission")
 		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)
 	}
 	return nil
