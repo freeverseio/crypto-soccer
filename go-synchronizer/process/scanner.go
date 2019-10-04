@@ -97,7 +97,7 @@ func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreatio
 func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Infof("[scanner] ScanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
+		log.Debugf("[scanner] ScanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
 		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
 	}
 	return nil
@@ -106,7 +106,7 @@ func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterato
 func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Infof("[scanner] ScanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
+		log.Debugf("[scanner] ScanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
 		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
 	}
 	return nil
