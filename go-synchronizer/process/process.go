@@ -47,8 +47,8 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process() (uint64, error) {
-	opts, err := p.nextRange()
+func (p *EventProcessor) Process(delta uint64) (uint64, error) {
+	opts, err := p.nextRange(delta)
 	if err != nil {
 		return 0, err
 	}
@@ -162,7 +162,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
-func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
+func (p *EventProcessor) nextRange(delta uint64) (*bind.FilterOpts, error) {
 	start, err := p.dbLastBlockNumber()
 	if err != nil {
 		return nil, err
@@ -179,7 +179,9 @@ func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
 		}
 	}
 	end := p.clientLastBlockNumber()
-	end = uint64(math.Min(float64(start+100), float64(end)))
+	if delta != 0 {
+		end = uint64(math.Min(float64(start+delta), float64(end)))
+	}
 	if start > end {
 		return nil, nil
 	}
