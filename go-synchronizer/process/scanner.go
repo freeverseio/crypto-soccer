@@ -3,7 +3,6 @@ package process
 import (
 	"sort"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 
@@ -23,13 +22,11 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 }
 
 type EventScanner struct {
-	leagues *leagues.Leagues
-	updates *updates.Updates
-	Events  []*AbstractEvent
+	Events []*AbstractEvent
 }
 
-func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates) *EventScanner {
-	return &EventScanner{leagues, updates, []*AbstractEvent{}}
+func NewEventScanner() *EventScanner {
+	return &EventScanner{[]*AbstractEvent{}}
 }
 
 type byFunction func(p1, p2 *AbstractEvent) bool
@@ -66,20 +63,7 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // leagues.LeaguesPlayerTransfer
 // updates.UpdatesActionsSubmission
 
-func (s *EventScanner) Process(opts *bind.FilterOpts) error {
-	if err := s.scanDivisionCreation(opts); err != nil {
-		return err
-	}
-	if err := s.scanTeamTransfer(opts); err != nil {
-		return err
-	}
-	if err := s.scanPlayerTransfer(opts); err != nil {
-		return err
-	}
-	if err := s.scanActionsSubmission(opts); err != nil {
-		return err
-	}
-
+func (s *EventScanner) Process() error {
 	if len(s.Events) > 10000 {
 		log.Info("sorting ", len(s.Events), " be patient...")
 	}
@@ -98,57 +82,40 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
-	log.Info("Add event ", name)
-	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.TxIndex, name, event))
+	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
 }
 
-func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterDivisionCreation(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreationIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanDivisionCreation timezone %v", e.Timezone)
 		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterTeamTransfer(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
 		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterPlayerTransfer(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
 		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
-	iter, err := s.updates.FilterActionsSubmission(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanActionsSubmission(iter *updates.UpdatesActionsSubmissionIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
+		log.Debugf("[scanner] ScanActionSubmission")
 		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)
 	}
 	return nil

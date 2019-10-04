@@ -47,8 +47,8 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process() (uint64, error) {
-	opts, err := p.nextRange()
+func (p *EventProcessor) Process(delta uint64) (uint64, error) {
+	opts, err := p.nextRange(delta)
 	if err != nil {
 		return 0, err
 	}
@@ -63,12 +63,48 @@ func (p *EventProcessor) Process() (uint64, error) {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	scanner := NewEventScanner(p.leagues, p.updates)
-	if err := scanner.Process(opts); err != nil {
+	divisionCreationIter, err := p.leagues.FilterDivisionCreation(opts)
+	if err != nil {
+		return 0, err
+	}
+	teamTransferIter, err := p.leagues.FilterTeamTransfer(opts)
+	if err != nil {
+		return 0, err
+	}
+	playerTransferIter, err := p.leagues.FilterPlayerTransfer(opts)
+	if err != nil {
+		return 0, err
+	}
+	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
+	if err != nil {
+		return 0, err
+	}
+
+	scanner := NewEventScanner()
+	if err := scanner.ScanActionsSubmission(actionSubmissionIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanDivisionCreation(divisionCreationIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanTeamTransfer(teamTransferIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanPlayerTransfer(playerTransferIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.Process(); err != nil {
 		return 0, err
 	} else {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
+
+	// for _, e := range scanner.Events {
+	// 	if e.Name == "UpdatesActionsSubmission" {
+	// 		continue
+	// 	}
+	// 	log.Infof("Event %v block: %v index: %v", e.Name, e.BlockNumber, e.TxIndexInBlock)
+	// }
 
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
@@ -86,6 +122,8 @@ func (p *EventProcessor) Process() (uint64, error) {
 // private
 // *****************************************************************************
 func (p *EventProcessor) dispatch(e *AbstractEvent) error {
+	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
+
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
 		log.Info("[processor] Dispatching LeaguesDivisionCreation event")
@@ -130,7 +168,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
-func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
+func (p *EventProcessor) nextRange(delta uint64) (*bind.FilterOpts, error) {
 	start, err := p.dbLastBlockNumber()
 	if err != nil {
 		return nil, err
@@ -147,7 +185,9 @@ func (p *EventProcessor) nextRange() (*bind.FilterOpts, error) {
 		}
 	}
 	end := p.clientLastBlockNumber()
-	end = uint64(math.Min(float64(start+100), float64(end)))
+	if delta != 0 {
+		end = uint64(math.Min(float64(start+delta), float64(end)))
+	}
 	if start > end {
 		return nil, nil
 	}
