@@ -98,7 +98,7 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
-	log.Debug("Add event ", name)
+	log.Info("Add event ", name)
 	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.TxIndex, name, event))
 }
 
