@@ -1,0 +1,26 @@
+version: '3'
+services:
+  ethereum: 
+    image: freeverseio/ethereum:slave
+    ports: 
+      - "8545:8545"
+      - "30303:30303"
+    volumes:
+      - ethereum-data:/test
+  postgres:
+    image: freeverseio/postgres:dev
+  synchronizer:
+    image: freeverseio/synchronizer:dev
+    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable -ethereum http://ethereum:8545
+    depends_on:
+      - postgres
+      - ethereum
+  universeapi:
+    image: freeverseio/universeapi:dev
+    depends_on:
+      - postgres
+    command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
+    ports:
+      - "4000:4000"
+volumes:
+  ethereum-data:
