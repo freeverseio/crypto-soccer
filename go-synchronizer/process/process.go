@@ -67,23 +67,20 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	teamTransferIter, err := p.leagues.FilterTeamTransfer(opts)
 	if err != nil {
 		return 0, err
 	}
-
 	playerTransferIter, err := p.leagues.FilterPlayerTransfer(opts)
 	if err != nil {
 		return 0, err
 	}
-
 	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return 0, err
 	}
 
-	scanner := NewEventScanner(p.leagues, p.updates)
+	scanner := NewEventScanner()
 	if err := scanner.ScanActionsSubmission(actionSubmissionIter); err != nil {
 		return 0, err
 	}

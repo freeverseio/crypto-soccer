@@ -23,13 +23,11 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 }
 
 type EventScanner struct {
-	leagues *leagues.Leagues
-	updates *updates.Updates
-	Events  []*AbstractEvent
+	Events []*AbstractEvent
 }
 
-func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates) *EventScanner {
-	return &EventScanner{leagues, updates, []*AbstractEvent{}}
+func NewEventScanner() *EventScanner {
+	return &EventScanner{[]*AbstractEvent{}}
 }
 
 type byFunction func(p1, p2 *AbstractEvent) bool
