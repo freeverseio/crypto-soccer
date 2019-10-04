@@ -67,19 +67,6 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // updates.UpdatesActionsSubmission
 
 func (s *EventScanner) Process(opts *bind.FilterOpts) error {
-	if err := s.scanDivisionCreation(opts); err != nil {
-		return err
-	}
-	if err := s.scanTeamTransfer(opts); err != nil {
-		return err
-	}
-	if err := s.scanPlayerTransfer(opts); err != nil {
-		return err
-	}
-	if err := s.scanActionsSubmission(opts); err != nil {
-		return err
-	}
-
 	if len(s.Events) > 10000 {
 		log.Info("sorting ", len(s.Events), " be patient...")
 	}
@@ -102,12 +89,7 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.TxIndex, name, event))
 }
 
-func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterDivisionCreation(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreationIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
@@ -115,12 +97,7 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 	return nil
 }
 
-func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterTeamTransfer(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
@@ -128,12 +105,7 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 	return nil
 }
 
-func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterPlayerTransfer(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
@@ -141,12 +113,7 @@ func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
 	return nil
 }
 
-func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
-	iter, err := s.updates.FilterActionsSubmission(opts)
-	if err != nil {
-		return err
-	}
-
+func (s *EventScanner) ScanActionsSubmission(iter *updates.UpdatesActionsSubmissionIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)

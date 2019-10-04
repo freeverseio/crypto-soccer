@@ -63,7 +63,39 @@ func (p *EventProcessor) Process() (uint64, error) {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
+	divisionCreationIter, err := p.leagues.FilterDivisionCreation(opts)
+	if err != nil {
+		return 0, err
+	}
+
+	teamTransferIter, err := p.leagues.FilterTeamTransfer(opts)
+	if err != nil {
+		return 0, err
+	}
+
+	playerTransferIter, err := p.leagues.FilterPlayerTransfer(opts)
+	if err != nil {
+		return 0, err
+	}
+
+	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
+	if err != nil {
+		return 0, err
+	}
+
 	scanner := NewEventScanner(p.leagues, p.updates)
+	if err := scanner.ScanActionsSubmission(actionSubmissionIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanDivisionCreation(divisionCreationIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanTeamTransfer(teamTransferIter); err != nil {
+		return 0, err
+	}
+	if err := scanner.ScanPlayerTransfer(playerTransferIter); err != nil {
+		return 0, err
+	}
 	if err := scanner.Process(opts); err != nil {
 		return 0, err
 	} else {
