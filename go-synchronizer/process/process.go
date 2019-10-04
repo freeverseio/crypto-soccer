@@ -278,14 +278,12 @@ func (p *EventProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *bi
 			if teamId, err := p.leagues.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
 			} else {
-				if teamOwner, err := p.leagues.GetOwnerTeam(opts, teamId); err != nil {
-					return err
-				} else if err := p.db.TeamCreate(
+				if err := p.db.TeamCreate(
 					storage.Team{
 						teamId,
 						timezone,
 						uint32(countryIdx.Uint64()),
-						storage.TeamState{teamOwner.Hex(), uint32(leagueIdx), teamIdxInLeague, 0, 0, 0, 0, 0, 0}},
+						storage.TeamState{"0x0", uint32(leagueIdx), teamIdxInLeague, 0, 0, 0, 0, 0, 0}},
 				); err != nil {
 					return err
 				} else if err := p.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
