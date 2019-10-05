@@ -112,8 +112,7 @@ func TestScanningTeamTransfer(t *testing.T) {
 		t.Fatal(err)
 	}
 	events = scanner.Events
-	if len(events) != 1 {
-		t.Fatalf("Expected 1 received %v", len(events))
+	if len(events) != 2 {
+		t.Fatalf("Expected 2 received %v", len(events))
 	}
-
 }
