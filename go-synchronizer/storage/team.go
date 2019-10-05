@@ -115,9 +115,8 @@ func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueI
 		return nil, err
 	}
 	defer rows.Close()
-	var teams []Team
+	var teamsIds []*big.Int
 	for rows.Next() {
-		var team Team
 		var teamID sql.NullString
 		err = rows.Scan(
 			&teamID,
@@ -126,7 +125,15 @@ func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueI
 			return nil, err
 		}
 		id, _ := new(big.Int).SetString(teamID.String, 10)
-		team, err = b.GetTeam(id)
+		teamsIds = append(teamsIds, id)
+	}
+	rows.Close()
+	var teams []Team
+	for i := 0; i < len(teamsIds); i++ {
+		teamID := teamsIds[i]
+		var team Team
+		team, err = b.GetTeam(teamID)
+
 		if err != nil {
 			return teams, err
 		}
@@ -156,7 +163,7 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 }
 
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
-	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
+	log.Infof("[DBMS] GetTeam of teamID %v", teamID)
 	var team Team
 	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against FROM teams WHERE (team_id = $1);", teamID.String())
 	if err != nil {
