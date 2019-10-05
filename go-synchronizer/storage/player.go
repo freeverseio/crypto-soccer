@@ -95,7 +95,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 
 func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position FROM players WHERE (player_id = $1);", playerID.String())
+	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state FROM players WHERE (player_id = $1);", playerID.String())
 	if err != nil {
 		return player, err
 	}
@@ -104,6 +104,8 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		return player, errors.New("Unexistent player " + playerID.String())
 	}
 	var teamID sql.NullString
+	var encodedSkills sql.NullString
+	var encodedState sql.NullString
 	err = rows.Scan(
 		&teamID,
 		&player.State.Defence,
@@ -113,9 +115,13 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&player.State.Endurance,
 		&player.State.ShirtNumber,
 		&player.PreferredPosition,
+		&encodedSkills,
+		&encodedSkills,
 	)
 	player.PlayerId = playerID
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
+	player.State.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
+	player.State.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
 	return player, err
 }
 
