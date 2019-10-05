@@ -1,5 +1,12 @@
 package process_test
 
+import (
+	"math/big"
+	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+)
+
 //	"fmt"
 
 // TODO commented cause I dunno what's happening
@@ -22,37 +29,37 @@ package process_test
 // 	}
 // }
 
-// func TestSyncTeams(t *testing.T) {
-// 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	_ = storage
+func TestSyncTeams(t *testing.T) {
+	// storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
-// 	ganache.DeployContracts(owner)
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
-// 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
-// 	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+	firstTeamID, err := bc.Leagues.EncodeTZCountryAndVal(
+		nil,
+		timezoneIdx,
+		countryIdx,
+		big.NewInt(0),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if firstTeamID.String() != "274877906944" {
+		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
+	}
+}
 
-// 	timezoneIdx := uint8(1)
-// 	countryIdx := big.NewInt(0)
-// 	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
-// 		nil,
-// 		timezoneIdx,
-// 		countryIdx,
-// 		big.NewInt(0),
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if firstTeamID.String() != "274877906944" {
-// 		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
-// 	}
-
-// 	_ = alice
 // 	_ = bob
 // 	_ = carol
 // 	//ganache.CreateTeam("A", alice)
