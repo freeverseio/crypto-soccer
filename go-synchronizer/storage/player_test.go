@@ -9,6 +9,21 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func TestGetPlayersOfTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	teamID := big.NewInt(434)
+	players, err := sto.GetPlayersOfTeam(teamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(players) != 0 {
+		t.Fatalf("Expected 0 received %v", len(players))
+	}
+}
+
 func TestPlayerCount(t *testing.T) {
 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {

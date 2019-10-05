@@ -101,6 +101,23 @@ func TestGetTeamOfUnexistenTeamID(t *testing.T) {
 	}
 }
 
+func TestGetTeamInLeague(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezone := uint8(1)
+	countryIdx := uint32(0)
+	leagueIdx := uint32(0)
+	teams, err := sto.GetTeamsInLeague(timezone, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(teams) != 0 {
+		t.Fatalf("Expected 0 received %v", len(teams))
+	}
+}
+
 func TestUpdateTeamOwner(t *testing.T) {
 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
