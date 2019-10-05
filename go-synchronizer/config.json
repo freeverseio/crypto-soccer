@@ -1,5 +1,5 @@
 {
-    "ethereumClient": "https://devnet.busyverse.com/web3",
+    "ethereumClient": "http://localhost:8545",
     "engineContractAddress": "0x694dA4331476cBb5b7b2f69e9B0E08d441c07235",
     "assetsContractAddress": "0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B",
     "leaguesContractAddress": "0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B",

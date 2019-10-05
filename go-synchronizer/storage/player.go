@@ -15,13 +15,15 @@ type Player struct {
 }
 
 type PlayerState struct {
-	TeamId      *big.Int
-	Defence     uint64
-	Speed       uint64
-	Pass        uint64
-	Shoot       uint64
-	Endurance   uint64
-	ShirtNumber uint8
+	TeamId        *big.Int
+	Defence       uint64
+	Speed         uint64
+	Pass          uint64
+	Shoot         uint64
+	Endurance     uint64
+	ShirtNumber   uint8
+	EncodedSkills *big.Int
+	EncodedState  *big.Int
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -50,7 +52,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -60,6 +62,8 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.State.Endurance,
 		player.State.ShirtNumber,
 		player.PreferredPosition,
+		player.State.EncodedSkills.String(),
+		player.State.EncodedState.String(),
 	)
 	if err != nil {
 		return err
