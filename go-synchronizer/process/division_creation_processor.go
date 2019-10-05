@@ -12,13 +12,17 @@ import (
 )
 
 type DivisionCreationProcessor struct {
-	db      *storage.Storage
-	leagues *leagues.Leagues
-	SK_SHO  uint8
-	SK_SPE  uint8
-	SK_PAS  uint8
-	SK_DEF  uint8
-	SK_END  uint8
+	db                    *storage.Storage
+	leagues               *leagues.Leagues
+	SK_SHO                uint8
+	SK_SPE                uint8
+	SK_PAS                uint8
+	SK_DEF                uint8
+	SK_END                uint8
+	LEAGUES_PER_DIV       uint8
+	TEAMS_PER_LEAGUE      uint8
+	calendarProcessor     *Calendar
+	PLAYERS_PER_TEAM_INIT uint8
 }
 
 func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues) (*DivisionCreationProcessor, error) {
@@ -42,6 +46,22 @@ func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues)
 	if err != nil {
 		return nil, err
 	}
+	LEAGUES_PER_DIV, err := leagues.LEAGUESPERDIV(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	TEAMS_PER_LEAGUE, err := leagues.TEAMSPERLEAGUE(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	calendarProcessor, err := NewCalendar(leagues, db)
+	if err != nil {
+		return nil, err
+	}
+	PLAYERS_PER_TEAM_INIT, err := leagues.PLAYERSPERTEAMINIT(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
 	return &DivisionCreationProcessor{
 		db,
 		leagues,
@@ -50,6 +70,10 @@ func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues)
 		SK_PAS,
 		SK_DEF,
 		SK_END,
+		LEAGUES_PER_DIV,
+		TEAMS_PER_LEAGUE,
+		calendarProcessor,
+		PLAYERS_PER_TEAM_INIT,
 	}, nil
 }
 
@@ -76,29 +100,16 @@ func (b *DivisionCreationProcessor) StoreDivisionCreation(event leagues.LeaguesD
 }
 func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
-	calendarProcessor, err := NewCalendar(b.leagues, b.db)
-	if err != nil {
-		return err
-	}
 
-	LEAGUES_PER_DIV, err := b.leagues.LEAGUESPERDIV(opts)
-	if err != nil {
-		return err
-	}
-	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(LEAGUES_PER_DIV)
-	leagueIdxEnd := leagueIdxBegin + int64(LEAGUES_PER_DIV)
-
-	TEAMS_PER_LEAGUE, err := b.leagues.TEAMSPERLEAGUE(opts)
-	if err != nil {
-		return err
-	}
+	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
+	leagueIdxEnd := leagueIdxBegin + int64(b.LEAGUES_PER_DIV)
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
 		if err := b.db.LeagueCreate(storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
 			return err
 		}
-		teamIdxBegin := leagueIdx * int64(TEAMS_PER_LEAGUE)
-		teamIdxEnd := teamIdxBegin + int64(TEAMS_PER_LEAGUE)
+		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
+		teamIdxEnd := teamIdxBegin + int64(b.TEAMS_PER_LEAGUE)
 		for teamIdxInLeague, teamIdx := uint32(0), teamIdxBegin; teamIdx < teamIdxEnd; teamIdx, teamIdxInLeague = teamIdx+1, teamIdxInLeague+1 {
 			if teamId, err := b.leagues.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
@@ -128,31 +139,21 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 			}
 		}
 
-		err = calendarProcessor.Generate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
+		err := b.calendarProcessor.Generate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
 		if err != nil {
 			return err
 		}
-		err = calendarProcessor.Populate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
+		err = b.calendarProcessor.Populate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
 		if err != nil {
 			return err
 		}
 	}
-	return err
+	return nil
 }
 
 func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
-	PLAYERS_PER_TEAM_INIT, err := b.leagues.PLAYERSPERTEAMINIT(opts)
-	if err != nil {
-		return err
-	}
-	begin := teamIdxInCountry * int64(PLAYERS_PER_TEAM_INIT)
-	end := begin + int64(PLAYERS_PER_TEAM_INIT)
-
-	SK_SHO := uint8(0)
-	SK_SPE := uint8(0)
-	SK_PAS := uint8(0)
-	SK_DEF := uint8(0)
-	SK_END := uint8(0)
+	begin := teamIdxInCountry * int64(b.PLAYERS_PER_TEAM_INIT)
+	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
 
 	for i := begin; i < end; i++ {
 		if playerId, err := b.leagues.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
@@ -173,11 +174,11 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 				preferredPosition,
 				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:        teamId,
-					Defence:       uint64(skills[SK_DEF]), // TODO: type should be uint16
-					Speed:         uint64(skills[SK_SPE]),
-					Pass:          uint64(skills[SK_PAS]),
-					Shoot:         uint64(skills[SK_SHO]),
-					Endurance:     uint64(skills[SK_END]),
+					Defence:       uint64(skills[b.SK_DEF]), // TODO: type should be uint16
+					Speed:         uint64(skills[b.SK_SPE]),
+					Pass:          uint64(skills[b.SK_PAS]),
+					Shoot:         uint64(skills[b.SK_SHO]),
+					Endurance:     uint64(skills[b.SK_END]),
 					ShirtNumber:   uint8(shirtNumber.Uint64()),
 					EncodedSkills: encodedSkills,
 					EncodedState:  encodedState,
@@ -186,7 +187,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		}
 	}
-	return err
+	return nil
 }
 
 func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, encodedSkills *big.Int) (string, error) {
