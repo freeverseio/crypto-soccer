@@ -26,8 +26,7 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage
 	if err != nil {
 		return nil, err
 	}
-	playerIDHack := big.NewInt(274877906944) // TODO remove player (timezone 1, country 0, player 0)
-	playerHackSkills, err := leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerIDHack)
+	playerHackSkills, _ := new(big.Int).SetString("756225211015655513108133115214810688164347164291028809890931443609804734464", 10)
 	if err != nil {
 		return nil, err
 	}
