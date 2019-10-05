@@ -58,6 +58,7 @@ CREATE TABLE players (
     -- TODO remove DEFAULT
     age INT NOT NULL DEFAULT 0, 
     encoded_skills NUMERIC(78,0) NOT NULL,
+    encoded_state NUMERIC(78,0) NOT NULL,
     PRIMARY KEY(player_id)
 );
 
