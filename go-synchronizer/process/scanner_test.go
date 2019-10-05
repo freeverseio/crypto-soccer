@@ -93,6 +93,11 @@ func TestScanningTeamTransfer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	timezoneIdx = uint8(2)
+	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	iter, err = ganache.Leagues.FilterTeamTransfer(nil)
 	if err != nil {
