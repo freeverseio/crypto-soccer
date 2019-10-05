@@ -152,7 +152,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
 		log.Info("[processor] Dispatching LeaguesDivisionCreation event")
-		return p.divisionCreationProcessor.StoreDivisionCreation(v)
+		return p.divisionCreationProcessor.Process(v)
 	case leagues.LeaguesTeamTransfer:
 		log.Info("[processor] dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId

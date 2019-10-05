@@ -77,7 +77,7 @@ func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues)
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) StoreDivisionCreation(event leagues.LeaguesDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(event leagues.LeaguesDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		if err := b.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
