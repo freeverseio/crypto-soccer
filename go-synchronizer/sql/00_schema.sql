@@ -57,6 +57,7 @@ CREATE TABLE players (
     potential INT NOT NULL DEFAULT 0, 
     -- TODO remove DEFAULT
     age INT NOT NULL DEFAULT 0, 
+    skills NUMERIC(78,0) NOT NULL,
     PRIMARY KEY(player_id)
 );
 
