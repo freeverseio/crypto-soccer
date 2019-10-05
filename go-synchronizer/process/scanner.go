@@ -94,6 +94,15 @@ func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreatio
 	return nil
 }
 
+func (s *EventScanner) ScanPlayerStateChange(iter *leagues.LeaguesPlayerStateChangeIterator) error {
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] ScanPlayerStateChange playerId %v state %v", e.PlayerId, e.State)
+		s.addEvent(e.Raw, "PlayerStateChange", e)
+	}
+	return nil
+}
+
 func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
 	for iter.Next() {
 		e := *(iter.Event)

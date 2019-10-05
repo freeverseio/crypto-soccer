@@ -3,6 +3,8 @@ package process_test
 import (
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
@@ -88,6 +90,12 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	bc.Leagues.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		crypto.PubkeyToAddress(bg.Owner),
+	)
+
 }
 
 // 	_ = bob
