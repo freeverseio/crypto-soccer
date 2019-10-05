@@ -36,6 +36,11 @@ contract('Assets', (accounts) => {
         });
     });
 
+    it('get skills at birth of playerId 274877906944', async () => {
+        skills = await assets.getPlayerSkillsAtBirth(274877906944).should.be.fulfilled;
+        skills.should.be.bignumber.equal('756225211015655513108133115214810688164347164291028809890931443609804734464');
+    });
+
     it('check cannot initialize contract twice', async () =>  {
         await assets.init().should.be.rejected;
     });
