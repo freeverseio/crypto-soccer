@@ -36,7 +36,11 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) (*EventProcessor, error) {
+	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
+	if err != nil {
+		return nil, err
+	}
 	return &EventProcessor{
 		false,
 		client,
@@ -44,13 +48,17 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		engine,
 		leagues,
 		updates,
-		NewDivisionCreationProcessor(db, leagues),
-	}
+		divisionCreationProcessor,
+	}, nil
 }
 
 // NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) *EventProcessor {
-	return &EventProcessor{true, client, db, engine, leagues, updates, NewDivisionCreationProcessor(db, leagues)}
+func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) (*EventProcessor, error) {
+	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
+	if err != nil {
+		return nil, err
+	}
+	return &EventProcessor{true, client, db, engine, leagues, updates, divisionCreationProcessor}, nil
 }
 
 // Process processes all scanned events and stores them into the database db

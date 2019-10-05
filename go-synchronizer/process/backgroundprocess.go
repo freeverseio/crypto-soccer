@@ -23,12 +23,16 @@ func BackgroundProcessNew(
 	engineContract *engine.Engine,
 	leaguesContract *leagues.Leagues,
 	updatesContract *updates.Updates,
-) *BackgroundProcess {
+) (*BackgroundProcess, error) {
+	eventProcessor, err := NewEventProcessor(client, storage, engineContract, leaguesContract, updatesContract)
+	if err != nil {
+		return nil, err
+	}
 	return &BackgroundProcess{
-		eventProcessor: NewEventProcessor(client, storage, engineContract, leaguesContract, updatesContract),
+		eventProcessor: eventProcessor,
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
-	}
+	}, nil
 }
 
 func (b *BackgroundProcess) Start() {
