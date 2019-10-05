@@ -45,6 +45,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
 	if (timezoneIdx == 0) ||
+		(timezoneIdx != 1) ||
 		(turnInDay > 1) ||
 		(turnInDay == 1 && day != 1) ||
 		(turnInDay == 0 && (day < 2 || day > 14)) {
