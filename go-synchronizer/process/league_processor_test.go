@@ -16,6 +16,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	}
 	ganache := testutils.NewGanache()
 	ganache.DeployContracts(ganache.Owner)
+	ganache.Init()
 	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, sto)
 	if err != nil {
 		t.Fatal(err)
