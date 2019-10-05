@@ -211,6 +211,7 @@ func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	for i := 0; i < 25; i++ {
 		state[i] = b.playerHackSkills
 	}
+	return state, nil // TODO remove
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return state, err

@@ -51,13 +51,23 @@ func (b *BlockchainNode) WaitReceipt(tx *types.Transaction, timeoutSec uint8) er
 	var receipt *types.Receipt
 
 	for receipt == nil && time.Now().Sub(start) < receiptTimeout {
-		receipt, _ := b.Client.TransactionReceipt(ctx, tx.Hash())
-		if receipt != nil {
+		receipt, err := b.Client.TransactionReceipt(ctx, tx.Hash())
+		if err == nil && receipt != nil {
 			return nil
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
 	return errors.New("Timeout waiting for receipt")
+}
+
+func (b *BlockchainNode) WaitReceipts(txs []*types.Transaction, timeoutSec uint8) error {
+	for _, tx := range txs {
+		err := b.WaitReceipt(tx, timeoutSec)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {

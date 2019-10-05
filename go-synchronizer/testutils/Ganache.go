@@ -29,7 +29,7 @@ type Ganache struct {
 func NewGanache() *Ganache {
 	client, err := ethclient.Dial("http://localhost:8545")
 	AssertNoErr(err, "Error connecting to ganache")
-	creatorPrivateKey, err := crypto.HexToECDSA("f1b3f8e0d52caec13491368449ab8d90f3d222a3e485aa7f02591bbceb5efba5")
+	creatorPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
 	AssertNoErr(err, "Failed converting private key to ECSDA")
 
 	// deploy time.go to fake block transactions and be able to advance blocknumber in ganache
