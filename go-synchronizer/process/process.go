@@ -124,13 +124,6 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
-	// for _, e := range scanner.Events {
-	// 	if e.Name == "UpdatesActionsSubmission" {
-	// 		continue
-	// 	}
-	// 	log.Infof("Event %v block: %v index: %v", e.Name, e.BlockNumber, e.TxIndexInBlock)
-	// }
-
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
 			return 0, err
