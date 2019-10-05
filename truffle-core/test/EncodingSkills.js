@@ -34,6 +34,11 @@ contract('Encoding', (accounts) => {
         // try to provide a tacticsId beyond range
         encoded = await encoding.encodeTactics(lineup, tacticsId = 64).should.be.rejected;
     });
+
+    it('get playerID of timezone 1, country 0, index in country 0', async () => {
+        encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, indexInCountry = 0).should.be.fulfilled;
+        encoded.should.be.bignumber.equal('274877906944');
+    });
     
     it('encoding of TZ and country in teamId and playerId', async () =>  {
         encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 3, val = 4).should.be.fulfilled;
@@ -59,6 +64,7 @@ contract('Encoding', (accounts) => {
             gamesNonStopping = 2,
             injuryWeeksLeft = 6
         ).should.be.fulfilled;
+        skills.should.be.bignumber.equal('115785027456831390978509138609450349226246706384468053026536030885154744434688');
         result = await encoding.getMonthOfBirth(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(monthOfBirth);
         result = await encoding.getPotential(skills).should.be.fulfilled;

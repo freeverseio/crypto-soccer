@@ -1,58 +1,95 @@
 package process_test
 
-//	"fmt"
+import (
+	"testing"
 
-// TODO commented cause I dunno what's happening
-// func TestSyncTeamWithNoTeam(t *testing.T) {
-// 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	blockchain := testutils.DefaultSimulatedBlockchain()
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 
-// 	p := NewEventProcessor(nil, storage, blockchain.Assets, blockchain.States, blockchain.Leagues)
-// 	p.Process()
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+)
 
-// 	count, err := storage.TeamCount()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if count != 0 {
-// 		t.Fatalf("Expected 0 received %v", count)
-// 	}
-// }
+func TestSyncTeams(t *testing.T) {
+	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// func TestSyncTeams(t *testing.T) {
-// 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	_ = storage
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	err = bc.InitOneTimezone(timezoneIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	owner := ganache.CreateAccountWithBalance("1000000000000000000") // 1 eth
-// 	ganache.DeployContracts(owner)
+	p, err := process.NewEventProcessor(bc.Client, storage, bc.Engine, bc.Leagues, bc.Updates)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	alice := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
-// 	bob := ganache.CreateAccountWithBalance("50000000000000000000")   // 50 eth
-// 	carol := ganache.CreateAccountWithBalance("50000000000000000000") // 50 eth
+	count, err := p.Process(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count == 0 {
+		t.Fatal("processed 0 blocks")
+	}
 
-// 	timezoneIdx := uint8(1)
-// 	countryIdx := big.NewInt(0)
-// 	firstTeamID, err := ganache.Assets.EncodeTZCountryAndVal(
-// 		nil,
-// 		timezoneIdx,
-// 		countryIdx,
-// 		big.NewInt(0),
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if firstTeamID.String() != "274877906944" {
-// 		t.Fatalf("Expected 274877906944 but received %v", firstTeamID.String())
-// 	}
+	if count, err := storage.TimezoneCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 1 {
+		t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
+	}
 
-// 	_ = alice
+	if count, err := storage.CountryCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 1 {
+		t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
+	}
+
+	if count, err := storage.TeamCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 128 {
+		t.Fatalf("Expected 128 actual %v", count)
+	}
+	if count, err := storage.PlayerCount(); err != nil {
+		t.Fatal(err)
+	} else if count != 128*18 {
+		t.Fatalf("Expected 128*18=2304 actual %v", count)
+	}
+
+	var txs []*types.Transaction
+	for i := 0; i < 24*4; i++ {
+		var root [32]byte
+		tx, err := bc.Updates.SubmitActionsRoot(
+			bind.NewKeyedTransactor(bc.Owner),
+			root,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		txs = append(txs, tx)
+	}
+	err = bc.WaitReceipts(txs, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = p.Process(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // 	_ = bob
 // 	_ = carol
 // 	//ganache.CreateTeam("A", alice)

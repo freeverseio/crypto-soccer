@@ -26,12 +26,11 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage
 	if err != nil {
 		return nil, err
 	}
-	// playerIDHack := big.NewInt(274877906946) // TODO remove
-	// playerHackSkills, err := leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerIDHack)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	playerHackSkills := big.NewInt(0)
+	playerHackSkills, _ := new(big.Int).SetString("756225211015655513108133115214810688164347164291028809890931443609804734464", 10)
+	if err != nil {
+		return nil, err
+	}
+	// playerHackSkills := big.NewInt(0)
 
 	return &LeagueProcessor{engine, leagues, storage, calendarProcessor, playerHackSkills}, nil
 }
@@ -212,6 +211,7 @@ func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	for i := 0; i < 25; i++ {
 		state[i] = b.playerHackSkills
 	}
+	return state, nil // TODO remove
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return state, err

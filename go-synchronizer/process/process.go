@@ -151,10 +151,10 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case leagues.LeaguesDivisionCreation:
-		log.Info("[processor] Dispatching LeaguesDivisionCreation event")
+		log.Debug("[processor] Dispatching LeaguesDivisionCreation event")
 		return p.divisionCreationProcessor.Process(v)
 	case leagues.LeaguesTeamTransfer:
-		log.Info("[processor] dispatching LeaguesTeamTransfer event")
+		log.Debug("[processor] dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.db.GetTeam(teamID)
@@ -165,7 +165,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
 	case leagues.LeaguesPlayerTransfer:
-		log.Info("[processor] dispatching LeaguesPlayerTransfer event")
+		log.Debug("[processor] dispatching LeaguesPlayerTransfer event")
 		playerID := v.PlayerId
 		toTeamID := v.TeamIdTarget
 		player, err := p.db.GetPlayer(playerID)
@@ -184,7 +184,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Info("[processor] Dispatching UpdatesActionsSubmission event")
+		log.Debug("[processor] Dispatching UpdatesActionsSubmission event")
 		return p.leagueProcessor.Process(v)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
