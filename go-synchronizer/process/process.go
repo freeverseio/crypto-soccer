@@ -29,6 +29,7 @@ type EventProcessor struct {
 	leagues                   *leagues.Leagues
 	updates                   *updates.Updates
 	divisionCreationProcessor *DivisionCreationProcessor
+	leagueProcessor           *LeagueProcessor
 }
 
 // *****************************************************************************
@@ -41,6 +42,10 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 	if err != nil {
 		return nil, err
 	}
+	leagueProcessor, err := NewLeagueProcessor(engine, leagues, db)
+	if err != nil {
+		return nil, err
+	}
 	return &EventProcessor{
 		false,
 		client,
@@ -49,6 +54,7 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		leagues,
 		updates,
 		divisionCreationProcessor,
+		leagueProcessor,
 	}, nil
 }
 
@@ -58,7 +64,11 @@ func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, eng
 	if err != nil {
 		return nil, err
 	}
-	return &EventProcessor{true, client, db, engine, leagues, updates, divisionCreationProcessor}, nil
+	leagueProcessor, err := NewLeagueProcessor(engine, leagues, db)
+	if err != nil {
+		return nil, err
+	}
+	return &EventProcessor{true, client, db, engine, leagues, updates, divisionCreationProcessor, leagueProcessor}, nil
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -175,11 +185,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Info("[processor] Dispatching UpdatesActionsSubmission event")
-		leagueProcessor, err := NewLeagueProcessor(p.engine, p.leagues, p.db)
-		if err != nil {
-			return err
-		}
-		return leagueProcessor.Process(v)
+		return p.leagueProcessor.Process(v)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
