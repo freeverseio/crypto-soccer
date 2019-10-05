@@ -18,6 +18,7 @@ type LeagueProcessor struct {
 	leagues           *leagues.Leagues
 	storage           *storage.Storage
 	calendarProcessor *Calendar
+	playerHackSkills  *big.Int
 }
 
 func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) (*LeagueProcessor, error) {
@@ -25,7 +26,12 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage
 	if err != nil {
 		return nil, err
 	}
-	return &LeagueProcessor{engine, leagues, storage, calendarProcessor}, nil
+	playerIDHack := big.NewInt(274877906946) // TODO remove
+	playerHackSkills, err := leagues.GetPlayerSkillsAtBirth(&bind.CallOpts{}, playerIDHack)
+	if err != nil {
+		return nil, err
+	}
+	return &LeagueProcessor{engine, leagues, storage, calendarProcessor, playerHackSkills}, nil
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
@@ -202,7 +208,7 @@ func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
-		state[i] = big.NewInt(0) // TODO remove
+		state[i] = b.playerHackSkills
 	}
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {
