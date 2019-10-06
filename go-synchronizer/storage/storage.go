@@ -15,6 +15,18 @@ type Storage struct {
 	db *sql.DB
 }
 
+func (b *Storage) Begin() (*sql.Tx, error) {
+	return b.db.Begin()
+}
+
+func (b *Storage) Commit(tx *sql.Tx) error {
+	return tx.Commit()
+}
+
+func (b *Storage) Rollback(tx *sql.Tx) error {
+	return tx.Rollback()
+}
+
 func NewPostgres(url string) (*Storage, error) {
 	var err error
 	storage := &Storage{}
