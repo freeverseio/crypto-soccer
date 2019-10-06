@@ -35,7 +35,13 @@ const loop = async () => {
 
     process.stdout.write("submitActionsRoot ... ");
     let gas = await updates.methods.submitActionsRoot(root).estimateGas();
-    await updates.methods.submitActionsRoot(root).send({ from, gas });
+
+    let txs = [];
+    for (let i = 0; i < 24*4; i++) {
+      const tx = updates.methods.submitActionsRoot(root).send({ from, gas });
+      txs.push(tx)
+    }
+    await Promise.all(txs);
 
     // process.stdout.write(", updateTZ ... ")
     // gas = await updates.methods.updateTZ(root).estimateGas();

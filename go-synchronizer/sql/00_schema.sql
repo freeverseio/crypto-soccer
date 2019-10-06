@@ -53,9 +53,8 @@ CREATE TABLE players (
     endurance INT NOT NULL,
     shirt_number INT NOT NULL,
     preferred_position TEXT NOT NULL,
-    -- TODO remove default
-    potential INT NOT NULL DEFAULT 0, 
-    -- TODO remove DEFAULT
+    potential INT NOT NULL, 
+    --- TODO remove default
     age INT NOT NULL DEFAULT 0, 
     encoded_skills NUMERIC(78,0) NOT NULL,
     encoded_state NUMERIC(78,0) NOT NULL,
