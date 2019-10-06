@@ -13,7 +13,10 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache := testutils.NewGanache()
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 	ganache.DeployContracts(ganache.Owner)
 
 	calendar, err := process.NewCalendar(ganache.Leagues, storage)
@@ -35,7 +38,10 @@ func TestResetCalendar(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache := testutils.NewGanache()
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 	ganache.DeployContracts(ganache.Owner)
 
 	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
@@ -64,7 +70,10 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache := testutils.NewGanache()
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 	ganache.DeployContracts(ganache.Owner)
 
 	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)

@@ -25,9 +25,18 @@ func TestScanningNothing(t *testing.T) {
 }
 
 func TestScanningIniting(t *testing.T) {
-	ganache := testutils.NewGanache()
-	ganache.DeployContracts(ganache.Owner)
-	ganache.Init()
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ganache.DeployContracts(ganache.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ganache.Init()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	divisionCreationIter, err := ganache.Leagues.FilterDivisionCreation(nil)
 	if err != nil {
@@ -62,7 +71,10 @@ func TestScanningIniting(t *testing.T) {
 }
 
 func TestScanningTeamTransfer(t *testing.T) {
-	ganache := testutils.NewGanache()
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 	ganache.DeployContracts(ganache.Owner)
 	ganache.Init()
 
@@ -89,15 +101,17 @@ func TestScanningTeamTransfer(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	address := crypto.PubkeyToAddress(ganache.Owner.PublicKey)
-	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
+	tx, err := ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
 	timezoneIdx = uint8(2)
-	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
+	tx1, err := ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
+	ganache.WaitReceipt(tx, 3)
+	ganache.WaitReceipt(tx1, 3)
 
 	iter, err = ganache.Leagues.FilterTeamTransfer(nil)
 	if err != nil {

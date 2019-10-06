@@ -135,11 +135,18 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	return nil
 }
 
-// func (ganache *Ganache) Init() {
-// 	// Initing
-// 	_, err := ganache.Leagues.Init(bind.NewKeyedTransactor(ganache.Owner))
-// 	AssertNoErr(err, "Error initializing leagues contract")
-// }
+func (b *BlockchainNode) Init() error {
+	// Initing
+	tx, err := b.Leagues.Init(bind.NewKeyedTransactor(b.Owner))
+	if err != nil {
+		return err
+	}
+	err = b.WaitReceipt(tx, 10)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (b *BlockchainNode) InitOneTimezone(timezoneIdx uint8) error {
 	// Initing

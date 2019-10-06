@@ -11,6 +11,7 @@ import (
 type Player struct {
 	PlayerId          *big.Int
 	PreferredPosition string
+	Potential         uint64
 	State             PlayerState
 }
 
@@ -52,7 +53,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);",
+	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -64,6 +65,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.PreferredPosition,
 		player.State.EncodedSkills.String(),
 		player.State.EncodedState.String(),
+		player.Potential,
 	)
 	if err != nil {
 		return err
@@ -95,7 +97,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 
 func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state FROM players WHERE (player_id = $1);", playerID.String())
+	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential FROM players WHERE (player_id = $1);", playerID.String())
 	if err != nil {
 		return player, err
 	}
@@ -117,6 +119,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&player.PreferredPosition,
 		&encodedSkills,
 		&encodedSkills,
+		&player.Potential,
 	)
 	player.PlayerId = playerID
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)

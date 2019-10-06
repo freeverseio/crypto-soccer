@@ -166,13 +166,16 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if preferredPosition, err := b.getPlayerPreferredPosition(opts, encodedSkills); err != nil {
 			return err
+		} else if potential, err := b.leagues.GetPotential(opts, encodedSkills); err != nil {
+			return err
 		} else if shirtNumber, err := b.leagues.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
 		} else if err := b.db.PlayerCreate(
 			storage.Player{
-				playerId,
-				preferredPosition,
-				storage.PlayerState{ // TODO: storage should use same skill ordering as BC
+				PlayerId:          playerId,
+				PreferredPosition: preferredPosition,
+				Potential:         potential.Uint64(),
+				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:        teamId,
 					Defence:       uint64(skills[b.SK_DEF]), // TODO: type should be uint16
 					Speed:         uint64(skills[b.SK_SPE]),
