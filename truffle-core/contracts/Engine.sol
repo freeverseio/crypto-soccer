@@ -21,6 +21,10 @@ contract Engine is EncodingSkills{
     
     bool dummyBoolToEstimateCost;
 
+    function generateMatchSeed(bytes32 seed, uint256 homeTeamId, uint256 visitorTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(seed, homeTeamId, visitorTeamId));
+    }
+
     // mock up to estimate cost of a match.
     // to be removed before deployment
     function playMatchWithCost(

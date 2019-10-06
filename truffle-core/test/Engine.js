@@ -118,6 +118,14 @@ contract('Engine', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
     });
 
+    it('generate match seed', async () => {
+        const seed = "0x0";
+        const homeTeamId = "3";
+        const visitorTeamId = "5";
+        const result = await engine.generateMatchSeed(seed, homeTeamId, visitorTeamId).should.be.fulfilled;
+        result.should.be.equal('0x033c646d693b716acb3a01ae35dd9ed16191786670a88f4c086b7223851a750d');
+    });
+
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, [teamStateAll50, teamStateAll1], [tactics0, tactics1], is2ndHalf, isHomeStadium).should.be.fulfilled;
     });
