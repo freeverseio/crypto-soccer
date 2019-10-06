@@ -1,7 +1,10 @@
 package process_test
 
 import (
+	"math/big"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -87,6 +90,44 @@ func TestSyncTeams(t *testing.T) {
 	_, err = p.Process(0)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	countryIdx := big.NewInt(0)
+	playerIdx := big.NewInt(0)
+	playerID, err := bc.Leagues.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner, err := bc.Leagues.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if owner.String() != "0x0000000000000000000000000000000000000000" {
+		t.Fatalf("Owner is wrong %v", owner.String())
+	}
+
+	tx, err := bc.Leagues.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(bc.Owner.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.WaitReceipt(tx, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	p.Process(0)
+
+	owner, err = bc.Leagues.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if owner != crypto.PubkeyToAddress(bc.Owner.PublicKey) {
+		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 }
 

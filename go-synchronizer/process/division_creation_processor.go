@@ -160,7 +160,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if encodedSkills, err := b.leagues.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 			return err
-		} else if encodedState, err := b.leagues.GetPlayerState(opts, playerId); err != nil {
+		} else if encodedState, err := b.leagues.GetPlayerStateAtBirth(opts, playerId); err != nil {
 			return err
 		} else if skills, err := b.leagues.GetSkillsVec(opts, encodedSkills); err != nil {
 			return err

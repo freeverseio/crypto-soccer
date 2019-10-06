@@ -134,7 +134,7 @@ contract('Assets', (accounts) => {
             return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
         });
     });
-    
+
     it('transfer of bot teams', async () =>  {
         tz = 1;
         countryIdxInTZ = 0;
@@ -320,6 +320,9 @@ contract('Assets', (accounts) => {
         // teamId2.should.be.equal(false)
         truffleAssert.eventEmitted(tx, "PlayerTransfer", (event) => {
             return event.playerId == playerId.toNumber() && event.teamIdTarget == teamId2.toNumber();
+        });
+        truffleAssert.eventEmitted(tx, "PlayerStateChange", (event) => {
+            return event.playerId.should.be.bignumber.equal(playerId) && event.state.should.be.bignumber.equal('3618502788706445968640963951987551335520783288612580731341071654717262659584');
         });
 
         // state of player after selling:

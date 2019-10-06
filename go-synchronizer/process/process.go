@@ -124,13 +124,6 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
 	}
 
-	// for _, e := range scanner.Events {
-	// 	if e.Name == "UpdatesActionsSubmission" {
-	// 		continue
-	// 	}
-	// 	log.Infof("Event %v block: %v index: %v", e.Name, e.BlockNumber, e.TxIndexInBlock)
-	// }
-
 	for _, v := range scanner.Events {
 		if err := p.dispatch(v); err != nil {
 			return 0, err
@@ -164,23 +157,23 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		// team.State.BlockNumber = blockNumber
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
-	case leagues.LeaguesPlayerTransfer:
-		log.Debug("[processor] dispatching LeaguesPlayerTransfer event")
+	case leagues.LeaguesPlayerStateChange:
+		log.Debug("[processor] dispatching LeaguesPlayerStateChange event")
 		playerID := v.PlayerId
-		toTeamID := v.TeamIdTarget
+		state := v.State
+		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
+		teamID, err := p.leagues.GetCurrentTeamId(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
 		player, err := p.db.GetPlayer(playerID)
 		if err != nil {
 			return err
 		}
-		playerState, err := p.leagues.GetPlayerState(&bind.CallOpts{}, playerID)
-		if err != nil {
-			return err
-		}
-		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, playerState)
-		if err != nil {
-			return err
-		}
-		player.State.TeamId = toTeamID
+		player.State.TeamId = teamID
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.db.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
