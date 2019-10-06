@@ -4,9 +4,7 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
@@ -78,10 +76,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			}
 			for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
 				match := matches[matchIdx]
-				matchSeed := GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+				matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+				if err != nil {
+					return err
+				}
 				states, err := b.getMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
 				if err != nil {
-					log.Error(err)
 					return err
 				}
 				tactics, err := b.getMatchTactics(match.HomeTeamID, match.VisitorTeamID)
@@ -116,32 +116,36 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) *big.Int {
-	uint256Ty, _ := abi.NewType("uint256", nil)
-	bytes32Ty, _ := abi.NewType("bytes32", nil)
+func (b *LeagueProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) (*big.Int, error) {
+	// uint256Ty, _ := abi.NewType("uint256", nil)
+	// bytes32Ty, _ := abi.NewType("bytes32", nil)
 
-	arguments := abi.Arguments{
-		{
-			Type: bytes32Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
-		{
-			Type: uint256Ty,
-		},
+	// arguments := abi.Arguments{
+	// 	{
+	// 		Type: bytes32Ty,
+	// 	},
+	// 	{
+	// 		Type: uint256Ty,
+	// 	},
+	// 	{
+	// 		Type: uint256Ty,
+	// 	},
+	// }
+
+	// bytes, _ := arguments.Pack(
+	// 	seed,
+	// 	homeTeamID,
+	// 	visitorTeamID,
+	// )
+	// crypto.Keccak256(bytes)
+
+	matchSeed, err := b.engine.GenerateMatchSeed(&bind.CallOpts{}, seed, homeTeamID, visitorTeamID)
+	if err != nil {
+		return nil, err
 	}
-
-	bytes, _ := arguments.Pack(
-		seed,
-		homeTeamID,
-		visitorTeamID,
-	)
-
-	buf := crypto.Keccak256(bytes)
 	z := new(big.Int)
-	z.SetBytes(buf)
-	return z
+	z.SetBytes(matchSeed[:])
+	return z, nil
 }
 
 func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
