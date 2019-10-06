@@ -27,17 +27,16 @@ const web3 = new Web3(provider, null, {});
 const updates = new web3.eth.Contract(updatesJSON.abi, updatesContractAddress);
 const from = provider.addresses[0];
 
-const root = "0x0";
 const loop = async () => {
   try {
     const currentVerse = await updates.methods.currentVerse().call();
     process.stdout.write("[VERSE: " + currentVerse + "] ");
-
     process.stdout.write("submitActionsRoot ... ");
-    let gas = await updates.methods.submitActionsRoot(root).estimateGas();
-
+    const nVerses = 24;
     let txs = [];
-    for (let i = 0; i < 24*4; i++) {
+    for (let i = 0; i < nVerses * 4; i++) {
+      const root = '0x' + (Math.floor(Math.random() * 10000000)).toString(16);
+      let gas = await updates.methods.submitActionsRoot(root).estimateGas();
       const tx = updates.methods.submitActionsRoot(root).send({ from, gas });
       txs.push(tx)
     }
