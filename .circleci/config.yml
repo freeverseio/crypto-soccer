@@ -23,14 +23,12 @@ jobs:
       - run: cd go-synchronizer && go build
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: |
-            # run ganache in the background
-            ./go-synchronizer/testutils/run_ethereum.sh &
-            # wait until ganache is up and running
+            docker run -p 8545:8545 freeverseio/ethereum:test
+            # wait until docker is up and running
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
             cd go-synchronizer
             go test ./...
-            #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
   go-soccer:
     docker:
       - image: freeverseio/circleci
