@@ -19,17 +19,14 @@ jobs:
       - checkout
       - run: make setup contracts
       - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
       - run: |
             # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh > /dev/null 2>&1 &
+            ./go-synchronizer/testutils/run_ethereum.sh > /dev/null 2>&1 &
             # wait until ganache is up and running
-            echo waiting for ganache
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
-            echo ganache is running
-            cd go-synchronizer/process
-            go test
+            cd go-synchronizer
+            go test ./...
             #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
   go-soccer:
     docker:
@@ -45,6 +42,7 @@ jobs:
       - checkout
       - run: make setup contracts
       - run: cd market/notary && go build
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: |
             ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
             # wait until ganache is up and running
