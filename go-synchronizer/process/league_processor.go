@@ -80,11 +80,11 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				if err != nil {
 					return err
 				}
-				states, err := b.getMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+				states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
 				if err != nil {
 					return err
 				}
-				tactics, err := b.getMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+				tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
 				if err != nil {
 					return err
 				}
@@ -219,20 +219,20 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 	return nil
 }
 
-func (b *LeagueProcessor) getMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
+func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
 	return tactics, nil
 }
 
-func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
+func (b *LeagueProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
 	var states [2][25]*big.Int
-	homeTeamState, err := b.getTeamState(homeTeamID)
+	homeTeamState, err := b.GetTeamState(homeTeamID)
 	if err != nil {
 		return states, err
 	}
-	visitorTeamState, err := b.getTeamState(visitorTeamID)
+	visitorTeamState, err := b.GetTeamState(visitorTeamID)
 	if err != nil {
 		return states, err
 	}
@@ -241,7 +241,7 @@ func (b *LeagueProcessor) getMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 	return states, nil
 }
 
-func (b *LeagueProcessor) getTeamState(teamID *big.Int) ([25]*big.Int, error) {
+func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = b.playerHackSkills
