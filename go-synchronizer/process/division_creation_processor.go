@@ -120,7 +120,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
-							"0x0",
+							"0x0000000000000000000000000000000000000000",
 							uint32(leagueIdx),
 							teamIdxInLeague,
 							0,
