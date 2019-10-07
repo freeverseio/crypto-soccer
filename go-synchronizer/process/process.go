@@ -96,11 +96,11 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	playerTransferIter, err := p.leagues.FilterPlayerTransfer(opts)
+	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return 0, err
 	}
-	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
+	playerStateChangeIter, err := p.leagues.FilterPlayerStateChange(opts)
 	if err != nil {
 		return 0, err
 	}
@@ -115,7 +115,7 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	if err := scanner.ScanTeamTransfer(teamTransferIter); err != nil {
 		return 0, err
 	}
-	if err := scanner.ScanPlayerTransfer(playerTransferIter); err != nil {
+	if err := scanner.ScanPlayerStateChange(playerStateChangeIter); err != nil {
 		return 0, err
 	}
 	if err := scanner.Process(); err != nil {
