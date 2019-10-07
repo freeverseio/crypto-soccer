@@ -97,8 +97,9 @@ func TestGetPlayer(t *testing.T) {
 	player.State.Shoot = 7
 	player.State.Speed = 8
 	player.State.TeamId = big.NewInt(10)
-	player.State.EncodedSkills = big.NewInt(43535453)
-	player.State.EncodedState = big.NewInt(43453)
+	player.State.EncodedSkills, _ = new(big.Int).SetString("3618502788692870556043062973242620158809030731543066377891708431006382948352", 10)
+	player.State.EncodedState, _ = new(big.Int).SetString("614878739568587161270510773682668741239185861458610514677961004951428661248", 10)
+
 	err = sto.PlayerCreate(player)
 	if err != nil {
 		t.Fatal(err)
