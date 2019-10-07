@@ -32,14 +32,9 @@ const loop = async () => {
     const currentVerse = await updates.methods.currentVerse().call();
     process.stdout.write("[VERSE: " + currentVerse + "] ");
     process.stdout.write("submitActionsRoot ... ");
-    let txs = [];
-    for (let i = 0; i < 24 * 4; i++) {
-      const root = '0x' + (Math.floor(Math.random() * 10000000)).toString(16);
-      let gas = await updates.methods.submitActionsRoot(root).estimateGas();
-      const tx = updates.methods.submitActionsRoot(root).send({ from, gas });
-      txs.push(tx)
-    }
-    await Promise.all(txs);
+    const root = '0x' + (Math.floor(Math.random() * 10000000)).toString(16);
+    let gas = await updates.methods.submitActionsRoot(root).estimateGas();
+    await updates.methods.submitActionsRoot(root).send({ from, gas });
 
     // process.stdout.write(", updateTZ ... ")
     // gas = await updates.methods.updateTZ(root).estimateGas();
