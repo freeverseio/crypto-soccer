@@ -4,6 +4,9 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -54,31 +57,48 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	}
 }
 
-// func TestProcess(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	ganache.DeployContracts(ganache.Owner)
+func TestProcess(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	err = bc.InitOneTimezone(timezoneIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(sto, bc.Leagues)
+	if err != nil {
+		t.Fatal(err)
+	}
+	countryIdx := big.NewInt(0)
+	divisionIdx := big.NewInt(0)
+	err = divisionCreationProcessor.Process(leagues.LeaguesDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	timezoneIdx := uint8(1)
-// 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-// 	countryIdx := uint32(0)
-// 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-// 	leagueIdx := uint32(0)
-// 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-
-// 	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, sto)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	var event updates.UpdatesActionsSubmission
-// 	event.Day = 1
-// 	event.TimeZone = timezoneIdx
-// 	event.TurnInDay = 1
-// 	err = processor.Process(event)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// }
+	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, sto)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var event updates.UpdatesActionsSubmission
+	event.Day = 1
+	event.TimeZone = timezoneIdx
+	event.TurnInDay = 1
+	day := uint8(1)
+	turnInDay := uint8(1)
+	seed := [32]byte{}
+	err = processor.Process(updates.UpdatesActionsSubmission{timezoneIdx, day, turnInDay, seed, nil, types.Log{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
