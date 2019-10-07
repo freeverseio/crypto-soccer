@@ -9,21 +9,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func TestGetPlayersOfTeam(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	teamID := big.NewInt(434)
-	players, err := sto.GetPlayersOfTeam(teamID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(players) != 0 {
-		t.Fatalf("Expected 0 received %v", len(players))
-	}
-}
-
 func TestPlayerCount(t *testing.T) {
 	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
 	if err != nil {
@@ -112,6 +97,8 @@ func TestGetPlayer(t *testing.T) {
 	player.State.Shoot = 7
 	player.State.Speed = 8
 	player.State.TeamId = big.NewInt(10)
+	player.State.EncodedSkills = big.NewInt(43535453)
+	player.State.EncodedState = big.NewInt(43453)
 	err = sto.PlayerCreate(player)
 	if err != nil {
 		t.Fatal(err)
@@ -135,6 +122,60 @@ func TestGetPlayer(t *testing.T) {
 	}
 	if !result.Equal(player) {
 		t.Fatalf("Expected %v got %v", player, result)
+	}
+}
+
+func TestGetPlayersOfTeam(t *testing.T) {
+	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	var team storage.Team
+	team.TeamID = big.NewInt(10)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	sto.TeamCreate(team)
+	var player storage.Player
+	player.PlayerId = big.NewInt(1)
+	player.State.Defence = 4
+	player.State.Endurance = 5
+	player.State.Pass = 6
+	player.State.Shoot = 7
+	player.State.Speed = 8
+	player.State.TeamId = team.TeamID
+	player.State.EncodedSkills = big.NewInt(43535453)
+	player.State.EncodedState = big.NewInt(43453)
+	err = sto.PlayerCreate(player)
+	if err != nil {
+		t.Fatal(err)
+	}
+	player2 := player
+	player2.PlayerId = big.NewInt(2)
+	player2.State.EncodedSkills = big.NewInt(767)
+	err = sto.PlayerCreate(player2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	players, err := sto.GetPlayersOfTeam(team.TeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(players) != 2 {
+		t.Fatalf("Expected 2 received %v", len(players))
+	}
+	if !players[0].Equal(player) {
+		t.Fatalf("Wrong player %v", players[0])
+	}
+	if !players[1].Equal(player2) {
+		t.Fatalf("Wrong player %v", players[0])
 	}
 }
 

@@ -30,13 +30,16 @@ type PlayerState struct {
 func (b *Player) Equal(player Player) bool {
 	return b.PlayerId.String() == player.PlayerId.String() &&
 		b.PreferredPosition == player.PreferredPosition &&
+		b.Potential == player.Potential &&
 		b.State.TeamId.String() == player.State.TeamId.String() &&
 		b.State.Defence == player.State.Defence &&
 		b.State.Speed == player.State.Speed &&
 		b.State.Pass == player.State.Pass &&
 		b.State.Shoot == player.State.Shoot &&
 		b.State.Endurance == player.State.Endurance &&
-		b.State.ShirtNumber == player.State.ShirtNumber
+		b.State.ShirtNumber == player.State.ShirtNumber &&
+		b.State.EncodedSkills.String() == player.State.EncodedSkills.String() &&
+		b.State.EncodedState.String() == player.State.EncodedState.String()
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -118,7 +121,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&player.State.ShirtNumber,
 		&player.PreferredPosition,
 		&encodedSkills,
-		&encodedSkills,
+		&encodedState,
 		&player.Potential,
 	)
 	player.PlayerId = playerID
@@ -130,26 +133,27 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 
 func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 	var players []Player
-	rows, err := b.db.Query("SELECT player_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position FROM players WHERE (team_id = $1);", teamID.String())
+	rows, err := b.db.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return players, err
 	}
 	defer rows.Close()
+	var playerIDs []*big.Int
 	for rows.Next() {
-		var player Player
 		var playerID sql.NullString
 		err = rows.Scan(
 			&playerID,
-			&player.State.Defence,
-			&player.State.Speed,
-			&player.State.Pass,
-			&player.State.Shoot,
-			&player.State.Endurance,
-			&player.State.ShirtNumber,
-			&player.PreferredPosition,
 		)
-		player.State.TeamId = teamID
-		player.PlayerId, _ = new(big.Int).SetString(playerID.String, 10)
+		result, _ := new(big.Int).SetString(playerID.String, 10)
+		playerIDs = append(playerIDs, result)
+	}
+	rows.Close()
+	for i := 0; i < len(playerIDs); i++ {
+		playerID := playerIDs[i]
+		player, err := b.GetPlayer(playerID)
+		if err != nil {
+			return players, err
+		}
 		players = append(players, player)
 	}
 	return players, err
