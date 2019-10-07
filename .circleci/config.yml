@@ -23,7 +23,7 @@ jobs:
       - run: cd go-synchronizer && go build
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: |
-            docker run -p 8545:8545 freeverseio/ethereum:test
+            docker run -p 8545:8545 freeverseio/ethereum:test -d
             # wait until docker is up and running
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
