@@ -130,6 +130,13 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	players, err := sto.GetPlayersOfTeam(big.NewInt(343))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(players) != 0 {
+		t.Fatalf("Expected 0 received %v", len(players))
+	}
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
@@ -164,7 +171,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	players, err := sto.GetPlayersOfTeam(team.TeamID)
+	players, err = sto.GetPlayersOfTeam(team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
