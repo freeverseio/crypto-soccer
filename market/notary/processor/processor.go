@@ -26,6 +26,88 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 	return &Processor{db, ethereumClient, assetsContract, freeverse, NewSigner(assetsContract)}, nil
 }
 
+func (b *Processor) processOrder(order storage.Order) error {
+	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
+
+	log.Infof("(1) generate hash private msg")
+	privHash, err := b.signer.HashPrivateMsg(
+		order.SellOrder.CurrencyId,
+		order.SellOrder.Price,
+		order.SellOrder.Rnd,
+	)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("(2) generate hash sell message")
+	var sigs [6][32]byte
+	var vs [2]uint8
+	sigs[0], err = b.signer.HashSellMessage(
+		order.SellOrder.CurrencyId,
+		order.SellOrder.Price,
+		order.SellOrder.Rnd,
+		order.SellOrder.ValidUntil,
+		order.SellOrder.PlayerId,
+		order.SellOrder.TypeOfTx,
+	)
+	if err != nil {
+		return err
+	}
+	sigs[1], sigs[2], vs[0], err = b.signer.RSV(order.SellOrder.Signature)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Infof("(3) generate hash buy message")
+	sigs[3], err = b.signer.HashBuyMessage(
+		order.SellOrder.CurrencyId,
+		order.SellOrder.Price,
+		order.SellOrder.Rnd,
+		order.SellOrder.ValidUntil,
+		order.SellOrder.PlayerId,
+		order.SellOrder.TypeOfTx,
+		order.BuyOrder.TeamId,
+	)
+	if err != nil {
+		return err
+	}
+	sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.BuyOrder.Signature)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("(4) freeze player")
+	tx, err := b.assets.FreezePlayer(
+		bind.NewKeyedTransactor(b.freeverse),
+		privHash,
+		order.SellOrder.ValidUntil,
+		order.SellOrder.PlayerId,
+		order.SellOrder.TypeOfTx,
+		order.BuyOrder.TeamId,
+		sigs,
+		vs,
+	)
+	if err != nil {
+		return err
+	}
+	err = b.waitReceipt(tx, 10)
+	if err != nil {
+		return err
+	}
+	log.Infof("(5) complete freeze")
+	tx, err = b.assets.CompleteFreeze(
+		bind.NewKeyedTransactor(b.freeverse),
+		order.SellOrder.PlayerId,
+	)
+	if err != nil {
+		return err
+	}
+	err = b.waitReceipt(tx, 10)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *Processor) Process() error {
 	log.Info("Processing")
 
@@ -35,88 +117,15 @@ func (b *Processor) Process() error {
 	}
 
 	for _, order := range orders {
-		log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
-
-		log.Infof("(1) generate hash private msg")
-		privHash, err := b.signer.HashPrivateMsg(
-			order.SellOrder.CurrencyId,
-			order.SellOrder.Price,
-			order.SellOrder.Rnd,
-		)
-		if err != nil {
-			return err
-		}
-
-		log.Infof("(2) generate hash sell message")
-		var sigs [6][32]byte
-		var vs [2]uint8
-		sigs[0], err = b.signer.HashSellMessage(
-			order.SellOrder.CurrencyId,
-			order.SellOrder.Price,
-			order.SellOrder.Rnd,
-			order.SellOrder.ValidUntil,
-			order.SellOrder.PlayerId,
-			order.SellOrder.TypeOfTx,
-		)
-		if err != nil {
-			return err
-		}
-		sigs[1], sigs[2], vs[0], err = b.signer.RSV(order.SellOrder.Signature)
+		err = b.processOrder(order)
 		if err != nil {
 			log.Error(err)
 		}
-		log.Infof("(3) generate hash buy message")
-		sigs[3], err = b.signer.HashBuyMessage(
-			order.SellOrder.CurrencyId,
-			order.SellOrder.Price,
-			order.SellOrder.Rnd,
-			order.SellOrder.ValidUntil,
-			order.SellOrder.PlayerId,
-			order.SellOrder.TypeOfTx,
-			order.BuyOrder.TeamId,
-		)
-		if err != nil {
-			return err
-		}
-		sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.BuyOrder.Signature)
-		if err != nil {
-			return err
-		}
 
-		log.Infof("(4) freeze player")
-		tx, err := b.assets.FreezePlayer(
-			bind.NewKeyedTransactor(b.freeverse),
-			privHash,
-			order.SellOrder.ValidUntil,
-			order.SellOrder.PlayerId,
-			order.SellOrder.TypeOfTx,
-			order.BuyOrder.TeamId,
-			sigs,
-			vs,
-		)
-		if err != nil {
-			return err
-		}
-		err = b.waitReceipt(tx, 10)
-		if err != nil {
-			return err
-		}
-		log.Infof("(5) complete freeze")
-		tx, err = b.assets.CompleteFreeze(
-			bind.NewKeyedTransactor(b.freeverse),
-			order.SellOrder.PlayerId,
-		)
-		if err != nil {
-			return err
-		}
-		err = b.waitReceipt(tx, 10)
-		if err != nil {
-			return err
-		}
-		log.Infof("(6) delete order")
+		log.Infof("(CLEANING) delete order")
 		err = b.db.DeleteOrder(order.SellOrder.PlayerId)
 		if err != nil {
-			return err
+			log.Error(err)
 		}
 	}
 	return nil
