@@ -1,4 +1,4 @@
-CREATE TABLE actions {
+CREATE TABLE actions (
     id TEXT NOT NULL,
-    PRIMARY KEY id
-}
+    PRIMARY KEY(id)
+)
