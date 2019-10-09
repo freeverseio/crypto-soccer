@@ -53,7 +53,7 @@ jobs:
             sleep 1
             echo ganache is running
             cd market/notary && go test ./...
-  relay:
+  relay.api:
     docker:
       - image: freeverseio/circleci
     steps:
@@ -97,7 +97,7 @@ jobs:
       - run: cd market/db && docker build -t freeverseio/market.db:dev .
       - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
       - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
-      - run: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
+      - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
       - run: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
       - run: cd staker && docker build -t freeverseio/staker:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
@@ -108,7 +108,7 @@ jobs:
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/relay:dev
+      - run: docker push freeverseio/relay.api:dev
       - run: docker push freeverseio/universeapi:dev
       - run: docker push freeverseio/staker:dev
 
@@ -132,7 +132,7 @@ workflows:
       - go-soccer
       - django-centauri
       - market.trader
-      - relay
+      - relay.api
       - market.notary
       - staker
       - dockerization:
@@ -145,7 +145,7 @@ workflows:
             - go-synchronizer
             - django-centauri
             - market.trader
-            - relay
+            - relay.api
             - market.notary
             - staker
       - deploy:
