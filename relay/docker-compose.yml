@@ -8,6 +8,6 @@ services:
     build: ./nodejs-api
     ports:
       - "4000:4000"
-  relay:
-    build: ./relay
-    command: -postgres postgres://freeverse:freeverse@db:5432/relay?sslmode=disable
+  # service:
+  #   build: ./service
+  #   command: -postgres postgres://freeverse:freeverse@db:5432/relay?sslmode=disable
