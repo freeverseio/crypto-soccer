@@ -1,4 +1,4 @@
-FROM ethereum/client-go:alltools-v1.8.27
+FROM ethereum/client-go:alltools-v1.9.6
 
 # Set the working directory to /app
 WORKDIR /test
@@ -19,5 +19,6 @@ VOLUME /test
 
 EXPOSE 8545
 EXPOSE 30303
+EXPOSE 30303/udp
 
-CMD ["geth", "--datadir", "/test/data", "--mine", "--unlock", "0x83a909262608c650bd9b0ae06e29d90d0f67ac5e", "--password", "/test/passwd", "--keystore", "/test/keystore", "--rpc", "--rpcapi", "personal,db,eth,net,web3,txpool,miner,debug", "--rpcvhosts", "*", "--rpccorsdomain", "*", "--rpcaddr", "0.0.0.0", "--networkid", "63819", "--nodiscover"]
+ENTRYPOINT ["geth", "--datadir", "/test/data", "--unlock", "0x83a909262608c650bd9b0ae06e29d90d0f67ac5e", "--password", "/test/passwd", "--keystore", "/test/keystore", "--rpc", "--rpcapi", "personal,db,eth,net,web3,txpool,miner,debug", "--rpcvhosts", "*", "--rpccorsdomain", "*", "--rpcaddr", "0.0.0.0", "--networkid", "63819", "--allow-insecure-unlock", "--bootnodes", "enode://ad19cf1118145147eb4e9cac5385626c189a31dd1f8e658ff0ffc2792a09b35195ef1586e122bf90efb07a672284733c828ab03f915ba2d428bae6e560adea67@165.22.66.118:30303"]
