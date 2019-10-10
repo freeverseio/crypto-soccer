@@ -27,19 +27,24 @@ async function signPutForSaleMTx(currencyId, price, rnd, validUntil, playerId, t
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyMTx(currencyId, price, rnd, validUntil, playerId, typeOfTX, buyerTeamId, buyerAccount) {
-  const privHash = concatHash(
-      ['uint8', 'uint256', 'uint256'],
-      [currencyId, price, rnd]
+async function signAgreeToBuyMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, typeOfTX, buyerTeamId, buyerAccount) {
+  const sellerPrivHash = concatHash(
+    ['uint8', 'uint256', 'uint256'],
+    [currencyId, price, sellerRnd]
   )
+  const buyerPrivHash = concatHash(
+    ['uint256', 'uint256'],
+    [extraPrice, buyerRnd]
+  )
+
   const sellerTxMsg = concatHash(
       ['bytes32', 'uint256', 'uint256', 'uint8'],
-      [privHash, validUntil, playerId, typeOfTX]
+      [sellerPrivHash, validUntil, playerId, typeOfTX]
   )
   const sellerTxHash = getMessageHash(sellerTxMsg);
   buyerTxMsg = concatHash(
-      ['bytes32', 'uint256'],
-      [sellerTxHash, buyerTeamId]
+      ['bytes32', 'bytes32', 'uint256'],
+      [sellerTxHash, buyerPrivHash, buyerTeamId]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
   return sigBuyer;
@@ -109,121 +114,121 @@ contract("Market", accounts => {
     now = await market.getBlockchainNowTime().should.be.fulfilled;
   });
 
-  it('deterministic sign (values used in market.notary test)', async () => {
-    sellerTeamId.should.be.bignumber.equal('274877906944');
-    buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
-    const playerIdToSell = sellerTeamPlayerIds[0];
-    playerIdToSell.should.be.bignumber.equal('274877906944');
+  // it('deterministic sign (values used in market.notary test)', async () => {
+  //   sellerTeamId.should.be.bignumber.equal('274877906944');
+  //   buyerTeamId.should.be.bignumber.equal('274877906945');
+  //   sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+  //   const playerIdToSell = sellerTeamPlayerIds[0];
+  //   playerIdToSell.should.be.bignumber.equal('274877906944');
 
-    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+  //   const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+  //   const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
-    // Define params of the seller, and sign
-    const validUntil = 2000000000;
-    const typeOfTX = 1;
-    const currencyId = 1;
-    const price = 41234;
-    const rnd = 42321;
+  //   // Define params of the seller, and sign
+  //   const validUntil = 2000000000;
+  //   const typeOfTX = 1;
+  //   const currencyId = 1;
+  //   const price = 41234;
+  //   const rnd = 42321;
 
-    const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
-    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell, typeOfTX).should.be.fulfilled;
-    message.should.be.equal('0xfa2289ff1375935f063219c2b2db02585be36f186eb27f70449339b9b1f3a6c0');
-    const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0x80e7e56ce2cd3e1c5fd2e63d04f5883303c36946557236b54ef258f6551521d1');
-    sigSeller.signature.should.be.equal('0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c');
+  //   const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+  //   privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+  //   const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell, typeOfTX).should.be.fulfilled;
+  //   message.should.be.equal('0xfa2289ff1375935f063219c2b2db02585be36f186eb27f70449339b9b1f3a6c0');
+  //   const sigSeller = sellerAccount.sign(message);
+  //   sigSeller.messageHash.should.be.equal('0x80e7e56ce2cd3e1c5fd2e63d04f5883303c36946557236b54ef258f6551521d1');
+  //   sigSeller.signature.should.be.equal('0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c');
 
-    const prefixed = await market.prefixed(message).should.be.fulfilled;
-    const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerTeamId).should.be.fulfilled;
-    buyerMsg.should.be.equal('0x60b4511aa304b8a813714020eac0a8cf807e74c9731cc35267d3b8530c652db2');
-    const sigBuyer = buyerAccount.sign(buyerMsg);
-    sigBuyer.messageHash.should.be.equal('0xd05a549335e18bc3a6d0544590ac44c5ce761a47ab2ad6175d3360a1757d0cf0');
-    sigBuyer.signature.should.be.equal('0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b');
-  });
+  //   const prefixed = await market.prefixed(message).should.be.fulfilled;
+  //   const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerTeamId).should.be.fulfilled;
+  //   buyerMsg.should.be.equal('0x60b4511aa304b8a813714020eac0a8cf807e74c9731cc35267d3b8530c652db2');
+  //   const sigBuyer = buyerAccount.sign(buyerMsg);
+  //   sigBuyer.messageHash.should.be.equal('0xd05a549335e18bc3a6d0544590ac44c5ce761a47ab2ad6175d3360a1757d0cf0');
+  //   sigBuyer.signature.should.be.equal('0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b');
+  // });
 
-  it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
-    // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-    // 2. Freeverse checks signature and returns to buyer: OK, failed
-    // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-    // 4. seller's mobile app sends to Freeverse: sigSeller and params
-    // 5. Freeverse checks signature and returns to seller: OK, failed
-    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-    // 7. If freeze went OK:
-    //          urges buyer to complete payment
-    //    If freeze not OK (he probably sold the player in a different market)
-    //          tells the buyer to forget about this player
-    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
+  // it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
+  //   // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
+  //   // 2. Freeverse checks signature and returns to buyer: OK, failed
+  //   // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
+  //   // 4. seller's mobile app sends to Freeverse: sigSeller and params
+  //   // 5. Freeverse checks signature and returns to seller: OK, failed
+  //   // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
+  //   // 7. If freeze went OK:
+  //   //          urges buyer to complete payment
+  //   //    If freeze not OK (he probably sold the player in a different market)
+  //   //          tells the buyer to forget about this player
+  //   // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
+  //   // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    // Define params of the seller, and sign
-    const validUntil = 2 * now.toNumber();
-    const typeOfTX = 2;
-    const currencyId = 1;
-    const price = 41234;
-    const rnd = 42321;
+  //   // Define params of the seller, and sign
+  //   const validUntil = 2 * now.toNumber();
+  //   const typeOfTX = 2;
+  //   const currencyId = 1;
+  //   const price = 41234;
+  //   const rnd = 42321;
 
-    // mobile app does this:
-    sigBuyer = await signOfferToBuyMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, buyerAccount);
+  //   // mobile app does this:
+  //   sigBuyer = await signOfferToBuyMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, buyerAccount);
 
-    // First of all, Freeverse and Seller check the signature
-    // In this case, using web3:
-    recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+  //   // First of all, Freeverse and Seller check the signature
+  //   // In this case, using web3:
+  //   recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
+  //   recoveredBuyerAddr.should.be.equal(buyerAccount.address);
 
-    // It can also be checked in the BC:
-    const privHash = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, rnd]
-    );
+  //   // It can also be checked in the BC:
+  //   const privHash = concatHash(
+  //     ["uint8", "uint256", "uint256"],
+  //     [currencyId, price, rnd]
+  //   );
 
-    buyerTxMsgBC = await market.buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX).should.be.fulfilled;
-    buyerTxMsgBC.should.be.equal(sigBuyer.message);
+  //   buyerTxMsgBC = await market.buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX).should.be.fulfilled;
+  //   buyerTxMsgBC.should.be.equal(sigBuyer.message);
 
-    // The seller agrees, and builds and signs a message
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+  //   // The seller agrees, and builds and signs a message
+  //   let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+  //   isFrozen.should.be.equal(false);
 
-    let sigSeller = await signAgreeToSellMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, sellerAccount).should.be.fulfilled;
+  //   let sigSeller = await signAgreeToSellMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, sellerAccount).should.be.fulfilled;
 
-    // in this case, both the buyer and the seller sign exactly the same Tx message.
-    sigSeller.messageHash.should.be.equal(sigBuyer.messageHash)
+  //   // in this case, both the buyer and the seller sign exactly the same Tx message.
+  //   sigSeller.messageHash.should.be.equal(sigBuyer.messageHash)
 
-    // // Freeverse checks the signature
-    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+  //   // // Freeverse checks the signature
+  //   recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+  //   recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
-    // // and send the Freeze TX. If it finishes, it went through.
-    const sigs = [
-      sigSeller.messageHash,
-      sigSeller.r,
-      sigSeller.s,
-      sigBuyer.messageHash,
-      sigBuyer.r,
-      sigBuyer.s
-    ];
-    const vs = [sigSeller.v, sigBuyer.v];
+  //   // // and send the Freeze TX. If it finishes, it went through.
+  //   const sigs = [
+  //     sigSeller.messageHash,
+  //     sigSeller.r,
+  //     sigSeller.s,
+  //     sigBuyer.messageHash,
+  //     sigBuyer.r,
+  //     sigBuyer.s
+  //   ];
+  //   const vs = [sigSeller.v, sigBuyer.v];
     
-    await market.freezePlayer(
-      privHash,
-      validUntil,
-      playerId,
-      typeOfTX,
-      buyerTeamId,
-      sigs,
-      vs
-    ).should.be.fulfilled;
+  //   await market.freezePlayer(
+  //     privHash,
+  //     validUntil,
+  //     playerId,
+  //     typeOfTX,
+  //     buyerTeamId,
+  //     sigs,
+  //     vs
+  //   ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
+  //   isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+  //   isFrozen.should.be.equal(true);
     
-    // Freeverse waits until actual money has been transferred between users, and completes sale
-    let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    initOwner.should.be.equal(sellerAccount.address);
-    await market.completeFreeze(playerId).should.be.fulfilled;
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(buyerAccount.address);
-  });
+  //   // Freeverse waits until actual money has been transferred between users, and completes sale
+  //   let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+  //   initOwner.should.be.equal(sellerAccount.address);
+  //   await market.completeFreeze(playerId).should.be.fulfilled;
+  //   let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+  //   finalOwner.should.be.equal(buyerAccount.address);
+  // });
 
   
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
@@ -245,13 +250,13 @@ contract("Market", accounts => {
     const typeOfTX = 1;
     const currencyId = 1;
     const price = 41234;
-    const rnd = 42321;
+    const sellerRnd = 42321;
 
     // mobile app does this:
     sigSeller = await signPutForSaleMTx(
       currencyId,
       price,
-      rnd,
+      sellerRnd,
       validUntil,
       playerId.toNumber(),
       typeOfTX,
@@ -264,12 +269,12 @@ contract("Market", accounts => {
     recoveredSellerAddr.should.be.equal(sellerAccount.address);
 
     // It can also be checked in the BC:
-    const privHash = concatHash(
+    const sellerPrivHash = concatHash(
       ["uint8", "uint256", "uint256"],
-      [currencyId, price, rnd]
+      [currencyId, price, sellerRnd]
     );
     sellerTxMsgBC = await market.buildPutForSaleTxMsg(
-      privHash,
+      sellerPrivHash,
       validUntil,
       playerId,
       typeOfTX
@@ -280,10 +285,21 @@ contract("Market", accounts => {
     let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(false);
 
+    // Add some amount to the price where seller started, and a rnd to obfuscate it
+    const extraPrice = 332;
+    const buyerRnd = 1243523;
+    
+    const buyerPrivHash = concatHash(
+      ["uint256", "uint256"],
+      [extraPrice, buyerRnd]
+    );
+
     let sigBuyer = await signAgreeToBuyMTx(
       currencyId,
       price,
-      rnd,
+      extraPrice,
+      sellerRnd,
+      buyerRnd,
       validUntil,
       playerId.toNumber(),
       typeOfTX,
@@ -309,7 +325,8 @@ contract("Market", accounts => {
     ];
     const vs = [sigSeller.v, sigBuyer.v];
     await market.freezePlayer(
-      privHash,
+      sellerPrivHash,
+      buyerPrivHash,
       validUntil,
       playerId,
       typeOfTX,
@@ -317,7 +334,6 @@ contract("Market", accounts => {
       sigs,
       vs
     ).should.be.fulfilled;
-
     isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(true);
     
@@ -328,7 +344,7 @@ contract("Market", accounts => {
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
-
+return
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
     // Define params of the seller, and sign
     const validUntil = 2 * now.toNumber();

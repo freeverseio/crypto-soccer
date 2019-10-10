@@ -27,7 +27,8 @@ contract Market {
     }
 
     function freezePlayer(
-        bytes32 privHash,
+        bytes32 sellerPrivHash,
+        bytes32 buyerPrivHash,
         uint256 validUntil,
         uint256 playerId,
         uint8 typeOfTX,
@@ -59,10 +60,10 @@ contract Market {
         bytes32 sellerTxHash;
         bytes32 buyerTxHash;
         if (typeOfTX == PUT_FOR_SALE) {
-            sellerTxHash = prefixed(buildPutForSaleTxMsg(privHash, validUntil, playerId, typeOfTX));
-            buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerTeamId));
+            sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerPrivHash, validUntil, playerId, typeOfTX));
+            buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerPrivHash, buyerTeamId));
         } else {
-            buyerTxHash = prefixed(buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
+            buyerTxHash = prefixed(buildOfferToBuyTxMsg(sellerPrivHash, validUntil, playerId, buyerTeamId, typeOfTX));
             sellerTxHash = buyerTxHash;
         }
         require(sellerTxHash == sigs[SELL_MSG], "seller signed a message that does not match the provided pre-hash data");
@@ -72,7 +73,8 @@ contract Market {
         playerIdToTargetTeam[playerId] = buyerTeamId;
     }
 
-    function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) public pure returns (bytes32) {
+    // this function is not used in the contract. It's only for external helps
+    function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) external pure returns (bytes32) {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
@@ -84,8 +86,8 @@ contract Market {
         return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
     }
 
-    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, uint256 buyerTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerMsg, buyerTeamId));
+    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, bytes32 buyerPrivHash, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(sellerMsg, buyerPrivHash, buyerTeamId));
     }
 
     // FUNCTIONS FOR SIGNATURE MANAGEMENT
