@@ -14,6 +14,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
 
@@ -22,6 +23,7 @@ type BlockchainNode struct {
 	Updates *updates.Updates
 	Leagues *leagues.Leagues
 	Engine  *engine.Engine
+	Market  *market.Market
 	Owner   *ecdsa.PrivateKey
 }
 
@@ -37,6 +39,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 
 	return &BlockchainNode{
 		client,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -101,6 +104,16 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
+	marketAddress, tx3, marketContract, err := market.DeployMarket(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployMarket failed")
+	fmt.Println("Market deployed at:", marketAddress.Hex())
+	if err != nil {
+		return err
+	}
+
 	err = b.WaitReceipt(tx0, 10)
 	if err != nil {
 		return err
@@ -113,9 +126,15 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	err = b.WaitReceipt(tx3, 10)
+	if err != nil {
+		return err
+	}
 	// setup
 	tx0, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in league contract")
+	tx2, err = marketContract.SetAssetsAddress(bind.NewKeyedTransactor(owner), leaguesAddress)
+	AssertNoErr(err, "Error setting Assets address to market")
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 
@@ -127,10 +146,15 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	err = b.WaitReceipt(tx2, 10)
+	if err != nil {
+		return err
+	}
 
 	b.Updates = updatesContract
 	b.Leagues = leaguesContract
 	b.Engine = engineContract
+	b.Market = marketContract
 
 	return nil
 }
