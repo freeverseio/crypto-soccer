@@ -1,10 +1,9 @@
-const BN = require("bn.js");
-require("chai")
-  .use(require("chai-as-promised"))
-  .use(require("chai-bn")(BN))
-  .should();
-// const truffleAssert = require("truffle-assertions");
-
+const BN = require('bn.js');
+require('chai')
+    .use(require('chai-as-promised'))
+    .use(require('chai-bn')(BN))
+    .should();
+const truffleAssert = require('truffle-assertions');
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
 
@@ -231,20 +230,70 @@ contract("Market", accounts => {
   // });
 
   
-  it("completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs and checks that the BC accepts it", async () => {
-    // 1. seller's mobile app sends to Freeverse: sigSeller AND params (currencyId, price, ....)
-    // 2. Freeverse checks signature and returns to seller: OK, failed
-    // 3. Freeverse advertises to everyone that playerId is for sale at price
-    // 4. buyer's mobile app sends to Freeverse: buySeller and params
-    // 5. Freeverse checks signature and returns to buyer: OK, failed
-    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-    // 7. If freeze went OK:
-    //          urges buyer to complete payment
-    //    If freeze not OK (he probably sold the player in a different market)
-    //          tells the buyer to forget about this player
-    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
+  it("check events of completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs", async () => {
+    // Define params of the seller, and sign
+    const validUntil = 2 * now.toNumber();
+    const typeOfTX = 1;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
 
+    // mobile app does this:
+    let sigSeller = await signPutForSaleMTx(
+      currencyId,
+      price,
+      rnd,
+      validUntil,
+      playerId.toNumber(),
+      typeOfTX,
+      sellerAccount
+    );
+
+    let sigBuyer = await signAgreeToBuyMTx(
+      currencyId,
+      price,
+      rnd,
+      validUntil,
+      playerId.toNumber(),
+      typeOfTX,
+      buyerTeamId.toNumber(),
+      buyerAccount
+    ).should.be.fulfilled;
+
+    const privHash = concatHash(
+      ["uint8", "uint256", "uint256"],
+      [currencyId, price, rnd]
+    );
+    // and send the Freeze TX. If it finishes, it went through.
+    const sigs = [
+      sigSeller.messageHash,
+      sigSeller.r,
+      sigSeller.s,
+      sigBuyer.messageHash,
+      sigBuyer.r,
+      sigBuyer.s
+    ];
+    const vs = [sigSeller.v, sigBuyer.v];
+    let tx = await market.freezePlayer(
+      privHash,
+      validUntil,
+      playerId,
+      typeOfTX,
+      buyerTeamId,
+      sigs,
+      vs
+    ).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
+    });
+
+    tx = await market.completeFreeze(playerId).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
+    });
+  });
+
+  it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
     // Define params of the seller, and sign
     const validUntil = 2 * now.toNumber();
     const typeOfTX = 1;
@@ -334,17 +383,19 @@ contract("Market", accounts => {
       sigs,
       vs
     ).should.be.fulfilled;
+
     isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(true);
     
     // Freeverse waits until actual money has been transferred between users, and completes sale
     let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     initOwner.should.be.equal(sellerAccount.address);
-    await market.completeFreeze(playerId).should.be.fulfilled;
+    await market.cancelFreeze(playerId).should.be.fulfilled;
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(buyerAccount.address);
+    finalOwner.should.be.equal(initOwner);
   });
 return
+
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
     // Define params of the seller, and sign
     const validUntil = 2 * now.toNumber();
