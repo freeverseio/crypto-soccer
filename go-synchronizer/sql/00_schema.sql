@@ -58,6 +58,7 @@ CREATE TABLE players (
     age INT NOT NULL DEFAULT 0, 
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
+    frozen BOOLEAN NOT NULL,
     PRIMARY KEY(player_id)
 );
 
