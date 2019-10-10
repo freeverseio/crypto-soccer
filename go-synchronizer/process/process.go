@@ -88,45 +88,17 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	divisionCreationIter, err := p.leagues.FilterDivisionCreation(opts)
-	if err != nil {
-		return 0, err
+	scanner := NewEventScanner(p.leagues, p.updates)
+	if scanner == nil {
+		return opts.Start, errors.New("Unable to create scanner")
 	}
-	teamTransferIter, err := p.leagues.FilterTeamTransfer(opts)
-	if err != nil {
-		return 0, err
-	}
-	actionSubmissionIter, err := p.updates.FilterActionsSubmission(opts)
-	if err != nil {
-		return 0, err
-	}
-	playerStateChangeIter, err := p.leagues.FilterPlayerStateChange(opts)
-	if err != nil {
-		return 0, err
-	}
-
-	scanner := NewEventScanner()
-	if err := scanner.ScanActionsSubmission(actionSubmissionIter); err != nil {
-		return 0, err
-	}
-	if err := scanner.ScanDivisionCreation(divisionCreationIter); err != nil {
-		return 0, err
-	}
-	if err := scanner.ScanTeamTransfer(teamTransferIter); err != nil {
-		return 0, err
-	}
-	if err := scanner.ScanPlayerStateChange(playerStateChangeIter); err != nil {
-		return 0, err
-	}
-	if err := scanner.Process(); err != nil {
+	if err := scanner.Process(opts); err != nil {
 		return 0, err
 	} else {
-		log.Debug("scanner got: ", len(scanner.Events), " Abstract Events")
-	}
-
-	for _, v := range scanner.Events {
-		if err := p.dispatch(v); err != nil {
-			return 0, err
+		for _, v := range scanner.Events {
+			if err := p.dispatch(v); err != nil {
+				return 0, err
+			}
 		}
 	}
 
