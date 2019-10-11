@@ -30,13 +30,9 @@ contract Market {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
-        uint8 typeOfTX,
         bytes32[3] memory sig,
         uint8 sigV
     ) public {
-        // check that the purpose of this transaction is of type 1 (sell - agree to buy)
-        require(typeOfTX == PUT_FOR_SALE || typeOfTX == MAKE_AN_OFFER, "typeOfTX not valid");
-
         // check validUntil has not expired
         require(now < validUntil, "these TXs had a valid time that expired already");
 
@@ -53,7 +49,7 @@ contract Market {
         // check that they signed what they input data says they signed:
         // ...for the seller and the buyer:
         bytes32 sellerTxHash;
-        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId, typeOfTX));
+        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         require(sellerTxHash == sig[IDX_MSG], "seller signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
@@ -65,7 +61,6 @@ contract Market {
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
-        uint8 typeOfTX,
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
         bytes32[3] memory sig,
@@ -78,7 +73,7 @@ contract Market {
             "buyer is not owner of team, or buyer signature not valid");
     
         // make sure that the playerId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId, typeOfTX));
+        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         // check that they signed what they input data says they signed:
         // ...for the seller and the buyer:
         bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId));
@@ -93,12 +88,12 @@ contract Market {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
-    function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint8 typeOfTX) public pure returns (bytes32) {
-        return keccak256(abi.encode(privHash, validUntil, playerId, typeOfTX));
+    function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId) public pure returns (bytes32) {
+        return keccak256(abi.encode(privHash, validUntil, playerId));
     }
 
-    function buildOfferToBuyTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint256 buyerTeamId, uint8 typeOfTX) public pure returns (bytes32) {
-        return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
+    function buildOfferToBuyTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId));
     }
 
     function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId) public pure returns (bytes32) {
