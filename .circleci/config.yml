@@ -15,21 +15,15 @@ jobs:
   go-synchronizer:
     docker:
       - image: freeverseio/circleci
+      - image: freeverseio/ethereum:test
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
     steps:
       - checkout
       - run: make setup contracts
       - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
-      - run: |
-            # run blockchain node in the background
-            ./go-synchronizer/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until node is up and running
-            echo waiting for blockchain node
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            sleep 1
-            echo blockchain is running
-            cd go-synchronizer/process
-            go test
+      - run: cd go-synchronizer && go test ./...
   go-soccer:
     docker:
       - image: freeverseio/circleci
