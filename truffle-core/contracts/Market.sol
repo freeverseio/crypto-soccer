@@ -9,20 +9,15 @@ import "./Assets.sol";
 contract Market {
     event PlayerFreeze(uint256 playerId, bool frozen);
 
-    uint8 constant internal SELL_MSG = 0;
-    uint8 constant internal SELL_r   = 1;
-    uint8 constant internal SELL_s   = 2;
-    uint8 constant internal BUY_MSG  = 3;
-    uint8 constant internal BUY_r    = 4;
-    uint8 constant internal BUY_s    = 5;
-    uint8 constant internal SELLER   = 0;
-    uint8 constant internal BUYER    = 1;
+    uint8 constant internal IDX_MSG = 0;
+    uint8 constant internal IDX_r   = 1;
+    uint8 constant internal IDX_s   = 2;
     uint8 constant internal PUT_FOR_SALE  = 1;
     uint8 constant internal MAKE_AN_OFFER = 2;
 
     Assets private _assets;
 
-    mapping (uint256 => uint256) private playerIdToTargetTeam;
+    mapping (uint256 => uint256) private playerIdToAuctionEnd;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
@@ -30,13 +25,11 @@ contract Market {
 
     function freezePlayer(
         bytes32 sellerPrivHash,
-        bytes32 buyerPrivHash,
         uint256 validUntil,
         uint256 playerId,
         uint8 typeOfTX,
-        uint256 buyerTeamId,
-        bytes32[6] memory sigs,
-        uint8[2] memory vs
+        bytes32[3] memory sig,
+        uint8 sigV
     ) public {
         // check that the purpose of this transaction is of type 1 (sell - agree to buy)
         require(typeOfTX == PUT_FOR_SALE || typeOfTX == MAKE_AN_OFFER, "typeOfTX not valid");
@@ -47,32 +40,21 @@ contract Market {
         // check player is not already frozen
         require(!isFrozen(playerId), "player already frozen");
 
-        // check assets are owned by someone
+        // check asset is owned by someone
         require(_assets.getOwnerPlayer(playerId) != address(0), "player not owned by anyone");
-        require(_assets.getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
 
         // check signatures are valid by requiring that they own the asset:
-        require(_assets.getOwnerPlayer(playerId) == recoverAddr(sigs[SELL_MSG], vs[SELLER], sigs[SELL_r], sigs[SELL_s]),
+        require(_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]),
             "seller is not owner of player, or seller signature is not valid");
-        require(_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sigs[BUY_MSG], vs[BUYER], sigs[BUY_r], sigs[BUY_s]),
-            "buyer is not owner of team, or buyer signature not valid");
 
         // check that they signed what they input data says they signed:
         // ...for the seller and the buyer:
         bytes32 sellerTxHash;
-        bytes32 buyerTxHash;
-        if (typeOfTX == PUT_FOR_SALE) {
-            sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerPrivHash, validUntil, playerId, typeOfTX));
-            buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerPrivHash, buyerTeamId));
-        } else {
-            buyerTxHash = prefixed(buildOfferToBuyTxMsg(sellerPrivHash, validUntil, playerId, buyerTeamId, typeOfTX));
-            sellerTxHash = buyerTxHash;
-        }
-        require(sellerTxHash == sigs[SELL_MSG], "seller signed a message that does not match the provided pre-hash data");
-        require(buyerTxHash == sigs[BUY_MSG], "buyer signed a message that does not match the provided pre-hash data");
+        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerPrivHash, validUntil, playerId, typeOfTX));
+        require(sellerTxHash == sig[IDX_MSG], "seller signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
-        playerIdToTargetTeam[playerId] = buyerTeamId;
+        playerIdToAuctionEnd[playerId] = validUntil;
         emit PlayerFreeze(playerId, true);
     }
 
@@ -115,18 +97,18 @@ contract Market {
 
     function isFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
-        return playerIdToTargetTeam[playerId] != 0;
+        return playerIdToAuctionEnd[playerId] != 0;
     }
 
     function cancelFreeze(uint256 playerId) public {
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
-        delete(playerIdToTargetTeam[playerId]);
+        delete(playerIdToAuctionEnd[playerId]);
         emit PlayerFreeze(playerId, false);
     }
 
     function completeFreeze(uint256 playerId) public {
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
-        _assets.transferPlayer(playerId, playerIdToTargetTeam[playerId]);
+        _assets.transferPlayer(playerId, playerIdToAuctionEnd[playerId]);
         cancelFreeze(playerId);
     }
 }
