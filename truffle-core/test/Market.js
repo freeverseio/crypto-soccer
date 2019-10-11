@@ -235,6 +235,18 @@ contract("Market", accounts => {
       sigSeller.r,
       sigSeller.s,
     ];
+    
+    // we can double-check that it would work
+    ok = await market.areFreezePlayerRequirementsOK(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      sigSellerMsgRS,
+      sigSeller.v
+    ).should.be.fulfilled;
+    ok.should.be.equal(true);
+    
+    // and finally do the freeze 
     tx = await market.freezePlayer(
       sellerHiddenPrice,
       validUntil,
@@ -257,6 +269,21 @@ contract("Market", accounts => {
       sigOffer.r,
       sigOffer.s,
     ];
+    
+    // test first
+    ok = await market.areCompleteAuctionRequirementsOK(
+      sellerHiddenPrice,
+      offerValidUntil,
+      playerId,
+      buyerHiddenPrice,
+      buyerTeamId.toNumber(),
+      sigOfferMsgRS,
+      sigOffer.v,
+      isOffer2StartAuction = true
+    ).should.be.fulfilled;
+    ok.should.be.equal(true);
+    
+    // write with confidence
     tx = await market.completeAuction(
       sellerHiddenPrice,
       offerValidUntil,
@@ -345,6 +372,18 @@ contract("Market", accounts => {
       sigSeller.r,
       sigSeller.s,
     ];
+
+    // we can double-check that it would work
+    ok = await market.areFreezePlayerRequirementsOK(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      sigSellerMsgRS,
+      sigSeller.v
+    ).should.be.fulfilled;
+    ok.should.be.equal(true);
+    
+    // and finally do the freeze 
     tx = await market.freezePlayer(
       sellerHiddenPrice,
       validUntil,
@@ -367,6 +406,21 @@ contract("Market", accounts => {
       sigOffer.r,
       sigOffer.s,
     ];
+    
+    // test first
+    ok = await market.areCompleteAuctionRequirementsOK(
+      sellerHiddenPrice,
+      offerValidUntil,
+      playerId,
+      buyerHiddenPrice,
+      buyerTeamId.toNumber(),
+      sigOfferMsgRS,
+      sigOffer.v,
+      isOffer2StartAuction = true
+    ).should.be.fulfilled;
+    ok.should.be.equal(false);
+    
+    // write with confidence    
     tx = await market.completeAuction(
       sellerHiddenPrice,
       offerValidUntil,
