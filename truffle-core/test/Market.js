@@ -130,39 +130,39 @@ contract("Market", accounts => {
   // *********************************   TEST  *******************************
   // *************************************************************************
   
-  // it('deterministic sign (values used in market.notary test)', async () => {
-  //   sellerTeamId.should.be.bignumber.equal('274877906944');
-  //   buyerTeamId.should.be.bignumber.equal('274877906945');
-  //   sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
-  //   const playerIdToSell = sellerTeamPlayerIds[0];
-  //   playerIdToSell.should.be.bignumber.equal('274877906944');
+  it('deterministic sign (values used in market.notary test)', async () => {
+    sellerTeamId.should.be.bignumber.equal('274877906944');
+    buyerTeamId.should.be.bignumber.equal('274877906945');
+    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    const playerIdToSell = sellerTeamPlayerIds[0];
+    playerIdToSell.should.be.bignumber.equal('274877906944');
 
-  //   const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-  //   const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
-  //   // Define params of the seller, and sign
-  //   validUntil = 2000000000;
-  //   buyerHiddenPrice = concatHash(
-  //     ["uint256", "uint256"],
-  //     [extraPrice, buyerRnd]
-  //   );
+    // Define params of the seller, and sign
+    validUntil = 2000000000;
+    buyerHiddenPrice = concatHash(
+      ["uint256", "uint256"],
+      [extraPrice, buyerRnd]
+    );
 
 
-  //   const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
-  //   privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-  //   const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell).should.be.fulfilled;
-  //   message.should.be.equal('0x909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d');
-  //   const sigSeller = sellerAccount.sign(message);
-  //   sigSeller.messageHash.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
-  //   sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
+    const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell).should.be.fulfilled;
+    message.should.be.equal('0x909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d');
+    const sigSeller = sellerAccount.sign(message);
+    sigSeller.messageHash.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
+    sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
 
-  //   const prefixed = await market.prefixed(message).should.be.fulfilled;
-  //   const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerHiddenPrice, buyerTeamId).should.be.fulfilled;
-  //   buyerMsg.should.be.equal('0x44be0cc9346f1bb12704bd9cd27b56dfda87932bfd7ae6bc755197d1f710c5c0');
-  //   const sigBuyer = buyerAccount.sign(buyerMsg);
-  //   sigBuyer.messageHash.should.be.equal('0xe791281515bce955edbc5cef6af64fcc018a5a7b0384f7cc5357b9c40476983a');
-  //   sigBuyer.signature.should.be.equal('0x84b2c5e27eec9a6fd467414e2ee9a8788077b4a040637769bc909f9d72b17fb92a5c2a5bbbde8cb8eb57cff0d8fadefb2b25493508c1ba1302cd79e1efe4791e1b');
-  // });
+    const prefixed = await market.prefixed(message).should.be.fulfilled;
+    const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerHiddenPrice, buyerTeamId).should.be.fulfilled;
+    buyerMsg.should.be.equal('0x44be0cc9346f1bb12704bd9cd27b56dfda87932bfd7ae6bc755197d1f710c5c0');
+    const sigBuyer = buyerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0xe791281515bce955edbc5cef6af64fcc018a5a7b0384f7cc5357b9c40476983a');
+    sigBuyer.signature.should.be.equal('0x84b2c5e27eec9a6fd467414e2ee9a8788077b4a040637769bc909f9d72b17fb92a5c2a5bbbde8cb8eb57cff0d8fadefb2b25493508c1ba1302cd79e1efe4791e1b');
+  });
 
   
   
@@ -268,7 +268,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
     
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
@@ -276,7 +276,6 @@ contract("Market", accounts => {
   });
   
   
-  return
   
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
@@ -379,19 +378,17 @@ contract("Market", accounts => {
       buyerHiddenPrice,
       buyerTeamId.toNumber(),
       sigBuyerMsgRS,
-      sigBuyer.v
+      sigBuyer.v,
+      isMakeAnOffer = false
     ).should.be.fulfilled;
     
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
 
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
-  
-  
-  
   
   // *************************************************************************
   // *********************************   TEST  *******************************
