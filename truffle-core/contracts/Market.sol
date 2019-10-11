@@ -14,6 +14,9 @@ contract Market {
     uint8 constant internal IDX_s   = 2;
     uint8 constant internal PUT_FOR_SALE  = 1;
     uint8 constant internal MAKE_AN_OFFER = 2;
+    // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
+    //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
+    uint256 constant POST_AUCTION_TIME = 24 hours; 
 
     Assets private _assets;
 
@@ -124,7 +127,7 @@ contract Market {
 
     function isFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
-        return playerIdToAuctionEnd[playerId] > now;
+        return playerIdToAuctionEnd[playerId] + POST_AUCTION_TIME > now;
     }
 
 }

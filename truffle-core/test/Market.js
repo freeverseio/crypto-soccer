@@ -153,155 +153,23 @@ contract("Market", accounts => {
   //   sigBuyer.messageHash.should.be.equal('0xd05a549335e18bc3a6d0544590ac44c5ce761a47ab2ad6175d3360a1757d0cf0');
   //   sigBuyer.signature.should.be.equal('0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b');
   // });
-
-  // it("completes a MAKE_AN_OFFER and AGREE_TO_SELL agreement via MTXs and checks that the BC accepts it", async () => {
-  //   // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-  //   // 2. Freeverse checks signature and returns to buyer: OK, failed
-  //   // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-  //   // 4. seller's mobile app sends to Freeverse: sigSeller and params
-  //   // 5. Freeverse checks signature and returns to seller: OK, failed
-  //   // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-  //   // 7. If freeze went OK:
-  //   //          urges buyer to complete payment
-  //   //    If freeze not OK (he probably sold the player in a different market)
-  //   //          tells the buyer to forget about this player
-  //   // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-  //   // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
-  //   // Define params of the seller, and sign
-  //   const validUntil = 2 * now.toNumber();
-  //   const typeOfTX = 2;
-  //   const currencyId = 1;
-  //   const price = 41234;
-  //   const rnd = 42321;
-
-  //   // mobile app does this:
-  //   sigBuyer = await signOfferToBuyMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, buyerAccount);
-
-  //   // First of all, Freeverse and Seller check the signature
-  //   // In this case, using web3:
-  //   recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-  //   recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-  //   // It can also be checked in the BC:
-  //   const privHash = concatHash(
-  //     ["uint8", "uint256", "uint256"],
-  //     [currencyId, price, rnd]
-  //   );
-
-  //   buyerTxMsgBC = await market.buildOfferToBuyTxMsg(privHash, validUntil, playerId, buyerTeamId, typeOfTX).should.be.fulfilled;
-  //   buyerTxMsgBC.should.be.equal(sigBuyer.message);
-
-  //   // The seller agrees, and builds and signs a message
-  //   let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-  //   isFrozen.should.be.equal(false);
-
-  //   let sigSeller = await signAgreeToSellMTx(currencyId, price, rnd, validUntil, playerId.toNumber(), buyerTeamId.toNumber(), typeOfTX, sellerAccount).should.be.fulfilled;
-
-  //   // in this case, both the buyer and the seller sign exactly the same Tx message.
-  //   sigSeller.messageHash.should.be.equal(sigBuyer.messageHash)
-
-  //   // // Freeverse checks the signature
-  //   recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-  //   recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-  //   // // and send the Freeze TX. If it finishes, it went through.
-  //   const sigs = [
-  //     sigSeller.messageHash,
-  //     sigSeller.r,
-  //     sigSeller.s,
-  //     sigBuyer.messageHash,
-  //     sigBuyer.r,
-  //     sigBuyer.s
-  //   ];
-  //   const vs = [sigSeller.v, sigBuyer.v];
-    
-  //   await market.freezePlayer(
-  //     privHash,
-  //     validUntil,
-  //     playerId,
-  //     typeOfTX,
-  //     buyerTeamId,
-  //     sigs,
-  //     vs
-  //   ).should.be.fulfilled;
-
-  //   isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-  //   isFrozen.should.be.equal(true);
-    
-  //   // Freeverse waits until actual money has been transferred between users, and completes sale
-  //   let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-  //   initOwner.should.be.equal(sellerAccount.address);
-  //   await market.completeFreeze(playerId).should.be.fulfilled;
-  //   let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-  //   finalOwner.should.be.equal(buyerAccount.address);
-  // });
-
-  // it("check events of completes a PUT_FOR_SALE and AGREE_TO_BUY agreement via MTXs", async () => {
-  //   // Define params of the seller, and sign
-  //   const validUntil = 2 * now.toNumber();
-  //   const typeOfTX = 1;
-  //   const currencyId = 1;
-  //   const price = 41234;
-  //   const rnd = 42321;
-
-  //   // mobile app does this:
-  //   let sigSeller = await signPutForSaleMTx(
-  //     currencyId,
-  //     price,
-  //     rnd,
-  //     validUntil,
-  //     playerId.toNumber(),
-  //     typeOfTX,
-  //     sellerAccount
-  //   );
-
-  //   let sigBuyer = await signAgreeToBuyMTx(
-  //     currencyId,
-  //     price,
-  //     rnd,
-  //     validUntil,
-  //     playerId.toNumber(),
-  //     typeOfTX,
-  //     buyerTeamId.toNumber(),
-  //     buyerAccount
-  //   ).should.be.fulfilled;
-
-  //   const privHash = concatHash(
-  //     ["uint8", "uint256", "uint256"],
-  //     [currencyId, price, rnd]
-  //   );
-  //   // and send the Freeze TX. If it finishes, it went through.
-  //   const sigs = [
-  //     sigSeller.messageHash,
-  //     sigSeller.r,
-  //     sigSeller.s,
-  //     sigBuyer.messageHash,
-  //     sigBuyer.r,
-  //     sigBuyer.s
-  //   ];
-  //   const vs = [sigSeller.v, sigBuyer.v];
-  //   let tx = await market.freezePlayer(
-  //     privHash,
-  //     validUntil,
-  //     playerId,
-  //     typeOfTX,
-  //     buyerTeamId,
-  //     sigs,
-  //     vs
-  //   ).should.be.fulfilled;
-  //   truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-  //     return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
-  //   });
-
-  //   tx = await market.completeFreeze(playerId).should.be.fulfilled;
-  //   truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-  //     return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
-  //   });
-  // });
+  
   
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
-    // mobile app does this:
+    // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
+    // 2. Freeverse checks signature and returns to buyer: OK, failed
+    // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
+    // 4. seller's mobile app sends to Freeverse: sigSeller and params
+    // 5. Freeverse checks signature and returns to seller: OK, failed
+    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
+    // 7. If freeze went OK:
+    //          urges buyer to complete payment
+    //    If freeze not OK (he probably sold the player in a different market)
+    //          tells the buyer to forget about this player
+    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
+    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
+
+    // Mobile app does this:
     sigSeller = await signPutForSaleMTx(
       currencyId,
       price,
@@ -361,7 +229,7 @@ contract("Market", accounts => {
       sigSeller.r,
       sigSeller.s,
     ];
-    await market.freezePlayer(
+    tx = await market.freezePlayer(
       sellerHiddenPrice,
       validUntil,
       playerId,
@@ -373,13 +241,18 @@ contract("Market", accounts => {
     isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(true);
 
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
+    });
+
+
     // Freeverse waits until actual money has been transferred between users, and completes sale
     const sigBuyerMsgRS = [
       sigBuyer.messageHash,
       sigBuyer.r,
       sigBuyer.s,
     ];
-    await market.completeAuction(
+    tx = await market.completeAuction(
       sellerHiddenPrice,
       validUntil,
       playerId,
@@ -389,102 +262,15 @@ contract("Market", accounts => {
       sigBuyerMsgRS,
       sigBuyer.v
     ).should.be.fulfilled;
+    
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
+    });
+
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
-
-  return;
   
-  it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
-    // Define params of the seller, and sign
-    const validUntil = 2 * now.toNumber();
-    const typeOfTX = 1;
-    const currencyId = 1;
-    const price = 41234;
-    const rnd = 42321;
-
-    // mobile app does this:
-    sigSeller = await signPutForSaleMTx(
-      currencyId,
-      price,
-      rnd,
-      validUntil,
-      playerId.toNumber(),
-      typeOfTX,
-      sellerAccount
-    );
-
-    // First of all, Freeverse and Buyer check the signature
-    // In this case, using web3:
-    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-    recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-    // It can also be checked in the BC:
-    const privHash = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, rnd]
-    );
-    sellerTxMsgBC = await market.buildPutForSaleTxMsg(
-      privHash,
-      validUntil,
-      playerId,
-      typeOfTX
-    ).should.be.fulfilled;
-    sellerTxMsgBC.should.be.equal(sigSeller.message);
-
-    // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
-
-    let sigBuyer = await signAgreeToBuyMTx(
-      currencyId,
-      price,
-      rnd,
-      validUntil,
-      playerId.toNumber(),
-      typeOfTX,
-      buyerTeamId.toNumber(),
-      buyerAccount
-    ).should.be.fulfilled;
-
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
-
-    // Freeverse checks the signature
-    recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-    // and send the Freeze TX. If it finishes, it went through.
-    const sigs = [
-      sigSeller.messageHash,
-      sigSeller.r,
-      sigSeller.s,
-      sigBuyer.messageHash,
-      sigBuyer.r,
-      sigBuyer.s
-    ];
-    const vs = [sigSeller.v, sigBuyer.v];
-    await market.freezePlayer(
-      privHash,
-      validUntil,
-      playerId,
-      typeOfTX,
-      buyerTeamId,
-      sigs,
-      vs
-    ).should.be.fulfilled;
-
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
-    
-    // Freeverse waits until actual money has been transferred between users, and completes sale
-    let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    initOwner.should.be.equal(sellerAccount.address);
-    await market.cancelFreeze(playerId).should.be.fulfilled;
-    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(initOwner);
-  });
-
   it("test accounts from truffle and web3", async () => {
     accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;
     accountsWeb3[0].should.be.equal(accounts[0]);
