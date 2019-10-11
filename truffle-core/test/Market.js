@@ -26,7 +26,7 @@ async function signPutForSaleMTx(currencyId, price, rnd, validUntil, playerId, s
 }
 
 // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isMakeAnOffer, buyerTeamId, buyerAccount) {
+async function signAgreeToBuyMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
   const sellerHiddenPrice = concatHash(
     ['uint8', 'uint256', 'uint256'],
     [currencyId, price, sellerRnd]
@@ -42,7 +42,7 @@ async function signAgreeToBuyMTx(currencyId, price, extraPrice, sellerRnd, buyer
   const sellerTxHash = getMessageHash(sellerTxMsg);
   buyerTxMsg = concatHash(
       ['bytes32', 'bytes32', 'uint256', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, buyerTeamId, isMakeAnOffer]
+      [sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction]
   )
   const sigBuyer = await buyerAccount.sign(buyerTxMsg);
   return sigBuyer;
@@ -185,7 +185,7 @@ contract("Market", accounts => {
       buyerRnd = 0,
       offerValidUntil,
       playerId.toNumber(),
-      isMakeAnOffer = true,
+      isOffer2StartAuction = true,
       buyerTeamId.toNumber(),
       buyerAccount
     ).should.be.fulfilled;
@@ -265,7 +265,7 @@ contract("Market", accounts => {
       buyerTeamId.toNumber(),
       sigOfferMsgRS,
       sigOffer.v,
-      isMakeAnOffer = true
+      isOffer2StartAuction = true
     ).should.be.fulfilled;
     
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -295,7 +295,7 @@ contract("Market", accounts => {
       buyerRnd = 0,
       offerValidUntil,
       playerId.toNumber(),
-      isMakeAnOffer = true,
+      isOffer2StartAuction = true,
       buyerTeamId.toNumber(),
       buyerAccount
     ).should.be.fulfilled;
@@ -375,7 +375,7 @@ contract("Market", accounts => {
       buyerTeamId.toNumber(),
       sigOfferMsgRS,
       sigOffer.v,
-      isMakeAnOffer = true
+      isOffer2StartAuction = true
     ).should.be.rejected;
   });
   
@@ -441,7 +441,7 @@ contract("Market", accounts => {
       buyerRnd,
       validUntil,
       playerId.toNumber(),
-      isMakeAnOffer = false,
+      isOffer2StartAuction = false,
       buyerTeamId.toNumber(),
       buyerAccount
     ).should.be.fulfilled;
@@ -489,7 +489,7 @@ contract("Market", accounts => {
       buyerTeamId.toNumber(),
       sigBuyerMsgRS,
       sigBuyer.v,
-      isMakeAnOffer = false
+      isOffer2StartAuction = false
     ).should.be.fulfilled;
     
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -505,7 +505,7 @@ contract("Market", accounts => {
   // *********************************   TEST  *******************************
   // *************************************************************************
   
-  it("fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isMakeAnOffer is not correctly set ", async () => {
+  it("fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
@@ -560,7 +560,7 @@ contract("Market", accounts => {
       buyerRnd,
       validUntil,
       playerId.toNumber(),
-      isMakeAnOffer = false,
+      isOffer2StartAuction = false,
       buyerTeamId.toNumber(),
       buyerAccount
     ).should.be.fulfilled;
@@ -608,7 +608,7 @@ contract("Market", accounts => {
       buyerTeamId.toNumber(),
       sigBuyerMsgRS,
       sigBuyer.v,
-      isMakeAnOffer = true
+      isOffer2StartAuction = true
     ).should.be.rejected;
   });
   
