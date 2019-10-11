@@ -93,7 +93,7 @@ const main = async () => {
             operation: 'query',
             fieldName: 'teamByTeamId',
             args: {
-              playerId: playerBuyOrder.teamid,
+              teamId: playerBuyOrder.teamid,
             },
             context,
             info,
