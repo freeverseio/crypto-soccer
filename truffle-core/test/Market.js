@@ -111,6 +111,12 @@ contract("Market", accounts => {
     await assets.transferFirstBotToAddr(tz = 1, countryIdxInTZ = 0, buyerAccount.address).should.be.fulfilled;
     now = await market.getBlockchainNowTime().should.be.fulfilled;
     
+    AUCTION_TIME = await market.AUCTION_TIME().should.be.fulfilled;
+    AUCTION_TIME = AUCTION_TIME.toNumber();
+    
+    POST_AUCTION_TIME = await market.POST_AUCTION_TIME().should.be.fulfilled;
+    POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
+    
     validUntil = 2 * now.toNumber();
     currencyId = 1;
     price = 41234;
@@ -120,40 +126,157 @@ contract("Market", accounts => {
 
   });
 
-  it('deterministic sign (values used in market.notary test)', async () => {
-    sellerTeamId.should.be.bignumber.equal('274877906944');
-    buyerTeamId.should.be.bignumber.equal('274877906945');
-    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
-    const playerIdToSell = sellerTeamPlayerIds[0];
-    playerIdToSell.should.be.bignumber.equal('274877906944');
+  // *************************************************************************
+  // *********************************   TEST  *******************************
+  // *************************************************************************
+  
+  // it('deterministic sign (values used in market.notary test)', async () => {
+  //   sellerTeamId.should.be.bignumber.equal('274877906944');
+  //   buyerTeamId.should.be.bignumber.equal('274877906945');
+  //   sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+  //   const playerIdToSell = sellerTeamPlayerIds[0];
+  //   playerIdToSell.should.be.bignumber.equal('274877906944');
 
-    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+  //   const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+  //   const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
-    // Define params of the seller, and sign
-    validUntil = 2000000000;
-    buyerHiddenPrice = concatHash(
+  //   // Define params of the seller, and sign
+  //   validUntil = 2000000000;
+  //   buyerHiddenPrice = concatHash(
+  //     ["uint256", "uint256"],
+  //     [extraPrice, buyerRnd]
+  //   );
+
+
+  //   const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
+  //   privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+  //   const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell).should.be.fulfilled;
+  //   message.should.be.equal('0x909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d');
+  //   const sigSeller = sellerAccount.sign(message);
+  //   sigSeller.messageHash.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
+  //   sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
+
+  //   const prefixed = await market.prefixed(message).should.be.fulfilled;
+  //   const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerHiddenPrice, buyerTeamId).should.be.fulfilled;
+  //   buyerMsg.should.be.equal('0x44be0cc9346f1bb12704bd9cd27b56dfda87932bfd7ae6bc755197d1f710c5c0');
+  //   const sigBuyer = buyerAccount.sign(buyerMsg);
+  //   sigBuyer.messageHash.should.be.equal('0xe791281515bce955edbc5cef6af64fcc018a5a7b0384f7cc5357b9c40476983a');
+  //   sigBuyer.signature.should.be.equal('0x84b2c5e27eec9a6fd467414e2ee9a8788077b4a040637769bc909f9d72b17fb92a5c2a5bbbde8cb8eb57cff0d8fadefb2b25493508c1ba1302cd79e1efe4791e1b');
+  // });
+
+  
+  
+  // *************************************************************************
+  // *********************************   TEST  *******************************
+  // *************************************************************************
+  
+  
+  it("completes a MAKE_AN_OFFER via MTXs", async () => {
+    // now, sellerRnd is fixed by offerer
+    offererRnd = 23987435;
+    offerValidUntil = now.toNumber() + 3600; // valid for an hour
+    const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
+    
+    let sigOffer = await signAgreeToBuyMTx(
+      currencyId,
+      price,
+      extraPrice = 0,
+      offererRnd,
+      buyerRnd = 0,
+      offerValidUntil,
+      playerId.toNumber(),
+      buyerTeamId.toNumber(),
+      buyerAccount
+    ).should.be.fulfilled;
+
+    sigSeller = await signPutForSaleMTx(
+      currencyId,
+      price,
+      offererRnd, // he reuses the rnd provided
+      validUntil, 
+      playerId.toNumber(),
+      sellerAccount
+    );
+
+    // First of all, Freeverse and Buyer check the signature
+    // In this case, using web3:
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+
+    // The correctness of the seller message can also be checked in the BC:
+    const sellerHiddenPrice = concatHash(
+      ["uint8", "uint256", "uint256"],
+      [currencyId, price, offererRnd]
+    );
+    sellerTxMsgBC = await market.buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
+    sellerTxMsgBC.should.be.equal(sigSeller.message);
+
+    // Then, the buyer builds a message to sign
+    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
+    // Add some amount to the price where seller started, and a rnd to obfuscate it
+    const buyerHiddenPrice = concatHash(
       ["uint256", "uint256"],
       [extraPrice, buyerRnd]
     );
+    
+    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
+    // Freeverse checks the signature
+    recoveredBuyerAddr = await web3.eth.accounts.recover(sigOffer);
+    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+
+    // and send the Freeze TX. 
+    const sigSellerMsgRS = [
+      sigSeller.messageHash,
+      sigSeller.r,
+      sigSeller.s,
+    ];
+    tx = await market.freezePlayer(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      sigSellerMsgRS,
+      sigSeller.v
+    ).should.be.fulfilled;
+
+    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+    isFrozen.should.be.equal(true);
+
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
+    });
 
 
-    const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
-    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell).should.be.fulfilled;
-    message.should.be.equal('0x909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d');
-    const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
-    sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
+    // Freeverse waits until actual money has been transferred between users, and completes sale
+    const sigOfferMsgRS = [
+      sigOffer.messageHash,
+      sigOffer.r,
+      sigOffer.s,
+    ];
+    tx = await market.completeAuction(
+      sellerHiddenPrice,
+      offerValidUntil,
+      playerId,
+      buyerHiddenPrice,
+      buyerTeamId.toNumber(),
+      sigOfferMsgRS,
+      sigOffer.v,
+      isMakeAnOffer = true
+    ).should.be.fulfilled;
+    
+    truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
+      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(false);
+    });
 
-    const prefixed = await market.prefixed(message).should.be.fulfilled;
-    const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerHiddenPrice, buyerTeamId).should.be.fulfilled;
-    buyerMsg.should.be.equal('0x44be0cc9346f1bb12704bd9cd27b56dfda87932bfd7ae6bc755197d1f710c5c0');
-    const sigBuyer = buyerAccount.sign(buyerMsg);
-    sigBuyer.messageHash.should.be.equal('0xe791281515bce955edbc5cef6af64fcc018a5a7b0384f7cc5357b9c40476983a');
-    sigBuyer.signature.should.be.equal('0x84b2c5e27eec9a6fd467414e2ee9a8788077b4a040637769bc909f9d72b17fb92a5c2a5bbbde8cb8eb57cff0d8fadefb2b25493508c1ba1302cd79e1efe4791e1b');
+    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    finalOwner.should.be.equal(buyerAccount.address);
   });
   
+  
+  return
   
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
@@ -266,6 +389,15 @@ contract("Market", accounts => {
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
+  
+  
+  
+  
+  // *************************************************************************
+  // *********************************   TEST  *******************************
+  // *************************************************************************
+  
+
   
   it("test accounts from truffle and web3", async () => {
     accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;

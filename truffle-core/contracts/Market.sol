@@ -16,7 +16,8 @@ contract Market {
     uint8 constant internal MAKE_AN_OFFER = 2;
     // POST_AUCTION_TIME: is how long does the buyer have to pay in fiat, after auction is finished.
     //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
-    uint256 constant POST_AUCTION_TIME = 24 hours; 
+    uint256 constant public POST_AUCTION_TIME   = 6 hours; 
+    uint256 constant public AUCTION_TIME        = 24 hours; 
 
     Assets private _assets;
 
@@ -64,8 +65,15 @@ contract Market {
         bytes32 buyerHiddenPrice,
         uint256 buyerTeamId,
         bytes32[3] memory sig,
-        uint8 sigV
+        uint8 sigV,
+        bool isMakeAnOffer
      ) public {
+        if (isMakeAnOffer) {
+            // validUntil is interpreted as offerValidUntil
+            require(validUntil > playerIdToAuctionEnd[playerId] - AUCTION_TIME, "offerValidUntil had expired");
+        } else {
+            require(validUntil == playerIdToAuctionEnd[playerId], "validUntil does not match seller-buyer");
+        } 
         // check asset is owned by buyer
         require(_assets.getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
         // check signatures are valid by requiring that they own the asset:
