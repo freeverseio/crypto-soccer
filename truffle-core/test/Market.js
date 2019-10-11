@@ -121,39 +121,39 @@ contract("Market", accounts => {
 
   });
 
-  // it('deterministic sign (values used in market.notary test)', async () => {
-  //   sellerTeamId.should.be.bignumber.equal('274877906944');
-  //   buyerTeamId.should.be.bignumber.equal('274877906945');
-  //   sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
-  //   const playerIdToSell = sellerTeamPlayerIds[0];
-  //   playerIdToSell.should.be.bignumber.equal('274877906944');
+  it('deterministic sign (values used in market.notary test)', async () => {
+    sellerTeamId.should.be.bignumber.equal('274877906944');
+    buyerTeamId.should.be.bignumber.equal('274877906945');
+    sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
+    const playerIdToSell = sellerTeamPlayerIds[0];
+    playerIdToSell.should.be.bignumber.equal('274877906944');
 
-  //   const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-  //   const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
+    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+    const buyerAccount = await web3.eth.accounts.privateKeyToAccount('0x3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882');
 
-  //   // Define params of the seller, and sign
-  //   const validUntil = 2000000000;
-  //   const typeOfTX = 1;
-  //   const currencyId = 1;
-  //   const price = 41234;
-  //   const rnd = 42321;
+    // Define params of the seller, and sign
+    validUntil = 2000000000;
+    buyerHiddenPrice = concatHash(
+      ["uint256", "uint256"],
+      [extraPrice, buyerRnd]
+    );
 
-  //   const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
-  //   privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-  //   const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell, typeOfTX).should.be.fulfilled;
-  //   message.should.be.equal('0xfa2289ff1375935f063219c2b2db02585be36f186eb27f70449339b9b1f3a6c0');
-  //   const sigSeller = sellerAccount.sign(message);
-  //   sigSeller.messageHash.should.be.equal('0x80e7e56ce2cd3e1c5fd2e63d04f5883303c36946557236b54ef258f6551521d1');
-  //   sigSeller.signature.should.be.equal('0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c');
 
-  //   const prefixed = await market.prefixed(message).should.be.fulfilled;
-  //   const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerTeamId).should.be.fulfilled;
-  //   buyerMsg.should.be.equal('0x60b4511aa304b8a813714020eac0a8cf807e74c9731cc35267d3b8530c652db2');
-  //   const sigBuyer = buyerAccount.sign(buyerMsg);
-  //   sigBuyer.messageHash.should.be.equal('0xd05a549335e18bc3a6d0544590ac44c5ce761a47ab2ad6175d3360a1757d0cf0');
-  //   sigBuyer.signature.should.be.equal('0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b');
-  // });
-  
+    const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerIdToSell, typeOfTX).should.be.fulfilled;
+    message.should.be.equal('0xfa2289ff1375935f063219c2b2db02585be36f186eb27f70449339b9b1f3a6c0');
+    const sigSeller = sellerAccount.sign(message);
+    sigSeller.messageHash.should.be.equal('0x80e7e56ce2cd3e1c5fd2e63d04f5883303c36946557236b54ef258f6551521d1');
+    sigSeller.signature.should.be.equal('0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c');
+
+    const prefixed = await market.prefixed(message).should.be.fulfilled;
+    const buyerMsg = await market.buildAgreeToBuyTxMsg(prefixed, buyerHiddenPrice, buyerTeamId).should.be.fulfilled;
+    buyerMsg.should.be.equal('0xe6c3bc5ff2ac0414a179b3228b83381940ac07d40b974e745b50fca0a6c74a7c');
+    const sigBuyer = buyerAccount.sign(buyerMsg);
+    sigBuyer.messageHash.should.be.equal('0xc1f4d27afdbf0f7429249b40e3a2dd83e1c14f167ac59a8f214c01877fb96223');
+    sigBuyer.signature.should.be.equal('0xb3c515952797e70596734d8559386e6a6f9f7de62b27c1a89a436a4c1d04e2d813cc84ea7fc35d34e27692bdd7f3946b77c47552ce6d2b6b5fce6bb7b869d0c21b');
+  });
   
   it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
