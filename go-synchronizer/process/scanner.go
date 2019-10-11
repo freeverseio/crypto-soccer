@@ -164,7 +164,7 @@ func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanPlayerFreeze")
-		s.addEvent(e.Raw, "UpdatesActionsSubmission", e)
+		s.addEvent(e.Raw, "FilterPlayerFreeze", e)
 	}
 	return nil
 }
