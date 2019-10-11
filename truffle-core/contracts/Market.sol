@@ -69,7 +69,7 @@ contract Market {
         bool isMakeAnOffer
      ) public {
         if (isMakeAnOffer) {
-            // validUntil is interpreted as offerValidUntil
+            // in this case: validUntil is interpreted as offerValidUntil
             require(validUntil > playerIdToAuctionEnd[playerId] - AUCTION_TIME, "offerValidUntil had expired");
         } else {
             require(validUntil == playerIdToAuctionEnd[playerId], "validUntil does not match seller-buyer");
@@ -84,7 +84,7 @@ contract Market {
         bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         // check that they signed what they input data says they signed:
         // ...for the seller and the buyer:
-        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId));
+        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isMakeAnOffer));
         require(buyerTxHash == sig[IDX_MSG], "buyer signed a message that does not match the provided pre-hash data");
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
         _assets.transferPlayer(playerId, buyerTeamId);
@@ -104,8 +104,8 @@ contract Market {
         return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId));
     }
 
-    function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId));
+    function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId, bool isMakeAnOffer) public pure returns (bytes32) {
+        return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId, isMakeAnOffer));
     }
 
     // FUNCTIONS FOR SIGNATURE MANAGEMENT
