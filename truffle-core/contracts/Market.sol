@@ -24,7 +24,7 @@ contract Market {
     }
 
     function freezePlayer(
-        bytes32 sellerPrivHash,
+        bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
         uint8 typeOfTX,
@@ -50,7 +50,7 @@ contract Market {
         // check that they signed what they input data says they signed:
         // ...for the seller and the buyer:
         bytes32 sellerTxHash;
-        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerPrivHash, validUntil, playerId, typeOfTX));
+        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId, typeOfTX));
         require(sellerTxHash == sig[IDX_MSG], "seller signed a message that does not match the provided pre-hash data");
 
         // // Freeze player
@@ -58,6 +58,33 @@ contract Market {
         emit PlayerFreeze(playerId, true);
     }
 
+     function completeAuction(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 playerId,
+        uint8 typeOfTX,
+        bytes32 buyerHiddenPrice,
+        uint256 buyerTeamId,
+        bytes32[3] memory sig,
+        uint8 sigV
+     ) public {
+        // check asset is owned by buyer
+        require(_assets.getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
+        // check signatures are valid by requiring that they own the asset:
+        require(_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]),
+            "buyer is not owner of team, or buyer signature not valid");
+    
+        // make sure that the playerId is the same that was used by the seller to sign
+        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId, typeOfTX));
+        // check that they signed what they input data says they signed:
+        // ...for the seller and the buyer:
+        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId));
+        require(buyerTxHash == sig[IDX_MSG], "buyer signed a message that does not match the provided pre-hash data");
+        require(isFrozen(playerId), "player not frozen, nothing to cancel");
+        _assets.transferPlayer(playerId, buyerTeamId);
+        playerIdToAuctionEnd[playerId] = 1;
+        emit PlayerFreeze(playerId, false);
+    }
     // this function is not used in the contract. It's only for external helps
     function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) external pure returns (bytes32) {
         return keccak256(abi.encode(currencyId, price, rnd));
@@ -71,8 +98,8 @@ contract Market {
         return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId, typeOfTX));
     }
 
-    function buildAgreeToBuyTxMsg(bytes32 sellerMsg, bytes32 buyerPrivHash, uint256 buyerTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(sellerMsg, buyerPrivHash, buyerTeamId));
+    function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId));
     }
 
     // FUNCTIONS FOR SIGNATURE MANAGEMENT
@@ -97,18 +124,7 @@ contract Market {
 
     function isFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
-        return playerIdToAuctionEnd[playerId] != 0;
+        return playerIdToAuctionEnd[playerId] > now;
     }
 
-    function cancelFreeze(uint256 playerId) public {
-        require(isFrozen(playerId), "player not frozen, nothing to cancel");
-        delete(playerIdToAuctionEnd[playerId]);
-        emit PlayerFreeze(playerId, false);
-    }
-
-    function completeFreeze(uint256 playerId) public {
-        require(isFrozen(playerId), "player not frozen, nothing to cancel");
-        _assets.transferPlayer(playerId, playerIdToAuctionEnd[playerId]);
-        cancelFreeze(playerId);
-    }
 }

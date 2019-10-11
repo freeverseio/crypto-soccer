@@ -300,7 +300,7 @@ contract("Market", accounts => {
   //   });
   // });
   
-  it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs but cancels because payment went wrong", async () => {
+  it("completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // mobile app does this:
     sigSeller = await signPutForSaleMTx(
       currencyId,
@@ -355,7 +355,7 @@ contract("Market", accounts => {
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
     recoveredBuyerAddr.should.be.equal(buyerAccount.address);
 
-    // and send the Freeze TX. If it finishes, it went through.
+    // and send the Freeze TX. 
     const sigSellerMsgRS = [
       sigSeller.messageHash,
       sigSeller.r,
@@ -372,13 +372,25 @@ contract("Market", accounts => {
 
     isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
     isFrozen.should.be.equal(true);
-    return;
+
     // Freeverse waits until actual money has been transferred between users, and completes sale
-    let initOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    initOwner.should.be.equal(sellerAccount.address);
-    await market.cancelFreeze(playerId).should.be.fulfilled;
+    const sigBuyerMsgRS = [
+      sigBuyer.messageHash,
+      sigBuyer.r,
+      sigBuyer.s,
+    ];
+    await market.completeAuction(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      typeOfTX,
+      buyerHiddenPrice,
+      buyerTeamId.toNumber(),
+      sigBuyerMsgRS,
+      sigBuyer.v
+    ).should.be.fulfilled;
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    finalOwner.should.be.equal(initOwner);
+    finalOwner.should.be.equal(buyerAccount.address);
   });
 
   return;
