@@ -1,8 +1,8 @@
 {
     "ethereumClient": "http://localhost:8545",
-    "engineContractAddress": "0x5c303C4C0A96B8CdF9dcCB3FB96f2aC9cC8B4d1b",
-    "assetsContractAddress": "0xf58d1CA3cFCf9565Fa15165e95EDda090761bC30",
-    "leaguesContractAddress": "0xf58d1CA3cFCf9565Fa15165e95EDda090761bC30",
-    "marketContractAddress": "0x254302C7B47d971673C9Dc9a0D5Ba0ff05246F3A",
-    "updatesContractAddress": "0xF4445b24D2f97ce034C4D27276BBD81C62C2F532"
+    "engineContractAddress": "0x925f1bF691d863B2F1716aA9eACC455dE7d9B545",
+    "assetsContractAddress": "0x8C522552A51736E4816e3CE9E30a5287a47E7FCF",
+    "leaguesContractAddress": "0x8C522552A51736E4816e3CE9E30a5287a47E7FCF",
+    "marketContractAddress": "0x7FABC0Fc1D8b10EA8975Ed1a7b526E19C098F199",
+    "updatesContractAddress": "0xfc3Bf2ECa6739d9A83Ef1e1F42441221bFfb9BBE"
 }

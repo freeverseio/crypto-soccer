@@ -19,7 +19,7 @@ module.exports = function (deployer) {
     console.log("Setting up ... done");
 
     console.log("Initing ...");
-    await leagues.init().should.be.fulfilled;
+    await leagues.initSingleTZ(1).should.be.fulfilled; // TODO: bootstrap od all timezone using init()
     await updates.initUpdates(leagues.address).should.be.fulfilled;
     console.log("Initing ... done");
 
