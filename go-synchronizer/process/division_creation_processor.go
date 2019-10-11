@@ -185,6 +185,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 					ShirtNumber:   uint8(shirtNumber.Uint64()),
 					EncodedSkills: encodedSkills,
 					EncodedState:  encodedState,
+					Frozen:        false,
 				}},
 		); err != nil {
 			return err

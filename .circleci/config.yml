@@ -15,22 +15,15 @@ jobs:
   go-synchronizer:
     docker:
       - image: freeverseio/circleci
+      - image: freeverseio/ethereum:test
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
     steps:
       - checkout
       - run: make setup contracts
       - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
-      - run: |
-            # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until ganache is up and running
-            echo waiting for ganache
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            sleep 1
-            echo ganache is running
-            cd go-synchronizer/process
-            go test
-            #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
+      - run: cd go-synchronizer && go test ./...
   go-soccer:
     docker:
       - image: freeverseio/circleci
@@ -47,11 +40,11 @@ jobs:
       - run: cd market/notary && go build
       - run: |
             ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until ganache is up and running
-            echo waiting for ganache
+            # wait until blockchain node is up and running
+            echo waiting for blockchain node
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
-            echo ganache is running
+            echo blockchain is running
             cd market/notary && go test ./...
   relay.api:
     docker:
@@ -121,6 +114,7 @@ jobs:
             - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - checkout
       - run: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
+      - run: scp -o StrictHostKeyChecking=no ./deployment/.env $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
 
 workflows:

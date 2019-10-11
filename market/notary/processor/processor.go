@@ -93,6 +93,8 @@ func (b *Processor) processOrder(order storage.Order) error {
 	if err != nil {
 		return err
 	}
+	log.Info("(4.1) wait 10 secs to simulate external payment")
+	time.Sleep(10 * time.Second)
 	log.Infof("(5) complete freeze")
 	tx, err = b.assets.CompleteFreeze(
 		bind.NewKeyedTransactor(b.freeverse),

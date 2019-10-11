@@ -3,10 +3,12 @@ package process
 import (
 	"sort"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
 
@@ -22,11 +24,17 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 }
 
 type EventScanner struct {
-	Events []*AbstractEvent
+	leagues *leagues.Leagues
+	updates *updates.Updates
+	market  *market.Market
+	Events  []*AbstractEvent
 }
 
-func NewEventScanner() *EventScanner {
-	return &EventScanner{[]*AbstractEvent{}}
+func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) *EventScanner {
+	if leagues != nil && updates != nil {
+		return &EventScanner{leagues, updates, market, []*AbstractEvent{}}
+	}
+	return nil
 }
 
 type byFunction func(p1, p2 *AbstractEvent) bool
@@ -63,7 +71,22 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // leagues.LeaguesPlayerTransfer
 // updates.UpdatesActionsSubmission
 
-func (s *EventScanner) Process() error {
+func (s *EventScanner) Process(opts *bind.FilterOpts) error {
+	if err := s.scanDivisionCreation(opts); err != nil {
+		return err
+	}
+	if err := s.scanPlayerStateChange(opts); err != nil {
+		return err
+	}
+	if err := s.scanTeamTransfer(opts); err != nil {
+		return err
+	}
+	if err := s.scanActionsSubmission(opts); err != nil {
+		return err
+	}
+
+	log.Debug("scanner got: ", len(s.Events), " Abstract Events")
+
 	if len(s.Events) > 10000 {
 		log.Info("sorting ", len(s.Events), " be patient...")
 	}
@@ -85,43 +108,72 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
 }
 
-func (s *EventScanner) ScanDivisionCreation(iter *leagues.LeaguesDivisionCreationIterator) error {
+func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
+	iter, err := s.leagues.FilterDivisionCreation(opts)
+	if err != nil {
+		return err
+	}
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Debugf("[scanner] ScanDivisionCreation timezone %v", e.Timezone)
+		log.Debugf("[scanner] scanDivisionCreation timezone %v", e.Timezone)
 		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) ScanPlayerStateChange(iter *leagues.LeaguesPlayerStateChangeIterator) error {
+func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
+	iter, err := s.leagues.FilterPlayerStateChange(opts)
+	if err != nil {
+		return err
+	}
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Debugf("[scanner] ScanPlayerStateChange playerId %v state %v", e.PlayerId, e.State)
+		log.Debugf("[scanner] scanPlayerStateChange playerId %v state %v", e.PlayerId, e.State)
 		s.addEvent(e.Raw, "PlayerStateChange", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) ScanTeamTransfer(iter *leagues.LeaguesTeamTransferIterator) error {
+func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
+	iter, err := s.leagues.FilterTeamTransfer(opts)
+	if err != nil {
+		return err
+	}
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Debugf("[scanner] ScanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
+		log.Debugf("[scanner] scanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
 		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) ScanPlayerTransfer(iter *leagues.LeaguesPlayerTransferIterator) error {
+//func (s *EventScanner) scanPlayerTransfer(opts *bind.FilterOpts) error {
+//	for iter.Next() {
+//		e := *(iter.Event)
+//		log.Debugf("[scanner] scanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
+//		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
+//	}
+//	return nil
+//}
+
+func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
+	iter, err := s.market.FilterPlayerFreeze(opts)
+	if err != nil {
+		return err
+	}
 	for iter.Next() {
 		e := *(iter.Event)
-		log.Debugf("[scanner] ScanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
-		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
+		log.Debugf("[scanner] scanPlayerFreeze")
+		s.addEvent(e.Raw, "FilterPlayerFreeze", e)
 	}
 	return nil
 }
 
-func (s *EventScanner) ScanActionsSubmission(iter *updates.UpdatesActionsSubmissionIterator) error {
+func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
+	iter, err := s.updates.FilterActionsSubmission(opts)
+	if err != nil {
+		return err
+	}
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] ScanActionSubmission")

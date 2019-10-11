@@ -13,14 +13,9 @@ import (
 )
 
 func TestScanningNothing(t *testing.T) {
-	scanner := process.NewEventScanner()
-	err := scanner.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-	events := scanner.Events
-	if len(events) != 0 {
-		t.Fatalf("Wrong events number: %v", len(scanner.Events))
+	scanner := process.NewEventScanner(nil, nil, nil)
+	if scanner != nil {
+		t.Fatal("scanner cannot be created with null contracts")
 	}
 }
 
@@ -38,16 +33,8 @@ func TestScanningIniting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	divisionCreationIter, err := ganache.Leagues.FilterDivisionCreation(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	scanner := process.NewEventScanner()
-	err = scanner.ScanDivisionCreation(divisionCreationIter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = scanner.Process()
+	scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market)
+	err = scanner.Process(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,24 +65,20 @@ func TestScanningTeamTransfer(t *testing.T) {
 	ganache.DeployContracts(ganache.Owner)
 	ganache.Init()
 
-	scanner := process.NewEventScanner()
+	eventCount := 0
 
-	iter, err := ganache.Leagues.FilterTeamTransfer(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = scanner.ScanTeamTransfer(iter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = scanner.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	events := scanner.Events
-	if len(events) != 0 {
-		t.Fatalf("Expected 0 received %v", len(events))
+	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
+		err = scanner.Process(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		eventCount += len(scanner.Events)
+		if eventCount == 0 {
+			// skipping check for exact number at creation
+			t.Fatalf("Expected some events received %v", eventCount)
+		}
+	} else {
+		t.Fatal("Unable to create scanner")
 	}
 
 	timezoneIdx := uint8(1)
@@ -113,20 +96,15 @@ func TestScanningTeamTransfer(t *testing.T) {
 	ganache.WaitReceipt(tx, 3)
 	ganache.WaitReceipt(tx1, 3)
 
-	iter, err = ganache.Leagues.FilterTeamTransfer(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = scanner.ScanTeamTransfer(iter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = scanner.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-	events = scanner.Events
-	if len(events) != 2 {
-		t.Fatalf("Expected 2 received %v", len(events))
+	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
+		err = scanner.Process(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(scanner.Events) != eventCount+2 {
+			t.Fatalf("Expected 2 received %v", len(scanner.Events)-eventCount)
+		}
+	} else {
+		t.Fatal("Unable to create scanner")
 	}
 }

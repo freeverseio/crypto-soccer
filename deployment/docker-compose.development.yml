@@ -2,9 +2,10 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/ethereum:dev
+    command: --mine 
     ports: 
-      - "8545:8545"
       - "30303:30303"
+      - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
   centauri:
@@ -39,14 +40,14 @@ services:
     image: freeverseio/market.notary:dev
     depends_on:
       - ethereum
-    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "0xE995621Ca05a79504EFA4193A9934Db4A92d38F5" -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" -ethereum http://ethereum:8545
+    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "${MARKET_CONTRACT_ADDRESS}" -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" -ethereum http://ethereum:8545
   relay.api:
     image: freeverseio/relay.api:dev
     depends_on:
       - ethereum
     ports:
       - "4003:4000"
-    command: --assetsContractAddress "0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B" --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" --ethereum "http://ethereum:8545"
+    command: --assetsContractAddress "${LEAGUES_CONTRACT_ADDRESS}" --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" --ethereum "http://ethereum:8545"
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
@@ -60,7 +61,7 @@ services:
     image: freeverseio/staker:dev
     depends_on:
       - ethereum
-    command: --updatesContractAddress "0xEFB926e542BB03182343aEe29ff8B36889327Acb" -i 1 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" --ethereum "http://ethereum:8545"
+    command: --updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" -i 1 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" --ethereum "http://ethereum:8545"
 volumes:
   centauri-data:
   ethereum-data:
