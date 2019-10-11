@@ -1,6 +1,6 @@
 CREATE TABLE tactics (
     teamId TEXT NOT NULL,
-    tactic_accept INT NOT NULL,
+    tactic_attack INT NOT NULL,
     tactic_center INT NOT NULL,
     tactic_defence INT NOT NULL,
     shirt_player_position_0 INT,
