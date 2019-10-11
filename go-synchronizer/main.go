@@ -13,6 +13,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
@@ -62,6 +63,12 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
+	log.Info("Creating Market bindings to: ", config.MarketContractAddress)
+	marketContract, err := market.NewMarket(common.HexToAddress(config.MarketContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
@@ -74,7 +81,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process, err := process.BackgroundProcessNew(client, sto, engineContract, leaguesContract, updatesContract)
+	process, err := process.BackgroundProcessNew(client, sto, engineContract, leaguesContract, updatesContract, marketContract)
 	if err != nil {
 		log.Fatal(err)
 	}

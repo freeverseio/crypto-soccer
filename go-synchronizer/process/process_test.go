@@ -35,7 +35,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	p, err := process.NewEventProcessor(bc.Client, storage, bc.Engine, bc.Leagues, bc.Updates)
+	p, err := process.NewEventProcessor(bc.Client, storage, bc.Engine, bc.Leagues, bc.Updates, bc.Market)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,6 +7,8 @@ import "./Assets.sol";
  */
 
 contract Market {
+    event PlayerFreeze(uint256 playerId, bool frozen);
+
     uint8 constant internal SELL_MSG = 0;
     uint8 constant internal SELL_r   = 1;
     uint8 constant internal SELL_s   = 2;
@@ -70,6 +72,7 @@ contract Market {
 
         // // Freeze player
         playerIdToTargetTeam[playerId] = buyerTeamId;
+        emit PlayerFreeze(playerId, true);
     }
 
     function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) public pure returns (bytes32) {
@@ -116,11 +119,12 @@ contract Market {
     function cancelFreeze(uint256 playerId) public {
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
         delete(playerIdToTargetTeam[playerId]);
+        emit PlayerFreeze(playerId, false);
     }
 
     function completeFreeze(uint256 playerId) public {
         require(isFrozen(playerId), "player not frozen, nothing to cancel");
         _assets.transferPlayer(playerId, playerIdToTargetTeam[playerId]);
+        cancelFreeze(playerId);
     }
-
 }
