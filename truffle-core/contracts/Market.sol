@@ -65,7 +65,41 @@ contract Market {
         emit PlayerFreeze(playerId, true);
     }
 
-     function completeAuction(
+
+    function areCompleteAuctionRequirementsOK(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32 buyerHiddenPrice,
+        uint256 buyerTeamId,
+        bytes32[3] memory sig,
+        uint8 sigV,
+        bool isOffer2StartAuction
+     ) 
+        public
+        view
+        returns(bool ok) 
+    {
+        // the next line will verify that the playerId is the same that was used by the seller to sign
+        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+        ok =    // check asset is owned by buyer
+                (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
+                // check signatures are valid by requiring that they own the asset:
+                (_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
+                // check player is still frozen
+                isFrozen(playerId) &&
+                // check that they signed what they input data says they signed:
+                sig[IDX_MSG] == prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+
+        if (isOffer2StartAuction) {
+            // in this case: validUntil is interpreted as offerValidUntil
+            ok = ok && (validUntil > playerIdToAuctionEnd[playerId] - AUCTION_TIME);
+        } else {
+            ok = ok && (validUntil == playerIdToAuctionEnd[playerId]);
+        } 
+    }
+
+    function completeAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
@@ -75,29 +109,23 @@ contract Market {
         uint8 sigV,
         bool isOffer2StartAuction
      ) public {
-        if (isOffer2StartAuction) {
-            // in this case: validUntil is interpreted as offerValidUntil
-            require(validUntil > playerIdToAuctionEnd[playerId] - AUCTION_TIME, "offerValidUntil had expired");
-        } else {
-            require(validUntil == playerIdToAuctionEnd[playerId], "validUntil does not match seller-buyer");
-        } 
-        // check asset is owned by buyer
-        require(_assets.getOwnerTeam(buyerTeamId) != address(0), "team not owned by anyone");
-        // check signatures are valid by requiring that they own the asset:
-        require(_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]),
-            "buyer is not owner of team, or buyer signature not valid");
-    
-        // make sure that the playerId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-        // check that they signed what they input data says they signed:
-        // ...for the seller and the buyer:
-        bytes32 buyerTxHash = prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
-        require(buyerTxHash == sig[IDX_MSG], "buyer signed a message that does not match the provided pre-hash data");
-        require(isFrozen(playerId), "player not frozen, nothing to cancel");
+        require(areCompleteAuctionRequirementsOK(
+            sellerHiddenPrice,
+            validUntil,
+            playerId,
+            buyerHiddenPrice,
+            buyerTeamId,
+            sig,
+            sigV,
+            isOffer2StartAuction)
+            , "requirements to complete auction are not met"    
+        );
         _assets.transferPlayer(playerId, buyerTeamId);
         playerIdToAuctionEnd[playerId] = 1;
         emit PlayerFreeze(playerId, false);
     }
+    
+    
     // this function is not used in the contract. It's only for external helps
     function hashPrivateMsg(uint8 currencyId, uint256 price, uint256 rnd) external pure returns (bytes32) {
         return keccak256(abi.encode(currencyId, price, rnd));
