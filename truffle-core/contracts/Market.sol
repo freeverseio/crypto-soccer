@@ -27,6 +27,31 @@ contract Market {
         _assets = Assets(addr);
     }
 
+    function areFreezePlayerRequirementsOK(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32[3] memory sig,
+        uint8 sigV
+    ) 
+        public 
+        view 
+        returns (bool)
+    {
+        return (
+            // check validUntil has not expired
+            (now < validUntil) &&
+            // check player is not already frozen
+            (!isFrozen(playerId))) &&  
+            // check asset is owned by legit address
+            (_assets.getOwnerPlayer(playerId) != address(0)) && 
+            // check signatures are valid by requiring that they own the asset:
+            (_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+            // check that they signed what they input data says they signed:
+            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))
+        );
+    }
+
     function freezePlayer(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -34,25 +59,7 @@ contract Market {
         bytes32[3] memory sig,
         uint8 sigV
     ) public {
-        // check validUntil has not expired
-        require(now < validUntil, "these TXs had a valid time that expired already");
-
-        // check player is not already frozen
-        require(!isFrozen(playerId), "player already frozen");
-
-        // check asset is owned by someone
-        require(_assets.getOwnerPlayer(playerId) != address(0), "player not owned by anyone");
-
-        // check signatures are valid by requiring that they own the asset:
-        require(_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]),
-            "seller is not owner of player, or seller signature is not valid");
-
-        // check that they signed what they input data says they signed:
-        // ...for the seller and the buyer:
-        bytes32 sellerTxHash;
-        sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-        require(sellerTxHash == sig[IDX_MSG], "seller signed a message that does not match the provided pre-hash data");
-
+        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
         playerIdToAuctionEnd[playerId] = validUntil;
         emit PlayerFreeze(playerId, true);
