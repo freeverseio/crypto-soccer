@@ -18,7 +18,13 @@ services:
     image: freeverseio/postgres:dev
   synchronizer:
     image: freeverseio/synchronizer:dev
-    command: -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable -ethereum http://ethereum:8545
+    command: > 
+      -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable 
+      -ethereum http://ethereum:8545
+      -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
+      -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
+      -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
     depends_on:
       - postgres
       - ethereum
@@ -40,28 +46,42 @@ services:
     image: freeverseio/market.notary:dev
     depends_on:
       - ethereum
-    command: -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable -market_address "${MARKET_CONTRACT_ADDRESS}" -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" -ethereum http://ethereum:8545
+    command: >
+      -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable  
+      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
+      -ethereum http://ethereum:8545 
+      -market_address "${MARKET_CONTRACT_ADDRESS}" 
   relay:
     image: freeverseio/relay:dev
     depends_on:
       - ethereum
     ports:
       - "4003:4000"
-    command: --assetsContractAddress "${LEAGUES_CONTRACT_ADDRESS}" --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" --ethereum "http://ethereum:8545"
+    command: >
+      --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
+      --ethereum "http://ethereum:8545"
+      --assetsContractAddress "${LEAGUES_CONTRACT_ADDRESS}" 
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
       - universeapi
       - market.trader
       - relay
-    command: -u http://universeapi:4000/graphql -m http://market.trader:4000/graphql -r http://relay:4000/graphql
+    command: >
+      -u http://universeapi:4000/graphql 
+      -m http://market.trader:4000/graphql 
+      -r http://relay:4000/graphql
     ports:
       - "4000:4000"
   staker:
     image: freeverseio/staker:dev
     depends_on:
       - ethereum
-    command: --updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" -i 1 --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" --ethereum "http://ethereum:8545"
+    command: >
+      --interval 1 
+      --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
+      --ethereum "http://ethereum:8545"
+      --updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
 volumes:
   centauri-data:
   ethereum-data:
