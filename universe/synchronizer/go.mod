@@ -1,4 +1,4 @@
-module github.com/freeverseio/crypto-soccer/go-synchronizer
+module github.com/freeverseio/crypto-soccer/universe/synchronizer
 
 go 1.12
 

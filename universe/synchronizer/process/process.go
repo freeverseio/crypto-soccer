@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/market"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/updates"
 
 	"fmt"
 	"math"
@@ -17,9 +17,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	//"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	//"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 

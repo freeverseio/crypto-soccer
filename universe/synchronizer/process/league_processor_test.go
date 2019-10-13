@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/testutils"
 )
 
 func TestCreateMAtchSeed(t *testing.T) {

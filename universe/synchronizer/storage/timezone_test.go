@@ -3,7 +3,7 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
 )
 
 func TestTimezoneCount(t *testing.T) {

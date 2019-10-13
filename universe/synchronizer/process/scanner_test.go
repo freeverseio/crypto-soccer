@@ -7,9 +7,9 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/testutils"
 )
 
 func TestScanningNothing(t *testing.T) {

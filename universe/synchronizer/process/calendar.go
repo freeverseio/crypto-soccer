@@ -5,8 +5,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
 )
 
 type Calendar struct {

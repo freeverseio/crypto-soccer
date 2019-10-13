@@ -5,9 +5,9 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/utils"
 	log "github.com/sirupsen/logrus"
 )
 

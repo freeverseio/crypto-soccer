@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/utils"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/utils"
 )
 
 func TestPreferredPosition(t *testing.T) {

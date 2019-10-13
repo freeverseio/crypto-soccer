@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
 )
 
 // func TestTeamStateUpdate(t *testing.T) {

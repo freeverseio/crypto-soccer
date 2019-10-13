@@ -12,10 +12,10 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/market"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/contracts/updates"
 )
 
 type BlockchainNode struct {

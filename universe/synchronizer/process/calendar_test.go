@@ -3,9 +3,9 @@ package process_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/universe/synchronizer/testutils"
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
