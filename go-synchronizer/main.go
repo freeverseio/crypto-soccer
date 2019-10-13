@@ -29,6 +29,19 @@ func main() {
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	flag.Parse()
 
+	if *leaguesContractAddress == "" {
+		log.Fatal("no league contract address")
+	}
+	if *marketContractAddress == "" {
+		log.Fatal("no league contract address")
+	}
+	if *updatesContractAddress == "" {
+		log.Fatal("no updates contract address")
+	}
+	if *engineContractAddress == "" {
+		log.Fatal("no engine contract address")
+	}
+
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
