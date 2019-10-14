@@ -4,11 +4,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/market/notary/processor"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
 )
 
@@ -70,58 +67,58 @@ func TestChangeOwnership(t *testing.T) {
 	}
 }
 
-func TestFreezePlayer(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache := testutils.NewGanache()
-	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	if err != nil {
-		t.Fatal(err)
-	}
-	value := new(big.Int)
-	value.SetString("50000000000000000000", 10)
-	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
-	if err != nil {
-		t.Fatal(err)
-	}
-	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	timezone := uint8(1)
-	countryIdxInTZ := big.NewInt(0)
-	teamId0, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
-	if err != nil {
-		t.Fatal(err)
-	}
-	team0PlayerIds, err := ganache.Assets.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	team0PlayerId0 := team0PlayerIds[0]
-	if team0PlayerId0.String() != "274877906944" {
-		t.Fatalf("Wrong player id : %v", team0PlayerId0.String())
-	}
+// func TestFreezePlayer(t *testing.T) {
+// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	ganache := testutils.NewGanache()
+// 	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	value := new(big.Int)
+// 	value.SetString("50000000000000000000", 10)
+// 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	timezone := uint8(1)
+// 	countryIdxInTZ := big.NewInt(0)
+// 	teamId0, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	team0PlayerIds, err := ganache.Assets.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	team0PlayerId0 := team0PlayerIds[0]
+// 	if team0PlayerId0.String() != "274877906944" {
+// 		t.Fatalf("Wrong player id : %v", team0PlayerId0.String())
+// 	}
 
-	sellOrder := storage.SellOrder{
-		PlayerId:   team0PlayerId0,
-		CurrencyId: 1,
-		Price:      big.NewInt(41234),
-		Rnd:        big.NewInt(42321),
-		ValidUntil: big.NewInt(2000000000),
-		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
-	}
-	err = processor.FreezePlayer(sellOrder)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
+// 	sellOrder := storage.SellOrder{
+// 		PlayerId:   team0PlayerId0,
+// 		CurrencyId: 1,
+// 		Price:      big.NewInt(41234),
+// 		Rnd:        big.NewInt(42321),
+// 		ValidUntil: big.NewInt(2000000000),
+// 		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
+// 	}
+// 	err = processor.FreezePlayer(sellOrder)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// }
 
 // func TestProcess(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")

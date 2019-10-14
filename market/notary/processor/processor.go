@@ -169,7 +169,6 @@ func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 	if err != nil {
 		log.Error(err)
 	}
-
 	tx, err := b.assets.FreezePlayer(
 		bind.NewKeyedTransactor(b.freeverse),
 		sellerHiddenPrice,
