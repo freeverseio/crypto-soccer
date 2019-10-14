@@ -13,7 +13,7 @@ import (
 )
 
 func TestScanningNothing(t *testing.T) {
-	scanner := process.NewEventScanner(nil, nil)
+	scanner := process.NewEventScanner(nil, nil, nil)
 	if scanner != nil {
 		t.Fatal("scanner cannot be created with null contracts")
 	}
@@ -33,7 +33,7 @@ func TestScanningIniting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates)
+	scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market)
 	err = scanner.Process(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -67,7 +67,7 @@ func TestScanningTeamTransfer(t *testing.T) {
 
 	eventCount := 0
 
-	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates); scanner != nil {
+	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
 		err = scanner.Process(nil)
 		if err != nil {
 			t.Fatal(err)
@@ -96,7 +96,7 @@ func TestScanningTeamTransfer(t *testing.T) {
 	ganache.WaitReceipt(tx, 3)
 	ganache.WaitReceipt(tx1, 3)
 
-	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates); scanner != nil {
+	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
 		err = scanner.Process(nil)
 		if err != nil {
 			t.Fatal(err)

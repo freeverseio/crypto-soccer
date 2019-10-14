@@ -43,6 +43,10 @@ const main = async () => {
     extend type PlayerSellOrder {
       playerByPlayerid: Player
     }
+
+    extend type PlayerBuyOrder {
+      teamByTeamId: Team
+    }
   `;
 
   const resolvers = {
@@ -73,6 +77,23 @@ const main = async () => {
             fieldName: 'playerByPlayerId',
             args: {
               playerId: playerSellOrder.playerid,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    },
+    PlayerBuyOrder: {
+      teamByTeamId: {
+        fragment: `... on PlayerBuyOrder { teamid }`,
+        resolve(playerBuyOrder, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: playerBuyOrder.teamid,
             },
             context,
             info,

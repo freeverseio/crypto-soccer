@@ -10,54 +10,69 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/config"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 )
 
 func main() {
-	configFile := flag.String("config", "./config.json", "configuration file")
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
+	marketContractAddress := flag.String("marketContractAddress", "", "")
+	updatesContractAddress := flag.String("updatesContractAddress", "", "")
+	engineContractAddress := flag.String("engineContractAddress", "", "")
 	flag.Parse()
+
+	if *leaguesContractAddress == "" {
+		log.Fatal("no league contract address")
+	}
+	if *marketContractAddress == "" {
+		log.Fatal("no league contract address")
+	}
+	if *updatesContractAddress == "" {
+		log.Fatal("no updates contract address")
+	}
+	if *engineContractAddress == "" {
+		log.Fatal("no engine contract address")
+	}
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
 	log.Info("Starting ...")
-	log.Info("Parsing configuration file: ", *configFile)
-	config, err := config.New(*configFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	config.Print()
-
 	log.Info("Dial the Ethereum client: ", *ethereumClient)
 	client, err := ethclient.Dial(*ethereumClient)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Leagues bindings to: ", config.LeaguesContractAddress)
-	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(config.LeaguesContractAddress), client)
+	log.Info("Creating Leagues bindings to: ", *leaguesContractAddress)
+	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(*leaguesContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Engine bindings to: ", config.EngineContractAddress)
-	engineContract, err := engine.NewEngine(common.HexToAddress(config.EngineContractAddress), client)
+	log.Info("Creating Engine bindings to: ", *engineContractAddress)
+	engineContract, err := engine.NewEngine(common.HexToAddress(*engineContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Updates bindings to: ", config.UpdatesContractAddress)
-	updatesContract, err := updates.NewUpdates(common.HexToAddress(config.UpdatesContractAddress), client)
+	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
+	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
+	log.Info("Creating Market bindings to: ", *marketContractAddress)
+	marketContract, err := market.NewMarket(common.HexToAddress(*marketContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -74,7 +89,7 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process, err := process.BackgroundProcessNew(client, sto, engineContract, leaguesContract, updatesContract)
+	process, err := process.BackgroundProcessNew(client, sto, engineContract, leaguesContract, updatesContract, marketContract)
 	if err != nil {
 		log.Fatal(err)
 	}
