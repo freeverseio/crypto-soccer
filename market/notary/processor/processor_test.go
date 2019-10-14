@@ -77,18 +77,12 @@ func TestFreezePlayer(t *testing.T) {
 	}
 	ganache := testutils.NewGanache()
 	alice, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-	bob, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
-
 	if err != nil {
 		t.Fatal(err)
 	}
 	value := new(big.Int)
 	value.SetString("50000000000000000000", 10)
 	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(alice))
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ganache.TransferWei(value, ganache.Owner, ganache.Public(bob))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,15 +100,14 @@ func TestFreezePlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
-	if err != nil {
-		t.Fatal(err)
-	}
 	team0PlayerIds, err := ganache.Assets.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	team0PlayerId0 := team0PlayerIds[0]
+	if team0PlayerId0.String() != "274877906944" {
+		t.Fatalf("Wrong player id : %v", team0PlayerId0.String())
+	}
 
 	sellOrder := storage.SellOrder{
 		PlayerId:   team0PlayerId0,
@@ -122,7 +115,7 @@ func TestFreezePlayer(t *testing.T) {
 		Price:      big.NewInt(41234),
 		Rnd:        big.NewInt(42321),
 		ValidUntil: big.NewInt(2000000000),
-		Signature: "0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c"
+		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 	}
 	err = processor.FreezePlayer(sellOrder)
 	if err != nil {
