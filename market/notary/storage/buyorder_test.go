@@ -21,8 +21,8 @@ func TestGetBuyOrders(t *testing.T) {
 	}
 
 	err = sto.CreateBuyOrder(storage.BuyOrder{
-		PlayerId: big.NewInt(1),
-		TeamId:   big.NewInt(2),
+		PlayerID: big.NewInt(1),
+		TeamID:   big.NewInt(2),
 	})
 	if err != nil {
 		t.Fatal(err)

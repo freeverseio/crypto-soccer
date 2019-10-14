@@ -22,7 +22,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 		return orders, err
 	}
 	for _, sellOrder := range sellOrders {
-		buyOrder := b.findBuyOrder(buyOrders, sellOrder.PlayerId)
+		buyOrder := b.findBuyOrder(buyOrders, sellOrder.PlayerID)
 		if buyOrder != nil {
 			orders = append(orders, Order{
 				SellOrder: sellOrder,
@@ -35,7 +35,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 
 func (b *Storage) findBuyOrder(orders []BuyOrder, playerId *big.Int) *BuyOrder {
 	for _, order := range orders {
-		if order.PlayerId.Cmp(playerId) == 0 {
+		if order.PlayerID.Cmp(playerId) == 0 {
 			return &order
 		}
 	}

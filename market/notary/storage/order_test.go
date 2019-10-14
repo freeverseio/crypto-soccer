@@ -21,11 +21,10 @@ func TestGetOrders(t *testing.T) {
 	}
 
 	err = sto.CreateSellOrder(storage.SellOrder{
-		PlayerId:   big.NewInt(1),
+		PlayerID:   big.NewInt(1),
 		Price:      big.NewInt(1000),
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
-		TypeOfTx:   3,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -39,8 +38,8 @@ func TestGetOrders(t *testing.T) {
 	}
 
 	err = sto.CreateBuyOrder(storage.BuyOrder{
-		PlayerId: big.NewInt(1),
-		TeamId:   big.NewInt(3),
+		PlayerID: big.NewInt(1),
+		TeamID:   big.NewInt(3),
 	})
 	if err != nil {
 		t.Fatal(err)
