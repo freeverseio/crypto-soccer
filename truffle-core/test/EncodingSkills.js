@@ -15,13 +15,13 @@ contract('Encoding', (accounts) => {
     it('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        lineup = Array.from(new Array(11), (x,i) => i);
+        lineup = Array.from(new Array(14), (x,i) => i);
         extraAttack = Array.from(new Array(10), (x,i) => i%2);
         encoded = await encoding.encodeTactics(lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
         let {0: line, 1: attk, 2: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
-        for (p = 0; p < 11; p++) {
+        for (p = 0; p < 14; p++) {
             line[p].toNumber().should.be.equal(lineup[p]);
         }
         for (p = 0; p < 10; p++) {

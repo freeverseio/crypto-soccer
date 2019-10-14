@@ -254,7 +254,7 @@ contract Engine is EncodingSkills, Sort{
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
-        uint8[11] memory lineup;
+        uint8[14] memory lineup;
         uint8 changes;
         (lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) 
@@ -264,7 +264,7 @@ contract Engine is EncodingSkills, Sort{
             if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
         }
         // check that there are no cases of player aligned twice (all lineup entries must be different) 
-        lineup = sort11(lineup);
+        lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
         require(changes < 4, "max allowed changes during the break is 3");
         return (states, extraAttack, getPlayersPerZone(tacticsId));

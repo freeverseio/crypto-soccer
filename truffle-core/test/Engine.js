@@ -12,9 +12,9 @@ const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 contract('Engine', (accounts) => {
     // const seed = 610106;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-    const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16];
-    const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18];
-    const lineupConsecutive =  Array.from(new Array(11), (x,i) => i);
+    const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16, 7, 13, 17];
+    const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18, 7, 13, 17];
+    const lineupConsecutive =  Array.from(new Array(14), (x,i) => i);
     const extraAttackNull =  Array.from(new Array(10), (x,i) => 0);
     const tacticId442 = 0; // 442
     const tacticId433 = 2; // 433
@@ -134,6 +134,12 @@ contract('Engine', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
+    
+    it('play a match to estimate cost', async () => {
+        const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
+    });
+
+    return
 
     it('penaltyPerAge', async () => {
         ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
@@ -158,9 +164,6 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
-    });
 
     it('play a match with penalties to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
