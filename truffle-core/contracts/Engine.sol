@@ -17,20 +17,18 @@ contract Engine is EncodingSkills, Sort{
     uint8 private constant IDX_DEFEND_SHOOT = 2; 
     uint8 private constant IDX_BLOCK_SHOOT  = 3; 
     uint8 private constant IDX_ENDURANCE    = 4; 
-    uint256 private constant TEN_TO_4       = uint256(10000); 
-    uint256 private constant TEN_TO_10      = uint256(10000000000); 
-    uint256 private constant TEN_TO_14      = uint256(100000000000000); 
     uint16 private constant NO_EVENT        = 11; 
     //
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 private constant IDX_IS_HOME_STADIUM  = 1; 
     uint8 private constant IDX_IS_PLAYOFF       = 2; 
     //
-    uint256 private constant ONE256       = 1; 
+    uint8 private constant IDX_SEED         = 0; 
+    uint8 private constant IDX_ST_TIME      = 1; 
+    // 
     uint256 private constant SECS_IN_YEAR  = 31536000; 
     uint256 private constant SECS_IN_DAY  = 86400; // 24 * 3600 
 
-    
     bool dummyBoolToEstimateCost;
 
     CardsAndInjuries private _cardsAndInjuries;
@@ -54,7 +52,8 @@ contract Engine is EncodingSkills, Sort{
         playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
-    
+
+
     /**
      * @dev playMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
@@ -74,28 +73,55 @@ contract Engine is EncodingSkills, Sort{
         view
         returns (uint256[2] memory)
     {
+        uint256 block0;
+        uint256 block1;
+        (matchLog, block0, block1) = playMatchWithoutPenalties(
+            [seed, matchStartTime], 
+            states,
+            tactics,
+            matchLog,
+            matchBools
+        );
+        if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
+            matchLog = _cardsAndInjuries.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
+        }
+        return matchLog;
+    }
+    
+    /**
+     * @dev playMatch returns the result of a match
+     * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
+     * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
+     * @return the score of the match
+     */
+    function playMatchWithoutPenalties(
+        uint256[2] memory seedAndStartTime,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory tactics,
+        uint256[2] memory matchLog,
+        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+    )
+        private
+        view
+        returns (uint256[2] memory, uint256, uint256)
+    {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
-        
-        uint8[3][2] memory substitutions;
-        (states[0], extraAttack[0], playersPerZone[0], substitutions[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
-        (states[1], extraAttack[1], playersPerZone[1], substitutions[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
-        matchLog[0] = _cardsAndInjuries.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seed);
-        matchLog[1] = _cardsAndInjuries.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
+        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
+        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
+        matchLog[0] = _cardsAndInjuries.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
+        matchLog[1] = _cardsAndInjuries.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
 
-        globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], matchStartTime);
-        globSkills[1] = getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], matchStartTime);
+        globSkills[0] = _cardsAndInjuries.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
+        globSkills[1] = _cardsAndInjuries.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLog, seed, matchStartTime, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
-        if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
-            computePenalties(matchLog, states, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT], uint64(seed)); // TODO seed
-        }
-        return matchLog;
+        computeRounds(matchLog, seedAndStartTime[IDX_SEED], seedAndStartTime[IDX_ST_TIME], states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
     function computeRounds(
@@ -133,39 +159,6 @@ contract Engine is EncodingSkills, Sort{
         }
     }
     
-    
-    function computePenalties(
-        uint256[2] memory matchLog, 
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
-        uint256 block0, 
-        uint256 block1, 
-        uint64 seed
-    )
-        public 
-        pure 
-        returns(uint256[2] memory) 
-    {
-        uint64[] memory rnds = getNRandsFromSeed(seed * 7, 14);
-        uint8[2] memory totalGoals;
-        for (uint8 round = 0; round < 6; round++) {
-            if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
-                matchLog[0] |= (ONE256 << 144 + round);
-                totalGoals[0] += 1;
-            }
-            if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
-                matchLog[1] |= (ONE256 << 144 + round);
-                totalGoals[1] += 1;
-            }
-            if ((round > 3) && (totalGoals[0] != totalGoals[1])) return matchLog;
-        }
-        if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
-            matchLog[0] |= (ONE256 << 144 + 6);
-        } else {
-            matchLog[1] |= (ONE256 << 144 + 6);
-        }
-        return matchLog;
-    }
-    
     function getNDefenders(uint8[9] memory playersPerZone) private pure returns (uint8) {
         return 2 * playersPerZone[0] + playersPerZone[1];
     }
@@ -191,11 +184,12 @@ contract Engine is EncodingSkills, Sort{
     ) 
         public 
         pure 
-        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone, uint8[3] memory substitutions) 
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
     {
         uint8 tacticsId;
         uint8[14] memory lineup;
         uint8 changes;
+        uint8[3] memory substitutions;
         (substitutions, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) 
         {
@@ -215,7 +209,7 @@ contract Engine is EncodingSkills, Sort{
         require(changes < 4, "max allowed changes during the break is 3");
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
-        return (outStates, extraAttack, getPlayersPerZone(tacticsId), substitutions);
+        return (outStates, extraAttack, getPlayersPerZone(tacticsId));
     }
 
     // TODO: can this be expressed as
@@ -428,58 +422,6 @@ contract Engine is EncodingSkills, Sort{
         require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
     }
 
-    /// @dev Computes basic data, including globalSkills, needed during the game.
-    /// @dev Basically implements the formulas:
-    // move2attack =    defence(defenders + 2*midfields + attackers) +
-    //                  speed(defenders + 2*midfields) +
-    //                  pass(defenders + 3*midfields)
-    // globSkills[IDX_CREATE_SHOOT] =    speed(attackers) + pass(attackers)
-    // globSkills[IDX_DEFEND_SHOOT] =    speed(defenders) + defence(defenders);
-    // blockShoot  =    shoot(keeper);
-    function getTeamGlobSkills(
-        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
-        uint8[9] memory playersPerZone, 
-        bool[10] memory extraAttack,
-        uint256 matchStartTime
-    )
-        public
-        pure
-        returns 
-    (
-        uint256[5] memory globSkills
-    )
-    {
-        // for a keeper, the 'shoot skill' is interpreted as block skill
-        // if for whatever reason, user places a non-GK as GK, the block skill is a terrible minimum.
-        uint256 penalty;
-        uint256 playerSkills = states[0];
-        globSkills[IDX_ENDURANCE] = getEndurance(playerSkills);
-        if (computePenaltyBadPositionAndCondition(0, playersPerZone, playerSkills) == 0) {
-            globSkills[IDX_BLOCK_SHOOT] = (10 * penaltyPerAge(playerSkills, matchStartTime))/1000000;
-        }
-        else globSkills[IDX_BLOCK_SHOOT] = (getShoot(playerSkills) * penaltyPerAge(playerSkills, matchStartTime))/1000000;
-        
-        uint256[3] memory fwdModFactors;
-
-        for (uint8 p = 1; p < 11; p++){
-            playerSkills = states[p];
-            penalty = computePenaltyBadPositionAndCondition(p, playersPerZone, playerSkills) * penaltyPerAge(playerSkills, matchStartTime);
-            fwdModFactors = getExtraAttackFactors(extraAttack[p-1]);
-            if (p < 1 + getNDefenders(playersPerZone)) {computeDefenderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else if (p < 1 + getNDefenders(playersPerZone) + getNMidfielders(playersPerZone)) {computeMidfielderGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}
-            else {computeForwardsGlobSkills(globSkills, playerSkills, penalty, fwdModFactors);}       
-        }
-        // endurance is converted to a percentage, 
-        // used to multiply (and hence decrease) the start endurance.
-        // 100 is super-endurant (1500), 70 is bad, for an avg starting team (550).
-        if (globSkills[IDX_ENDURANCE] < 500) {
-            globSkills[IDX_ENDURANCE] = 70;
-        } else if (globSkills[IDX_ENDURANCE] < 1400) {
-            globSkills[IDX_ENDURANCE] = 100 - (1400-globSkills[IDX_ENDURANCE])/30;
-        } else {
-            globSkills[IDX_ENDURANCE] = 100;
-        }
-    }
     
     // for each day that passes over 31 years (=11315 days), we subtract 0,0274%, so that you get 10.001% less per year
     // on a max of 1M, this is 274 per day.
@@ -490,176 +432,13 @@ contract Engine is EncodingSkills, Sort{
         return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
 
-    function computeDefenderGlobSkills(
-        uint256[5] memory globSkills,
-        uint256 playerSkills, 
-        uint256 penalty, 
-        uint256[3] memory fwdModFactors
-    ) 
-        private 
-        pure
-    {
-        if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills) + getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_DEFEND_SHOOT] += ((getDefence(playerSkills) + getSpeed(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 30;
-            globSkills[IDX_DEFEND_SHOOT] += 20;
-            globSkills[IDX_ENDURANCE]   += 10;
-        }
-    }
-
-
-    function computeMidfielderGlobSkills(
-        uint256[5] memory globSkills,
-        uint256 playerSkills, 
-        uint256 penalty, 
-        uint256[3] memory fwdModFactors
-    ) 
-        private 
-        pure
-    {
-        if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((2*getDefence(playerSkills) + 2*getSpeed(playerSkills) + 3*getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE]   += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 50;
-            globSkills[IDX_ENDURANCE]   += 10;
-        }
-    }
-    
-    
-    function computeForwardsGlobSkills(
-        uint256[5] memory globSkills,
-        uint256 playerSkills, 
-        uint256 penalty, 
-        uint256[3] memory fwdModFactors
-    ) 
-        private 
-        pure
-    {
-        if (penalty != 0) {
-            globSkills[IDX_MOVE2ATTACK] += ((getDefence(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_CREATE_SHOOT] += ((getSpeed(playerSkills) + getPass(playerSkills)) * penalty * fwdModFactors[IDX_MOVE2ATTACK])/TEN_TO_14;
-            globSkills[IDX_ENDURANCE] += ((getEndurance(playerSkills)) * penalty)/TEN_TO_10;
-        } else {
-            globSkills[IDX_MOVE2ATTACK] += 10;
-            globSkills[IDX_CREATE_SHOOT] += 20;
-            globSkills[IDX_ENDURANCE] += 10;
-        }
-    }
-    
-    
     
     
 
 
 
-    // recall order: [MOVE2ATTACK, CREATE_SHOOT, DEFEND_SHOOT, BLOCK_SHOOT, ENDURANCE]
-    // the forward modifier factors only change the first 3.
-    function getExtraAttackFactors(bool extraAttack) public pure returns (uint256[3] memory fwdModFactors) {
-        if (extraAttack)    {fwdModFactors = [uint256(10500), uint256(10500), uint256(9500)];}
-        else                {fwdModFactors = [TEN_TO_4, TEN_TO_4, TEN_TO_4];}
-    }
-  
-    // 0 penalty means no penalty
-    // 1000 penalty means 10% penalty
-    // etc... up to MAX_PENALTY
-    function computePenaltyBadPositionAndCondition(
-        uint8 lineupPos, 
-        uint8[9] memory playersPerZone, 
-        uint256 playerSkills
-    ) 
-        public
-        pure
-        returns (uint256 penalty) 
-    {
-        require(lineupPos < 11, "wrong arg in computePenaltyBadPositionAndCondition");
-        uint256 forwardness = getForwardness(playerSkills);
-        uint256 leftishness = getLeftishness(playerSkills);
-        if (forwardness == IDX_GK && lineupPos > 0 || forwardness != IDX_GK && lineupPos == 0) return 0;
-        uint8[9] memory playersBelow = playersBelowZones(playersPerZone);
-        lineupPos--; // remove the offset due to the GK
-        if (lineupPos < playersBelow[0]) { 
-            // assigned to defense left
-            penalty = penaltyForDefenders(forwardness);
-            penalty += penaltyForLefts(leftishness);
-        } else if (lineupPos < playersBelow[1]) { 
-            // assigned to defense center
-            penalty = penaltyForDefenders(forwardness);
-            penalty += penaltyForCenters(leftishness);
-        } else if (lineupPos < playersBelow[2]) { 
-            // assigned to defense left
-            penalty = penaltyForDefenders(forwardness);
-            penalty += penaltyForRights(leftishness);
-        } else if (lineupPos < playersBelow[3]) { 
-            // assigned to mid left
-            penalty = penaltyForMids(forwardness);
-            penalty += penaltyForLefts(leftishness);
-        } else if (lineupPos < playersBelow[4]) { 
-            // assigned to mid center
-            penalty = penaltyForMids(forwardness);
-            penalty += penaltyForCenters(leftishness);
-        } else if (lineupPos < playersBelow[5]) { 
-            // assigned to mid right
-            penalty = penaltyForMids(forwardness);
-            penalty += penaltyForRights(leftishness);
-        } else if (lineupPos < playersBelow[6]) { 
-            // assigned to attack left
-            penalty = penaltyForAttackers(forwardness);
-            penalty += penaltyForLefts(leftishness);
-        } else if (lineupPos < playersBelow[7]) { 
-            // assigned to attack center
-            penalty = penaltyForAttackers(forwardness);
-            penalty += penaltyForCenters(leftishness);
-        } else { 
-            // assigned to attack right
-            penalty = penaltyForAttackers(forwardness);
-            penalty += penaltyForRights(leftishness);
-        }
-        uint256 gamesNonStop = getGamesNonStopping(playerSkills);
-        if (gamesNonStop > 5) {
-            return 5000 - penalty;
-        } else {
-            return 10000 - gamesNonStop * 1000 - penalty;
-        }
-    }
 
-    function playersBelowZones(uint8[9] memory playersPerZone) private pure returns(uint8[9] memory  playersBelow) {
-        playersBelow[0] = playersPerZone[0];    
-        for (uint8 z = 1; z < 9; z++) {
-            playersBelow[z] = playersBelow[z-1] + playersPerZone[z];
-        }
-    }
 
-    function penaltyForLefts(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_C || leftishness == IDX_CR) {return 1000;} 
-            else if (leftishness == IDX_R) {return 2000;}
-    }
-
-    function penaltyForCenters(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_L || leftishness == IDX_R) {return 1000;} 
-    }
-
-    function penaltyForRights(uint256 leftishness) private pure returns(uint16) {
-            if (leftishness == IDX_C || leftishness == IDX_LC) {return 1000;} 
-            else if (leftishness == IDX_L) {return 2000;}
-    }
-    
-    function penaltyForDefenders(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_M || forwardness == IDX_MF) {return 1000;}
-            else if (forwardness == IDX_F) {return 2000;}
-    }
-
-    function penaltyForMids(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_D || forwardness == IDX_F) {return 1000;}
-    }
-
-    function penaltyForAttackers(uint256 forwardness) private pure returns(uint16) {
-            if (forwardness == IDX_M || forwardness == IDX_MD) {return 1000;}
-            else if (forwardness == IDX_D) {return 2000;}
-    }
 
 }
 

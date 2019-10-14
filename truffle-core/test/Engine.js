@@ -203,7 +203,7 @@ contract('Engine', (accounts) => {
 
     it('computePenalties', async () => {
         // one team much better than the other:
-        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
+        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -212,7 +212,7 @@ contract('Engine', (accounts) => {
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
         
         // both teams similar:
-        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 50, 50, seed);
+        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 50, 50, seed);
         expected = [false, true, true, true, true, false, false]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -221,7 +221,7 @@ contract('Engine', (accounts) => {
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
 
         // both teams really incredible goalkeepers:
-        log = await engine.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
+        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
         expected = [false, false, false, false, false, false, true]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -291,7 +291,7 @@ contract('Engine', (accounts) => {
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
@@ -312,9 +312,9 @@ contract('Engine', (accounts) => {
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -336,7 +336,7 @@ contract('Engine', (accounts) => {
                 forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
-                penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
                 if (expected442[p] == MAX_PENALTY) {
                     penalty.toNumber().should.be.equal(0);
                 } else {
@@ -359,9 +359,9 @@ contract('Engine', (accounts) => {
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await engine.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -640,7 +640,7 @@ contract('Engine', (accounts) => {
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await engine.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, now).should.be.fulfilled;
+        globSkills = await cardsAndInjuries.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, now).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
