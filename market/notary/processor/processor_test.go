@@ -92,12 +92,10 @@ func TestFreezePlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	processor, err := processor.NewProcessor(sto, ganache.Client, ganache.Market, ganache.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	timezone := uint8(1)
 	countryIdxInTZ := big.NewInt(0)
 	teamId0, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
@@ -124,6 +122,7 @@ func TestFreezePlayer(t *testing.T) {
 		Price:      big.NewInt(41234),
 		Rnd:        big.NewInt(42321),
 		ValidUntil: big.NewInt(2000000000),
+		Signature: "0xac466c2139f6edce74d18161252922d8368dce25c3e508de98e8659e9a994a000dd33bd3034aea26fe99b54b1df240041f77afb0a2be508a83e7d35482b20a951c"
 	}
 	err = processor.FreezePlayer(sellOrder)
 	if err != nil {
