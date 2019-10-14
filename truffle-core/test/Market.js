@@ -271,7 +271,7 @@ contract("Market", accounts => {
     ];
     
     // test first
-    ok = await market.areCompleteAuctionRequirementsOK(
+    ok = await market.areCompletePlayerAuctionRequirementsOK(
       sellerHiddenPrice,
       offerValidUntil,
       playerId,
@@ -284,7 +284,7 @@ contract("Market", accounts => {
     ok.should.be.equal(true);
     
     // write with confidence
-    tx = await market.completeAuction(
+    tx = await market.completePlayerAuction(
       sellerHiddenPrice,
       offerValidUntil,
       playerId,
@@ -408,7 +408,7 @@ contract("Market", accounts => {
     ];
     
     // test first
-    ok = await market.areCompleteAuctionRequirementsOK(
+    ok = await market.areCompletePlayerAuctionRequirementsOK(
       sellerHiddenPrice,
       offerValidUntil,
       playerId,
@@ -421,7 +421,7 @@ contract("Market", accounts => {
     ok.should.be.equal(false);
     
     // write with confidence    
-    tx = await market.completeAuction(
+    tx = await market.completePlayerAuction(
       sellerHiddenPrice,
       offerValidUntil,
       playerId,
@@ -599,7 +599,7 @@ contract("Market", accounts => {
       sigBuyer.r,
       sigBuyer.s,
     ];
-    tx = await market.completeAuction(
+    tx = await market.completePlayerAuction(
       sellerHiddenPrice,
       validUntil,
       playerId,
@@ -718,7 +718,7 @@ contract("Market", accounts => {
       sigBuyer.s,
     ];
     
-    tx = await market.completeAuction(
+    tx = await market.completePlayerAuction(
       sellerHiddenPrice,
       validUntil,
       playerId,

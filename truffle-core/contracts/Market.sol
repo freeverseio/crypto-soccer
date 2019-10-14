@@ -70,7 +70,7 @@ contract Market {
     }
 
 
-    function areCompleteAuctionRequirementsOK(
+    function areCompletePlayerAuctionRequirementsOK(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
@@ -105,7 +105,7 @@ contract Market {
         } 
     }
 
-    function completeAuction(
+    function completePlayerAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
         uint256 playerId,
@@ -115,7 +115,7 @@ contract Market {
         uint8 sigV,
         bool isOffer2StartAuction
      ) public {
-        require(areCompleteAuctionRequirementsOK(
+        require(areCompletePlayerAuctionRequirementsOK(
             sellerHiddenPrice,
             validUntil,
             playerId,
