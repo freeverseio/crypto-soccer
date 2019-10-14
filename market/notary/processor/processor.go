@@ -117,7 +117,7 @@ func (b *Processor) Process() error {
 
 	for _, order := range orders {
 		playerID := order.SellOrder.PlayerId
-		frozen, err := b.assets.IsFrozen(&bind.CallOpts{}, playerID)
+		frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
 		if err != nil {
 			log.Error(err)
 			continue

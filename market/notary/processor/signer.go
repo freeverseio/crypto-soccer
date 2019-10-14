@@ -58,7 +58,7 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.BuildPutForSaleTxMsg(
+	hash, err = b.assets.BuildPutAssetForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
 		validUntil,
