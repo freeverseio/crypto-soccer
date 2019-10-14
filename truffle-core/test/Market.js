@@ -435,6 +435,70 @@ contract("Market", accounts => {
   
   
   
+  // *************************************************************************
+  // *********************************   TEST  *******************************
+  // *************************************************************************
+  
+  
+  it("fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
+    validUntil = now.toNumber() + 3600*24*2; // two days
+
+    sigSeller = await signPutForSaleMTx(
+      currencyId,
+      price,
+      offererRnd, // he reuses the rnd provided
+      validUntil, 
+      playerId.toNumber(),
+      sellerAccount
+    );
+
+    // First of all, Freeverse and Buyer check the signature
+    // In this case, using web3:
+    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
+    recoveredSellerAddr.should.be.equal(sellerAccount.address);
+
+    // The correctness of the seller message can also be checked in the BC:
+    const sellerHiddenPrice = concatHash(
+      ["uint8", "uint256", "uint256"],
+      [currencyId, price, offererRnd]
+    );
+    sellerTxMsgBC = await market.buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
+    sellerTxMsgBC.should.be.equal(sigSeller.message);
+
+    // Then, the buyer builds a message to sign
+    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
+    isFrozen.should.be.equal(false);
+
+    // and send the Freeze TX. 
+    const sigSellerMsgRS = [
+      sigSeller.messageHash,
+      sigSeller.r,
+      sigSeller.s,
+    ];
+
+    // we can double-check that it would work
+    ok = await market.areFreezePlayerRequirementsOK(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      sigSellerMsgRS,
+      sigSeller.v
+    ).should.be.fulfilled;
+    ok.should.be.equal(false);
+    
+    // and finally do the freeze 
+    tx = await market.freezePlayer(
+      sellerHiddenPrice,
+      validUntil,
+      playerId,
+      sigSellerMsgRS,
+      sigSeller.v
+    ).should.be.rejected;
+  });
+  
+  
+  
+  
   
   // *************************************************************************
   // *********************************   TEST  *******************************
