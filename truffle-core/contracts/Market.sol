@@ -19,6 +19,7 @@ contract Market {
     uint256 constant public POST_AUCTION_TIME   = 6 hours; 
     uint256 constant public AUCTION_TIME        = 24 hours; 
     uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
+    uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
 
     Assets private _assets;
 
@@ -64,7 +65,7 @@ contract Market {
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        playerIdToAuctionData[playerId] = validUntil;
+        playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
         emit PlayerFreeze(playerId, true);
     }
 
@@ -87,6 +88,8 @@ contract Market {
         bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         ok =    // check asset is owned by buyer
                 (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
+                // check buyer and seller refer to the exact same auction
+                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (playerIdToAuctionData[playerId] >> 34)) &&
                 // check signatures are valid by requiring that they own the asset:
                 (_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
@@ -96,9 +99,9 @@ contract Market {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > playerIdToAuctionData[playerId] - AUCTION_TIME);
+            ok = ok && (validUntil > (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
         } else {
-            ok = ok && (validUntil == playerIdToAuctionData[playerId]);
+            ok = ok && (validUntil == (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
         } 
     }
 
@@ -134,12 +137,12 @@ contract Market {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
-    function buildPutForSaleTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId) public pure returns (bytes32) {
-        return keccak256(abi.encode(privHash, validUntil, playerId));
+    function buildPutForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, validUntil, playerId));
     }
 
-    function buildOfferToBuyTxMsg(bytes32 privHash, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
-        return keccak256(abi.encode(privHash, validUntil, playerId, buyerTeamId));
+    function buildOfferToBuyTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, validUntil, playerId, buyerTeamId));
     }
 
     function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId, bool isOffer2StartAuction) public pure returns (bytes32) {
@@ -168,7 +171,7 @@ contract Market {
 
     function isFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
-        return playerIdToAuctionData[playerId] + POST_AUCTION_TIME > now;
+        return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
 }
