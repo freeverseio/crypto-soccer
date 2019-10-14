@@ -34,12 +34,13 @@ contract EncodingSkills {
 
 
     /**
-     * @dev Tactics serializes a total of 86 bits = 14*5 + 10 + 6:
+     * @dev Tactics serializes a total of 98 bits = 3 * 4 + 14*5 + 10 + 6:
+     *      substitutions[3]      = 4 bit each = [3 different nums from 0 to 11]
      *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
     **/
-    function encodeTactics(uint8[14] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) public pure returns (uint256) {
+    function encodeTactics(uint8[3] memory substitutions, uint8[14] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) public pure returns (uint256) {
         require(tacticsId < 86, "tacticsId should fit in 86 bit");
         uint256 encoded = uint256(tacticsId);
         for (uint8 p = 0; p < 10; p++) {
@@ -49,11 +50,15 @@ contract EncodingSkills {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
+        for (uint8 p = 0; p < 3; p++) {
+            require(substitutions[p] < 12, "incorrect lineup entry");
+            encoded |= uint256(substitutions[p]) << 86 + 4 * p;
+        }          
         return encoded;
     }
 
-    function decodeTactics(uint256 tactics) public pure returns (uint8[14] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) {
-        require(tactics < 2**86, "tacticsId should fit in 81 bit");
+    function decodeTactics(uint256 tactics) public pure returns (uint8[3] memory substitutions, uint8[14] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) {
+        require(tactics < 2**98, "tacticsId should fit in 98 bit");
         tacticsId = uint8(tactics & 63);
         tactics >>= 6;
         for (uint8 p = 0; p < 10; p++) {
@@ -64,6 +69,11 @@ contract EncodingSkills {
             lineup[p] = uint8(tactics & 31); // 2^5 - 1
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             tactics >>= 5;
+        }          
+        for (uint8 p = 0; p < 3; p++) {
+            substitutions[p] = uint8(tactics & 15); // 2^4 - 1
+            require(substitutions[p] < 12, "incorrect lineup entry"); // 11 is used as "no substitution"
+            tactics >>= 4;
         }          
     }
     
