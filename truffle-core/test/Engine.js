@@ -8,6 +8,7 @@ const truffleAssert = require('truffle-assertions');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
+const CardsAndInjuries = artifacts.require('CardsAndInjuries');
 
 contract('Engine', (accounts) => {
     // const seed = 610106;
@@ -123,6 +124,8 @@ contract('Engine', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
+        cardsAndInjuries = await CardsAndInjuries.new().should.be.fulfilled;
+        await engine.setCardsAndInjuries(cardsAndInjuries.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
         tactics1NoChanges = await engine.encodeTactics(noSubstitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
@@ -142,7 +145,6 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
-
 
     it('penaltyPerAge', async () => {
         ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];

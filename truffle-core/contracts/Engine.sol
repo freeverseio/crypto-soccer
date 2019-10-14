@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./EncodingSkills.sol";
 import "./Sort.sol";
+import "./CardsAndInjuries.sol";
 
 contract Engine is EncodingSkills, Sort{
     
@@ -31,6 +32,12 @@ contract Engine is EncodingSkills, Sort{
 
     
     bool dummyBoolToEstimateCost;
+
+    CardsAndInjuries private _cardsAndInjuries;
+
+    function setCardsAndInjuries(address addr) public {
+        _cardsAndInjuries = CardsAndInjuries(addr);
+    }
 
     // mock up to estimate cost of a match.
     // to be removed before deployment
@@ -64,7 +71,7 @@ contract Engine is EncodingSkills, Sort{
         bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
     )
         public
-        pure
+        view
         returns (uint256[2] memory)
     {
         uint256[5][2] memory globSkills;
@@ -75,8 +82,8 @@ contract Engine is EncodingSkills, Sort{
         (states[0], extraAttack[0], playersPerZone[0], substitutions[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
         (states[1], extraAttack[1], playersPerZone[1], substitutions[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
-        matchLog[0] = computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seed);
-        matchLog[1] = computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
+        matchLog[0] = _cardsAndInjuries.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seed);
+        matchLog[1] = _cardsAndInjuries.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seed);
 
 
         globSkills[0] = getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], matchStartTime);
@@ -171,74 +178,6 @@ contract Engine is EncodingSkills, Sort{
         return 2 * playersPerZone[6] + playersPerZone[7];
     }
     
-    // // encodes: round (from 0 to 11), linedUpPos (from 0 to 10), eventType (from 1 to 3: redCard, softInjury, HardInjury)
-    // // encoded value = 0 <==> no event
-    // function encodeEvent(uint16 linedUpPos, uint16 round, uint16 eventType) public pure returns (uint16) {
-    //     return (linedUpPos) + (round << 4) + (eventType << 8);
-    // }
-    
-    // function decodeEvent(uint16 code) public pure returns (uint16[3] memory) {
-    //     return [code & 15, (code >> 4) & 15, (code >> 8) & 3];
-    // }
-    
-    function computeTypeOfEvent(uint256 rnd) private pure returns (uint8) {
-        uint256[] memory weights = new uint256[](3);
-        weights[0] = 1; // injuryHard   
-        weights[1] = 2; // injuryLow
-        weights[2] = 5; // redCard
-        return 1 + throwDiceArray(weights, rnd);
-    }
-
-    // Over a game, we would like:
-    //      - injuryHard = 1 per 100 games => 0.01 per game per player => 0.02 per game
-    //      - injuryLow = 0.7 per 100 games => 0.007 per game per player => 0.04 per game
-    //      - redCard 1/10 = 0.1 per game
-    //      - yellowCard 2.5 per game 
-    // We encode this in uint16[3] events, which applies to 1 half of the game only.
-    //  - 1 possible event that leaves a player out of the match, encoded in:
-    //          events[0, 1] = [player (from 0 to 11), eventType (injuryHard, injuryLow, redCard)]
-    //  - 2 possible events for yellow card:
-    //          events[2] = player (from 0 to 11)
-    //          events[3] = player (from 0 to 11)
-    // The player value is set to NO_EVENT ( = 11) if no event took place
-    // If we're on the 2nd half, the idx are events[4,5,6,7]
-    function computeExceptionalEvents
-    (
-        uint256 matchLog,
-        uint256[PLAYERS_PER_TEAM_MAX] memory states,
-        bool is2ndHalf,
-        uint256 seed
-    ) 
-        public 
-        pure 
-        returns 
-    (
-        uint256
-    ) 
-    {
-        uint8 offset = is2ndHalf ? 165 : 151;
-        uint256[] memory weights = new uint256[](12);
-        uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
-        for (uint8 p = 0; p < 11; p++) {
-            weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
-        }
-        // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
-        // average sumAggressiveness = 11 * 2.5 = 27.5
-        // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
-        weights[11] = 758;
-        matchLog |= uint256(throwDiceArray(weights, rnds[0])) << offset;
-        matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 4);
-        // next: two events for yellow cards
-        // average sumAggressiveness = 11 * 2.5 = 27.5
-        // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
-        // weight nothing happens = 9
-        weights[11] = 9;
-        matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 6);
-        matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 10);
-        return matchLog;
-    }
-    
-
 
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many
     // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
