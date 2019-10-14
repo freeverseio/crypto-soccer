@@ -267,7 +267,9 @@ contract Engine is EncodingSkills, Sort{
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
         require(changes < 4, "max allowed changes during the break is 3");
-        return (states, extraAttack, getPlayersPerZone(tacticsId));
+        
+        
+        return (outStates, extraAttack, getPlayersPerZone(tacticsId));
     }
 
     // TODO: can this be expressed as

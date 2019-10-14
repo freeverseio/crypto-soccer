@@ -85,7 +85,7 @@ contract('Engine', (accounts) => {
         gamesNonStopping = 0;
         injuryWeeksLeft = 0;
         for (p = 0; p < 11; p++) {
-            pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, playerId, [pot, fwd442[p], left442[p], aggr],
+            pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, playerId + p, [pot, fwd442[p], left442[p], aggr],
                 alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled 
             teamState.push(pSkills)
         }
@@ -139,7 +139,6 @@ contract('Engine', (accounts) => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
 
-    return
 
     it('penaltyPerAge', async () => {
         ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
@@ -637,7 +636,7 @@ contract('Engine', (accounts) => {
         result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1, is2ndHalf).should.be.fulfilled;
         let {0: states, 1:fwdMods , 2: playersPerZone} = result;
         for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
-        for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[p]);
+        for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[lineup1[p]]);
     });
 
     it('play match with wrong tactic', async () => {
