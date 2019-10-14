@@ -10,7 +10,6 @@ contract Engine is EncodingSkills, Sort{
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
     uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
-    uint256 public constant MAX_PENALTY     = 10000; // Idx used to identify normal player acting as GK, or viceversa.
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -26,7 +25,6 @@ contract Engine is EncodingSkills, Sort{
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
     // 
-    uint256 private constant SECS_IN_YEAR  = 31536000; 
     uint256 private constant SECS_IN_DAY  = 86400; // 24 * 3600 
 
     bool dummyBoolToEstimateCost;
@@ -431,14 +429,6 @@ contract Engine is EncodingSkills, Sort{
         if (ageDays > 14964) return 0; // 3649 + 11315 (41 years)
         return ageDays < 11316 ? 1000000 : 1000000 - 274 * (ageDays - 11315);
     }
-
-    
-    
-
-
-
-
-
 
 }
 
