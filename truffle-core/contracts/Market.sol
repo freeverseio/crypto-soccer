@@ -18,10 +18,11 @@ contract Market {
     //  ...it includes time to ask for a 2nd-best bidder, or 3rd-best.
     uint256 constant public POST_AUCTION_TIME   = 6 hours; 
     uint256 constant public AUCTION_TIME        = 24 hours; 
+    uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
 
     Assets private _assets;
 
-    mapping (uint256 => uint256) private playerIdToAuctionEnd;
+    mapping (uint256 => uint256) private playerIdToAuctionData;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
@@ -48,7 +49,9 @@ contract Market {
             // check signatures are valid by requiring that they own the asset:
             (_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
-            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))
+            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)) &&
+            // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
+            (validUntil < now + MAX_VALID_UNTIL) 
         );
     }
 
@@ -61,7 +64,7 @@ contract Market {
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        playerIdToAuctionEnd[playerId] = validUntil;
+        playerIdToAuctionData[playerId] = validUntil;
         emit PlayerFreeze(playerId, true);
     }
 
@@ -93,9 +96,9 @@ contract Market {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > playerIdToAuctionEnd[playerId] - AUCTION_TIME);
+            ok = ok && (validUntil > playerIdToAuctionData[playerId] - AUCTION_TIME);
         } else {
-            ok = ok && (validUntil == playerIdToAuctionEnd[playerId]);
+            ok = ok && (validUntil == playerIdToAuctionData[playerId]);
         } 
     }
 
@@ -121,7 +124,7 @@ contract Market {
             , "requirements to complete auction are not met"    
         );
         _assets.transferPlayer(playerId, buyerTeamId);
-        playerIdToAuctionEnd[playerId] = 1;
+        playerIdToAuctionData[playerId] = 1;
         emit PlayerFreeze(playerId, false);
     }
     
@@ -165,7 +168,7 @@ contract Market {
 
     function isFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
-        return playerIdToAuctionEnd[playerId] + POST_AUCTION_TIME > now;
+        return playerIdToAuctionData[playerId] + POST_AUCTION_TIME > now;
     }
 
 }

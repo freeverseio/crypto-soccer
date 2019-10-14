@@ -117,7 +117,7 @@ contract("Market", accounts => {
     POST_AUCTION_TIME = await market.POST_AUCTION_TIME().should.be.fulfilled;
     POST_AUCTION_TIME = POST_AUCTION_TIME.toNumber();
     
-    validUntil = 2 * now.toNumber();
+    validUntil = now.toNumber() + AUCTION_TIME;
     currencyId = 1;
     price = 41234;
     sellerRnd = 42321;
