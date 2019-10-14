@@ -213,8 +213,8 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Add some amount to the price where seller started, and a rnd to obfuscate it
     const buyerHiddenPrice = concatHash(
@@ -222,8 +222,8 @@ contract("Market", accounts => {
       [extraPrice, buyerRnd]
     );
     
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigOffer);
@@ -255,8 +255,8 @@ contract("Market", accounts => {
       sigSeller.v
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
@@ -350,8 +350,8 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Add some amount to the price where seller started, and a rnd to obfuscate it
     const buyerHiddenPrice = concatHash(
@@ -359,8 +359,8 @@ contract("Market", accounts => {
       [extraPrice, buyerRnd]
     );
     
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigOffer);
@@ -392,8 +392,8 @@ contract("Market", accounts => {
       sigSeller.v
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
@@ -466,8 +466,8 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // and send the Freeze TX. 
     const sigSellerMsgRS = [
@@ -542,8 +542,8 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Add some amount to the price where seller started, and a rnd to obfuscate it
     const buyerHiddenPrice = concatHash(
@@ -564,8 +564,8 @@ contract("Market", accounts => {
       buyerAccount
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
@@ -585,8 +585,8 @@ contract("Market", accounts => {
       sigSeller.v
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
@@ -661,8 +661,8 @@ contract("Market", accounts => {
     sellerTxMsgBC.should.be.equal(sigSeller.message);
 
     // Then, the buyer builds a message to sign
-    let isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Add some amount to the price where seller started, and a rnd to obfuscate it
     const buyerHiddenPrice = concatHash(
@@ -683,8 +683,8 @@ contract("Market", accounts => {
       buyerAccount
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(false);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(false);
 
     // Freeverse checks the signature
     recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
@@ -704,8 +704,8 @@ contract("Market", accounts => {
       sigSeller.v
     ).should.be.fulfilled;
 
-    isFrozen = await market.isFrozen(playerId).should.be.fulfilled;
-    isFrozen.should.be.equal(true);
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
+    isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);

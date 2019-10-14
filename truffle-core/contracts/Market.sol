@@ -7,7 +7,8 @@ import "./Assets.sol";
  */
 
 contract Market {
-    event PlayerFreeze(uint256 playerId, bool frozen);
+    event PlayerFreeze(uint256 playerId, uint256 auctionData, bool frozen);
+    event TeamFreeze(uint256 teamId, uint256 auctionData, bool frozen);
 
     uint8 constant internal IDX_MSG = 0;
     uint8 constant internal IDX_r   = 1;
@@ -24,9 +25,93 @@ contract Market {
     Assets private _assets;
 
     mapping (uint256 => uint256) private playerIdToAuctionData;
+    mapping (uint256 => uint256) private teamIdToAuctionData;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
+    }
+    
+    // Main PLAYER auction functions: freeze & complete
+    function freezePlayer(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32[3] memory sig,
+        uint8 sigV
+    ) public {
+        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
+        // // Freeze player
+        playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
+        emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
+    }
+
+    function completePlayerAuction(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 playerId,
+        bytes32 buyerHiddenPrice,
+        uint256 buyerTeamId,
+        bytes32[3] memory sig,
+        uint8 sigV,
+        bool isOffer2StartAuction
+     ) public {
+        require(areCompletePlayerAuctionRequirementsOK(
+            sellerHiddenPrice,
+            validUntil,
+            playerId,
+            buyerHiddenPrice,
+            buyerTeamId,
+            sig,
+            sigV,
+            isOffer2StartAuction)
+            , "requirements to complete auction are not met"    
+        );
+        _assets.transferPlayer(playerId, buyerTeamId);
+        playerIdToAuctionData[playerId] = 1;
+        emit PlayerFreeze(playerId, 1, false);
+    }
+    
+    // Main TEAM auction functions: freeze & complete
+    function freezeTeam(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 teamId,
+        bytes32[3] memory sig,
+        uint8 sigV
+    ) public {
+        require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
+        // // Freeze player
+        teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
+        emit TeamFreeze(teamId, teamIdToAuctionData[teamId], true);
+    }
+
+
+    function areFreezeTeamRequirementsOK(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 teamId,
+        bytes32[3] memory sig,
+        uint8 sigV
+    ) 
+        public 
+        view 
+        returns (bool)
+    {
+        return true;
+        return (
+            // check validUntil has not expired
+            (now < validUntil) &&
+            // check player is not already frozen
+            (!isTeamFrozen(teamId))) &&  
+            // check asset is owned by legit address
+            (_assets.getOwnerPlayer(teamId) != address(0)) && 
+            // check signatures are valid by requiring that they own the asset:
+            (_assets.getOwnerPlayer(teamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+            // check that they signed what they input data says they signed:
+            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, teamId)) &&
+            // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
+            (validUntil < now + MAX_VALID_UNTIL) 
+        );
     }
 
     function areFreezePlayerRequirementsOK(
@@ -44,7 +129,7 @@ contract Market {
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
-            (!isFrozen(playerId))) &&  
+            (!isPlayerFrozen(playerId))) &&  
             // check asset is owned by legit address
             (_assets.getOwnerPlayer(playerId) != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
@@ -54,19 +139,6 @@ contract Market {
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
             (validUntil < now + MAX_VALID_UNTIL) 
         );
-    }
-
-    function freezePlayer(
-        bytes32 sellerHiddenPrice,
-        uint256 validUntil,
-        uint256 playerId,
-        bytes32[3] memory sig,
-        uint8 sigV
-    ) public {
-        require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
-        // // Freeze player
-        playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
-        emit PlayerFreeze(playerId, true);
     }
 
 
@@ -93,7 +165,7 @@ contract Market {
                 // check signatures are valid by requiring that they own the asset:
                 (_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
-                isFrozen(playerId) &&
+                isPlayerFrozen(playerId) &&
                 // check that they signed what they input data says they signed:
                 sig[IDX_MSG] == prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
 
@@ -105,31 +177,7 @@ contract Market {
         } 
     }
 
-    function completePlayerAuction(
-        bytes32 sellerHiddenPrice,
-        uint256 validUntil,
-        uint256 playerId,
-        bytes32 buyerHiddenPrice,
-        uint256 buyerTeamId,
-        bytes32[3] memory sig,
-        uint8 sigV,
-        bool isOffer2StartAuction
-     ) public {
-        require(areCompletePlayerAuctionRequirementsOK(
-            sellerHiddenPrice,
-            validUntil,
-            playerId,
-            buyerHiddenPrice,
-            buyerTeamId,
-            sig,
-            sigV,
-            isOffer2StartAuction)
-            , "requirements to complete auction are not met"    
-        );
-        _assets.transferPlayer(playerId, buyerTeamId);
-        playerIdToAuctionData[playerId] = 1;
-        emit PlayerFreeze(playerId, false);
-    }
+
     
     
     // this function is not used in the contract. It's only for external helps
@@ -169,9 +217,13 @@ contract Market {
         return now;
     }
 
-    function isFrozen(uint256 playerId) public view returns (bool) {
+    function isPlayerFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.playerExists(playerId), "unexistent player");
         return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
+    function isTeamFrozen(uint256 teamId) public view returns (bool) {
+        require(_assets.teamExists(teamId), "unexistent team");
+        return (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+    }
 }
