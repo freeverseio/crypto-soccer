@@ -133,7 +133,7 @@ contract Market {
             // check signatures are valid by requiring that they own the asset:
             (teamOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
-            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, teamId)) &&
+            (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId)) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
             (validUntil < now + MAX_VALID_UNTIL) 
         );
@@ -153,25 +153,24 @@ contract Market {
         returns(bool ok, address buyerAddress) 
     {
         // the next line will verify that the teamId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, teamId));
+        bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId));
         buyerAddress = recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]);
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (playerIdToAuctionData[teamId] >> 34)) &&
-                // check player is still frozen
+                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (teamIdToAuctionData[teamId] >> 34)) &&
+                // // check player is still frozen
                 isTeamFrozen(teamId) &&
-                // check that they signed what they input data says they signed:
+                // // check that they signed what they input data says they signed:
                 sig[IDX_MSG] == prefixed(buildAgreeToBuyTeamTxMsg(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (playerIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            ok = ok && (validUntil > (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
         } else {
-            ok = ok && (validUntil == (playerIdToAuctionData[teamId] & VALID_UNTIL_MASK));
+            ok = ok && (validUntil == (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
         } 
     }
-
 
     function areFreezePlayerRequirementsOK(
         bytes32 sellerHiddenPrice,
@@ -194,7 +193,7 @@ contract Market {
             // check signatures are valid by requiring that they own the asset:
             (_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
-            (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)) &&
+            (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
             (validUntil < now + MAX_VALID_UNTIL) 
         );
@@ -216,7 +215,7 @@ contract Market {
         returns(bool ok) 
     {
         // the next line will verify that the playerId is the same that was used by the seller to sign
-        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+        bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
         ok =    // check asset is owned by buyer
                 (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
@@ -244,7 +243,7 @@ contract Market {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
-    function buildPutForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 assetId) public pure returns (bytes32) {
+    function buildPutAssetForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 assetId) public pure returns (bytes32) {
         return keccak256(abi.encode(hiddenPrice, validUntil, assetId));
     }
 
