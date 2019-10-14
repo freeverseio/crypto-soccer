@@ -85,6 +85,31 @@ contract Market {
         emit TeamFreeze(teamId, teamIdToAuctionData[teamId], true);
     }
 
+    function completeTeamAuction(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 teamId,
+        bytes32 buyerHiddenPrice,
+        bytes32[3] memory sig,
+        uint8 sigV,
+        bool isOffer2StartAuction
+     ) public {
+        (bool ok, address buyerAddress) = areCompleteTeamAuctionRequirementsOK(
+            sellerHiddenPrice,
+            validUntil,
+            teamId,
+            buyerHiddenPrice,
+            sig,
+            sigV,
+            isOffer2StartAuction
+        );
+        require(ok, "requirements to complete auction are not met");
+        _assets.transferTeam(teamId, buyerAddress);
+        teamIdToAuctionData[teamId] = 1;
+        emit TeamFreeze(teamId, 1, false);
+    }
+
+
 
     function areFreezeTeamRequirementsOK(
         bytes32 sellerHiddenPrice,
@@ -97,22 +122,56 @@ contract Market {
         view 
         returns (bool)
     {
-        return true;
+        address teamOwner = _assets.getOwnerTeam(teamId);
         return (
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
             (!isTeamFrozen(teamId))) &&  
             // check asset is owned by legit address
-            (_assets.getOwnerPlayer(teamId) != address(0)) && 
+            (teamOwner != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
-            (_assets.getOwnerPlayer(teamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+            (teamOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
             (sig[IDX_MSG] == prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, teamId)) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
             (validUntil < now + MAX_VALID_UNTIL) 
         );
     }
+
+    function areCompleteTeamAuctionRequirementsOK(
+        bytes32 sellerHiddenPrice,
+        uint256 validUntil,
+        uint256 teamId,
+        bytes32 buyerHiddenPrice,
+        bytes32[3] memory sig,
+        uint8 sigV,
+        bool isOffer2StartAuction
+     ) 
+        public
+        view
+        returns(bool ok, address buyerAddress) 
+    {
+        // the next line will verify that the teamId is the same that was used by the seller to sign
+        bytes32 sellerTxHash = prefixed(buildPutForSaleTxMsg(sellerHiddenPrice, validUntil, teamId));
+        buyerAddress = recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]);
+        ok =    // check buyerAddress is legit and signature is valid
+                (buyerAddress != address(0)) && 
+                // check buyer and seller refer to the exact same auction
+                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (playerIdToAuctionData[teamId] >> 34)) &&
+                // check player is still frozen
+                isTeamFrozen(teamId) &&
+                // check that they signed what they input data says they signed:
+                sig[IDX_MSG] == prefixed(buildAgreeToBuyTeamTxMsg(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
+
+        if (isOffer2StartAuction) {
+            // in this case: validUntil is interpreted as offerValidUntil
+            ok = ok && (validUntil > (playerIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+        } else {
+            ok = ok && (validUntil == (playerIdToAuctionData[teamId] & VALID_UNTIL_MASK));
+        } 
+    }
+
 
     function areFreezePlayerRequirementsOK(
         bytes32 sellerHiddenPrice,
@@ -167,7 +226,7 @@ contract Market {
                 // check player is still frozen
                 isPlayerFrozen(playerId) &&
                 // check that they signed what they input data says they signed:
-                sig[IDX_MSG] == prefixed(buildAgreeToBuyTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+                sig[IDX_MSG] == prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
@@ -185,16 +244,20 @@ contract Market {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
-    function buildPutForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId) public pure returns (bytes32) {
-        return keccak256(abi.encode(hiddenPrice, validUntil, playerId));
+    function buildPutForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 assetId) public pure returns (bytes32) {
+        return keccak256(abi.encode(hiddenPrice, validUntil, assetId));
     }
 
     function buildOfferToBuyTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 playerId, uint256 buyerTeamId) public pure returns (bytes32) {
         return keccak256(abi.encode(hiddenPrice, validUntil, playerId, buyerTeamId));
     }
 
-    function buildAgreeToBuyTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId, bool isOffer2StartAuction) public pure returns (bytes32) {
+    function buildAgreeToBuyPlayerTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, uint256 buyerTeamId, bool isOffer2StartAuction) public pure returns (bytes32) {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+    }
+
+    function buildAgreeToBuyTeamTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, bool isOffer2StartAuction) public pure returns (bytes32) {
+        return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
     }
 
     // FUNCTIONS FOR SIGNATURE MANAGEMENT
