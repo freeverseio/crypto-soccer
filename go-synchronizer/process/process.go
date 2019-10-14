@@ -24,7 +24,6 @@ import (
 )
 
 type EventProcessor struct {
-	usesGanache               bool
 	client                    *ethclient.Client
 	db                        *storage.Storage
 	engine                    *engine.Engine
@@ -50,7 +49,6 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		return nil, err
 	}
 	return &EventProcessor{
-		false,
 		client,
 		db,
 		engine,
@@ -60,19 +58,6 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		divisionCreationProcessor,
 		leagueProcessor,
 	}, nil
-}
-
-// NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) (*EventProcessor, error) {
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
-	if err != nil {
-		return nil, err
-	}
-	leagueProcessor, err := NewLeagueProcessor(engine, leagues, db)
-	if err != nil {
-		return nil, err
-	}
-	return &EventProcessor{true, client, db, engine, leagues, updates, market, divisionCreationProcessor, leagueProcessor}, nil
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -217,9 +202,6 @@ func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
 	return storedLastBlockNumber, err
 }
 func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
-	if p.usesGanache {
-		return eventRaw.BlockNumber, eventRaw.BlockNumber, nil
-	}
 	block, err := p.client.BlockByHash(context.Background(), eventRaw.BlockHash)
 	if err != nil {
 		return 0, 0, err
