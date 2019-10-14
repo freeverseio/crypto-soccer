@@ -123,7 +123,7 @@ func (b *Processor) Process() error {
 			continue
 		}
 		if frozen == false {
-			err = b.freezePlayer(order.SellOrder)
+			err = b.FreezePlayer(order.SellOrder)
 			if err != nil {
 				log.Error(err)
 				continue
@@ -144,7 +144,7 @@ func (b *Processor) Process() error {
 	return nil
 }
 
-func (b *Processor) freezePlayer(sellOrder storage.SellOrder) error {
+func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
 		sellOrder.CurrencyId,
 		sellOrder.Price,

@@ -11,6 +11,10 @@ import (
 
 func TestRSV(t *testing.T) {
 	signer := processor.NewSigner(nil)
+	_, _, _, err := signer.RSV("0x0")
+	if err == nil {
+		t.Fatal("No error on wrong signature")
+	}
 	r, s, v, err := signer.RSV("0x405c83733f474f6919032fd41bd2e37b1a3be444bc52380c0e3f4c79ce8245ce229b4b0fe3a9798b5aad5f8df5c6acc07e4810f1a111d7712bf06aee7c7384001b")
 	if err != nil {
 		t.Fatal(err)

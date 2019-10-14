@@ -2,6 +2,7 @@ package processor
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -17,6 +18,9 @@ func NewSigner(marketContract *market.Market) *Signer {
 }
 
 func (b *Signer) RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
+	if len(signature) != 132 {
+		return r, s, v, errors.New("wrong signature length")
+	}
 	signature = signature[2:] // remove 0x
 	vect, err := hex.DecodeString(signature[0:64])
 	if err != nil {
