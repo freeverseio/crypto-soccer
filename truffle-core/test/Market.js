@@ -129,7 +129,23 @@ contract("Market", accounts => {
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************
-  
+  it ('put for sale msg', async () => {
+    const validUntil = 2000000000;
+    const playerId = 10;
+    const currencyId = 1;
+    const price = 41234;
+    const rnd = 42321;
+    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
+
+    const privateHash = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
+    privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
+    const message = await market.buildPutForSaleTxMsg(privateHash, validUntil, playerId).should.be.fulfilled;
+    message.should.be.equal('0x07d43490a59d38783f03854081c1ecd738a6cb320c1767befdbc147e6b496eed');
+    const sigSeller = sellerAccount.sign(message);
+    sigSeller.messageHash.should.be.equal('0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796');
+    sigSeller.signature.should.be.equal('0x075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c');
+  });
+   
   it('deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
@@ -146,7 +162,6 @@ contract("Market", accounts => {
       ["uint256", "uint256"],
       [extraPrice, buyerRnd]
     );
-
 
     const privateHash = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
     privateHash.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
