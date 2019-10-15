@@ -142,13 +142,32 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
     
-    it('computeExceptionalEvents', async () => {
+    it('computeExceptionalEvents no clashes with redcards', async () => {
         seedForRedCard = seed + 83;
-        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, is2nd = true, seedForRedCard).should.be.fulfilled;
+        substis = [2, 6, 1];
+        rounds = [4,2,6];
+        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
         decoded = await encodingLog.decodeMatchLog(newLog);
         let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
         expectedOut = [0, 9];
-        expectedOutRounds = [0, 1];
+        expectedOutRounds = [0, 5];
+        expectedYellows = [0, 0, 1, 12];
+        expectedType = [0, 3]; // 0 = no event, 3 = redCard
+        for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+        for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
+        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    });
+    
+    it('computeExceptionalEvents clashing with redcards', async () => {
+        seedForRedCard = seed + 83;
+        substis = [2, 6, 1];
+        rounds = [4,2,6];
+        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
+        decoded = await encodingLog.decodeMatchLog(newLog);
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+        expectedOut = [0, 9];
+        expectedOutRounds = [0, 5];
         expectedYellows = [0, 0, 1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
@@ -160,9 +179,13 @@ contract('Engine', (accounts) => {
         // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
     });
     
+    return;
+    
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
+    
+    return;
     
     it('penaltyPerAge', async () => {
         ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];

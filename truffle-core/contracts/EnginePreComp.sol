@@ -16,6 +16,8 @@ contract EnginePreComp is EngineLib {
     uint256 private constant TEN_TO_14      = uint256(100000000000000); 
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
+    uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint8 public constant NO_SUBST  = 11;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
 
     // Over a game, we would like:
@@ -40,8 +42,8 @@ contract EnginePreComp is EngineLib {
     (
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
-        // uint8[3][2] memory substitutions,
-        // uint8[3] memory subsRounds,
+        uint8[3] memory substitutions,
+        uint8[3] memory subsRounds,
         bool is2ndHalf,
         uint256 seed
     ) 
@@ -62,8 +64,21 @@ contract EnginePreComp is EngineLib {
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[14] = 758;
-        matchLog |= uint256(throwDiceArray(weights, rnds[0])) << offset;
-        matchLog |= uint256(computeRound(rnds[0]+1)) << offset + 4;
+        uint256 outGamed = uint256(throwDiceArray(weights, rnds[0]));
+        matchLog |= outGamed << offset;
+        uint8 minRound = 0;
+        uint8 maxRound = ROUNDS_PER_MATCH;
+        // outGame = 11, 12, or 13 => it affects the player joining in
+        // outGame = 0,...,10 => it affects the player to be substituted
+        if (outGamed > 10) {minRound = subsRounds[outGamed - 11];}
+        // note that substitution[p] == 11 => NO_SUBS, 
+        // but it cannot happen in the next else-if (since outGamed <= 10 in that branch)
+        else {
+            for (uint8 p = 0; p < 3; p++) {
+                if (outGamed == substitutions[p]) {maxRound = subsRounds[p];} 
+            }
+        }
+        matchLog |= uint256(computeRound(rnds[0]+1, minRound, maxRound)) << offset + 4;
         matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 8);
         // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
@@ -76,8 +91,8 @@ contract EnginePreComp is EngineLib {
         return matchLog;
     }
     
-    function computeRound(uint256 seed) private pure returns (uint8 round) {
-        return uint8(seed % 12);
+    function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {
+        return minRound + uint8(seed % (maxRound - minRound + 1));
     }
 
     // it cannot return 0.

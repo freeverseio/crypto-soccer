@@ -35,7 +35,7 @@ contract EncodingSkills {
 
     /**
      * @dev Tactics serializes a total of 110 bits = 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
-     *      substitutions[3]      = 4 bit each = [3 different nums from 0 to 11]
+     *      substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
      *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
