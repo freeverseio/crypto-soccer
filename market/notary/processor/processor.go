@@ -27,7 +27,7 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 }
 
 // func (b *Processor) processOrder(order storage.Order) error {
-// 	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
+// 	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.Bet.TeamId)
 
 // 	log.Infof("(1) generate hash private msg")
 // 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
@@ -65,12 +65,12 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 		order.SellOrder.ValidUntil,
 // 		order.SellOrder.PlayerId,
 // 		order.SellOrder.TypeOfTx,
-// 		order.BuyOrder.TeamId,
+// 		order.Bet.TeamId,
 // 	)
 // 	if err != nil {
 // 		return err
 // 	}
-// 	// sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.BuyOrder.Signature)
+// 	// sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.Bet.Signature)
 // 	// if err != nil {
 // 	// 	return err
 // 	// }
@@ -116,7 +116,7 @@ func (b *Processor) Process() error {
 	}
 
 	for _, order := range orders {
-		playerID := order.SellOrder.PlayerId
+		playerID := order.SellOrder.PlayerID
 		frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
 		if err != nil {
 			log.Error(err)
@@ -146,7 +146,7 @@ func (b *Processor) Process() error {
 
 func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
-		sellOrder.CurrencyId,
+		sellOrder.CurrencyID,
 		sellOrder.Price,
 		sellOrder.Rnd,
 	)
@@ -156,11 +156,11 @@ func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 	var sigs [3][32]byte
 	var vs uint8
 	sigs[0], err = b.signer.HashSellMessage(
-		sellOrder.CurrencyId,
+		sellOrder.CurrencyID,
 		sellOrder.Price,
 		sellOrder.Rnd,
 		sellOrder.ValidUntil,
-		sellOrder.PlayerId,
+		sellOrder.PlayerID,
 	)
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 		bind.NewKeyedTransactor(b.freeverse),
 		sellerHiddenPrice,
 		sellOrder.ValidUntil,
-		sellOrder.PlayerId,
+		sellOrder.PlayerID,
 		sigs,
 		vs,
 	)

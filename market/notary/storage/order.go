@@ -2,13 +2,11 @@ package storage
 
 import (
 	"math/big"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type Order struct {
 	SellOrder SellOrder
-	BuyOrder  BuyOrder
+	Bet       Bet
 }
 
 func (b *Storage) GetOrders() ([]Order, error) {
@@ -17,37 +15,27 @@ func (b *Storage) GetOrders() ([]Order, error) {
 	if err != nil {
 		return orders, err
 	}
-	buyOrders, err := b.GetBuyOrders()
+	Bets, err := b.GetBets()
 	if err != nil {
 		return orders, err
 	}
 	for _, sellOrder := range sellOrders {
-		buyOrder := b.findBuyOrder(buyOrders, sellOrder.PlayerId)
-		if buyOrder != nil {
+		Bet := b.findBet(Bets, sellOrder.PlayerID)
+		if Bet != nil {
 			orders = append(orders, Order{
 				SellOrder: sellOrder,
-				BuyOrder:  *buyOrder,
+				Bet:       *Bet,
 			})
 		}
 	}
 	return orders, nil
 }
 
-func (b *Storage) findBuyOrder(orders []BuyOrder, playerId *big.Int) *BuyOrder {
-	for _, order := range orders {
-		if order.PlayerId.Cmp(playerId) == 0 {
-			return &order
-		}
-	}
+func (b *Storage) findBet(orders []Bet, playerId *big.Int) *Bet {
+	// for _, order := range orders {
+	// 	if order.PlayerID.Cmp(playerId) == 0 {
+	// 		return &order
+	// 	}
+	// }
 	return nil
-}
-
-func (b *Storage) DeleteOrder(playerId *big.Int) error {
-	log.Infof("[DBMS] - delete order %v", playerId)
-	err := b.DeleteBuyOrder(playerId)
-	if err != nil {
-		return err
-	}
-	err = b.DeleteSellOrder(playerId)
-	return err
 }
