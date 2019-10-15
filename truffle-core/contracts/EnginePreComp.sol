@@ -74,11 +74,14 @@ contract EnginePreComp is EngineLib {
             return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
         }
         if (is2ndHalf) {
-            if (yellowCardeds[0] == ((matchLog >> 161) & 15)) {
+            uint256[2] memory prevYellows;
+            prevYellows[0] = (matchLog >> 161) & 15;
+            prevYellows[1] = (matchLog >> 165) & 15;
+            if (yellowCardeds[0] == prevYellows[0] || yellowCardeds[0] == prevYellows[1]) {
                 matchLog |= yellowCardeds[1] << (offset + 14);
                 return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
             }
-            if (yellowCardeds[1] == ((matchLog >> 161) & 15)) {
+            if (yellowCardeds[1] == prevYellows[0] || yellowCardeds[1] == prevYellows[1]) {
                 matchLog |= yellowCardeds[0] << (offset + 14);
                 return logOutOfGame(true, yellowCardeds[1], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
             }
