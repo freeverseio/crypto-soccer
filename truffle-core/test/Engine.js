@@ -142,6 +142,24 @@ contract('Engine', (accounts) => {
         events1Half = [events1Half,events1Half];
     });
     
+    it('computeExceptionalEvents', async () => {
+        seedForRedCard = seed + 83;
+        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, is2nd = true, seedForRedCard).should.be.fulfilled;
+        decoded = await encodingLog.decodeMatchLog(newLog);
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+        expectedOut = [0, 9];
+        expectedOutRounds = [0, 1];
+        expectedYellows = [0, 0, 1, 12];
+        expectedType = [0, 3]; // 0 = no event, 3 = redCard
+        for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+        for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber());//.should.be.equal(expectedOutRounds[i]);
+        for (i = 0; i < expectedYellows.length; i++) console.log(yel[i].toNumber());//.should.be.equal(expectedYellows[i]);
+        for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber());//.should.be.equal(expectedType[i]);
+        // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+        // for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
+        // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    });
+    
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });

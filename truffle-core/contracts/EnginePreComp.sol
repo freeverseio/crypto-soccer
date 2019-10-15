@@ -25,12 +25,17 @@ contract EnginePreComp is EngineLib {
     //      - yellowCard 2.5 per game 
     // We encode this in uint16[3] events, which applies to 1 half of the game only.
     //  - 1 possible event that leaves a player out of the match, encoded in:
-    //          events[0, 1] = [player (from 0 to 11), eventType (injuryHard, injuryLow, redCard)]
+    //          events[0, 1] = [player (from 0 to 13), eventType (injuryHard, injuryLow, redCard)]
     //  - 2 possible events for yellow card:
-    //          events[2] = player (from 0 to 11)
-    //          events[3] = player (from 0 to 11)
-    // The player value is set to NO_EVENT ( = 11) if no event took place
+    //          events[2] = player (from 0 to 13)
+    //          events[3] = player (from 0 to 13)
+    // The player value is set to NO_EVENT ( = 14) if no event took place
     // If we're on the 2nd half, the idx are events[4,5,6,7]
+    // for out of game:
+    //      it cannot return 0
+    //      injuryHard:  1
+    //      injuryLow:   2
+    //      redCard:     3
     function computeExceptionalEvents
     (
         uint256 matchLog,
@@ -45,7 +50,7 @@ contract EnginePreComp is EngineLib {
         uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 165 : 151;
+        uint8 offset = is2ndHalf ? 169 : 151;
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 14; p++) {
@@ -56,18 +61,27 @@ contract EnginePreComp is EngineLib {
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[14] = 758;
         matchLog |= uint256(throwDiceArray(weights, rnds[0])) << offset;
-        matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 4);
+        matchLog |= uint256(computeRound(rnds[0]+1)) << offset + 4;
+        matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 8);
         // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[14] = 9;
-        matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 6);
-        matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 10);
+        matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 10);
+        matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 14);
         
         return matchLog;
     }
+    
+    function computeRound(uint256 seed) private pure returns (uint8 round) {
+        return uint8(seed % 12);
+    }
 
+    // it cannot return 0.
+    // injuryHard:  1
+    // injuryLow:   2
+    // redCard:     3
     function computeTypeOfEvent(uint256 rnd) private pure returns (uint8) {
         uint256[] memory weights = new uint256[](3);
         weights[0] = 1; // injuryHard   

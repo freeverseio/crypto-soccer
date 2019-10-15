@@ -46,7 +46,7 @@ contract EncodingMatchLog {
         log |= uint256(yellowCards[3]) << 183;
         // substitutions
         for (uint8 p = 0; p < 6; p++) {
-            log |= uint256(substitutions[p] ? 1: 0) << 186 + p;
+            log |= uint256(substitutions[p] ? 1: 0) << 187 + p;
         }        
     }
     
@@ -87,7 +87,7 @@ contract EncodingMatchLog {
         yellowCards[3] = uint8((log >> 183) & 15);
         // substitutions
         for (uint8 p = 0; p < 6; p++) {
-            substitutions[p] = ((log >> 186 + p) & 1) == 1;
+            substitutions[p] = ((log >> 187 + p) & 1) == 1;
         }        
     }
 }
