@@ -6,7 +6,7 @@ pragma solidity >=0.4.21 <0.6.0;
 contract EncodingMatchLog {
 
     uint256 private constant ONE256       = 1; 
-
+ 
     function encodeMatchLog(
         uint8 nGoals, // 4b
         uint8[14] memory assistersIdx, // 4b each
@@ -15,7 +15,8 @@ contract EncodingMatchLog {
         bool[7] memory penalties, // 1b each
         uint8[2] memory outOfGames,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
-        uint8[4] memory yellowCards // 4b each
+        uint8[4] memory yellowCards, // 4b each
+        bool[6] memory substitutions // 4b each, the first 3 for half 1, the other for half 2
     )
         public
         pure
@@ -40,6 +41,10 @@ contract EncodingMatchLog {
         log |= uint256(typesOutOfGames[1]) << 169;
         log |= uint256(yellowCards[2]) << 171;
         log |= uint256(yellowCards[3]) << 175;
+        // substitutions
+        for (uint8 p = 0; p < 6; p++) {
+            log |= uint256(substitutions[p] ? 1: 0) << 179 + p;
+        }        
     }
     
     
@@ -51,7 +56,8 @@ contract EncodingMatchLog {
         bool[15] memory penalties, // 1b each
         uint8[2] memory outOfGames,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
-        uint8[4] memory yellowCards // 4b each
+        uint8[4] memory yellowCards, // 4b each
+        bool[6] memory substitutions // 4b each
     ) 
     {
         nGoals = uint8(log & 15);
@@ -73,8 +79,9 @@ contract EncodingMatchLog {
         typesOutOfGames[1] = uint8((log >> 169) & 3);
         yellowCards[2] = uint8((log >> 171) & 15);
         yellowCards[3] = uint8((log >> 175) & 15);
+        // substitutions
+        for (uint8 p = 0; p < 6; p++) {
+            substitutions[p] = ((log >> 179 + p) & 1) == 1;
+        }        
     }
-
-
-
 }

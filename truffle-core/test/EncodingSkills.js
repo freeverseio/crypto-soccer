@@ -49,7 +49,7 @@ contract('Encoding', (accounts) => {
             forwardness = 3,
             leftishness = 4,
             aggressiveness = 1],
-            alignedLastHalf = true,
+            alignedEndOfLastHalf = true,
             redCardLastGame = true,
             gamesNonStopping = 2,
             injuryWeeksLeft = 6
@@ -66,8 +66,8 @@ contract('Encoding', (accounts) => {
         result.toNumber().should.be.equal(aggressiveness);
         result = await encoding.getPlayerIdFromSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(playerId);
-        result = await encoding.getAlignedLastHalf(skills).should.be.fulfilled;
-        result.should.be.equal(alignedLastHalf);
+        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        result.should.be.equal(alignedEndOfLastHalf);
         result = await encoding.getRedCardLastGame(skills).should.be.fulfilled;
         result.should.be.equal(redCardLastGame);
         result = await encoding.getGamesNonStopping(skills).should.be.fulfilled;
@@ -82,25 +82,25 @@ contract('Encoding', (accounts) => {
         playerId = 143;
         potential = 5;
         aggr = 2;
-        alignedLastHalf = true;
+        alignedEndOfLastHalf = true;
         redCardLastGame = true;
         gamesNonStopping = 2;
         injuryWeeksLeft = 6;
         // leftishness = 0 only possible for goalkeepers:
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 0, leftishness = 0, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 1, leftishness = 0, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
         // forwardness is 5 at max:
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 5, leftishness = 1, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 6, leftishness = 1, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
         // leftishness is 7 at max:
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 5, leftishness = 7, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.fulfilled;
         await encoding.encodePlayerSkills(sk, dayOfBirth, playerId, [potential, forwardness = 5, leftishness = 8, aggr],
-            alignedLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
+            alignedEndOfLastHalf, redCardLastGame, gamesNonStopping, injuryWeeksLeft).should.be.rejected;
     });
     
 });

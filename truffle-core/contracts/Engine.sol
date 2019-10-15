@@ -102,8 +102,8 @@ contract Engine is EngineLib, Sort{
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
 
-        (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
-        (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
+        (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0]);
+        (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1]);
 
         matchLog[0] = _precomp.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
         matchLog[1] = _precomp.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
@@ -160,36 +160,51 @@ contract Engine is EngineLib, Sort{
     function getLineUpAndPlayerPerZone(
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
         uint256 tactics,
-        bool is2ndHalf
+        bool is2ndHalf,
+        uint256 matchLog
     ) 
         public 
         pure 
-        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone) 
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone, uint256) 
     {
         uint8 tacticsId;
         uint8[14] memory lineup;
         uint8 changes;
         uint8[3] memory substitutions;
+        if (is2ndHalf) {
+            // count the changes already made in 1st half:
+            for (uint8 p = 0; p < 6; p++) {
+                if(((matchLog >> 179 + p) & 1) == 1) changes++;
+            }        
+        }
         (substitutions, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
-        for (uint8 p = 0; p < 11; p++) 
-        {
+        for (uint8 p = 0; p < 11; p++) {
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
-            if (is2ndHalf && !getAlignedLastHalf(outStates[p])) changes++;
+            if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) changes++; 
         }
-        if (substitutions[0] < 11) changes++;
+        
+        if (substitutions[0] < 11) {
+            changes++;
+            outStates[11] = states[lineup[11]];
+            assertCanPlay(outStates[11]);
+        }
         if (substitutions[1] < 11) { 
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
+            outStates[12] = states[lineup[12]];
+            assertCanPlay(outStates[12]);
         }
         if (substitutions[2] < 11) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
+            outStates[13] = states[lineup[13]];
+            assertCanPlay(outStates[13]);
         }
-        require(changes < 4, "max allowed changes during the break is 3");
+        require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
-        return (outStates, extraAttack, getPlayersPerZone(tacticsId));
+        return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
     }
 
     // TODO: can this be expressed as

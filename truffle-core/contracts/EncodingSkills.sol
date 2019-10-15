@@ -91,7 +91,7 @@ contract EncodingSkills {
      *      aggressiveness            = 3 bits
      *      playerId                  = 43 bits
      *      
-     *      alignedLastHalf           = 1 (bool)
+     *      alignedEndOfLastHalf      = 1 (bool)
      *      redCardLastGame           = 1 (bool)
      *      gamesNonStopping          = 3 (0, 1, ..., 6). Finally, 7 means more than 6.
      *      injuryWeeksLeft           = 3 
@@ -101,7 +101,7 @@ contract EncodingSkills {
         uint256 dayOfBirth, 
         uint256 playerId, 
         uint8[4] memory birthTraits,
-        bool alignedLastHalf, 
+        bool alignedEndOfLastHalf, 
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
         uint8 injuryWeeksLeft
@@ -132,7 +132,7 @@ contract EncodingSkills {
         encoded |= uint256(birthTraits[IDX_POT]) << 123;
         encoded |= uint256(birthTraits[IDX_FWD]) << 120;
         encoded |= uint256(birthTraits[IDX_LEF]) << 117;
-        encoded |= uint256(alignedLastHalf ? 1 : 0) << 116;
+        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 116;
         encoded |= uint256(redCardLastGame ? 1 : 0) << 115;
         encoded |= uint256(gamesNonStopping) << 112;
         encoded |= uint256(injuryWeeksLeft) << 109;
@@ -179,7 +179,7 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 106 & 7);
     }
 
-    function getAlignedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 116 & 1) == 1;
     }
 
