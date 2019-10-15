@@ -70,7 +70,9 @@ contract EnginePreComp is EngineLib {
         uint8 maxRound = ROUNDS_PER_MATCH;
         // outGame = 11, 12, or 13 => it affects the player joining in
         // outGame = 0,...,10 => it affects the player to be substituted
-        if (outGamed > 10) {minRound = subsRounds[outGamed - 11];}
+        if (outGamed < 14 && outGamed > 10) {
+            minRound = subsRounds[outGamed - 11];
+        }
         // note that substitution[p] == 11 => NO_SUBS, 
         // but it cannot happen in the next else-if (since outGamed <= 10 in that branch)
         else {
@@ -92,6 +94,7 @@ contract EnginePreComp is EngineLib {
     }
     
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {
+        require(maxRound > minRound, "max and min rounds are not correct");
         return minRound + uint8(seed % (maxRound - minRound + 1));
     }
 
