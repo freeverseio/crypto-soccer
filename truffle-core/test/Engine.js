@@ -14,6 +14,7 @@ contract('Engine', (accounts) => {
     // const seed = 610106;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const substitutions = [6, 10, 0];
+    const subsRounds = [3, 7, 1];
     const noSubstitutions = [11, 11, 11];
     const lineup0 = [0, 3, 4, 5, 6, 9, 10, 11, 12, 15, 16, 7, 13, 17];
     const lineup1 = [0, 3, 4, 5, 6, 9, 10, 11, 16, 17, 18, 7, 13, 17];
@@ -127,11 +128,11 @@ contract('Engine', (accounts) => {
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setCardsAndInjuries(precomp.address).should.be.fulfilled;
-        tactics0 = await engine.encodeTactics(substitutions, lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics442 = await engine.encodeTactics(substitutions, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics0 = await engine.encodeTactics(substitutions, subsRounds, lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics442 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
         teamStateAll50 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2).should.be.fulfilled;
         MAX_RND = await engine.MAX_RND().should.be.fulfilled;
@@ -265,9 +266,9 @@ contract('Engine', (accounts) => {
         messi = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0], 
             alignedLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0).should.be.fulfilled;            
         teamStateAll50[p] = messi; 
-        tactics442TwoChanges = await engine.encodeTactics([3,1,11], lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442TwoChanges = await engine.encodeTactics([3,1,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442TwoChanges, tactics1NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        tactics442ThreeChanges = await engine.encodeTactics([3,1,5], lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442ThreeChanges = await engine.encodeTactics([3,1,5], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
         result = await engine.playMatch(seed, now, [teamStateAll50, teamStateAll1], [tactics442ThreeChanges, tactics1NoChanges], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
     });
 
@@ -646,7 +647,7 @@ contract('Engine', (accounts) => {
     });
 
     it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
-        tacticsWrong = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
+        tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, is2ndHalf, log = [0,0], seed).should.be.rejected;
     });
 
@@ -659,7 +660,7 @@ contract('Engine', (accounts) => {
     });
 
     it('play match with wrong tactic', async () => {
-        tacticsWrong = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticIdTooLarge = 6);
+        tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6);
         await engine.playMatch(seed, now, teamStateAll50, teamStateAll50, [tacticsWrong, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.rejected;
     });
 
