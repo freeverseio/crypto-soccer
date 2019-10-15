@@ -143,6 +143,7 @@ contract('Engine', (accounts) => {
     });
     
     it('computeExceptionalEvents no clashes with redcards', async () => {
+        // there is a red card with this seed, to player 9, but he's not involved in any change
         seedForRedCard = seed + 83;
         substis = [2, 6, 1];
         rounds = [4, 2, 6];
@@ -160,6 +161,8 @@ contract('Engine', (accounts) => {
     });
     
     it('computeExceptionalEvents clashing with redcards before changing player', async () => {
+        // there is a red card with this seed, to player 9. Since he's involved in a change, 
+        // the round for which he saw the card should be before the proposed change round (2) 
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
@@ -167,7 +170,7 @@ contract('Engine', (accounts) => {
         decoded = await encodingLog.decodeMatchLog(newLog);
         let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
         expectedOut = [0, 9];
-        expectedOutRounds = [0, 1]; // note that it'd be 0, 9 otherwise
+        expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
         expectedYellows = [0, 0, 1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
@@ -177,6 +180,8 @@ contract('Engine', (accounts) => {
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player', async () => {
+        // there is a red card with this seed, to player 13, which is by definition one of the players to join during the game. 
+        // the round for which he saw the card (6) should be after the proposed change round (6 too) 
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
@@ -184,19 +189,32 @@ contract('Engine', (accounts) => {
         decoded = await encodingLog.decodeMatchLog(newLog);
         let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
         expectedOut = [0, 13];
-        expectedOutRounds = [0, 1]; // note that it'd be 0, 9 otherwise
-        expectedYellows = [0, 0, 1, 12];
+        expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
+        expectedYellows = [0, 0, 14, 13];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber());//.should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedYellows.length; i++) console.log(yel[i].toNumber());//.should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber());//.should.be.equal(expectedType[i]);
-        // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        // for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
-        // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+        for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
+        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
     });
 
-    return;
+    it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
+        // same as previous but pushing it to the limit, so that the round is 10
+        seedForRedCardInSubstitutes = seed + 357;
+        substis = [2, 9, 1];
+        rounds = [4, 2, 10];
+        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
+        decoded = await encodingLog.decodeMatchLog(newLog);
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+        expectedOut = [0, 13];
+        expectedOutRounds = [0, 10]; 
+        expectedYellows = [0, 0, 14, 13];
+        expectedType = [0, 3]; // 0 = no event, 3 = redCard
+        for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+        for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
+        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    });
     
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
