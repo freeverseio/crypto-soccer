@@ -3,9 +3,7 @@ pragma solidity ^0.5.0;
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 
-contract EnginePreComp is EncodingSkills, EngineLib {
-    uint8 private constant BITS_PER_RND     = 36;   // Number of bits allowed for random numbers inside match decisisons
-    uint256 public constant MAX_RND         = 68719476735; // Max random number allowed inside match decisions: 2^36-1
+contract EnginePreComp is EngineLib {
     uint256 private constant ONE256       = 1; 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
