@@ -169,13 +169,14 @@ contract Engine is EngineLib, Sort{
         uint8[14] memory lineup;
         uint8 changes;
         uint8[3] memory substitutions;
+        uint8[3] memory rounds;
         if (is2ndHalf) {
             // count the changes already made in 1st half:
             for (uint8 p = 0; p < 6; p++) {
                 if(((matchLog >> 179 + p) & 1) == 1) changes++;
             }        
         }
-        (substitutions, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        (substitutions, rounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);

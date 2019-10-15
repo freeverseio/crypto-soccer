@@ -49,6 +49,7 @@ contract EnginePreComp is EngineLib {
         uint256[] memory weights = new uint256[](12);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < 11; p++) {
+            // if (states[p] != 0)
             weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
@@ -64,6 +65,7 @@ contract EnginePreComp is EngineLib {
         weights[11] = 9;
         matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 6);
         matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 10);
+        
         return matchLog;
     }
 
