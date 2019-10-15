@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"math/big"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
-type BuyOrder struct {
-	PlayerID        *big.Int
+type Bet struct {
+	Auction         uuid.UUID
 	ExtraPrice      float32
 	Rnd             int64
 	TeamID          *big.Int
@@ -16,52 +17,40 @@ type BuyOrder struct {
 	Signature       string
 }
 
-func (b *Storage) CreateBuyOrder(order BuyOrder) error {
-	log.Infof("[DBMS] + create buy order %v", order)
-	_, err := b.db.Exec("INSERT INTO player_buy_orders (player_id, extra_price, rnd, team_id, is_2_start_auction, signature) VALUES ($1, $2, $3, $4, $5, $6);",
-		order.PlayerID.String(),
+func (b *Storage) CreateBet(order Bet) error {
+	log.Infof("[DBMS] + create bet %v", order)
+	_, err := b.db.Exec("INSERT INTO bets (auction, extra_price, rnd, team_id, signature) VALUES ($1, $2, $3, $4, $5);",
+		order.Auction,
 		order.ExtraPrice,
 		order.Rnd,
 		order.TeamID.String(),
-		order.Is2StartAuction,
 		order.Signature,
 	)
 	return err
 }
 
-func (b *Storage) GetBuyOrders() ([]BuyOrder, error) {
-	var offers []BuyOrder
-	rows, err := b.db.Query("SELECT player_id, extra_price, rnd, team_id, is_2_start_auction, signature FROM player_buy_orders;")
+func (b *Storage) GetBets() ([]Bet, error) {
+	var offers []Bet
+	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature FROM bets;")
 	if err != nil {
 		return offers, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var offer BuyOrder
-		var playerID sql.NullString
+		var offer Bet
 		var teamID sql.NullString
 		err = rows.Scan(
-			&playerID,
+			&offer.Auction,
 			&offer.ExtraPrice,
 			&offer.Rnd,
 			&teamID,
-			&offer.Is2StartAuction,
 			&offer.Signature,
 		)
 		if err != nil {
 			return offers, err
 		}
-		offer.PlayerID, _ = new(big.Int).SetString(playerID.String, 10)
 		offer.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
 		offers = append(offers, offer)
 	}
 	return offers, nil
-}
-
-func (b *Storage) DeleteBuyOrder(playerId *big.Int) error {
-	log.Infof("[DBMS] Delete buy order %v", playerId)
-	_, err := b.db.Exec("DELETE FROM player_buy_orders WHERE (player_id = $1);",
-		playerId.String(),
-	)
-	return err
 }

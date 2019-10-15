@@ -27,7 +27,7 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 }
 
 // func (b *Processor) processOrder(order storage.Order) error {
-// 	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.BuyOrder.TeamId)
+// 	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.Bet.TeamId)
 
 // 	log.Infof("(1) generate hash private msg")
 // 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
@@ -65,12 +65,12 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 		order.SellOrder.ValidUntil,
 // 		order.SellOrder.PlayerId,
 // 		order.SellOrder.TypeOfTx,
-// 		order.BuyOrder.TeamId,
+// 		order.Bet.TeamId,
 // 	)
 // 	if err != nil {
 // 		return err
 // 	}
-// 	// sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.BuyOrder.Signature)
+// 	// sigs[4], sigs[5], vs[1], err = b.signer.RSV(order.Bet.Signature)
 // 	// if err != nil {
 // 	// 	return err
 // 	// }
