@@ -42,7 +42,7 @@ contract EncodingSkills {
     **/
     function encodeTactics(
         uint8[3] memory substitutions, 
-        uint8[3] memory rounds, 
+        uint8[3] memory subsRounds, 
         uint8[14] memory lineup, 
         bool[10] memory extraAttack, 
         uint8 tacticsId
@@ -62,16 +62,16 @@ contract EncodingSkills {
         }          
         for (uint8 p = 0; p < 3; p++) {
             require(substitutions[p] < 12, "incorrect lineup entry");
-            require(rounds[p] < 12, "incorrect round");
+            require(subsRounds[p] < 12, "incorrect round");
             encoded |= uint256(substitutions[p]) << 86 + 4 * p;
-            encoded |= uint256(rounds[p]) << 98 + 4 * p;
+            encoded |= uint256(subsRounds[p]) << 98 + 4 * p;
         }          
         return encoded;
     }
 
     function decodeTactics(uint256 tactics) public pure returns (
         uint8[3] memory substitutions, 
-        uint8[3] memory rounds, 
+        uint8[3] memory subsRounds, 
         uint8[14] memory lineup, 
         bool[10] memory extraAttack, 
         uint8 tacticsId
@@ -94,8 +94,8 @@ contract EncodingSkills {
             tactics >>= 4;
         }          
         for (uint8 p = 0; p < 3; p++) {
-            rounds[p] = uint8(tactics & 15); // 2^4 - 1
-            require(rounds[p] < 12, "incorrect round entry");
+            subsRounds[p] = uint8(tactics & 15); // 2^4 - 1
+            require(subsRounds[p] < 12, "incorrect round entry");
             tactics >>= 4;
         }          
     }

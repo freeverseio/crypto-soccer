@@ -17,9 +17,9 @@ contract('Encoding', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
-        rounds = [3,7,1];
+        subsRounds = [3,7,1];
         extraAttack = Array.from(new Array(10), (x,i) => i%2);
-        encoded = await encoding.encodeTactics(substitutions, rounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
@@ -31,14 +31,14 @@ contract('Encoding', (accounts) => {
         }
         for (p = 0; p < 3; p++) {
             subs[p].toNumber().should.be.equal(substitutions[p]);
-            roun[p].toNumber().should.be.equal(rounds[p]);
+            roun[p].toNumber().should.be.equal(subsRounds[p]);
         }
         // // try to provide a tacticsId beyond range
-        encoded = await encoding.encodeTactics(substitutions, rounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
+        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
         // try to provide a lineup beyond range
         lineupWrong = lineup;
         lineupWrong[4] = PLAYERS_PER_TEAM_MAX;
-        encoded = await encoding.encodeTactics(substitutions, rounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
+        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
     
     it('encoding and decoding skills', async () => {
