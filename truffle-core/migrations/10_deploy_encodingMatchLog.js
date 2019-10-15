@@ -1,8 +1,8 @@
-const CardsAndInjuries = artifacts.require('CardsAndInjuries');
+const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 
 module.exports = function (deployer) {
   deployer.then(async () => {
-      await deployer.deploy(CardsAndInjuries);
+      await deployer.deploy(EncodingMatchLog);
     })
     .catch(console.error);
 };
