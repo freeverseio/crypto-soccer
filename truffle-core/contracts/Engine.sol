@@ -102,11 +102,8 @@ contract Engine is EngineLib, Sort{
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
 
-        (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0]);
-        (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1]);
-
-        matchLog[0] = _precomp.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
-        matchLog[1] = _precomp.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
+        (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
+        (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
@@ -161,10 +158,11 @@ contract Engine is EngineLib, Sort{
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
         uint256 tactics,
         bool is2ndHalf,
-        uint256 matchLog
+        uint256 matchLog,
+        uint256 seed
     ) 
         public 
-        pure 
+        view 
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone, uint256) 
     {
         uint8 tacticsId;
@@ -204,6 +202,8 @@ contract Engine is EngineLib, Sort{
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
+        
+        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, is2ndHalf, seed);
         return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
     }
 
