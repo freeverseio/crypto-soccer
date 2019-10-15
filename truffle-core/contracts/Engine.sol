@@ -166,17 +166,36 @@ contract Engine is EngineLib, Sort{
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone, uint256) 
     {
         uint8 tacticsId;
+        // (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        // outStates = getLinedUpStates(matchLog, lineup, substitutions, states, is2ndHalf);
+        outStates = getLinedUpStates(matchLog, tactics, states, is2ndHalf);
+        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, is2ndHalf, seed);
+        return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
+    }
+
+    function getLinedUpStates(
+        uint256 matchLog, 
+        uint256 tactics, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        bool is2ndHalf
+    )
+        private 
+        pure 
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates) 
+    {
         uint8[14] memory lineup;
-        uint8 changes;
         uint8[3] memory substitutions;
         uint8[3] memory subsRounds;
+        bool[10] memory extraAttack;
+        uint8 tacticsId;
+        (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        uint8 changes;
         if (is2ndHalf) {
             // count the changes already made in 1st half:
             for (uint8 p = 0; p < 6; p++) {
                 if(((matchLog >> 186 + p) & 1) == 1) changes++;
             }        
         }
-        (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
@@ -201,11 +220,9 @@ contract Engine is EngineLib, Sort{
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");
-        
-        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, is2ndHalf, seed);
-        return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
+        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");        
     }
+
 
     // TODO: can this be expressed as
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many

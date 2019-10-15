@@ -40,6 +40,8 @@ contract EnginePreComp is EngineLib {
     (
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        // uint8[3][2] memory substitutions,
+        // uint8[3] memory subsRounds,
         bool is2ndHalf,
         uint256 seed
     ) 
