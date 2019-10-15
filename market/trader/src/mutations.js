@@ -8,6 +8,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
     typeDefs: gql`
        extend type Mutation {
         createAuction(input: AuctionInput!): Boolean
+        deleteAuction(uuid: UUID!): Boolean
       }
     `,
     resolvers: {
@@ -25,14 +26,14 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return true;
+          return true;// TODO return something with sense
         },
-        // deletePlayerSellOrder: async (_, {playerId}, context) => {
-        //   const query = sql.query`DELETE FROM player_sell_orders WHERE playerId=${sql.value(playerId)}`;
-        //   const {text, values} = sql.compile(query);
-        //   await context.pgClient.query(text, values);
-        //   return playerId;
-        // },
+        deleteAuction: async (_, {uuid}, context) => {
+          const query = sql.query`DELETE FROM auctions WHERE uuid=${sql.value(uuid)}`;
+          const {text, values} = sql.compile(query);
+          await context.pgClient.query(text, values);
+          return true; // TODO return something with sense
+        },
         // createPlayerBuyOrder: async (_, {input}, context) => {
         //   const { playerid, teamid, signature } = input;
         //   const query = sql.query`INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES (
