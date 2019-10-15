@@ -60,38 +60,77 @@ contract EnginePreComp is EngineLib {
         for (uint8 p = 0; p < 14; p++) {
             if (states[p] != 0) weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
-        // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
-        // average sumAggressiveness = 11 * 2.5 = 27.5
-        // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
-        weights[14] = 758;
-        uint256 outGamed = uint256(throwDiceArray(weights, rnds[0]));
-        matchLog |= outGamed << offset;
-        uint8 minRound = 0;
-        uint8 maxRound = ROUNDS_PER_MATCH;
-        // outGame = 11, 12, or 13 => it affects the player joining in
-        // outGame = 0,...,10 => it affects the player to be substituted
-        if (outGamed < 14 && outGamed > 10) {
-            minRound = subsRounds[outGamed - 11];
-        }
-        // note that substitution[p] == 11 => NO_SUBS, 
-        // but it cannot happen in the next else-if (since outGamed <= 10 in that branch)
-        else {
-            for (uint8 p = 0; p < 3; p++) {
-                if (outGamed == substitutions[p]) {maxRound = subsRounds[p];} 
-            }
-        }
-        matchLog |= uint256(computeRound(rnds[0]+1, minRound, maxRound)) << offset + 4;
-        matchLog |= uint256(computeTypeOfEvent(rnds[1])) << (offset + 8);
+        
         // next: two events for yellow cards
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[14] = 9;
-        matchLog |= uint256(throwDiceArray(weights, rnds[2])) << (offset + 10);
-        matchLog |= uint256(throwDiceArray(weights, rnds[3])) << (offset + 14);
+        uint256[2] memory yellowCardeds;
+        yellowCardeds[0] = uint256(throwDiceArray(weights, rnds[2]));
+        yellowCardeds[1] = uint256(throwDiceArray(weights, rnds[3]));
+    
+        if (yellowCardeds[0] == yellowCardeds[1]) {
+            return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+        }
+        if (is2ndHalf) {
+            if (yellowCardeds[0] == ((matchLog >> 161) & 15)) {
+                matchLog |= yellowCardeds[1] << (offset + 14);
+                return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            }
+            if (yellowCardeds[1] == ((matchLog >> 161) & 15)) {
+                matchLog |= yellowCardeds[0] << (offset + 14);
+                return logOutOfGame(true, yellowCardeds[1], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            }
+        }
         
+        matchLog |= yellowCardeds[0] << (offset + 10);
+        matchLog |= yellowCardeds[1] << (offset + 14);
+
+        // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
+        // average sumAggressiveness = 11 * 2.5 = 27.5
+        // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
+        weights[14] = 758;
+        uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
+        return logOutOfGame(false, selectedPlayer, offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+    }
+
+    function logOutOfGame(
+        bool forceRedCard,
+        uint256 selectedPlayer, 
+        uint8 offset, 
+        uint256 matchLog,
+        uint8[3] memory substitutions,
+        uint8[3] memory subsRounds,
+        uint64 rnd0,
+        uint64 rnd1
+    ) private pure returns(uint256) 
+    {
+        matchLog |= selectedPlayer << offset;
+        uint8 minRound = 0;
+        uint8 maxRound = ROUNDS_PER_MATCH;
+        // outGame = 11, 12, or 13 => it affects the player joining in
+        // outGame = 0,...,10 => it affects the player to be substituted
+        if (selectedPlayer < 14 && selectedPlayer > 10) {
+            minRound = subsRounds[selectedPlayer - 11];
+        }
+        // note that substitution[p] == 11 => NO_SUBS, 
+        // but it cannot happen in the next else-if (since selectedPlayer <= 10 in that branch)
+        else {
+            for (uint8 p = 0; p < 3; p++) {
+                if (selectedPlayer == substitutions[p]) {maxRound = subsRounds[p];} 
+            }
+        }
+        matchLog |= uint256(computeRound(rnd0+1, minRound, maxRound)) << offset + 4;
+        if (forceRedCard) {
+            matchLog |= uint256(3) << (offset + 8);
+        } else {
+            matchLog |= uint256(computeTypeOfEvent(rnd1)) << (offset + 8);
+        }
         return matchLog;
     }
+
+
     
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {
         require(maxRound > minRound, "max and min rounds are not correct");
