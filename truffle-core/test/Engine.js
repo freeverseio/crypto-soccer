@@ -8,7 +8,7 @@ const truffleAssert = require('truffle-assertions');
 const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
-const CardsAndInjuries = artifacts.require('CardsAndInjuries');
+const EnginePreComp = artifacts.require('EnginePreComp');
 
 contract('Engine', (accounts) => {
     // const seed = 610106;
@@ -125,7 +125,7 @@ contract('Engine', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
-        cardsAndInjuries = await CardsAndInjuries.new().should.be.fulfilled;
+        cardsAndInjuries = await EnginePreComp.new().should.be.fulfilled;
         await engine.setCardsAndInjuries(cardsAndInjuries.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;

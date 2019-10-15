@@ -2,7 +2,7 @@ pragma solidity ^0.5.0;
 
 import "./EncodingSkills.sol";
 import "./Sort.sol";
-import "./CardsAndInjuries.sol";
+import "./EnginePreComp.sol";
 
 contract Engine is EncodingSkills, Sort{
     
@@ -29,10 +29,10 @@ contract Engine is EncodingSkills, Sort{
 
     bool dummyBoolToEstimateCost;
 
-    CardsAndInjuries private _cardsAndInjuries;
+    EnginePreComp private _cardsAndInjuries;
 
     function setCardsAndInjuries(address addr) public {
-        _cardsAndInjuries = CardsAndInjuries(addr);
+        _cardsAndInjuries = EnginePreComp(addr);
     }
 
     // mock up to estimate cost of a match.
