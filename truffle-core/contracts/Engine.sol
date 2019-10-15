@@ -29,10 +29,10 @@ contract Engine is EncodingSkills, Sort{
 
     bool dummyBoolToEstimateCost;
 
-    EnginePreComp private _cardsAndInjuries;
+    EnginePreComp private _precomp;
 
     function setCardsAndInjuries(address addr) public {
-        _cardsAndInjuries = EnginePreComp(addr);
+        _precomp = EnginePreComp(addr);
     }
 
     // mock up to estimate cost of a match.
@@ -81,7 +81,7 @@ contract Engine is EncodingSkills, Sort{
             matchBools
         );
         if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
-            matchLog = _cardsAndInjuries.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
+            matchLog = _precomp.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
         }
         return matchLog;
     }
@@ -110,11 +110,11 @@ contract Engine is EncodingSkills, Sort{
         (states[0], extraAttack[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF]);
         (states[1], extraAttack[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF]);
 
-        matchLog[0] = _cardsAndInjuries.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
-        matchLog[1] = _cardsAndInjuries.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
+        matchLog[0] = _precomp.computeExceptionalEvents(matchLog[0], states[0], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
+        matchLog[1] = _precomp.computeExceptionalEvents(matchLog[1], states[1], matchBools[IDX_IS_2ND_HALF], seedAndStartTime[IDX_SEED]);
 
-        globSkills[0] = _cardsAndInjuries.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
-        globSkills[1] = _cardsAndInjuries.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
+        globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }

@@ -125,8 +125,8 @@ contract('Engine', (accounts) => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
-        cardsAndInjuries = await EnginePreComp.new().should.be.fulfilled;
-        await engine.setCardsAndInjuries(cardsAndInjuries.address).should.be.fulfilled;
+        precomp = await EnginePreComp.new().should.be.fulfilled;
+        await engine.setCardsAndInjuries(precomp.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, lineup0, extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
         tactics1NoChanges = await engine.encodeTactics(noSubstitutions, lineup1, extraAttackNull, tacticId433).should.be.fulfilled;
@@ -202,7 +202,7 @@ return
 
     it('computePenalties', async () => {
         // one team much better than the other:
-        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
+        log = await precomp.computePenalties(log = [0,0], [teamStateAll50, teamStateAll1], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -211,7 +211,7 @@ return
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
         
         // both teams similar:
-        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 50, 50, seed);
+        log = await precomp.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 50, 50, seed);
         expected = [false, true, true, true, true, false, false]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -220,7 +220,7 @@ return
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
 
         // both teams really incredible goalkeepers:
-        log = await cardsAndInjuries.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
+        log = await precomp.computePenalties(log = [0,0], [teamStateAll50, teamStateAll50], 5000000, 5000000, seed);
         expected = [false, false, false, false, false, false, true]
         decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
         for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
@@ -290,7 +290,7 @@ return
         expected = Array.from(new Array(11), (x,i) => MAX_PENALTY);
         expected[0] = 0;
         for (p=0; p < 11; p++) {
-            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected[p]);
         }
     });
@@ -311,9 +311,9 @@ return
             2000, 3000, 4000
         ];
         for (p=0; p < 11; p++) {
-            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -335,7 +335,7 @@ return
                 forwardness = 1, leftishness = 4, aggr = 0], alignedLastHalf = false, redCardLastGame = false, games, injuryWeeksLeft = 0
             ).should.be.fulfilled;            
             for (p=0; p < 11; p+=3) {
-                penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+                penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
                 if (expected442[p] == MAX_PENALTY) {
                     penalty.toNumber().should.be.equal(0);
                 } else {
@@ -358,9 +358,9 @@ return
         ];
         expected433 = expected442;
         for (p=0; p < 11; p++) {
-            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone442, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected442[p]);
-            penalty = await cardsAndInjuries.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
+            penalty = await precomp.computePenaltyBadPositionAndCondition(p, playersPerZone433, playerSkills).should.be.fulfilled;
             penalty.toNumber().should.be.equal(10000 - expected433[p]);
         }
     });
@@ -639,7 +639,7 @@ return
         // attackersShoot = [1,1]
         
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
-        globSkills = await cardsAndInjuries.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, now).should.be.fulfilled;
+        globSkills = await precomp.getTeamGlobSkills(teamState442, playersPerZone442, extraAttackNull, now).should.be.fulfilled;
         expectedGlob = [42, 4, 8, 1, 70];
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
