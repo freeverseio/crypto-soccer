@@ -808,104 +808,24 @@ contract("Market", accounts => {
     let finalOwner = await assets.getOwnerTeam(sellerTeamId.toNumber()).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
-return
-  // // *************************************************************************
-  // // *********************************   TEST  *******************************
-  // // *************************************************************************
+
+  // *************************************************************************
+  // *********************************   TEST  *******************************
+  // *************************************************************************
   
-  // it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-  //   // Mobile app does this:
-  //   sigSeller = await signPutAssetForSaleMTx(
-  //     currencyId,
-  //     price,
-  //     sellerRnd, 
-  //     validUntil, 
-  //     sellerTeamId.toNumber(),
-  //     sellerAccount
-  //   );
-
-
-  //   // First of all, Freeverse and Buyer check the signature
-  //   // In this case, using web3:
-  //   recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-  //   recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-  //   // The correctness of the seller message can also be checked in the BC:
-  //   const sellerHiddenPrice = concatHash(
-  //     ["uint8", "uint256", "uint256"],
-  //     [currencyId, price, sellerRnd]
-  //   );
-  //   sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, sellerTeamId.toNumber()).should.be.fulfilled;
-  //   sellerTxMsgBC.should.be.equal(sigSeller.message);
-
-  //   // Then, the buyer builds a message to sign
-  //   let isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
-  //   isTeamFrozen.should.be.equal(false);
-
-  //   // Add some amount to the price where seller started, and a rnd to obfuscate it
-  //   const buyerHiddenPrice = concatHash(
-  //     ["uint256", "uint256"],
-  //     [extraPrice, buyerRnd]
-  //   );
-
-  //   let sigBuyer = await signAgreeToBuyTeamMTx(
-  //     currencyId,
-  //     price,
-  //     extraPrice,
-  //     sellerRnd,
-  //     buyerRnd,
-  //     validUntil,
-  //     sellerTeamId.toNumber(),
-  //     isOffer2StartAuction = false,
-  //     buyerAccount
-  //   ).should.be.fulfilled;
-
-
-  //   isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
-  //   isTeamFrozen.should.be.equal(false);
-
-  //   // Freeverse checks the signature
-  //   recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-  //   recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-  //   // and send the Freeze TX. 
-  //   const sigSellerMsgRS = [
-  //     sigSeller.messageHash,
-  //     sigSeller.r,
-  //     sigSeller.s,
-  //   ];
-  //   tx = await market.freezeTeam(
-  //     sellerHiddenPrice,
-  //     validUntil,
-  //     sellerTeamId.toNumber(),
-  //     sigSellerMsgRS,
-  //     sigSeller.v
-  //   ).should.be.fulfilled;
-
-  //   isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
-  //   isTeamFrozen.should.be.equal(true);
-
-  //   truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
-  //     return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
-  //   });
-
-  //   // Freeverse waits until actual money has been transferred between users, and completes sale
-  //   const sigBuyerMsgRS = [
-  //     sigBuyer.messageHash,
-  //     sigBuyer.r,
-  //     sigBuyer.s,
-  //   ];
+  it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
+    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
+    isTeamFrozen.should.be.equal(true);
+    truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
+      return event.teamId.should.be.bignumber.equal(sellerTeamId) && event.frozen.should.be.equal(true);
+    });
     
-  //   tx = await market.completeTeamAuction(
-  //     sellerHiddenPrice,
-  //     validUntil,
-  //     sellerTeamId.toNumber(),
-  //     buyerHiddenPrice,
-  //     sigBuyerMsgRS,
-  //     sigBuyer.v,
-  //     isOffer2StartAuction = true
-  //   ).should.be.rejected;
-  // });
+    tx = await completeTeamAuction(
+      currencyId, price, sellerRnd, validUntil, sellerTeamId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = true, buyerAccount
+    ).should.be.rejected;    
+  });
 
   // // ------------------------------------------------------------------------------------ 
   // // ------------------------------------------------------------------------------------ 
