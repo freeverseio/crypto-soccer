@@ -21,7 +21,7 @@ contract('EncodingMatchLog', (accounts) => {
         typesOutOfGames = [1, 2];
         outOfGameRounds = [7, 4];
         yellowCardedFinished1stHalf = [false, true];
-        ingameSubstitutions = [
+        ingameSubsCancelled = [
             false, true, false,  // half 1
             true, true, false,   // half 2
         ]
@@ -42,10 +42,10 @@ contract('EncodingMatchLog', (accounts) => {
             typesOutOfGames, 
             yellowCardedFinished1stHalf,
             halfTimeSubstitutions, 
-            ingameSubstitutions
+            ingameSubsCancelled
         );
         result = await encoding.decodeMatchLog(result);
-        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = result;
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = result;
         nGo.toNumber().should.be.equal(nGoals);        
         for (i = 0; i < assistersIdx.length; i++) ass[i].toNumber().should.be.equal(assistersIdx[i]); 
         for (i = 0; i < shootersIdx.length; i++) sho[i].toNumber().should.be.equal(shootersIdx[i]); 
@@ -56,7 +56,7 @@ contract('EncodingMatchLog', (accounts) => {
         for (i = 0; i < typesOutOfGames.length; i++) typ[i].toNumber().should.be.equal(typesOutOfGames[i]); 
         for (i = 0; i < yellowCardedFinished1stHalf.length; i++) yelFin[i].should.be.equal(yellowCardedFinished1stHalf[i]); 
         for (i = 0; i < halfTimeSubstitutions.length; i++) halfSubs[i].toNumber().should.be.equal(halfTimeSubstitutions[i]); 
-        for (i = 0; i < ingameSubstitutions.length; i++) inGameSubs[i].should.be.equal(ingameSubstitutions[i]); 
+        for (i = 0; i < ingameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(ingameSubsCancelled[i]); 
     });
     
 

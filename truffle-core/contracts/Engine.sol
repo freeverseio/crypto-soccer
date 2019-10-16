@@ -193,17 +193,23 @@ contract Engine is EngineLib, Sort{
         uint8[14] memory lineup;
         (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         uint8 changes;
-        if (is2ndHalf) {
-            // count the changes already made in 1st half:
-            for (uint8 p = 0; p < 6; p++) {
-                if(((matchLog >> 186 + p) & 1) == 1) changes++;
-            }        
-        }
+        
+        // Count changes during half-time:
         // substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
-            if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) changes++; 
+            if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
+                matchLog |= (uint256(p) << 195 + 4 * changes);
+                changes++; 
+            }
+        }
+        // Count changes ingame during 1st half
+        // matchLog >> 189, 190, 191 contain ingameSubsCancelled
+        if (is2ndHalf) {
+            for (uint8 p = 0; p < 3; p++) {
+                if(((matchLog >> 189 + p) & 1) == 0) changes++;
+            }        
         }
         if (substitutions[0] < 11) {
             changes++;

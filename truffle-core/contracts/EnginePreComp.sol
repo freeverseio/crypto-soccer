@@ -19,6 +19,7 @@ contract EnginePreComp is EngineLib {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant NO_SUBST  = 11;   // noone was subtituted
     uint8 public constant NO_CARD  = 14;   // noone saw a card
+    uint8 public constant RED_CARD  = 3;   // type of event = redCard
 
 
     // Over a game, we would like:
@@ -38,7 +39,7 @@ contract EnginePreComp is EngineLib {
     //      it cannot return 0
     //      injuryHard:  1
     //      injuryLow:   2
-    //      redCard:     3
+    //      redCard:     3  (aka RED_CARD)
     function computeExceptionalEvents
     (
         uint256 matchLog,
@@ -55,7 +56,7 @@ contract EnginePreComp is EngineLib {
         uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 169 : 151;
+        uint8 offset = is2ndHalf ? 171 : 151;
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
         for (uint8 p = 0; p < NO_CARD; p++) {
@@ -77,37 +78,45 @@ contract EnginePreComp is EngineLib {
     
         // However, it is important to check if a player who saw a yellow card is not linedup anymore
     
+        // if both yellows are for the same player => force red card, and leave. Enough punishment.
         if (yellowCardeds[0] == yellowCardeds[1]) {
-            return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
         }
+        // if we are in the 2nd half (and the 2 yellows are for different players):
+        // - if any such player had alread received one in the 1st half => force red, record the other yellow card, leave. 
         if (is2ndHalf) {
             uint256[2] memory prevYellows;
             prevYellows[0] = (matchLog >> 161) & 15;
             prevYellows[1] = (matchLog >> 165) & 15;
             if (yellowCardeds[0] == prevYellows[0] || yellowCardeds[0] == prevYellows[1]) {
-                matchLog |= yellowCardeds[1] << (offset + 14);
-                return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                matchLog |= yellowCardeds[1] << (offset + 10);
+                return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
             }
             if (yellowCardeds[1] == prevYellows[0] || yellowCardeds[1] == prevYellows[1]) {
                 matchLog |= yellowCardeds[0] << (offset + 14);
-                return logOutOfGame(true, yellowCardeds[1], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                return logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
             }
         }
+        
+        // if we get here: both yellows are to different players, who can continue playing. Record them.
         matchLog |= yellowCardeds[0] << (offset + 10);
         matchLog |= yellowCardeds[1] << (offset + 14);
 
+        // finally, compute possible other redcards/injuries.
+        // if a new red card is given to a previously yellow-carded player, no prob, such things happen.
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[NO_CARD] = 758;
         uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
-        return logOutOfGame(false, selectedPlayer, offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+        matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+        return matchLog;
     }
 
     function logOutOfGame(
+        bool is2ndHalf,
         bool forceRedCard,
         uint256 selectedPlayer, 
-        uint8 offset, 
         uint256 matchLog,
         uint8[3] memory substitutions,
         uint8[3] memory subsRounds,
@@ -115,27 +124,37 @@ contract EnginePreComp is EngineLib {
         uint64 rnd1
     ) private pure returns(uint256) 
     {
+        uint8 offset = is2ndHalf ? 171 : 151;
         matchLog |= selectedPlayer << offset;
         uint8 minRound = 0;
         uint8 maxRound = ROUNDS_PER_MATCH;
-        // outGame = 11, 12, or 13 => it affects the player joining in
-        // outGame = 0,...,10 => it affects the player to be substituted
+
+        // first compute the type of event        
+        uint256 typeOfEvent = forceRedCard ? uint256(RED_CARD) : uint256(computeTypeOfEvent(rnd1));
+        matchLog |= typeOfEvent << (offset + 8);
+
+        // if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
+        // make sure that the round selected for this event is after joining. 
         if (selectedPlayer < 14 && selectedPlayer > 10) {
             minRound = subsRounds[selectedPlayer - 11];
         }
-        // note that substitution[p] == 11 => NO_SUBS, 
-        // but it cannot happen in the next else-if (since selectedPlayer <= 10 in that branch)
+        // if the selected player was one of the guys to be changed during this half (outGame = 0,...10),
+        // make sure that the round selected for this event is before the change.
+        // (note that substitution[p] == 11 => NO_SUBS, cannot happen 
+        // in the next else-if (since selectedPlayer <= 10 in that branch)
         else {
             for (uint8 p = 0; p < 3; p++) {
-                if (selectedPlayer == substitutions[p]) {maxRound = subsRounds[p];} 
+                if (selectedPlayer == substitutions[p]) {
+                    maxRound = subsRounds[p];
+                    // log that this substitution was unable to take place
+                    if (typeOfEvent == RED_CARD) {
+                        if (is2ndHalf) matchLog |= (ONE256 << 192 + p);
+                        else matchLog |= (ONE256 << 189 + p);
+                    }
+                } 
             }
         }
         matchLog |= uint256(computeRound(rnd0+1, minRound, maxRound)) << offset + 4;
-        if (forceRedCard) {
-            matchLog |= uint256(3) << (offset + 8);
-        } else {
-            matchLog |= uint256(computeTypeOfEvent(rnd1)) << (offset + 8);
-        }
         return matchLog;
     }
 

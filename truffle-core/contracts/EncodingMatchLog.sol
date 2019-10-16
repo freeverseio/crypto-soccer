@@ -18,7 +18,7 @@ contract EncodingMatchLog {
         uint8[2] memory typesOutOfGames, // 2b each
         bool[2] memory yellowCardedFinished1stHalf, // 1b each
         uint8[3] memory halfTimeSubstitutions, // 4b each, the first 3 for half 1, the other for half 2
-        bool[6] memory ingameSubstitutions // 1b each, the first 3 for half 1, the other for half 2
+        bool[6] memory ingameSubsCancelled // 1b each, the first 3 for half 1, the other for half 2
     )
         public
         pure
@@ -47,9 +47,9 @@ contract EncodingMatchLog {
         log |= uint256(typesOutOfGames[1]) << 179;
         log |= uint256(outOfGamesAndYellowCards[4]) << 181;
         log |= uint256(outOfGamesAndYellowCards[5]) << 185;
-        // ingameSubstitutions
+        // ingameSubsCancelled
         for (uint8 p = 0; p < 6; p++) {
-            log |= uint256(ingameSubstitutions[p] ? 1: 0) << 189 + p;
+            log |= uint256(ingameSubsCancelled[p] ? 1: 0) << 189 + p;
         }        
         for (uint8 p = 0; p < 3; p++) {
             log |= uint256(halfTimeSubstitutions[p]) << 195 + 4 * p;
@@ -68,7 +68,7 @@ contract EncodingMatchLog {
         uint8[2] memory typesOutOfGames, // 2b each
         bool[2] memory yellowCardedFinished1stHalf, // 1b each
         uint8[3] memory halfTimeSubstitutions, // 4b each, the first 3 for half 1, the other for half 2
-        bool[6] memory ingameSubstitutions // 1b each, the first 3 for half 1, the other for half 2
+        bool[6] memory ingameSubsCancelled // 1b each, the first 3 for half 1, the other for half 2
     ) 
     {
         nGoals = uint8(log & 15);
@@ -94,9 +94,9 @@ contract EncodingMatchLog {
         typesOutOfGames[1] = uint8((log >> 179) & 3);
         outOfGamesAndYellowCards[4] = uint8((log >> 181) & 15);
         outOfGamesAndYellowCards[5] = uint8((log >> 185) & 15);
-        // ingameSubstitutions
+        // ingameSubsCancelled
         for (uint8 p = 0; p < 6; p++) {
-            ingameSubstitutions[p] = ((log >> 189 + p) & 1) == 1;
+            ingameSubsCancelled[p] = ((log >> 189 + p) & 1) == 1;
         }        
         for (uint8 p = 0; p < 3; p++) {
             halfTimeSubstitutions[p]  = uint8((log >> 195 + 4 * p) & 15);
