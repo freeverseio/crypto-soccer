@@ -256,8 +256,6 @@ contract('Engine', (accounts) => {
 
     });
     
-    return;
-
     // it('computeExceptionalEvents coming from a first half with a refirst half 2', async () => {
     //     // same as previous but pushing it to the limit, so that the round is 10
     //     seedForRedCardInSubstitutes = seed + 357;
