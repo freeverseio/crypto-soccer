@@ -210,7 +210,7 @@ func TestChangeOwnership(t *testing.T) {
 // 		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
 // 	}
 
-// 	bids, err := sto.Getbids()
+// 	bids, err := sto.GetBids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

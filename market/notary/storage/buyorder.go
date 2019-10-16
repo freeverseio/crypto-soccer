@@ -29,7 +29,7 @@ func (b *Storage) CreateBet(order Bid) error {
 	return err
 }
 
-func (b *Storage) Getbids() ([]Bid, error) {
+func (b *Storage) GetBids() ([]Bid, error) {
 	var offers []Bid
 	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature FROM bids;")
 	if err != nil {

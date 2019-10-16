@@ -15,7 +15,7 @@ func (b *Storage) GetOrders() ([]Order, error) {
 	if err != nil {
 		return orders, err
 	}
-	bids, err := b.Getbids()
+	bids, err := b.GetBids()
 	if err != nil {
 		return orders, err
 	}

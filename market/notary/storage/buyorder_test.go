@@ -12,7 +12,7 @@ func TestGetbids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.Getbids()
+	result, err := sto.GetBids()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,7 +28,7 @@ func TestGetbids(t *testing.T) {
 	}
 }
 
-// 	result, err = sto.Getbids()
+// 	result, err = sto.GetBids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -40,7 +40,7 @@ func TestGetbids(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	result, err = sto.Getbids()
+// 	result, err = sto.GetBids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
