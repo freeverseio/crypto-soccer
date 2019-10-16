@@ -22,6 +22,7 @@ contract Market {
     uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
 
     Assets private _assets;
 
@@ -83,11 +84,6 @@ contract Market {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
         teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
-        bool ok;
-        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
-        for (uint8 p = 0; p < 25; p++) {
-            ok = ok || isPlayerFrozen(playerIds[p % 18]);
-        }
         emit TeamFreeze(teamId, teamIdToAuctionData[teamId], true);
     }
 
@@ -115,8 +111,6 @@ contract Market {
         emit TeamFreeze(teamId, 1, false);
     }
 
-
-
     function areFreezeTeamRequirementsOK(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -126,23 +120,27 @@ contract Market {
     ) 
         public 
         view 
-        returns (bool)
+        returns (bool ok)
     {
         address teamOwner = _assets.getOwnerTeam(teamId);
-        return (
-            // check validUntil has not expired
-            (now < validUntil) &&
-            // check player is not already frozen
-            (!isTeamFrozen(teamId))) &&  
-            // check asset is owned by legit address
-            (teamOwner != address(0)) && 
-            // check signatures are valid by requiring that they own the asset:
-            (teamOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
-            // check that they signed what they input data says they signed:
-            (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId)) &&
-            // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
-            (validUntil < now + MAX_VALID_UNTIL) 
-        );
+        ok =    // check validUntil has not expired
+                (now < validUntil) &&
+                // check player is not already frozen
+                (!isTeamFrozen(teamId)) &&  
+                // check asset is owned by legit address
+                (teamOwner != address(0)) && 
+                // check signatures are valid by requiring that they own the asset:
+                (teamOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+                // check that they signed what they input data says they signed:
+                (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, teamId))) &&
+                // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
+                (validUntil < now + MAX_VALID_UNTIL);
+        if (!ok) return false;
+           
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if ((playerIds[p] != FREE_PLAYER_ID) && isPlayerFrozen(playerIds[p])) return false;
+        }
     }
 
     function areCompleteTeamAuctionRequirementsOK(
@@ -194,6 +192,8 @@ contract Market {
             (now < validUntil) &&
             // check player is not already frozen
             (!isPlayerFrozen(playerId))) &&  
+            // check that the team it belongs to not already frozen
+            !isTeamFrozen(_assets.getCurrentTeamId(playerId)) &&
             // check asset is owned by legit address
             (_assets.getOwnerPlayer(playerId) != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
@@ -201,7 +201,7 @@ contract Market {
             // check that they signed what they input data says they signed:
             (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
-            (validUntil < now + MAX_VALID_UNTIL) 
+            (validUntil < now + MAX_VALID_UNTIL)
         );
     }
 
