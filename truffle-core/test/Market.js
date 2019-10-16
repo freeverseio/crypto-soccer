@@ -157,6 +157,50 @@ async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, 
     return tx, sellerHiddenPrice;
 }
 
+async function completePlayerAuction(currencyId, price, sellerRnd, validUntil, playerId, extraPrice, buyerRnd, isOffer2StartAuction=false, buyerTeamId, buyyerAccount) {
+  // Add some amount to the price where seller started, and a rnd to obfuscate it
+  const buyerHiddenPrice = concatHash(
+    ["uint256", "uint256"],
+    [extraPrice, buyerRnd]
+  );
+
+  let sigBuyer = await signAgreeToBuyPlayerMTx(
+    currencyId,
+    price,
+    extraPrice,
+    sellerRnd,
+    buyerRnd,
+    validUntil,
+    playerId.toNumber(),
+    isOffer2StartAuction,
+    buyerTeamId.toNumber(),
+    buyerAccount
+  ).should.be.fulfilled;
+
+  // Freeverse checks the signature
+  recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
+  recoveredBuyerAddr.should.be.equal(buyerAccount.address);
+
+  // Freeverse waits until actual money has been transferred between users, and completes sale
+  const sigBuyerMsgRS = [
+    sigBuyer.messageHash,
+    sigBuyer.r,
+    sigBuyer.s,
+  ];
+  tx = await market.completePlayerAuction(
+    sellerHiddenPrice,
+    validUntil,
+    playerId,
+    buyerHiddenPrice,
+    buyerTeamId.toNumber(),
+    sigBuyerMsgRS,
+    sigBuyer.v,
+    isOffer2StartAuction
+  ).should.be.fulfilled;
+    
+  return tx
+}
+
 
 // The two needed helpers: concatHash & getMessageHash
 function concatHash(types, vals) {
@@ -1229,52 +1273,11 @@ contract("Market", accounts => {
     tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount);
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
-
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    
-    // Add some amount to the price where seller started, and a rnd to obfuscate it
-    const buyerHiddenPrice = concatHash(
-      ["uint256", "uint256"],
-      [extraPrice, buyerRnd]
-    );
-
-    let sigBuyer = await signAgreeToBuyPlayerMTx(
-      currencyId,
-      price,
-      extraPrice,
-      sellerRnd,
-      buyerRnd,
-      validUntil,
-      playerId.toNumber(),
-      isOffer2StartAuction = false,
-      buyerTeamId.toNumber(),
-      buyerAccount
-    ).should.be.fulfilled;
-
-    // Freeverse checks the signature
-    recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-    // Freeverse waits until actual money has been transferred between users, and completes sale
-    const sigBuyerMsgRS = [
-      sigBuyer.messageHash,
-      sigBuyer.r,
-      sigBuyer.s,
-    ];
-    tx = await market.completePlayerAuction(
-      sellerHiddenPrice,
-      validUntil,
-      playerId,
-      buyerHiddenPrice,
-      buyerTeamId.toNumber(),
-      sigBuyerMsgRS,
-      sigBuyer.v,
-      isOffer2StartAuction = false
-    ).should.be.fulfilled;
-    
+    tx = await completePlayerAuction(currencyId, price, sellerRnd, validUntil, playerId, extraPrice, buyerRnd, isOffer2StartAuction=false, buyerTeamId, buyerAccount);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
