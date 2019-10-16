@@ -20,7 +20,6 @@ CREATE TABLE auctions (
     state TEXT NOT NULL DEFAULT 'STARTED' REFERENCES auction_states(state),
     PRIMARY KEY(uuid)
 );
-comment on column auctions.state is E'@omit create';
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
