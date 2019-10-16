@@ -1,3 +1,14 @@
+CREATE TABLE auction_states(
+    state TEXT NOT NULL PRIMARY KEY
+);
+INSERT INTO auction_states(state) VALUES ('STARTED');
+INSERT INTO auction_states(state) VALUES ('ASSET_FROZEN');
+INSERT INTO auction_states(state) VALUES ('PAYING');
+INSERT INTO auction_states(state) VALUES ('PAID');
+INSERT INTO auction_states(state) VALUES ('CANCELLED_BY_SELLER');
+INSERT INTO auction_states(state) VALUES ('FREEZE_FAILED');
+INSERT INTO auction_states(state) VALUES ('PAYMENT_FAILED');
+
 CREATE TABLE auctions (
     uuid UUID NOT NULL,
     player_id TEXT NOT NULL,
@@ -6,6 +17,7 @@ CREATE TABLE auctions (
     rnd INT NOT NULL,
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
+    state TEXT NOT NULL REFERENCES auction_states(state),
     PRIMARY KEY(uuid)
 );
 
@@ -16,4 +28,5 @@ CREATE TABLE bids (
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     PRIMARY KEY(auction, extra_price)
-)
+);
+
