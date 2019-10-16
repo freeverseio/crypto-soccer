@@ -66,7 +66,7 @@ contract EnginePreComp is EngineLib {
         // by the red-card computation below, if needed.
         for (uint8 p = 0; p < 3; p++) {
             if (substitutions[p] != NO_SUBST) {
-                if (is2ndHalf) matchLog |= (CHG_HAPPENED << 192 + p);
+                if (is2ndHalf) matchLog |= (CHG_HAPPENED << 195 + 2 * p);
                 else matchLog |= (CHG_HAPPENED << 189 + 2 * p);
             } 
         }
@@ -164,8 +164,10 @@ contract EnginePreComp is EngineLib {
                     maxRound = subsRounds[p];
                     // log that this substitution was unable to take place
                     if (typeOfEvent == RED_CARD) {
-                        if (is2ndHalf) matchLog |= (CHG_CANCELLED << 195 + p);
-                        else matchLog |= (CHG_CANCELLED << 189 + 2 * p);
+                        matchLog = setInGameSubs(
+                            matchLog,
+                            is2ndHalf ? 195 + 2 * p : 189 + 2 * p
+                        );
                     }
                 } 
             }
@@ -174,6 +176,9 @@ contract EnginePreComp is EngineLib {
         return matchLog;
     }
 
+    function setInGameSubs(uint256 matchLog, uint8 pos) private pure returns (uint256) {
+        return (matchLog & ~(uint256(3) << pos)) | (CHG_CANCELLED << pos);
+    }
 
     
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {

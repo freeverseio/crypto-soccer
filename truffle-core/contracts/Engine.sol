@@ -202,7 +202,7 @@ contract Engine is EngineLib, Sort{
             outStates[p] = states[lineup[p]];
             assertCanPlay(outStates[p]);
             if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                matchLog |= (uint256(p) << 195 + 4 * changes);
+                matchLog |= (uint256(p) << 201 + 4 * changes);
                 changes++; 
             }
         }
@@ -214,6 +214,8 @@ contract Engine is EngineLib, Sort{
                 if(((matchLog >> 189 + 2*p) & 3) == CHG_HAPPENED) changes++;
             }        
         }
+
+
         if (substitutions[0] < 11) {
             changes++;
             outStates[11] = states[lineup[11]];
