@@ -30,7 +30,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           return true;// TODO return something with sense
         },
         deleteAuction: async (_, {uuid}, context) => {
-          const query = sql.query`DELETE FROM auctions WHERE uuid=${sql.value(uuid)}`;
+          const query = sql.query`UPDATE auctions SET state='CANCELLED_BY_SELLER' WHERE uuid=${sql.value(uuid)}`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
           return true; // TODO return something with sense
