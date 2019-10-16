@@ -25,6 +25,7 @@ func TestGetOrders(t *testing.T) {
 		Price:      big.NewInt(1000),
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
+		State:      "STARTED",
 	})
 	if err != nil {
 		t.Fatal(err)

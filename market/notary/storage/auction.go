@@ -16,11 +16,12 @@ type SellOrder struct {
 	Rnd        *big.Int
 	ValidUntil *big.Int
 	Signature  string
+	State      string
 }
 
 func (b *Storage) CreateSellOrder(order SellOrder) error {
 	log.Infof("[DBMS] + create sell order %v", order)
-	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		order.UUID,
 		order.PlayerID.String(),
 		order.CurrencyID,
@@ -28,13 +29,14 @@ func (b *Storage) CreateSellOrder(order SellOrder) error {
 		order.Rnd.String(),
 		order.ValidUntil.String(),
 		order.Signature,
+		order.State,
 	)
 	return err
 }
 
 func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 	var orders []SellOrder
-	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature FROM auctions;")
+	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state FROM auctions;")
 	if err != nil {
 		return orders, err
 	}
@@ -53,6 +55,7 @@ func (b *Storage) GetSellOrders() ([]SellOrder, error) {
 			&rnd,
 			&validUntil,
 			&order.Signature,
+			&order.State,
 		)
 		if err != nil {
 			return orders, err
