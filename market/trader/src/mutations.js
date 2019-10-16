@@ -15,14 +15,15 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
       Mutation: {
         createAuction: async (_, { input }, context) =>  {
           const { uuid, playerId, currencyId, price, rnd, validUntil, signature } = input;
-          const query = sql.query`INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature) VALUES (
+          const query = sql.query`INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES (
             ${sql.value(uuid)},
             ${sql.value(playerId)}, 
             ${sql.value(currencyId)}, 
             ${sql.value(price)},
             ${sql.value(rnd)},
             ${sql.value(validUntil)},
-            ${sql.value(signature)}
+            ${sql.value(signature)},
+            ${sql.value('STARTED')}
             )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
