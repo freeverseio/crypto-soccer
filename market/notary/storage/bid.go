@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Bet struct {
+type Bid struct {
 	Auction         uuid.UUID
 	ExtraPrice      float32
 	Rnd             int64
@@ -17,9 +17,9 @@ type Bet struct {
 	Signature       string
 }
 
-func (b *Storage) CreateBet(order Bet) error {
-	log.Infof("[DBMS] + create bet %v", order)
-	_, err := b.db.Exec("INSERT INTO bets (auction, extra_price, rnd, team_id, signature) VALUES ($1, $2, $3, $4, $5);",
+func (b *Storage) CreateBet(order Bid) error {
+	log.Infof("[DBMS] + create Bid %v", order)
+	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature) VALUES ($1, $2, $3, $4, $5);",
 		order.Auction,
 		order.ExtraPrice,
 		order.Rnd,
@@ -29,15 +29,15 @@ func (b *Storage) CreateBet(order Bet) error {
 	return err
 }
 
-func (b *Storage) GetBets() ([]Bet, error) {
-	var offers []Bet
-	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature FROM bets;")
+func (b *Storage) GetBids() ([]Bid, error) {
+	var offers []Bid
+	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature FROM bids;")
 	if err != nil {
 		return offers, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var offer Bet
+		var offer Bid
 		var teamID sql.NullString
 		err = rows.Scan(
 			&offer.Auction,

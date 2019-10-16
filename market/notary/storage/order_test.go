@@ -37,7 +37,7 @@ func TestGetOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBet(storage.Bet{
+	err = sto.CreateBet(storage.Bid{
 		TeamID: big.NewInt(3),
 	})
 	if err != nil {

@@ -198,7 +198,7 @@ func TestChangeOwnership(t *testing.T) {
 // 		t.Fatalf("Expectedf originOwner ALICE but got %v", targetOwner)
 // 	}
 
-// 	sto.CreateBet(storage.Bet{
+// 	sto.CreateBet(storage.Bid{
 // 		PlayerId:  playerId,
 // 		TeamId:    teamId,
 // 		Signature: "0x44bb117064e1e2a8ef5fed99f3ec9281f95ef7caea595db2c36071963f74e4c904e8c61d6cb75aaef61718e1d2dff49bc3c55c886e7b3d3e73db31a1af3c61721b",
@@ -210,12 +210,12 @@ func TestChangeOwnership(t *testing.T) {
 // 		t.Fatalf("Expected originOwner BOB but got %v", targetOwner)
 // 	}
 
-// 	Bets, err := sto.GetBets()
+// 	bids, err := sto.GetBids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	if len(Bets) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(Bets))
+// 	if len(bids) != 0 {
+// 		t.Fatalf("Expercted 0 but got %v", len(bids))
 // 	}
 // 	sellOrders, err := sto.GetSellOrders()
 // 	if err != nil {

@@ -9,7 +9,7 @@ CREATE TABLE auctions (
     PRIMARY KEY(uuid)
 );
 
-CREATE TABLE bets (
+CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
     extra_price NUMERIC(15,2) NOT NULL,
     rnd INT NOT NULL,
