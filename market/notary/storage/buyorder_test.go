@@ -7,12 +7,12 @@ import (
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 )
 
-func TestGetBets(t *testing.T) {
+func TestGetbids(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetBets()
+	result, err := sto.Getbids()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestGetBets(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBet(storage.Bet{
+	err = sto.CreateBet(storage.Bid{
 		TeamID: big.NewInt(2),
 	})
 	if err == nil {
@@ -28,7 +28,7 @@ func TestGetBets(t *testing.T) {
 	}
 }
 
-// 	result, err = sto.GetBets()
+// 	result, err = sto.Getbids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -40,7 +40,7 @@ func TestGetBets(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	result, err = sto.GetBets()
+// 	result, err = sto.Getbids()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

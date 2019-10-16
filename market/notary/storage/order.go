@@ -6,7 +6,7 @@ import (
 
 type Order struct {
 	SellOrder SellOrder
-	Bet       Bet
+	Bid       Bid
 }
 
 func (b *Storage) GetOrders() ([]Order, error) {
@@ -15,23 +15,23 @@ func (b *Storage) GetOrders() ([]Order, error) {
 	if err != nil {
 		return orders, err
 	}
-	Bets, err := b.GetBets()
+	bids, err := b.Getbids()
 	if err != nil {
 		return orders, err
 	}
 	for _, sellOrder := range sellOrders {
-		Bet := b.findBet(Bets, sellOrder.PlayerID)
-		if Bet != nil {
+		Bid := b.findBet(bids, sellOrder.PlayerID)
+		if Bid != nil {
 			orders = append(orders, Order{
 				SellOrder: sellOrder,
-				Bet:       *Bet,
+				Bid:       *Bid,
 			})
 		}
 	}
 	return orders, nil
 }
 
-func (b *Storage) findBet(orders []Bet, playerId *big.Int) *Bet {
+func (b *Storage) findBet(orders []Bid, playerId *big.Int) *Bid {
 	// for _, order := range orders {
 	// 	if order.PlayerID.Cmp(playerId) == 0 {
 	// 		return &order
