@@ -17,7 +17,8 @@ contract EnginePreComp is EngineLib {
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
-    uint8 public constant NO_SUBST  = 11;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
+    uint8 public constant NO_SUBST  = 11;   // noone was subtituted
+    uint8 public constant NO_CARD  = 14;   // noone saw a card
 
 
     // Over a game, we would like:
@@ -57,7 +58,7 @@ contract EnginePreComp is EngineLib {
         uint8 offset = is2ndHalf ? 169 : 151;
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
-        for (uint8 p = 0; p < 14; p++) {
+        for (uint8 p = 0; p < NO_CARD; p++) {
             if (states[p] != 0) weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
         
@@ -65,10 +66,16 @@ contract EnginePreComp is EngineLib {
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
-        weights[14] = 9;
+        weights[NO_CARD] = 9;
         uint256[2] memory yellowCardeds;
+        
         yellowCardeds[0] = uint256(throwDiceArray(weights, rnds[2]));
         yellowCardeds[1] = uint256(throwDiceArray(weights, rnds[3]));
+    
+        // Important: there is no need to check if a red card had been given in the 1st half, because that player, simply
+        // would never be able to have been lined-up, and never made it up to here.
+    
+        // However, it is important to check if a player who saw a yellow card is not linedup anymore
     
         if (yellowCardeds[0] == yellowCardeds[1]) {
             return logOutOfGame(true, yellowCardeds[0], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
@@ -86,14 +93,13 @@ contract EnginePreComp is EngineLib {
                 return logOutOfGame(true, yellowCardeds[1], offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
             }
         }
-        
         matchLog |= yellowCardeds[0] << (offset + 10);
         matchLog |= yellowCardeds[1] << (offset + 14);
 
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
-        weights[14] = 758;
+        weights[NO_CARD] = 758;
         uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
         return logOutOfGame(false, selectedPlayer, offset, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
     }
