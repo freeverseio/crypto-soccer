@@ -157,7 +157,10 @@ async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, 
     return tx, sellerHiddenPrice;
 }
 
-async function completePlayerAuction(currencyId, price, sellerRnd, validUntil, playerId, extraPrice, buyerRnd, isOffer2StartAuction=false, buyerTeamId, buyyerAccount) {
+async function completePlayerAuction(
+    currencyId, price, sellerRnd, validUntil, playerId, 
+    extraPrice, buyerRnd, isOffer2StartAuctionSig, sOffer2StartAuctionBC, buyerTeamId, buyyerAccount
+  ) {
   // Add some amount to the price where seller started, and a rnd to obfuscate it
   const buyerHiddenPrice = concatHash(
     ["uint256", "uint256"],
@@ -172,7 +175,7 @@ async function completePlayerAuction(currencyId, price, sellerRnd, validUntil, p
     buyerRnd,
     validUntil,
     playerId.toNumber(),
-    isOffer2StartAuction,
+    isOffer2StartAuctionSig,
     buyerTeamId.toNumber(),
     buyerAccount
   ).should.be.fulfilled;
@@ -195,7 +198,7 @@ async function completePlayerAuction(currencyId, price, sellerRnd, validUntil, p
     buyerTeamId.toNumber(),
     sigBuyerMsgRS,
     sigBuyer.v,
-    isOffer2StartAuction
+    isOffer2StartAuctionBC
   ).should.be.fulfilled;
     
   return tx
@@ -803,19 +806,6 @@ contract("Market", accounts => {
   // // *************************************************************************
   
   // it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-  //   // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-  //   // 2. Freeverse checks signature and returns to buyer: OK, failed
-  //   // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-  //   // 4. seller's mobile app sends to Freeverse: sigSeller and params
-  //   // 5. Freeverse checks signature and returns to seller: OK, failed
-  //   // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-  //   // 7. If freeze went OK:
-  //   //          urges buyer to complete payment
-  //   //    If freeze not OK (he probably sold the player in a different market)
-  //   //          tells the buyer to forget about this player
-  //   // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-  //   // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
-
   //   // Mobile app does this:
   //   sigSeller = await signPutAssetForSaleMTx(
   //     currencyId,
@@ -939,7 +929,10 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
-    tx = await completePlayerAuction(currencyId, price, offererRnd, offerValidUntil, playerId, extraPrice = 0, buyerRnd = 0, isOffer2StartAuction=true, buyerTeamId, buyerAccount).should.be.fulfilled;
+    tx = await completePlayerAuction(
+      currencyId, price,  offererRnd, offerValidUntil, playerId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
@@ -968,7 +961,11 @@ contract("Market", accounts => {
     });
 
     // the MTX was actually created before the seller put the asset for sale, but it is used now to complete the auction  
-    await completePlayerAuction(currencyId, price, offererRnd, offerValidUntil, playerId, extraPrice = 0, buyerRnd = 0, isOffer2StartAuction=true, buyerTeamId, buyerAccount).should.be.rejected;
+    tx = await completePlayerAuction(
+      currencyId, price,  offererRnd, offerValidUntil, playerId, 
+      extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
+    ).should.be.rejected;
+    
   });
   
   // *************************************************************************
@@ -1004,14 +1001,18 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount);
+    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
-    tx = await completePlayerAuction(currencyId, price, sellerRnd, validUntil, playerId, extraPrice, buyerRnd, isOffer2StartAuction=false, buyerTeamId, buyerAccount);
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
       return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
@@ -1020,116 +1021,21 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
-  return
-    
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************
   
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-    // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
-    // 2. Freeverse checks signature and returns to buyer: OK, failed
-    // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
-    // 4. seller's mobile app sends to Freeverse: sigSeller and params
-    // 5. Freeverse checks signature and returns to seller: OK, failed
-    // 6. Freeverse FREEZES the player by sending a TX to the BLOCKCHAIN
-    // 7. If freeze went OK:
-    //          urges buyer to complete payment
-    //    If freeze not OK (he probably sold the player in a different market)
-    //          tells the buyer to forget about this player
-    // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
-    // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    // Mobile app does this:
-    sigSeller = await signPutAssetForSaleMTx(
-      currencyId,
-      price,
-      sellerRnd,
-      validUntil,
-      playerId.toNumber(),
-      sellerAccount
-    );
-
-    // First of all, Freeverse and Buyer check the signature
-    // In this case, using web3:
-    recoveredSellerAddr = await web3.eth.accounts.recover(sigSeller);
-    recoveredSellerAddr.should.be.equal(sellerAccount.address);
-
-    // The correctness of the seller message can also be checked in the BC:
-    const sellerHiddenPrice = concatHash(
-      ["uint8", "uint256", "uint256"],
-      [currencyId, price, sellerRnd]
-    );
-    sellerTxMsgBC = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
-    sellerTxMsgBC.should.be.equal(sigSeller.message);
-
-    // Then, the buyer builds a message to sign
-    let isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(false);
-
-    // Add some amount to the price where seller started, and a rnd to obfuscate it
-    const buyerHiddenPrice = concatHash(
-      ["uint256", "uint256"],
-      [extraPrice, buyerRnd]
-    );
-
-    let sigBuyer = await signAgreeToBuyPlayerMTx(
-      currencyId,
-      price,
-      extraPrice,
-      sellerRnd,
-      buyerRnd,
-      validUntil,
-      playerId.toNumber(),
-      isOffer2StartAuction = false,
-      buyerTeamId.toNumber(),
-      buyerAccount
-    ).should.be.fulfilled;
-
-    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
-    isPlayerFrozen.should.be.equal(false);
-
-    // Freeverse checks the signature
-    recoveredBuyerAddr = await web3.eth.accounts.recover(sigBuyer);
-    recoveredBuyerAddr.should.be.equal(buyerAccount.address);
-
-    // and send the Freeze TX. 
-    const sigSellerMsgRS = [
-      sigSeller.messageHash,
-      sigSeller.r,
-      sigSeller.s,
-    ];
-    tx = await market.freezePlayer(
-      sellerHiddenPrice,
-      validUntil,
-      playerId,
-      sigSellerMsgRS,
-      sigSeller.v
-    ).should.be.fulfilled;
-
+    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
-
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal('274877906948') && event.frozen.should.be.equal(true);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
-
-    // Freeverse waits until actual money has been transferred between users, and completes sale
-    const sigBuyerMsgRS = [
-      sigBuyer.messageHash,
-      sigBuyer.r,
-      sigBuyer.s,
-    ];
-    
-    tx = await market.completePlayerAuction(
-      sellerHiddenPrice,
-      validUntil,
-      playerId,
-      buyerHiddenPrice,
-      buyerTeamId.toNumber(),
-      sigBuyerMsgRS,
-      sigBuyer.v,
-      isOffer2StartAuction = true
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = true, buyerTeamId, buyerAccount
     ).should.be.rejected;
   });
   
