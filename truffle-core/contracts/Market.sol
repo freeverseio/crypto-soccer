@@ -21,6 +21,7 @@ contract Market {
     uint256 constant public AUCTION_TIME        = 24 hours; 
     uint256 constant public MAX_VALID_UNTIL     = 30 hours; // the sum of the previous two
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
+    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
 
     Assets private _assets;
 
@@ -82,6 +83,11 @@ contract Market {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
         teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
+        bool ok;
+        uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
+        for (uint8 p = 0; p < 25; p++) {
+            ok = ok || isPlayerFrozen(playerIds[p % 18]);
+        }
         emit TeamFreeze(teamId, teamIdToAuctionData[teamId], true);
     }
 
