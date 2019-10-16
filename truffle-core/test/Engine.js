@@ -149,39 +149,43 @@ contract('Engine', (accounts) => {
     //     rounds = [4, 2, 6];
     //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
     //     decoded = await encodingLog.decodeMatchLog(newLog);
-    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
     //     expectedOut = [0, 9];
     //     expectedOutRounds = [0, 5];
     //     expectedYellows = [0, 0, 1, 12];
     //     expectedType = [0, 3]; // 0 = no event, 3 = redCard
-    //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+    //     expectedInGameSubsCancelled = [false, false, false, false, false, false];
+    //     yellowedFinished = [false, false];
+    //     for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+    //     for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-    //     for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+    //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
     // });
     
-    it('computeExceptionalEvents clashing with redcards before changing player', async () => {
-        // there is a red card with this seed, to player 9. Since he's involved in a change, 
-        // the round for which he saw the card should be before the proposed change round (2) 
-        seedForRedCard = seed + 83;
-        substis = [2, 9, 1];
-        rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(newLog);
-        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
-        expectedOut = [0, 9];
-        expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
-        expectedYellows = [0, 0, 1, 12];
-        expectedType = [0, 3]; // 0 = no event, 3 = redCard
-        expectedInGameSubsCancelled = [false, false, false, false, true, false];
-        yellowedFinished = [false, false];
-        for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-        for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
-    });
+    // it('computeExceptionalEvents clashing with redcards before changing player', async () => {
+    //     // there is a red card with this seed, to player 9. Since he's involved in a change, 
+    //     // the round for which he saw the card should be before the proposed change round (2) 
+    //     seedForRedCard = seed + 83;
+    //     substis = [2, 9, 1];
+    //     rounds = [4, 2, 6];
+    //     newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
+    //     decoded = await encodingLog.decodeMatchLog(newLog);
+    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
+    //     expectedOut = [0, 9];
+    //     expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
+    //     expectedYellows = [0, 0, 1, 12];
+    //     expectedType = [0, 3]; // 0 = no event, 3 = redCard
+    //     expectedInGameSubsCancelled = [false, false, false, false, true, false];
+    //     yellowedFinished = [false, false];
+    //     for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+    //     for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
+    //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+    //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+    //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+    // });
 
     // it('computeExceptionalEvents clashing with redcards after changing player', async () => {
     //     // there is a red card with this seed, to player 13, which is by definition one of the players to join during the game. 
@@ -191,15 +195,19 @@ contract('Engine', (accounts) => {
     //     rounds = [4, 2, 6];
     //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
     //     decoded = await encodingLog.decodeMatchLog(newLog);
-    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
     //     expectedOut = [0, 13];
     //     expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
     //     expectedYellows = [0, 0, 14, 13];
     //     expectedType = [0, 3]; // 0 = no event, 3 = redCard
-    //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+    //     expectedInGameSubsCancelled = [false, false, false, false, false, false];
+    //     yellowedFinished = [false, false];
+    //     for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+    //     for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-    //     for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+    //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
     // });
 
     // it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
@@ -209,34 +217,43 @@ contract('Engine', (accounts) => {
     //     rounds = [4, 2, 10];
     //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
     //     decoded = await encodingLog.decodeMatchLog(newLog);
-    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
     //     expectedOut = [0, 13];
     //     expectedOutRounds = [0, 10]; 
     //     expectedYellows = [0, 0, 14, 13];
     //     expectedType = [0, 3]; // 0 = no event, 3 = redCard
-    //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+    //     expectedInGameSubsCancelled = [false, false, false, false, false, false];
+    //     yellowedFinished = [false, false];
+    //     for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+    //     for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-    //     for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
     //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+    //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
     // });
     
-    // it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
-    //     // same as previous but pushing it to the limit, so that the round is 10
-    //     seedForRedCardInSubstitutes = seed + 357;
-    //     substis = [2, 9, 1];
-    //     rounds = [4, 2, 10];
-    //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
-    //     decoded = await encodingLog.decodeMatchLog(newLog);
-    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
-    //     expectedOut = [13, 0];
-    //     expectedOutRounds = [10, 0]; 
-    //     expectedYellows = [14, 13, 0, 0];
-    //     expectedType = [3, 0]; // 0 = no event, 3 = redCard
-    //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
-    //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-    //     for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
-    //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-    // });
+    it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
+        // same as previous but pushing it to the limit, so that the round is 10
+        seedForRedCardInSubstitutes = seed + 357;
+        substis = [2, 9, 1];
+        rounds = [4, 2, 10];
+        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
+        decoded = await encodingLog.decodeMatchLog(newLog);
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
+        expectedOut = [13, 0];
+        expectedOutRounds = [10, 0]; 
+        expectedYellows = [14, 13, 0, 0];
+        expectedType = [3, 0]; // 0 = no event, 3 = redCard
+        expectedInGameSubsCancelled = [false, false, false, false, false, false];
+        yellowedFinished = [false, false];
+        for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+        for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
+        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+        for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+
+    });
 
     // it('computeExceptionalEvents coming from a first half with a refirst half 2', async () => {
     //     // same as previous but pushing it to the limit, so that the round is 10
