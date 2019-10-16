@@ -193,7 +193,7 @@ contract Market {
             // check player is not already frozen
             (!isPlayerFrozen(playerId))) &&  
             // check that the team it belongs to not already frozen
-            !isTeamFrozen(_assets.getCurrentTeamId(playerId)) &&
+            !isTeamFrozen(_assets.getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
             (_assets.getOwnerPlayer(playerId) != address(0)) && 
             // check signatures are valid by requiring that they own the asset:

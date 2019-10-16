@@ -168,8 +168,11 @@ contract Assets is EncodingSkills, EncodingState {
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         require(playerExists(playerId), "unexistent player");
-        uint256 teamId = getCurrentTeamId(getPlayerState(playerId));
-        return getOwnerTeam(teamId);
+        return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+    }
+    
+    function getCurrentTeamIdFromPlayerId(uint256 playerId) public view returns(uint256) {
+        return getCurrentTeamId(getPlayerState(playerId));
     }
 
     function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
