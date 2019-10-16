@@ -19,4 +19,23 @@ func TestTacticCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	count, err := db.TacticCount()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("expecting 1 tactic, got %v", count)
+	}
+	tc, err := db.GetTactic(teamId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tc.Defense != 4 || tc.Center != 3 || tc.Attack != 3 {
+		t.Fatalf("expecting 4-3-3, got %v-%v-%v", tc.Defense, tc.Center, tc.Attack)
+	}
+
+	tc, err = db.GetTactic(big.NewInt(2))
+	if err == nil {
+		t.Fatal("team 2 does not exist and should fail")
+	}
 }
