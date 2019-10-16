@@ -232,80 +232,77 @@ contract('Engine', (accounts) => {
     //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
     // });
     
-    it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
-        // same as previous but pushing it to the limit, so that the round is 10
-        seedForRedCardInSubstitutes = seed + 357;
-        substis = [2, 9, 1];
-        rounds = [4, 2, 10];
-        newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(newLog);
-        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
-        expectedOut = [13, 0];
-        expectedOutRounds = [10, 0]; 
-        expectedYellows = [14, 13, 0, 0];
-        expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubsCancelled = [false, false, false, false, false, false];
-        yellowedFinished = [false, false];
-        for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-        for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
-
-    });
-
-    // it('computeExceptionalEvents coming from a first half with a refirst half 2', async () => {
+    // it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
     //     // same as previous but pushing it to the limit, so that the round is 10
     //     seedForRedCardInSubstitutes = seed + 357;
     //     substis = [2, 9, 1];
     //     rounds = [4, 2, 10];
     //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
     //     decoded = await encodingLog.decodeMatchLog(newLog);
-    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+    //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubsCancl} = decoded;
     //     expectedOut = [13, 0];
     //     expectedOutRounds = [10, 0]; 
     //     expectedYellows = [14, 13, 0, 0];
     //     expectedType = [3, 0]; // 0 = no event, 3 = redCard
-    //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
-    //     for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber());//.should.be.equal(expectedOutRounds[i]);
-    //     for (i = 0; i < expectedYellows.length; i++) console.log(yel[i].toNumber())//.should.be.equal(expectedYellows[i]);
-    //     for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber())//.should.be.equal(expectedType[i]);
-    //     // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-    //     // for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
-    //     // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     expectedInGameSubsCancelled = [false, false, false, false, false, false];
+    //     yellowedFinished = [false, false];
+    //     for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
+    //     for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
+    //     for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+    //     for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    //     for (i = 0; i < expectedInGameSubsCancelled.length; i++) inGameSubsCancl[i].should.be.equal(expectedInGameSubsCancelled[i]);
+    //     for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+
     // });
+
+    // // it('computeExceptionalEvents coming from a first half with a refirst half 2', async () => {
+    // //     // same as previous but pushing it to the limit, so that the round is 10
+    // //     seedForRedCardInSubstitutes = seed + 357;
+    // //     substis = [2, 9, 1];
+    // //     rounds = [4, 2, 10];
+    // //     newLog = await precomp.computeExceptionalEvents(log = [0, 0], teamStateAll50, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
+    // //     decoded = await encodingLog.decodeMatchLog(newLog);
+    // //     let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: outRounds, 7: typ, 8: yel, 9: subs} = decoded;
+    // //     expectedOut = [13, 0];
+    // //     expectedOutRounds = [10, 0]; 
+    // //     expectedYellows = [14, 13, 0, 0];
+    // //     expectedType = [3, 0]; // 0 = no event, 3 = redCard
+    // //     for (i = 0; i < expectedOut.length; i++) out[i].toNumber().should.be.equal(expectedOut[i]);
+    // //     for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber());//.should.be.equal(expectedOutRounds[i]);
+    // //     for (i = 0; i < expectedYellows.length; i++) console.log(yel[i].toNumber())//.should.be.equal(expectedYellows[i]);
+    // //     for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber())//.should.be.equal(expectedType[i]);
+    // //     // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
+    // //     // for (i = 0; i < expectedYellows.length; i++) yel[i].toNumber().should.be.equal(expectedYellows[i]);
+    // //     // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
+    // // });
        
     
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
-    });
+    // it('play a match to estimate cost', async () => {
+    //     const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
+    // });
     
-    return
-    
-    it('penaltyPerAge', async () => {
-        ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
-        expectedPenalty = [1000000, 998904, 998904, 1544, 1544, 0, 0, 0]
-        for (i = 0; i < ageInDays.length; i++) {
-            dayOfBirth = Math.round(secsToDays(now) - ageInDays[i]/7);
-            playerSkills = await engine.encodePlayerSkills(
-                skills = [1,1,1,1,1], 
-                dayOfBirth, 
-                playerId = 2132321,
-                [potential = 3,
-                forwardness,
-                leftishness,
-                aggr = 0],
-                alignedEndOfLastHalf = true,
-                redCardLastGame = false,
-                gamesNonStopping = 0,
-                injuryWeeksLeft = 0
-            ).should.be.fulfilled;
-            result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
-            result.toNumber().should.be.equal(expectedPenalty[i]);
-        }
-    });
-    
+    // it('penaltyPerAge', async () => {
+    //     ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
+    //     expectedPenalty = [1000000, 998904, 998904, 1544, 1544, 0, 0, 0]
+    //     for (i = 0; i < ageInDays.length; i++) {
+    //         dayOfBirth = Math.round(secsToDays(now) - ageInDays[i]/7);
+    //         playerSkills = await engine.encodePlayerSkills(
+    //             skills = [1,1,1,1,1], 
+    //             dayOfBirth, 
+    //             playerId = 2132321,
+    //             [potential = 3,
+    //             forwardness,
+    //             leftishness,
+    //             aggr = 0],
+    //             alignedEndOfLastHalf = true,
+    //             redCardLastGame = false,
+    //             gamesNonStopping = 0,
+    //             injuryWeeksLeft = 0
+    //         ).should.be.fulfilled;
+    //         result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
+    //         result.toNumber().should.be.equal(expectedPenalty[i]);
+    //     }
+    // });
 
     it('play a match with penalties to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;

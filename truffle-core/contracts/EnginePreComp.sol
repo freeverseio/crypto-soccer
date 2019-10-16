@@ -4,7 +4,9 @@ import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 
 contract EnginePreComp is EngineLib {
-    uint256 private constant ONE256       = 1; 
+    uint256 private constant ONE256              = uint256(1); 
+    uint256 private constant CHG_HAPPENED        = uint256(1); 
+    uint256 private constant CHG_CANCELLED       = uint256(2); 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -59,6 +61,18 @@ contract EnginePreComp is EngineLib {
         uint8 offset = is2ndHalf ? 171 : 151;
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
+
+        // Start by logging that all substitutions are possible. It will be re-written 
+        // by the red-card computation below, if needed.
+        for (uint8 p = 0; p < 3; p++) {
+            if (substitutions[p] != NO_SUBST) {
+                if (is2ndHalf) matchLog |= (CHG_HAPPENED << 192 + p);
+                else matchLog |= (CHG_HAPPENED << 189 + 2 * p);
+            } 
+        }
+
+        // Build weights for players, based on their aggressiveness.
+        // Legit players have > 0, but those already out in first half (teams with 10 players) have 0.
         for (uint8 p = 0; p < NO_CARD; p++) {
             if (states[p] != 0) weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
@@ -86,8 +100,10 @@ contract EnginePreComp is EngineLib {
         // - if any such player had alread received one in the 1st half => force red, record the other yellow card, leave. 
         if (is2ndHalf) {
             uint256[2] memory prevYellows;
+            // if (169)
             prevYellows[0] = (matchLog >> 161) & 15;
             prevYellows[1] = (matchLog >> 165) & 15;
+            // TONI: check if they finished last half
             if (yellowCardeds[0] == prevYellows[0] || yellowCardeds[0] == prevYellows[1]) {
                 matchLog |= yellowCardeds[1] << (offset + 10);
                 return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
@@ -148,8 +164,8 @@ contract EnginePreComp is EngineLib {
                     maxRound = subsRounds[p];
                     // log that this substitution was unable to take place
                     if (typeOfEvent == RED_CARD) {
-                        if (is2ndHalf) matchLog |= (ONE256 << 192 + p);
-                        else matchLog |= (ONE256 << 189 + p);
+                        if (is2ndHalf) matchLog |= (CHG_CANCELLED << 195 + p);
+                        else matchLog |= (CHG_CANCELLED << 189 + 2 * p);
                     }
                 } 
             }

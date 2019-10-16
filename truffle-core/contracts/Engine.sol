@@ -21,6 +21,8 @@ contract Engine is EngineLib, Sort{
     //
     uint8 private constant IDX_SEED         = 0; 
     uint8 private constant IDX_ST_TIME      = 1; 
+    // 
+    uint256 private constant CHG_HAPPENED   = uint256(1); 
 
     bool dummyBoolToEstimateCost;
 
@@ -204,11 +206,12 @@ contract Engine is EngineLib, Sort{
                 changes++; 
             }
         }
+
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
         if (is2ndHalf) {
             for (uint8 p = 0; p < 3; p++) {
-                if(((matchLog >> 189 + p) & 1) == 0) changes++;
+                if(((matchLog >> 189 + 2*p) & 3) == CHG_HAPPENED) changes++;
             }        
         }
         if (substitutions[0] < 11) {
