@@ -17,7 +17,7 @@ CREATE TABLE auctions (
     rnd INT NOT NULL,
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
-    state TEXT NOT NULL REFERENCES auction_states(state),
+    state TEXT NOT NULL DEFAULT 'STARTED' REFERENCES auction_states(state),
     PRIMARY KEY(uuid)
 );
 
