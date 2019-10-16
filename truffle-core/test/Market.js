@@ -345,9 +345,6 @@ contract("Market", accounts => {
 
   });
 
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
   it ('players: put for sale msg', async () => {
     const validUntil = 2000000000;
     const playerId = 10;
@@ -441,13 +438,6 @@ contract("Market", accounts => {
   // ------------------------------------------------------------------------------------
   // ------------------------------------------------------------------------------------
   
-
-  
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
-  
   it("teams: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
@@ -466,12 +456,6 @@ contract("Market", accounts => {
       extraPrice = 0, buyerRnd = 0, isOffer2StartAuctionSig = true, isOffer2StartAuctionBC = true, buyerAccount
     ).should.be.fulfilled;
   });
-  
-
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
   
   it("teams: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
@@ -492,11 +476,6 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
 
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
-  
   it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
     validUntil = now.toNumber() + 3600*24*2; // two days
 
@@ -554,11 +533,6 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
   
-  
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
   it("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
@@ -593,10 +567,6 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
   it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
@@ -611,6 +581,7 @@ contract("Market", accounts => {
     ).should.be.rejected;    
   });
 
+  
   // // ------------------------------------------------------------------------------------ 
   // // ------------------------------------------------------------------------------------ 
   // // ------------------------------------------------------------------------------------ 
@@ -618,14 +589,6 @@ contract("Market", accounts => {
   // // ------------------------------------------------------------------------------------
   // // ------------------------------------------------------------------------------------
   // // ------------------------------------------------------------------------------------
-  
-  
-  
-  
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
   
   it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
@@ -654,11 +617,6 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
-  
   it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
@@ -680,22 +638,11 @@ contract("Market", accounts => {
     
   });
   
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
-  
   it("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
     tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     validUntil = now.toNumber() + 3600*24*2; // two days
     tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
-  
-  
-  
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
   
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
@@ -731,10 +678,6 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
-  // *************************************************************************
-  // *********************************   TEST  *******************************
-  // *************************************************************************
-  
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
 
     tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
