@@ -83,12 +83,12 @@ func TestUpdateAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = processor.ComputeState(&auction)
+	state, err := processor.ComputeState(auction)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auction.State != storage.NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.NO_BIDS, auction.State)
+	if state != storage.NO_BIDS {
+		t.Fatalf("Expected %v but %v", storage.NO_BIDS, state)
 	}
 }
 

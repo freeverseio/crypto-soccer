@@ -113,15 +113,17 @@ func (b *Processor) Process() error {
 	if err != nil {
 		return err
 	}
-	for idx := range openedAuctions {
-		auction := openedAuctions[idx]
-		err = b.ComputeState(&auction)
+	for _, auction := range openedAuctions {
+		state, err := b.ComputeState(auction)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateAuctionState(auction)
-		if err != nil {
-			return err
+		if state != auction.State {
+			err = b.db.UpdateAuctionState(auction)
+			if err != nil {
+				return err
+			}
+
 		}
 	}
 
@@ -160,12 +162,12 @@ func (b *Processor) Process() error {
 	return nil
 }
 
-func (b *Processor) ComputeState(auction *storage.Auction) error {
+func (b *Processor) ComputeState(auction storage.Auction) (storage.AuctionState, error) {
 	now := time.Now().Unix()
 	if auction.ValidUntil.Int64() < now {
-		auction.State = storage.NO_BIDS
+		return storage.NO_BIDS, nil
 	}
-	return nil
+	return auction.State, nil
 }
 
 func (b *Processor) FreezePlayer(Auction storage.Auction) error {
