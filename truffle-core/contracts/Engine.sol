@@ -23,6 +23,7 @@ contract Engine is EngineLib, Sort{
     uint8 private constant IDX_ST_TIME      = 1; 
     // 
     uint256 private constant CHG_HAPPENED   = uint256(1); 
+    uint8 public constant RED_CARD  = 3;   // type of event = redCard
 
     bool dummyBoolToEstimateCost;
 
@@ -195,17 +196,28 @@ contract Engine is EngineLib, Sort{
         uint8[14] memory lineup;
         (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
         uint8 changes;
+        uint8 emptyShirts; 
         
-        // Count changes during half-time:
-        // substitutions = 11 means NO_SUBS
+        // Count changes during half-time, as well as not-aligned players
+        // ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = states[lineup[p]];
-            assertCanPlay(outStates[p]);
-            if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
+            if (outStates[p] == 0) {
+                emptyShirts++;
+            } else if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
                 matchLog |= (uint256(p) << 201 + 4 * changes);
                 changes++; 
             }
         }
+
+        // if is2ndHalf: make sure we align 10 or 11 players depedning on possible 1st half redcards
+        if (is2ndHalf && wasThereRedCardIn1stHalf(matchLog)) {
+            require(emptyShirts == 1, "You cannot line up 11 players if there was a red card in 1st half");
+        } else {
+            require(emptyShirts == 0, "You must line up 11 players");
+        }
+        
+        
         
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
@@ -240,6 +252,9 @@ contract Engine is EngineLib, Sort{
         for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");        
     }
 
+    function wasThereRedCardIn1stHalf(uint256 matchLog) private pure returns(bool) {
+        return ((matchLog >> 159) & 3) == RED_CARD;
+    }
 
     // TODO: can this be expressed as
     // translates from a high level tacticsId (e.g. 442) to a format that describes how many

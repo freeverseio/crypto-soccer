@@ -170,6 +170,7 @@ contract EnginePreComp is EngineLib {
         uint64 rnd1
     ) private pure returns(uint256) 
     {
+        if (selectedPlayer == NO_CARD) return matchLog;
         uint8 offset = is2ndHalf ? 171 : 151;
         matchLog |= selectedPlayer << offset;
         uint8 minRound = 0;
