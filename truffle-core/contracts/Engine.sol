@@ -206,8 +206,6 @@ contract Engine is EngineLib, Sort{
                 changes++; 
             }
         }
-
-        require(changes == 11, "---");
         
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
