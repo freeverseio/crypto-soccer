@@ -215,7 +215,6 @@ contract Engine is EngineLib, Sort{
             }        
         }
 
-
         if (substitutions[0] < 11) {
             changes++;
             outStates[11] = states[lineup[11]];

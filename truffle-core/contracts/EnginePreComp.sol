@@ -99,18 +99,15 @@ contract EnginePreComp is EngineLib {
         // if we are in the 2nd half (and the 2 yellows are for different players):
         // - if any such player had alread received one in the 1st half => force red, record the other yellow card, leave. 
         if (is2ndHalf) {
-            uint256[2] memory prevYellows;
-            // if (169)
-            prevYellows[0] = (matchLog >> 161) & 15;
-            prevYellows[1] = (matchLog >> 165) & 15;
-            // TONI: check if they finished last half
-            if (yellowCardeds[0] == prevYellows[0] || yellowCardeds[0] == prevYellows[1]) {
-                matchLog |= yellowCardeds[1] << (offset + 10);
-                return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[0])) {
+                matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                yellowCardeds[0] = NO_CARD;
             }
-            if (yellowCardeds[1] == prevYellows[0] || yellowCardeds[1] == prevYellows[1]) {
-                matchLog |= yellowCardeds[0] << (offset + 14);
-                return logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
+                if (!didRedCardHappenInThisHalf(matchLog, offset)) {
+                    matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                }
+                yellowCardeds[1] = NO_CARD;
             }
         }
         
@@ -125,8 +122,21 @@ contract EnginePreComp is EngineLib {
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[NO_CARD] = 758;
         uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
-        matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
-        return matchLog;
+        return logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+    }
+    
+    function hadReceivedYellowIn1stHalf(uint256 matchLog, uint256 newYellowCarded) private pure returns(bool) {
+        bool hadReceived =  newYellowCarded == ((matchLog >> 161) & 15) ||
+                            newYellowCarded == ((matchLog >> 165) & 15);
+
+        return hadReceived;
+        // yellowCardedFinished1stHalf[0] = ((log >> 169) & 1) == 1;
+        // yellowCardedFinished1stHalf[1] = ((log >> 170) & 1) == 1;
+
+    }
+    
+    function didRedCardHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {
+        return (matchLog >> (offset + 8) & 15) < NO_CARD;
     }
 
     function logOutOfGame(
