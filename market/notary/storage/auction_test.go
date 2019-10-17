@@ -21,13 +21,8 @@ func TestGetOpenAuctions(t *testing.T) {
 		t.Fatalf("Expected 0 but: %v", len(result))
 	}
 	err = sto.CreateAuction(storage.Auction{
-		UUID:       uuid.New(),
-		PlayerID:   big.NewInt(1),
-		Price:      big.NewInt(100),
-		Rnd:        big.NewInt(4353),
-		ValidUntil: big.NewInt(3),
-		Signature:  "ciao",
-		State:      "PAID",
+		UUID:  uuid.New(),
+		State: "PAID",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -40,13 +35,22 @@ func TestGetOpenAuctions(t *testing.T) {
 		t.Fatalf("Expected 0 but: %v", len(result))
 	}
 	err = sto.CreateAuction(storage.Auction{
-		UUID:       uuid.New(),
-		PlayerID:   big.NewInt(1),
-		Price:      big.NewInt(100),
-		Rnd:        big.NewInt(4353),
-		ValidUntil: big.NewInt(3),
-		Signature:  "ciao",
-		State:      "STARTED",
+		UUID:  uuid.New(),
+		State: "STARTED",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.CreateAuction(storage.Auction{
+		UUID:  uuid.New(),
+		State: "ASSET_FROZEN",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.CreateAuction(storage.Auction{
+		UUID:  uuid.New(),
+		State: "PAYING",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -55,8 +59,8 @@ func TestGetOpenAuctions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result) != 1 {
-		t.Fatalf("Expected 1 but: %v", len(result))
+	if len(result) != 3 {
+		t.Fatalf("Expected 3 but: %v", len(result))
 	}
 }
 
