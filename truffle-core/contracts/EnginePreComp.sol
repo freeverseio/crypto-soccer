@@ -115,24 +115,43 @@ contract EnginePreComp is EngineLib {
         matchLog |= yellowCardeds[0] << (offset + 10);
         matchLog |= yellowCardeds[1] << (offset + 14);
 
-        // finally, compute possible other redcards/injuries.
+        // Redcards & Injuries:
         // if a new red card is given to a previously yellow-carded player, no prob, such things happen.
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         weights[NO_CARD] = 758;
         uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
-        return logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+        matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+
+        // If 1st half, log the yellowCarded guys how managed to end linedup
+        if (!is2ndHalf) {
+            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[0], substitutions)) matchLog |= (ONE256 << 169);
+            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[1], substitutions)) matchLog |= (ONE256 << 170);
+        }
+        return matchLog;
+    }
+    
+    function didPlayerFinish1stHalf(uint256 matchLog, uint256 player, uint8[3] memory substitutions) private pure returns(bool) {
+        // check if it was outOfGamed in 1st half: ((matchLog >> 151) & 15) = redCardeds in 1st Half
+        // ...note: no need to check type of outOfGame, he cannot be linedup in 2nd half
+        if (((matchLog >> 151) & 15) == player) return false; 
+        // check if it was substituted:
+        // ...note: if substitution did not happen because he was redCarded, he'd have falled in previous check.
+        for (uint p = 0; p < 3; p++) {
+            if (player == substitutions[p]) return false;
+        }
+        return true;
     }
     
     function hadReceivedYellowIn1stHalf(uint256 matchLog, uint256 newYellowCarded) private pure returns(bool) {
-        bool hadReceived =  newYellowCarded == ((matchLog >> 161) & 15) ||
-                            newYellowCarded == ((matchLog >> 165) & 15);
-
-        return hadReceived;
-        // yellowCardedFinished1stHalf[0] = ((log >> 169) & 1) == 1;
-        // yellowCardedFinished1stHalf[1] = ((log >> 170) & 1) == 1;
-
+        return   
+            // ((matchLog >> 161) & 15) = 1st half yellow card [0]
+            // ((log >> 169) & 1) = yellowCardedCouldNotFinish1stHalf[0]
+            (newYellowCarded == ((matchLog >> 161) & 15)) && (((matchLog >> 169) & 1) == 0)  ||
+            // ((matchLog >> 165) & 15) = 1st half yellow card [1]
+            // ((log >> 170) & 1) = yellowCardedCouldNotFinish1stHalf[1]
+            (newYellowCarded == ((matchLog >> 165) & 15)) && (((matchLog >> 170) & 1) == 0);
     }
     
     function didRedCardHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {

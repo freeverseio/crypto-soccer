@@ -16,7 +16,7 @@ contract EncodingMatchLog {
         uint8[6] memory outOfGamesAndYellowCards,  // 2 outOfGames, 4 yellowCards, 4b each
         uint8[2] memory outOfGameRounds,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
-        bool[2] memory yellowCardedFinished1stHalf, // 1b each
+        bool[2] memory yellowCardedDidNotFinish1stHalf, // 1b each
         uint8[3] memory halfTimeSubstitutions, // 4b each, the first 3 for half 1, the other for half 2
         uint8[6] memory ingameSubs // 2b each, the first 3 for half 1, the other for half 2.
                                             // ...0: no change required, 1: change happened, 2: change could not happen  
@@ -40,8 +40,8 @@ contract EncodingMatchLog {
         log |= uint256(typesOutOfGames[0]) << 159;
         log |= uint256(outOfGamesAndYellowCards[2]) << 161;
         log |= uint256(outOfGamesAndYellowCards[3]) << 165;
-        log |= uint256(yellowCardedFinished1stHalf[0] ? 1: 0) << 169;
-        log |= uint256(yellowCardedFinished1stHalf[1] ? 1: 0) << 170;
+        log |= uint256(yellowCardedDidNotFinish1stHalf[0] ? 1: 0) << 169;
+        log |= uint256(yellowCardedDidNotFinish1stHalf[1] ? 1: 0) << 170;
         // 2nd half
         log |= uint256(outOfGamesAndYellowCards[1]) << 171;
         log |= uint256(outOfGameRounds[1]) << 175;
@@ -67,7 +67,7 @@ contract EncodingMatchLog {
         uint8[6] memory outOfGamesAndYellowCards,  // 2 outOfGames, 4 yellowCards, 4b each
         uint8[2] memory outOfGameRounds,  // 4b each
         uint8[2] memory typesOutOfGames, // 2b each
-        bool[2] memory yellowCardedFinished1stHalf, // 1b each
+        bool[2] memory yellowCardedDidNotFinish1stHalf, // 1b each
         uint8[3] memory halfTimeSubstitutions, // 4b each, the first 3 for half 1, the other for half 2
         uint8[6] memory ingameSubs // 1b each, the first 3 for half 1, the other for half 2
     ) 
@@ -87,8 +87,8 @@ contract EncodingMatchLog {
         typesOutOfGames[0] = uint8((log >> 159) & 3);
         outOfGamesAndYellowCards[2] = uint8((log >> 161) & 15);
         outOfGamesAndYellowCards[3] = uint8((log >> 165) & 15);
-        yellowCardedFinished1stHalf[0] = ((log >> 169) & 1) == 1;
-        yellowCardedFinished1stHalf[1] = ((log >> 170) & 1) == 1;
+        yellowCardedDidNotFinish1stHalf[0] = ((log >> 169) & 1) == 1;
+        yellowCardedDidNotFinish1stHalf[1] = ((log >> 170) & 1) == 1;
         // 2nd half
         outOfGamesAndYellowCards[1] = uint8((log >> 171) & 15);
         outOfGameRounds[1] = uint8((log >> 175) & 15);

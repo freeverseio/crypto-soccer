@@ -20,7 +20,7 @@ contract('EncodingMatchLog', (accounts) => {
         penalties  = Array.from(new Array(7), (x,i) => (i % 2 == 0));
         typesOutOfGames = [1, 2];
         outOfGameRounds = [7, 4];
-        yellowCardedFinished1stHalf = [false, true];
+        yellowCardedDidNotFinish1stHalf = [false, true];
         ingameSubs = [
             0, 1, 2,  // half 1
             2, 1, 0,   // half 2
@@ -40,7 +40,7 @@ contract('EncodingMatchLog', (accounts) => {
             outOfGamesAndYellowCards, 
             outOfGameRounds, 
             typesOutOfGames, 
-            yellowCardedFinished1stHalf,
+            yellowCardedDidNotFinish1stHalf,
             halfTimeSubstitutions, 
             ingameSubs
         );
@@ -54,7 +54,7 @@ contract('EncodingMatchLog', (accounts) => {
         for (i = 0; i < outOfGamesAndYellowCards.length; i++) outsAndYels[i].toNumber().should.be.equal(outOfGamesAndYellowCards[i]); 
         for (i = 0; i < outOfGameRounds.length; i++) outRounds[i].toNumber().should.be.equal(outOfGameRounds[i]); 
         for (i = 0; i < typesOutOfGames.length; i++) typ[i].toNumber().should.be.equal(typesOutOfGames[i]); 
-        for (i = 0; i < yellowCardedFinished1stHalf.length; i++) yelFin[i].should.be.equal(yellowCardedFinished1stHalf[i]); 
+        for (i = 0; i < yellowCardedDidNotFinish1stHalf.length; i++) yelFin[i].should.be.equal(yellowCardedDidNotFinish1stHalf[i]); 
         for (i = 0; i < halfTimeSubstitutions.length; i++) halfSubs[i].toNumber().should.be.equal(halfTimeSubstitutions[i]); 
         for (i = 0; i < ingameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(ingameSubs[i]); 
     });

@@ -157,13 +157,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [0, 0, 1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [0, 0, 0, 1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
     });
     
     
@@ -181,13 +181,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [0, 0, 1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [0, 0, 0, 1, 2, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player', async () => {
@@ -204,13 +204,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [0, 0, 14, 13];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [0, 0, 0, 1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
     });
 
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute', async () => {
@@ -227,13 +227,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [0, 0, 14, 13];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [0, 0, 0, 1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
     });
     
     it('computeExceptionalEvents clashing with redcards after changing player forcing last minute (first half)', async () => {
@@ -250,13 +250,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [14, 13, 0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [1, 1, 1, 0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, true];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
 
     });
     
@@ -275,13 +275,13 @@ contract('Engine', (accounts) => {
         expectedYellows = [1, 12, 0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [1, 2, 1, 0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
 
         // second half
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50, substis = [0,0,0], rounds = [0,0,0], is2nd = true, seedForRedCard).should.be.fulfilled;
@@ -292,20 +292,20 @@ contract('Engine', (accounts) => {
         expectedYellows = [1, 12, 14, 14];
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
         expectedInGameSubs = [1, 2, 1, 1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedFinished = [false, false];
+        yellowedCouldNotFinish = [false, false];
         // for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
         // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
         // for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
         // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
         // for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        // for (i = 0; i < yellowedFinished.length; i++) yelFin[i].should.be.equal(yellowedFinished[i]);
+        // for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
 
         for (i = 0; i < expectedOut.length; i++) console.log(outsAndYels[i].toNumber())//.should.be.equal(expectedOut[i]);
         for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber())//.should.be.equal(expectedOutRounds[i]);
         for (i = 0; i < expectedYellows.length; i++) console.log(outsAndYels[i+2].toNumber())//.should.be.equal(expectedYellows[i]);
         for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber())//.should.be.equal(expectedType[i]);
         for (i = 0; i < expectedInGameSubs.length; i++) console.log(inGameSubs[i].toNumber())//.should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedFinished.length; i++) console.log(yelFin[i])//.should.be.equal(yellowedFinished[i]);
+        for (i = 0; i < yellowedCouldNotFinish.length; i++) console.log(yelFin[i])//.should.be.equal(yellowedCouldNotFinish[i]);
         
     });
 return
