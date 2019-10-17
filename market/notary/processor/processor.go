@@ -109,6 +109,18 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 func (b *Processor) Process() error {
 	log.Info("Processing")
 
+	openedAuctions, err := b.db.GetOpenAuctions()
+	if err != nil {
+		return err
+	}
+	for idx := range openedAuctions {
+		auction := &openedAuctions[idx]
+		err = b.UpdateState(auction)
+		if err != nil {
+			return err
+		}
+	}
+
 	// I get all the orders
 	orders, err := b.db.GetOrders()
 	if err != nil {
@@ -140,6 +152,14 @@ func (b *Processor) Process() error {
 		// if err != nil {
 		// 	log.Error(err)
 		// }
+	}
+	return nil
+}
+
+func (b *Processor) UpdateState(auction *storage.Auction) error {
+	now := time.Now().Unix()
+	if auction.ValidUntil.Int64() < now {
+		auction.State = "NO_BIDS"
 	}
 	return nil
 }

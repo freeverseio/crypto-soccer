@@ -3,10 +3,15 @@ package processor_test
 import (
 	"math/big"
 	"testing"
+	"time"
+
+	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/freeverseio/crypto-soccer/market/notary/storage"
 	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
+	"github.com/google/uuid"
 )
 
 func TestChangeOwnership(t *testing.T) {
@@ -64,6 +69,26 @@ func TestChangeOwnership(t *testing.T) {
 	owner = ganache.GetPlayerOwner(playerId)
 	if owner != ganache.Public(alice) {
 		t.Fatalf("Expected owner ALICE but got %v", owner)
+	}
+}
+
+func TestUpdateAuction(t *testing.T) {
+	now := time.Now().Unix()
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(now - 10),
+		State:      "OPENED",
+	}
+	processor, err := processor.NewProcessor(nil, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = processor.UpdateState(&auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if auction.State != "NO_BIDS" {
+		t.Fatalf("Expected NO_BIDS but %v", auction.State)
 	}
 }
 
