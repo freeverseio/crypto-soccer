@@ -106,7 +106,7 @@ func TestChangeOwnership(t *testing.T) {
 // 		t.Fatalf("Wrong player id : %v", team0PlayerId0.String())
 // 	}
 
-// 	sellOrder := storage.SellOrder{
+// 	Auction := storage.Auction{
 // 		PlayerId:   team0PlayerId0,
 // 		CurrencyId: 1,
 // 		Price:      big.NewInt(41234),
@@ -114,7 +114,7 @@ func TestChangeOwnership(t *testing.T) {
 // 		ValidUntil: big.NewInt(2000000000),
 // 		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 // 	}
-// 	err = processor.FreezePlayer(sellOrder)
+// 	err = processor.FreezePlayer(Auction)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -183,7 +183,7 @@ func TestChangeOwnership(t *testing.T) {
 // 	if originOwner != ganache.Public(alice) {
 // 		t.Fatalf("Expected originOwner ALICE but got %v", originOwner)
 // 	}
-// 	sto.CreateSellOrder(storage.SellOrder{
+// 	sto.CreateAuction(storage.Auction{
 // 		PlayerId:   playerId,
 // 		CurrencyId: currencyId,
 // 		Price:      price,
@@ -217,11 +217,11 @@ func TestChangeOwnership(t *testing.T) {
 // 	if len(bids) != 0 {
 // 		t.Fatalf("Expercted 0 but got %v", len(bids))
 // 	}
-// 	sellOrders, err := sto.GetSellOrders()
+// 	Auctions, err := sto.GetAuctions()
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	if len(sellOrders) != 0 {
-// 		t.Fatalf("Expercted 0 but got %v", len(sellOrders))
+// 	if len(Auctions) != 0 {
+// 		t.Fatalf("Expercted 0 but got %v", len(Auctions))
 // 	}
 // }

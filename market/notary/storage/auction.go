@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type SellOrder struct {
+type Auction struct {
 	UUID       uuid.UUID
 	PlayerID   *big.Int
 	CurrencyID uint8
@@ -19,7 +19,7 @@ type SellOrder struct {
 	State      string
 }
 
-func (b *Storage) CreateSellOrder(order SellOrder) error {
+func (b *Storage) CreateAuction(order Auction) error {
 	log.Infof("[DBMS] + create sell order %v", order)
 	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		order.UUID,
@@ -34,15 +34,15 @@ func (b *Storage) CreateSellOrder(order SellOrder) error {
 	return err
 }
 
-func (b *Storage) GetSellOrders() ([]SellOrder, error) {
-	var orders []SellOrder
+func (b *Storage) GetAuctions() ([]Auction, error) {
+	var orders []Auction
 	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state FROM auctions;")
 	if err != nil {
 		return orders, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var order SellOrder
+		var order Auction
 		var playerID sql.NullString
 		var price sql.NullString
 		var rnd sql.NullString
