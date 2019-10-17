@@ -105,7 +105,7 @@ contract EncodingSkills {
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
      *      dayOfBirth                = 16 bits  (since Unix time, max 180 years)
-     *      birthTraits               = [potential, forwardness, leftishness, aggressiveness]
+     *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness]
      *      potential                 = 4 bits (number is limited to [0,...,9])
      *      forwardness               = 3 bits
      *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
@@ -114,10 +114,11 @@ contract EncodingSkills {
      *      aggressiveness            = 3 bits
      *      playerId                  = 43 bits
      *      
-     *      alignedEndOfLastHalf      = 1 (bool)
-     *      redCardLastGame           = 1 (bool)
-     *      gamesNonStopping          = 3 (0, 1, ..., 6). Finally, 7 means more than 6.
-     *      injuryWeeksLeft           = 3 
+     *      alignedEndOfLastHalf      = 1b (bool)
+     *      redCardLastGame           = 1b (bool)
+     *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
+     *      injuryWeeksLeft           = 3b 
+     *      substitutedDuringLastHalf = 1b (bool) 
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -127,7 +128,8 @@ contract EncodingSkills {
         bool alignedEndOfLastHalf, 
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
-        uint8 injuryWeeksLeft
+        uint8 injuryWeeksLeft,
+        bool substitutedLastHalf
     )
         public
         pure
@@ -159,7 +161,8 @@ contract EncodingSkills {
         encoded |= uint256(redCardLastGame ? 1 : 0) << 115;
         encoded |= uint256(gamesNonStopping) << 112;
         encoded |= uint256(injuryWeeksLeft) << 109;
-        return (encoded | uint256(birthTraits[IDX_AGG]) << 106);
+        encoded |= uint256(birthTraits[IDX_AGG]) << 106;
+        return (encoded | uint256(substitutedLastHalf ? 1 : 0) << 105);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -204,6 +207,10 @@ contract EncodingSkills {
 
     function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 116 & 1) == 1;
+    }
+
+    function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+        return (encodedSkills >> 115 & 1) == 1;
     }
 
     function getRedCardLastGame(uint256 encodedSkills) public pure returns (bool) {
