@@ -77,7 +77,7 @@ func TestUpdateAuction(t *testing.T) {
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(now - 10),
-		State:      "OPENED",
+		State:      storage.STARTED,
 	}
 	processor, err := processor.NewProcessor(nil, nil, nil, nil)
 	if err != nil {
@@ -87,8 +87,8 @@ func TestUpdateAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auction.State != "NO_BIDS" {
-		t.Fatalf("Expected NO_BIDS but %v", auction.State)
+	if auction.State != storage.NO_BIDS {
+		t.Fatalf("Expected %v but %v", storage.NO_BIDS, auction.State)
 	}
 }
 

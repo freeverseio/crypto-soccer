@@ -163,7 +163,7 @@ func (b *Processor) Process() error {
 func (b *Processor) ComputeState(auction *storage.Auction) error {
 	now := time.Now().Unix()
 	if auction.ValidUntil.Int64() < now {
-		auction.State = "NO_BIDS"
+		auction.State = storage.NO_BIDS
 	}
 	return nil
 }

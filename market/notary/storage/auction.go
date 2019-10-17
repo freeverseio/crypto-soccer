@@ -16,7 +16,7 @@ type Auction struct {
 	Rnd        *big.Int
 	ValidUntil *big.Int
 	Signature  string
-	State      string
+	State      AuctionState
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
