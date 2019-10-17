@@ -350,55 +350,6 @@ contract('Engine', (accounts) => {
         
     });    
 
-    it2('computeExceptionalEvents clashing 2nd against 1st, with no substitution in the middle', async () => {
-        // first half:
-        //      - there is a red card with this seed, to player 9 at round 2. 
-        //      - there are two yellow cards, for player 1, and for subtituted 12.
-        seedForRedCard = seed + 83;
-        substis = [2, 3, 4];
-        rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50, substis, rounds, is2nd = false, seedForRedCard).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(newLog);
-        var {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = decoded;
-        expectedOut = [9, 0];
-        expectedOutRounds = [5, 0]; 
-        expectedYellows = [1, 12, 0, 0];
-        expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs = [1, 1, 1, 0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
-        for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-        for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
-
-        // second half
-        finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50, substis = [0,0,0], rounds = [0,0,0], is2nd = true, seedForRedCard).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(finalLog);
-        var {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = decoded;
-        expectedOut = [9, 1]; // note that the red card comes from two yellows.
-        expectedOutRounds = [5, 5]; 
-        expectedYellows = [1, 12, 14, 14]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
-        expectedType = [3, 3]; // 0 = no event, 3 = redCard
-        expectedInGameSubs = [1, 1, 1, 1, 1, 1]; // 0: no subs requested, 1: change takes place, 2: change cancelled
-        yellowedCouldNotFinish = [false, false];
-        // for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
-        // for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        // for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
-        // for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-        // for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
-        // for (i = 0; i < yellowedCouldNotFinish.length; i++) yelFin[i].should.be.equal(yellowedCouldNotFinish[i]);
-
-        for (i = 0; i < expectedOut.length; i++) console.log(outsAndYels[i].toNumber())//.should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) console.log(outRounds[i].toNumber())//.should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedYellows.length; i++) console.log(outsAndYels[i+2].toNumber())//.should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedType.length; i++) console.log(typ[i].toNumber())//.should.be.equal(expectedType[i]);
-        for (i = 0; i < expectedInGameSubs.length; i++) console.log(inGameSubs[i].toNumber())//.should.be.equal(expectedInGameSubs[i]);
-        for (i = 0; i < yellowedCouldNotFinish.length; i++) console.log(yelFin[i])//.should.be.equal(yellowedCouldNotFinish[i]);
-        
-    });    
-
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50, teamStateAll1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
