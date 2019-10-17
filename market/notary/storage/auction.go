@@ -34,6 +34,10 @@ func (b *Storage) CreateAuction(order Auction) error {
 	return err
 }
 
+func (b *Storage) GetOpenAuctions() ([]Auction, error) {
+	return nil, nil
+}
+
 func (b *Storage) GetAuctions() ([]Auction, error) {
 	var orders []Auction
 	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state FROM auctions;")
