@@ -104,7 +104,7 @@ contract EnginePreComp is EngineLib {
                 yellowCardeds[0] = NO_CARD;
             }
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
-                if (!didRedCardHappenInThisHalf(matchLog, offset)) {
+                if (!didOutOfGameHappenInThisHalf(matchLog, offset)) {
                     matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
                 }
                 yellowCardeds[1] = NO_CARD;
@@ -120,10 +120,11 @@ contract EnginePreComp is EngineLib {
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
-        weights[NO_CARD] = 758;
-        uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
-        matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
-
+        if (!didOutOfGameHappenInThisHalf(matchLog, offset)) {
+            weights[NO_CARD] = 758;
+            uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
+            matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+        }
         // If 1st half, log the yellowCarded guys how managed to end linedup
         if (!is2ndHalf) {
             if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[0], substitutions)) matchLog |= (ONE256 << 169);
@@ -154,8 +155,8 @@ contract EnginePreComp is EngineLib {
             (newYellowCarded == ((matchLog >> 165) & 15)) && (((matchLog >> 170) & 1) == 0);
     }
     
-    function didRedCardHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {
-        return (matchLog >> (offset + 8) & 15) < NO_CARD;
+    function didOutOfGameHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {
+        return ((matchLog >> offset + 8) & 3) != 0;
     }
 
     function logOutOfGame(
