@@ -229,6 +229,7 @@ contract EnginePreComp is EngineLib {
         return 1 + throwDiceArray(weights, rnd);
     }
 
+    // TODO: avoid redCarded or outOfGame players to shoot, include changed players.
     function computePenalties(
         uint256[2] memory matchLog, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
