@@ -114,49 +114,53 @@ func (b *Processor) Process() error {
 		return err
 	}
 	for idx := range openedAuctions {
-		auction := &openedAuctions[idx]
-		err = b.UpdateState(auction)
+		auction := openedAuctions[idx]
+		err = b.ComputeState(&auction)
+		if err != nil {
+			return err
+		}
+		err = b.db.UpdateAuctionState(auction)
 		if err != nil {
 			return err
 		}
 	}
 
 	// I get all the orders
-	orders, err := b.db.GetOrders()
-	if err != nil {
-		return err
-	}
+	// orders, err := b.db.GetOrders()
+	// if err != nil {
+	// 	return err
+	// }
 
-	for _, order := range orders {
-		playerID := order.Auction.PlayerID
-		frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		if frozen == false {
-			err = b.FreezePlayer(order.Auction)
-			if err != nil {
-				log.Error(err)
-				continue
-			}
-		}
+	// for _, order := range orders {
+	// 	playerID := order.Auction.PlayerID
+	// 	frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
+	// 	if err != nil {
+	// 		log.Error(err)
+	// 		continue
+	// 	}
+	// 	if frozen == false {
+	// 		err = b.FreezePlayer(order.Auction)
+	// 		if err != nil {
+	// 			log.Error(err)
+	// 			continue
+	// 		}
+	// 	}
 
-		// err = b.processOrder(order)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
+	// err = b.processOrder(order)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
 
-		// log.Infof("(CLEANING) delete order")
-		// err = b.db.DeleteOrder(order.Auction.PlayerId)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-	}
+	// log.Infof("(CLEANING) delete order")
+	// err = b.db.DeleteOrder(order.Auction.PlayerId)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// }
 	return nil
 }
 
-func (b *Processor) UpdateState(auction *storage.Auction) error {
+func (b *Processor) ComputeState(auction *storage.Auction) error {
 	now := time.Now().Unix()
 	if auction.ValidUntil.Int64() < now {
 		auction.State = "NO_BIDS"

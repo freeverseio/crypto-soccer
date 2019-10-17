@@ -83,7 +83,7 @@ func TestUpdateAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = processor.UpdateState(&auction)
+	err = processor.ComputeState(&auction)
 	if err != nil {
 		t.Fatal(err)
 	}
