@@ -5,13 +5,13 @@ import (
 )
 
 type Order struct {
-	SellOrder SellOrder
+	Auction Auction
 	Bid       Bid
 }
 
 func (b *Storage) GetOrders() ([]Order, error) {
 	var orders []Order
-	sellOrders, err := b.GetSellOrders()
+	Auctions, err := b.GetAuctions()
 	if err != nil {
 		return orders, err
 	}
@@ -19,11 +19,11 @@ func (b *Storage) GetOrders() ([]Order, error) {
 	if err != nil {
 		return orders, err
 	}
-	for _, sellOrder := range sellOrders {
-		Bid := b.findBet(bids, sellOrder.PlayerID)
+	for _, Auction := range Auctions {
+		Bid := b.findBet(bids, Auction.PlayerID)
 		if Bid != nil {
 			orders = append(orders, Order{
-				SellOrder: sellOrder,
+				Auction: Auction,
 				Bid:       *Bid,
 			})
 		}
