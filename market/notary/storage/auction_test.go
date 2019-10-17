@@ -8,6 +8,34 @@ import (
 	"github.com/google/uuid"
 )
 
+func TestUpdateAuctionState(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	auction := storage.Auction{
+		UUID:  uuid.New(),
+		State: "PAID",
+	}
+	err = sto.CreateAuction(auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	newState := "STARTED"
+	auction.State = newState
+	err = sto.UpdateAuctionState(auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	auctions, err := sto.GetAuctions()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if auctions[0].State != newState {
+		t.Fatalf("Expected %v but %v", newState, auctions[0].State)
+	}
+}
+
 func TestGetOpenAuctions(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
 	if err != nil {
