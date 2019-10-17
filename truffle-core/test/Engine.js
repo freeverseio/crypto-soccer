@@ -80,7 +80,6 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-        // toni
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
         var playerStateTemp = await engine.encodePlayerSkills(
@@ -101,7 +100,6 @@ contract('Engine', (accounts) => {
         return teamState;
     };
 
-    // toni
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
