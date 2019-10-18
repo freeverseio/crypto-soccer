@@ -27,13 +27,13 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 }
 
 // func (b *Processor) processOrder(order storage.Order) error {
-// 	log.Infof("[broker] player %v -> team %v", order.SellOrder.PlayerId, order.Bid.TeamId)
+// 	log.Infof("[broker] player %v -> team %v", order.Auction.PlayerId, order.Bid.TeamId)
 
 // 	log.Infof("(1) generate hash private msg")
 // 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
-// 		order.SellOrder.CurrencyId,
-// 		order.SellOrder.Price,
-// 		order.SellOrder.Rnd,
+// 		order.Auction.CurrencyId,
+// 		order.Auction.Price,
+// 		order.Auction.Rnd,
 // 	)
 // 	if err != nil {
 // 		return err
@@ -43,28 +43,28 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 	var sigs [3][32]byte
 // 	var vs uint8
 // 	sigs[0], err = b.signer.HashSellMessage(
-// 		order.SellOrder.CurrencyId,
-// 		order.SellOrder.Price,
-// 		order.SellOrder.Rnd,
-// 		order.SellOrder.ValidUntil,
-// 		order.SellOrder.PlayerId,
-// 		order.SellOrder.TypeOfTx,
+// 		order.Auction.CurrencyId,
+// 		order.Auction.Price,
+// 		order.Auction.Rnd,
+// 		order.Auction.ValidUntil,
+// 		order.Auction.PlayerId,
+// 		order.Auction.TypeOfTx,
 // 	)
 // 	if err != nil {
 // 		return err
 // 	}
-// 	sigs[1], sigs[2], vs, err = b.signer.RSV(order.SellOrder.Signature)
+// 	sigs[1], sigs[2], vs, err = b.signer.RSV(order.Auction.Signature)
 // 	if err != nil {
 // 		log.Error(err)
 // 	}
 // 	log.Infof("(3) generate hash buy message")
 // 	_, err = b.signer.HashBuyMessage(
-// 		order.SellOrder.CurrencyId,
-// 		order.SellOrder.Price,
-// 		order.SellOrder.Rnd,
-// 		order.SellOrder.ValidUntil,
-// 		order.SellOrder.PlayerId,
-// 		order.SellOrder.TypeOfTx,
+// 		order.Auction.CurrencyId,
+// 		order.Auction.Price,
+// 		order.Auction.Rnd,
+// 		order.Auction.ValidUntil,
+// 		order.Auction.PlayerId,
+// 		order.Auction.TypeOfTx,
 // 		order.Bid.TeamId,
 // 	)
 // 	if err != nil {
@@ -79,8 +79,8 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 	tx, err := b.assets.FreezePlayer(
 // 		bind.NewKeyedTransactor(b.freeverse),
 // 		sellerHiddenPrice,
-// 		order.SellOrder.ValidUntil,
-// 		order.SellOrder.PlayerId,
+// 		order.Auction.ValidUntil,
+// 		order.Auction.PlayerId,
 // 		sigs,
 // 		vs,
 // 	)
@@ -94,7 +94,7 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 	log.Infof("(5) complete freeze")
 // 	tx, err = b.assets.CompleteFreeze(
 // 		bind.NewKeyedTransactor(b.freeverse),
-// 		order.SellOrder.PlayerId,
+// 		order.Auction.PlayerId,
 // 	)
 // 	if err != nil {
 // 		return err
@@ -109,46 +109,72 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 func (b *Processor) Process() error {
 	log.Info("Processing")
 
-	// I get all the orders
-	orders, err := b.db.GetOrders()
+	openedAuctions, err := b.db.GetOpenAuctions()
 	if err != nil {
 		return err
 	}
-
-	for _, order := range orders {
-		playerID := order.SellOrder.PlayerID
-		frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
+	for _, auction := range openedAuctions {
+		state, err := b.ComputeState(auction)
 		if err != nil {
-			log.Error(err)
-			continue
+			return err
 		}
-		if frozen == false {
-			err = b.FreezePlayer(order.SellOrder)
+		if state != auction.State {
+			err = b.db.UpdateAuctionState(auction)
 			if err != nil {
-				log.Error(err)
-				continue
+				return err
 			}
+
 		}
-
-		// err = b.processOrder(order)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-
-		// log.Infof("(CLEANING) delete order")
-		// err = b.db.DeleteOrder(order.SellOrder.PlayerId)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
 	}
+
+	// I get all the orders
+	// orders, err := b.db.GetOrders()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// for _, order := range orders {
+	// 	playerID := order.Auction.PlayerID
+	// 	frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
+	// 	if err != nil {
+	// 		log.Error(err)
+	// 		continue
+	// 	}
+	// 	if frozen == false {
+	// 		err = b.FreezePlayer(order.Auction)
+	// 		if err != nil {
+	// 			log.Error(err)
+	// 			continue
+	// 		}
+	// 	}
+
+	// err = b.processOrder(order)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+
+	// log.Infof("(CLEANING) delete order")
+	// err = b.db.DeleteOrder(order.Auction.PlayerId)
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// }
 	return nil
 }
 
-func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
+func (b *Processor) ComputeState(auction storage.Auction) (storage.AuctionState, error) {
+	now := time.Now().Unix()
+	if auction.ValidUntil.Int64() < now {
+		return storage.NO_BIDS, nil
+	}
+	return auction.State, nil
+}
+
+func (b *Processor) FreezePlayer(Auction storage.Auction) error {
 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
-		sellOrder.CurrencyID,
-		sellOrder.Price,
-		sellOrder.Rnd,
+		Auction.CurrencyID,
+		Auction.Price,
+		Auction.Rnd,
 	)
 	if err != nil {
 		return err
@@ -156,24 +182,24 @@ func (b *Processor) FreezePlayer(sellOrder storage.SellOrder) error {
 	var sigs [3][32]byte
 	var vs uint8
 	sigs[0], err = b.signer.HashSellMessage(
-		sellOrder.CurrencyID,
-		sellOrder.Price,
-		sellOrder.Rnd,
-		sellOrder.ValidUntil,
-		sellOrder.PlayerID,
+		Auction.CurrencyID,
+		Auction.Price,
+		Auction.Rnd,
+		Auction.ValidUntil,
+		Auction.PlayerID,
 	)
 	if err != nil {
 		return err
 	}
-	sigs[1], sigs[2], vs, err = b.signer.RSV(sellOrder.Signature)
+	sigs[1], sigs[2], vs, err = b.signer.RSV(Auction.Signature)
 	if err != nil {
 		log.Error(err)
 	}
 	tx, err := b.assets.FreezePlayer(
 		bind.NewKeyedTransactor(b.freeverse),
 		sellerHiddenPrice,
-		sellOrder.ValidUntil,
-		sellOrder.PlayerID,
+		Auction.ValidUntil,
+		Auction.PlayerID,
 		sigs,
 		vs,
 	)

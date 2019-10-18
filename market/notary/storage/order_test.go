@@ -20,7 +20,7 @@ func TestGetOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateSellOrder(storage.SellOrder{
+	err = sto.CreateAuction(storage.Auction{
 		PlayerID:   big.NewInt(1),
 		Price:      big.NewInt(1000),
 		Rnd:        big.NewInt(4353),
@@ -38,7 +38,7 @@ func TestGetOrders(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBet(storage.Bid{
+	err = sto.CreateBid(storage.Bid{
 		TeamID: big.NewInt(3),
 	})
 	if err != nil {

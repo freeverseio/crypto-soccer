@@ -17,7 +17,7 @@ type Bid struct {
 	Signature       string
 }
 
-func (b *Storage) CreateBet(order Bid) error {
+func (b *Storage) CreateBid(order Bid) error {
 	log.Infof("[DBMS] + create Bid %v", order)
 	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature) VALUES ($1, $2, $3, $4, $5);",
 		order.Auction,

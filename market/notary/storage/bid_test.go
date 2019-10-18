@@ -20,7 +20,7 @@ func TestGetbids(t *testing.T) {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
 
-	err = sto.CreateBet(storage.Bid{
+	err = sto.CreateBid(storage.Bid{
 		TeamID: big.NewInt(2),
 	})
 	if err == nil {
