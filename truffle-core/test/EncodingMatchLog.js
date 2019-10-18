@@ -17,35 +17,39 @@ contract('EncodingMatchLog', (accounts) => {
         assistersIdx = Array.from(new Array(14), (x,i) => i);
         shootersIdx  = Array.from(new Array(14), (x,i) => 15-i);
         shooterForwardPos  = Array.from(new Array(14), (x,i) => i % 4);
+        assistersShootersForwardsPos = assistersIdx.concat(shootersIdx).concat(shooterForwardPos);
         penalties  = Array.from(new Array(7), (x,i) => (i % 2 == 0));
         typesOutOfGames = [1, 2];
         outOfGameRounds = [7, 4];
         yellowCardedDidNotFinish1stHalf = [false, true];
+        isHomeStadium = [true];
+        yellowCardedDidNotFinish1stHalfAndIsHomeStadium = yellowCardedDidNotFinish1stHalf.concat(isHomeStadium);
         ingameSubs = [
             0, 1, 2,  // half 1
             2, 1, 0,   // half 2
         ]
-        outOfGamesAndYellowCards = [10, 4, 9, 6, 3, 0]
+        outOfGamesAndYellowCards = [10, 4, 9, 6, 3, 0];
         // made out from these two:
         //      outOfGames = [10, 4];
         //      yellowCards = [9, 6, 3, 0];
 
-        halfTimeSubstitutions = [9, 7, 10]
+        halfTimeSubstitutions = [9, 7, 10];
+        numDefTotWinner = [10, 4, 3, 1]; // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
         result = await encoding.encodeMatchLog(
             nGoals, 
-            assistersIdx, 
-            shootersIdx, 
-            shooterForwardPos, 
+            assistersShootersForwardsPos, 
             penalties, 
             outOfGamesAndYellowCards, 
             outOfGameRounds, 
             typesOutOfGames, 
-            yellowCardedDidNotFinish1stHalf,
+            yellowCardedDidNotFinish1stHalfAndIsHomeStadium,
             halfTimeSubstitutions, 
-            ingameSubs
+            ingameSubs,
+            numDefTotWinner
         );
         result = await encoding.decodeMatchLog(result);
-        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = result;
+        // let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = result;
+        let {0: nGo, 1: assShoFwd, 2: pen, 3: outsAndYels, 4: outRounds, 5: typ, 6: yelFinHome, 7: halfSubs, 8: inGameSubs, 9: defTotWin} = result;
         nGo.toNumber().should.be.equal(nGoals);        
         for (i = 0; i < assistersIdx.length; i++) ass[i].toNumber().should.be.equal(assistersIdx[i]); 
         for (i = 0; i < shootersIdx.length; i++) sho[i].toNumber().should.be.equal(shootersIdx[i]); 
