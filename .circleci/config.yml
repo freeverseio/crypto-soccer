@@ -24,7 +24,7 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd go/sync && go build
+      - run: cd go/cmd/sync && go build
       - run: cd go/sync && go test ./...
       - run: cd go/sync && docker build -t freeverseio/synchronizer:dev .
   market.notary:
@@ -35,7 +35,7 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd go/market/notary && go build
+      - run: cd go/cmd/market/notary && go build
       - run: |
             ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
             # wait until blockchain node is up and running
@@ -68,7 +68,7 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd go/relay && go build
+      - run: cd go/cmd/relay && go build
       - run: cd go/relay && go test ./...
       - run: cd go/relay && docker build -t freeverseio/relay.actions:dev .
   market.trader:
