@@ -12,7 +12,7 @@ jobs:
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go-synchronizer:
+  synchronizer:
     docker:
       - image: freeverseio/circleci
       - image: freeverseio/ethereum:test
@@ -24,9 +24,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test ./...
-      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
+      - run: cd go/sync && go build
+      - run: cd go/sync && go test ./...
+      - run: cd go/sync && docker build -t freeverseio/synchronizer:dev .
   market.notary:
     docker:
       - image: freeverseio/circleci
@@ -35,7 +35,7 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd market/notary && go build
+      - run: cd go/market/notary && go build
       - run: |
             ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
             # wait until blockchain node is up and running
@@ -43,8 +43,8 @@ jobs:
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
             echo blockchain is running
-            cd market/notary && go test ./...
-      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
+            cd go/market/notary && go test ./...
+      - run: cd go/market/notary && docker build -t freeverseio/market.notary:dev .
   relay.api:
     docker:
       - image: freeverseio/circleci
@@ -53,9 +53,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd relay/nodejs-api && npm install
-      - run: cd relay/nodejs-api && npm test
-      - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
+      - run: cd go/relay/nodejs-api && npm install
+      - run: cd go/relay/nodejs-api && npm test
+      - run: cd go/relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
   relay.actions:
     docker:
       - image: freeverseio/circleci
@@ -68,9 +68,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd relay && go build
-      - run: cd relay && go test ./...
-      - run: cd relay && docker build -t freeverseio/relay.actions:dev .
+      - run: cd go/relay && go build
+      - run: cd go/relay && go test ./...
+      - run: cd go/relay && docker build -t freeverseio/relay.actions:dev .
   market.trader:
     docker:
       - image: freeverseio/circleci
@@ -78,9 +78,9 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd market/trader && npm install
-      - run: cd market/trader && npm test
-      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
+      - run: cd go/market/trader && npm install
+      - run: cd go/market/trader && npm test
+      - run: cd go/market/trader && docker build -t freeverseio/market.trader:dev .
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -99,9 +99,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run: cd go/sync/sql && docker build -t freeverseio/postgres:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd market/db && docker build -t freeverseio/market.db:dev .
+      - run: cd go/market/db && docker build -t freeverseio/market.db:dev .
       - run: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
   docker-hub-upload:
     docker:
@@ -138,7 +138,7 @@ workflows:
   build_and_test:
     jobs:
       - truffle_core
-      - go-synchronizer
+      - synchronizer
       - django-centauri
       - market.trader
       - relay.actions
@@ -153,7 +153,7 @@ workflows:
                 - ci
           requires:
             - dockerization
-            - go-synchronizer
+            - synchronizer
             - django-centauri
             - market.trader
             - relay.api
