@@ -21,19 +21,14 @@ jobs:
           password: $DOCKER_PASSWD
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd go-synchronizer && go build
       - run: cd go-synchronizer && go test ./...
-      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
   market.notary:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd market/notary && go build
       - run: |
@@ -44,18 +39,14 @@ jobs:
             sleep 1
             echo blockchain is running
             cd market/notary && go test ./...
-      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
   relay.api:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd relay/nodejs-api && npm install
       - run: cd relay/nodejs-api && npm test
-      - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
   relay.actions:
     docker:
       - image: freeverseio/circleci
@@ -65,49 +56,39 @@ jobs:
           password: $DOCKER_PASSWD
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd relay && go build
       - run: cd relay && go test ./...
-      - run: cd relay && docker build -t freeverseio/relay.actions:dev .
   market.trader:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: cd market/trader && npm install
       - run: cd market/trader && npm test
-      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
   django-centauri:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
       - run: cd django-centauri && python3 manage.py test
-      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
   dockerization:
     docker:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
+      - run: make setup contracts
+      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
+      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
       - run: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run: cd relay && docker build -t freeverseio/relay.actions:dev .
+      - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd market/db && docker build -t freeverseio/market.db:dev .
+      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
+      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
       - run: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
-  docker-hub-upload:
-    docker:
-      - image: freeverseio/circleci
-    steps:
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:dev
       - run: docker push freeverseio/synchronizer:dev
@@ -143,15 +124,13 @@ workflows:
       - relay.actions
       - relay.api
       - market.notary
-      - dockerization
-      - docker-hub-upload:
+      - dockerization:
           filters:
             branches:
               only:
                 - dev
                 - ci
           requires:
-            - dockerization
             - go-synchronizer
             - django-centauri
             - market.trader
@@ -164,7 +143,7 @@ workflows:
               only:
                 - dev
           requires:
-            - docker-hub-upload
+            - dockerization
             - truffle_core
 
 
