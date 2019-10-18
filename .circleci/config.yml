@@ -138,6 +138,7 @@ workflows:
       - go-soccer
       - django-centauri
       - market.trader
+      - relay.actions
       - relay.api
       - market.notary
       - staker
@@ -152,6 +153,7 @@ workflows:
             - django-centauri
             - market.trader
             - relay.api
+            - relay.actions
             - market.notary
             - staker
       - deploy:
