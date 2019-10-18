@@ -7,77 +7,16 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/market/notary/processor"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
-	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
 	"github.com/google/uuid"
 )
-
-func TestChangeOwnership(t *testing.T) {
-	ganache := testutils.NewGanache()
-	alice := ganache.Alice
-	bob := ganache.Bob
-
-	timezone := uint8(1)
-	countryIdxInTZ := big.NewInt(0)
-	teamId0, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
-	if err != nil {
-		t.Fatal(err)
-	}
-	teamId1, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
-	if err != nil {
-		t.Fatal(err)
-	}
-	teamId2, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(2))
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
-	if err != nil {
-		t.Fatal(err)
-	}
-	team0PlayerIds, err := ganache.Assets.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	playerId := team0PlayerIds[0]
-	owner := ganache.GetPlayerOwner(playerId)
-	if owner != ganache.Public(alice) {
-		t.Fatalf("Expected owner ALICE but got %v", owner)
-	}
-	err = ganache.TransferPlayer(playerId, teamId1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	owner = ganache.GetPlayerOwner(playerId)
-	if owner != ganache.Public(bob) {
-		t.Fatalf("Expected owner BOB but got %v", owner.Hex())
-	}
-	err = ganache.TransferPlayer(playerId, teamId2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	owner = ganache.GetPlayerOwner(playerId)
-	if owner != ganache.Public(alice) {
-		t.Fatalf("Expected owner ALICE but got %v", owner)
-	}
-}
 
 func TestUpdateAuction(t *testing.T) {
 	now := time.Now().Unix()
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(now - 10),
-		State:      storage.STARTED,
+		State:      storage.AUCTION_STARTED,
 	}
 	processor, err := processor.NewProcessor(nil, nil, nil, nil)
 	if err != nil {
@@ -87,8 +26,40 @@ func TestUpdateAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if state != storage.NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.NO_BIDS, state)
+	if state != storage.AUCTION_NO_BIDS {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, state)
+	}
+}
+
+func TestOutdatedAuction(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().Unix()
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(now - 10),
+		State:      storage.AUCTION_STARTED,
+	}
+	err = sto.CreateAuction(auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	processor, err := processor.NewProcessor(sto, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = processor.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	auctions, err := sto.GetAuctions()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if auctions[0].State != storage.AUCTION_NO_BIDS {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, auctions[0].State)
 	}
 }
 

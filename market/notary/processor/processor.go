@@ -119,7 +119,8 @@ func (b *Processor) Process() error {
 			return err
 		}
 		if state != auction.State {
-			err = b.db.UpdateAuctionState(auction)
+			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
+			err = b.db.UpdateAuctionState(auction.UUID, state)
 			if err != nil {
 				return err
 			}
@@ -165,7 +166,7 @@ func (b *Processor) Process() error {
 func (b *Processor) ComputeState(auction storage.Auction) (storage.AuctionState, error) {
 	now := time.Now().Unix()
 	if auction.ValidUntil.Int64() < now {
-		return storage.NO_BIDS, nil
+		return storage.AUCTION_NO_BIDS, nil
 	}
 	return auction.State, nil
 }

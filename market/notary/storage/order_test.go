@@ -25,7 +25,7 @@ func TestGetOrders(t *testing.T) {
 		Price:      big.NewInt(1000),
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
-		State:      "STARTED",
+		State:      storage.AUCTION_STARTED,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -40,6 +40,7 @@ func TestGetOrders(t *testing.T) {
 
 	err = sto.CreateBid(storage.Bid{
 		TeamID: big.NewInt(3),
+		State:  storage.BID_FILED,
 	})
 	if err != nil {
 		t.Fatal(err)

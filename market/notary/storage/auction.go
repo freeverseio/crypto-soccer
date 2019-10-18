@@ -8,6 +8,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type AuctionState string
+
+const (
+	AUCTION_STARTED      AuctionState = "STARTED"
+	AUCTION_ASSET_FROZEN AuctionState = "ASSET_FROZEN"
+	AUCTION_PAYING       AuctionState = "PAYING"
+	AUCTION_PAID         AuctionState = "PAID"
+	AUCTION_NO_BIDS      AuctionState = "NO_BIDS"
+)
+
 type Auction struct {
 	UUID       uuid.UUID
 	PlayerID   *big.Int
@@ -20,7 +30,7 @@ type Auction struct {
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
-	log.Infof("[DBMS] + create sell order %v", order)
+	log.Infof("[DBMS] + create Auction %v", order)
 	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 		order.UUID,
 		order.PlayerID.String(),
@@ -50,8 +60,8 @@ func (b *Storage) GetOpenAuctions() ([]Auction, error) {
 	return openAunction, nil
 }
 
-func (b *Storage) UpdateAuctionState(auction Auction) error {
-	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", auction.State, auction.UUID)
+func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState) error {
+	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", state, uuid)
 	return err
 }
 
