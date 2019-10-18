@@ -51,8 +51,8 @@ services:
       -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
       -ethereum http://ethereum:8545 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
-  relay:
-    image: freeverseio/relay:dev
+  relay.api:
+    image: freeverseio/relay.api:dev
     depends_on:
       - ethereum
     ports:
@@ -66,22 +66,22 @@ services:
     depends_on:
       - universeapi
       - market.trader
-      - relay
+      - relay.api
     command: >
       -u http://universeapi:4000/graphql 
       -m http://market.trader:4000/graphql 
-      -r http://relay:4000/graphql
+      -r http://relay.api:4000/graphql
     ports:
       - "4000:4000"
-  staker:
-    image: freeverseio/staker:dev
+  relay.actions:
+    image: freeverseio/relay.actions:dev
     depends_on:
       - ethereum
     command: >
-      --interval 1 
-      --privateKey "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
-      --ethereum "http://ethereum:8545"
-      --updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
+      -memory
+      -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
+      -ethereum "http://ethereum:8545"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
 volumes:
   centauri-data:
   ethereum-data:
