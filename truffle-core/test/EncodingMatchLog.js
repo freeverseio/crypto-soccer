@@ -51,16 +51,15 @@ contract('EncodingMatchLog', (accounts) => {
         // let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = result;
         let {0: nGo, 1: assShoFwd, 2: pen, 3: outsAndYels, 4: outRounds, 5: typ, 6: yelFinHome, 7: halfSubs, 8: inGameSubs, 9: defTotWin} = result;
         nGo.toNumber().should.be.equal(nGoals);        
-        for (i = 0; i < assistersIdx.length; i++) ass[i].toNumber().should.be.equal(assistersIdx[i]); 
-        for (i = 0; i < shootersIdx.length; i++) sho[i].toNumber().should.be.equal(shootersIdx[i]); 
-        for (i = 0; i < shooterForwardPos.length; i++) fwd[i].toNumber().should.be.equal(shooterForwardPos[i]); 
+        for (i = 0; i < assistersShootersForwardsPos.length; i++) assShoFwd[i].toNumber().should.be.equal(assistersShootersForwardsPos[i]); 
         for (i = 0; i < penalties.length; i++) pen[i].should.be.equal(penalties[i]); 
         for (i = 0; i < outOfGamesAndYellowCards.length; i++) outsAndYels[i].toNumber().should.be.equal(outOfGamesAndYellowCards[i]); 
         for (i = 0; i < outOfGameRounds.length; i++) outRounds[i].toNumber().should.be.equal(outOfGameRounds[i]); 
         for (i = 0; i < typesOutOfGames.length; i++) typ[i].toNumber().should.be.equal(typesOutOfGames[i]); 
-        for (i = 0; i < yellowCardedDidNotFinish1stHalf.length; i++) yelFin[i].should.be.equal(yellowCardedDidNotFinish1stHalf[i]); 
+        for (i = 0; i < yellowCardedDidNotFinish1stHalfAndIsHomeStadium.length; i++) yelFinHome[i].should.be.equal(yellowCardedDidNotFinish1stHalfAndIsHomeStadium[i]); 
         for (i = 0; i < halfTimeSubstitutions.length; i++) halfSubs[i].toNumber().should.be.equal(halfTimeSubstitutions[i]); 
         for (i = 0; i < ingameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(ingameSubs[i]); 
+        for (i = 0; i < numDefTotWinner.length; i++) defTotWin[i].toNumber().should.be.equal(numDefTotWinner[i]); 
     });
     
 

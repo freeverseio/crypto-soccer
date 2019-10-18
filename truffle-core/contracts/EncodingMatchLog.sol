@@ -62,7 +62,7 @@ contract EncodingMatchLog {
             log |= uint256(halfTimeSubstitutions[p]) << 201 + 4 * p;
             log |= uint256(numDefTotWinner[p]) << 213 + 4 * p; // nDefs1, nDefs2, nTot2
         }            
-        log |= uint256(numDefTotWinner[3]) << 215; // winner
+        log |= uint256(numDefTotWinner[3]) << 225; // winner
         log |= uint256(yellowCardedDidNotFinish1stHalfAndIsHomeStadium[2] ? 1: 0) << 227; // isHomeStadium
         
     }
@@ -88,7 +88,7 @@ contract EncodingMatchLog {
         for (uint8 p = 0; p < 14; p++) {
             assistersShootersForwardsPos[p]     = uint8((log >> 4 + 4 * p) & 15);
             assistersShootersForwardsPos[p+14]  = uint8((log >> 60 + 4 * p) & 15);
-            assistersShootersForwardsPos[p+14]  = uint8((log >> 116 + 2 * p) & 3);
+            assistersShootersForwardsPos[p+28]  = uint8((log >> 116 + 2 * p) & 3);
         }    
         for (uint8 p = 0; p < 7; p++) {
             penalties[p] = ((log >> 144 + p) & 1) == 1;
@@ -113,6 +113,9 @@ contract EncodingMatchLog {
         }        
         for (uint8 p = 0; p < 3; p++) {
             halfTimeSubstitutions[p]  = uint8((log >> 201 + 4 * p) & 15);
+            numDefTotWinner[p] = uint8((log >> 213 + 4 * p) & 15);
         }            
+        numDefTotWinner[3] = uint8((log >> 225) & 3);
+        yellowCardedDidNotFinish1stHalfAndIsHomeStadium[2] = ((log >> 227) & 1) == 1;
     }
 }
