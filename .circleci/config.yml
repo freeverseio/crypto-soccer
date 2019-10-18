@@ -63,9 +63,12 @@ jobs:
           password: $DOCKER_PASSWD
     steps:
       - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd relay && go build
       - run: cd relay && go test ./...
+      - run: cd relay && docker build -t freeverseio/relay.actions:dev .
   staker:
     docker:
       - image: freeverseio/circleci
@@ -116,6 +119,7 @@ jobs:
       - run: docker push freeverseio/relay.api:dev
       - run: docker push freeverseio/universeapi:dev
       - run: docker push freeverseio/staker:dev
+      - run: docker push freeverseio/relay.actions:dev
 
   deploy:
     docker:
