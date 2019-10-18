@@ -70,7 +70,7 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/relay && go build
       - run: cd go/relay && go test ./...
-      - run: cd go/relay && docker build -t freeverseio/relay.actions:dev .
+      - run: cd go/cmd/relay && docker build -t freeverseio/relay.actions:dev .
   market.trader:
     docker:
       - image: freeverseio/circleci
