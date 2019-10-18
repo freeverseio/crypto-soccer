@@ -17,13 +17,13 @@ import (
 type Processor struct {
 	db        *storage.Storage
 	client    *ethclient.Client
-	assets    *market.Market
+	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *Signer
 }
 
-func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *market.Market, freeverse *ecdsa.PrivateKey) (*Processor, error) {
-	return &Processor{db, ethereumClient, assetsContract, freeverse, NewSigner(assetsContract)}, nil
+func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, marketContract *market.Market, freeverse *ecdsa.PrivateKey) (*Processor, error) {
+	return &Processor{db, ethereumClient, marketContract, freeverse, NewSigner(marketContract)}, nil
 }
 
 // func (b *Processor) processOrder(order storage.Order) error {
@@ -76,7 +76,7 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 	// }
 
 // 	log.Infof("(4) freeze player")
-// 	tx, err := b.assets.FreezePlayer(
+// 	tx, err := b.market.FreezePlayer(
 // 		bind.NewKeyedTransactor(b.freeverse),
 // 		sellerHiddenPrice,
 // 		order.Auction.ValidUntil,
@@ -92,7 +92,7 @@ func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsC
 // 		return err
 // 	}
 // 	log.Infof("(5) complete freeze")
-// 	tx, err = b.assets.CompleteFreeze(
+// 	tx, err = b.market.CompleteFreeze(
 // 		bind.NewKeyedTransactor(b.freeverse),
 // 		order.Auction.PlayerId,
 // 	)
@@ -124,7 +124,6 @@ func (b *Processor) Process() error {
 			if err != nil {
 				return err
 			}
-
 		}
 	}
 
@@ -136,7 +135,7 @@ func (b *Processor) Process() error {
 
 	// for _, order := range orders {
 	// 	playerID := order.Auction.PlayerID
-	// 	frozen, err := b.assets.IsPlayerFrozen(&bind.CallOpts{}, playerID)
+	// 	frozen, err := b.market.IsPlayerFrozen(&bind.CallOpts{}, playerID)
 	// 	if err != nil {
 	// 		log.Error(err)
 	// 		continue
@@ -196,7 +195,7 @@ func (b *Processor) FreezePlayer(Auction storage.Auction) error {
 	if err != nil {
 		log.Error(err)
 	}
-	tx, err := b.assets.FreezePlayer(
+	tx, err := b.market.FreezePlayer(
 		bind.NewKeyedTransactor(b.freeverse),
 		sellerHiddenPrice,
 		Auction.ValidUntil,
