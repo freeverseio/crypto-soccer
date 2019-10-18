@@ -119,7 +119,8 @@ func (b *Processor) Process() error {
 			return err
 		}
 		if state != auction.State {
-			err = b.db.UpdateAuctionState(auction)
+			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
+			err = b.db.UpdateAuctionState(auction.UUID, state)
 			if err != nil {
 				return err
 			}

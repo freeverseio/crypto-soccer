@@ -60,8 +60,8 @@ func (b *Storage) GetOpenAuctions() ([]Auction, error) {
 	return openAunction, nil
 }
 
-func (b *Storage) UpdateAuctionState(auction Auction) error {
-	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", auction.State, auction.UUID)
+func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState) error {
+	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", state, uuid)
 	return err
 }
 
