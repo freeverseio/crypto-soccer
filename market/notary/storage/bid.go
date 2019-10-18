@@ -15,42 +15,45 @@ type Bid struct {
 	TeamID          *big.Int
 	Is2StartAuction bool
 	Signature       string
+	State           BidState
 }
 
-func (b *Storage) CreateBid(order Bid) error {
-	log.Infof("[DBMS] + create Bid %v", order)
-	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature) VALUES ($1, $2, $3, $4, $5);",
-		order.Auction,
-		order.ExtraPrice,
-		order.Rnd,
-		order.TeamID.String(),
-		order.Signature,
+func (b *Storage) CreateBid(bid Bid) error {
+	log.Infof("[DBMS] + create Bid %v", bid)
+	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES ($1, $2, $3, $4, $5, $6);",
+		bid.Auction,
+		bid.ExtraPrice,
+		bid.Rnd,
+		bid.TeamID.String(),
+		bid.Signature,
+		bid.State,
 	)
 	return err
 }
 
 func (b *Storage) GetBids() ([]Bid, error) {
-	var offers []Bid
-	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature FROM bids;")
+	var bids []Bid
+	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature, state FROM bids;")
 	if err != nil {
-		return offers, err
+		return bids, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var offer Bid
+		var bid Bid
 		var teamID sql.NullString
 		err = rows.Scan(
-			&offer.Auction,
-			&offer.ExtraPrice,
-			&offer.Rnd,
+			&bid.Auction,
+			&bid.ExtraPrice,
+			&bid.Rnd,
 			&teamID,
-			&offer.Signature,
+			&bid.Signature,
+			&bid.State,
 		)
 		if err != nil {
-			return offers, err
+			return bids, err
 		}
-		offer.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
-		offers = append(offers, offer)
+		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
+		bids = append(bids, bid)
 	}
-	return offers, nil
+	return bids, nil
 }

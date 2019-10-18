@@ -22,6 +22,7 @@ func TestGetbids(t *testing.T) {
 
 	err = sto.CreateBid(storage.Bid{
 		TeamID: big.NewInt(2),
+		State:  storage.BID_FILED,
 	})
 	if err == nil {
 		t.Fatal(err)
