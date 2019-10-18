@@ -20,7 +20,7 @@ contract Evolution {
         returns (uint256[2] memory points)
     {
         
-        // 1 point for winning at home, 2 points for winning
+        // +1 point for winning at home, +2 points for winning
         // away, or in a cup match. 0 points for drawing.
         uint256 nGoals0 = (matchLog[0] & 15);
         uint256 nGoals1 = (matchLog[1] & 15);
@@ -30,12 +30,14 @@ contract Evolution {
             points[1] = isHomeStadium ? 2 : 2;    
         }
 
-        uint256[2] memory pointsNeg;
+        // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker
+        points[0] += pointsPerWhoScoredGoals(matchLog[0], nGoals0);
+        points[1] += pointsPerWhoScoredGoals(matchLog[1], nGoals1);
 
+        uint256[2] memory pointsNeg;
         // -1 for each opponent goal
         pointsNeg[0] = nGoals1;
         pointsNeg[1] = nGoals0;
-
         // -3 for redCards, -1 for yellows
         // ...note that offset for 1st half is 159, and for 2nd half is 179
         for (uint8 team = 0; team <2; team++) {
@@ -45,10 +47,17 @@ contract Evolution {
                 pointsNeg[team] += (((matchLog[0] >> (offset + 6)) & 15) < NO_CARD) ? 1 : 0;
             }
         }
-
-        
-
     }
     
+    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker
+    function pointsPerWhoScoredGoals(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
+        for (uint8 goal = 0; goal < nGoals; goal++) {
+            uint256 fwdPos = (matchLog >> 116 + 2 * goal) & 3;
+            if (fwdPos < 2) {points += 6;}
+            else if (fwdPos == 2) {points += 5;}
+            else {points += 6;}
+        }
+    }
+
 }
 
