@@ -101,7 +101,6 @@ jobs:
       - run: docker push freeverseio/market.notary:dev
       - run: docker push freeverseio/relay.api:dev
       - run: docker push freeverseio/universeapi:dev
-      - run: docker push freeverseio/staker:dev
       - run: docker push freeverseio/relay.actions:dev
   deploy:
     docker:
