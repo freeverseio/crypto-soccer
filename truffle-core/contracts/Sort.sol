@@ -2,12 +2,12 @@ pragma solidity ^0.5.0;
 
 contract Sort {
     
-    function sort11(uint8[11] memory data) public pure returns(uint8[11] memory) {
-       quickSort11(data, int(0), int(10));
+    function sort14(uint8[14] memory data) public pure returns(uint8[14] memory) {
+       quickSort14(data, int(0), int(13));
        return data;
     }
     
-    function quickSort11(uint8[11] memory arr, int left, int right) internal pure {
+    function quickSort14(uint8[14] memory arr, int left, int right) internal pure {
         int i = left;
         int j = right;
         if(i==j) return;
@@ -22,9 +22,9 @@ contract Sort {
             }
         }
         if (left < j)
-            quickSort11(arr, left, j);
+            quickSort14(arr, left, j);
         if (i < right)
-            quickSort11(arr, i, right);
+            quickSort14(arr, i, right);
     }
 
 }

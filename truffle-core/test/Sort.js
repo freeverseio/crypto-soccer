@@ -12,10 +12,11 @@ contract('Sort', (accounts) => {
         sort = await Sort.new().should.be.fulfilled;
     });
     
-    it('sorts arrays of 11 numbers', async () =>  {
-        expected = [1, 1, 3, 3, 4, 5, 6, 7, 9, 10, 12];
-        result = await sort.sort11([4,7,3,1,12,9,5,3,1,6,10]).should.be.fulfilled;
-        for (i = 0; i < 11; i++) {
+    it('sorts arrays of 14 numbers', async () =>  {
+        data =      [4, 7, 3, 1, 12, 9, 5, 3, 1, 6, 10, 13, 11, 11];
+        expected =  [1, 1, 3, 3, 4, 5, 6, 7, 9, 10, 11, 11, 12, 13];
+        result = await sort.sort14(data).should.be.fulfilled;
+        for (i = 0; i < 14; i++) {
             result[i].toNumber().should.be.equal(expected[i]);
         }
     });

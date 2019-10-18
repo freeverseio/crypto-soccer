@@ -9,26 +9,29 @@ const Championships = artifacts.require('Championships');
 const Engine = artifacts.require('Engine');
 
 contract('Championships', (accounts) => {
-    const tactic442 = 0;
-    const tactic433 = 1;
+    const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
+    const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
+    const subLastHalf = false;
 
-    const createTeamStateFromSinglePlayer = async (skills, engine) => {
-        const playerStateTemp = await engine.encodePlayerSkills(
-            skills, 
-            monthOfBirth = 0, 
-            playerId = 1321312,
-            [potential = 3,
-            forwardness = 3,
-            leftishness = 2,
-            aggressiveness = 0],
-            alignedLastHalf = false,
-            redCardLastGame = false,
-            gamesNonStopping = 0,
-            injuryWeeksLeft = 0
-        ).should.be.fulfilled;
+    function secsToDays(secs) {
+        return secs/ (24 * 3600);
+    }
 
+    const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
-        for (player = 0; player < PLAYERS_PER_TEAM_MAX; player++) {
+        var playerStateTemp = await engine.encodePlayerSkills(
+            skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+        ).should.be.fulfilled;
+        for (player = 0; player < 11; player++) {
+            teamState.push(playerStateTemp)
+        }
+
+        playerStateTemp = await engine.encodePlayerSkills(
+            skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+        ).should.be.fulfilled;
+        for (player = 11; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
         }
         return teamState;

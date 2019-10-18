@@ -34,36 +34,69 @@ contract EncodingSkills {
 
 
     /**
-     * @dev Tactics serializes a total of 71 bits = 55 + 10 + 6:
-     *      lineup[11]          = 5 bit each = [playerIdxInTeam1, ..., ]
+     * @dev Tactics serializes a total of 110 bits = 3 * 4 + 3 * 4 + 14*5 + 10 + 6:
+     *      substitutions[3]    = 4 bit each = [3 different nums from 0 to 10], with 11 = no subs
+     *      lineup[14]          = 5 bit each = [playerIdxInTeam1, ..., ]
      *      extraAttack[10]     = 1 bit each, 0: normal, 1: player has extra attack duties
      *      tacticsId           = 6 bit (0 = 442, 1 = 541, ...
     **/
-    function encodeTactics(uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) public pure returns (uint256) {
-        require(tacticsId < 64, "tacticsId should fit in 6 bit");
+    function encodeTactics(
+        uint8[3] memory substitutions, 
+        uint8[3] memory subsRounds, 
+        uint8[14] memory lineup, 
+        bool[10] memory extraAttack, 
+        uint8 tacticsId
+    ) 
+        public 
+        pure 
+        returns (uint256) 
+    {
+        require(tacticsId < 64, "tacticsId should fit in 64 bit");
         uint256 encoded = uint256(tacticsId);
         for (uint8 p = 0; p < 10; p++) {
             encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + 1 * p;
         }          
-        for (uint8 p = 0; p < 11; p++) {
+        for (uint8 p = 0; p < 14; p++) {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             encoded |= uint256(lineup[p]) << 16 + 5 * p;
+        }          
+        for (uint8 p = 0; p < 3; p++) {
+            require(substitutions[p] < 12, "incorrect lineup entry");
+            require(subsRounds[p] < 12, "incorrect round");
+            encoded |= uint256(substitutions[p]) << 86 + 4 * p;
+            encoded |= uint256(subsRounds[p]) << 98 + 4 * p;
         }          
         return encoded;
     }
 
-    function decodeTactics(uint256 tactics) public pure returns (uint8[11] memory lineup, bool[10] memory extraAttack, uint8 tacticsId) {
-        require(tactics < 2**81, "tacticsId should fit in 61 bit");
+    function decodeTactics(uint256 tactics) public pure returns (
+        uint8[3] memory substitutions, 
+        uint8[3] memory subsRounds, 
+        uint8[14] memory lineup, 
+        bool[10] memory extraAttack, 
+        uint8 tacticsId
+    ) {
+        require(tactics < 2**110, "tacticsId should fit in 98 bit");
         tacticsId = uint8(tactics & 63);
         tactics >>= 6;
         for (uint8 p = 0; p < 10; p++) {
             extraAttack[p] = ((tactics & 1) == 1 ? true : false); // 2^1 - 1
             tactics >>= 1;
         }          
-        for (uint8 p = 0; p < 11; p++) {
+        for (uint8 p = 0; p < 14; p++) {
             lineup[p] = uint8(tactics & 31); // 2^5 - 1
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             tactics >>= 5;
+        }          
+        for (uint8 p = 0; p < 3; p++) {
+            substitutions[p] = uint8(tactics & 15); // 2^4 - 1
+            require(substitutions[p] < 12, "incorrect lineup entry"); // 11 is used as "no substitution"
+            tactics >>= 4;
+        }          
+        for (uint8 p = 0; p < 3; p++) {
+            subsRounds[p] = uint8(tactics & 15); // 2^4 - 1
+            require(subsRounds[p] < 12, "incorrect round entry");
+            tactics >>= 4;
         }          
     }
     
@@ -72,7 +105,7 @@ contract EncodingSkills {
      *      5 skills                  = 5 x 14 bits
      *                                = shoot, speed, pass, defence, endurance
      *      dayOfBirth                = 16 bits  (since Unix time, max 180 years)
-     *      birthTraits               = [potential, forwardness, leftishness, aggressiveness]
+     *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness]
      *      potential                 = 4 bits (number is limited to [0,...,9])
      *      forwardness               = 3 bits
      *                                  GK: 0, D: 1, M: 2, F: 3, MD: 4, MF: 5
@@ -81,20 +114,22 @@ contract EncodingSkills {
      *      aggressiveness            = 3 bits
      *      playerId                  = 43 bits
      *      
-     *      alignedLastHalf           = 1 (bool)
-     *      redCardLastGame           = 1 (bool)
-     *      gamesNonStopping          = 3 (0, 1, ..., 6). Finally, 7 means more than 6.
-     *      injuryWeeksLeft           = 3 
+     *      alignedEndOfLastHalf      = 1b (bool)
+     *      redCardLastGame           = 1b (bool)
+     *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
+     *      injuryWeeksLeft           = 3b 
+     *      substitutedDuringLastHalf = 1b (bool) 
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
         uint256 dayOfBirth, 
         uint256 playerId, 
         uint8[4] memory birthTraits,
-        bool alignedLastHalf, 
+        bool alignedEndOfLastHalf, 
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
-        uint8 injuryWeeksLeft
+        uint8 injuryWeeksLeft,
+        bool substitutedLastHalf
     )
         public
         pure
@@ -122,11 +157,12 @@ contract EncodingSkills {
         encoded |= uint256(birthTraits[IDX_POT]) << 123;
         encoded |= uint256(birthTraits[IDX_FWD]) << 120;
         encoded |= uint256(birthTraits[IDX_LEF]) << 117;
-        encoded |= uint256(alignedLastHalf ? 1 : 0) << 116;
+        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 116;
         encoded |= uint256(redCardLastGame ? 1 : 0) << 115;
         encoded |= uint256(gamesNonStopping) << 112;
         encoded |= uint256(injuryWeeksLeft) << 109;
-        return (encoded | uint256(birthTraits[IDX_AGG]) << 106);
+        encoded |= uint256(birthTraits[IDX_AGG]) << 106;
+        return (encoded | uint256(substitutedLastHalf ? 1 : 0) << 105);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -169,8 +205,12 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 106 & 7);
     }
 
-    function getAlignedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 116 & 1) == 1;
+    }
+
+    function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+        return (encodedSkills >> 115 & 1) == 1;
     }
 
     function getRedCardLastGame(uint256 encodedSkills) public pure returns (bool) {
