@@ -1,21 +1,21 @@
-package process_test
+package relay_test
 
 import (
-	"math/big"
+	//"math/big"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
+	//"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	//"github.com/ethereum/go-ethereum/core/types"
+	//"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
 	"github.com/freeverseio/crypto-soccer/relay/process"
 	"github.com/freeverseio/crypto-soccer/relay/storage"
+	"github.com/freeverseio/crypto-soccer/relay/testutils"
 )
 
-func TestSyncTeams(t *testing.T) {
-	storage, err := storage.NewSqlite3("../db/00_schema.sql")
-	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+func TestSubmitActionRoot(t *testing.T) {
+	db, err := storage.NewSqlite3("../db/00_schema.sql")
+	// db, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,12 +34,12 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	p, err := process.NewProcessor(bc.Client, bc.Owner, bc.Updates)
+	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Updates)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err := p.Process()
+	err = p.Process()
 	if err != nil {
 		t.Fatal(err)
 	}

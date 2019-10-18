@@ -1,7 +1,10 @@
 package storage
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
+	"hash"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -14,6 +17,26 @@ type Tactic struct {
 	Attack      uint8
 	Shirts      [11]uint8
 	ExtraAttack [10]uint8
+}
+
+// Hash - computes hash for a Tactic
+func (t *Tactic) Hash() ([32]byte, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	b := [32]byte{}
+	h := computeHash(sha256.New(), data)
+	copy(b[:], h[:])
+	return b, nil
+}
+
+func computeHash(h hash.Hash, data ...[]byte) []byte {
+	h.Reset()
+	for _, d := range data {
+		h.Write(d)
+	}
+	return h.Sum(nil)
 }
 
 func (b *Storage) TacticCreate(t Tactic) error {

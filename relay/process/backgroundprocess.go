@@ -1,6 +1,7 @@
 package relay
 
 import (
+	"crypto/ecdsa"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -21,7 +22,7 @@ func BackgroundProcessNew(
 	storage *storage.Storage,
 	updatesContract *updates.Updates,
 ) (*BackgroundProcess, error) {
-	processor, err := NewProcessor(client, privatekey, storage, updatesContract)
+	processor, err := NewProcessor(client, privateKey, storage, updatesContract)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				err := b.relay.Process(delta)
+				err := b.relay.Process()
 				if err != nil {
 					panic(err)
 				}

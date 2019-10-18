@@ -3,15 +3,13 @@ package relay
 import (
 	"context"
 	"crypto/ecdsa"
-	"crypto/sha256"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"hash"
-	"time"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
+	//"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -25,6 +23,7 @@ type Processor struct {
 	publicAddress common.Address
 	db            *storage.Storage
 	updates       *updates.Updates
+	count         int64
 }
 
 // *****************************************************************************
@@ -38,8 +37,6 @@ func NewProcessor(
 	updates *updates.Updates,
 ) (*Processor, error) {
 
-	rand.Seed(time.Now())
-
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
@@ -50,62 +47,53 @@ func NewProcessor(
 
 	return &Processor{
 		client,
-		publicAddress,
 		privateKey,
+		publicAddress,
 		db,
 		updates,
+		0,
 	}, nil
 }
 
-func (p *Processor) Process(delta uint64) error {
-	return computeActionsRoot()
-}
-
-type Action struct {
-	value uint64
-}
-
-// Hash - computes hash for an Action
-func (a *Action) Hash() ([]byte, error) {
-	data, err := json.Marshal(a)
-	if err != nil {
-		return nil, err
-	}
-	return computeHash(sha256.New(), data), nil
-}
-
-func computeHash(h hash.Hash, data ...[]byte) []byte {
-	h.Reset()
-	for _, d := range data {
-		h.Write(d)
-	}
-	return h.Sum(nil)
+func (p *Processor) Process() error {
+	return p.computeActionsRoot()
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
 func (p *Processor) computeActionsRoot() error {
-	gasLimit := uint64(21000)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
 	if err != nil {
 		return err
 	}
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	gasPrice, err := p.client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return err
 	}
 
-	auth := bind.NewKeyedTransactor(privateKey)
+	auth := bind.NewKeyedTransactor(p.privateKey)
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)
 	auth.GasPrice = gasPrice
 
+	session := updates.UpdatesSession{
+		p.updates,
+		bind.CallOpts{},
+		*auth,
+	}
+
 	//currentVerse, err := updates.currentVerse(nil)
 
-	root := Action{rand.Uint64()}.Hash()
+	tactic := &storage.Tactic{}
+	tactic.TeamID = big.NewInt(p.count)
+	p.count += 1
+	root, err := tactic.Hash()
+	if err != nil {
+		return err
+	}
 	log.Infof("[relay] submitActionsRoot %v", root)
-	_, err = updates.submitActionsRoot(auth, root)
+	_, err = session.SubmitActionsRoot(root)
 	return err
 }
