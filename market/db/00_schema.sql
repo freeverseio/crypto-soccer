@@ -22,12 +22,21 @@ CREATE TABLE auctions (
     PRIMARY KEY(uuid)
 );
 
+CREATE TABLE bid_states(
+    state TEXT NOT NULL PRIMARY KEY
+);
+INSERT INTO bid_states(state) VALUES ('FILED');
+INSERT INTO bid_states(state) VALUES ('PAYING');
+INSERT INTO bid_states(state) VALUES ('PAID');
+INSERT INTO bid_states(state) VALUES ('FAILED');
+
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
     extra_price NUMERIC(15,2) NOT NULL,
     rnd INT NOT NULL,
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
+    state TEXT NOT NULL REFERENCES bid_states(state),
     PRIMARY KEY(auction, extra_price)
 );
 
