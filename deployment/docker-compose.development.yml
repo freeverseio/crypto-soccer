@@ -58,9 +58,9 @@ services:
     ports:
       - "4003:4000"
     command: >
-      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
-      -ethereum "http://ethereum:8545"
-      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
+      --assetsContractAddress "${LEAGUES_CONTRACT_ADDRESS}" 
+      --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
+      --ethereum "http://ethereum:8545"
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
