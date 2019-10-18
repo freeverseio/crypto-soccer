@@ -7,52 +7,51 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
   return {
     typeDefs: gql`
        extend type Mutation {
-        createPlayerSellOrder(input: PlayerSellOrderInput!): BigFloat
-        deletePlayerSellOrder(playerId: BigFloat!): BigFloat
-        createPlayerBuyOrder(input: PlayerBuyOrderInput!): BigFloat
-        deletePlayerBuyOrder(playerId: BigFloat!): BigFloat
+        createAuction(input: AuctionInput!): Boolean
+        deleteAuction(uuid: UUID!): Boolean
       }
     `,
     resolvers: {
       Mutation: {
-        createPlayerSellOrder: async (_, { input }, context) =>  {
-          const { playerid, currencyid, price, rnd, validuntil, typeoftx, signature } = input;
-          const query = sql.query`INSERT INTO player_sell_orders (playerId, currencyId, price, rnd, validUntil, typeOfTx, signature) VALUES (
-            ${sql.value(playerid)}, 
-            ${sql.value(currencyid)}, 
+        createAuction: async (_, { input }, context) =>  {
+          const { uuid, playerId, currencyId, price, rnd, validUntil, signature } = input;
+          const query = sql.query`INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES (
+            ${sql.value(uuid)},
+            ${sql.value(playerId)}, 
+            ${sql.value(currencyId)}, 
             ${sql.value(price)},
             ${sql.value(rnd)},
-            ${sql.value(validuntil)},
-            ${sql.value(typeoftx)},
-            ${sql.value(signature)}
+            ${sql.value(validUntil)},
+            ${sql.value(signature)},
+            ${sql.value('STARTED')}
             )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return playerid;
+          return true;// TODO return something with sense
         },
-        deletePlayerSellOrder: async (_, {playerId}, context) => {
-          const query = sql.query`DELETE FROM player_sell_orders WHERE playerId=${sql.value(playerId)}`;
+        deleteAuction: async (_, {uuid}, context) => {
+          const query = sql.query`UPDATE auctions SET state='CANCELLED_BY_SELLER' WHERE uuid=${sql.value(uuid)}`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
-          return playerId;
+          return true; // TODO return something with sense
         },
-        createPlayerBuyOrder: async (_, {input}, context) => {
-          const { playerid, teamid, signature } = input;
-          const query = sql.query`INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES (
-            ${sql.value(playerid)}, 
-            ${sql.value(teamid)}, 
-            ${sql.value(signature)}
-            )`;
-          const {text, values} = sql.compile(query);
-          await context.pgClient.query(text, values);
-          return playerid;
-        },
-        deletePlayerBuyOrder: async (_, {playerId}, context) => {
-          const query = sql.query`DELETE FROM player_buy_orders WHERE playerId=${sql.value(playerId)}`;
-          const {text, values} = sql.compile(query);
-          await context.pgClient.query(text, values);
-          return playerId;
-        },
+        // createPlayerBuyOrder: async (_, {input}, context) => {
+        //   const { playerid, teamid, signature } = input;
+        //   const query = sql.query`INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES (
+        //     ${sql.value(playerid)}, 
+        //     ${sql.value(teamid)}, 
+        //     ${sql.value(signature)}
+        //     )`;
+        //   const {text, values} = sql.compile(query);
+        //   await context.pgClient.query(text, values);
+        //   return playerid;
+        // },
+        // deletePlayerBuyOrder: async (_, {playerId}, context) => {
+        //   const query = sql.query`DELETE FROM player_buy_orders WHERE playerId=${sql.value(playerId)}`;
+        //   const {text, values} = sql.compile(query);
+        //   await context.pgClient.query(text, values);
+        //   return playerId;
+        // },
       }
     }
   };

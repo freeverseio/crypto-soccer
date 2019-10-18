@@ -2,6 +2,7 @@ package processor
 
 import (
 	"encoding/hex"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -17,6 +18,9 @@ func NewSigner(marketContract *market.Market) *Signer {
 }
 
 func (b *Signer) RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
+	if len(signature) != 132 {
+		return r, s, v, errors.New("wrong signature length")
+	}
 	signature = signature[2:] // remove 0x
 	vect, err := hex.DecodeString(signature[0:64])
 	if err != nil {
@@ -43,7 +47,7 @@ func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) 
 	return privateHash, err
 }
 
-func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, typeOfTx uint8) ([32]byte, error) {
+func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) ([32]byte, error) {
 	var hash [32]byte
 	hashPrivateMessage, err := b.assets.HashPrivateMsg(
 		&bind.CallOpts{},
@@ -54,12 +58,11 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.BuildPutForSaleTxMsg(
+	hash, err = b.assets.BuildPutAssetForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
 		validUntil,
 		playerId,
-		typeOfTx,
 	)
 	if err != nil {
 		return hash, err
@@ -68,39 +71,38 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	return hash, err
 }
 
-func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, typeOfTx uint8, teamId *big.Int) ([32]byte, error) {
-	var hash [32]byte
-	hashPrivateMessage, err := b.assets.HashPrivateMsg(
-		&bind.CallOpts{},
-		currencyId,
-		price,
-		rnd,
-	)
-	if err != nil {
-		return hash, err
-	}
-	sellMsgHash, err := b.assets.BuildPutForSaleTxMsg(
-		&bind.CallOpts{},
-		hashPrivateMessage,
-		validUntil,
-		playerId,
-		typeOfTx,
-	)
-	if err != nil {
-		return hash, err
-	}
-	prefixedHash, err := b.assets.Prefixed(&bind.CallOpts{}, sellMsgHash)
-	if err != nil {
-		return hash, err
-	}
-	hash, err = b.assets.BuildAgreeToBuyTxMsg(
-		&bind.CallOpts{},
-		prefixedHash,
-		teamId,
-	)
-	if err != nil {
-		return hash, err
-	}
-	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
-	return hash, err
-}
+// func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {
+// 	var hash [32]byte
+// 	hashPrivateMessage, err := b.assets.HashPrivateMsg(
+// 		&bind.CallOpts{},
+// 		currencyId,
+// 		price,
+// 		rnd,
+// 	)
+// 	if err != nil {
+// 		return hash, err
+// 	}
+// 	sellMsgHash, err := b.assets.BuildPutForSaleTxMsg(
+// 		&bind.CallOpts{},
+// 		hashPrivateMessage,
+// 		validUntil,
+// 		playerId,
+// 	)
+// 	if err != nil {
+// 		return hash, err
+// 	}
+// 	prefixedHash, err := b.assets.Prefixed(&bind.CallOpts{}, sellMsgHash)
+// 	if err != nil {
+// 		return hash, err
+// 	}
+// 	hash, err = b.assets.BuildAgreeToBuyTxMsg(
+// 		&bind.CallOpts{},
+// 		prefixedHash,
+// 		teamId,
+// 	)
+// 	if err != nil {
+// 		return hash, err
+// 	}
+// 	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+// 	return hash, err
+// }
