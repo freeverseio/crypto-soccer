@@ -28,7 +28,7 @@ CREATE TABLE bid_states(
 INSERT INTO bid_states(state) VALUES ('FILED');
 INSERT INTO bid_states(state) VALUES ('PAYING');
 INSERT INTO bid_states(state) VALUES ('PAID');
-INSERT INTO bid_states(state) VALUES ('FAILED');
+INSERT INTO bid_states(state) VALUES ('EXPIRED');
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
