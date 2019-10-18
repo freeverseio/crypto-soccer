@@ -54,6 +54,18 @@ jobs:
       - run: make setup contracts
       - run: cd relay/nodejs-api && npm install
       - run: cd relay/nodejs-api && npm test
+  relay.actions:
+    docker:
+      - image: freeverseio/circleci
+      - image: freeverseio/ethereum:test
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
+    steps:
+      - checkout
+      - run: make setup contracts
+      - run: cd relay && go build
+      - run: cd relay && go test ./...
   staker:
     docker:
       - image: freeverseio/circleci
