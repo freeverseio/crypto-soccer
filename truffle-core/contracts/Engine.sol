@@ -256,18 +256,6 @@ contract Engine is EngineLib, Sort{
         return ((matchLog >> 159) & 3) == RED_CARD;
     }
 
-    // TODO: can this be expressed as
-    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
-    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
-    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
-    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[9] memory) {
-        require(tacticsId < 4, "we currently support only 4 different tactics");
-        if (tacticsId == 0) return [1,2,1,1,2,1,0,2,0];  // 0 = 442
-        if (tacticsId == 1) return [1,3,1,1,2,1,0,1,0];  // 0 = 541
-        if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  // 0 = 433
-        if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  // 0 = 451
-    }
 
     /// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
