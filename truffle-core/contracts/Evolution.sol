@@ -43,8 +43,6 @@ contract Evolution is EncodingSkills, EngineLib {
         // +2 per half played by GK/D, +1 per half played for Mids and Atts
         if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog[0], tacticsHalf1[0], tacticsHalf2[0]);
         if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog[1], tacticsHalf1[1], tacticsHalf2[1]);
-        
-
 
         uint256[2] memory pointsNeg;
         // -1 for each opponent goal
