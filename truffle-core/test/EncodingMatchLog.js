@@ -18,20 +18,45 @@ contract('EncodingMatchLog', (accounts) => {
         shootersIdx  = Array.from(new Array(14), (x,i) => 15-i);
         shooterForwardPos  = Array.from(new Array(14), (x,i) => i % 4);
         penalties  = Array.from(new Array(7), (x,i) => (i % 2 == 0));
-        outOfGames = [10, 4];
         typesOutOfGames = [1, 2];
-        yellowCards = [9, 6, 3, 0];
-        result = await encoding.encodeMatchLog(nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties, outOfGames, typesOutOfGames, yellowCards);
+        outOfGameRounds = [7, 4];
+        yellowCardedDidNotFinish1stHalf = [false, true];
+        ingameSubs = [
+            0, 1, 2,  // half 1
+            2, 1, 0,   // half 2
+        ]
+        outOfGamesAndYellowCards = [10, 4, 9, 6, 3, 0]
+        // made out from these two:
+        //      outOfGames = [10, 4];
+        //      yellowCards = [9, 6, 3, 0];
+
+        halfTimeSubstitutions = [9, 7, 10]
+        result = await encoding.encodeMatchLog(
+            nGoals, 
+            assistersIdx, 
+            shootersIdx, 
+            shooterForwardPos, 
+            penalties, 
+            outOfGamesAndYellowCards, 
+            outOfGameRounds, 
+            typesOutOfGames, 
+            yellowCardedDidNotFinish1stHalf,
+            halfTimeSubstitutions, 
+            ingameSubs
+        );
         result = await encoding.decodeMatchLog(result);
-        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: out, 6: typ, 7: yel} = result;
+        let {0: nGo, 1: ass, 2: sho, 3: fwd, 4: pen, 5: outsAndYels, 6: outRounds, 7: typ, 8: yelFin, 9: halfSubs, 10: inGameSubs} = result;
         nGo.toNumber().should.be.equal(nGoals);        
         for (i = 0; i < assistersIdx.length; i++) ass[i].toNumber().should.be.equal(assistersIdx[i]); 
         for (i = 0; i < shootersIdx.length; i++) sho[i].toNumber().should.be.equal(shootersIdx[i]); 
         for (i = 0; i < shooterForwardPos.length; i++) fwd[i].toNumber().should.be.equal(shooterForwardPos[i]); 
         for (i = 0; i < penalties.length; i++) pen[i].should.be.equal(penalties[i]); 
-        for (i = 0; i < outOfGames.length; i++) out[i].toNumber().should.be.equal(outOfGames[i]); 
+        for (i = 0; i < outOfGamesAndYellowCards.length; i++) outsAndYels[i].toNumber().should.be.equal(outOfGamesAndYellowCards[i]); 
+        for (i = 0; i < outOfGameRounds.length; i++) outRounds[i].toNumber().should.be.equal(outOfGameRounds[i]); 
         for (i = 0; i < typesOutOfGames.length; i++) typ[i].toNumber().should.be.equal(typesOutOfGames[i]); 
-        for (i = 0; i < yellowCards.length; i++) yel[i].toNumber().should.be.equal(yellowCards[i]); 
+        for (i = 0; i < yellowCardedDidNotFinish1stHalf.length; i++) yelFin[i].should.be.equal(yellowCardedDidNotFinish1stHalf[i]); 
+        for (i = 0; i < halfTimeSubstitutions.length; i++) halfSubs[i].toNumber().should.be.equal(halfTimeSubstitutions[i]); 
+        for (i = 0; i < ingameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(ingameSubs[i]); 
     });
     
 
