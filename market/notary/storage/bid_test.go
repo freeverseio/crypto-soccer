@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/market/notary/storage"
+	"github.com/google/uuid"
 )
 
 func TestGetbids(t *testing.T) {
@@ -12,20 +13,28 @@ func TestGetbids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetBids()
+	uuid := uuid.New()
+	result, err := sto.GetBidsOfAuction(uuid)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(result) != 0 {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
-
 	err = sto.CreateBid(storage.Bid{
-		TeamID: big.NewInt(2),
-		State:  storage.BID_FILED,
+		TeamID:  big.NewInt(2),
+		Auction: uuid,
+		State:   storage.BID_FILED,
 	})
 	if err == nil {
 		t.Fatal(err)
+	}
+	result, err := sto.GetBidsOfAuction(uuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("Expected 1 got %v", len(result))
 	}
 }
 

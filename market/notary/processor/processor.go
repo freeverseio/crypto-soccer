@@ -167,6 +167,7 @@ func (b *Processor) ComputeState(auction storage.Auction) (storage.AuctionState,
 	if auction.ValidUntil.Int64() < now {
 		return storage.AUCTION_NO_BIDS, nil
 	}
+
 	return auction.State, nil
 }
 
