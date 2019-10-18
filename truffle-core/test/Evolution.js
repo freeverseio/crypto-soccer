@@ -5,6 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 
+const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
@@ -26,7 +27,7 @@ contract('Evolution', (accounts) => {
     const firstHalfLog = [0, 0];
     const subLastHalf = false;
     const is2ndHalf = false;
-    const isHomeStadium = false;
+    const isHomeStadium = true;
     const isPlayoff = false;
     const matchBools = [is2ndHalf, isHomeStadium, isPlayoff]
     const IDX_R = 1;
@@ -98,6 +99,7 @@ contract('Evolution', (accounts) => {
     };
 
     beforeEach(async () => {
+        evolution = await Evolution.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
@@ -120,6 +122,40 @@ contract('Evolution', (accounts) => {
     });
     
     it('test1', async () => {
+        assistersIdx = Array.from(new Array(14), (x,i) => i);
+        shootersIdx  = Array.from(new Array(14), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(14), (x,i) => 1);
+        penalties  = Array.from(new Array(7), (x,i) => 0);
+        typesOutOfGames = [3, 0];
+        outOfGameRounds = [7, 0];
+        yellowCardedDidNotFinish1stHalf = [false, false];
+        ingameSubs = [0, 0, 0, 0, 0, 0]
+        outOfGamesAndYellowCards = [9, 14, 14, 0, 0, 0]
+        halfTimeSubstitutions = [14, 14, 14]
+        log0 = await encodingLog.encodeMatchLog(
+            nGoals = 3, 
+            assistersIdx, 
+            shootersIdx, 
+            shooterForwardPos, 
+            penalties, 
+            outOfGamesAndYellowCards, 
+            outOfGameRounds, 
+            typesOutOfGames, 
+            yellowCardedDidNotFinish1stHalf,
+            halfTimeSubstitutions, 
+            ingameSubs
+        );
+        result = await evolution.computeTrainingPoints(
+            [log0, log0], 
+            [teamStateAll50Half1, teamStateAll50Half1],
+            [teamStateAll50Half1, teamStateAll50Half1],
+            [tactics0, tactics0],
+            [tactics0, tactics0],
+            isHomeStadium
+        )
+        console.log(result[0].toNumber(), result[1].toNumber())
+        result[0].should.be.bignumber.equal(result[1]);
+        result[0].toNumber().should.be.equal(15);
     });
 
 });
