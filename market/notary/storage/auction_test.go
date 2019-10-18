@@ -15,13 +15,13 @@ func TestUpdateAuctionState(t *testing.T) {
 	}
 	auction := storage.Auction{
 		UUID:  uuid.New(),
-		State: storage.PAID,
+		State: storage.AUCTION_PAID,
 	}
 	err = sto.CreateAuction(auction)
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction.State = storage.STARTED
+	auction.State = storage.AUCTION_STARTED
 	err = sto.UpdateAuctionState(auction)
 	if err != nil {
 		t.Fatal(err)
@@ -30,8 +30,8 @@ func TestUpdateAuctionState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auctions[0].State != storage.STARTED {
-		t.Fatalf("Expected %v but %v", storage.STARTED, auctions[0].State)
+	if auctions[0].State != storage.AUCTION_STARTED {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_STARTED, auctions[0].State)
 	}
 }
 
@@ -49,7 +49,7 @@ func TestGetOpenAuctions(t *testing.T) {
 	}
 	err = sto.CreateAuction(storage.Auction{
 		UUID:  uuid.New(),
-		State: storage.PAID,
+		State: storage.AUCTION_PAID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -63,21 +63,21 @@ func TestGetOpenAuctions(t *testing.T) {
 	}
 	err = sto.CreateAuction(storage.Auction{
 		UUID:  uuid.New(),
-		State: storage.STARTED,
+		State: storage.AUCTION_STARTED,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	err = sto.CreateAuction(storage.Auction{
 		UUID:  uuid.New(),
-		State: storage.ASSET_FROZEN,
+		State: storage.AUCTION_ASSET_FROZEN,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 	err = sto.CreateAuction(storage.Auction{
 		UUID:  uuid.New(),
-		State: storage.PAYING,
+		State: storage.AUCTION_PAYING,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +109,7 @@ func TestGetAuctions(t *testing.T) {
 		Rnd:        big.NewInt(4353),
 		ValidUntil: big.NewInt(3),
 		Signature:  "ciao",
-		State:      storage.STARTED,
+		State:      storage.AUCTION_STARTED,
 	})
 	if err != nil {
 		t.Fatal(err)
