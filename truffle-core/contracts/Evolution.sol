@@ -30,9 +30,11 @@ contract Evolution {
             points[1] = isHomeStadium ? 2 : 2;    
         }
 
-    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
+        // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
         points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog[0], nGoals0);
         points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog[1], nGoals1);
+
+        // +4 for GK/D who saw no card at all, +1 for Mids and Atts
 
         uint256[2] memory pointsNeg;
         // -1 for each opponent goal
