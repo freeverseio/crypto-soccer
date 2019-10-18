@@ -3,7 +3,7 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/market/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/market/notary/storage"
 	_ "github.com/lib/pq"
 )
 

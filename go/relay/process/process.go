@@ -13,8 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/relay/contracts/updates"
-	"github.com/freeverseio/crypto-soccer/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 type Processor struct {

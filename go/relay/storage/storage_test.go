@@ -3,7 +3,7 @@ package storage_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	_ "github.com/lib/pq"
 )
 

@@ -8,10 +8,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/testutils"
+	"github.com/freeverseio/crypto-soccer/go/sync/process"
+	"github.com/freeverseio/crypto-soccer/go/sync/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestSyncTeams(t *testing.T) {

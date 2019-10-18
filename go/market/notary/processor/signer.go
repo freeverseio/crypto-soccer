@@ -6,7 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/market/notary/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 )
 
 type Signer struct {

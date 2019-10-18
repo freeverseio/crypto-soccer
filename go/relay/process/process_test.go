@@ -8,9 +8,9 @@ import (
 	//"github.com/ethereum/go-ethereum/core/types"
 	//"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/freeverseio/crypto-soccer/relay/process"
-	"github.com/freeverseio/crypto-soccer/relay/storage"
-	"github.com/freeverseio/crypto-soccer/relay/testutils"
+	"github.com/freeverseio/crypto-soccer/go/relay/process"
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestSubmitActionRoot(t *testing.T) {

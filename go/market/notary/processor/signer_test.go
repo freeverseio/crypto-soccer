@@ -5,8 +5,8 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/market/notary/processor"
-	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
+	"github.com/freeverseio/crypto-soccer/go/market/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestRSV(t *testing.T) {

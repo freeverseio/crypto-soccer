@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/market/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/market/notary/storage"
 	"github.com/google/uuid"
 )
 

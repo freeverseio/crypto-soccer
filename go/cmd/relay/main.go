@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/relay/contracts/updates"
-	"github.com/freeverseio/crypto-soccer/relay/process"
-	"github.com/freeverseio/crypto-soccer/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/relay/process"
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func main() {
@@ -49,7 +49,7 @@ func main() {
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("./db/00_schema.sql")
+		sto, err = storage.NewSqlite3("../../relay/db/00_schema.sql")
 	} else {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)

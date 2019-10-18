@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/market/notary/processor"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/freeverseio/crypto-soccer/market/notary/storage"
-	"github.com/freeverseio/crypto-soccer/market/notary/testutils"
+
+	"github.com/freeverseio/crypto-soccer/go/market/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/market/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 	"github.com/google/uuid"
 )
 
@@ -21,31 +21,31 @@ func TestChangeOwnership(t *testing.T) {
 
 	timezone := uint8(1)
 	countryIdxInTZ := big.NewInt(0)
-	teamId0, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
+	teamId0, err := ganache.Leagues.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(0))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
+	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
-	teamId1, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
+	teamId1, err := ganache.Leagues.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(1))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
+	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(bob), timezone, countryIdxInTZ, crypto.PubkeyToAddress(bob.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
-	teamId2, err := ganache.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(2))
+	teamId2, err := ganache.Leagues.EncodeTZCountryAndVal(&bind.CallOpts{}, timezone, countryIdxInTZ, big.NewInt(2))
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
+	_, err = ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(alice), timezone, countryIdxInTZ, crypto.PubkeyToAddress(alice.PublicKey))
 	if err != nil {
 		t.Fatal(err)
 	}
-	team0PlayerIds, err := ganache.Assets.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
+	team0PlayerIds, err := ganache.Leagues.GetPlayerIdsInTeam(&bind.CallOpts{}, teamId0)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func TestTacticCreate(t *testing.T) {
