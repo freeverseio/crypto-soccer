@@ -30,9 +30,9 @@ contract Evolution {
             points[1] = isHomeStadium ? 2 : 2;    
         }
 
-        // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker
-        points[0] += pointsPerWhoScoredGoals(matchLog[0], nGoals0);
-        points[1] += pointsPerWhoScoredGoals(matchLog[1], nGoals1);
+    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
+        points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog[0], nGoals0);
+        points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog[1], nGoals1);
 
         uint256[2] memory pointsNeg;
         // -1 for each opponent goal
@@ -49,13 +49,16 @@ contract Evolution {
         }
     }
     
-    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker
-    function pointsPerWhoScoredGoals(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
+    // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
+    function pointsPerWhoScoredGoalsAndAssists(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
         for (uint8 goal = 0; goal < nGoals; goal++) {
             uint256 fwdPos = (matchLog >> 116 + 2 * goal) & 3;
             if (fwdPos < 2) {points += 6;}
             else if (fwdPos == 2) {points += 5;}
             else {points += 6;}
+            // if assister is different the shooter, it was a true assist
+            if (((matchLog >> 4 + 4 * goal) & 15) != ((matchLog >> 60 + 4 * goal) & 15)) {points += 3;}
+            
         }
     }
 
