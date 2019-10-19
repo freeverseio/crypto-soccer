@@ -277,8 +277,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
         uint256 dayOfBirth;
         (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
-        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false);
+        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint16 sumSkills) = computeSkills(dna, shirtNum);
+        return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -315,7 +315,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory) {
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint16) {
         uint16[5] memory skills;
         uint16[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
@@ -379,11 +379,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             dna >>= 6; // los2(50) -> ceil
             excess += skills[i];
         }
+        uint16 delta;
         if (excess < 250) {
-            uint16 delta = (250 - excess) / N_SKILLS;
+            delta = (250 - excess) / N_SKILLS;
             for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
         }
-        return (skills, [potential, forwardness, leftishness, aggressiveness]);
+        // note: final sum of skills = excess + N_SKILLS * delta;
+        return (skills, [potential, forwardness, leftishness, aggressiveness], excess + N_SKILLS * delta);
     }
 
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
