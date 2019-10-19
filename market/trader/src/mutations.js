@@ -9,6 +9,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
        extend type Mutation {
         createAuction(input: AuctionInput!): Boolean
         deleteAuction(uuid: UUID!): Boolean
+        createBid(input: BidInput!): Boolean
       }
     `,
     resolvers: {
@@ -35,17 +36,20 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           await context.pgClient.query(text, values);
           return true; // TODO return something with sense
         },
-        // createPlayerBuyOrder: async (_, {input}, context) => {
-        //   const { playerid, teamid, signature } = input;
-        //   const query = sql.query`INSERT INTO player_buy_orders (playerId, teamId, signature) VALUES (
-        //     ${sql.value(playerid)}, 
-        //     ${sql.value(teamid)}, 
-        //     ${sql.value(signature)}
-        //     )`;
-        //   const {text, values} = sql.compile(query);
-        //   await context.pgClient.query(text, values);
-        //   return playerid;
-        // },
+        createBid: async (_, {input}, context) => {
+          const { auction, extraPrice, rnd, teamId, signature } = input;
+          const query = sql.query`INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES (
+            ${sql.value(auction)}, 
+            ${sql.value(extraPrice)}, 
+            ${sql.value(rnd)},
+            ${sql.value(teamId)},
+            ${sql.value(signature)},
+            ${sql.value('FILED')}
+            )`;
+          const {text, values} = sql.compile(query);
+          await context.pgClient.query(text, values);
+          return true;
+        },
         // deletePlayerBuyOrder: async (_, {playerId}, context) => {
         //   const query = sql.query`DELETE FROM player_buy_orders WHERE playerId=${sql.value(playerId)}`;
         //   const {text, values} = sql.compile(query);
