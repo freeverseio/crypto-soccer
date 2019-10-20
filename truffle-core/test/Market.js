@@ -201,6 +201,8 @@ contract("Market", accounts => {
       [extraPrice, buyerRnd]
     );
 
+    buyerHiddenPrice.should.be.equal('0xd46585a1479af8dcc6f2ce8495174282f8c874f1583182bbe2c9df7ae2358edc');
+
     const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, sellerRnd).should.be.fulfilled;
     sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
     const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerIdToSell).should.be.fulfilled;
@@ -211,6 +213,7 @@ contract("Market", accounts => {
     sigSeller.signature.should.be.equal('0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c');
 
     const prefixed = await market.prefixed(message).should.be.fulfilled;
+    prefixed.should.be.equal('0x55d0b23ce4ce7530aa71b177b169ca4bf52dec4866ffbf37fa84fd0146a5f36a');
     const isOffer2StartAuction = true;
     const buyerMsg = await market.buildAgreeToBuyPlayerTxMsg(prefixed, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction).should.be.fulfilled;
     buyerMsg.should.be.equal('0xc049e2032b873dd67cc7cc43fb2488f7c770d1654716fc75024cda693c74488c');
