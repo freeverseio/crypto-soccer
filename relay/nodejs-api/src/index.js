@@ -1,6 +1,6 @@
 const express = require("express");
 const { postgraphile } = require("postgraphile");
-const mutations = require("./mutations");
+const Mutations = require("./mutations");
 
 const { ApolloServer } = require("apollo-server");
 const typeDefs = require("./schema");
@@ -37,6 +37,7 @@ const provider = new HDWalletProvider(privateKey, ethereum);
 const web3 = new Web3(provider, null, {});
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const from = provider.addresses[0];
+const mutations = Mutations(assets, from);
 
 app.use(
   postgraphile(

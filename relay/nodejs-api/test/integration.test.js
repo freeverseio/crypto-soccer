@@ -25,12 +25,7 @@ describe('assets resolvers', () => {
         // deploy contracts
         const { states, assets, leagues } = await genesis(provider, identity.address).should.be.fulfilled;
 
-        const resolvers = new Resolvers({
-            states,
-            assets,
-            leagues,
-            from: identity.address
-        });
+        const resolvers = Resolvers(assets, identity.address);
         const server = new ApolloServer({ typeDefs, resolvers });
         createTestClient(server);
     });

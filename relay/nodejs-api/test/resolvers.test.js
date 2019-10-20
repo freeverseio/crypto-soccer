@@ -23,11 +23,8 @@ describe('assets resolvers', () => {
     beforeEach(async () => {
         contracts = await genesis(provider, identity.address);
 
-        const { market } = contracts;
-        resolvers = new Resolvers({
-            market,
-            from: identity.address
-        });
+        const { assets } = contracts;
+        resolvers = Resolvers(assets, identity.address);
     });
 
     describe('Mutation', () => {
