@@ -45,11 +45,12 @@ contract EncodingMatchLog {
         return log | (uint256(ONE256) << (169 + posInHaf));
     }
     
-    function setInGameSubs(uint256 log, uint8 pos) private pure returns (uint256) {
-        return (log & ~(uint256(3) << pos)) | (CHG_CANCELLED << pos);
+    function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) private pure returns (uint256) {
+        uint8 offset = 189 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
+        return (log & ~(uint256(3) << offset)) | (uint256(happenedType) << offset);
     }
     
-    function setIsHomeStadium(uint256 log)  public pure returns (uint256) {
+    function addIsHomeStadium(uint256 log)  public pure returns (uint256) {
         return log | (uint256(ONE256) << 227);
     }
     
@@ -93,7 +94,7 @@ contract EncodingMatchLog {
         pure
         returns (uint256 log) 
     {
-        log = nGoals;
+        log = addNGoals(log, nGoals);
         for (uint8 p = 0; p < 14; p++) {
             log |= uint256(assistersShootersForwardsPos[p]) << 4 + 4 * p;
             log |= uint256(assistersShootersForwardsPos[p + 14]) << 60 + 4 * p;
