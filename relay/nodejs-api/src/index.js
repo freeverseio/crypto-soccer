@@ -33,6 +33,10 @@ console.log("assets address    : ", assetsContractAddress);
 console.log("--------------------------------------------------------");
 
 const app = express();
+const provider = new HDWalletProvider(privateKey, ethereum);
+const web3 = new Web3(provider, null, {});
+const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
+const from = provider.addresses[0];
 
 app.use(
   postgraphile(
@@ -50,22 +54,3 @@ app.use(
 );
 
 app.listen(port);
-
-// const provider = new HDWalletProvider(privateKey, ethereum);
-// const web3 = new Web3(provider, null, {});
-// const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
-// const from = provider.addresses[0];
-
-// const resolvers = new Resolvers({
-//   assets,
-//   from
-// });
-
-// const server = new ApolloServer({
-//   typeDefs,
-//   resolvers
-// });
-
-// server.listen().then(({ url }) => {
-//   console.log(`🚀  Server ready at ${url}`);
-// });
