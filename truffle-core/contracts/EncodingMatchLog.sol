@@ -16,53 +16,52 @@ contract EncodingMatchLog {
     function getNGoals(uint256 log) public pure returns (uint8) {
         return uint8(log & 15);
     }
-
     
     function addAssister(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << 4 + 4 * pos);
+        return log | (uint256(player) << (4 + 4 * pos));
     }
   
     function getAssister(uint256 log, uint8 pos) public pure returns (uint8) {
-        return uint8((log >> 4 + 4 * pos) & 15);
+        return uint8((log >> (4 + 4 * pos)) & 15);
     }
 
     function addShooter(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << 60 + 4 * pos);
+        return log | (uint256(player) << (60 + 4 * pos));
     }
   
     function getShooter(uint256 log, uint8 pos) public pure returns (uint8) {
-        return uint8((log >> 60 + 4 * pos) & 15);
+        return uint8((log >> (60 + 4 * pos)) & 15);
     }
 
     function addForwardPos(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << 116 + 2 * pos);
+        return log | (uint256(player) << (116 + 2 * pos));
     }
     
     function getForwardPos(uint256 log, uint8 pos) public pure returns (uint8) {
-        return uint8((log >> 116 + 4 * pos) & 3);
+        return uint8((log >> (116 + 2 * pos)) & 3);
     }
     
     function addPenalty(uint256 log, bool penalty, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(penalty ? 1 : 0) << 144 * pos);
+        return log | (uint256(penalty ? 1 : 0) << (144 + pos));
     }
 
     function getPenalty(uint256 log, uint8 pos)  public pure returns (bool) {
-        return ((log >> 144 + pos) & 1) == 1;
+        return ((log >> (144 + pos)) & 1) == 1;
     }
     
     function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
         uint8 offset = is2ndHalf ? 171 : 151;
         log |= (uint256(player) << offset);
-        log |= (uint256(round) << offset + 4);
-        return log | (uint256(typeOfOutOfGame) << offset + 8);
+        log |= (uint256(round) << (offset + 4));
+        return log | (uint256(typeOfOutOfGame) << (offset + 8));
     }
 
     function getOutOfGame(uint256 log, bool is2ndHalf)  public pure 
     returns (uint8 player, uint8 round, uint8 typeOfOutOfGame) {
         uint8 offset = is2ndHalf ? 171 : 151;
         player = uint8((log >> offset) & 15);
-        round  = uint8((log >> offset + 4) & 15);
-        typeOfOutOfGame = uint8((log >> offset + 8) & 3);
+        round  = uint8((log >> (offset + 4)) & 15);
+        typeOfOutOfGame = uint8((log >> (offset + 8)) & 3);
     }
 
     function addYellowCard(uint256 log, uint8 player, uint8 posInHaf, bool is2ndHalf)  public pure returns (uint256) {
@@ -76,7 +75,7 @@ contract EncodingMatchLog {
     }
 
     function setYellowedDidNotFinished1stHalf(uint256 log, uint8 posInHaf)  public pure returns (uint256) {
-        return log | (uint256(ONE256) << (169 + posInHaf));
+        return log | (ONE256 << (169 + posInHaf));
     }
 
     function getYellowedDidNotFinished1stHalf(uint256 log, uint8 posInHaf)  public pure returns (bool) {
@@ -94,7 +93,7 @@ contract EncodingMatchLog {
     }
     
     function addIsHomeStadium(uint256 log)  public pure returns (uint256) {
-        return log | (uint256(ONE256) << 227);
+        return log | (ONE256 << 227);
     }
     
     function getIsHomeStadium(uint256 log)  public pure returns (bool) {
@@ -102,7 +101,7 @@ contract EncodingMatchLog {
     }
     
     function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << 201 + 4 * pos);
+        return log | (uint256(player) << (201 + 4 * pos));
     }
     
     function getHalfTimeSubs(uint256 log, uint8 pos)  public pure returns (uint8) {
@@ -110,19 +109,19 @@ contract EncodingMatchLog {
     }
 
     function addNDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
-        return log | (uint256(nDefs) << (201 + 4 * (is2ndHalf ? 1 : 0)));
+        return log | (uint256(nDefs) << (213 + 4 * (is2ndHalf ? 1 : 0)));
     }
 
     function getNDefs(uint256 log, bool is2ndHalf)  public pure returns (uint8) {
-        return uint8((log >> (201 + 4 * (is2ndHalf ? 1 : 0))) & 15);
+        return uint8((log >> (213 + 4 * (is2ndHalf ? 1 : 0))) & 15);
     }
 
     function addNTot2ndHalf(uint256 log, uint8 nTot)  public pure returns (uint256) {
-        return log | (uint256(nTot) << 209);
+        return log | (uint256(nTot) << 221);
     }
 
     function getNTot2ndHalf(uint256 log)  public pure returns (uint8) {
-        return uint8((log >> 209) & 15);
+        return uint8((log >> 221) & 15);
     }
 
     function addWinner(uint256 log, uint8 winner)  public pure returns (uint256) {

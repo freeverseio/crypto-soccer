@@ -15,6 +15,7 @@ contract('EncodingMatchLog', (accounts) => {
         isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
         halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner
     ) {
+        log = 0;
         log = await encoding.addNGoals(log, nGoals).should.be.fulfilled;
         for (p = 0; p <assistersIdx.length; p++) log = await encoding.addAssister(log, assistersIdx[p], p).should.be.fulfilled;
         for (p = 0; p <shootersIdx.length; p++) log = await encoding.addShooter(log, shootersIdx[p], p).should.be.fulfilled;
@@ -43,7 +44,7 @@ contract('EncodingMatchLog', (accounts) => {
         return log;
     }
 
-    async function checkExpectedLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+    async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
         outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
         isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
         halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner) 
@@ -80,9 +81,9 @@ contract('EncodingMatchLog', (accounts) => {
             is2ndHalfs = [false, true];
             for (p = 0; p <outOfGames.length; p++) {
                 result = await encoding.getOutOfGame(log, is2ndHalfs[p]).should.be.fulfilled;
-                result.toNumber().player.should.be.equal(outOfGames[p]);
-                result.toNumber().round.should.be.equal(outOfGameRounds[p]);
-                result.toNumber().typeOfOutOfGame.should.be.equal(typesOutOfGames[p]);
+                result.player.toNumber().should.be.equal(outOfGames[p]);
+                result.round.toNumber().should.be.equal(outOfGameRounds[p]);
+                result.typeOfOutOfGame.toNumber().should.be.equal(typesOutOfGames[p]);
             }
         }        
         if (yellowCardedDidNotFinish1stHalf != UNDEF) {
@@ -127,19 +128,19 @@ contract('EncodingMatchLog', (accounts) => {
         }        
         if (nDefs1 != UNDEF) {
             result = await encoding.getNDefs(log, is2nd = false).should.be.fulfilled;
-            result.should.be.equal(nDefs1);
+            result.toNumber().should.be.equal(nDefs1);
         }        
         if (nDefs2 != UNDEF) {
             result = await encoding.getNDefs(log, is2nd = true).should.be.fulfilled;
-            result.should.be.equal(nDefs2);
+            result.toNumber().should.be.equal(nDefs2);
         }        
         if (nTot != UNDEF) {
             result = await encoding.getNTot2ndHalf(log).should.be.fulfilled;
-            result.should.be.equal(nTot);
+            result.toNumber().should.be.equal(nTot);
         }        
         if (winner != UNDEF) {
             result = await encoding.getWinner(log).should.be.fulfilled;
-            result.should.be.equal(winner);
+            result.toNumber().should.be.equal(winner);
         }        
     }    
     
@@ -157,7 +158,7 @@ contract('EncodingMatchLog', (accounts) => {
         outOfGameRounds = [7, 4];
         typesOutOfGames = [1, 2];
         yellowCardedDidNotFinish1stHalf = [false, true];
-        isHomeStadium = [true];
+        isHomeStadium = true;
         ingameSubs1 = [0, 1, 2];
         ingameSubs2 = [2, 1, 0];
         yellowCards1 = [9, 6];
@@ -173,12 +174,10 @@ contract('EncodingMatchLog', (accounts) => {
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner);
 
-        ///////////////
-
-        // await checkExpectedLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-        //     outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
-        //     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-        //     halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner);
+        await checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner);
     });
     
 
