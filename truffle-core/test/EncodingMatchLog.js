@@ -31,7 +31,11 @@ contract('EncodingMatchLog', (accounts) => {
             log = await encoding.addOutOfGame(log, outOfGames[p], outOfGameRounds[p], typesOutOfGames[p], is2ndHalfs[p]);
         }
         yellowCardedDidNotFinish1stHalf = [false, true];
-        for (p = 0; p <penalties.length; p++) log = await encoding.setYellowedDidNotFinished1stHalf(log, yellowCardedDidNotFinish1stHalf[p], p);
+        for (p = 0; p <penalties.length; p++) {
+            if ( yellowCardedDidNotFinish1stHalf[p]) {
+                log = await encoding.setYellowedDidNotFinished1stHalf(log, p);
+            }
+        }
 
         isHomeStadium = [true];
         if (isHomeStadium) log = await encoding.addIsHomeStadium(log)
@@ -50,13 +54,11 @@ contract('EncodingMatchLog', (accounts) => {
         
         halfTimeSubstitutions = [9, 7, 10];
         
-        for (p = 0; p <halfTimeSubstitutions.length; p++) log = await encoding.addHalfTimeSubs(log, halfTimeSubstitutions[p]);
+        for (p = 0; p <halfTimeSubstitutions.length; p++) log = await encoding.addHalfTimeSubs(log, halfTimeSubstitutions[p], p);
         
-        numDefTotWinner = [10, 4, 3, 1]; // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
-        
-        log = await encoding.addHalfTimeSubs(log, nDefs1 = 4, is2nd = false);
-        log = await encoding.addHalfTimeSubs(log, nDefs2 = 3, is2nd = true);
-        log = await encoding.addNTot2ndHalf(log, nTot = 10, is2nd = false);
+        log = await encoding.addNDefs(log, nDefs1 = 4, is2nd = false);
+        log = await encoding.addNDefs(log, nDefs2 = 3, is2nd = true);
+        log = await encoding.addNTot2ndHalf(log, nTot = 10);
         log = await encoding.addWinner(log, winner = 1);
 
         result = await encoding.decodeMatchLog(log);

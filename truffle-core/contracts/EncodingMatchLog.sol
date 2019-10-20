@@ -45,7 +45,7 @@ contract EncodingMatchLog {
         return log | (uint256(ONE256) << (169 + posInHaf));
     }
     
-    function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) private pure returns (uint256) {
+    function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) public pure returns (uint256) {
         uint8 offset = 189 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
         return (log & ~(uint256(3) << offset)) | (uint256(happenedType) << offset);
     }
