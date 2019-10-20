@@ -27,7 +27,7 @@ const { port, databaseUrl, ethereum, privateKey, assetsContractAddress } = progr
 
 console.log("--------------------------------------------------------");
 console.log("databaseUrl       : ", databaseUrl);
-console.log("ethereum       : ", ethereum);
+console.log("ethereum          : ", ethereum);
 console.log("🔥  account p.k.   : ", privateKey);
 console.log("assets address    : ", assetsContractAddress);
 console.log("--------------------------------------------------------");
