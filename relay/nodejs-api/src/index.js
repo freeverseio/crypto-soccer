@@ -1,10 +1,6 @@
 const express = require("express");
 const { postgraphile } = require("postgraphile");
-const Mutations = require("./mutations");
-
-const { ApolloServer } = require("apollo-server");
-const typeDefs = require("./schema");
-const Resolvers = require("./resolvers");
+const MutationsPlugin = require("./mutations_plugin");
 const Web3 = require("web3");
 const assetsJSON = require("../contracts/Assets.json");
 const HDWalletProvider = require("truffle-hdwallet-provider");
@@ -37,7 +33,7 @@ const provider = new HDWalletProvider(privateKey, ethereum);
 const web3 = new Web3(provider, null, {});
 const assets = new web3.eth.Contract(assetsJSON.abi, assetsContractAddress);
 const from = provider.addresses[0];
-const mutations = Mutations(assets, from);
+const mutationsPlugin = MutationsPlugin(assets, from);
 
 app.use(
   postgraphile(
@@ -49,7 +45,7 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       // disableDefaultMutations: true,
-      appendPlugins: [mutations]
+      appendPlugins: [mutationsPlugin]
     }
   )
 );
