@@ -10,7 +10,9 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
     for (p = 0; p <assistersIdx.length; p++) log = await encoding.addAssister(log, assistersIdx[p], p).should.be.fulfilled;
     for (p = 0; p <shootersIdx.length; p++) log = await encoding.addShooter(log, shootersIdx[p], p).should.be.fulfilled;
     for (p = 0; p <shooterForwardPos.length; p++) log = await encoding.addForwardPos(log, shooterForwardPos[p], p).should.be.fulfilled;
-    for (p = 0; p <penalties.length; p++) log = await encoding.addPenalty(log, penalties[p], p).should.be.fulfilled;
+    for (p = 0; p <penalties.length; p++) {
+      if (penalties[p]) log = await encoding.addScoredPenalty(log, p).should.be.fulfilled;
+    }
     is2ndHalfs = [false, true];
     for (p = 0; p <outOfGames.length; p++) {
         log = await encoding.addOutOfGame(log, outOfGames[p], outOfGameRounds[p], typesOutOfGames[p], is2ndHalfs[p]).should.be.fulfilled;

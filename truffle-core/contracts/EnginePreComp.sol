@@ -494,13 +494,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
             if (outStates[p] == 0) {
                 emptyShirts++;
             } else if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                matchLog |= (uint256(p) << 201 + 4 * changes);
+                matchLog = addHalfTimeSubs(matchLog, p, changes);
                 changes++; 
             }
         }
 
         // if is2ndHalf: make sure we align 10 or 11 players depedning on possible 1st half redcards
-        if (is2ndHalf && wasThereRedCardIn1stHalf(matchLog)) {
+        if (is2ndHalf && getOutOfGameType(matchLog, false) == RED_CARD) {
             require(emptyShirts == 1, "You cannot line up 11 players if there was a red card in 1st half");
         } else {
             require(emptyShirts == 0, "You must line up 11 players");
@@ -510,7 +510,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
         if (is2ndHalf) {
             for (uint8 p = 0; p < 3; p++) {
-                if(((matchLog >> 189 + 2*p) & 3) == CHG_HAPPENED) changes++;
+                if (getInGameSubsHappened(matchLog, p, false) == CHG_HAPPENED) changes++;
             }        
         }
 
@@ -543,10 +543,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         require(getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID, "free player shirt has been aligned");
         require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
         require(!getSubstitutedLastHalf(playerSkills), "cannot align player who was already substituted");
-    }
-
-    function wasThereRedCardIn1stHalf(uint256 matchLog) private pure returns(bool) {
-        return ((matchLog >> 159) & 3) == RED_CARD;
     }
 
 }
