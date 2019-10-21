@@ -37,6 +37,8 @@ services:
       - "4001:4000"
   market.db:
     image: freeverseio/market.db:dev
+    volumes: 
+      - market.db-data:/var/lib/postgresql/data
   market.trader:
     image: freeverseio/market.trader:dev
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
@@ -88,3 +90,4 @@ services:
 volumes:
   centauri-data:
   ethereum-data:
+  market.db-data:
