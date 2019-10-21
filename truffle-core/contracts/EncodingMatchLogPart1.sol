@@ -53,6 +53,11 @@ contract EncodingMatchLogPart1 {
         return log | (uint256(penalty ? 1 : 0) << (144 + pos));
     }
 
+    function getOutOfGamePlayer(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
+        uint8 offset = is2ndHalf ? 171 : 151;
+        return ((uint256(log) >> offset) & 15);
+    }
+
     function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
         uint8 offset = is2ndHalf ? 171 : 151;
         log |= (uint256(player) << offset);

@@ -138,7 +138,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     function didPlayerFinish1stHalf(uint256 matchLog, uint256 player, uint8[3] memory substitutions) private pure returns(bool) {
         // check if it was outOfGamed in 1st half: ((matchLog >> 151) & 15) = redCardeds in 1st Half
         // ...note: no need to check type of outOfGame, he cannot be linedup in 2nd half
-        if (((matchLog >> 151) & 15) == player) return false; 
+        if (getOutOfGamePlayer(matchLog, false) == player) return false; 
         // check if it was substituted:
         // ...note: if substitution did not happen because he was redCarded, he'd have falled in previous check.
         for (uint p = 0; p < 3; p++) {
