@@ -46,6 +46,9 @@ contract('Engine', (accounts) => {
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const MAX_PENALTY = 10000;
+    const DRAW = 2;
+    const WINNER_HOME = 0;
+    const WINNER_AWAY = 1;
 
     const it2 = async(text, f) => {};
     
@@ -398,7 +401,7 @@ contract('Engine', (accounts) => {
         }   
     });
     
-    it('computePenalties', async () => {
+    it2('computePenalties', async () => {
         // one team much better than the other:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll1Half2], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
@@ -451,7 +454,7 @@ contract('Engine', (accounts) => {
         }   
     });
 
-    it2('goals from 1st half are added in the 2nd half', async () => {
+    it('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log12 = await engine.playMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
@@ -466,6 +469,8 @@ contract('Engine', (accounts) => {
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log12[team]);
             nGoals.toNumber().should.be.equal(expected[team]);
+            winner = await encodingLog.getWinner(log12[team]);
+            winner.toNumber().should.be.equal(DRAW);
         }
     });
 

@@ -23,6 +23,8 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     // 
     uint256 private constant CHG_HAPPENED   = uint256(1); 
     uint8 public constant RED_CARD  = 3;   // type of event = redCard
+    uint8 private constant WINNER_AWAY = 1;
+    uint8 private constant WINNER_DRAW = 2;
 
     bool dummyBoolToEstimateCost;
 
@@ -77,8 +79,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             matchLog,
             matchBools
         );
-        if (matchBools[IDX_IS_PLAYOFF] && (getNGoals(matchLog[0]) == getNGoals(matchLog[1]))) {
+        if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLog[0]) == getNGoals(matchLog[1]))) {
             matchLog = _precomp.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
+        } else {
+            // note that WINNER_HOME = 0, so no need to write anything if home wins.
+            if (getNGoals(matchLog[0]) == getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_DRAW);
+            else if (getNGoals(matchLog[0]) < getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_AWAY);
         }
         return matchLog;
     }

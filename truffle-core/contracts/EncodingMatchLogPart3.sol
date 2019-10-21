@@ -41,5 +41,11 @@ contract EncodingMatchLogPart3 {
         return uint8(log & 15);
     }
 
+    function addWinnerToBothLogs(uint256[2] memory logs, uint8 winner)  public pure returns (uint256[2] memory) {
+        logs[0] |= (uint256(winner) << 225);
+        logs[1] |= (uint256(winner) << 225);
+        return logs;
+    }
+    
 
 }
