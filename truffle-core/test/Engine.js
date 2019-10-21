@@ -160,8 +160,6 @@ contract('Engine', (accounts) => {
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(newLog);
-        let {0: nGo, 1: assShoFwd, 2: pen, 3: outsAndYels, 4: outRounds, 5: typ, 6: yelFin, 7: halfSubs, 8: inGameSubs, 9: defTotWin} = decoded;
         isHomeSt = false;
         expectedOut = [0, 9];
         expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
