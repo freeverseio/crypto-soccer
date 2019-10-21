@@ -28,8 +28,8 @@ services:
     depends_on:
       - postgres
       - ethereum
-  universeapi:
-    image: freeverseio/universeapi:dev
+  universe.api:
+    image: freeverseio/universe.api:dev
     depends_on:
       - postgres
     command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
@@ -69,11 +69,11 @@ services:
   horizon:
     image: freeverseio/horizon:dev
     depends_on:
-      - universeapi
+      - universe.api
       - market.trader
       - relay.api
     command: >
-      -u http://universeapi:4000/graphql 
+      -u http://universe.api:4000/graphql 
       -m http://market.trader:4000/graphql 
       -r http://relay.api:4000/graphql
     ports:
