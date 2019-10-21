@@ -86,7 +86,7 @@ jobs:
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd relay && docker build -t freeverseio/relay.actions:dev .
       - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
-      - run: cd relay/db && docker build -t freeverseio/relay.db:dev .
+      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd market/db && docker build -t freeverseio/market.db:dev .
       - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
