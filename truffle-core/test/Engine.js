@@ -384,8 +384,8 @@ contract('Engine', (accounts) => {
         nGoals0 = await encodingLog.getNGoals(log2[0]).should.be.fulfilled;
         nGoals1 = await encodingLog.getNGoals(log2[1]).should.be.fulfilled;
         nGoals0.toNumber().should.be.equal(nGoals1.toNumber());
-        expected1 = [true, false, true, true, true, true, false]
-        expected2 = [true, false, true, true, true, true, true];
+        expected1 = [true, false, true, true, true, true, true]
+        expected2 = [true, false, true, true, true, true, false];
         for (i = 0; i < 7; i++) {
             pen = await encodingLog.getPenalty(log2[0], i).should.be.fulfilled;
             pen.should.be.equal(expected1[i]);
@@ -423,12 +423,12 @@ contract('Engine', (accounts) => {
 
         // both teams really incredible goalkeepers:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll50Half2], 5000000, 5000000, seed);
-        expected = [false, false, false, false, false, false, true]
+        expected = [false, false, false, false, false, false, false]
         for (i = 0; i < 7; i++) {
             pen = await encodingLog.getPenalty(log[team = 0], i).should.be.fulfilled;
             pen.should.be.equal(expected[i]);
         }
-        expected = [false, false, false, false, false, false, false]
+        expected = [false, false, false, false, false, false, true]
         for (i = 0; i < 7; i++) {
             pen = await encodingLog.getPenalty(log[team = 1], i).should.be.fulfilled;
             pen.should.be.equal(expected[i]);

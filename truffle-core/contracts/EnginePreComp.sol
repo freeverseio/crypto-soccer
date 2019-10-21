@@ -237,12 +237,22 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
                 matchLog[1] = addScoredPenalty(matchLog[1], round); 
                 totalGoals[1] += 1;
             }
-            if ((round > 3) && (totalGoals[0] != totalGoals[1])) return matchLog;
+            if (round > 3) {
+                // note: winner = 0: home, 1: away, 2: draw (so if home wins, no need to write anything)
+                if (totalGoals[0] > totalGoals[1]) return matchLog;
+                if (totalGoals[0] < totalGoals[1]) {
+                    matchLog[0] = addWinner(matchLog[0], 1);
+                    matchLog[1] = addWinner(matchLog[1], 1);
+                    return matchLog;
+                }
+            }
         }
-        if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
+        if (throwDice(block0 + getShoot(states[0][4]), block1 + getShoot(states[1][4]), rnds[13]) == 0) {
             matchLog[0] = addScoredPenalty(matchLog[0], 6); 
         } else {
             matchLog[1] = addScoredPenalty(matchLog[1], 6); 
+            matchLog[0] = addWinner(matchLog[0], 1);
+            matchLog[1] = addWinner(matchLog[1], 1);
         }
         return matchLog;
     }
