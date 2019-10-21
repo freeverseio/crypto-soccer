@@ -95,18 +95,18 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     
         // if both yellows are for the same player => force red card, and leave. Enough punishment.
         if (yellowCardeds[0] == yellowCardeds[1]) {
-            return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            return logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
         }
         // if we are in the 2nd half (and the 2 yellows are for different players):
         // - if any such player had alread received one in the 1st half => force red, record the other yellow card, leave. 
         if (is2ndHalf) {
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[0])) {
-                matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
                 yellowCardeds[0] = NO_CARD;
             }
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
                 if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
-                    matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+                    matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
                 }
                 yellowCardeds[1] = NO_CARD;
             }
@@ -123,13 +123,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
             weights[NO_CARD] = 758;
-            uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
-            matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
+            uint8 selectedPlayer = throwDiceArray(weights, rnds[0]);
+            matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
         }
-        // If 1st half, log the yellowCarded guys how managed to end linedup
+        // If 1st half, log the yellowCarded guys who managed to end lined-up
         if (!is2ndHalf) {
-            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[0], substitutions)) matchLog |= (ONE256 << 169);
-            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[1], substitutions)) matchLog |= (ONE256 << 170);
+            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[0], substitutions)) matchLog = setYellowedDidNotFinished1stHalf(matchLog, 0);
+            if (!didPlayerFinish1stHalf(matchLog, yellowCardeds[1], substitutions)) matchLog = setYellowedDidNotFinished1stHalf(matchLog, 1);
         }
         return matchLog;
     }
@@ -159,23 +159,20 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     function logOutOfGame(
         bool is2ndHalf,
         bool forceRedCard,
-        uint256 selectedPlayer, 
+        uint8 selectedPlayer, 
         uint256 matchLog,
         uint8[3] memory substitutions,
         uint8[3] memory subsRounds,
-        uint64 rnd0,
-        uint64 rnd1
+        uint64[2] memory rnds
     ) private pure returns(uint256) 
     {
         if (selectedPlayer == NO_CARD) return matchLog;
-        uint8 offset = is2ndHalf ? 171 : 151;
-        matchLog |= selectedPlayer << offset;
+        
         uint8 minRound = 0;
         uint8 maxRound = ROUNDS_PER_MATCH;
 
         // first compute the type of event        
-        uint256 typeOfEvent = forceRedCard ? uint256(RED_CARD) : uint256(computeTypeOfEvent(rnd1));
-        matchLog |= typeOfEvent << (offset + 8);
+        uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);
 
         // if the selected player was one of the guys joining during this half (outGame = 11, 12, or 13),
         // make sure that the round selected for this event is after joining. 
@@ -200,8 +197,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
                 } 
             }
         }
-        matchLog |= uint256(computeRound(rnd0+1, minRound, maxRound)) << offset + 4;
-        return matchLog;
+        return addOutOfGame(matchLog, selectedPlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
     }
 
     function setInGameSubs(uint256 matchLog, uint8 pos) private pure returns (uint256) {

@@ -150,7 +150,6 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
     });
 
-    return
     
     it('computeExceptionalEvents clashing with redcards before changing player', async () => {
         // there is a red card with this seed, to player 9. Since he's involved in a change, 
@@ -322,6 +321,7 @@ contract('Engine', (accounts) => {
     it('play a match to estimate cost', async () => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
     });
+    return
     
     it('penaltyPerAge', async () => {
         ageInDays       = [31*365, 31*365+1, 31*365+2, 41*365-4, 41*365-3, 41*365-2, 41*365-1];
