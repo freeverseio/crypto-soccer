@@ -7,7 +7,7 @@ import (
 )
 
 func TestLeagueCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestLeagueCount(t *testing.T) {
 }
 
 func TestLeagueCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestLeagueCreate(t *testing.T) {
 }
 
 // func TestGetLeague(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

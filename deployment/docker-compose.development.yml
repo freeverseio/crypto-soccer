@@ -14,12 +14,12 @@ services:
       - "8000:8000"
     volumes:
       - centauri-data:/app/db
-  postgres:
-    image: freeverseio/postgres:dev
+  universe.db:
+    image: freeverseio/universe.db:dev
   synchronizer:
     image: freeverseio/synchronizer:dev
     command: > 
-      -postgres postgres://freeverse:freeverse@postgres:5432/cryptosoccer?sslmode=disable 
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"

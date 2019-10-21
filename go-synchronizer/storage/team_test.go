@@ -8,7 +8,7 @@ import (
 )
 
 // func TestTeamStateUpdate(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -46,7 +46,7 @@ import (
 // }
 
 func TestTeamCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestTeamCount(t *testing.T) {
 }
 
 func TestTeamCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestTeamCreate(t *testing.T) {
 }
 
 func TestGetTeamOfUnexistenTeamID(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func TestGetTeamOfUnexistenTeamID(t *testing.T) {
 }
 
 func TestGetTeamInLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,7 +129,7 @@ func TestGetTeamInLeague(t *testing.T) {
 }
 
 func TestUpdateTeamOwner(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 }
 
 // func TestTeamAddSameTimeTwice(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -182,7 +182,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // }
 
 // func TestGetUnexistentTeam(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -193,7 +193,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // }
 
 // func TestGetTeam(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

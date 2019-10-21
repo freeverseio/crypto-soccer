@@ -7,7 +7,7 @@ import (
 )
 
 func TestTimezoneCount(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

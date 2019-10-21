@@ -83,7 +83,7 @@ jobs:
       - run: make setup contracts
       - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd relay && docker build -t freeverseio/relay.actions:dev .
       - run: cd relay/nodejs-api && docker build -t freeverseio/relay.api:dev .
       - run: cd relay/db && docker build -t freeverseio/relay.db:dev .
@@ -96,7 +96,7 @@ jobs:
       - run: docker push freeverseio/centauri:dev
       - run: docker push freeverseio/synchronizer:dev
       - run: docker push freeverseio/horizon:dev
-      - run: docker push freeverseio/postgres:dev
+      - run: docker push freeverseio/universe.db:dev
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev

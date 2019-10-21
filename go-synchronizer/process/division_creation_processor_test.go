@@ -1,7 +1,7 @@
 package process_test
 
 // func TestDivisionCreationProcess(t *testing.T) {
-// 	db, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	db, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

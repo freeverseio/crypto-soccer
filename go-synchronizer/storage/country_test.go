@@ -7,7 +7,7 @@ import (
 )
 
 func TestCountryCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestCountryCount(t *testing.T) {
 }
 
 func TestCountryCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestCountryCreate(t *testing.T) {
 }
 
 func TestGetCountry(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

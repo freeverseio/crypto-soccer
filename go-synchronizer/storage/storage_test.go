@@ -9,7 +9,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	_, err := storage.NewSqlite3("../sql/00_schema.sql")
+	_, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestPlayerCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,7 +24,7 @@ func TestPlayerCount(t *testing.T) {
 }
 
 func TestPlayerCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestPlayerCreate(t *testing.T) {
 }
 
 func TestPlayerUpdate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestPlayerUpdate(t *testing.T) {
 }
 
 func TestGetPlayer(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestGetPlayer(t *testing.T) {
 }
 
 func TestGetPlayersOfTeam(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -188,7 +188,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 }
 
 // func TestPlayerAddTwiceSameTeam(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

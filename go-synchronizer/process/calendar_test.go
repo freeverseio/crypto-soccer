@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
-	storage, err := storage.NewSqlite3("../sql/00_schema.sql")
+	storage, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 }
 
 func TestResetCalendar(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestResetCalendar(t *testing.T) {
 }
 
 func TestGenerateCalendarOfExistingLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +102,7 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 }
 
 // func TestPopulateCalendarOfExistingLeague(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../sql/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../universe.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
