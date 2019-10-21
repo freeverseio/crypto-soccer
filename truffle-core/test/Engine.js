@@ -352,7 +352,7 @@ contract('Engine', (accounts) => {
         const result = await engine.playMatchWithCost(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
     });
 
-    it('check that penalties are played in playoff games and excluding redcarded players', async () => {
+    it2('check that penalties are played in playoff games and excluding redcarded players', async () => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
         //  - there are the right goals to, then, in 2nd half, end up in draw.
@@ -394,33 +394,45 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it2('computePenalties', async () => {
+    it('computePenalties', async () => {
         // one team much better than the other:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll1Half2], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 0], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
         expected = [false, false, false, false, false, false, false]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
-        
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 1], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
+
         // both teams similar:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll50Half2], 50, 50, seed);
         expected = [false, true, true, true, true, false, false]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 0], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
         expected = [true, true, true, true, true, false, false]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 1], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
 
         // both teams really incredible goalkeepers:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll50Half2], 5000000, 5000000, seed);
         expected = [false, false, false, false, false, false, true]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 0]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 0], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
         expected = [false, false, false, false, false, false, false]
-        decodedLog = await encodingLog.decodeMatchLog(log[team = 1]);
-        for (i = 0; i < 7; i++) decodedLog.penalties[i].should.be.equal(expected[i]);
+        for (i = 0; i < 7; i++) {
+            pen = await encodingLog.getPenalty(log[team = 1], i).should.be.fulfilled;
+            pen.should.be.equal(expected[i]);
+        }
     });
 
     it2('goals from 1st half are added in the 2nd half', async () => {
