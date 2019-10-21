@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
+import "./EncodingMatchLogPart3.sol";
 
-contract Engine is EngineLib{
+contract Engine is EngineLib, EncodingMatchLogPart3 {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
@@ -76,7 +77,7 @@ contract Engine is EngineLib{
             matchLog,
             matchBools
         );
-        if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
+        if (matchBools[IDX_IS_PLAYOFF] && (getNGoals(matchLog[0]) == getNGoals(matchLog[1]))) {
             matchLog = _precomp.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
         }
         return matchLog;
@@ -293,7 +294,7 @@ contract Engine is EngineLib{
         pure
         returns (uint256[2] memory)
     {
-        uint256 currentGoals = matchLog[teamThatAttacks] & 15;
+        uint8 currentGoals = getNGoals(matchLog[teamThatAttacks]);
         if (currentGoals > 13) return matchLog;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
@@ -301,10 +302,10 @@ contract Engine is EngineLib{
         bool isGoal = throwDice((getShoot(states[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
             uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
-            matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
-            matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
-            matchLog[teamThatAttacks] |= uint256(getForwardPos(shooter, playersPerZone)) << (116 + 2 * currentGoals);
-            matchLog[teamThatAttacks]++;
+            matchLog[teamThatAttacks] = addAssister(matchLog[teamThatAttacks], assister, currentGoals);
+            matchLog[teamThatAttacks] = addShooter(matchLog[teamThatAttacks], shooter, currentGoals);
+            matchLog[teamThatAttacks] = addForwardPos(matchLog[teamThatAttacks], getForwardPos(shooter, playersPerZone), currentGoals);
+            matchLog[teamThatAttacks]++; // adds 1 goal because nGoals is the right-most number serialized
         }
         return matchLog;
     }

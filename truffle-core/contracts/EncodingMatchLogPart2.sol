@@ -33,10 +33,6 @@ contract EncodingMatchLogPart2 {
         return log + goals;
     }
 
-    function getNGoals(uint256 log) public pure returns (uint8) {
-        return uint8(log & 15);
-    }
-    
     function addAssister(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
         return log | (uint256(player) << (4 + 4 * pos));
     }

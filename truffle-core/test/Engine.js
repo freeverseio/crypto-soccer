@@ -372,6 +372,7 @@ contract('Engine', (accounts) => {
         nDefs2 = 3; 
         nTot = 10; 
         winner = 1; 
+        
         log0 = await logUtils.encodeLog(encodingLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
