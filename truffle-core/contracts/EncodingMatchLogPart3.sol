@@ -46,6 +46,10 @@ contract EncodingMatchLogPart3 {
         logs[1] |= (uint256(winner) << 225);
         return logs;
     }
-    
+
+    function addNDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
+        return log | (uint256(nDefs) << (213 + 4 * (is2ndHalf ? 1 : 0)));
+    }
+
 
 }

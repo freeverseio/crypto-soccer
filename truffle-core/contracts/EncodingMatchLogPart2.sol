@@ -110,9 +110,6 @@ contract EncodingMatchLogPart2 {
         return uint8((log >> (201 + 4 * pos)) & 15);
     }
 
-    function addNDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
-        return log | (uint256(nDefs) << (213 + 4 * (is2ndHalf ? 1 : 0)));
-    }
 
     function getNDefs(uint256 log, bool is2ndHalf)  public pure returns (uint8) {
         return uint8((log >> (213 + 4 * (is2ndHalf ? 1 : 0))) & 15);

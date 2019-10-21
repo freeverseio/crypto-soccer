@@ -113,6 +113,9 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
         (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
 
+        matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
+
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
         if (matchBools[IDX_IS_HOME_STADIUM]) {
@@ -181,6 +184,19 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
     }
 
+    function writeNDefs(
+        uint256 matchLog, 
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint8 nDefsInTactics, 
+        bool is2ndHalf
+    ) private pure returns (uint256) {
+        if (is2ndHalf) {
+            for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
+                if (states[p] == 0) return addNDefs(matchLog, nDefsInTactics - 1, true);
+            }
+        }
+        return addNDefs(matchLog, nDefsInTactics, is2ndHalf);
+    }
 
     /// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )

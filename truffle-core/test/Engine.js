@@ -471,6 +471,10 @@ contract('Engine', (accounts) => {
             nGoals.toNumber().should.be.equal(expected[team]);
             winner = await encodingLog.getWinner(log12[team]);
             winner.toNumber().should.be.equal(DRAW);
+            nDefs = await encodingLog.getNDefs(log12[team], is2nd = false);
+            nDefs.toNumber().should.be.equal(4);
+            nDefs = await encodingLog.getNDefs(log12[team], is2nd = true);
+            nDefs.toNumber().should.be.equal(4);
         }
     });
 
