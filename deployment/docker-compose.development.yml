@@ -26,13 +26,13 @@ services:
       -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
     depends_on:
-      - postgres
+      - universe.db
       - ethereum
   universe.api:
     image: freeverseio/universe.api:dev
     depends_on:
-      - postgres
-    command: -d postgres://freeverse:freeverse@postgres:5432/cryptosoccer
+      - universe.db
+    command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
     ports:
       - "4001:4000"
   market.db:
