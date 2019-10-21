@@ -41,10 +41,6 @@ func NewSqlite3(schemaFile string) (*Storage, error) {
 	if err := storage.db.Ping(); err != nil {
 		return nil, err
 	}
-	_, err = storage.db.Exec("PRAGMA foreign_keys = ON;")
-	if err != nil {
-		return nil, err
-	}
 	file, err := os.Open(schemaFile)
 	if err != nil {
 		return nil, err

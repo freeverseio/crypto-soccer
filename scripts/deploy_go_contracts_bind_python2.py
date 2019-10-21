@@ -64,7 +64,9 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     dests = [os.path.join(parentdir,'go-synchronizer','contracts'),
-             os.path.join(parentdir,'market', 'notary', 'contracts')]
+             os.path.join(parentdir,'market', 'notary', 'contracts'),
+             os.path.join(parentdir,'relay', 'contracts')
+             ]
 
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Assets.json'), 'assets', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Market.json'), 'market', dests)

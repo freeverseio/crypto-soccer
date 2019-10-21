@@ -7,15 +7,13 @@ import (
 	"syscall"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/relay/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/relay/process"
+	"github.com/freeverseio/crypto-soccer/relay/storage"
 )
 
 func main() {
@@ -23,23 +21,12 @@ func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
-	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
-	marketContractAddress := flag.String("marketContractAddress", "", "")
+	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
-	engineContractAddress := flag.String("engineContractAddress", "", "")
 	flag.Parse()
 
-	if *leaguesContractAddress == "" {
-		log.Fatal("no league contract address")
-	}
-	if *marketContractAddress == "" {
-		log.Fatal("no league contract address")
-	}
 	if *updatesContractAddress == "" {
 		log.Fatal("no updates contract address")
-	}
-	if *engineContractAddress == "" {
-		log.Fatal("no engine contract address")
 	}
 
 	if *debug {
@@ -53,26 +40,8 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	log.Info("Creating Leagues bindings to: ", *leaguesContractAddress)
-	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(*leaguesContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Engine bindings to: ", *engineContractAddress)
-	engineContract, err := engine.NewEngine(common.HexToAddress(*engineContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
 	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
 	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Market bindings to: ", *marketContractAddress)
-	marketContract, err := market.NewMarket(common.HexToAddress(*marketContractAddress), client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
@@ -80,7 +49,7 @@ func main() {
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("./sql/00_schema.sql")
+		sto, err = storage.NewSqlite3("./db/00_schema.sql")
 	} else {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)
@@ -89,7 +58,11 @@ func main() {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
 
-	process, err := process.BackgroundProcessNew(client, sto, engineContract, leaguesContract, updatesContract, marketContract)
+	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
+	if err != nil {
+		log.Fatal("Unable to obtain privateLey")
+	}
+	process, err := relay.BackgroundProcessNew(client, privateKey, sto, updatesContract)
 	if err != nil {
 		log.Fatal(err)
 	}

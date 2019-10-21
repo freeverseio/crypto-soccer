@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
+
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
@@ -22,12 +24,12 @@ import (
 )
 
 type EventProcessor struct {
-	usesGanache               bool
 	client                    *ethclient.Client
 	db                        *storage.Storage
 	engine                    *engine.Engine
 	leagues                   *leagues.Leagues
 	updates                   *updates.Updates
+	market                    *market.Market
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
 }
@@ -37,7 +39,7 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) (*EventProcessor, error) {
+func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) (*EventProcessor, error) {
 	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
 	if err != nil {
 		return nil, err
@@ -47,28 +49,15 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		return nil, err
 	}
 	return &EventProcessor{
-		false,
 		client,
 		db,
 		engine,
 		leagues,
 		updates,
+		market,
 		divisionCreationProcessor,
 		leagueProcessor,
 	}, nil
-}
-
-// NewGanacheEventProcessor creates a new struct for scanning and storing crypto soccer events from a ganache client
-func NewGanacheEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates) (*EventProcessor, error) {
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
-	if err != nil {
-		return nil, err
-	}
-	leagueProcessor, err := NewLeagueProcessor(engine, leagues, db)
-	if err != nil {
-		return nil, err
-	}
-	return &EventProcessor{true, client, db, engine, leagues, updates, divisionCreationProcessor, leagueProcessor}, nil
 }
 
 // Process processes all scanned events and stores them into the database db
@@ -88,7 +77,7 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	scanner := NewEventScanner(p.leagues, p.updates)
+	scanner := NewEventScanner(p.leagues, p.updates, p.market)
 	if scanner == nil {
 		return opts.Start, errors.New("Unable to create scanner")
 	}
@@ -151,6 +140,15 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	case updates.UpdatesActionsSubmission:
 		log.Debug("[processor] Dispatching UpdatesActionsSubmission event")
 		return p.leagueProcessor.Process(v)
+	case market.MarketPlayerFreeze:
+		log.Debug("[processor] Dispatching MarketPlayerFreeze event")
+		playerID := v.PlayerId
+		player, err := p.db.GetPlayer(playerID)
+		if err != nil {
+			return err
+		}
+		player.State.Frozen = v.Frozen
+		return p.db.PlayerUpdate(playerID, player.State)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
@@ -204,9 +202,6 @@ func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
 	return storedLastBlockNumber, err
 }
 func (p *EventProcessor) getTimeOfEvent(eventRaw types.Log) (uint64, uint64, error) {
-	if p.usesGanache {
-		return eventRaw.BlockNumber, eventRaw.BlockNumber, nil
-	}
 	block, err := p.client.BlockByHash(context.Background(), eventRaw.BlockHash)
 	if err != nil {
 		return 0, 0, err

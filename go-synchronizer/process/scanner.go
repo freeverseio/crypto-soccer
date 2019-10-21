@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
 )
 
@@ -25,12 +26,13 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 type EventScanner struct {
 	leagues *leagues.Leagues
 	updates *updates.Updates
+	market  *market.Market
 	Events  []*AbstractEvent
 }
 
-func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates) *EventScanner {
+func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) *EventScanner {
 	if leagues != nil && updates != nil {
-		return &EventScanner{leagues, updates, []*AbstractEvent{}}
+		return &EventScanner{leagues, updates, market, []*AbstractEvent{}}
 	}
 	return nil
 }
@@ -153,6 +155,19 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 //	}
 //	return nil
 //}
+
+func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
+	iter, err := s.market.FilterPlayerFreeze(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanPlayerFreeze")
+		s.addEvent(e.Raw, "FilterPlayerFreeze", e)
+	}
+	return nil
+}
 
 func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
 	iter, err := s.updates.FilterActionsSubmission(opts)

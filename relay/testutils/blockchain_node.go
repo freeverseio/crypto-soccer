@@ -11,12 +11,19 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go-synchronizer/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/relay/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/relay/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/relay/contracts/market"
+	"github.com/freeverseio/crypto-soccer/relay/contracts/updates"
 )
+
+func AssertNoErr(err error, params ...interface{}) {
+	if err != nil {
+		log.Fatal(err, params)
+	}
+}
 
 type BlockchainNode struct {
 	Client  *ethclient.Client

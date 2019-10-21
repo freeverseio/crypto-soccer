@@ -9,7 +9,6 @@ import "./EncodingState.sol";
 
 contract Assets is EncodingSkills, EncodingState {
     event TeamTransfer(uint256 teamId, address to);
-    event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
 
@@ -444,7 +443,6 @@ contract Assets is EncodingSkills, EncodingState {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
         (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
-        emit PlayerTransfer(playerId, teamIdTarget); // TODO remove
         emit PlayerStateChange(playerId, newState);
     }
 
