@@ -32,6 +32,7 @@ jobs:
     docker:
       - image: freeverseio/circleci
     steps:
+    executor: freeverse
       - checkout
       - run: make setup contracts
       - run: cd go/cmd/marketnotary && go build
