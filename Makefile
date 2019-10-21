@@ -3,9 +3,7 @@ setup:
 
 contracts:
 	cd truffle-core && ./node_modules/.bin/truffle compile
-	mkdir -p nodejs-horizon
-	cp -r truffle-core/build/contracts ./relay/nodejs-api
-	cp -r truffle-core/build/contracts ./staker
+	cp -r truffle-core/build/contracts ./relay.api
 	cd scripts && ./deploy_go_contracts_bind_python2.py
 
 clean:

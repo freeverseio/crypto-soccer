@@ -64,7 +64,7 @@ if __name__ == "__main__":
             sys.exit(-1)
 
     dests = [os.path.join(parentdir,'go-synchronizer','contracts'),
-             os.path.join(parentdir,'market', 'notary', 'contracts'),
+             os.path.join(parentdir,'market.notary', 'contracts'),
              os.path.join(parentdir,'relay', 'contracts')
              ]
 
