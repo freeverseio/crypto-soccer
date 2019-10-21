@@ -148,13 +148,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     }
     
     function hadReceivedYellowIn1stHalf(uint256 matchLog, uint256 newYellowCarded) private pure returns(bool) {
-        return   
+        return
             // ((matchLog >> 161) & 15) = 1st half yellow card [0]
             // ((log >> 169) & 1) = yellowCardedCouldNotFinish1stHalf[0]
-            (newYellowCarded == ((matchLog >> 161) & 15)) && (((matchLog >> 169) & 1) == 0)  ||
+            ((newYellowCarded == getYellowCard(matchLog, 0, false)) && (!getYellowedDidNotFinished1stHalf(matchLog, 0))) ||
             // ((matchLog >> 165) & 15) = 1st half yellow card [1]
             // ((log >> 170) & 1) = yellowCardedCouldNotFinish1stHalf[1]
-            (newYellowCarded == ((matchLog >> 165) & 15)) && (((matchLog >> 170) & 1) == 0);
+            ((newYellowCarded == getYellowCard(matchLog, 1, false)) && (!getYellowedDidNotFinished1stHalf(matchLog, 1)));
     }
     
     function didOutOfGameHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {

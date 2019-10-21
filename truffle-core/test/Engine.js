@@ -260,7 +260,7 @@ contract('Engine', (accounts) => {
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
 
-            // second half
+        // second half
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, substis = [0,0,0], rounds = [0,0,0], is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 12]; 
