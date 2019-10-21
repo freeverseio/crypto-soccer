@@ -4,15 +4,17 @@ pragma solidity >=0.4.21 <0.6.0;
  */
 
         // uint8 nGoals, // 4b, offset 0
-        // uint8[42] memory assistersShootersForwardsPos, 
-        //     // [assistersIdx[14], shootersIdx[14], shooterFwdPos[14]]
-        //     // [ each 4b, each 4b, each 2b]
-        //     // [ offset 4, offset 60, offset 116]
+        // uint8 assistersIdx[14], 4b each, offset 4
+        // uint8 shootersIdx[14], 4b each, offset 60
+        // uint8 shooterFwdPos[14], 2b each, offset 116
         // bool[7] memory penalties, // 1b each, offset 144
-        // uint8[6] memory outOfGamesAndYellowCards,  // 2 outOfGames, 4 yellowCards, 4b each, offset 151
+        // uint8[2] memory outOfGames 4b each
+        // uint8[6] memory yellowCards1, 4b each,
+        // uint8[6] memory yellowCards2, 4b each
         // uint8[2] memory outOfGameRounds,  
         // uint8[2] memory typesOutOfGames, 
-        // bool[3] memory yellowCardedDidNotFinish1stHalfAndIsHomeStadium, // 1b each, last one has offset 227
+        // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,
+        // bool isHomeStadium, // 1b each,
         // uint8[3] memory halfTimeSubstitutions, // 4b each, offset 201, the first 3 for half 1, the other for half 2
         // uint8[6] memory ingameSubs, // 2b each, offset 189
         //                             //  ...the first 3 for half 1, the other for half 2.
