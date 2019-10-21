@@ -655,7 +655,7 @@ contract('Engine', (accounts) => {
         expectedFwd         = [3, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedGoals[team]);
             ass = await encodingLog.getAssister(log[team], 0).should.be.fulfilled;
             sho = await encodingLog.getShooter(log[team], 0).should.be.fulfilled;
             fwd = await encodingLog.getForwardPos(log[team], 0).should.be.fulfilled;
@@ -671,7 +671,7 @@ contract('Engine', (accounts) => {
         expectedFwd         = [0, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedGoals[team]);
             ass = await encodingLog.getAssister(log[team], 0).should.be.fulfilled;
             sho = await encodingLog.getShooter(log[team], 0).should.be.fulfilled;
             fwd = await encodingLog.getForwardPos(log[team], 0).should.be.fulfilled;
@@ -687,7 +687,7 @@ contract('Engine', (accounts) => {
         expectedFwd         = [3, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedGoals[team]);
             ass = await encodingLog.getAssister(log[team], 0).should.be.fulfilled;
             sho = await encodingLog.getShooter(log[team], 0).should.be.fulfilled;
             fwd = await encodingLog.getForwardPos(log[team], 0).should.be.fulfilled;
@@ -919,13 +919,13 @@ contract('Engine', (accounts) => {
         expectedResult = [2, 2];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
         matchLog = await engine.playMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [11, 0];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
     });
 
@@ -934,13 +934,13 @@ contract('Engine', (accounts) => {
         expectedResult = [2, 2];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
         matchLog = await engine.playMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [1, 1];
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
     });
 });
