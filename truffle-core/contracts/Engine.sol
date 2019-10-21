@@ -175,8 +175,6 @@ contract Engine is EngineLib{
     }
 
 
-
-
     /// @dev Rescales global skills of both teams according to their endurance
     function teamsGetTired(uint256[5] memory skillsTeamA, uint256[5]  memory skillsTeamB )
         public

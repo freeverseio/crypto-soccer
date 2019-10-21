@@ -3,11 +3,12 @@ pragma solidity ^0.5.0;
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 import "./Sort.sol";
+import "./EncodingMatchLogPart1.sol";
 
-contract EnginePreComp is EngineLib, Sort {
+contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 private constant ONE256              = uint256(1); 
-    uint256 private constant CHG_HAPPENED        = uint256(1); 
+    uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint256 private constant CHG_CANCELLED       = uint256(2); 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
@@ -68,8 +69,7 @@ contract EnginePreComp is EngineLib, Sort {
         // by the red-card computation below, if needed.
         for (uint8 p = 0; p < 3; p++) {
             if (substitutions[p] != NO_SUBST) {
-                if (is2ndHalf) matchLog |= (CHG_HAPPENED << 195 + 2 * p);
-                else matchLog |= (CHG_HAPPENED << 189 + 2 * p);
+                matchLog = setInGameSubsHappened(matchLog, CHG_HAPPENED, p, is2ndHalf);
             } 
         }
 
@@ -84,10 +84,10 @@ contract EnginePreComp is EngineLib, Sort {
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
         weights[NO_CARD] = 9;
-        uint256[2] memory yellowCardeds;
+        uint8[2] memory yellowCardeds;
         
-        yellowCardeds[0] = uint256(throwDiceArray(weights, rnds[2]));
-        yellowCardeds[1] = uint256(throwDiceArray(weights, rnds[3]));
+        yellowCardeds[0] = throwDiceArray(weights, rnds[2]);
+        yellowCardeds[1] = throwDiceArray(weights, rnds[3]);
     
         // Important: there is no need to check if a red card had been given in the 1st half, because that player, simply
         // would never be able to have been lined-up, and never made it up to here.
@@ -114,8 +114,8 @@ contract EnginePreComp is EngineLib, Sort {
         }
         
         // if we get here: both yellows are to different players, who can continue playing. Record them.
-        matchLog |= yellowCardeds[0] << (offset + 10);
-        matchLog |= yellowCardeds[1] << (offset + 14);
+        matchLog = addYellowCard(matchLog, yellowCardeds[0], 0, is2ndHalf);
+        matchLog = addYellowCard(matchLog, yellowCardeds[1], 1, is2ndHalf);
 
         // Redcards & Injuries:
         // if a new red card is given to a previously yellow-carded player, no prob, such things happen.
