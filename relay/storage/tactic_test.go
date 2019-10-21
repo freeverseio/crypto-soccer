@@ -8,7 +8,7 @@ import (
 )
 
 func TestTacticCreate(t *testing.T) {
-	db, err := storage.NewSqlite3("../db/00_schema.sql")
+	db, err := storage.NewSqlite3("../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
