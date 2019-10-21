@@ -29,7 +29,8 @@ jobs:
       - run: cd go-synchronizer && go build
       - run: cd go-synchronizer && go test ./...
   market-notary:
-    executor: freeverse
+    docker:
+      - image: freeverseio/circleci
     steps:
       - checkout
       - run: make setup contracts
