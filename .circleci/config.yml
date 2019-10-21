@@ -30,15 +30,15 @@ jobs:
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd market/notary && go build
+      - run: cd market.notary && go build
       - run: |
-            ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
+            ./market.notary/testutils/run_ganache.sh > /dev/null 2>&1 &
             # wait until blockchain node is up and running
             echo waiting for blockchain node
             while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
             sleep 1
             echo blockchain is running
-            cd market/notary && go test ./...
+            cd market.notary && go test ./...
   relay.api:
     docker:
       - image: freeverseio/circleci
@@ -64,8 +64,8 @@ jobs:
       - image: freeverseio/circleci
     steps:
       - checkout
-      - run: cd market/trader && npm install
-      - run: cd market/trader && npm test
+      - run: cd market.trader && npm install
+      - run: cd market.trader && npm test
   django-centauri:
     docker:
       - image: freeverseio/circleci
@@ -82,15 +82,15 @@ jobs:
           docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
-      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
+      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd relay && docker build -t freeverseio/relay.actions:dev .
       - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
       - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd market/db && docker build -t freeverseio/market.db:dev .
+      - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
-      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
+      - run: cd market.notary && docker build -t freeverseio/market.notary:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:dev
