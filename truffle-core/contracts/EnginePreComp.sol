@@ -61,7 +61,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         uint256
     ) 
     {
-        uint8 offset = is2ndHalf ? 171 : 151;
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
@@ -106,7 +105,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
                 yellowCardeds[0] = NO_CARD;
             }
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
-                if (!didOutOfGameHappenInThisHalf(matchLog, offset)) {
+                if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
                     matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
                 }
                 yellowCardeds[1] = NO_CARD;
@@ -122,7 +121,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         // events[0] => STUFF THAT REMOVES A PLAYER FROM FIELD: injuries and redCard 
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
-        if (!didOutOfGameHappenInThisHalf(matchLog, offset)) {
+        if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
             weights[NO_CARD] = 758;
             uint256 selectedPlayer = uint256(throwDiceArray(weights, rnds[0]));
             matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, rnds[0], rnds[1]);
@@ -157,10 +156,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
             ((newYellowCarded == getYellowCard(matchLog, 1, false)) && (!getYellowedDidNotFinished1stHalf(matchLog, 1)));
     }
     
-    function didOutOfGameHappenInThisHalf(uint256 matchLog, uint8 offset) private pure returns (bool) {
-        return ((matchLog >> offset + 8) & 3) != 0;
-    }
-
     function logOutOfGame(
         bool is2ndHalf,
         bool forceRedCard,

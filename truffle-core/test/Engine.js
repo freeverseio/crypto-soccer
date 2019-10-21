@@ -150,6 +150,8 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
     });
 
+    return
+    
     it('computeExceptionalEvents clashing with redcards before changing player', async () => {
         // there is a red card with this seed, to player 9. Since he's involved in a change, 
         // the round for which he saw the card should be before the proposed change round (2) 
