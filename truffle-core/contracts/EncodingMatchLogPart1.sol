@@ -49,8 +49,8 @@ contract EncodingMatchLogPart1 {
         return log | (uint256(player) << (116 + 2 * pos));
     }
     
-    function addPenalty(uint256 log, bool penalty, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(penalty ? 1 : 0) << (144 + pos));
+    function addScoredPenalty(uint256 log, uint8 pos)  public pure returns (uint256) {
+        return log | (ONE256 << (144 + pos));
     }
 
     function getOutOfGamePlayer(uint256 log, bool is2ndHalf)  public pure returns (uint256) {

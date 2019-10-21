@@ -9,7 +9,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 private constant ONE256              = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
-    uint256 private constant CHG_CANCELLED       = uint256(2); 
+    uint8 private constant CHG_CANCELLED       = uint8(2); 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
     uint8 private constant IDX_CREATE_SHOOT = 1; 
@@ -189,10 +189,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
                     maxRound = subsRounds[p];
                     // log that this substitution was unable to take place
                     if (typeOfEvent == RED_CARD) {
-                        matchLog = setInGameSubs(
-                            matchLog,
-                            is2ndHalf ? 195 + 2 * p : 189 + 2 * p
-                        );
+                        matchLog = setInGameSubsHappened(matchLog, CHG_CANCELLED, p, is2ndHalf);
                     }
                 } 
             }
@@ -200,11 +197,6 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         return addOutOfGame(matchLog, selectedPlayer, computeRound(rnds[0]+1, minRound, maxRound), typeOfEvent, is2ndHalf);
     }
 
-    function setInGameSubs(uint256 matchLog, uint8 pos) private pure returns (uint256) {
-        return (matchLog & ~(uint256(3) << pos)) | (CHG_CANCELLED << pos);
-    }
-
-    
     function computeRound(uint256 seed, uint8 minRound, uint8 maxRound) private pure returns (uint8 round) {
         require(maxRound > minRound, "max and min rounds are not correct");
         return minRound + uint8(seed % (maxRound - minRound + 1));
@@ -238,19 +230,19 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         uint8[2] memory totalGoals;
         for (uint8 round = 0; round < 6; round++) {
             if (throwDice(block1, 3 * getShoot(states[0][10-round]), rnds[2 *round]) == 1) {
-                matchLog[0] |= (ONE256 << 144 + round);
+                matchLog[0] = addScoredPenalty(matchLog[0], round); 
                 totalGoals[0] += 1;
             }
             if (throwDice(block0, 3 * getShoot(states[1][10-round]), rnds[2 *round + 1]) == 1) {
-                matchLog[1] |= (ONE256 << 144 + round);
+                matchLog[1] = addScoredPenalty(matchLog[1], round); 
                 totalGoals[1] += 1;
             }
             if ((round > 3) && (totalGoals[0] != totalGoals[1])) return matchLog;
         }
         if (throwDice(block0 + getShoot(states[0][4]), block0 + getShoot(states[0][4]), rnds[13]) == 1) {
-            matchLog[0] |= (ONE256 << 144 + 6);
+            matchLog[0] = addScoredPenalty(matchLog[0], 6); 
         } else {
-            matchLog[1] |= (ONE256 << 144 + 6);
+            matchLog[1] = addScoredPenalty(matchLog[1], 6); 
         }
         return matchLog;
     }
