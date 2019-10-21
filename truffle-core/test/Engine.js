@@ -394,7 +394,7 @@ contract('Engine', (accounts) => {
         }
     });
     
-    it('computePenalties', async () => {
+    it2('computePenalties', async () => {
         // one team much better than the other:
         log = await precomp.computePenalties(log = [0,0], [teamStateAll50Half2, teamStateAll1Half2], 50, 1, seed);
         expected = [true, true, true, true, true, false, false]
@@ -438,42 +438,38 @@ contract('Engine', (accounts) => {
     it2('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        log1 =  await engine.playMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log = [0, 0], [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         log12 = await engine.playMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // for this seedDraw, they all score one goal in each half
         expected = [1, 1]
         for (team = 0; team < 2; team++) {
-            decodedLog = await encodingLog.decodeMatchLog(log0[team]);
-            decodedLog.nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals = await encodingLog.getNGoals(log0[team]);
+            nGoals.toNumber().should.be.equal(expected[team]);
         }
         // so the final result should be 2-2
         expected = [2, 2]
         for (team = 0; team < 2; team++) {
-            decodedLog = await encodingLog.decodeMatchLog(log12[team]);
-            decodedLog.nGoals.toNumber().should.be.equal(expected[team]);
+            nGoals = await encodingLog.getNGoals(log12[team]);
+            nGoals.toNumber().should.be.equal(expected[team]);
         }
     });
 
-    it2('red cards in first half force lineups of 10 players in 2nd half', async () => {
+    it('red cards in first half force lineups of 10 players in 2nd half', async () => {
         // choose a seed that gives a red card for player 9.
         seedForRedCard = seed + 83;
         log0 =  await engine.playMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
-        decoded = await encodingLog.decodeMatchLog(log0[0]);
-        let {0: nGo, 1: assShoFwd, 2: pen, 3: outsAndYels, 4: outRounds, 5: typ, 6: yelFin, 7: halfSubs, 8: inGameSubs, 9: defTotWin} = decoded;
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [5, 0]; 
-        expectedYellows = [1, 10, 0, 0];
+        expectedYellows1 = [1, 10];
+        expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
-        expectedInGameSubs = [0, 0, 0, 0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs1 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
+        expectedInGameSubs2 = [0, 0, 0]; // 0: no subs requested, 1: change takes place, 2: change cancelled
         yellowedCouldNotFinish = [false, false];
-        yellowCardedDidNotFinish1stHalfAndIsHomeStadium = yellowedCouldNotFinish.concat(isHomeSt);
-        for (i = 0; i < yellowCardedDidNotFinish1stHalfAndIsHomeStadium.length; i++) yelFin[i].should.be.equal(yellowCardedDidNotFinish1stHalfAndIsHomeStadium[i]);
-        for (i = 0; i < expectedOut.length; i++) outsAndYels[i].toNumber().should.be.equal(expectedOut[i]);
-        for (i = 0; i < expectedYellows.length; i++) outsAndYels[i+2].toNumber().should.be.equal(expectedYellows[i]);
-        for (i = 0; i < expectedOutRounds.length; i++) outRounds[i].toNumber().should.be.equal(expectedOutRounds[i]);
-        for (i = 0; i < expectedType.length; i++) typ[i].toNumber().should.be.equal(expectedType[i]);
-        for (i = 0; i < expectedInGameSubs.length; i++) inGameSubs[i].toNumber().should.be.equal(expectedInGameSubs[i]);
+        await logUtils.checkExpectedLog(encodingLog, log0[0], nGoals = UNDEF, ass = UNDEF, sho = UNDEF, fwdPos = UNDEF, penalties = UNDEF,
+            expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
+            isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
+            halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
 
         log2 = await engine.playMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
         teamStateAll50Half2[5] = 0;
