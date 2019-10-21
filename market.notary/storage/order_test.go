@@ -8,7 +8,7 @@ import (
 )
 
 func TestGetOrders(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../market.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

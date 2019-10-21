@@ -32,7 +32,7 @@ func TestUpdateAuction(t *testing.T) {
 }
 
 func TestOutdatedAuction(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../market.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ func TestOutdatedAuction(t *testing.T) {
 }
 
 // func TestFreezePlayer(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
@@ -117,7 +117,7 @@ func TestOutdatedAuction(t *testing.T) {
 // }
 
 // func TestProcess(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../db/00_schema.sql")
+// 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
