@@ -2,31 +2,34 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
-jobs:
-  truffle_core:
-    docker:
-      - image: freeverseio/circleci
-    steps:
-      - checkout
-      - run: cd truffle-core && npm install
-      - run: cd truffle-core && ./node_modules/.bin/truffle compile
-      - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go-synchronizer:
+version: 2.1
+
+executors:
+  freeverse:
     docker:
       - image: freeverseio/circleci
       - image: freeverseio/ethereum:test
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
+
+jobs:
+  truffle_core:
+    executor: freeverse
+    steps:
+      - checkout
+      - run: cd truffle-core && npm install
+      - run: cd truffle-core && ./node_modules/.bin/truffle compile
+      - run: cd truffle-core && ./node_modules/.bin/truffle test
+  go-synchronizer:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
       - run: cd go-synchronizer && go build
       - run: cd go-synchronizer && go test ./...
-  market.notary:
-    docker:
-      - image: freeverseio/circleci
+  market-notary:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
@@ -39,43 +42,34 @@ jobs:
             sleep 1
             echo blockchain is running
             cd market.notary && go test ./...
-  relay.api:
-    docker:
-      - image: freeverseio/circleci
+  relay-api:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
       - run: cd relay.api && npm install
       - run: cd relay.api && npm test
-  relay.actions:
-    docker:
-      - image: freeverseio/circleci
-      - image: freeverseio/ethereum:test
-        auth:
-          username: $DOCKER_ID
-          password: $DOCKER_PASSWD
+  relay-actions:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
       - run: cd relay && go build
       - run: cd relay && go test ./...
-  market.trader:
-    docker:
-      - image: freeverseio/circleci
+  market-trader:
+    executor: freeverse
     steps:
       - checkout
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
   django-centauri:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - checkout
       - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
       - run: cd django-centauri && python3 manage.py test
   dockerization:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
@@ -105,8 +99,7 @@ jobs:
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
   deploy:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -123,10 +116,10 @@ workflows:
       - truffle_core
       - go-synchronizer
       - django-centauri
-      - market.trader
-      - relay.actions
-      - relay.api
-      - market.notary
+      - market-trader
+      - relay-actions
+      - relay-api
+      - market-notary
       - dockerization:
           filters:
             branches:
@@ -136,10 +129,10 @@ workflows:
           requires:
             - go-synchronizer
             - django-centauri
-            - market.trader
-            - relay.api
-            - relay.actions
-            - market.notary
+            - market-trader
+            - relay-api
+            - relay-actions
+            - market-notary
       - deploy:
           filters:
            branches:
