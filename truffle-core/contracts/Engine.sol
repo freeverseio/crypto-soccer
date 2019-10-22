@@ -179,7 +179,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory outStates, uint8[9] memory) 
     {
         uint8 tacticsId;
-        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf); 
+        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf);
         matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, tactics, is2ndHalf, seed); 
         return (matchLog, outStates, getPlayersPerZone(tacticsId));
     }
