@@ -16,7 +16,7 @@ type Tactic struct {
 	Center      uint8
 	Attack      uint8
 	Shirts      [11]uint8
-	ExtraAttack [10]uint8
+	ExtraAttack [10]bool
 }
 
 // Hash - computes hash for a Tactic

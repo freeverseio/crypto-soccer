@@ -16,16 +16,16 @@ CREATE TABLE tactics (
     shirt_9 INT,
     shirt_10 INT,
 
-    extra_attack_1  INT DEFAULT 0,
-    extra_attack_2  INT DEFAULT 0,
-    extra_attack_3  INT DEFAULT 0,
-    extra_attack_4  INT DEFAULT 0,
-    extra_attack_5  INT DEFAULT 0,
-    extra_attack_6  INT DEFAULT 0,
-    extra_attack_7  INT DEFAULT 0,
-    extra_attack_8  INT DEFAULT 0,
-    extra_attack_9  INT DEFAULT 0,
-    extra_attack_10 INT DEFAULT 0,
+    extra_attack_1  BOOLEAN DEFAULT FALSE,
+    extra_attack_2  BOOLEAN DEFAULT FALSE,
+    extra_attack_3  BOOLEAN DEFAULT FALSE,
+    extra_attack_4  BOOLEAN DEFAULT FALSE,
+    extra_attack_5  BOOLEAN DEFAULT FALSE,
+    extra_attack_6  BOOLEAN DEFAULT FALSE,
+    extra_attack_7  BOOLEAN DEFAULT FALSE,
+    extra_attack_8  BOOLEAN DEFAULT FALSE,
+    extra_attack_9  BOOLEAN DEFAULT FALSE,
+    extra_attack_10 BOOLEAN DEFAULT FALSE,
 
     PRIMARY KEY(team_id)
 )
