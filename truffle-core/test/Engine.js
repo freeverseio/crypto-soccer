@@ -266,6 +266,7 @@ contract('Engine', (accounts) => {
         // the player with shirt = 1 was substituted by player 13, who was red-carded
         // in the 2nd half there is a defender less than usual
         teamStateAll50Half2[1] = 0;
+        seedDraw = 12;
         log2 = await engine.playMatch(seedDraw, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442NoChanges, tactics442NoChanges], [newLog, newLog], [is2nd = true, isHomeStadium,  playoff = false]).should.be.fulfilled;
         for (team = 0; team < 2; team++){
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
