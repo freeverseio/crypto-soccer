@@ -23,6 +23,7 @@ pragma solidity >=0.4.21 <0.6.0;
         //                             // [4b, 4b, 4b, 2b], offset 213
         //                             // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
         //                             // winner: 0 = home, 1 = away, 2 = draw
+        // teamSumSkills: 24b // offset 227
 contract EncodingMatchLogPart2 {
 
     uint256 private constant ONE256       = 1; 
@@ -127,7 +128,11 @@ contract EncodingMatchLogPart2 {
         return log | (uint256(winner) << 225);
     }
 
-    function getWinner(uint256 log)  public pure returns (uint8) {
+    function getWinner(uint256 log) public pure returns (uint8) {
         return uint8((log >> 225) & 3);
+    }
+    
+    function getTeamSumSkills(uint256 log) public pure returns (uint256) {
+        return (log >> 227) & 16777215; // 2^24 - 1
     }
 }
