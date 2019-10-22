@@ -1,0 +1,10 @@
+FROM golang:alpine
+
+WORKDIR /app
+
+COPY . /app
+
+RUN apk add --no-cache alpine-sdk
+RUN cd cmd && go build ./synchronizer.go
+
+ENTRYPOINT ["./cmd/go-synchronizer"]

@@ -21,28 +21,20 @@ jobs:
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go-synchronizer:
+  synchronizer:
     executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test ./...
+      - run: cd go/cmd/ && go build ./synchronizer.go
+      - run: cd go/synchronizer && go test ./...
   market-notary:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd market.notary && go build
-      - run: |
-            ./market.notary/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until blockchain node is up and running
-            echo waiting for blockchain node
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            sleep 1
-            echo blockchain is running
-            cd market.notary && go test ./...
+      - run: cd go/cmd/ && go build ./notary.go
+      - run: cd go/marketnotary && go test ./...
   relay-api:
     executor: freeverse
     steps:
@@ -55,8 +47,8 @@ jobs:
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd relay && go build
-      - run: cd relay && go test ./...
+      - run: cd go/cmd && go build ./relay.go
+      - run: cd go/relay && go test ./...
   market-trader:
     executor: freeverse
     steps:
@@ -79,13 +71,13 @@ jobs:
       - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd relay && docker build -t freeverseio/relay.actions:dev .
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
       - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
       - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
-      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
-      - run: cd market.notary && docker build -t freeverseio/market.notary:dev .
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:dev
@@ -115,7 +107,7 @@ workflows:
   build_and_test:
     jobs:
       - truffle_core
-      - go-synchronizer
+      - synchronizer
       - django-centauri
       - market-trader
       - relay-actions
@@ -128,7 +120,7 @@ workflows:
                 - dev
                 - ci
           requires:
-            - go-synchronizer
+            - synchronizer
             - django-centauri
             - market-trader
             - relay-api
@@ -142,5 +134,3 @@ workflows:
           requires:
             - dockerization
             - truffle_core
-
-
