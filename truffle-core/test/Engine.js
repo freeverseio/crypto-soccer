@@ -503,6 +503,27 @@ contract('Engine', (accounts) => {
         }   
     });
 
+    it('teamSkills are added from 1st to 2nd half', async () => {
+        seedDraw = 12;
+        tactics442TwoChanges = await engine.encodeTactics([3,1,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442WithNoChanges = await engine.encodeTactics([11,11,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        log0 =  await engine.playMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expected = [3250, 2750];
+        for (team = 0; team < 2; team++) {
+            teamSkills = await encodingLog.getTeamSumSkills(log0[team]).should.be.fulfilled;
+            teamSkills.toNumber().should.be.equal(expected[team]);
+        }
+        tactics442OneChange = await engine.encodeTactics([3,11,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        log12 = await engine.playMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442OneChange, tactics442WithNoChanges], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        expected = [3322, 2750];
+        for (team = 0; team < 2; team++) {
+            teamSkills = await encodingLog.getTeamSumSkills(log12[team]).should.be.fulfilled;
+            teamSkills.toNumber().should.be.equal(expected[team]);
+        }
+    });
+    
+    
+
     it('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
@@ -553,6 +574,8 @@ contract('Engine', (accounts) => {
             nDefs.toNumber().should.be.equal(4);
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = true);
             nDefs.toNumber().should.be.equal(4);
+            teamSkills = await encodingLog.getTeamSumSkills(log2[team]).should.be.fulfilled;
+            teamSkills.toNumber().should.be.equal(2814);
         }
     });
     
