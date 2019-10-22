@@ -50,7 +50,7 @@ contract('Engine', (accounts) => {
     const WINNER_HOME = 0;
     const WINNER_AWAY = 1;
     const teamSumSkillsDefault = 3256244;
-    
+    const MAX_GOALS = 12;
     const it2 = async(text, f) => {};
     
     function daysToSecs(dayz) {
@@ -403,9 +403,9 @@ contract('Engine', (accounts) => {
         // cook data so that the first half ended up in a way that:
         //  - there are red cards
         //  - there are the right goals to, then, in 2nd half, end up in draw.
-        assistersIdx = Array.from(new Array(14), (x,i) => i);
-        shootersIdx  = Array.from(new Array(14), (x,i) => 1);
-        shooterForwardPos  = Array.from(new Array(14), (x,i) => 1);
+        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
+        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
         penalties  = Array.from(new Array(7), (x,i) => false);
         typesOutOfGames = [3, 0];
         outOfGameRounds = [7, 0];

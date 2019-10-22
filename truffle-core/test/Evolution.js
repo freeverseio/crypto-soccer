@@ -4,6 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const logUtils = require('./matchLogUtils.js');
 
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
@@ -44,6 +45,7 @@ contract('Evolution', (accounts) => {
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const MAX_PENALTY = 10000;
+    const MAX_GOALS = 12;
 
     const it2 = async(text, f) => {};
     
@@ -64,14 +66,17 @@ contract('Evolution', (accounts) => {
         redCardLastGame = false;
         gamesNonStopping = 0;
         injuryWeeksLeft = 0;
+        sumSkills = forceSkills.reduce((a, b) => a + b, 0);
         for (p = 0; p < 11; p++) {
             pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, playerId + p, [pot, fwd442[p], left442[p], aggr],
-                alignedEndOfLastHalfTwoVec[0], redCardLastGame, gamesNonStopping, injuryWeeksLeft, subLastHalf).should.be.fulfilled 
+                alignedEndOfLastHalfTwoVec[0], redCardLastGame, gamesNonStopping, 
+                injuryWeeksLeft, subLastHalf, sumSkills).should.be.fulfilled 
             teamState.push(pSkills)
         }
         p = 10;
         pSkills = await engine.encodePlayerSkills(forceSkills, dayOfBirth21, playerId + p, [pot, fwd442[p], left442[p], aggr],
-                alignedEndOfLastHalfTwoVec[1], redCardLastGame, gamesNonStopping, injuryWeeksLeft, subLastHalf).should.be.fulfilled 
+                alignedEndOfLastHalfTwoVec[1], redCardLastGame, gamesNonStopping, 
+                injuryWeeksLeft, subLastHalf, sumSkills).should.be.fulfilled 
         for (p = 11; p < PLAYERS_PER_TEAM_MAX; p++) {
             teamState.push(pSkills)
         }        
@@ -80,9 +85,11 @@ contract('Evolution', (accounts) => {
 
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
+        sumSkills = skills.reduce((a, b) => a + b, 0);
         var playerStateTemp = await engine.encodePlayerSkills(
             skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
-            alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+            alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
         for (player = 0; player < 11; player++) {
             teamState.push(playerStateTemp)
@@ -90,7 +97,8 @@ contract('Evolution', (accounts) => {
 
         playerStateTemp = await engine.encodePlayerSkills(
             skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
-            alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+            alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
         for (player = 11; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)
@@ -122,36 +130,33 @@ contract('Evolution', (accounts) => {
     });
     
     it('test1', async () => {
-        assistersIdx = Array.from(new Array(14), (x,i) => i);
-        shootersIdx  = Array.from(new Array(14), (x,i) => 1);
-        shooterForwardPos  = Array.from(new Array(14), (x,i) => 1);
-        penalties  = Array.from(new Array(7), (x,i) => 0);
+        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
+        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        penalties  = Array.from(new Array(7), (x,i) => false);
         typesOutOfGames = [3, 0];
         outOfGameRounds = [7, 0];
         yellowCardedDidNotFinish1stHalf = [false, false];
-        ingameSubs = [0, 0, 0, 0, 0, 0]
-        outOfGamesAndYellowCards = [9, 14, 14, 0, 0, 0]
+        ingameSubs1 = [0, 0, 0]
+        ingameSubs2 = [0, 0, 0]
+        outOfGames = [9, 14]
+        yellowCards1 = [14, 0]
+        yellowCards2 = [0, 0]
         halfTimeSubstitutions = [14, 14, 14]
-        log0 = await encodingLog.encodeMatchLog(
-            nGoals = 3, 
-            assistersIdx, 
-            shootersIdx, 
-            shooterForwardPos, 
-            penalties, 
-            outOfGamesAndYellowCards, 
-            outOfGameRounds, 
-            typesOutOfGames, 
-            yellowCardedDidNotFinish1stHalf,
-            halfTimeSubstitutions, 
-            ingameSubs
-        );
+        nDefs1 = 4; 
+        nDefs2 = 0; 
+        nTot = 10; 
+        winner = 0; 
+        isHomeSt = true;
+        teamSumSkillsDefault = 100;
+
+        log0 = await logUtils.encodeLog(encodingLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault);
+        
         result = await evolution.computeTrainingPoints(
             [log0, log0], 
-            [teamStateAll50Half1, teamStateAll50Half1],
-            [teamStateAll50Half1, teamStateAll50Half1],
-            [tactics0, tactics0],
-            [tactics0, tactics0],
-            isHomeStadium
         )
         console.log(result[0].toNumber(), result[1].toNumber())
         result[0].should.be.bignumber.equal(result[1]);
