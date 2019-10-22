@@ -44,7 +44,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             ${sql.value(rnd)},
             ${sql.value(teamId)},
             ${sql.value(signature)},
-            ${sql.value('FILED')}
+            ${sql.value('ACCEPTED')}
             )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);

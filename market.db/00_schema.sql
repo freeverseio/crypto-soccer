@@ -25,10 +25,11 @@ CREATE TABLE auctions (
 CREATE TABLE bid_states(
     state TEXT NOT NULL PRIMARY KEY
 );
-INSERT INTO bid_states(state) VALUES ('FILED');
+INSERT INTO bid_states(state) VALUES ('ACCEPTED');
+INSERT INTO bid_states(state) VALUES ('REFUSED');
 INSERT INTO bid_states(state) VALUES ('PAYING');
 INSERT INTO bid_states(state) VALUES ('PAID');
-INSERT INTO bid_states(state) VALUES ('EXPIRED');
+INSERT INTO bid_states(state) VALUES ('FAILED_TO_PAY');
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
