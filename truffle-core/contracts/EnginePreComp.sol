@@ -49,8 +49,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     (
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds,
+        uint256 tactics,
         bool is2ndHalf,
         uint256 seed
     ) 
@@ -61,6 +60,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         uint256
     ) 
     {
+        (uint8[3] memory  substitutions, uint8[3] memory subsRounds, , ,) = decodeTactics(tactics);
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
@@ -485,15 +485,12 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         pure 
         returns 
     (
+        uint256,
         uint256[PLAYERS_PER_TEAM_MAX] memory outStates,
-        uint8 tacticsId,
-        bool[10] memory extraAttack,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds
+        uint8
     ) 
     {
-        uint8[14] memory lineup;
-        (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
         uint8 changes;
         uint8 emptyShirts; 
         
@@ -546,7 +543,8 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");        
+        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");  
+        return (matchLog, outStates, tacticsId);      
     }
 
     function assertCanPlay(uint256 playerSkills) public pure {

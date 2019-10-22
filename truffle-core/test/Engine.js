@@ -137,7 +137,8 @@ contract('Engine', (accounts) => {
         seedForRedCard = seed + 83;
         substis = [2, 6, 1];
         rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 9];
         expectedOutRounds = [0, 5];
@@ -160,7 +161,8 @@ contract('Engine', (accounts) => {
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, substis, rounds, is2nd = true, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 9];
         expectedOutRounds = [0, 1]; // note that this 1 would be 9 otherwise
@@ -182,7 +184,8 @@ contract('Engine', (accounts) => {
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, substis, rounds, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 13];
         expectedOutRounds = [0, 6]; // note that it'd be 0, 9 otherwise
@@ -204,7 +207,8 @@ contract('Engine', (accounts) => {
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
         rounds = [4, 2, 10];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, substis, rounds, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCardInSubstitutes).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 13];
         expectedOutRounds = [0, 10]; 
@@ -226,7 +230,8 @@ contract('Engine', (accounts) => {
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
         rounds = [4, 2, 10];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [13, 0];
         expectedOutRounds = [10, 0];
@@ -248,7 +253,8 @@ contract('Engine', (accounts) => {
         seedForRedCardInSubstitutes = seed + 357;
         substis = [2, 9, 1];
         rounds = [4, 2, 10];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, substis, rounds, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCardInSubstitutes).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [13, 0];
         expectedOutRounds = [10, 0];
@@ -283,7 +289,8 @@ contract('Engine', (accounts) => {
         seedForRedCard = seed + 83;
         substis = [2, 9, 1];
         rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, substis, rounds, is2nd = false, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [1, 0]; // note that this 1 would be 9 otherwise
@@ -299,7 +306,8 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
 
         // second half
-        finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, substis = [0,0,0], rounds = [0,0,0], is2nd = true, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
+        finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 12]; 
         expectedOutRounds = [1, 5]; // note that this 1 would be 9 otherwise
@@ -323,7 +331,8 @@ contract('Engine', (accounts) => {
         seedForRedCard = seed + 83;
         substis = [2, 3, 4];
         rounds = [4, 2, 6];
-        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, substis, rounds, is2nd = false, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0);
+        newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [5, 0]; 
@@ -339,7 +348,8 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF);
 
         // second half
-        finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, substis = [0,0,0], rounds = [0,0,0], is2nd = true, seedForRedCard).should.be.fulfilled;
+        tactics = await engine.encodeTactics(substis = [0,0,0], rounds = [0,0,0], lineupConsecutive, extraAttackNull, tacticsId = 0);
+        finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 1]; // note that the red card comes from two yellows.
         expectedOutRounds = [5, 5]; 
@@ -966,16 +976,10 @@ contract('Engine', (accounts) => {
         for (g = 0; g < 5; g++) globSkills[g].toNumber().should.be.equal(expectedGlob[g]);
     });
 
-    it('getLineUpAndPlayerPerZone for wrong tactics', async () => {
-        tacticsWrong = await engine.encodeTactics(substitutions, subsRounds, lineup1, extraAttackNull, tacticIdTooLarge = 6).should.be.fulfilled;
-        result = await engine.getLineUpAndPlayerPerZone(tacticsWrong, tactics1, is2ndHalf, log = [0,0], seed).should.be.rejected;
-    });
-
     it('getLineUpAndPlayerPerZone', async () => {
         teamState442 = await createTeamState442(engine, forceSkills= [1,1,1,1,1]).should.be.fulfilled;
         result = await engine.getLineUpAndPlayerPerZone(teamState442, tactics1, is2ndHalf, log = [0,0], seed).should.be.fulfilled;
-        let {0: states, 1:fwdMods , 2: playersPerZone} = result;
-        for (p = 0; p < 6; p++) playersPerZone[p].toNumber().should.be.equal(playersPerZone433[p]);
+        let {0: matchLog, 1: states} = result;
         for (p = 0; p < 11; p++) states[p].should.be.bignumber.equal(teamState442[lineupConsecutive[p]]);
     });
 
@@ -992,6 +996,7 @@ contract('Engine', (accounts) => {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
         }
+
         matchLog = await engine.playMatch(123456, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [11, 0];
         for (team = 0; team < 2; team++) {
