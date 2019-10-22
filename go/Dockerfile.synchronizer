@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . /app
 
 RUN apk add --no-cache alpine-sdk
-RUN go build
+RUN cd cmd && go build ./synchronizer.go
 
-ENTRYPOINT ["./go-synchronizer"]
+ENTRYPOINT ["./cmd/go-synchronizer"]
