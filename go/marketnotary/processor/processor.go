@@ -118,13 +118,23 @@ func (b *Processor) Process() error {
 	now := time.Now().Unix()
 
 	for _, auction := range openedAuctions {
-		// bids := storage.Get
-		state := storage.AUCTION_STARTED
+		bids, err := b.db.GetBidsOfAuction(auction.UUID)
+		if err != nil {
+			return err
+		}
+
+		state := auction.State
 
 		// check that auction are closed
 		if auction.ValidUntil.Int64() < now {
-			state = storage.AUCTION_NO_BIDS
+			if len(bids) != 0 {
+				state = storage.AUCTION_PAYING
+			} else {
+				state = storage.AUCTION_NO_BIDS
+			}
 		}
+
+		// update auction state if changed
 		if state != auction.State {
 			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
 			err = b.db.UpdateAuctionState(auction.UUID, state)
