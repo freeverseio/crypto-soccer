@@ -31,11 +31,11 @@ contract EncodingMatchLogPart3 {
     }
   
     function addShooter(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << (60 + 4 * pos));
+        return log | (uint256(player) << (52 + 4 * pos));
     }
   
     function addForwardPos(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
-        return log | (uint256(player) << (116 + 2 * pos));
+        return log | (uint256(player) << (100 + 2 * pos));
     }
     
     function getNGoals(uint256 log) public pure returns (uint8) {
@@ -43,13 +43,13 @@ contract EncodingMatchLogPart3 {
     }
 
     function addWinnerToBothLogs(uint256[2] memory logs, uint8 winner)  public pure returns (uint256[2] memory) {
-        logs[0] |= (uint256(winner) << 225);
-        logs[1] |= (uint256(winner) << 225);
+        logs[0] |= (uint256(winner) << 209);
+        logs[1] |= (uint256(winner) << 209);
         return logs;
     }
 
     function addNDefs(uint256 log, uint8 nDefs, bool is2ndHalf)  public pure returns (uint256) {
-        return log | (uint256(nDefs) << (213 + 4 * (is2ndHalf ? 1 : 0)));
+        return log | (uint256(nDefs) << (197 + 4 * (is2ndHalf ? 1 : 0)));
     }
 
 
