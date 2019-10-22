@@ -13,15 +13,19 @@ contract('Championships', (accounts) => {
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const subLastHalf = false;
 
+    const it2 = async(text, f) => {};
+
     function secsToDays(secs) {
         return secs/ (24 * 3600);
     }
 
     const createTeamStateFromSinglePlayer = async (skills, engine, forwardness = 3, leftishness = 2, alignedEndOfLastHalfTwoVec = [false, false]) => {
         teamState = []
+        sumSkills = skills.reduce((a, b) => a + b, 0);
         var playerStateTemp = await engine.encodePlayerSkills(
             skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
-            alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+            alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
         for (player = 0; player < 11; player++) {
             teamState.push(playerStateTemp)
@@ -29,7 +33,8 @@ contract('Championships', (accounts) => {
 
         playerStateTemp = await engine.encodePlayerSkills(
             skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
-            alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, injuryWeeksLeft = 0, subLastHalf
+            alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
+            injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
         for (player = 11; player < PLAYERS_PER_TEAM_MAX; player++) {
             teamState.push(playerStateTemp)

@@ -119,6 +119,7 @@ contract EncodingSkills {
      *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
      *      injuryWeeksLeft           = 3b 
      *      substitutedDuringLastHalf = 1b (bool) 
+     *      sumSkills                 = 16b (must equal sum(skills))
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -129,7 +130,8 @@ contract EncodingSkills {
         bool redCardLastGame, 
         uint8 gamesNonStopping, 
         uint8 injuryWeeksLeft,
-        bool substitutedLastHalf
+        bool substitutedLastHalf,
+        uint16 sumSkills
     )
         public
         pure
@@ -162,7 +164,8 @@ contract EncodingSkills {
         encoded |= uint256(gamesNonStopping) << 112;
         encoded |= uint256(injuryWeeksLeft) << 109;
         encoded |= uint256(birthTraits[IDX_AGG]) << 106;
-        return (encoded | uint256(substitutedLastHalf ? 1 : 0) << 105);
+        encoded |= uint256(substitutedLastHalf ? 1 : 0) << 105;
+        return (encoded | uint256(sumSkills) << 89);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -242,11 +245,7 @@ contract EncodingSkills {
     // }
 
     function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return      getShoot(encodedSkills) 
-                  + getSpeed(encodedSkills) 
-                  + getPass(encodedSkills)
-                  + getDefence(encodedSkills)
-                  + getEndurance(encodedSkills);
+        return uint256(encodedSkills >> 89 & 65535); // 2**16-1
     }
 
 

@@ -1,11 +1,10 @@
 pragma solidity ^0.5.0;
 
-import "./Sort.sol";
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
+import "./EncodingMatchLogPart3.sol";
 
-contract Engine is EngineLib, Sort{
-    
+contract Engine is EngineLib, EncodingMatchLogPart3 {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
@@ -24,6 +23,8 @@ contract Engine is EngineLib, Sort{
     // 
     uint256 private constant CHG_HAPPENED   = uint256(1); 
     uint8 public constant RED_CARD  = 3;   // type of event = redCard
+    uint8 private constant WINNER_AWAY = 1;
+    uint8 private constant WINNER_DRAW = 2;
 
     bool dummyBoolToEstimateCost;
 
@@ -78,8 +79,12 @@ contract Engine is EngineLib, Sort{
             matchLog,
             matchBools
         );
-        if (matchBools[IDX_IS_PLAYOFF] && ((matchLog[0] & 15) == (matchLog[1] & 15))) {
+        if (matchBools[IDX_IS_PLAYOFF] && ( getNGoals(matchLog[0]) == getNGoals(matchLog[1]))) {
             matchLog = _precomp.computePenalties(matchLog, states, block0, block1, uint64(seed));  // TODO seed
+        } else {
+            // note that WINNER_HOME = 0, so no need to write anything if home wins.
+            if (getNGoals(matchLog[0]) == getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_DRAW);
+            else if (getNGoals(matchLog[0]) < getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_AWAY);
         }
         return matchLog;
     }
@@ -107,6 +112,9 @@ contract Engine is EngineLib, Sort{
 
         (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
         (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
+
+        matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
+        matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
@@ -171,102 +179,23 @@ contract Engine is EngineLib, Sort{
         uint8 tacticsId;
         uint8[3] memory substitutions;
         uint8[3] memory subsRounds;
-        (outStates, tacticsId, extraAttack, substitutions, subsRounds) = getLinedUpStates(matchLog, tactics, states, is2ndHalf);
+        (outStates, tacticsId, extraAttack, substitutions, subsRounds) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf);
         matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, substitutions, subsRounds, is2ndHalf, seed); 
         return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
     }
 
-    function getLinedUpStates(
+    function writeNDefs(
         uint256 matchLog, 
-        uint256 tactics, 
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint8 nDefsInTactics, 
         bool is2ndHalf
-    )
-        private 
-        pure 
-        returns 
-    (
-        uint256[PLAYERS_PER_TEAM_MAX] memory outStates,
-        uint8 tacticsId,
-        bool[10] memory extraAttack,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds
-    ) 
-    {
-        uint8[14] memory lineup;
-        (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
-        uint8 changes;
-        uint8 emptyShirts; 
-        
-        // Count changes during half-time, as well as not-aligned players
-        // ...note: substitutions = 11 means NO_SUBS
-        for (uint8 p = 0; p < 11; p++) {
-            outStates[p] = states[lineup[p]];
-            if (outStates[p] == 0) {
-                emptyShirts++;
-            } else if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                matchLog |= (uint256(p) << 201 + 4 * changes);
-                changes++; 
+    ) private pure returns (uint256) {
+        if (is2ndHalf) {
+            for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
+                if (states[p] == 0) return addNDefs(matchLog, nDefsInTactics - 1, true);
             }
         }
-
-        // if is2ndHalf: make sure we align 10 or 11 players depedning on possible 1st half redcards
-        if (is2ndHalf && wasThereRedCardIn1stHalf(matchLog)) {
-            require(emptyShirts == 1, "You cannot line up 11 players if there was a red card in 1st half");
-        } else {
-            require(emptyShirts == 0, "You must line up 11 players");
-        }
-        
-        
-        
-        // Count changes ingame during 1st half
-        // matchLog >> 189, 190, 191 contain ingameSubsCancelled
-        if (is2ndHalf) {
-            for (uint8 p = 0; p < 3; p++) {
-                if(((matchLog >> 189 + 2*p) & 3) == CHG_HAPPENED) changes++;
-            }        
-        }
-
-        if (substitutions[0] < 11) {
-            changes++;
-            outStates[11] = states[lineup[11]];
-            assertCanPlay(outStates[11]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
-        }
-        if (substitutions[1] < 11) { 
-            changes++;
-            require(substitutions[0] != substitutions[1], "changelist incorrect");
-            outStates[12] = states[lineup[12]];
-            assertCanPlay(outStates[12]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
-        }
-        if (substitutions[2] < 11) {
-            changes++;
-            require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            outStates[13] = states[lineup[13]];
-            assertCanPlay(outStates[13]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
-        }
-        require(changes < 4, "max allowed changes in a game is 3");
-        lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");        
-    }
-
-    function wasThereRedCardIn1stHalf(uint256 matchLog) private pure returns(bool) {
-        return ((matchLog >> 159) & 3) == RED_CARD;
-    }
-
-    // TODO: can this be expressed as
-    // translates from a high level tacticsId (e.g. 442) to a format that describes how many
-    // players play in each of the 9 zones in the field (Def, Mid, Forw) x (L, C, R), 
-    // We impose left-right symmetry: DR = DL, MR = ML, FR = FL.
-    // So we only manage 6 numbers: [DL, DM, ML, MM, FL, FM], and force 
-    function getPlayersPerZone(uint8 tacticsId) internal pure returns (uint8[9] memory) {
-        require(tacticsId < 4, "we currently support only 4 different tactics");
-        if (tacticsId == 0) return [1,2,1,1,2,1,0,2,0];  // 0 = 442
-        if (tacticsId == 1) return [1,3,1,1,2,1,0,1,0];  // 0 = 541
-        if (tacticsId == 2) return [1,2,1,1,1,1,1,1,1];  // 0 = 433
-        if (tacticsId == 3) return [1,2,1,1,3,1,0,1,0];  // 0 = 451
+        return addNDefs(matchLog, nDefsInTactics, is2ndHalf);
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
@@ -387,7 +316,7 @@ contract Engine is EngineLib, Sort{
         pure
         returns (uint256[2] memory)
     {
-        uint256 currentGoals = matchLog[teamThatAttacks] & 15;
+        uint8 currentGoals = getNGoals(matchLog[teamThatAttacks]);
         if (currentGoals > 13) return matchLog;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
@@ -395,10 +324,10 @@ contract Engine is EngineLib, Sort{
         bool isGoal = throwDice((getShoot(states[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
         if (isGoal) {
             uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
-            matchLog[teamThatAttacks] |= uint256(assister) << (4 + 4 * currentGoals);
-            matchLog[teamThatAttacks] |= uint256(shooter) << (60 + 4 * currentGoals);
-            matchLog[teamThatAttacks] |= uint256(getForwardPos(shooter, playersPerZone)) << (116 + 2 * currentGoals);
-            matchLog[teamThatAttacks]++;
+            matchLog[teamThatAttacks] = addAssister(matchLog[teamThatAttacks], assister, currentGoals);
+            matchLog[teamThatAttacks] = addShooter(matchLog[teamThatAttacks], shooter, currentGoals);
+            matchLog[teamThatAttacks] = addForwardPos(matchLog[teamThatAttacks], getForwardPos(shooter, playersPerZone), currentGoals);
+            matchLog[teamThatAttacks]++; // adds 1 goal because nGoals is the right-most number serialized
         }
         return matchLog;
     }
@@ -410,11 +339,6 @@ contract Engine is EngineLib, Sort{
         else return 3;
     }
     
-    function assertCanPlay(uint256 playerSkills) public pure {
-        require(getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID, "free player shirt has been aligned");
-        require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
-        require(!getSubstitutedLastHalf(playerSkills), "cannot align player who was already substituted");
-    }
     
 }
 
