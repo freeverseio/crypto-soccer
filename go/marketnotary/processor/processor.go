@@ -114,10 +114,16 @@ func (b *Processor) Process() error {
 	if err != nil {
 		return err
 	}
+
+	now := time.Now().Unix()
+
 	for _, auction := range openedAuctions {
-		state, err := b.ComputeState(auction)
-		if err != nil {
-			return err
+		// bids := storage.Get
+		state := storage.AUCTION_STARTED
+
+		// check that auction are closed
+		if auction.ValidUntil.Int64() < now {
+			state = storage.AUCTION_NO_BIDS
 		}
 		if state != auction.State {
 			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
@@ -125,7 +131,6 @@ func (b *Processor) Process() error {
 			if err != nil {
 				return err
 			}
-
 		}
 	}
 
@@ -162,14 +167,6 @@ func (b *Processor) Process() error {
 	// }
 	// }
 	return nil
-}
-
-func (b *Processor) ComputeState(auction storage.Auction) (storage.AuctionState, error) {
-	now := time.Now().Unix()
-	if auction.ValidUntil.Int64() < now {
-		return storage.AUCTION_NO_BIDS, nil
-	}
-	return auction.State, nil
 }
 
 func (b *Processor) FreezePlayer(Auction storage.Auction) error {

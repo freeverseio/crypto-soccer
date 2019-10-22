@@ -11,26 +11,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
-func TestUpdateAuction(t *testing.T) {
-	now := time.Now().Unix()
-	auction := storage.Auction{
-		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(now - 10),
-		State:      storage.AUCTION_STARTED,
-	}
-	processor, err := processor.NewProcessor(nil, nil, nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	state, err := processor.ComputeState(auction)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if state != storage.AUCTION_NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, state)
-	}
-}
-
 func TestOutdatedAuction(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 	if err != nil {
