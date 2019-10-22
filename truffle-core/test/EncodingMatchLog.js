@@ -35,16 +35,17 @@ contract('EncodingMatchLog', (accounts) => {
         nDefs2 = 3;
         nTot = 10;
         winner = 1;
+        teamSumSkills = 4238475332
         
         log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner);
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills);
 
         await logUtils.checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner);
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills);
     });
     
 
