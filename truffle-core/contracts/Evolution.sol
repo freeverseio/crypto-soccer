@@ -40,13 +40,13 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         pointsNeg[0] = nGoals1;
         pointsNeg[1] = nGoals0;
         // -3 for redCards, -1 for yellows
-        // ...note that offset for 1st half is 159, and for 2nd half is 179
         for (uint8 team = 0; team <2; team++) {
-            for (uint8 offset = 159; offset < 180; offset += 20) {
-                pointsNeg[team] += (((matchLog[0] >> offset) & 3) < RED_CARD) ? 3 : 0;
-                pointsNeg[team] += (((matchLog[0] >> (offset + 2)) & 15) < NO_CARD) ? 1 : 0;
-                pointsNeg[team] += (((matchLog[0] >> (offset + 6)) & 15) < NO_CARD) ? 1 : 0;
-            }
+            pointsNeg[team] += 
+                    3 * (getOutOfGameType(matchLog[team], false) + getOutOfGameType(matchLog[team], true)) 
+                +   (getOutOfGameType(matchLog[team], 0, false) < NO_CARD ? 1 : 0) 
+                +   (getOutOfGameType(matchLog[team], 1, false) < NO_CARD ? 1 : 0)
+                +   (getOutOfGameType(matchLog[team], 0, true)  < NO_CARD ? 1 : 0) 
+                +   (getOutOfGameType(matchLog[team], 1, true)  < NO_CARD ? 1 : 0);
         }
         
         // subtract points, keeping them always non-negativre
@@ -54,16 +54,16 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         points[1] = (points[1] > pointsNeg[1]) ? (points[1] - pointsNeg[1]) : 0;
         
         // +10% for each extra 50 points of lack of balance between teams
-        uint256 teamQuality0 = computeTeamQuality(statesHalf1[0]);
-        uint256 teamQuality1 = computeTeamQuality(statesHalf1[1]);
+        // uint256 teamQuality0 = computeTeamQuality(matchLog[0]);
+        // uint256 teamQuality1 = computeTeamQuality(matchLog[1]);
 
-        if (teamQuality0 > teamQuality1) {
-            points[0] = (points[0] * teamQuality1 * 3) / (teamQuality0 * 4);
-            points[1] = (points[1] * teamQuality0 * 4) / (teamQuality1 * 3);
-        } else if (teamQuality0 < teamQuality1) {
-            points[0] = (points[0] * teamQuality1 * 4) / (teamQuality0 * 3);
-            points[1] = (points[1] * teamQuality0 * 3) / (teamQuality1 * 4);
-        }
+        // if (teamQuality0 > teamQuality1) {
+        //     points[0] = (points[0] * teamQuality1 * 3) / (teamQuality0 * 4);
+        //     points[1] = (points[1] * teamQuality0 * 4) / (teamQuality1 * 3);
+        // } else if (teamQuality0 < teamQuality1) {
+        //     points[0] = (points[0] * teamQuality1 * 4) / (teamQuality0 * 3);
+        //     points[1] = (points[1] * teamQuality0 * 3) / (teamQuality1 * 4);
+        // }
     }
     
     // if clean-sheet (opponent did not score):
