@@ -35,7 +35,7 @@ contract('EncodingMatchLog', (accounts) => {
         nDefs2 = 3;
         nTot = 10;
         winner = 1;
-        teamSumSkills = 4238475332
+        teamSumSkills = 1;
         
         log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,

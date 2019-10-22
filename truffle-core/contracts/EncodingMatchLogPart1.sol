@@ -4,10 +4,10 @@ pragma solidity >=0.4.21 <0.6.0;
  */
 
         // uint8 nGoals, // 4b, offset 0
-        // uint8 assistersIdx[14], 4b each, offset 4
-        // uint8 shootersIdx[14], 4b each, offset 60
-        // uint8 shooterFwdPos[14], 2b each, offset 116
-        // bool[7] memory penalties, // 1b each, offset 144
+        // uint8 assistersIdx[12], 4b each, offset 4
+        // uint8 shootersIdx[12], 4b each, offset 52
+        // uint8 shooterFwdPos[12], 2b each, offset 100
+        // bool[7] memory penalties, // 1b each, offset 128
         // uint8[2] memory outOfGames 4b each
         // uint8[6] memory yellowCards1, 4b each,
         // uint8[6] memory yellowCards2, 4b each
@@ -33,7 +33,6 @@ contract EncodingMatchLogPart1 {
     function addNGoals(uint256 log, uint8 goals) public pure returns (uint256) {
         return log + goals;
     }
-
     
     function addScoredPenalty(uint256 log, uint8 pos)  public pure returns (uint256) {
         return log | (ONE256 << (144 + pos));
