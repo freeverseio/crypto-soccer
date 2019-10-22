@@ -2,8 +2,9 @@ pragma solidity ^0.5.0;
 
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
+import "./EncodingMatchLog.sol";
 
-contract Evolution is EncodingSkills, EngineLib {
+contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_CARD  = 14;   // noone saw a card
@@ -12,27 +13,17 @@ contract Evolution is EncodingSkills, EngineLib {
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
 
-    function computeTrainingPoints( 
-        uint256[2] memory matchLog,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory statesHalf1,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory statesHalf2,
-        uint256[2] memory tacticsHalf1,
-        uint256[2] memory tacticsHalf2,
-        bool isHomeStadium
-    )
-        public
-        pure
-        returns (uint256[2] memory points)
+    function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory points)
     {
         
         // +11 point for winning at home, +22 points for winning
         // away, or in a cup match. 0 points for drawing.
-        uint256 nGoals0 = (matchLog[0] & 15);
-        uint256 nGoals1 = (matchLog[1] & 15);
-        if ( nGoals0 > nGoals1) {
-            points[0] = POINTS_FOR_HAVING_PLAYED + (isHomeStadium ? 11 : 22);    
-        } else if (nGoals0 < nGoals1) {
-            points[1] = POINTS_FOR_HAVING_PLAYED + (isHomeStadium ? 22 : 22);    
+        uint256 nGoals0 = getNGoals(matchLog[0]);
+        uint256 nGoals1 = getNGoals(matchLog[1]);
+        if (getWinner(matchLog[0])==0) {
+            points[0] = POINTS_FOR_HAVING_PLAYED + (getIsHomeStadium(matchLog[0]) ? 11 : 22);    
+        } else if (getWinner(matchLog[0])==1) {
+            points[1] = POINTS_FOR_HAVING_PLAYED + (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
         }
 
         // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
@@ -41,8 +32,8 @@ contract Evolution is EncodingSkills, EngineLib {
 
         // if clean-sheet (opponent did not score):
         // +2 per half played by GK/D, +1 per half played for Mids and Atts
-        if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog[0], tacticsHalf1[0], tacticsHalf2[0]);
-        if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog[1], tacticsHalf1[1], tacticsHalf2[1]);
+        if (nGoals1 == 0) points[0] += pointsPerCleanSheet(matchLog[0]);
+        if (nGoals0 == 0) points[1] += pointsPerCleanSheet(matchLog[1]);
 
         uint256[2] memory pointsNeg;
         // -1 for each opponent goal
@@ -77,14 +68,14 @@ contract Evolution is EncodingSkills, EngineLib {
     
     // if clean-sheet (opponent did not score):
     // +2 per half played by GK/D, +1 per half played for Mids and Atts
-    function pointsPerCleanSheet(uint256 matchLog, uint256 tacticsHalf1, uint256 tacticsHalf2) public pure returns (uint256) {
-        // formula: 
-        //      points  = 2 (for GK) + 2 * nDef + nMid + nAtt 
-        //              = 2 + 2 * nDef + 10 - nDef = 12 + nDef
-        uint8 nDef = getNDefenders(getPlayersPerZone(uint8(tacticsHalf1 & 63)));
-        uint256 points  = 12 + nDef;
-        nDef = getNDefenders(getPlayersPerZone(uint8(tacticsHalf2 & 63)));
-        return points + 12 + nDef;
+    function pointsPerCleanSheet(uint256 matchLog) public pure returns (uint256) {
+        // formula: (note that for a given half: 1 + nDef + nMid + nAtt = nTot)
+        //      pointsPerHalf   = 2 (for GK) + 2 * nDef + nMid + nAtt 
+        //                      = 2 + 2 * nDef + nTot - nDef - 1 = nTot + 1 + nDef
+        //      note also that by constraint, nTot = 11 in the first half
+        //      pointsPerMatch  = 2 + nTot1 + nTot2 + nDef1 + nDef2 = 13 + nTot2 + nDef1 + nDef2 
+        return 13   + (getOutOfGameType(matchLog, false) == RED_CARD ? 10 : 11) 
+                    +  getNDefs(matchLog, false) + getNDefs(matchLog, true);
     }
     
     
