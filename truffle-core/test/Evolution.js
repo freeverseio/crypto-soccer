@@ -110,7 +110,7 @@ contract('Evolution', (accounts) => {
         evolution = await Evolution.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
-        encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
+        encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setCardsAndInjuries(precomp.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
@@ -148,19 +148,20 @@ contract('Evolution', (accounts) => {
         nTot = 10; 
         winner = 0; 
         isHomeSt = true;
-        teamSumSkillsDefault = 100;
-
-        log0 = await logUtils.encodeLog(encodingLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+        teamSumSkillsDefault = 0;
+        trainingPointsInit = 0;
+        
+        log0 = await logUtils.encodeLog(encodeLog, nGoals = 3, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault);
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
-        result = await evolution.computeTrainingPoints(
-            [log0, log0], 
-        )
-        // console.log(result[0].toNumber(), result[1].toNumber())
-        // result[0].should.be.bignumber.equal(result[1]);
-        // result[0].toNumber().should.be.equal(15);
+        logFinal = await evolution.computeTrainingPoints([log0, log0])
+        expected = [30, 9];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
+        }
     });
 
 });

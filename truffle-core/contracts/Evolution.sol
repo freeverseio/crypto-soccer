@@ -65,6 +65,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
             points[0] = (points[0] * teamSumSkills1 * 4) / (teamSumSkills0 * 3);
             points[1] = (points[1] * teamSumSkills0 * 3) / (teamSumSkills1 * 4);
         }
+        matchLog[0] = addTrainingPoints(matchLog[0], points[0]);
+        matchLog[1] = addTrainingPoints(matchLog[1], points[1]);
         return matchLog;
     }
     
