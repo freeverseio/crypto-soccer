@@ -134,7 +134,8 @@ contract('Evolution', (accounts) => {
         assets = await Assets.new().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
-        await engine.setCardsAndInjuries(precomp.address).should.be.fulfilled;
+        await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
+        await evolution.setEngine(engine.address).should.be.fulfilled;
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId433).should.be.fulfilled;
         tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId433).should.be.fulfilled;
@@ -155,6 +156,21 @@ contract('Evolution', (accounts) => {
         
     });
 
+    it('test that we can a 2nd half and include the evolution points too', async () => {
+        matchLog = await evolution.play2ndHalfAndEvolve(
+            123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
+            [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+
+            expectedResult = [2, 2];
+            expectedPoints = [12, 50];
+            for (team = 0; team < 2; team++) {
+            nGoals = await encodeLog.getNGoals(matchLog[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expectedPoints[team]);
+        }
+    });
+    
     it('training points: estimate cost', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,

@@ -3,6 +3,7 @@ pragma solidity ^0.5.0;
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
+import "./Engine.sol";
 
 contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
 
@@ -12,8 +13,32 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
+    uint8 private constant IDX_IS_2ND_HALF      = 0; 
+
+    Engine private _engine;
 
     bool dummyBoolToEstimateCost;
+
+    function setEngine(address addr) public {
+        _engine = Engine(addr);
+    }
+
+    // function to call on 2nd half when we want to the matchlog to include the evolution points too.
+    function play2ndHalfAndEvolve(
+        uint256 seed,
+        uint256 matchStartTime,
+        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
+        uint256[2] memory tactics,
+        uint256[2] memory matchLog,
+        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
+    )
+        public view returns(uint256[2] memory)
+    {
+        require(matchBools[IDX_IS_2ND_HALF], "play with evolution should only be called in 2nd half games");
+        return computeTrainingPoints(
+            _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools)
+        );
+    }
 
     function computeTrainingPointsWithCost(uint256[2] memory matchLog) public returns (uint256[2] memory)
     {
@@ -23,7 +48,6 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
 
     function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
     {
-        
         // +11 point for winning at home, +22 points for winning
         // away, or in a cup match. 0 points for drawing.
         uint256 nGoals0 = getNGoals(matchLog[0]);
