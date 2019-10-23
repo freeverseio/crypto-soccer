@@ -63,7 +63,7 @@ contract('Evolution', (accounts) => {
     const nDefs1 = 4; 
     const nDefs2 = 4; 
     const nTot = 11; 
-    const winner = 2; 
+    const winner = 2; // DRAW = 2
     const isHomeSt = false;
     const teamSumSkillsDefault = 0;
     const trainingPointsInit = 0;
@@ -154,7 +154,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it('training points with random inputs', async () => {
+    it2('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];
         outGames = [9, 14]
@@ -179,7 +179,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points with no goals nor anything else', async () => {
+    it2('training points with no goals nor anything else', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
@@ -196,14 +196,19 @@ contract('Evolution', (accounts) => {
     });    
 
     it('training points with many goals but bothing else', async () => {
-        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+        goals = 5;
+        ass     = Array.from(new Array(goals), (x,i) => 10);
+        shoot   = Array.from(new Array(goals), (x,i) => 10);
+        fwd     = Array.from(new Array(goals), (x,i) => 3);
+        
+        log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await evolution.computeTrainingPoints([log0, log0])
-        // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(25+8) = 42
-        expected = [42, 42];
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
+        expected = [25, 25];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);

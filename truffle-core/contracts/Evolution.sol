@@ -24,8 +24,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         points[0] = POINTS_FOR_HAVING_PLAYED;
         points[1] = POINTS_FOR_HAVING_PLAYED;
 
-        if (getWinner(matchLog[0])==0) {
-            points[0] += (getIsHomeStadium(matchLog[0]) ? 11 : 22);    
+        if (getWinner(matchLog[0])==0) { // we can get winner from [0] or [1], they are the same   
+            points[0] += (getIsHomeStadium(matchLog[0]) ? 11 : 22); // we can get homeStadium from [0] or [1], they are the same   
         } else if (getWinner(matchLog[0])==1) {
             points[1] += (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
         }
@@ -101,13 +101,12 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
     // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
     function pointsPerWhoScoredGoalsAndAssists(uint256 matchLog, uint256 nGoals) public pure returns(uint256 points) {
         for (uint8 goal = 0; goal < nGoals; goal++) {
-            uint256 fwdPos = (matchLog >> 116 + 2 * goal) & 3;
+            uint256 fwdPos = getForwardPos(matchLog, goal);
             if (fwdPos < 2) {points += 6;}
             else if (fwdPos == 2) {points += 5;}
-            else {points += 6;}
+            else {points += 4;}
             // if assister is different the shooter, it was a true assist
-            if (((matchLog >> 4 + 4 * goal) & 15) != ((matchLog >> 60 + 4 * goal) & 15)) {points += 3;}
-            
+            if (getShooter(matchLog, goal) != getAssister(matchLog, goal)) {points += 3;}
         }
     }
 
