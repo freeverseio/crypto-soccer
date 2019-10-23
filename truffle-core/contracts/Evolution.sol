@@ -46,12 +46,15 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         // -3 for redCards, -1 for yellows
         for (uint8 team = 0; team <2; team++) {
             pointsNeg[team] += 
-                    3 * (getOutOfGameType(matchLog[team], false) + getOutOfGameType(matchLog[team], true)) 
-                +   (getYellowCard(matchLog[team], 0, false) < NO_CARD ? 1 : 0) 
-                +   (getYellowCard(matchLog[team], 1, false) < NO_CARD ? 1 : 0)
-                +   (getYellowCard(matchLog[team], 0, true)  < NO_CARD ? 1 : 0) 
-                +   (getYellowCard(matchLog[team], 1, true)  < NO_CARD ? 1 : 0);
+                    (getOutOfGameType(matchLog[team], false) == RED_CARD ? 3 : 0)
+                +   (getOutOfGameType(matchLog[team], true)  == RED_CARD ? 3 : 0)
+                +   ((getYellowCard(matchLog[team], 0, false) < NO_CARD) ? 1 : 0) 
+                +   ((getYellowCard(matchLog[team], 1, false) < NO_CARD) ? 1 : 0)
+                +   ((getYellowCard(matchLog[team], 0, true)  < NO_CARD) ? 1 : 0) 
+                +   ((getYellowCard(matchLog[team], 1, true)  < NO_CARD) ? 1 : 0);
         }
+        
+        // require(pointsNeg[0] == 10, "....");
         
         // subtract points, keeping them always non-negativre
         points[0] = (points[0] > pointsNeg[0]) ? (points[0] - pointsNeg[0]) : 0;

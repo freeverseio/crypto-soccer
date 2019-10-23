@@ -46,6 +46,7 @@ contract('Evolution', (accounts) => {
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const MAX_PENALTY = 10000;
     const MAX_GOALS = 12;
+    const RED_CARD = 3;
 
     const assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
     const shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
@@ -154,7 +155,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it2('training points with random inputs', async () => {
+    it('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];
         outGames = [9, 14]
@@ -172,21 +173,21 @@ contract('Evolution', (accounts) => {
             halfTimeSubstitutions, defs1, defs2, numTot, win, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await evolution.computeTrainingPoints([log0, log0])
-        expected = [30, 19];
+        expected = [36, 25];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
         }
     });
 
-    it2('training points with no goals nor anything else', async () => {
+    it('training points with no goals nor anything else', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await evolution.computeTrainingPoints([log0, log0])
-        // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(25+8) = 42
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(24+8) = 42
         expected = [42, 42];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
@@ -194,7 +195,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it2('training points with many goals by attackers', async () => {
+    it('training points with many goals by attackers', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
         shoot   = Array.from(new Array(goals), (x,i) => 10);
@@ -214,7 +215,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it2('training points with many goals by mids', async () => {
+    it('training points with many goals by mids', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 6);
@@ -234,7 +235,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it2('training points with many goals by defs with assists', async () => {
+    it('training points with many goals by defs with assists', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 2);
@@ -255,7 +256,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it2('training points with many goals with a winner at home', async () => {
+    it('training points with many goals with a winner at home', async () => {
         win = 0;
         isHome = true;
 
@@ -284,7 +285,6 @@ contract('Evolution', (accounts) => {
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
-            // console.log(points.toNumber())//.should.be.equal(expected[team]);
         }
     });    
 
@@ -318,6 +318,26 @@ contract('Evolution', (accounts) => {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
             // console.log(points.toNumber())//.should.be.equal(expected[team]);
+        }
+    });    
+    
+    it('training points with no goals but cards', async () => {
+        outGames    = [4, 6];
+        types       = [RED_CARD, RED_CARD];
+        yellows1    = [3, 7];
+        yellows2    = [1, 2];
+        
+        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outGames, outOfGameRounds, types, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellows1, yellows2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+        
+        logFinal = await evolution.computeTrainingPoints([log0, log0])
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(23+8) - REDS(3*2) - YELLOWS(4) 
+        expected = [31, 31];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
         }
     });    
 });
