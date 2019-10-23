@@ -134,4 +134,13 @@ contract EncodingMatchLogPart2 {
     function getTeamSumSkills(uint256 log) public pure returns (uint256) {
         return (log >> 211) & 16777215; // 2^24 - 1
     }
+    
+    function addTrainingPoints(uint256 log, uint256 points)  public pure returns (uint256) {
+        return log | (uint256(points) << 235);
+    }
+
+    function getTrainingPoints(uint256 log)  public pure returns (uint256) {
+        return  (log >> 235) & 4095; // 2^12-1
+    }
+    
 }

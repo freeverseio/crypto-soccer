@@ -37,16 +37,17 @@ contract('EncodingMatchLog', (accounts) => {
         nTot = 10;
         winner = 1;
         teamSumSkills = 1;
+        trainingPoints = 2333;
         
         log = await logUtils.encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills);
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints);
 
         await logUtils.checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills);
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints);
     });
     
 

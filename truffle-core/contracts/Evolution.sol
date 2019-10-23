@@ -13,13 +13,14 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
 
-    function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory points)
+    function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
     {
         
         // +11 point for winning at home, +22 points for winning
         // away, or in a cup match. 0 points for drawing.
         uint256 nGoals0 = getNGoals(matchLog[0]);
         uint256 nGoals1 = getNGoals(matchLog[1]);
+        uint256[2] memory points;
         if (getWinner(matchLog[0])==0) {
             points[0] = POINTS_FOR_HAVING_PLAYED + (getIsHomeStadium(matchLog[0]) ? 11 : 22);    
         } else if (getWinner(matchLog[0])==1) {
@@ -54,16 +55,17 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         points[1] = (points[1] > pointsNeg[1]) ? (points[1] - pointsNeg[1]) : 0;
         
         // +10% for each extra 50 points of lack of balance between teams
-        // uint256 teamQuality0 = computeTeamQuality(matchLog[0]);
-        // uint256 teamQuality1 = computeTeamQuality(matchLog[1]);
+        uint256 teamSumSkills0 = getTeamSumSkills(matchLog[0]);
+        uint256 teamSumSkills1 = getTeamSumSkills(matchLog[1]);
 
-        // if (teamQuality0 > teamQuality1) {
-        //     points[0] = (points[0] * teamQuality1 * 3) / (teamQuality0 * 4);
-        //     points[1] = (points[1] * teamQuality0 * 4) / (teamQuality1 * 3);
-        // } else if (teamQuality0 < teamQuality1) {
-        //     points[0] = (points[0] * teamQuality1 * 4) / (teamQuality0 * 3);
-        //     points[1] = (points[1] * teamQuality0 * 3) / (teamQuality1 * 4);
-        // }
+        if (teamSumSkills0 > teamSumSkills1) {
+            points[0] = (points[0] * teamSumSkills1 * 3) / (teamSumSkills0 * 4);
+            points[1] = (points[1] * teamSumSkills0 * 4) / (teamSumSkills1 * 3);
+        } else if (teamSumSkills0 < teamSumSkills1) {
+            points[0] = (points[0] * teamSumSkills1 * 4) / (teamSumSkills0 * 3);
+            points[1] = (points[1] * teamSumSkills0 * 3) / (teamSumSkills1 * 4);
+        }
+        return matchLog;
     }
     
     // if clean-sheet (opponent did not score):
