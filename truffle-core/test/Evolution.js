@@ -154,7 +154,15 @@ contract('Evolution', (accounts) => {
         
         
     });
-    
+
+    it('training points: estimate cost', async () => {
+        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+        logFinal = await evolution.computeTrainingPointsWithCost([log0, log0]);
+    });    
+        
     it('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];

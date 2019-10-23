@@ -13,6 +13,14 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
 
+    bool dummyBoolToEstimateCost;
+
+    function computeTrainingPointsWithCost(uint256[2] memory matchLog) public returns (uint256[2] memory)
+    {
+        dummyBoolToEstimateCost = !dummyBoolToEstimateCost;
+        return computeTrainingPoints(matchLog);
+    }
+
     function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
     {
         
