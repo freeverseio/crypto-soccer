@@ -30,13 +30,13 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
 
     EnginePreComp private _precomp;
 
-    function setCardsAndInjuries(address addr) public {
+    function setPreCompAddr(address addr) public {
         _precomp = EnginePreComp(addr);
     }
 
     // mock up to estimate cost of a match.
     // to be removed before deployment
-    function playMatchWithCost(
+    function playHalfMatchWithCost(
         uint256 seed,
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
@@ -46,19 +46,19 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     )
         public
     {
-        playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
+        playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
 
 
     /**
-     * @dev playMatch returns the result of a match
+     * @dev playHalfMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
      * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
-    function playMatch(
+    function playHalfMatch(
         uint256 seed,
         uint256 matchStartTime, //actionsSubmissionTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
@@ -90,7 +90,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     }
     
     /**
-     * @dev playMatch returns the result of a match
+     * @dev playHalfMatch returns the result of a match
      * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
