@@ -127,9 +127,11 @@ contract('Evolution', (accounts) => {
         kMaxRndNumHalf = Math.floor(MAX_RND/2)-200; 
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
+        POINTS_FOR_HAVING_PLAYED = await evolution.POINTS_FOR_HAVING_PLAYED().should.be.fulfilled;
+        POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
     
-    it('test1', async () => {
+    it('training points with random inputs', async () => {
         assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
         shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
         shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
@@ -157,11 +159,47 @@ contract('Evolution', (accounts) => {
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
         
         logFinal = await evolution.computeTrainingPoints([log0, log0])
-        expected = [30, 9];
+        expected = [30, 19];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
         }
     });
 
+    it('training points with no goals nor anything else', async () => {
+        assistersIdx = Array.from(new Array(MAX_GOALS), (x,i) => i);
+        shootersIdx  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        shooterForwardPos  = Array.from(new Array(MAX_GOALS), (x,i) => 1);
+        penalties  = Array.from(new Array(7), (x,i) => false);
+        typesOutOfGames = [0, 0];
+        outOfGameRounds = [0, 0];
+        yellowCardedDidNotFinish1stHalf = [false, false];
+        ingameSubs1 = [0, 0, 0]
+        ingameSubs2 = [0, 0, 0]
+        outOfGames = [14, 14]
+        yellowCards1 = [14, 14]
+        yellowCards2 = [14, 14]
+        halfTimeSubstitutions = [14, 14, 14]
+        nDefs1 = 4; 
+        nDefs2 = 4; 
+        nTot = 11; 
+        winner = 2; 
+        isHomeSt = false;
+        teamSumSkillsDefault = 0;
+        trainingPointsInit = 0;
+        
+        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+        
+        logFinal = await evolution.computeTrainingPoints([log0, log0])
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + cleanSheet(25+8) = 42
+        expected = [42, 42];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
+            // console.log(points.toNumber())//.should.be.equal(expected[team]);
+        }
+    });    
 });

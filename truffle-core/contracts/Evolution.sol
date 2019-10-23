@@ -21,10 +21,13 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         uint256 nGoals0 = getNGoals(matchLog[0]);
         uint256 nGoals1 = getNGoals(matchLog[1]);
         uint256[2] memory points;
+        points[0] = POINTS_FOR_HAVING_PLAYED;
+        points[1] = POINTS_FOR_HAVING_PLAYED;
+
         if (getWinner(matchLog[0])==0) {
-            points[0] = POINTS_FOR_HAVING_PLAYED + (getIsHomeStadium(matchLog[0]) ? 11 : 22);    
+            points[0] += (getIsHomeStadium(matchLog[0]) ? 11 : 22);    
         } else if (getWinner(matchLog[0])==1) {
-            points[1] = POINTS_FOR_HAVING_PLAYED + (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
+            points[1] += (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
         }
 
         // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
