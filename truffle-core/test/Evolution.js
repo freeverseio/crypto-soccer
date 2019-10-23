@@ -191,11 +191,10 @@ contract('Evolution', (accounts) => {
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);
-            // console.log(points.toNumber())//.should.be.equal(expected[team]);
         }
     });    
 
-    it('training points with many goals but bothing else', async () => {
+    it2('training points with many goals by attackers', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
         shoot   = Array.from(new Array(goals), (x,i) => 10);
@@ -209,6 +208,79 @@ contract('Evolution', (accounts) => {
         logFinal = await evolution.computeTrainingPoints([log0, log0])
         // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(5)  
         expected = [25, 25];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
+        }
+    });    
+
+    it2('training points with many goals by mids', async () => {
+        goals = 5;
+        ass     = Array.from(new Array(goals), (x,i) => 6);
+        shoot   = Array.from(new Array(goals), (x,i) => 6);
+        fwd     = Array.from(new Array(goals), (x,i) => 2);
+        
+        log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+        
+        logFinal = await evolution.computeTrainingPoints([log0, log0])
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_MIDS(5 * 5) - GOALS_OPPONENT(5)  
+        expected = [30, 30];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
+        }
+    });    
+
+    it2('training points with many goals by defs with assists', async () => {
+        goals = 5;
+        ass     = Array.from(new Array(goals), (x,i) => 6);
+        shoot   = Array.from(new Array(goals), (x,i) => 2);
+        fwd     = Array.from(new Array(goals), (x,i) => 1);
+        
+        log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
+        
+        logFinal = await evolution.computeTrainingPoints([log0, log0])
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_DEFS(4 * 5) + ASSISTS(3*5) - GOALS_OPPONENT(5)  
+        expected = [50, 50];
+        for (team = 0; team < 2; team++) {
+            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expected[team]);
+            // console.log(points.toNumber())//.should.be.equal(expected[team]);
+        }
+    });    
+
+    it('training points with many goals with a winner at home', async () => {
+        win = 0;
+        isHome = true;
+
+        goals = 5;
+        ass     = Array.from(new Array(goals), (x,i) => 10);
+        shoot   = Array.from(new Array(goals), (x,i) => 10);
+        fwd     = Array.from(new Array(goals), (x,i) => 3);
+        log0 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+
+        goals = 4;
+        ass     = Array.from(new Array(goals), (x,i) => 10);
+        shoot   = Array.from(new Array(goals), (x,i) => 10);
+        fwd     = Array.from(new Array(goals), (x,i) => 3);
+        log1 = await logUtils.encodeLog(encodeLog, goals, ass, shoot, fwd, penalties,
+            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
+            isHome, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
+            halfTimeSubstitutions, nDefs1, nDefs2, nTot, win, teamSumSkillsDefault, trainingPointsInit);
+            
+        logFinal = await evolution.computeTrainingPoints([log0, log1])
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + WIN_AT_HOME(11) + GOALS_BY_ATTACKERS(4 * 5) - GOALS_OPPONENT(4)  
+        // expect: POINTS_FOR_HAVING_PLAYED(10) + GOALS_BY_ATTACKERS(4 * 4) - GOALS_OPPONENT(5)  
+        expected = [37, 21];
         for (team = 0; team < 2; team++) {
             points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expected[team]);

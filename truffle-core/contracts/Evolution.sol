@@ -29,7 +29,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         } else if (getWinner(matchLog[0])==1) {
             points[1] += (getIsHomeStadium(matchLog[0]) ? 22 : 22);    
         }
-
+        
         // +6 for goal scored by GK/D; +5 for midfielder; +4 for attacker; +3 for each assist
         points[0] += pointsPerWhoScoredGoalsAndAssists(matchLog[0], nGoals0);
         points[1] += pointsPerWhoScoredGoalsAndAssists(matchLog[1], nGoals1);
