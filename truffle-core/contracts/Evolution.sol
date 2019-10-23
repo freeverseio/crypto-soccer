@@ -65,11 +65,11 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
         uint256 teamSumSkills1 = getTeamSumSkills(matchLog[1]);
 
         if (teamSumSkills0 > teamSumSkills1) {
-            points[0] = (points[0] * teamSumSkills1 * 3) / (teamSumSkills0 * 4);
-            points[1] = (points[1] * teamSumSkills0 * 4) / (teamSumSkills1 * 3);
+            points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
+            points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         } else if (teamSumSkills0 < teamSumSkills1) {
-            points[0] = (points[0] * teamSumSkills1 * 4) / (teamSumSkills0 * 3);
-            points[1] = (points[1] * teamSumSkills0 * 3) / (teamSumSkills1 * 4);
+            points[0] = (points[0] * teamSumSkills1) / (teamSumSkills0);
+            points[1] = (points[1] * teamSumSkills0) / (teamSumSkills1);
         }
         matchLog[0] = addTrainingPoints(matchLog[0], points[0]);
         matchLog[1] = addTrainingPoints(matchLog[1], points[1]);
