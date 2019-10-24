@@ -19,6 +19,7 @@ CREATE TABLE auctions (
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES auction_states(state),
+    paymet_link TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(uuid)
 );
 
@@ -38,6 +39,7 @@ CREATE TABLE bids (
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES bid_states(state),
+    paymet_link TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );
 
