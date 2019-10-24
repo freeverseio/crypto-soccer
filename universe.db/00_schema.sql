@@ -27,6 +27,7 @@ CREATE TABLE leagues (
 
 CREATE TABLE teams (
     team_id NUMERIC(78,0) NOT NULL,
+    name TEXT NOT NULL,
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
     owner TEXT NOT NULL,
@@ -45,6 +46,7 @@ CREATE TABLE teams (
 
 CREATE TABLE players (
     player_id NUMERIC(78,0) NOT NULL,
+    name TEXT NOT NULL,
     team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
