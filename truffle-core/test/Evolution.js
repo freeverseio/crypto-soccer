@@ -162,15 +162,15 @@ contract('Evolution', (accounts) => {
             [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
 
             expectedResult = [2, 2];
-            expectedPoints = [12, 50];
+            expectedPoints = [15, 18];
             for (team = 0; team < 2; team++) {
             nGoals = await encodeLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
-            points = await encodeLog.getTrainingPoints(logFinal[team]).should.be.fulfilled;
+            points = await encodeLog.getTrainingPoints(matchLog[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expectedPoints[team]);
         }
     });
-    
+
     it('training points: estimate cost', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
