@@ -81,6 +81,13 @@ func TestClosedAuctionWithBid(t *testing.T) {
 	if auctions[0].State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, auctions[0].State)
 	}
+	// bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// if bids[0].State != storage.BID_PAYING {
+	// 	t.Fatalf("Expects %v got %v", storage.BID_PAYING, bids[0].State)
+	// }
 }
 
 // func TestFreezePlayer(t *testing.T) {
