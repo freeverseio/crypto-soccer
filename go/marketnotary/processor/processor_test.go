@@ -43,6 +43,46 @@ func TestOutdatedAuction(t *testing.T) {
 	}
 }
 
+func TestClosedAuctionWithBid(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().Unix()
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(now - 10),
+		State:      storage.AUCTION_STARTED,
+	}
+	err = sto.CreateAuction(auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bid := storage.Bid{
+		Auction: auction.UUID,
+		State:   storage.BID_ACCEPTED,
+	}
+	err = sto.CreateBid(bid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	processor, err := processor.NewProcessor(sto, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = processor.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	auctions, err := sto.GetAuctions()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if auctions[0].State != storage.AUCTION_PAYING {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, auctions[0].State)
+	}
+}
+
 // func TestFreezePlayer(t *testing.T) {
 // 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 // 	if err != nil {
