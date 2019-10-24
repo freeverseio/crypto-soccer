@@ -238,10 +238,10 @@ contract('Evolution', (accounts) => {
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
         TPs = 20;
-        weights = [14, 18, 22, 27, 31];
+        weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [2,5,7,10,13];
+        expected = [14, 18, 22, 27, 31];;
         result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[1]);
@@ -255,7 +255,7 @@ contract('Evolution', (accounts) => {
 
     it('test evolvePlayer with old age', async () => {
         playerSkills = await engine.encodePlayerSkills(
-            skills = [10, 10, 10, 10, 10], 
+            skills = [1000, 2000, 3000, 4000, 5000], 
             dayOfBirth = 30*365, // 30 years after unix time 
             playerId = 2132321,
             [potential = 2, forwardness, leftishness, aggr = 0],
@@ -266,34 +266,25 @@ contract('Evolution', (accounts) => {
             subLastHalf,
             sumSkills = 5
         ).should.be.fulfilled;
-        age = 17;
+        age = 35;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
-        result = await engine.getBirthDay(playerSkills);
-        resultAgeDays = Math.floor((7 * matchStartTime)/(24*3600)) - 7 * result.toNumber();
-        console.log(resultAgeDays, resultAgeDays/365)
         
         TPs = 20;
-        weights = [14, 18, 22, 27, 31];
+        weights = [0, 0, 0, 0, 0];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [2,5,7,10,13];
-        // result.toNumber().should.be.equal(expected[0]);
-        console.log(result.toNumber())
+        expected = [968, 1968, 2968, 3968, 4968]; // -32 per game
+        result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        // result.toNumber().should.be.equal(expected[1]);
-        console.log(result.toNumber())
+        result.toNumber().should.be.equal(expected[1]);
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        // result.toNumber().should.be.equal(expected[2]);
-        console.log(result.toNumber())
+        result.toNumber().should.be.equal(expected[2]);
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        // result.toNumber().should.be.equal(expected[3]);
-        console.log(result.toNumber())
+        result.toNumber().should.be.equal(expected[3]);
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        // result.toNumber().should.be.equal(expected[4]);
-        console.log(result.toNumber())
+        result.toNumber().should.be.equal(expected[4]);
     });
 
-    return;
     it('test that we can a 2nd half and include the evolution points too', async () => {
         matchLog = await evolution.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
