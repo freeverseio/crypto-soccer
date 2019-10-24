@@ -185,7 +185,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
     // formula: TP(i) = w(i)/100 * TP, where TP are the TPs, S(i) is the weight for skill(i)
     // deltaS(i)    = w(i)/100 * max[ TP,  TP* (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
     // If age is in days:
-    // deltaS(i)    = w(i)/100 * max[ TP,  TP * (pot * 2920 - 3 * ageDays - 17520)/2190] - max(0,(age-31)*8)
+    // deltaS(i)    = w(i)/100 * max[ TP,  TP * (pot * 2920 - 3 * ageDays + 17520)/2190] - max(0,(age-31)*8)
     // skill(i)     = max(0, skill(i) + deltaS(i))
     // 
     // shoot, speed, pass, defence, endurance
@@ -194,8 +194,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         uint256 potential = getPotential(skills);
         uint256 deltaNeg = (ageDays > 11315) ? ((ageDays-11315)*8)/365 : 0;
         uint256 multiplier;
-        if (potential * 2920 > 3 * ageDays + 17520 + 2190) {
-            multiplier = (TPs*(potential * 2920 - 3 * ageDays - 17520))/2190;
+        if (potential * 2920 + 17520 > 3 * ageDays + 2190) {
+            multiplier = (TPs*(potential * 2920 - 3 * ageDays + 17520))/2190;
         } else {
             multiplier = TPs;
         }
