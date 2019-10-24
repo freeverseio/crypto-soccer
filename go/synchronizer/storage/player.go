@@ -10,6 +10,7 @@ import (
 
 type Player struct {
 	PlayerId          *big.Int
+	Name              string
 	PreferredPosition string
 	Potential         uint64
 	State             PlayerState
@@ -41,7 +42,8 @@ func (b *Player) Equal(player Player) bool {
 		b.State.ShirtNumber == player.State.ShirtNumber &&
 		b.State.EncodedSkills.String() == player.State.EncodedSkills.String() &&
 		b.State.EncodedState.String() == player.State.EncodedState.String() &&
-		b.State.Frozen == player.State.Frozen
+		b.State.Frozen == player.State.Frozen &&
+		b.Name == player.Name
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
@@ -58,7 +60,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);",
+	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -72,6 +74,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.State.EncodedState.String(),
 		player.Potential,
 		player.State.Frozen,
+		player.Name,
 	)
 	if err != nil {
 		return err
