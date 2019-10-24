@@ -137,6 +137,24 @@ func (b *Processor) Process() error {
 		// update auction state if changed
 		if state != auction.State {
 			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
+			switch state {
+			case storage.AUCTION_PAYING:
+				err = b.db.UpdateAuctionPaymentUrl(auction.UUID, "https://www.freeverse.io")
+				if err != nil {
+					return err
+				}
+				bid := bids[0]
+				err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage.BID_PAYING)
+				if err != nil {
+					return err
+				}
+				err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, "http://ninjaflex.com/")
+				if err != nil {
+					return err
+				}
+				break
+			}
+
 			err = b.db.UpdateAuctionState(auction.UUID, state)
 			if err != nil {
 				return err
