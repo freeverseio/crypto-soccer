@@ -9,6 +9,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/Pallinder/sillyname-go"
 )
 
 type DivisionCreationProcessor struct {
@@ -117,6 +119,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 				if err := b.db.TeamCreate(
 					storage.Team{
 						teamId,
+						sillyname.GenerateStupidName(),
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
@@ -173,6 +176,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 		} else if err := b.db.PlayerCreate(
 			storage.Player{
 				PlayerId:          playerId,
+				Name:              sillyname.GenerateStupidName(),
 				PreferredPosition: preferredPosition,
 				Potential:         potential.Uint64(),
 				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC

@@ -22,6 +22,7 @@ type TeamState struct {
 
 type Team struct {
 	TeamID      *big.Int
+	Name        string
 	TimezoneIdx uint8
 	CountryIdx  uint32
 	State       TeamState
@@ -29,13 +30,14 @@ type Team struct {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league, name) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
 		team.State.Owner,
 		team.State.LeagueIdx,
 		team.State.TeamIdxInLeague,
+		team.Name,
 	)
 	if err != nil {
 		return err

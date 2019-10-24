@@ -3,6 +3,7 @@ module github.com/freeverseio/crypto-soccer/go
 go 1.12
 
 require (
+	github.com/Pallinder/sillyname-go v0.0.0-20130730142914-97aeae9e6ba1
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20191015010157-ce4ff66f8dba // indirect
 	github.com/deckarep/golang-set v1.7.1 // indirect
