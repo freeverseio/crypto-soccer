@@ -172,6 +172,11 @@ contract('Evolution', (accounts) => {
         ).should.be.fulfilled;
         age = 24;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+
+        result = await engine.getBirthDay(playerSkills);
+        resultAgeDays = Math.floor((7 * matchStartTime)/(24*3600)) - 7 * result.toNumber();
+        console.log(resultAgeDays/365)
+        
         TPs = 20;
         weights = [10, 20, 30, 10, 5];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);

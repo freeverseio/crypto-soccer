@@ -60,6 +60,16 @@ contract('Encoding', (accounts) => {
             substitutedLastHalf = true,
             sumSkills
         ).should.be.fulfilled;
+        result = await encoding.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[0]);
+        result = await encoding.getSpeed(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[1]);
+        result = await encoding.getPass(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[2]);
+        result = await encoding.getDefence(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[3]);
+        result = await encoding.getEndurance(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[4]);
         result = await encoding.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
         result = await encoding.getPotential(skills).should.be.fulfilled;
