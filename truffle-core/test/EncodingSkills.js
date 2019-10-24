@@ -4,12 +4,14 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();;
 
-const Encoding = artifacts.require('EncodingSkills');
+    const Encoding = artifacts.require('EncodingSkills');
+    const EncodingSet = artifacts.require('EncodingSkillsSetters');
 
 contract('Encoding', (accounts) => {
 
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
+        encodingSet = await EncodingSet.new().should.be.fulfilled;
     });
     
     it('encodeTactics', async () =>  {
@@ -42,10 +44,10 @@ contract('Encoding', (accounts) => {
     });
     
     it('encoding and decoding skills', async () => {
-        const sk = [16383, 13, 4, 56, 456]
+        sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
 
-        const skills = await encoding.encodePlayerSkills(
+        skills = await encoding.encodePlayerSkills(
             sk,
             dayOfBirth = 4*365, 
             playerId = 143,
@@ -60,6 +62,16 @@ contract('Encoding', (accounts) => {
             substitutedLastHalf = true,
             sumSkills
         ).should.be.fulfilled;
+        result = await encoding.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[0]);
+        result = await encoding.getSpeed(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[1]);
+        result = await encoding.getPass(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[2]);
+        result = await encoding.getDefence(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[3]);
+        result = await encoding.getEndurance(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[4]);
         result = await encoding.getBirthDay(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(dayOfBirth);
         result = await encoding.getPotential(skills).should.be.fulfilled;
@@ -84,6 +96,25 @@ contract('Encoding', (accounts) => {
         result.should.be.equal(substitutedLastHalf);
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
+        
+        sk = [43, 567, 3214, 356, 4556]
+        sumSkills = sk.reduce((a, b) => a + b, 0);
+        skills = await encodingSet.setShoot(skills, sk[0]);
+        skills = await encodingSet.setSpeed(skills, sk[1]);
+        skills = await encodingSet.setPass(skills, sk[2]);
+        skills = await encodingSet.setDefence(skills, sk[3]);
+        skills = await encodingSet.setEndurance(skills, sk[4]);
+        result = await encoding.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[0]);
+        result = await encoding.getSpeed(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[1]);
+        result = await encoding.getPass(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[2]);
+        result = await encoding.getDefence(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[3]);
+        result = await encoding.getEndurance(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[4]);
+
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {

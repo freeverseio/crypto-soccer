@@ -4,8 +4,10 @@ import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
 import "./Engine.sol";
+import "./EncodingTPAssignment.sol";
+import "./EncodingSkillsSetters.sol";
 
-contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
+contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_CARD  = 14;   // noone saw a card
@@ -14,6 +16,13 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
+    uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
+    uint8 constant public N_SKILLS = 5;
+    uint8 constant public SK_SHO = 0;
+    uint8 constant public SK_SPE = 1;
+    uint8 constant public SK_PAS = 2;
+    uint8 constant public SK_DEF = 3;
+    uint8 constant public SK_END = 4;
 
     Engine private _engine;
 
@@ -144,6 +153,85 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib {
             if (getShooter(matchLog, goal) != getAssister(matchLog, goal)) {points += 3;}
         }
     }
+    
+    function getTeamEvolvedSkills(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint256 TPs, 
+        uint256 userAssignment,
+        uint256 matchStartTime
+    ) 
+        public
+        pure
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
+    {
+        (uint8[25] memory weights, uint8 specialPlayer) = decodeTP(userAssignment);
+        uint8[5] memory singleWeights;
+        
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            uint256 skills = states[p];
+            if (skills == FREE_PLAYER_ID || skills == 0) continue; 
+            uint8 offset = 0;
+            if (p == specialPlayer) offset = 20;
+            else if(getForwardness(skills) == IDX_GK) offset = 0;
+            else if(getForwardness(skills) == IDX_D) offset = 5;
+            else if(getForwardness(skills) == IDX_F) offset = 15;
+            else offset = 10;
+            for (uint8 w = 0; w < 5; w++) singleWeights[w] = weights[offset + w];
+            states[p] = evolvePlayer(skills, TPs, singleWeights, matchStartTime);
+        }    
+        return states;
+    }
+    
+    // formula: TP(i) = w(i)/100 * TP, where TP are the TPs, S(i) is the weight for skill(i)
+    // deltaS(i)    = w(i)/100 * max[ TP,  TP* (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
+    // If age is in days:
+    // deltaS(i)    = w(i)/100 * max[ TP,  TP * (pot * 2920 - 3 * ageDays + 17520)/2190] - max(0,(age-31)*8)
+    // skill(i)     = max(0, skill(i) + deltaS(i))
+    // 
+    // shoot, speed, pass, defence, endurance
+    function evolvePlayer(uint256 skills, uint256 TPs, uint8[5] memory weights, uint256 matchStartTime) public pure returns(uint256) {
+        uint256 ageDays = (7 * matchStartTime)/SECS_IN_DAY - 7 * getBirthDay(skills);
+        uint256 potential = getPotential(skills);
+        uint256 deltaNeg = (ageDays > 11315) ? ((ageDays-11315)*8)/365 : 0;
+        uint256 multiplier;
+        if (potential * 2920 + 17520 > 3 * ageDays + 2190) {
+            multiplier = (TPs*(potential * 2920 - 3 * ageDays + 17520))/2190;
+        } else {
+            multiplier = TPs;
+        }
+        // 0: shoot
+        if (getShoot(skills) + (multiplier * weights[SK_SHO])/100 > deltaNeg) {
+            skills = setShoot(skills, getShoot(skills) + (multiplier * weights[SK_SHO])/100 - deltaNeg);
+        } else {
+            skills = setShoot(skills, 1);
+        }
+        // 1: speed
+        if (getSpeed(skills) + (multiplier * weights[SK_SPE])/100 > deltaNeg) {
+            skills = setSpeed(skills, getSpeed(skills) + (multiplier * weights[SK_SPE])/100 - deltaNeg);
+        } else {
+            skills = setSpeed(skills, 1);
+        }
+        // 2: pass
+        if (getPass(skills) + (multiplier * weights[SK_PAS])/100 > deltaNeg) {
+            skills = setPass(skills, getPass(skills) + (multiplier * weights[SK_PAS])/100 - deltaNeg);
+        } else {
+            skills = setPass(skills, 1);
+        }
+        // 3: defence
+        if (getDefence(skills) + (multiplier * weights[SK_DEF])/100 > deltaNeg) {
+            skills = setDefence(skills, getDefence(skills) + (multiplier * weights[SK_DEF])/100 - deltaNeg);
+        } else {
+            skills = setDefence(skills, 1);
+        }
+        // 4: endurance
+        if (getEndurance(skills) + (multiplier * weights[SK_END])/100 > deltaNeg) {
+            skills = setEndurance(skills, getEndurance(skills) + (multiplier * weights[SK_END])/100 - deltaNeg);
+        } else {
+            skills = setEndurance(skills, 1);
+        }
+        return skills;
+    } 
+
 
 }
 
