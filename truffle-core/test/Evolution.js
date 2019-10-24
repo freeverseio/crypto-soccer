@@ -157,7 +157,7 @@ contract('Evolution', (accounts) => {
     });
 
     
-    it2('test evolvePlayer at zero potential', async () => {
+    it('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [0, 0, 0, 0, 0], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -189,7 +189,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expected[4]);
     });
 
-    it2('test evolvePlayer at non-zero potential', async () => {
+    it('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [0, 0, 0, 0, 0], 
             dayOfBirth = 30*365, // 30 years after unix time 
