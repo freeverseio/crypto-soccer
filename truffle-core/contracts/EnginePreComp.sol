@@ -49,8 +49,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
     (
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds,
+        uint256 tactics,
         bool is2ndHalf,
         uint256 seed
     ) 
@@ -61,6 +60,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         uint256
     ) 
     {
+        (uint8[3] memory  substitutions, uint8[3] memory subsRounds, , ,) = decodeTactics(tactics);
         uint256[] memory weights = new uint256[](15);
         uint64[] memory rnds = getNRandsFromSeed(seed + 42, 4);
 
@@ -485,17 +485,15 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
         pure 
         returns 
     (
+        uint256,
         uint256[PLAYERS_PER_TEAM_MAX] memory outStates,
-        uint8 tacticsId,
-        bool[10] memory extraAttack,
-        uint8[3] memory substitutions,
-        uint8[3] memory subsRounds
+        uint8
     ) 
     {
-        uint8[14] memory lineup;
-        (substitutions, subsRounds, lineup, extraAttack, tacticsId) = decodeTactics(tactics);
+        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
         uint8 changes;
         uint8 emptyShirts; 
+        uint256 teamSkills;
         
         // Count changes during half-time, as well as not-aligned players
         // ...note: substitutions = 11 means NO_SUBS
@@ -505,8 +503,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
                 emptyShirts++;
             } else if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
                 matchLog = addHalfTimeSubs(matchLog, p, changes);
-                changes++; 
-            }
+                changes++;
+                teamSkills += getSumOfSkills(outStates[p]); 
+            } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 
         }
 
         // if is2ndHalf: make sure we align 10 or 11 players depedning on possible 1st half redcards
@@ -529,24 +528,29 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
             outStates[11] = states[lineup[11]];
             assertCanPlay(outStates[11]);
             require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
+            teamSkills += getSumOfSkills(outStates[11]); 
         }
         if (substitutions[1] < 11) { 
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
             outStates[12] = states[lineup[12]];
             assertCanPlay(outStates[12]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
+            require(!getAlignedEndOfLastHalf(outStates[12]), "cannot align a player who already left the field once");
+            teamSkills += getSumOfSkills(outStates[12]); 
         }
         if (substitutions[2] < 11) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
             outStates[13] = states[lineup[13]];
             assertCanPlay(outStates[13]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
+            require(!getAlignedEndOfLastHalf(outStates[13]), "cannot align a player who already left the field once");
+            teamSkills += getSumOfSkills(outStates[13]); 
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");        
+        for (uint8 p = 1; p < 11; p++) require(lineup[p] > lineup[p-1], "player appears twice in lineup!");  
+        matchLog = addTeamSumSkills(matchLog, teamSkills);
+        return (matchLog, outStates, tacticsId);      
     }
 
     function assertCanPlay(uint256 playerSkills) public pure {

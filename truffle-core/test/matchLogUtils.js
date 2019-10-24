@@ -3,7 +3,7 @@ const UNDEF = undefined;
 async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
     outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner
+    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
 ) {
     log = 0;
     log = await encoding.addNGoals(log, nGoals).should.be.fulfilled;
@@ -33,13 +33,16 @@ async function encodeLog(encoding, nGoals, assistersIdx, shootersIdx, shooterFor
     log = await encoding.addNDefs(log, nDefs2, is2nd = true).should.be.fulfilled;
     log = await encoding.addNTot2ndHalf(log, nTot).should.be.fulfilled;
     log = await encoding.addWinner(log, winner).should.be.fulfilled;
+    log = await encoding.addTeamSumSkills(log, teamSumSkills).should.be.fulfilled;
+    log = await encoding.addTrainingPoints(log, trainingPoints).should.be.fulfilled;
     return log;
 }
 
 async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx, shooterForwardPos, penalties,
     outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
     isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner) 
+    halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints
+) 
 {
     if (nGoals != UNDEF) {
         result = await encoding.getNGoals(log);
@@ -133,6 +136,14 @@ async function checkExpectedLog(encoding, log, nGoals, assistersIdx, shootersIdx
     if (winner != UNDEF) {
         result = await encoding.getWinner(log).should.be.fulfilled;
         result.toNumber().should.be.equal(winner);
+    }        
+    if (teamSumSkills != UNDEF) {
+        result = await encoding.getTeamSumSkills(log).should.be.fulfilled;
+        result.toNumber().should.be.equal(teamSumSkills);
+    }        
+    if (trainingPoints != UNDEF) {
+        result = await encoding.getTrainingPoints(log).should.be.fulfilled;
+        result.toNumber().should.be.equal(trainingPoints);
     }        
 }    
   

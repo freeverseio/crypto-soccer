@@ -30,13 +30,13 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
 
     EnginePreComp private _precomp;
 
-    function setCardsAndInjuries(address addr) public {
+    function setPreCompAddr(address addr) public {
         _precomp = EnginePreComp(addr);
     }
 
     // mock up to estimate cost of a match.
     // to be removed before deployment
-    function playMatchWithCost(
+    function playHalfMatchWithCost(
         uint256 seed,
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
@@ -46,19 +46,19 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     )
         public
     {
-        playMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
+        playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
         dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
 
 
     /**
-     * @dev playMatch returns the result of a match
+     * @dev playHalfMatch returns the result of a match
      * @param seed the pseudo-random number to use as a seed for the match
      * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
-    function playMatch(
+    function playHalfMatch(
         uint256 seed,
         uint256 matchStartTime, //actionsSubmissionTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
@@ -90,7 +90,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     }
     
     /**
-     * @dev playMatch returns the result of a match
+     * @dev playHalfMatch returns the result of a match
      * @param states a 2-vector, each of the 2 being vector with the state of the players of team 0
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
@@ -110,14 +110,16 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
 
-        (states[0], extraAttack[0], playersPerZone[0], matchLog[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
-        (states[1], extraAttack[1], playersPerZone[1], matchLog[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
+        (matchLog[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
+        (matchLog[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
 
         matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
+
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
+
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
@@ -174,14 +176,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     ) 
         public 
         view 
-        returns (uint256[PLAYERS_PER_TEAM_MAX] memory outStates, bool[10] memory extraAttack, uint8[9] memory playersPerZone, uint256) 
+        returns (uint256, uint256[PLAYERS_PER_TEAM_MAX] memory outStates, uint8[9] memory) 
     {
         uint8 tacticsId;
-        uint8[3] memory substitutions;
-        uint8[3] memory subsRounds;
-        (outStates, tacticsId, extraAttack, substitutions, subsRounds) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf);
-        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, substitutions, subsRounds, is2ndHalf, seed); 
-        return (outStates, extraAttack, getPlayersPerZone(tacticsId), matchLog);
+        (matchLog, outStates, tacticsId) = _precomp.getLinedUpStates(matchLog, tactics, states, is2ndHalf);
+        matchLog = _precomp.computeExceptionalEvents(matchLog, outStates, tactics, is2ndHalf, seed); 
+        return (matchLog, outStates, getPlayersPerZone(tacticsId));
     }
 
     function writeNDefs(
