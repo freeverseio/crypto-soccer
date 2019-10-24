@@ -40,6 +40,10 @@ const main = async () => {
       auctionsByPlayerId: AuctionsConnection
     }
 
+    extend type Team {
+      tacticsByTeamId: TacticsConnection
+    }
+
     extend type Auction {
       playerByPlayerId: Player
     }
@@ -57,6 +61,25 @@ const main = async () => {
             args: {
               condition: {
                 playerId: player.playerId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+    },
+    Team: {
+      tacticsByTeamId: {
+        fragment: `... on Team { teamId }`,
+        resolve(team, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: relayRemoteSchema,
+            operation: 'query',
+            fieldName: 'allTactics',
+            args: {
+              condition: {
+                teamId: team.teamId
               }
             },
             context,
