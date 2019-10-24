@@ -65,6 +65,11 @@ func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState) error {
 	return err
 }
 
+func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
+	_, err := b.db.Exec("UPDATE auctions SET payment_url=$1 WHERE uuid=$2;", url, uuid)
+	return err
+}
+
 func (b *Storage) GetAuctions() ([]Auction, error) {
 	var orders []Auction
 	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state FROM auctions;")

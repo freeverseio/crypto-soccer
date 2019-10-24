@@ -19,7 +19,7 @@ CREATE TABLE auctions (
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES auction_states(state),
-    paymet_link TEXT NOT NULL DEFAULT '',
+    payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(uuid)
 );
 
@@ -34,12 +34,12 @@ INSERT INTO bid_states(state) VALUES ('FAILED_TO_PAY');
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
-    extra_price NUMERIC(15,2) NOT NULL,
+    extra_price INT NOT NULL,
     rnd INT NOT NULL,
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES bid_states(state),
-    paymet_link TEXT NOT NULL DEFAULT '',
+    payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );
 
