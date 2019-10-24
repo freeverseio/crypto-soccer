@@ -157,12 +157,12 @@ contract('Evolution', (accounts) => {
     });
 
     
-    it('test evolvePlayer', async () => {
+    it('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
-            skills = [1,1,1,1,1], 
+            skills = [0, 0, 0, 0, 0], 
             dayOfBirth = 30*365, // 30 years after unix time 
             playerId = 2132321,
-            [potential = 3, forwardness, leftishness, aggr = 0],
+            [potential = 0, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalf = true,
             redCardLastGame = false,
             gamesNonStopping = 0,
@@ -170,30 +170,62 @@ contract('Evolution', (accounts) => {
             subLastHalf,
             sumSkills = 5
         ).should.be.fulfilled;
-        age = 24;
+        age = 16;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
-
-        result = await engine.getBirthDay(playerSkills);
-        resultAgeDays = Math.floor((7 * matchStartTime)/(24*3600)) - 7 * result.toNumber();
-        console.log(resultAgeDays/365)
         
         TPs = 20;
-        weights = [10, 20, 30, 10, 5];
+        weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(3);
+        expected = [2,4,6,8,10];
+        result.toNumber().should.be.equal(expected[0]);
+        result = await engine.getSpeed(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expected[1]);
+        result = await engine.getPass(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expected[2]);
+        result = await engine.getDefence(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expected[3]);
+        result = await engine.getEndurance(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expected[4]);
+    });
+
+    it('test evolvePlayer at non-zero potential', async () => {
+        playerSkills = await engine.encodePlayerSkills(
+            skills = [0, 0, 0, 0, 0], 
+            dayOfBirth = 30*365, // 30 years after unix time 
+            playerId = 2132321,
+            [potential = 0, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        // age = 16;
+        // matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        result = await engine.getBirthDay(playerSkills);
+        resultAgeDays = Math.floor((7 * matchStartTime)/(24*3600)) - 7 * result.toNumber();
+        console.log(resultAgeDays, resultAgeDays/365)
+        
+        TPs = 20;
+        weights = [10, 10, 10, 10, 10];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        expected = [2,2,2,2,2];
+        // result.toNumber().should.be.equal(expected[0]);
         console.log(result.toNumber())
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(5);
+        // result.toNumber().should.be.equal(expected[1]);
         console.log(result.toNumber())
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(7);
+        // result.toNumber().should.be.equal(expected[2]);
         console.log(result.toNumber())
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(3);
+        // result.toNumber().should.be.equal(expected[3]);
         console.log(result.toNumber())
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(2);
+        // result.toNumber().should.be.equal(expected[4]);
         console.log(result.toNumber())
     });
 
