@@ -229,6 +229,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         } else {
             skills = setEndurance(skills, 1);
         }
+        return skills;
     } 
 
 

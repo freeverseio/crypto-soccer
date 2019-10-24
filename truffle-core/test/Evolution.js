@@ -156,6 +156,43 @@ contract('Evolution', (accounts) => {
         
     });
 
+    
+    it('test evolvePlayer', async () => {
+        playerSkills = await engine.encodePlayerSkills(
+            skills = [1,1,1,1,1], 
+            dayOfBirth = 30*365, // 30 years after unix time 
+            playerId = 2132321,
+            [potential = 3, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        age = 24;
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        TPs = 20;
+        weights = [10, 20, 30, 10, 5];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+        console.log(result.toNumber())
+        result = await engine.getSpeed(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(5);
+        console.log(result.toNumber())
+        result = await engine.getPass(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(7);
+        console.log(result.toNumber())
+        result = await engine.getDefence(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(3);
+        console.log(result.toNumber())
+        result = await engine.getEndurance(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(2);
+        console.log(result.toNumber())
+    });
+
+    return;
     it('test that we can a 2nd half and include the evolution points too', async () => {
         matchLog = await evolution.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
