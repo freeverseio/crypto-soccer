@@ -28,7 +28,8 @@ contract('SortValues', (accounts) => {
     it('sorts idxs of 8 numbers', async () =>  {
         data =          [4, 7, 3, 1, 12, 9, 5, 3];
         expectedIdxs =  [3, 2, 7, 0, 6, 1, 5, 4];
-        result = await sortIdxs.sortIdxs(data).should.be.fulfilled;
+        idxs = Array.from(new Array(8), (x,i) => i);
+        result = await sortIdxs.sortIdxs(data, idxs).should.be.fulfilled;
         for (i = 0; i < 8; i++) {
             // console.log(result[i].toNumber())
             result[i].toNumber().should.be.equal(expectedIdxs[i]);

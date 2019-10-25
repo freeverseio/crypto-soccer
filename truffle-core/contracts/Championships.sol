@@ -87,6 +87,18 @@ contract Championships is SortIdxs {
             (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
     }
 
+    function getMatchesForTeams(uint8 team0, uint8 team1) public pure returns (uint8 match0, uint8 match1) 
+    {
+        uint8 home;
+        uint8 vist;
+        for (uint8 m = 0; m < MATCHES_PER_LEAGUE; m++) {
+            (home, vist) = getTeamsInLeagueMatch(m / 4, m % 4);
+            if ((home == team0) && (vist == team1)) match0 = m;
+            if ((home == team1) && (vist == team0)) match1 = m;
+        }
+    }
+
+
     function _shiftBack(uint8 t) private pure returns (uint8)
     {
         if (t < TEAMS_PER_LEAGUE)
@@ -109,23 +121,71 @@ contract Championships is SortIdxs {
     }
 
     // returns two sorted lists, [worst teamIdxInLeague, points], ....
+    // idx in the N*(N-1) matrix, assuming t0 < t1
+    // idx(t0 = 0, t1) = (0)   + t1 - 1
+    // idx(t0 = 1, t1) = (7)   + t1 - 2
+    // idx(t0 = 2, t1) = (7+6) + t1 - 3
+    // idx(t0, t1)     = (7+6) + t1 - 3
+    
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay) public pure returns (
-        uint8[TEAMS_PER_LEAGUE] memory ranking, uint8[TEAMS_PER_LEAGUE] memory points
+        uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
         require(matchDay < MATCHDAYS, "wrong matchDay");
         uint8 team0;
         uint8 team1;
+        uint16[TEAMS_PER_LEAGUE]memory goals;
         for(uint8 m = 0; m < matchDay * 4; m++) {
             (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
+            goals[team0] += results[m][0];
+            goals[team1] += results[m][1];
             if (results[m][0] == results[m][1]) {
-                points[team0] += 1;
-                points[team1] += 1;
+                points[team0] += 1000000;
+                points[team1] += 1000000;
             } else if (results[m][0] > results[m][1]) {
-                points[team0] += 3;
+                points[team0] += 3000000;
             } else {
-                points[team1] += 3;
+                points[team1] += 3000000;
             }
         }
-        ranking = sortIdxs(points);
+        // note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
+        for (uint8 i = 0; i < TEAMS_PER_LEAGUE; i++) ranking[i] = i;
+        sortIdxs(points, ranking);
+        uint8 lastNonTied;
+        for (uint8 r = 0; r < TEAMS_PER_LEAGUE-1; r++) {
+            if (points[r+1] != points[r] && lastNonTied == r) lastNonTied = r+1;
+            else if (points[r+1] != points[r]) {
+                computeSecondaryPoints(ranking, points, results, goals, lastNonTied, r);
+                lastNonTied = r+1;
+            }
+        }
+        if (points[TEAMS_PER_LEAGUE-1] == points[TEAMS_PER_LEAGUE-2]) {
+            computeSecondaryPoints(ranking, points, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1);
+        }
+        sortIdxs(points, ranking);
+    }
+    
+    function computeSecondaryPoints(
+        uint8[TEAMS_PER_LEAGUE] memory ranking,
+        uint256[TEAMS_PER_LEAGUE] memory points,
+        uint8[2][MATCHES_PER_LEAGUE] memory results,
+        uint16[TEAMS_PER_LEAGUE]memory goals,
+        uint8 firstTeamInRank,
+        uint8 lastTeamInRank
+    ) public pure {
+        for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
+            points[team0] += goals[ranking[team0]];
+            for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
+                uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
+                if (bestTeam == 0) points[team0] += 1000;
+                else if (bestTeam == 1) points[team1] += 1000;
+            }        
+        }
+    }
+
+    function computeDirect(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 team0, uint8 team1) public pure returns(uint8 bestTeam) {
+        (uint8 match0, uint8 match1) = getMatchesForTeams(team0, team1);
+        if (results[match0][0] + results[match1][1] > results[match0][1] + results[match1][0]) return 0;
+        else if (results[match0][0] + results[match1][1] < results[match0][1] + results[match1][0]) return 1;
+        else return 2;
     }
 }
