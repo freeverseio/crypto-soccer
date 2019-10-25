@@ -16,6 +16,19 @@ contract('Championships', (accounts) => {
 
     const it2 = async(text, f) => {};
 
+    function compareArrays(result, expected, toNum = true, verbose = false) {
+        verb = [];
+        for (i = 0; i < expected.length; i++) {
+            if (toNum) verb.push(result[i].toNumber());
+            else verb.push(result[i]);
+            if (!verbose) {
+                if (toNum) result[i].toNumber().should.be.equal(expected[i]);
+                else result[i].should.be.equal(expected[i]);
+            }            
+        }
+        if (verbose) console.log(verb);
+    }
+    
     function secsToDays(secs) {
         return secs/ (24 * 3600);
     }
@@ -73,18 +86,10 @@ contract('Championships', (accounts) => {
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [12000075110, 12001081441, 14000000000, 15000000000, 21000000000, 23000000000, 24000000000, 26000000000];
-        expectedRanking = [3, 6, 0, 7, 5, 2, 1, 4];
-        exPo = [];
-        exRa = [];
-        for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
-            result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
-            result.points[team].toNumber().should.be.equal(expectedPoints[team]);
-            exPo.push(result.points[team].toNumber());
-            exRa.push(result.ranking[team].toNumber());
-        }
-        console.log(exPo)
-        console.log(exRa)
+        expectedPoints =  [26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081423, 12000075754];
+        expectedRanking = [ 4, 1, 2, 5, 7, 0, 6, 3 ];
+        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
     
     it('computeLeagueLeaderBoard many clashes', async () =>  {
@@ -92,18 +97,10 @@ contract('Championships', (accounts) => {
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [15000000000, 16000049389, 16001047441, 16002047610, 18000000000, 22000051423, 22000052802, 27000000000];
-        expectedRanking = [6, 0, 3, 4, 5, 1, 2, 7];
-        exPo = [];
-        exRa = [];
-        for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
-            result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
-            result.points[team].toNumber().should.be.equal(expectedPoints[team]);
-            exPo.push(result.points[team].toNumber());
-            exRa.push(result.ranking[team].toNumber());
-        }
-        console.log(exPo)
-        console.log(exRa)
+        expectedPoints =  [27000000000, 22000052441, 22000051610, 18000000000, 16002047402, 16001047423, 16000049802, 15000000000];
+        expectedRanking = [ 7, 2, 1, 5, 4, 3, 0, 6 ];
+        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
@@ -111,18 +108,10 @@ contract('Championships', (accounts) => {
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
-        expectedPoints =  [ 13000000110, 13000000389, 13000000402, 13000000423, 13000000441, 13000000610, 13000000754, 13000000802 ];
-        expectedRanking = [ 5, 6, 1, 3, 4, 7, 2, 0 ];
-        exPo = [];
-        exRa = []; 
-        for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
-            result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
-            result.points[team].toNumber().should.be.equal(expectedPoints[team]);
-            exPo.push(result.points[team].toNumber());
-            exRa.push(result.ranking[team].toNumber());
-        }
-        console.log(exPo)
-        console.log(exRa)
+        expectedPoints =  [ 13000000802, 13000000754, 13000000610, 13000000441, 13000000423, 13000000402, 13000000389, 13000000110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
 
     it('check initial constants', async () =>  {

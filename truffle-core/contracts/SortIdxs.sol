@@ -15,8 +15,8 @@ contract SortIdxs {
         if(i==j) return;
         uint pivot = arr[uint(left + (right - left) / 2)];
         while (i <= j) {
-            while (arr[uint(i)] < pivot) i++;
-            while (pivot < arr[uint(j)]) j--;
+            while (arr[uint(i)] > pivot) i++;
+            while (pivot > arr[uint(j)]) j--;
             if (i <= j) {
                 (arr[uint(i)], arr[uint(j)]) = (arr[uint(j)], arr[uint(i)]);
                 (idxs[uint(i)], idxs[uint(j)]) = (idxs[uint(j)], idxs[uint(i)]);
