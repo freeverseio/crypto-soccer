@@ -72,7 +72,7 @@ contract('Championships', (accounts) => {
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [12000075, 12001081, 14000000, 15000000, 21000000, 23000000, 24000000, 26000000];
+        expectedPoints =  [12000075000, 12001081000, 14000000000, 15000000000, 21000000000, 23000000000, 24000000000, 26000000000];
         expectedRanking = [3, 6, 0, 7, 5, 2, 1, 4];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
@@ -85,7 +85,7 @@ contract('Championships', (accounts) => {
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [15000000, 16000049, 16001047, 16002047, 18000000, 22000051, 22000052, 27000000];
+        expectedPoints =  [15000000000, 16000049000, 16001047000, 16002047000, 18000000000, 22000051000, 22000052000, 27000000000];
         expectedRanking = [6, 0, 3, 4, 5, 1, 2, 7];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
@@ -96,9 +96,9 @@ contract('Championships', (accounts) => {
     it('computeLeagueLeaderBoard all clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
-        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 2)]);
         result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [15000000, 16000049, 16001047, 16002047, 18000000, 22000051, 22000052, 27000000];
+        expectedPoints =  [15000000000, 16000049000, 16001047000, 16002047000, 18000000000, 22000051000, 22000052000, 27000000000];
         expectedRanking = [6, 0, 3, 4, 5, 1, 2, 7];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             console.log(result.ranking[team].toNumber(), result.points[team].toNumber());

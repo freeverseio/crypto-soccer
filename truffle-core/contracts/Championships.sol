@@ -139,12 +139,12 @@ contract Championships is SortIdxs {
             goals[team0] += results[m][0];
             goals[team1] += results[m][1];
             if (results[m][0] == results[m][1]) {
-                points[team0] += 1000000;
-                points[team1] += 1000000;
+                points[team0] += 1000000000;
+                points[team1] += 1000000000;
             } else if (results[m][0] > results[m][1]) {
-                points[team0] += 3000000;
+                points[team0] += 3000000000;
             } else {
-                points[team1] += 3000000;
+                points[team1] += 3000000000;
             }
         }
         // note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
@@ -173,11 +173,11 @@ contract Championships is SortIdxs {
         uint8 lastTeamInRank
     ) public pure {
         for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
-            points[team0] += goals[ranking[team0]];
+            points[team0] += uint256(goals[ranking[team0]])*1000;
             for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
                 uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
-                if (bestTeam == 0) points[team0] += 1000;
-                else if (bestTeam == 1) points[team1] += 1000;
+                if (bestTeam == 0) points[team0] += 1000000;
+                else if (bestTeam == 1) points[team1] += 1000000;
             }        
         }
     }
