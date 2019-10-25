@@ -2,14 +2,16 @@ pragma solidity ^0.5.0;
 
 contract SortIdxs {
     
-    function sort14(uint8[14] memory data) public pure returns(uint8[14] memory) {
-       uint8[14] memory idxs;
-       for (uint8 i = 0; i < 14; i++) idxs[i] = i;
-       quickSort14(data, int(0), int(13), idxs);
+    uint256 constant private N_IDXS = 8;
+    
+    function sortIdxs(uint8[N_IDXS] memory data) public pure returns(uint8[N_IDXS] memory) {
+       uint8[N_IDXS] memory idxs;
+       for (uint8 i = 0; i < N_IDXS; i++) idxs[i] = i;
+       quickSort(data, idxs, int(0), int(N_IDXS - 1));
        return idxs;
     }
     
-    function quickSort14(uint8[14] memory arr, int left, int right, uint8[14] memory idxs) internal pure {
+    function quickSort(uint8[N_IDXS] memory arr, uint8[N_IDXS] memory idxs, int left, int right) internal pure {
         int i = left;
         int j = right;
         if(i==j) return;
@@ -25,9 +27,9 @@ contract SortIdxs {
             }
         }
         if (left < j)
-            quickSort14(arr, left, j, idxs);
+            quickSort(arr, idxs, left, j);
         if (i < right)
-            quickSort14(arr, i, right, idxs);
+            quickSort(arr, idxs, i, right);
     }
 
 }
