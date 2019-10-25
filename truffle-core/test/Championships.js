@@ -76,8 +76,8 @@ contract('Championships', (accounts) => {
         expectedRanking = [3, 6, 0, 7, 5, 2, 1, 4];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             console.log(result.ranking[team].toNumber(), result.points[team].toNumber());
-            result.ranking[team].toNumber().should.be.equal(expectedRanking);
-            result.points[team].toNumber().should.be.equal(expectedPoints);
+            result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
+            result.points[team].toNumber().should.be.equal(expectedPoints[team]);
         }
     });
     
