@@ -12,6 +12,7 @@ contract('Championships', (accounts) => {
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const subLastHalf = false;
+    const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
 
     const it2 = async(text, f) => {};
 
@@ -71,43 +72,59 @@ contract('Championships', (accounts) => {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
-        result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [12000075000, 12001081000, 14000000000, 15000000000, 21000000000, 23000000000, 24000000000, 26000000000];
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [12000075110, 12001081441, 14000000000, 15000000000, 21000000000, 23000000000, 24000000000, 26000000000];
         expectedRanking = [3, 6, 0, 7, 5, 2, 1, 4];
+        exPo = [];
+        exRa = [];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
             result.points[team].toNumber().should.be.equal(expectedPoints[team]);
+            exPo.push(result.points[team].toNumber());
+            exRa.push(result.ranking[team].toNumber());
         }
+        console.log(exPo)
+        console.log(exRa)
     });
     
     it('computeLeagueLeaderBoard many clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
         results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
-        result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [15000000000, 16000049000, 16001047000, 16002047000, 18000000000, 22000051000, 22000052000, 27000000000];
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [15000000000, 16000049389, 16001047441, 16002047610, 18000000000, 22000051423, 22000052802, 27000000000];
         expectedRanking = [6, 0, 3, 4, 5, 1, 2, 7];
+        exPo = [];
+        exRa = [];
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
             result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
             result.points[team].toNumber().should.be.equal(expectedPoints[team]);
+            exPo.push(result.points[team].toNumber());
+            exRa.push(result.ranking[team].toNumber());
         }
+        console.log(exPo)
+        console.log(exRa)
     });
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
-        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 2)]);
-        result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
-        expectedPoints =  [15000000000, 16000049000, 16001047000, 16002047000, 18000000000, 22000051000, 22000052000, 27000000000];
-        expectedRanking = [6, 0, 3, 4, 5, 1, 2, 7];
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [ 13000000110, 13000000389, 13000000402, 13000000423, 13000000441, 13000000610, 13000000754, 13000000802 ];
+        expectedRanking = [ 5, 6, 1, 3, 4, 7, 2, 0 ];
+        exPo = [];
+        exRa = []; 
         for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
-            console.log(result.ranking[team].toNumber(), result.points[team].toNumber());
-            // result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
-            // result.points[team].toNumber().should.be.equal(expectedPoints[team]);
+            result.ranking[team].toNumber().should.be.equal(expectedRanking[team]);
+            result.points[team].toNumber().should.be.equal(expectedPoints[team]);
+            exPo.push(result.points[team].toNumber());
+            exRa.push(result.ranking[team].toNumber());
         }
+        console.log(exPo)
+        console.log(exRa)
     });
 
-    return
     it('check initial constants', async () =>  {
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);

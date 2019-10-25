@@ -87,6 +87,7 @@ contract Championships is SortIdxs {
             (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
     }
 
+    // TODO: do this by exact formula instead of brute force search
     function getMatchesForTeams(uint8 team0, uint8 team1) public pure returns (uint8 match0, uint8 match1) 
     {
         uint8 home;
@@ -122,12 +123,8 @@ contract Championships is SortIdxs {
 
     // returns two sorted lists, [worst teamIdxInLeague, points], ....
     // idx in the N*(N-1) matrix, assuming t0 < t1
-    // idx(t0 = 0, t1) = (0)   + t1 - 1
-    // idx(t0 = 1, t1) = (7)   + t1 - 2
-    // idx(t0 = 2, t1) = (7+6) + t1 - 3
-    // idx(t0, t1)     = (7+6) + t1 - 3
     
-    function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay) public pure returns (
+    function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
         require(matchDay < MATCHDAYS, "wrong matchDay");
@@ -154,26 +151,28 @@ contract Championships is SortIdxs {
         for (uint8 r = 0; r < TEAMS_PER_LEAGUE-1; r++) {
             if (points[r+1] != points[r] && lastNonTied == r) lastNonTied = r+1;
             else if (points[r+1] != points[r]) {
-                computeSecondaryPoints(ranking, points, results, goals, lastNonTied, r);
+                computeSecondaryPoints(ranking, points, results, goals, lastNonTied, r, matchDaySeed);
                 lastNonTied = r+1;
             }
         }
         if (points[TEAMS_PER_LEAGUE-1] == points[TEAMS_PER_LEAGUE-2]) {
-            computeSecondaryPoints(ranking, points, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1);
+            computeSecondaryPoints(ranking, points, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1, matchDaySeed);
         }
         sortIdxs(points, ranking);
     }
     
+    // Points = nPoints in league * 1e9 + bestDirects * 1e6 + nGoalsInLeague * 1e3 + random % 999
     function computeSecondaryPoints(
         uint8[TEAMS_PER_LEAGUE] memory ranking,
         uint256[TEAMS_PER_LEAGUE] memory points,
         uint8[2][MATCHES_PER_LEAGUE] memory results,
         uint16[TEAMS_PER_LEAGUE]memory goals,
         uint8 firstTeamInRank,
-        uint8 lastTeamInRank
+        uint8 lastTeamInRank,
+        uint256 matchDaySeed
     ) public pure {
         for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
-            points[team0] += uint256(goals[ranking[team0]])*1000;
+            points[team0] += uint256(goals[ranking[team0]])*1000 + (matchDaySeed >> team0 * 10) % 999;
             for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
                 uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
                 if (bestTeam == 0) points[team0] += 1000000;
