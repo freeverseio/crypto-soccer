@@ -42,7 +42,8 @@ func NewStarted() State {
 
 func (b *Started) Process(m *AuctionMachine) {
 	now := time.Now().Unix()
-	if m.Auction.ValidUntil.Int64() < now {
+
+	if (len(m.Bids) == 0) && (m.Auction.ValidUntil.Int64()) < now {
 		m.Auction.State = storage.AUCTION_NO_BIDS
 	}
 }
