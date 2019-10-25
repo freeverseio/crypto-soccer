@@ -2,10 +2,10 @@ pragma solidity ^0.5.0;
 
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
-import "./Sort.sol";
+import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
-contract EnginePreComp is EngineLib, EncodingMatchLogPart1, Sort {
+contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 private constant ONE256              = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 

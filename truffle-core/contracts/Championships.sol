@@ -11,6 +11,7 @@ contract Championships {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
+    uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
     Engine private _engine;
 
     function setEngineAdress(address addr) public {
@@ -106,38 +107,23 @@ contract Championships {
             return (team2, team1);
     }
 
-    // returns [scoreHome, scoreAway, scoreHome, scoreAway,...]
-    // TODO: currentVerseSeed must be provided from getCurrentVerseSeed()
-    // TODO: likewise, matchday should be computed outside
-    // function computeMatchday(
-    //     uint8 matchday,
-    //     uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
-    //     uint256[TEAMS_PER_LEAGUE] memory tacticsIds,
-    //     uint256 currentVerseSeed
-    // )
-    //     public
-    //     view
-    //     returns (uint8[2 * MATCHES_PER_DAY] memory scores)
-    // {
-    //     uint8[2] memory score;
-    //     uint8 homeTeamIdx;
-    //     uint8 visitorTeamIdx;
-    //     for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
-    //     {
-    //         (homeTeamIdx, visitorTeamIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);
-    //         uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
-    //         uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
-    //         uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
-    //         uint8[4] memory events0;
-    //         (score, events0, events0) = _engine.playMatch(
-    //             matchSeed, 
-    //             states,
-    //             tactics,
-    //             false,
-    //             false
-    //         );
-    //         scores[matchIdxInDay * 2] = score[0];
-    //         scores[matchIdxInDay * 2 +1 ] = score[1];
+    // function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay) public pure returns (
+    //     uint8[TEAMS_PER_LEAGUE] memory ranking, uint8[TEAMS_PER_LEAGUE] memory points
+    // ) {
+    //     require(matchDay < MATCHDAYS, "wrong matchDay");
+    //     uint8 team0;
+    //     uint8 team1;
+    //     for(uint8 m = 0; m < matchDay * 4; m++) {
+    //         (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
+    //         if (results[m][0] == results[m][1]) {
+    //             points[team0] += 1;
+    //             points[team1] += 1;
+    //         } else if (results[m][0] > results[m][1]) {
+    //             points[team0] += 3;
+    //         } else {
+    //             points[team1] += 3;
+    //         }
     //     }
-    // }    
+        
+    // }
 }

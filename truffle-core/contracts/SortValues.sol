@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract Sort {
+contract SortValues {
     
     function sort14(uint8[14] memory data) public pure returns(uint8[14] memory) {
        quickSort14(data, int(0), int(13));

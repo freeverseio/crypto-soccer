@@ -4,12 +4,14 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();;
 
-const Sort = artifacts.require('Sort');
+const SortValues = artifacts.require('SortValues');
+// const SortIdxs = artifacts.require('SortIdxs');
 
-contract('Sort', (accounts) => {
+contract('SortValues', (accounts) => {
 
     beforeEach(async () => {
-        sort = await Sort.new().should.be.fulfilled;
+        sort = await SortValues.new().should.be.fulfilled;
+        // sortIdxs = await SortValues.new().should.be.fulfilled;
     });
     
     it('sorts arrays of 14 numbers', async () =>  {
