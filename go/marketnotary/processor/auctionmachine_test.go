@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestOutdatedAuction(t *testing.T) {
+func TestStartedState(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
