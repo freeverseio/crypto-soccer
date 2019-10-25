@@ -47,6 +47,10 @@ const main = async () => {
     extend type Auction {
       playerByPlayerId: Player
     }
+
+    extend type Bid {
+      teamByTeamId: Team
+    }
   `;
 
   const resolvers = {
@@ -105,23 +109,23 @@ const main = async () => {
         }
       }
     },
-    // PlayerBuyOrder: {
-    //   teamByTeamId: {
-    //     fragment: `... on PlayerBuyOrder { teamid }`,
-    //     resolve(playerBuyOrder, args, context, info) {
-    //       return info.mergeInfo.delegateToSchema({
-    //         schema: universeRemoteSchema,
-    //         operation: 'query',
-    //         fieldName: 'teamByTeamId',
-    //         args: {
-    //           teamId: playerBuyOrder.teamid,
-    //         },
-    //         context,
-    //         info,
-    //       })
-    //     }
-    //   }
-    // }
+    Bid: {
+      teamByTeamId: {
+        fragment: `... on Bid { teamId }`,
+        resolve(bid, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: bid.teamId,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    },
   };
 
   const schema = mergeSchemas({
