@@ -1,11 +1,12 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Engine.sol";
+import "./SortIdxs.sol";
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships {
+contract Championships is SortIdxs {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -107,23 +108,24 @@ contract Championships {
             return (team2, team1);
     }
 
-    // function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay) public pure returns (
-    //     uint8[TEAMS_PER_LEAGUE] memory ranking, uint8[TEAMS_PER_LEAGUE] memory points
-    // ) {
-    //     require(matchDay < MATCHDAYS, "wrong matchDay");
-    //     uint8 team0;
-    //     uint8 team1;
-    //     for(uint8 m = 0; m < matchDay * 4; m++) {
-    //         (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
-    //         if (results[m][0] == results[m][1]) {
-    //             points[team0] += 1;
-    //             points[team1] += 1;
-    //         } else if (results[m][0] > results[m][1]) {
-    //             points[team0] += 3;
-    //         } else {
-    //             points[team1] += 3;
-    //         }
-    //     }
-        
-    // }
+    // returns two sorted lists, [worst teamIdxInLeague, points], ....
+    function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay) public pure returns (
+        uint8[TEAMS_PER_LEAGUE] memory ranking, uint8[TEAMS_PER_LEAGUE] memory points
+    ) {
+        require(matchDay < MATCHDAYS, "wrong matchDay");
+        uint8 team0;
+        uint8 team1;
+        for(uint8 m = 0; m < matchDay * 4; m++) {
+            (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
+            if (results[m][0] == results[m][1]) {
+                points[team0] += 1;
+                points[team1] += 1;
+            } else if (results[m][0] > results[m][1]) {
+                points[team0] += 3;
+            } else {
+                points[team1] += 3;
+            }
+        }
+        ranking = sortIdxs(points);
+    }
 }

@@ -51,6 +51,10 @@ contract('Championships', (accounts) => {
         return leagueState;
     };
     
+    function getRand(seed, min, max) {
+        return min + (2**Math.abs(Math.floor(Math.sin(seed + 324212) * 24))) % (max - min + 1)
+    }
+    
     beforeEach(async () => {
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
@@ -63,8 +67,21 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
+    it('computeLeagueLeaderBoard almost no clashes', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 13;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay).should.be.fulfilled;
+        expectedPoints =  [12, 12, 14, 15, 21, 23, 24, 26];
+        expectedRanking = [3, 6, 0, 7, 5, 2, 1, 4];
+        for (team = 0; team < TEAMS_PER_LEAGUE; team++) {
+            console.log(result.ranking[team].toNumber(), result.points[team].toNumber());
+            result.ranking[team].toNumber().should.be.equal(expectedRanking);
+            result.points[team].toNumber().should.be.equal(expectedPoints);
+        }
+    });
+    
     it('check initial constants', async () =>  {
-        engine = 0;
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
