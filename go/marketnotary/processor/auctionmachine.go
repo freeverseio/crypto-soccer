@@ -8,16 +8,17 @@ import (
 
 type AuctionMachine struct {
 	Auction storage.Auction
+	Bids    []storage.Bid
 	current State
 }
 
-func NewAuctionMachine(auction storage.Auction) *AuctionMachine {
+func NewAuctionMachine(auction storage.Auction, bids []storage.Bid) *AuctionMachine {
 	var state State
 	switch auction.State {
 	case storage.AUCTION_STARTED:
 		state = NewStarted()
 	}
-	return &AuctionMachine{auction, state}
+	return &AuctionMachine{auction, bids, state}
 }
 
 func (b *AuctionMachine) SetCurrent(s State) {

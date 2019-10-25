@@ -17,8 +17,8 @@ func TestOutdatedAuction(t *testing.T) {
 		ValidUntil: big.NewInt(now - 10),
 		State:      storage.AUCTION_STARTED,
 	}
-
-	machine := processor.NewAuctionMachine(auction)
+	bids := []storage.Bid{}
+	machine := processor.NewAuctionMachine(auction, bids)
 	machine.Process()
 	if machine.Auction.State != storage.AUCTION_NO_BIDS {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, auction.State)
