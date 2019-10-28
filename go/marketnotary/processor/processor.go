@@ -43,12 +43,15 @@ func (b *Processor) Process() error {
 			return err
 		}
 
-		machine := auctionmachine.NewAuctionMachine(
+		machine, err := auctionmachine.NewAuctionMachine(
 			auction,
 			bids,
 			b.assets,
 			b.freeverse,
 		)
+		if err != nil {
+			return err
+		}
 
 		err = machine.Process()
 		if err != nil {

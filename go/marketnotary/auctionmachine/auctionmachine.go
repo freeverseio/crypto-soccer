@@ -32,6 +32,8 @@ func NewAuctionMachine(
 		state = NewStarted()
 	case storage.AUCTION_ASSET_FROZEN:
 		state = NewAssetFrozen()
+	case storage.AUCTION_PAYING:
+		state = NewPaying()
 	default:
 		return nil, errors.New("unknown auction state")
 	}

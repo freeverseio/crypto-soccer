@@ -133,3 +133,51 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, machine.Auction.State)
 	}
 }
+
+func TestPayingAuction(t *testing.T) {
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(time.Now().Unix() - 1),
+		State:      storage.AUCTION_PAYING,
+	}
+	bids := []storage.Bid{
+		storage.Bid{
+			Auction: auction.UUID,
+		},
+	}
+	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if machine.Auction.State != storage.AUCTION_PAYING {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, machine.Auction.State)
+	}
+}
+
+func TestPayingPaymentDoneAuction(t *testing.T) {
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(time.Now().Unix() - 70),
+		State:      storage.AUCTION_PAYING,
+	}
+	bids := []storage.Bid{
+		storage.Bid{
+			Auction: auction.UUID,
+		},
+	}
+	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if machine.Auction.State == storage.AUCTION_PAYING {
+		t.Fatalf("Expected not %v", machine.Auction.State)
+	}
+}
