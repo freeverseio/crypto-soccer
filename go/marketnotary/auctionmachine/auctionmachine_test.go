@@ -32,7 +32,7 @@ func TestStartedStateToNoBids(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine := auctionmachine.NewAuctionMachine(auction, bids, bc.Market)
+	machine := auctionmachine.NewAuctionMachine(auction, bids, bc.Market, nil)
 	err = machine.Process()
 	if err != nil {
 		t.Fatal(err)

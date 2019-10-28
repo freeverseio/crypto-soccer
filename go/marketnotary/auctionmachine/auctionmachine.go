@@ -1,6 +1,8 @@
 package auctionmachine
 
 import (
+	"crypto/ecdsa"
+
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
@@ -10,16 +12,18 @@ type State interface {
 }
 
 type AuctionMachine struct {
-	Auction storage.Auction
-	Bids    []storage.Bid
-	current State
-	market  *market.Market
+	Auction   storage.Auction
+	Bids      []storage.Bid
+	current   State
+	market    *market.Market
+	freeverse *ecdsa.PrivateKey
 }
 
 func NewAuctionMachine(
 	auction storage.Auction,
 	bids []storage.Bid,
 	market *market.Market,
+	freeverse *ecdsa.PrivateKey,
 ) *AuctionMachine {
 	var state State
 	switch auction.State {
@@ -31,6 +35,7 @@ func NewAuctionMachine(
 		bids,
 		state,
 		market,
+		nil,
 	}
 }
 

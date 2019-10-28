@@ -23,7 +23,10 @@ func (b *Started) Process(m *AuctionMachine) error {
 	if (len(m.Bids) == 0) && (m.Auction.ValidUntil.Int64()) < now {
 		m.Auction.State = storage.AUCTION_NO_BIDS
 		m.SetState(NewNoBids())
+		return nil
 	}
+
+	// trying yo freeze the asset
 
 	return nil
 }
