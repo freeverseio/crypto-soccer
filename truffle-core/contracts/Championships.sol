@@ -2,17 +2,24 @@ pragma solidity >=0.4.21 <0.6.0;
 
 import "./Engine.sol";
 import "./SortIdxs.sol";
+import "./EncodingSkills.sol";
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships is SortIdxs {
+contract Championships is SortIdxs, EncodingSkills {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
+    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
+    uint256 constant private INERTIA = 4000;
+    uint256 constant private ONE_MINUS_INERTIA = 6000;
+    uint256 constant private WEIGHT_SKILLS = 100;
+    uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+
     Engine private _engine;
 
     function setEngineAdress(address addr) public {
@@ -121,9 +128,45 @@ contract Championships is SortIdxs {
             return (team2, team1);
     }
 
-    // returns two sorted lists, [worst teamIdxInLeague, points], ....
+    function computeTeamRankingPoints(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint8 leagueRanking,
+        uint256 prevPerfPoints
+    ) 
+        public
+        pure
+        returns (uint256 rankingPoints)
+    {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if (states[p] != 0 && states[p] != FREE_PLAYER_ID)
+                rankingPoints += getSumOfSkills(states[p]);
+        }
+        prevPerfPoints = (INERTIA * prevPerfPoints 
+                        + ONE_MINUS_INERTIA * getPerfPoints(leagueRanking)) /10000;
+        
+        // rankingPoints = W * SK/SK_START + (PERF - 10) =
+        //    W * SK + SK_START * (PERF-10)
+        // => require  W * SK + PERF * SK_START > 10 * SK_START
+        if (WEIGHT_SKILLS * rankingPoints + prevPerfPoints * SKILLS_AT_START > 10 * SKILLS_AT_START) {
+            return WEIGHT_SKILLS * rankingPoints + (prevPerfPoints - 10) * SKILLS_AT_START;
+        } else {
+            return 0;
+        }
+    }
+
+    function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
+        if (leagueRanking == 0) return 2;
+        else if (leagueRanking == 1) return 5;
+        else if (leagueRanking == 2) return 8;
+        else if (leagueRanking == 3) return 10;
+        else if (leagueRanking == 4) return 12;
+        else if (leagueRanking == 5) return 15;
+        else if (leagueRanking == 6) return 18;
+        else return 20;
+    }
+
+    // returns two sorted lists, [best teamIdxInLeague, points], ....
     // idx in the N*(N-1) matrix, assuming t0 < t1
-    
     function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
         uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
     ) {
