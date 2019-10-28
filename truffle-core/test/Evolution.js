@@ -4,7 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
-const logUtils = require('./matchLogUtils.js');
+const logUtils = require('../utils/matchLogUtils.js');
 
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
