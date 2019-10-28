@@ -91,7 +91,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		CurrencyID: uint8(1),
 		Price:      big.NewInt(41234),
 		Rnd:        big.NewInt(42321),
-		ValidUntil: big.NewInt(1572284694),
+		ValidUntil: big.NewInt(2000000000),
 		Signature:  "0x025bbed3e0810e682ad500d9f35c90246e7580bbc44ccc81aec951636d2b7dd228c27239aa2fb7ef4e1b729f89f9ccf1152897949f22b9f35f30706c1f39f4791b",
 		State:      storage.AUCTION_STARTED,
 	}
@@ -102,6 +102,14 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	result := hex.EncodeToString(auctionHiddenPrice[:])
 	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
 		t.Fatalf("Expected 4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa got %v", result)
+	}
+	auctionMsg, err := bc.Market.BuildPutAssetForSaleTxMsg(&bind.CallOpts{}, auctionHiddenPrice, auction.ValidUntil, auction.PlayerID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result = hex.EncodeToString(auctionMsg[:])
+	if result != "909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d" {
+		t.Fatalf("Exected 909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d gor %v", result)
 	}
 
 	bids := []storage.Bid{
