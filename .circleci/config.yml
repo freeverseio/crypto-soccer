@@ -34,7 +34,7 @@ jobs:
       - checkout
       - run: make setup contracts
       - run: cd go/cmd/ && go build ./notary.go
-      - run: cd go/marketnotary && go test ./...
+      - run: cd go/marketnotary && go test ./... -p 1
   relay-api:
     executor: freeverse
     steps:

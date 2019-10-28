@@ -1,11 +1,11 @@
-package processor_test
+package auctionmachine_test
 
 import (
 	"math/big"
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/processor"
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 	"github.com/google/uuid"
@@ -32,7 +32,7 @@ func TestStartedState(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine := processor.NewAuctionMachine(auction, bids, bc.Market)
+	machine := auctionmachine.NewAuctionMachine(auction, bids, bc.Market)
 	machine.Process()
 	if machine.Auction.State != storage.AUCTION_NO_BIDS {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, auction.State)
