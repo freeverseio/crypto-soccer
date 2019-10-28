@@ -34,7 +34,7 @@ contract('Assets', (accounts) => {
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
-        specialPlayerId = await encoding.encodePlayerSkills(
+        specialPlayerId = await assets.encodePlayerSkills(
             sk,
             dayOfBirth = 4*365, 
             playerId = 144321433,
@@ -50,9 +50,9 @@ contract('Assets', (accounts) => {
             sumSkills
         ).should.be.fulfilled;
         result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
-        specialPlayerId = await encoding.addIsSpecial(specialPlayerId).should.be.fulfilled;
+        specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
-        result = await encoding.getShoot(skills).should.be.fulfilled;
+        result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
 
