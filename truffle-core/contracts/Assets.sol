@@ -263,6 +263,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
+        // if ((playerId >> 255) == 1) return getSpecialPlayerSkillsAtBirth(playerId);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
@@ -272,6 +273,15 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
         return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
     }
+
+    // function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
+    //     uint256 dayOfBirth;
+    //     (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
+    //     (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint16 sumSkills) = computeSkills(dna, shirtNum);
+    //     return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+    // }
+
+
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {

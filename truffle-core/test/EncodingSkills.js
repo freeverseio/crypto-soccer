@@ -9,6 +9,8 @@ require('chai')
 
 contract('Encoding', (accounts) => {
 
+    const it2 = async(text, f) => {};
+
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;

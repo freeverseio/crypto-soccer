@@ -34,22 +34,22 @@ contract EncodingSkillsSetters {
 
     
     function setShoot(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 242)) | (val << 242);
+        return ((encodedSkills & ~(uint256(0x3fff))) | val);
     }
     
     function setSpeed(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 228)) | (val << 228);
+        return (encodedSkills & ~(uint256(0x3fff) << 14)) | (val << 14);
     }
     
     function setPass(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 214)) | (val << 214);
+        return (encodedSkills & ~(uint256(0x3fff) << 28)) | (val << 28);
     }
     
     function setDefence(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 200)) | (val << 200);
+        return (encodedSkills & ~(uint256(0x3fff) << 42)) | (val << 42);
     }
 
     function setEndurance(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 186)) | (val << 186);
+        return (encodedSkills & ~(uint256(0x3fff) << 56)) | (val << 56);
     }
 }
