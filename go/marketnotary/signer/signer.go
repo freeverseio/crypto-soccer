@@ -71,6 +71,14 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	return hash, err
 }
 
+func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {
+	return b.assets.HashBidHiddenPrice(
+		&bind.CallOpts{},
+		extraPrice,
+		rnd,
+	)
+}
+
 // func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {
 // 	var hash [32]byte
 // 	hashPrivateMessage, err := b.assets.HashPrivateMsg(
