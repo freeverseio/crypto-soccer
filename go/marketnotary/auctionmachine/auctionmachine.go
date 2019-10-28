@@ -6,7 +6,7 @@ import (
 )
 
 type State interface {
-	Process(m *AuctionMachine)
+	Process(m *AuctionMachine) error
 }
 
 type AuctionMachine struct {
@@ -34,6 +34,11 @@ func NewAuctionMachine(
 	}
 }
 
-func (b *AuctionMachine) Process() {
-	b.current.Process(b)
+func (b *AuctionMachine) Process() error {
+	return b.current.Process(b)
+}
+
+func (b *AuctionMachine) SetState(state State) error {
+	b.current = state
+	return nil
 }

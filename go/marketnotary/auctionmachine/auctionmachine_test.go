@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestStartedState(t *testing.T) {
+func TestStartedStateToNoBids(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
@@ -33,8 +33,15 @@ func TestStartedState(t *testing.T) {
 	}
 	bids := []storage.Bid{}
 	machine := auctionmachine.NewAuctionMachine(auction, bids, bc.Market)
-	machine.Process()
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if machine.Auction.State != storage.AUCTION_NO_BIDS {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, auction.State)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
 	}
 }
