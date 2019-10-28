@@ -249,6 +249,10 @@ contract Market {
         return keccak256(abi.encode(currencyId, price, rnd));
     }
 
+    function hashBidHiddenPrice(uint256 extraPrice, uint256 rnd) external pure returns (bytes32) {
+        return keccak256(abi.encode(extraPrice, rnd));
+    }
+
     function buildPutAssetForSaleTxMsg(bytes32 hiddenPrice, uint256 validUntil, uint256 assetId) public pure returns (bytes32) {
         return keccak256(abi.encode(hiddenPrice, validUntil, assetId));
     }
