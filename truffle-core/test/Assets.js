@@ -30,6 +30,32 @@ contract('Assets', (accounts) => {
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         });
 
+        
+    it('create special players', async () => {
+        sk = [16383, 13, 4, 56, 456]
+        sumSkills = sk.reduce((a, b) => a + b, 0);
+        specialPlayerId = await assets.encodePlayerSkills(
+            sk,
+            dayOfBirth = 4*365, 
+            playerId = 144321433,
+            [potential = 5,
+            forwardness = 3,
+            leftishness = 4,
+            aggressiveness = 1],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = true,
+            gamesNonStopping = 2,
+            injuryWeeksLeft = 6,
+            substitutedLastHalf = true,
+            sumSkills
+        ).should.be.fulfilled;
+        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
+        specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
+        skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
+        result = await assets.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[0]);        
+    });
+
     it('check division event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {

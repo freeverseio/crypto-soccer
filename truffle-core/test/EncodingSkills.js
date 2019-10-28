@@ -9,6 +9,8 @@ require('chai')
 
 contract('Encoding', (accounts) => {
 
+    const it2 = async(text, f) => {};
+
     beforeEach(async () => {
         encoding = await Encoding.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
@@ -96,6 +98,12 @@ contract('Encoding', (accounts) => {
         result.should.be.equal(substitutedLastHalf);
         result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sumSkills);
+        
+        result =  await encoding.getIsSpecial(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        skills2 = await encoding.addIsSpecial(skills).should.be.fulfilled;
+        result =  await encoding.getIsSpecial(skills2).should.be.fulfilled;
+        result.should.be.equal(true);
         
         sk = [43, 567, 3214, 356, 4556]
         sumSkills = sk.reduce((a, b) => a + b, 0);
