@@ -32,20 +32,6 @@ func TestAuctionWithNoBids(t *testing.T) {
 }
 
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
-	// bc, err := testutils.NewBlockchainNode()
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-
-	// err = bc.DeployContracts(bc.Owner)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	// timezoneIdx := uint8(1)
-	// err = bc.InitOneTimezone(timezoneIdx)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 10),
