@@ -263,7 +263,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
-        // if (isSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
+        if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
@@ -274,12 +274,9 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
     }
 
-    // function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
-    //     uint256 dayOfBirth;
-    //     (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
-    //     (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint16 sumSkills) = computeSkills(dna, shirtNum);
-    //     return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
-    // }
+    function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
+        return playerId;
+    }
 
 
 
