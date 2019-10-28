@@ -2,6 +2,8 @@ package auctionmachine
 
 import (
 	"errors"
+	"math/rand"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
@@ -16,6 +18,17 @@ func NewPaying() State {
 func (b *Paying) Process(m *AuctionMachine) error {
 	if m.Auction.State != storage.AUCTION_PAYING {
 		return errors.New("Paying: wrong state")
+	}
+
+	now := time.Now().Unix()
+	if (now - m.Auction.ValidUntil.Int64()) > 60 {
+		if rand.Intn(100) > 50 {
+			m.Auction.State = storage.AUCTION_PAID
+			m.SetState(NewPaid())
+		} else {
+			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
+			m.SetState(NewFailedToPay())
+		}
 	}
 
 	return nil
