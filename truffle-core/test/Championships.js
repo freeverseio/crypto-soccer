@@ -4,6 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
 
 const Championships = artifacts.require('Championships');
 const Engine = artifacts.require('Engine');
@@ -12,9 +13,10 @@ contract('Championships', (accounts) => {
     const now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const subLastHalf = false;
+    const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
 
     const it2 = async(text, f) => {};
-
+    
     function secsToDays(secs) {
         return secs/ (24 * 3600);
     }
@@ -51,6 +53,10 @@ contract('Championships', (accounts) => {
         return leagueState;
     };
     
+    function getRand(seed, min, max) {
+        return min + (2**Math.abs(Math.floor(Math.sin(seed + 324212) * 24))) % (max - min + 1)
+    }
+    
     beforeEach(async () => {
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
@@ -63,8 +69,57 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
+    it('computeTeamRankingPoints with no previous points', async () =>  {
+        // teamSkills = 5*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
+        result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(143000);
+        
+    });
+
+    it('computeTeamRankingPoints with previous points', async () =>  {
+        // teamSkills = 5*50*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
+        result.toNumber().should.be.equal(6206800);
+    });
+
+    it('computeLeagueLeaderBoard almost no clashes', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 13;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i, 0, 12), getRand(2*i+1, 0, 12)]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081423, 12000075754];
+        expectedRanking = [ 4, 1, 2, 5, 7, 0, 6, 3 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
+    
+    it('computeLeagueLeaderBoard many clashes', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 13;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 2), getRand(2*i+3, 0, 12)]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [27000000000, 22000052441, 22000051610, 18000000000, 16002047402, 16001047423, 16000049802, 15000000000];
+        expectedRanking = [ 7, 2, 1, 5, 4, 3, 0, 6 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
+
+    it('computeLeagueLeaderBoard all clashes', async () =>  {
+        MATCHES_PER_LEAGUE = 56;
+        matchDay = 13;
+        results = Array.from(new Array(MATCHES_PER_LEAGUE), (x,i) => [getRand(2*i+1, 0, 1), getRand(2*i+3, 0, 1)]);
+        result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
+        expectedPoints =  [ 13000000802, 13000000754, 13000000610, 13000000441, 13000000423, 13000000402, 13000000389, 13000000110 ];
+        expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+    });
+
     it('check initial constants', async () =>  {
-        engine = 0;
         MATCHDAYS.toNumber().should.be.equal(14);
         MATCHES_PER_DAY.toNumber().should.be.equal(4);
         TEAMS_PER_LEAGUE.toNumber().should.be.equal(8);
@@ -132,31 +187,5 @@ contract('Championships', (accounts) => {
         teams[1].toNumber().should.be.equal(0);
     });
     
-    // it('calculate a day in a league', async () => {
-    //     day = 0;
-    //     verseSeed = 0;
-    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-    //     result = await champs.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
-    //     expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
-    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-    //     // console.log(actualScores);
-    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
-    //     }
-    //     day = 3;
-    //     verseSeed = 432;
-    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-    //     result = await champs.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
-    //     expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
-    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-    //     // console.log(actualScores);
-    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
-    //     }
-    // });
 
 });

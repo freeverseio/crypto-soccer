@@ -1,16 +1,24 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./Engine.sol";
+import "./SortIdxs.sol";
+import "./EncodingSkills.sol";
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships {
+contract Championships is SortIdxs, EncodingSkills {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
+    uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
+    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
+    uint256 constant private INERTIA = 4;
+    uint256 constant private WEIGHT_SKILLS = 100;
+    uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+
     Engine private _engine;
 
     function setEngineAdress(address addr) public {
@@ -85,6 +93,19 @@ contract Championships {
             (visitorIdx, homeIdx) = _getTeamsInMatchFirstHalf(matchday - (TEAMS_PER_LEAGUE - 1), matchIdxInDay);
     }
 
+    // TODO: do this by exact formula instead of brute force search
+    function getMatchesForTeams(uint8 team0, uint8 team1) public pure returns (uint8 match0, uint8 match1) 
+    {
+        uint8 home;
+        uint8 vist;
+        for (uint8 m = 0; m < MATCHES_PER_LEAGUE; m++) {
+            (home, vist) = getTeamsInLeagueMatch(m / 4, m % 4);
+            if ((home == team0) && (vist == team1)) match0 = m;
+            if ((home == team1) && (vist == team0)) match1 = m;
+        }
+    }
+
+
     function _shiftBack(uint8 t) private pure returns (uint8)
     {
         if (t < TEAMS_PER_LEAGUE)
@@ -106,38 +127,118 @@ contract Championships {
             return (team2, team1);
     }
 
-    // returns [scoreHome, scoreAway, scoreHome, scoreAway,...]
-    // TODO: currentVerseSeed must be provided from getCurrentVerseSeed()
-    // TODO: likewise, matchday should be computed outside
-    // function computeMatchday(
-    //     uint8 matchday,
-    //     uint256[PLAYERS_PER_TEAM_MAX][TEAMS_PER_LEAGUE] memory prevLeagueState,
-    //     uint256[TEAMS_PER_LEAGUE] memory tacticsIds,
-    //     uint256 currentVerseSeed
-    // )
-    //     public
-    //     view
-    //     returns (uint8[2 * MATCHES_PER_DAY] memory scores)
-    // {
-    //     uint8[2] memory score;
-    //     uint8 homeTeamIdx;
-    //     uint8 visitorTeamIdx;
-    //     for (uint8 matchIdxInDay = 0; matchIdxInDay < MATCHES_PER_DAY ; matchIdxInDay++)
-    //     {
-    //         (homeTeamIdx, visitorTeamIdx) = getTeamsInLeagueMatch(matchday, matchIdxInDay);
-    //         uint256 matchSeed = uint256(keccak256(abi.encode(currentVerseSeed, matchIdxInDay))); 
-    //         uint256[2] memory tactics = [tacticsIds[homeTeamIdx], tacticsIds[visitorTeamIdx]];
-    //         uint256[PLAYERS_PER_TEAM_MAX][2] memory states = [prevLeagueState[homeTeamIdx], prevLeagueState[visitorTeamIdx]];
-    //         uint8[4] memory events0;
-    //         (score, events0, events0) = _engine.playMatch(
-    //             matchSeed, 
-    //             states,
-    //             tactics,
-    //             false,
-    //             false
-    //         );
-    //         scores[matchIdxInDay * 2] = score[0];
-    //         scores[matchIdxInDay * 2 +1 ] = score[1];
-    //     }
-    // }    
+    function computeTeamRankingPoints(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint8 leagueRanking,
+        uint256 prevPerfPoints
+    ) 
+        public
+        pure
+        returns (uint256 teamSkills)
+    {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if (states[p] != 0 && states[p] != FREE_PLAYER_ID)
+                teamSkills += getSumOfSkills(states[p]);
+        }
+        
+        // Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
+        //                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
+        // 
+        // Note that we use P = [0, 20] instead of the user-facing P' = [-10, 10] to avoid negatives.
+        // I/I0 is the percentage of the previous perfPoints that we carry here. 
+        // Formula: R = W SK/SK0 + P - 10 = W SK/SK0 + (I P0 + (10-I) P1)/I0 - 10
+        // So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (10-I)P1) - 10 SK0 I0
+        // Note that if we do not need to dive, we can just keep I = 4, I0 = 10
+        //  R * SK0 * I0 = 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10 W SK + SK0 Pnow
+        // And finall  RankingPoints = 10W SK + SK0 Pnow
+
+        // The user knows that his performance points now are: (note I' = I/I0)
+        //  Pnow' = I' P0' + (1-I')P1' = I' P0 + (1-I')P1 - 10 = Pnow/I0
+
+        // Formula in terms of pos and neg terms:
+        //   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
+        uint256 perfPointsThisLeague = getPerfPoints(leagueRanking);
+        uint256 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
+        uint256 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
+        
+        if (pos > neg) return pos-neg;
+        else return 0;
+    }
+
+    function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
+        if (leagueRanking == 0) return 20;
+        else if (leagueRanking == 1) return 18;
+        else if (leagueRanking == 2) return 15;
+        else if (leagueRanking == 3) return 12;
+        else if (leagueRanking == 4) return 10;
+        else if (leagueRanking == 5) return 8;
+        else if (leagueRanking == 6) return 5;
+        else return 2;
+    }
+
+    // returns two sorted lists, [best teamIdxInLeague, points], ....
+    // idx in the N*(N-1) matrix, assuming t0 < t1
+    function computeLeagueLeaderBoard(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 matchDay, uint256 matchDaySeed) public pure returns (
+        uint8[TEAMS_PER_LEAGUE] memory ranking, uint256[TEAMS_PER_LEAGUE] memory points
+    ) {
+        require(matchDay < MATCHDAYS, "wrong matchDay");
+        uint8 team0;
+        uint8 team1;
+        uint16[TEAMS_PER_LEAGUE]memory goals;
+        for(uint8 m = 0; m < matchDay * 4; m++) {
+            (team0, team1) = getTeamsInLeagueMatch(m / 4, m % 4); 
+            goals[team0] += results[m][0];
+            goals[team1] += results[m][1];
+            if (results[m][0] == results[m][1]) {
+                points[team0] += 1000000000;
+                points[team1] += 1000000000;
+            } else if (results[m][0] > results[m][1]) {
+                points[team0] += 3000000000;
+            } else {
+                points[team1] += 3000000000;
+            }
+        }
+        // note that both points and ranking are returned ordered: (but goals and goalsAverage remain with old idxs)
+        for (uint8 i = 0; i < TEAMS_PER_LEAGUE; i++) ranking[i] = i;
+        sortIdxs(points, ranking);
+        uint8 lastNonTied;
+        for (uint8 r = 0; r < TEAMS_PER_LEAGUE-1; r++) {
+            if (points[r+1] != points[r] && lastNonTied == r) lastNonTied = r+1;
+            else if (points[r+1] != points[r]) {
+                computeSecondaryPoints(ranking, points, results, goals, lastNonTied, r, matchDaySeed);
+                lastNonTied = r+1;
+            }
+        }
+        if (points[TEAMS_PER_LEAGUE-1] == points[TEAMS_PER_LEAGUE-2]) {
+            computeSecondaryPoints(ranking, points, results, goals, lastNonTied, TEAMS_PER_LEAGUE-1, matchDaySeed);
+        }
+        sortIdxs(points, ranking);
+    }
+    
+    // Points = nPoints in league * 1e9 + bestDirects * 1e6 + nGoalsInLeague * 1e3 + random % 999
+    function computeSecondaryPoints(
+        uint8[TEAMS_PER_LEAGUE] memory ranking,
+        uint256[TEAMS_PER_LEAGUE] memory points,
+        uint8[2][MATCHES_PER_LEAGUE] memory results,
+        uint16[TEAMS_PER_LEAGUE]memory goals,
+        uint8 firstTeamInRank,
+        uint8 lastTeamInRank,
+        uint256 matchDaySeed
+    ) public pure {
+        for (uint8 team0 = firstTeamInRank; team0 <= lastTeamInRank; team0++) {
+            points[team0] += uint256(goals[ranking[team0]])*1000 + (matchDaySeed >> team0 * 10) % 999;
+            for (uint8 team1 = team0 + 1; team1 <= lastTeamInRank; team1++) {
+                uint8 bestTeam = computeDirect(results, ranking[team0], ranking[team1]);
+                if (bestTeam == 0) points[team0] += 1000000;
+                else if (bestTeam == 1) points[team1] += 1000000;
+            }        
+        }
+    }
+
+    function computeDirect(uint8[2][MATCHES_PER_LEAGUE] memory results, uint8 team0, uint8 team1) public pure returns(uint8 bestTeam) {
+        (uint8 match0, uint8 match1) = getMatchesForTeams(team0, team1);
+        if (results[match0][0] + results[match1][1] > results[match0][1] + results[match1][0]) return 0;
+        else if (results[match0][0] + results[match1][1] < results[match0][1] + results[match1][0]) return 1;
+        else return 2;
+    }
 }

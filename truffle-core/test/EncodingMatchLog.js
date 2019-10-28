@@ -5,7 +5,7 @@ require('chai')
     .should();;
 
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
-const logUtils = require('./matchLogUtils.js');
+const logUtils = require('../utils/matchLogUtils.js');
 
 contract('EncodingMatchLog', (accounts) => {
 

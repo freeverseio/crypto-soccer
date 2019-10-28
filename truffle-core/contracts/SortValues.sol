@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-contract Sort {
+contract SortValues {
     
     function sort14(uint8[14] memory data) public pure returns(uint8[14] memory) {
        quickSort14(data, int(0), int(13));
@@ -13,8 +13,8 @@ contract Sort {
         if(i==j) return;
         uint pivot = arr[uint(left + (right - left) / 2)];
         while (i <= j) {
-            while (arr[uint(i)] < pivot) i++;
-            while (pivot < arr[uint(j)]) j--;
+            while (arr[uint(i)] > pivot) i++;
+            while (pivot > arr[uint(j)]) j--;
             if (i <= j) {
                 (arr[uint(i)], arr[uint(j)]) = (arr[uint(j)], arr[uint(i)]);
                 i++;
