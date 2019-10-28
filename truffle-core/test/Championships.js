@@ -72,21 +72,20 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*2-100) = 45800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
         result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result.toNumber().should.be.equal(45800);
+        result.toNumber().should.be.equal(143000);
         
     });
 
     it('computeTeamRankingPoints with previous points', async () =>  {
-        // teamSkills = 50*25
+        // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 50 * 25 + 18*50 *(4*50000+6 * 20 -100) = 45800
-        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 50000).should.be.fulfilled;
-        result.toNumber().should.be.equal(181268000);
-        
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
+        result.toNumber().should.be.equal(6206800);
     });
-    return
+
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;

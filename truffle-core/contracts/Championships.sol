@@ -16,7 +16,6 @@ contract Championships is SortIdxs, EncodingSkills {
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant private INERTIA = 4;
-    uint256 constant private ONE_MINUS_INERTIA = 6;
     uint256 constant private WEIGHT_SKILLS = 100;
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
 
@@ -167,14 +166,14 @@ contract Championships is SortIdxs, EncodingSkills {
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
-        if (leagueRanking == 0) return 2;
-        else if (leagueRanking == 1) return 5;
-        else if (leagueRanking == 2) return 8;
-        else if (leagueRanking == 3) return 10;
-        else if (leagueRanking == 4) return 12;
-        else if (leagueRanking == 5) return 15;
-        else if (leagueRanking == 6) return 18;
-        else return 20;
+        if (leagueRanking == 0) return 20;
+        else if (leagueRanking == 1) return 18;
+        else if (leagueRanking == 2) return 15;
+        else if (leagueRanking == 3) return 12;
+        else if (leagueRanking == 4) return 10;
+        else if (leagueRanking == 5) return 8;
+        else if (leagueRanking == 6) return 5;
+        else return 2;
     }
 
     // returns two sorted lists, [best teamIdxInLeague, points], ....
