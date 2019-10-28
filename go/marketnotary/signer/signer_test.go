@@ -1,16 +1,16 @@
-package processor_test
+package signer_test
 
 import (
 	"encoding/hex"
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/processor"
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestRSV(t *testing.T) {
-	signer := processor.NewSigner(nil)
+	signer := signer.NewSigner(nil)
 	_, _, _, err := signer.RSV("0x0")
 	if err == nil {
 		t.Fatal("No error on wrong signature")
@@ -39,7 +39,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := processor.NewSigner(bc.Market)
+	signer := signer.NewSigner(bc.Market)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
@@ -64,7 +64,7 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := processor.NewSigner(bc.Market)
+	signer := signer.NewSigner(bc.Market)
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)

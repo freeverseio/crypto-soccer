@@ -1,4 +1,4 @@
-package processor
+package signer
 
 import (
 	"encoding/hex"

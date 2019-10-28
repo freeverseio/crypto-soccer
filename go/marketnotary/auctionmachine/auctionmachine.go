@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
@@ -18,6 +19,7 @@ type AuctionMachine struct {
 	current   State
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
+	signer    *signer.Signer
 }
 
 func New(
@@ -42,7 +44,8 @@ func New(
 		bids,
 		state,
 		market,
-		nil,
+		freeverse,
+		signer.NewSigner(market),
 	}, nil
 }
 
