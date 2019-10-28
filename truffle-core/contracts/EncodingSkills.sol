@@ -120,6 +120,7 @@ contract EncodingSkills {
      *      injuryWeeksLeft           = 3b 
      *      substitutedDuringLastHalf = 1b (bool) 
      *      sumSkills                 = 16b (must equal sum(skills))
+     *      isSpecialPlayer           = 1b
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -235,4 +236,13 @@ contract EncodingSkills {
     function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills >> 151 & 65535); // 2**16-1
     }
+    
+    function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {
+        return uint256(encodedSkills >> 167 & 1) == 1; 
+    }
+     
+    function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
+        return (encodedSkills | (uint256(1) << 167));
+    }
+
 }

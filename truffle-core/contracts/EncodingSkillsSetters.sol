@@ -52,4 +52,5 @@ contract EncodingSkillsSetters {
     function setEndurance(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
         return (encodedSkills & ~(uint256(0x3fff) << 56)) | (val << 56);
     }
+
 }
