@@ -108,8 +108,28 @@ func TestFrozenAuction(t *testing.T) {
 	if machine.Auction.State != storage.AUCTION_ASSET_FROZEN {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_ASSET_FROZEN, machine.Auction.State)
 	}
+}
+
+func TestOutdatedFrozenAuction(t *testing.T) {
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(time.Now().Unix() - 100),
+		State:      storage.AUCTION_ASSET_FROZEN,
+	}
+	bids := []storage.Bid{
+		storage.Bid{
+			Auction: auction.UUID,
+		},
+	}
+	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	err = machine.Process()
 	if err != nil {
 		t.Fatal(err)
+	}
+	if machine.Auction.State != storage.AUCTION_PAYING {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, machine.Auction.State)
 	}
 }
