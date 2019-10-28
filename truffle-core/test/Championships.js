@@ -69,12 +69,21 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
-    it('computeTeamRankingPoints almost no clashes', async () =>  {
+    it('computeTeamRankingPoints with no previous points', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-        // 10W SK + SK0 (I P0 + (1-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*2-100) = 45800
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*2-100) = 45800
         result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
         result.toNumber().should.be.equal(45800);
+        
+    });
+
+    it('computeTeamRankingPoints with previous points', async () =>  {
+        // teamSkills = 50*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 50 * 25 + 18*50 *(4*50000+6 * 20 -100) = 45800
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 50000).should.be.fulfilled;
+        result.toNumber().should.be.equal(181268000);
         
     });
     return
