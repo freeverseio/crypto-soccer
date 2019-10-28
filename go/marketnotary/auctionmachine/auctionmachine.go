@@ -20,7 +20,7 @@ type AuctionMachine struct {
 	freeverse *ecdsa.PrivateKey
 }
 
-func NewAuctionMachine(
+func New(
 	auction storage.Auction,
 	bids []storage.Bid,
 	market *market.Market,

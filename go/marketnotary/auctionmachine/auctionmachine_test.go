@@ -17,7 +17,7 @@ func TestAuctionWithNoBids(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestPayingAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -169,7 +169,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.NewAuctionMachine(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

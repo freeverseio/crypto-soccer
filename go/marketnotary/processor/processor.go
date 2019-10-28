@@ -43,7 +43,7 @@ func (b *Processor) Process() error {
 			return err
 		}
 
-		machine, err := auctionmachine.NewAuctionMachine(
+		machine, err := auctionmachine.New(
 			auction,
 			bids,
 			b.assets,
