@@ -72,8 +72,9 @@ contract('Championships', (accounts) => {
     it('computeTeamRankingPoints almost no clashes', async () =>  {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (1-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*2-100) = 45800
         result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result.toNumber().should.be.equal(4400);
+        result.toNumber().should.be.equal(45800);
         
     });
     return

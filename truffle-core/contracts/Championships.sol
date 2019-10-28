@@ -15,8 +15,8 @@ contract Championships is SortIdxs, EncodingSkills {
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
-    uint256 constant private INERTIA = 4000;
-    uint256 constant private ONE_MINUS_INERTIA = 6000;
+    uint256 constant private INERTIA = 4;
+    uint256 constant private ONE_MINUS_INERTIA = 6;
     uint256 constant private WEIGHT_SKILLS = 100;
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
 
@@ -141,17 +141,29 @@ contract Championships is SortIdxs, EncodingSkills {
             if (states[p] != 0 && states[p] != FREE_PLAYER_ID)
                 teamSkills += getSumOfSkills(states[p]);
         }
-        prevPerfPoints = (INERTIA * prevPerfPoints 
-                        + ONE_MINUS_INERTIA * getPerfPoints(leagueRanking)) /10000;
         
-        // teamSkills = W * SK/SK_START + (PERF - 10) =
-        //    W * SK + SK_START * (PERF-10)
-        // => require  W * SK + PERF * SK_START > 10 * SK_START
-        if (WEIGHT_SKILLS * teamSkills + prevPerfPoints * SKILLS_AT_START > 10 * SKILLS_AT_START) {
-            return WEIGHT_SKILLS * teamSkills + (prevPerfPoints - 10) * SKILLS_AT_START;
-        } else {
-            return 0;
-        }
+        // Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
+        //                  I = Inertia, I0 = inertia Max, P0 = prevPerfPoints, P1 = currenteLeaguePerfPoints
+        // 
+        // Note that we use P = [0, 20] instead of the user-facing P' = [-10, 10] to avoid negatives.
+        // I/I0 is the percentage of the previous perfPoints that we carry here. 
+        // Formula: R = W SK/SK0 + P - 10 = W SK/SK0 + (I P0 + (10-I) P1)/I0 - 10
+        // So we can avoid dividing, and simply compute:  R * SK0 * I0 = W SK I0 + SK0 (I P0 + (10-I)P1) - 10 SK0 I0
+        // Note that if we do not need to dive, we can just keep I = 4, I0 = 10
+        //  R * SK0 * I0 = 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10 W SK + SK0 Pnow
+        // And finall  RankingPoints = 10W SK + SK0 Pnow
+
+        // The user knows that his performance points now are: (note I' = I/I0)
+        //  Pnow' = I' P0' + (1-I')P1' = I' P0 + (1-I')P1 - 10 = Pnow/I0
+
+        // Formula in terms of pos and neg terms:
+        //   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
+        uint256 perfPointsThisLeague = getPerfPoints(leagueRanking);
+        uint256 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
+        uint256 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
+        
+        if (pos > neg) return pos-neg;
+        else return 0;
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
