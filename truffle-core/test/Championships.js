@@ -69,6 +69,14 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
+    it('computeTeamRankingPoints almost no clashes', async () =>  {
+        // teamSkills = 5*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
+        result.toNumber().should.be.equal(4400);
+        
+    });
+    return
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;
@@ -170,31 +178,5 @@ contract('Championships', (accounts) => {
         teams[1].toNumber().should.be.equal(0);
     });
     
-    // it('calculate a day in a league', async () => {
-    //     day = 0;
-    //     verseSeed = 0;
-    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-    //     result = await champs.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
-    //     expectedScores      = [ 0, 1, 0, 0, 1, 5, 3, 1 ]
-    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-    //     // console.log(actualScores);
-    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
-    //     }
-    //     day = 3;
-    //     verseSeed = 432;
-    //     leagueAll50 = await createLeagueStateFromSinglePlayer([50, 50, 50, 50, 50], engine);
-    //     leagueTacticsIds = Array(TEAMS_PER_LEAGUE.toNumber()).fill(tactic442);
-    //     result = await champs.computeMatchday(day, leagueAll50, leagueTacticsIds, verseSeed).should.be.fulfilled;
-    //     result.length.should.be.equal(MATCHES_PER_DAY * 2);
-    //     expectedScores      = [ 0, 3, 1, 3, 1, 0, 1, 1 ]
-    //     actualScores    = Array.from(new Array(result.length), (x,i) => result[i].toNumber());
-    //     // console.log(actualScores);
-    //     for (idx = 0; idx < 2 * MATCHES_PER_DAY; idx++){
-    //         result[idx].toNumber().should.be.equal(expectedScores[idx]);
-    //     }
-    // });
 
 });

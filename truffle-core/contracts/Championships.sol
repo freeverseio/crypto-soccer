@@ -135,20 +135,20 @@ contract Championships is SortIdxs, EncodingSkills {
     ) 
         public
         pure
-        returns (uint256 rankingPoints)
+        returns (uint256 teamSkills)
     {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (states[p] != 0 && states[p] != FREE_PLAYER_ID)
-                rankingPoints += getSumOfSkills(states[p]);
+                teamSkills += getSumOfSkills(states[p]);
         }
         prevPerfPoints = (INERTIA * prevPerfPoints 
                         + ONE_MINUS_INERTIA * getPerfPoints(leagueRanking)) /10000;
         
-        // rankingPoints = W * SK/SK_START + (PERF - 10) =
+        // teamSkills = W * SK/SK_START + (PERF - 10) =
         //    W * SK + SK_START * (PERF-10)
         // => require  W * SK + PERF * SK_START > 10 * SK_START
-        if (WEIGHT_SKILLS * rankingPoints + prevPerfPoints * SKILLS_AT_START > 10 * SKILLS_AT_START) {
-            return WEIGHT_SKILLS * rankingPoints + (prevPerfPoints - 10) * SKILLS_AT_START;
+        if (WEIGHT_SKILLS * teamSkills + prevPerfPoints * SKILLS_AT_START > 10 * SKILLS_AT_START) {
+            return WEIGHT_SKILLS * teamSkills + (prevPerfPoints - 10) * SKILLS_AT_START;
         } else {
             return 0;
         }
