@@ -32,7 +32,7 @@ func TestRSV(t *testing.T) {
 	}
 }
 
-func TestHashPRivateMessage(t *testing.T) {
+func TestAuctionHiddenPrice(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
