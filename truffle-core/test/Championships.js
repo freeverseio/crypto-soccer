@@ -4,6 +4,7 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
 
 const Championships = artifacts.require('Championships');
 const Engine = artifacts.require('Engine');
@@ -15,19 +16,6 @@ contract('Championships', (accounts) => {
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
 
     const it2 = async(text, f) => {};
-
-    function compareArrays(result, expected, toNum = true, verbose = false) {
-        verb = [];
-        for (i = 0; i < expected.length; i++) {
-            if (toNum) verb.push(result[i].toNumber());
-            else verb.push(result[i]);
-            if (!verbose) {
-                if (toNum) result[i].toNumber().should.be.equal(expected[i]);
-                else result[i].should.be.equal(expected[i]);
-            }            
-        }
-        if (verbose) console.log(verb);
-    }
     
     function secsToDays(secs) {
         return secs/ (24 * 3600);
@@ -88,8 +76,8 @@ contract('Championships', (accounts) => {
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [26000000000, 24000000000, 23000000000, 21000000000, 15000000000, 14000000000, 12001081423, 12000075754];
         expectedRanking = [ 4, 1, 2, 5, 7, 0, 6, 3 ];
-        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
-        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
     
     it('computeLeagueLeaderBoard many clashes', async () =>  {
@@ -99,8 +87,8 @@ contract('Championships', (accounts) => {
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [27000000000, 22000052441, 22000051610, 18000000000, 16002047402, 16001047423, 16000049802, 15000000000];
         expectedRanking = [ 7, 2, 1, 5, 4, 3, 0, 6 ];
-        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
-        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
 
     it('computeLeagueLeaderBoard all clashes', async () =>  {
@@ -110,8 +98,8 @@ contract('Championships', (accounts) => {
         result = await champs.computeLeagueLeaderBoard(results, matchDay, seed).should.be.fulfilled;
         expectedPoints =  [ 13000000802, 13000000754, 13000000610, 13000000441, 13000000423, 13000000402, 13000000389, 13000000110 ];
         expectedRanking = [ 0, 2, 7, 4, 3, 1, 6, 5 ];
-        compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
-        compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
+        debug.compareArrays(result.ranking, expectedRanking, toNum = true, verbose = false);
+        debug.compareArrays(result.points, expectedPoints, toNum = true, verbose = false);
     });
 
     it('check initial constants', async () =>  {
