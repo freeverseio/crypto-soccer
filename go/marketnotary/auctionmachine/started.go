@@ -26,7 +26,9 @@ func (b *Started) Process(m *AuctionMachine) error {
 		return nil
 	}
 
-	// trying yo freeze the asset
+	// TODO trying to freeze the asset
+	m.Auction.State = storage.AUCTION_ASSET_FROZEN
+	m.SetState(NewAssetFrozen())
 
 	return nil
 }
