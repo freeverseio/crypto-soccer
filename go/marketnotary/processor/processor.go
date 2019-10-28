@@ -6,6 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -35,29 +37,29 @@ func (b *Processor) Process() error {
 		return err
 	}
 
-	now := time.Now().Unix()
-
 	for _, auction := range openedAuctions {
 		bids, err := b.db.GetBidsOfAuction(auction.UUID)
 		if err != nil {
 			return err
 		}
 
-		state := auction.State
+		machine := auctionmachine.NewAuctionMachine(
+			auction,
+			bids,
+			b.assets,
+			b.freeverse,
+		)
 
-		// check that auction are closed
-		if auction.ValidUntil.Int64() < now {
-			if len(bids) != 0 {
-				state = storage.AUCTION_PAYING
-			} else {
-				state = storage.AUCTION_NO_BIDS
-			}
+		err = machine.Process()
+		if err != nil {
+			return err
 		}
 
 		// update auction state if changed
-		if state != auction.State {
-			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, state)
-			switch state {
+		newState := machine.Auction.State
+		if newState != auction.State {
+			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, newState)
+			switch newState {
 			case storage.AUCTION_PAYING:
 				err = b.db.UpdateAuctionPaymentUrl(auction.UUID, "https://www.freeverse.io")
 				if err != nil {
@@ -75,7 +77,7 @@ func (b *Processor) Process() error {
 				break
 			}
 
-			err = b.db.UpdateAuctionState(auction.UUID, state)
+			err = b.db.UpdateAuctionState(auction.UUID, newState)
 			if err != nil {
 				return err
 			}
