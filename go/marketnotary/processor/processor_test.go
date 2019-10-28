@@ -43,7 +43,7 @@ func TestOutdatedAuction(t *testing.T) {
 	}
 }
 
-func TestClosedAuctionWithBid(t *testing.T) {
+func TestAuctionWithBid(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +51,7 @@ func TestClosedAuctionWithBid(t *testing.T) {
 	now := time.Now().Unix()
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(now - 10),
+		ValidUntil: big.NewInt(now + 100),
 		State:      storage.AUCTION_STARTED,
 	}
 	err = sto.CreateAuction(auction)
@@ -78,15 +78,15 @@ func TestClosedAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auctions[0].State != storage.AUCTION_PAYING {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_PAYING, auctions[0].State)
+	if auctions[0].State != storage.AUCTION_ASSET_FROZEN {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_ASSET_FROZEN, auctions[0].State)
 	}
 	bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bids[0].State != storage.BID_PAYING {
-		t.Fatalf("Expects %v got %v", storage.BID_PAYING, bids[0].State)
+	if bids[0].State != storage.BID_ACCEPTED {
+		t.Fatalf("Expects %v got %v", storage.BID_ACCEPTED, bids[0].State)
 	}
 }
 
