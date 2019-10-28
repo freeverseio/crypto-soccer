@@ -2,6 +2,7 @@ package auctionmachine
 
 import (
 	"crypto/ecdsa"
+	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
@@ -24,11 +25,15 @@ func NewAuctionMachine(
 	bids []storage.Bid,
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
-) *AuctionMachine {
+) (*AuctionMachine, error) {
 	var state State
 	switch auction.State {
 	case storage.AUCTION_STARTED:
 		state = NewStarted()
+	case storage.AUCTION_ASSET_FROZEN:
+		state = NewAssetFrozen()
+	default:
+		return nil, errors.New("unknown auction state")
 	}
 	return &AuctionMachine{
 		auction,
@@ -36,7 +41,7 @@ func NewAuctionMachine(
 		state,
 		market,
 		nil,
-	}
+	}, nil
 }
 
 func (b *AuctionMachine) Process() error {
