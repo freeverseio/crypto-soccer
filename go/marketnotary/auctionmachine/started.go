@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Started struct {
@@ -29,6 +30,7 @@ func (b *Started) Process(m *AuctionMachine) error {
 	}
 
 	// TODO trying to freeze the asset
+	log.Warn("Started::Process| Not implemented Auctrion going ASSET_FROZEN")
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
 	m.SetState(NewAssetFrozen())
 
