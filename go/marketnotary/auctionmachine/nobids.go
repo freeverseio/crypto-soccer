@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type NoBids struct {
@@ -18,5 +19,6 @@ func (b *NoBids) Process(m *AuctionMachine) error {
 		return errors.New("NoBids: wrong state")
 	}
 
+	log.Warn("NoBids::Process called")
 	return nil
 }

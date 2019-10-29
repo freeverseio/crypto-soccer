@@ -9,6 +9,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/processor"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestOutdatedAuction(t *testing.T) {
@@ -48,10 +49,22 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	now := time.Now().Unix()
 	auction := storage.Auction{
 		UUID:       uuid.New(),
+		PlayerID:   big.NewInt(65),
+		Price:      big.NewInt(7),
+		Rnd:        big.NewInt(73),
 		ValidUntil: big.NewInt(now + 100),
+		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 		State:      storage.AUCTION_STARTED,
 	}
 	err = sto.CreateAuction(auction)
@@ -66,7 +79,7 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	processor, err := processor.NewProcessor(sto, nil, nil, nil)
+	processor, err := processor.NewProcessor(sto, bc.Client, bc.Market, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,8 +91,8 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auctions[0].State != storage.AUCTION_ASSET_FROZEN {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_ASSET_FROZEN, auctions[0].State)
+	if auctions[0].State != storage.AUCTION_FAILED_TO_FREEZE {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, auctions[0].State)
 	}
 	bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
 	if err != nil {
