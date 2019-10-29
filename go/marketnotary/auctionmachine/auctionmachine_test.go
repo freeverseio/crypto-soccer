@@ -1,7 +1,6 @@
 package auctionmachine_test
 
 import (
-	"encoding/hex"
 	"math/big"
 	"testing"
 	"time"
@@ -79,7 +78,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
-		common.HexToAddress("0x9c0511bfc917d6395E3ccEe7F15A1898FC5CCd97"),
+		common.HexToAddress("0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7"),
 	)
 	err = bc.WaitReceipt(tx, 5)
 	if err != nil {
@@ -92,26 +91,9 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		Price:      big.NewInt(41234),
 		Rnd:        big.NewInt(42321),
 		ValidUntil: big.NewInt(2000000000),
-		Signature:  "0x025bbed3e0810e682ad500d9f35c90246e7580bbc44ccc81aec951636d2b7dd228c27239aa2fb7ef4e1b729f89f9ccf1152897949f22b9f35f30706c1f39f4791b",
+		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 		State:      storage.AUCTION_STARTED,
 	}
-	auctionHiddenPrice, err := bc.Market.HashPrivateMsg(&bind.CallOpts{}, auction.CurrencyID, auction.Price, auction.Rnd)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result := hex.EncodeToString(auctionHiddenPrice[:])
-	if result != "4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa" {
-		t.Fatalf("Expected 4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa got %v", result)
-	}
-	auctionMsg, err := bc.Market.BuildPutAssetForSaleTxMsg(&bind.CallOpts{}, auctionHiddenPrice, auction.ValidUntil, auction.PlayerID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	result = hex.EncodeToString(auctionMsg[:])
-	if result != "909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d" {
-		t.Fatalf("Exected 909e2fbc45b398649f58c7ea4b632ff1b457ee5f60a43a70abfe00d50e7c917d gor %v", result)
-	}
-
 	bids := []storage.Bid{
 		storage.Bid{
 			Auction: auction.UUID,
@@ -125,12 +107,8 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State != storage.AUCTION_ASSET_FROZEN {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_ASSET_FROZEN, machine.Auction.State)
-	}
-	err = machine.Process()
-	if err != nil {
-		t.Fatal(err)
+	if machine.Auction.State != storage.AUCTION_FAILED_TO_FREEZE {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, machine.Auction.State)
 	}
 }
 

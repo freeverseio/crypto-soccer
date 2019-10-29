@@ -63,7 +63,9 @@ func (b *Started) Process(m *AuctionMachine) error {
 		sigV,
 	)
 	if err != nil {
-		return err
+		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
+		m.SetState(NewFailedToFreeze())
+		return nil
 	}
 
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN

@@ -11,12 +11,14 @@ import (
 type AuctionState string
 
 const (
-	AUCTION_STARTED       AuctionState = "STARTED"
-	AUCTION_ASSET_FROZEN  AuctionState = "ASSET_FROZEN"
-	AUCTION_PAYING        AuctionState = "PAYING"
-	AUCTION_PAID          AuctionState = "PAID"
-	AUCTION_NO_BIDS       AuctionState = "NO_BIDS"
-	AUCTION_FAILED_TO_PAY AuctionState = "FAILED_TO_PAY"
+	AUCTION_STARTED             AuctionState = "STARTED"
+	AUCTION_ASSET_FROZEN        AuctionState = "ASSET_FROZEN"
+	AUCTION_PAYING              AuctionState = "PAYING"
+	AUCTION_PAID                AuctionState = "PAID"
+	AUCTION_NO_BIDS             AuctionState = "NO_BIDS"
+	AUCTION_CANCELLED_BY_SELLER AuctionState = "CANCELLED_BY_SELLER"
+	AUCTION_FAILED_TO_PAY       AuctionState = "FAILED_TO_PAY"
+	AUCTION_FAILED_TO_FREEZE    AuctionState = "FAILED_TO_FREEZE"
 )
 
 type Auction struct {
