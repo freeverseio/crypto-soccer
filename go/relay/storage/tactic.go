@@ -2,6 +2,7 @@ package storage
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"hash"
@@ -39,11 +40,12 @@ func computeHash(h hash.Hash, data ...[]byte) []byte {
 	return h.Sum(nil)
 }
 
-func (b *Storage) TacticCreate(t Tactic) error {
+func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	log.Debugf("[DBMS] Create tactic %v", t)
 	_, err := b.db.Exec(
 		`INSERT INTO tactics (
 			team_id,
+			verse,
                         defense,
                         center,
                         attack,
@@ -93,9 +95,11 @@ func (b *Storage) TacticCreate(t Tactic) error {
                         $22,
                         $23,
                         $24,
-                        $25
+                        $25,
+                        $26
 		);`,
 		t.TeamID.String(),
+		verse,
 		t.Defense,
 		t.Center,
 		t.Attack,
@@ -123,7 +127,7 @@ func (b *Storage) TacticCreate(t Tactic) error {
 	)
 	return err
 }
-func (b *Storage) GetTactic(teamID *big.Int) (*Tactic, error) {
+func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
 	rows, err := b.db.Query(
 		`SELECT
@@ -151,7 +155,7 @@ func (b *Storage) GetTactic(teamID *big.Int) (*Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (team_id = $1);`, teamID.String())
+		FROM tactics WHERE (team_id = $1) and (verse = $2);`, teamID.String(), verse)
 	if err != nil {
 		return nil, err
 	}
@@ -192,14 +196,23 @@ func (b *Storage) GetTactic(teamID *big.Int) (*Tactic, error) {
 	}
 	return &t, nil
 }
-func (b *Storage) TacticCount() (uint64, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM tactics;")
+func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
+	count := uint64(0)
+	var rows *sql.Rows
+	var err error
+
+	if verse == nil {
+		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics;")
+	} else {
+		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", *verse)
+	}
+
 	if err != nil {
 		return 0, err
 	}
+
 	defer rows.Close()
 	rows.Next()
-	var count uint64
 	err = rows.Scan(&count)
 	if err != nil {
 		return 0, err

@@ -1,5 +1,7 @@
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
+    verse BIGINT UNSIGNED NOT NULL,
+
     defense INT NOT NULL,
     center INT NOT NULL,
     attack INT NOT NULL,
@@ -27,5 +29,5 @@ CREATE TABLE tactics (
     extra_attack_9  BOOLEAN DEFAULT FALSE,
     extra_attack_10 BOOLEAN DEFAULT FALSE,
 
-    PRIMARY KEY(team_id)
+    PRIMARY KEY(team_id, verse)
 )
