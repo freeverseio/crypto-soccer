@@ -13,6 +13,14 @@ import (
 )
 
 func TestOutdatedAuction(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +35,7 @@ func TestOutdatedAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	processor, err := processor.NewProcessor(sto, nil, nil, nil)
+	processor, err := processor.NewProcessor(sto, bc.Client, bc.Market, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}

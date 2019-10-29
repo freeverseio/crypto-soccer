@@ -1,14 +1,10 @@
 package testutils
 
 import (
-	"context"
 	"crypto/ecdsa"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -16,6 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 )
 
 type BlockchainNode struct {
@@ -45,32 +42,6 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 		nil,
 		creatorPrivateKey,
 	}, nil
-}
-
-func (b *BlockchainNode) WaitReceipt(tx *types.Transaction, timeoutSec uint8) error {
-	receiptTimeout := time.Second * time.Duration(timeoutSec)
-	start := time.Now()
-	ctx := context.TODO()
-	var receipt *types.Receipt
-
-	for receipt == nil && time.Now().Sub(start) < receiptTimeout {
-		receipt, err := b.Client.TransactionReceipt(ctx, tx.Hash())
-		if err == nil && receipt != nil {
-			return nil
-		}
-		time.Sleep(200 * time.Millisecond)
-	}
-	return errors.New("Timeout waiting for receipt")
-}
-
-func (b *BlockchainNode) WaitReceipts(txs []*types.Transaction, timeoutSec uint8) error {
-	for _, tx := range txs {
-		err := b.WaitReceipt(tx, timeoutSec)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
@@ -114,19 +85,19 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	err = b.WaitReceipt(tx0, 10)
+	err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx1, 10)
+	err = helper.WaitReceipt(b.Client, tx1, 10)
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx2, 10)
+	err = helper.WaitReceipt(b.Client, tx2, 10)
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx3, 10)
+	err = helper.WaitReceipt(b.Client, tx3, 10)
 	if err != nil {
 		return err
 	}
@@ -138,15 +109,15 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 
-	err = b.WaitReceipt(tx0, 10)
+	err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx1, 10)
+	err = helper.WaitReceipt(b.Client, tx1, 10)
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx2, 10)
+	err = helper.WaitReceipt(b.Client, tx2, 10)
 	if err != nil {
 		return err
 	}
@@ -165,7 +136,7 @@ func (b *BlockchainNode) Init() error {
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx, 10)
+	err = helper.WaitReceipt(b.Client, tx, 10)
 	if err != nil {
 		return err
 	}
@@ -178,7 +149,7 @@ func (b *BlockchainNode) InitOneTimezone(timezoneIdx uint8) error {
 	if err != nil {
 		return err
 	}
-	err = b.WaitReceipt(tx, 10)
+	err = helper.WaitReceipt(b.Client, tx, 10)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -14,13 +15,21 @@ import (
 )
 
 func TestAuctionWithNoBids(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,13 +47,21 @@ func TestAuctionWithNoBids(t *testing.T) {
 }
 
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 10),
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +97,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		big.NewInt(0),
 		common.HexToAddress("0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7"),
 	)
-	err = bc.WaitReceipt(tx, 5)
+	err = helper.WaitReceipt(bc.Client, tx, 5)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +116,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,6 +130,14 @@ func TestStartedAuctionWithBids(t *testing.T) {
 }
 
 func TestFrozenAuction(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
@@ -123,7 +148,7 @@ func TestFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -137,6 +162,14 @@ func TestFrozenAuction(t *testing.T) {
 }
 
 func TestOutdatedFrozenAuction(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 100),
@@ -147,7 +180,7 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,6 +194,14 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 }
 
 func TestPayingAuction(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 1),
@@ -171,7 +212,7 @@ func TestPayingAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -185,6 +226,14 @@ func TestPayingAuction(t *testing.T) {
 }
 
 func TestPayingPaymentDoneAuction(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 70),
@@ -195,7 +244,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, nil, nil)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
