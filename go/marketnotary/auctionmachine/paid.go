@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Paid struct {
@@ -18,5 +19,6 @@ func (b *Paid) Process(m *AuctionMachine) error {
 		return errors.New("Paid: wrong state")
 	}
 
+	log.Warn("Paid::Process called")
 	return nil
 }
