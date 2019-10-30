@@ -57,10 +57,10 @@ func (b *Paying) Process(m *AuctionMachine) error {
 		}
 		tx, err := m.market.CompletePlayerAuction(
 			bind.NewKeyedTransactor(m.freeverse),
-			bidHiddenPrice,
+			auctionHiddenPrice,
 			m.Auction.ValidUntil,
 			m.Auction.PlayerID,
-			auctionHiddenPrice,
+			bidHiddenPrice,
 			bid.TeamID,
 			sig,
 			sigV,
