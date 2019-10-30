@@ -19,24 +19,27 @@ CREATE TABLE auctions (
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES auction_states(state),
+    payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(uuid)
 );
 
 CREATE TABLE bid_states(
     state TEXT NOT NULL PRIMARY KEY
 );
-INSERT INTO bid_states(state) VALUES ('FILED');
+INSERT INTO bid_states(state) VALUES ('ACCEPTED');
+INSERT INTO bid_states(state) VALUES ('REFUSED');
 INSERT INTO bid_states(state) VALUES ('PAYING');
 INSERT INTO bid_states(state) VALUES ('PAID');
-INSERT INTO bid_states(state) VALUES ('EXPIRED');
+INSERT INTO bid_states(state) VALUES ('FAILED_TO_PAY');
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
-    extra_price NUMERIC(15,2) NOT NULL,
+    extra_price INT NOT NULL,
     rnd INT NOT NULL,
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES bid_states(state),
+    payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );
 

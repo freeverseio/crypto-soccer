@@ -11,11 +11,12 @@ import (
 type AuctionState string
 
 const (
-	AUCTION_STARTED      AuctionState = "STARTED"
-	AUCTION_ASSET_FROZEN AuctionState = "ASSET_FROZEN"
-	AUCTION_PAYING       AuctionState = "PAYING"
-	AUCTION_PAID         AuctionState = "PAID"
-	AUCTION_NO_BIDS      AuctionState = "NO_BIDS"
+	AUCTION_STARTED       AuctionState = "STARTED"
+	AUCTION_ASSET_FROZEN  AuctionState = "ASSET_FROZEN"
+	AUCTION_PAYING        AuctionState = "PAYING"
+	AUCTION_PAID          AuctionState = "PAID"
+	AUCTION_NO_BIDS       AuctionState = "NO_BIDS"
+	AUCTION_FAILED_TO_PAY AuctionState = "FAILED_TO_PAY"
 )
 
 type Auction struct {
@@ -62,6 +63,11 @@ func (b *Storage) GetOpenAuctions() ([]Auction, error) {
 
 func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState) error {
 	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", state, uuid)
+	return err
+}
+
+func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
+	_, err := b.db.Exec("UPDATE auctions SET payment_url=$1 WHERE uuid=$2;", url, uuid)
 	return err
 }
 

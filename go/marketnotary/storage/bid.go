@@ -11,15 +11,16 @@ import (
 type BidState string
 
 const (
-	BID_FILED   BidState = "FILED"
-	BID_PAYING  BidState = "PAYING"
-	BID_PAID    BidState = "PAID"
-	BID_EXPIRED BidState = "EXPIRED"
+	BID_ACCEPTED BidState = "ACCEPTED"
+	BID_REFUSED  BidState = "REFUSED"
+	BID_PAYING   BidState = "PAYING"
+	BID_PAID     BidState = "PAID"
+	BID_EXPIRED  BidState = "FAILED_TO_PAY"
 )
 
 type Bid struct {
 	Auction         uuid.UUID
-	ExtraPrice      float32
+	ExtraPrice      int64
 	Rnd             int64
 	TeamID          *big.Int
 	Is2StartAuction bool
@@ -40,9 +41,19 @@ func (b *Storage) CreateBid(bid Bid) error {
 	return err
 }
 
-func (b *Storage) GetBids() ([]Bid, error) {
+func (b *Storage) UpdateBidState(auction uuid.UUID, extra_price int64, state BidState) error {
+	_, err := b.db.Exec("UPDATE bids SET state=$1 WHERE auction=$2 AND extra_price=$3;", state, auction, extra_price)
+	return err
+}
+
+func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url string) error {
+	_, err := b.db.Exec("UPDATE bids SET payment_url=$1 WHERE auction=$2 AND extra_price=$3;", url, auction, extra_price)
+	return err
+}
+
+func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]Bid, error) {
 	var bids []Bid
-	rows, err := b.db.Query("SELECT auction, extra_price, rnd, team_id, signature, state FROM bids;")
+	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state FROM bids WHERE auction=$1;", auctionUUID)
 	if err != nil {
 		return bids, err
 	}
@@ -51,7 +62,6 @@ func (b *Storage) GetBids() ([]Bid, error) {
 		var bid Bid
 		var teamID sql.NullString
 		err = rows.Scan(
-			&bid.Auction,
 			&bid.ExtraPrice,
 			&bid.Rnd,
 			&teamID,
@@ -61,6 +71,7 @@ func (b *Storage) GetBids() ([]Bid, error) {
 		if err != nil {
 			return bids, err
 		}
+		bid.Auction = auctionUUID
 		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
 		bids = append(bids, bid)
 	}

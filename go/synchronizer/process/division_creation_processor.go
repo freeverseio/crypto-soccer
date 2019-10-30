@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/freeverseio/crypto-soccer/go/names"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -117,6 +119,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 				if err := b.db.TeamCreate(
 					storage.Team{
 						teamId,
+						names.GenerateTeamName(teamId),
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
@@ -173,6 +176,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 		} else if err := b.db.PlayerCreate(
 			storage.Player{
 				PlayerId:          playerId,
+				Name:              names.GeneratePlayerName(playerId),
 				PreferredPosition: preferredPosition,
 				Potential:         potential.Uint64(),
 				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC

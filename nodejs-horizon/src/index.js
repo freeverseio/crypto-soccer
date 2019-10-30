@@ -40,8 +40,16 @@ const main = async () => {
       auctionsByPlayerId: AuctionsConnection
     }
 
+    extend type Team {
+      tacticsByTeamId: TacticsConnection
+    }
+
     extend type Auction {
       playerByPlayerId: Player
+    }
+
+    extend type Bid {
+      teamByTeamId: Team
     }
   `;
 
@@ -57,6 +65,25 @@ const main = async () => {
             args: {
               condition: {
                 playerId: player.playerId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+    },
+    Team: {
+      tacticsByTeamId: {
+        fragment: `... on Team { teamId }`,
+        resolve(team, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: relayRemoteSchema,
+            operation: 'query',
+            fieldName: 'allTactics',
+            args: {
+              condition: {
+                teamId: team.teamId
               }
             },
             context,
@@ -82,23 +109,23 @@ const main = async () => {
         }
       }
     },
-    // PlayerBuyOrder: {
-    //   teamByTeamId: {
-    //     fragment: `... on PlayerBuyOrder { teamid }`,
-    //     resolve(playerBuyOrder, args, context, info) {
-    //       return info.mergeInfo.delegateToSchema({
-    //         schema: universeRemoteSchema,
-    //         operation: 'query',
-    //         fieldName: 'teamByTeamId',
-    //         args: {
-    //           teamId: playerBuyOrder.teamid,
-    //         },
-    //         context,
-    //         info,
-    //       })
-    //     }
-    //   }
-    // }
+    Bid: {
+      teamByTeamId: {
+        fragment: `... on Bid { teamId }`,
+        resolve(bid, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: bid.teamId,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    },
   };
 
   const schema = mergeSchemas({

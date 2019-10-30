@@ -11,26 +11,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
-func TestUpdateAuction(t *testing.T) {
-	now := time.Now().Unix()
-	auction := storage.Auction{
-		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(now - 10),
-		State:      storage.AUCTION_STARTED,
-	}
-	processor, err := processor.NewProcessor(nil, nil, nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	state, err := processor.ComputeState(auction)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if state != storage.AUCTION_NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, state)
-	}
-}
-
 func TestOutdatedAuction(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 	if err != nil {
@@ -60,6 +40,53 @@ func TestOutdatedAuction(t *testing.T) {
 	}
 	if auctions[0].State != storage.AUCTION_NO_BIDS {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, auctions[0].State)
+	}
+}
+
+func TestAuctionWithBid(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().Unix()
+	auction := storage.Auction{
+		UUID:       uuid.New(),
+		ValidUntil: big.NewInt(now + 100),
+		State:      storage.AUCTION_STARTED,
+	}
+	err = sto.CreateAuction(auction)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bid := storage.Bid{
+		Auction: auction.UUID,
+		State:   storage.BID_ACCEPTED,
+	}
+	err = sto.CreateBid(bid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	processor, err := processor.NewProcessor(sto, nil, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = processor.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	auctions, err := sto.GetAuctions()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if auctions[0].State != storage.AUCTION_ASSET_FROZEN {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_ASSET_FROZEN, auctions[0].State)
+	}
+	bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bids[0].State != storage.BID_ACCEPTED {
+		t.Fatalf("Expects %v got %v", storage.BID_ACCEPTED, bids[0].State)
 	}
 }
 
