@@ -355,4 +355,12 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
+	time.Sleep(2 * time.Second)
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if machine.Auction.State != storage.AUCTION_PAID {
+		t.Fatalf("Expected not %v", machine.Auction.State)
+	}
 }
