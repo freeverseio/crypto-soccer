@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
@@ -93,8 +94,8 @@ func TestScanningTeamTransfer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache.WaitReceipt(tx, 3)
-	ganache.WaitReceipt(tx1, 3)
+	helper.WaitReceipt(ganache.Client, tx, 3)
+	helper.WaitReceipt(ganache.Client, tx1, 3)
 
 	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
 		err = scanner.Process(nil)

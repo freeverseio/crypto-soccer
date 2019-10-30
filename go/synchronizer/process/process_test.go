@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
@@ -83,7 +84,7 @@ func TestSyncTeams(t *testing.T) {
 		}
 		txs = append(txs, tx)
 	}
-	err = bc.WaitReceipts(txs, 3)
+	err = helper.WaitReceipts(bc.Client, txs, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +116,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = bc.WaitReceipt(tx, 3)
+	err = helper.WaitReceipt(bc.Client, tx, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
