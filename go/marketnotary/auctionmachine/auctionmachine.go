@@ -57,7 +57,7 @@ func New(
 		state,
 		market,
 		freeverse,
-		signer.NewSigner(market),
+		signer.NewSigner(market, freeverse),
 		client,
 	}, nil
 }

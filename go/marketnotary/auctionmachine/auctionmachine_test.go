@@ -236,7 +236,12 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() - 70),
+		PlayerID:   big.NewInt(274877906944),
+		CurrencyID: uint8(1),
+		Price:      big.NewInt(41234),
+		Rnd:        big.NewInt(42321),
+		ValidUntil: big.NewInt(2000000000),
+		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 		State:      storage.AUCTION_PAYING,
 	}
 	bids := []storage.Bid{
@@ -252,7 +257,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State == storage.AUCTION_PAYING {
+	if machine.Auction.State == storage.AUCTION_FAILED_TO_PAY {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
 }

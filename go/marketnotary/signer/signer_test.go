@@ -114,6 +114,44 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
 		t.Fatalf("Hash error %v", result)
 	}
+}
+
+func TestHashBidMessage(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	signer := signer.NewSigner(bc.Market, nil)
+
+	validUntil := big.NewInt(2000000000)
+	playerId := big.NewInt(274877906944)
+	currencyId := uint8(1)
+	price := big.NewInt(41234)
+	auctionRnd := big.NewInt(42321)
+	extraPrice := big.NewInt(332)
+	bidRnd := big.NewInt(1243523)
+	teamID := big.NewInt(274877906945)
+	isOffer2StartAuction := true
+
+	hash, err := signer.HashBidMessage(
+		currencyId,
+		price,
+		auctionRnd,
+		validUntil,
+		playerId,
+		extraPrice,
+		bidRnd,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "e04d23ec0424b22adec87879118715ce75997a4fd47897c398f3a8cad79b3041" {
+		t.Fatalf("Hash error %v", result)
+	}
 
 }
 

@@ -74,6 +74,50 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	return hash, err
 }
 
+func (b *Signer) HashBidMessage(
+	currencyID uint8,
+	price *big.Int,
+	auctionRnd *big.Int,
+	validUntil *big.Int,
+	playerID *big.Int,
+	extraPrice *big.Int,
+	bidRnd *big.Int,
+	teamID *big.Int,
+	isOffer2StartAuction bool,
+) ([32]byte, error) {
+	var hash [32]byte
+	auctionHashMsg, err := b.HashSellMessage(
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+	)
+	if err != nil {
+		return hash, err
+	}
+	bidHiddenPrice, err := b.assets.HashBidHiddenPrice(
+		&bind.CallOpts{},
+		extraPrice,
+		bidRnd,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.BuildAgreeToBuyPlayerTxMsg(
+		&bind.CallOpts{},
+		auctionHashMsg,
+		bidHiddenPrice,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+	return hash, err
+}
+
 func (b *Signer) SignCreateAuction(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) (sig []byte, err error) {
 	hash, err := b.HashSellMessage(currencyId, price, rnd, validUntil, playerId)
 	if err != nil {
