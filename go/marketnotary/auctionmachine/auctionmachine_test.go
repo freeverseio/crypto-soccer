@@ -97,7 +97,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		big.NewInt(0),
 		common.HexToAddress("0x291081e5a1bF0b9dF6633e4868C88e1FA48900e7"),
 	)
-	err = helper.WaitReceipt(bc.Client, tx, 5)
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
 	if err != nil {
 		t.Fatal(err)
 	}

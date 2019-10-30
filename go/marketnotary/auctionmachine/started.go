@@ -4,8 +4,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/helper"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Started struct {
@@ -54,7 +57,7 @@ func (b *Started) Process(m *AuctionMachine) error {
 	if err != nil {
 		return err
 	}
-	_, err = m.market.FreezePlayer(
+	tx, err := m.market.FreezePlayer(
 		bind.NewKeyedTransactor(m.freeverse),
 		auctionHiddenPrice,
 		m.Auction.ValidUntil,
@@ -63,6 +66,20 @@ func (b *Started) Process(m *AuctionMachine) error {
 		sigV,
 	)
 	if err != nil {
+		log.Error(err)
+		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
+		m.SetState(NewFailedToFreeze())
+		return nil
+	}
+	receipt, err := helper.WaitReceipt(m.client, tx, 60)
+	if err != nil {
+		log.Error("Timeout waiting receipt for freeze")
+		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
+		m.SetState(NewFailedToFreeze())
+		return nil
+	}
+	if receipt.Status == 0 {
+		log.Error("Freeze mined but failed")
 		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
 		m.SetState(NewFailedToFreeze())
 		return nil

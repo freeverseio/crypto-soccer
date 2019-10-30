@@ -85,19 +85,19 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	err = helper.WaitReceipt(b.Client, tx0, 10)
+	_, err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx1, 10)
+	_, err = helper.WaitReceipt(b.Client, tx1, 10)
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx2, 10)
+	_, err = helper.WaitReceipt(b.Client, tx2, 10)
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx3, 10)
+	_, err = helper.WaitReceipt(b.Client, tx3, 10)
 	if err != nil {
 		return err
 	}
@@ -109,15 +109,15 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 
-	err = helper.WaitReceipt(b.Client, tx0, 10)
+	_, err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx1, 10)
+	_, err = helper.WaitReceipt(b.Client, tx1, 10)
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx2, 10)
+	_, err = helper.WaitReceipt(b.Client, tx2, 10)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (b *BlockchainNode) Init() error {
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx, 10)
+	_, err = helper.WaitReceipt(b.Client, tx, 10)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (b *BlockchainNode) InitOneTimezone(timezoneIdx uint8) error {
 	if err != nil {
 		return err
 	}
-	err = helper.WaitReceipt(b.Client, tx, 10)
+	_, err = helper.WaitReceipt(b.Client, tx, 10)
 	if err != nil {
 		return err
 	}
