@@ -56,11 +56,7 @@ func TestSignCreateAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sig[len(sig)-1] == 0x00 {
-		sig[len(sig)-1] = 0x1B
-	} else {
-		sig[len(sig)-1] = 0x1C
-	}
+
 	result := hex.EncodeToString(sig)
 	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
 		t.Fatalf("Sign error %v", result)

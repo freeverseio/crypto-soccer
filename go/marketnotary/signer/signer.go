@@ -123,7 +123,37 @@ func (b *Signer) SignCreateAuction(currencyId uint8, price *big.Int, rnd *big.In
 	if err != nil {
 		return nil, err
 	}
-	return crypto.Sign(hash[:], b.pvr)
+	return b.Sign(hash)
+}
+
+func (b *Signer) SignCreateBid(
+	currencyID uint8,
+	price *big.Int,
+	auctionRnd *big.Int,
+	validUntil *big.Int,
+	playerID *big.Int,
+	extraPrice *big.Int,
+	bidRnd *big.Int,
+	teamID *big.Int,
+	isOffer2StartAuction bool,
+) (sig []byte, err error) {
+	hash, err := b.HashBidMessage(currencyID, price, auctionRnd, validUntil, playerID, extraPrice, bidRnd, teamID, isOffer2StartAuction)
+	if err != nil {
+		return nil, err
+	}
+
+	return b.Sign(hash)
+}
+
+func (b *Signer) Sign(hash [32]byte) ([]byte, error) {
+	sig, err := crypto.Sign(hash[:], b.pvr)
+	last := len(sig) - 1
+	if sig[last] == 0x00 {
+		sig[last] = 0x1B
+	} else {
+		sig[last] = 0x1C
+	}
+	return sig, err
 }
 
 func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {
