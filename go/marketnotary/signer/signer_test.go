@@ -10,7 +10,7 @@ import (
 )
 
 func TestRSV(t *testing.T) {
-	signer := signer.NewSigner(nil)
+	signer := signer.NewSigner(nil, nil)
 	_, _, _, err := signer.RSV("0x0")
 	if err == nil {
 		t.Fatal("No error on wrong signature")
@@ -32,6 +32,35 @@ func TestRSV(t *testing.T) {
 	}
 }
 
+// func TestSignCreateAuction(t *testing.T) {
+// 	bc, err := testutils.NewBlockchainNode()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	err = bc.DeployContracts(bc.Owner)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	pvr, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	signer := signer.NewSigner(bc.Market, pvr)
+// 	validUntil := big.NewInt(2000000000)
+// 	playerId := big.NewInt(10)
+// 	currencyId := uint8(1)
+// 	price := big.NewInt(41234)
+// 	rnd := big.NewInt(42321)
+// 	sig, err := signer.SignCreateAuction(currencyId, price, rnd, validUntil, playerId)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	result := hex.EncodeToString(sig)
+// 	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
+// 		t.Fatalf("Sign error %v", result)
+// 	}
+// }
+
 func TestAuctionHiddenPrice(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
@@ -39,7 +68,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market)
+	signer := signer.NewSigner(bc.Market, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
@@ -64,7 +93,7 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market)
+	signer := signer.NewSigner(bc.Market, nil)
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -85,6 +114,7 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
 		t.Fatalf("Hash error %v", result)
 	}
+
 }
 
 func TestBidHiddenPrice(t *testing.T) {
@@ -96,7 +126,7 @@ func TestBidHiddenPrice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signer := signer.NewSigner(bc.Market)
+	signer := signer.NewSigner(bc.Market, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
 
