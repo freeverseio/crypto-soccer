@@ -1,6 +1,6 @@
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
-    verse BIGINT UNSIGNED NOT NULL,
+    verse BIGINT NOT NULL,
 
     defense INT NOT NULL,
     center INT NOT NULL,
