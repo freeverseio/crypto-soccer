@@ -66,13 +66,23 @@ func (b *Started) Process(m *AuctionMachine) error {
 		sigV,
 	)
 	if err != nil {
+		log.Error(err)
 		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
 		m.SetState(NewFailedToFreeze())
 		return nil
 	}
-	_, err = helper.WaitReceipt(m.client, tx, 60)
+	receipt, err := helper.WaitReceipt(m.client, tx, 60)
 	if err != nil {
-		log.Error("Started: Timeout waiting for receipt")
+		log.Error("Timeout waiting receipt for freeze")
+		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
+		m.SetState(NewFailedToFreeze())
+		return nil
+	}
+	if receipt.Status == 0 {
+		log.Error("Freeze mined but failed")
+		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
+		m.SetState(NewFailedToFreeze())
+		return nil
 	}
 
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
