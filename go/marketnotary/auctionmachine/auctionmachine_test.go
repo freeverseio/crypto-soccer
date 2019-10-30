@@ -272,7 +272,8 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	validUntil := big.NewInt(2000000000)
+	now := time.Now().Unix()
+	validUntil := big.NewInt(now + 10)
 	playerID := big.NewInt(274877906944)
 	currencyID := uint8(1)
 	price := big.NewInt(41234)
@@ -343,7 +344,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State == storage.AUCTION_ASSET_FROZEN {
+	if machine.Auction.State != storage.AUCTION_ASSET_FROZEN {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
 }
