@@ -55,6 +55,24 @@ func (b *Paying) Process(m *AuctionMachine) error {
 		if err != nil {
 			return err
 		}
+		isValid, err := m.market.AreCompletePlayerAuctionRequirementsOK(
+			&bind.CallOpts{},
+			auctionHiddenPrice,
+			m.Auction.ValidUntil,
+			m.Auction.PlayerID,
+			bidHiddenPrice,
+			bid.TeamID,
+			sig,
+			sigV,
+			isOffer2StartAuction,
+		)
+		if err != nil {
+			log.Error(err)
+		}
+		log.Error(isValid)
+		if isValid == false {
+			log.Error("INVALID!!!!!")
+		}
 		tx, err := m.market.CompletePlayerAuction(
 			bind.NewKeyedTransactor(m.freeverse),
 			auctionHiddenPrice,

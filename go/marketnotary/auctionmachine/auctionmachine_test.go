@@ -281,7 +281,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	extraPrice := big.NewInt(332)
 	bidRnd := big.NewInt(1243523)
 	teamID := big.NewInt(274877906945)
-	isOffer2StartAuction := true
+	isOffer2StartAuction := false
 
 	signer := signer.NewSigner(bc.Market, nil)
 	hashAuctionMsg, err := signer.HashSellMessage(
