@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) error {
+func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uint8) (*types.Receipt, error) {
 	receiptTimeout := time.Second * time.Duration(timeoutSec)
 	start := time.Now()
 	ctx := context.TODO()
@@ -18,16 +18,16 @@ func WaitReceipt(client *ethclient.Client, tx *types.Transaction, timeoutSec uin
 	for receipt == nil && time.Now().Sub(start) < receiptTimeout {
 		receipt, err := client.TransactionReceipt(ctx, tx.Hash())
 		if err == nil && receipt != nil {
-			return nil
+			return receipt, nil
 		}
 		time.Sleep(200 * time.Millisecond)
 	}
-	return errors.New("Timeout waiting for receipt")
+	return nil, errors.New("Timeout waiting for receipt")
 }
 
 func WaitReceipts(client *ethclient.Client, txs []*types.Transaction, timeoutSec uint8) error {
 	for _, tx := range txs {
-		err := WaitReceipt(client, tx, timeoutSec)
+		_, err := WaitReceipt(client, tx, timeoutSec)
 		if err != nil {
 			return err
 		}

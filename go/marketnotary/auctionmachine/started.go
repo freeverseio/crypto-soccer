@@ -70,7 +70,7 @@ func (b *Started) Process(m *AuctionMachine) error {
 		m.SetState(NewFailedToFreeze())
 		return nil
 	}
-	err = helper.WaitReceipt(m.client, tx, 60)
+	_, err = helper.WaitReceipt(m.client, tx, 60)
 	if err != nil {
 		log.Error("Started: Timeout waiting for receipt")
 	}
