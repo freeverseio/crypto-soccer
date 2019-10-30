@@ -1,20 +1,23 @@
 package signer
 
 import (
+	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 )
 
 type Signer struct {
 	assets *market.Market
+	pvr    *ecdsa.PrivateKey
 }
 
-func NewSigner(marketContract *market.Market) *Signer {
-	return &Signer{marketContract}
+func NewSigner(marketContract *market.Market, pvr *ecdsa.PrivateKey) *Signer {
+	return &Signer{marketContract, pvr}
 }
 
 func (b *Signer) RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
@@ -69,6 +72,58 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	}
 	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
 	return hash, err
+}
+
+func (b *Signer) HashBidMessage(
+	currencyID uint8,
+	price *big.Int,
+	auctionRnd *big.Int,
+	validUntil *big.Int,
+	playerID *big.Int,
+	extraPrice *big.Int,
+	bidRnd *big.Int,
+	teamID *big.Int,
+	isOffer2StartAuction bool,
+) ([32]byte, error) {
+	var hash [32]byte
+	auctionHashMsg, err := b.HashSellMessage(
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+	)
+	if err != nil {
+		return hash, err
+	}
+	bidHiddenPrice, err := b.assets.HashBidHiddenPrice(
+		&bind.CallOpts{},
+		extraPrice,
+		bidRnd,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.BuildAgreeToBuyPlayerTxMsg(
+		&bind.CallOpts{},
+		auctionHashMsg,
+		bidHiddenPrice,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		return hash, err
+	}
+	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+	return hash, err
+}
+
+func (b *Signer) SignCreateAuction(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) (sig []byte, err error) {
+	hash, err := b.HashSellMessage(currencyId, price, rnd, validUntil, playerId)
+	if err != nil {
+		return nil, err
+	}
+	return crypto.Sign(hash[:], b.pvr)
 }
 
 func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {
