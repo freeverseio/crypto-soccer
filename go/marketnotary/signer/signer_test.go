@@ -87,6 +87,29 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	}
 }
 
+func TestBidHiddenPrice(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signer := signer.NewSigner(bc.Market)
+	extraPrice := big.NewInt(332)
+	buyerRandom := big.NewInt(1243523)
+
+	hash, err := signer.BidHiddenPrice(extraPrice, buyerRandom)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := hex.EncodeToString(hash[:])
+	if result != "d46585a1479af8dcc6f2ce8495174282f8c874f1583182bbe2c9df7ae2358edc" {
+		t.Fatalf("Hash error %v", result)
+	}
+}
+
 // func TestHashAgreeToBuyMessage(t *testing.T) {
 // 	ganache := testutils.NewGanache()
 // 	signer := processor.NewSigner(ganache.Market)
