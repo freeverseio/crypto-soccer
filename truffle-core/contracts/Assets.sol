@@ -104,9 +104,9 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return _timeZones[timeZone].lastActionsSubmissionTime;
     }
 
-    function setSkillsRoot(uint8 tz, bytes32 root) external returns(uint256) {
+    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external returns(uint256) {
+        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].lastUpdateTime = now;
     }
 
