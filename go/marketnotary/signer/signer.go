@@ -1,4 +1,4 @@
-package processor
+package signer
 
 import (
 	"encoding/hex"
@@ -69,6 +69,14 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	}
 	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
 	return hash, err
+}
+
+func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {
+	return b.assets.HashBidHiddenPrice(
+		&bind.CallOpts{},
+		extraPrice,
+		rnd,
+	)
 }
 
 // func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {

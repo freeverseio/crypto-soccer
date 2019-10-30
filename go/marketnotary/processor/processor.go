@@ -8,7 +8,6 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -22,11 +21,10 @@ type Processor struct {
 	client    *ethclient.Client
 	assets    *market.Market
 	freeverse *ecdsa.PrivateKey
-	signer    *Signer
 }
 
 func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *market.Market, freeverse *ecdsa.PrivateKey) (*Processor, error) {
-	return &Processor{db, ethereumClient, assetsContract, freeverse, NewSigner(assetsContract)}, nil
+	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
 }
 
 func (b *Processor) Process() error {
@@ -90,48 +88,48 @@ func (b *Processor) Process() error {
 	return nil
 }
 
-func (b *Processor) FreezePlayer(Auction storage.Auction) error {
-	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
-		Auction.CurrencyID,
-		Auction.Price,
-		Auction.Rnd,
-	)
-	if err != nil {
-		return err
-	}
-	var sigs [3][32]byte
-	var vs uint8
-	sigs[0], err = b.signer.HashSellMessage(
-		Auction.CurrencyID,
-		Auction.Price,
-		Auction.Rnd,
-		Auction.ValidUntil,
-		Auction.PlayerID,
-	)
-	if err != nil {
-		return err
-	}
-	sigs[1], sigs[2], vs, err = b.signer.RSV(Auction.Signature)
-	if err != nil {
-		log.Error(err)
-	}
-	tx, err := b.assets.FreezePlayer(
-		bind.NewKeyedTransactor(b.freeverse),
-		sellerHiddenPrice,
-		Auction.ValidUntil,
-		Auction.PlayerID,
-		sigs,
-		vs,
-	)
-	if err != nil {
-		return err
-	}
-	err = b.waitReceipt(tx, 10)
-	if err != nil {
-		return err
-	}
-	return nil
-}
+// func (b *Processor) FreezePlayer(Auction storage.Auction) error {
+// 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
+// 		Auction.CurrencyID,
+// 		Auction.Price,
+// 		Auction.Rnd,
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	var sigs [3][32]byte
+// 	var vs uint8
+// 	sigs[0], err = b.signer.HashSellMessage(
+// 		Auction.CurrencyID,
+// 		Auction.Price,
+// 		Auction.Rnd,
+// 		Auction.ValidUntil,
+// 		Auction.PlayerID,
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	sigs[1], sigs[2], vs, err = b.signer.RSV(Auction.Signature)
+// 	if err != nil {
+// 		log.Error(err)
+// 	}
+// 	tx, err := b.assets.FreezePlayer(
+// 		bind.NewKeyedTransactor(b.freeverse),
+// 		sellerHiddenPrice,
+// 		Auction.ValidUntil,
+// 		Auction.PlayerID,
+// 		sigs,
+// 		vs,
+// 	)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = b.waitReceipt(tx, 10)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 func (b *Processor) waitReceipt(tx *types.Transaction, timeoutSec uint8) error {
 	receiptTimeout := time.Second * time.Duration(timeoutSec)

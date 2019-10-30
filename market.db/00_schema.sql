@@ -7,8 +7,8 @@ INSERT INTO auction_states(state) VALUES ('PAYING');
 INSERT INTO auction_states(state) VALUES ('PAID');
 INSERT INTO auction_states(state) VALUES ('NO_BIDS');
 INSERT INTO auction_states(state) VALUES ('CANCELLED_BY_SELLER');
-INSERT INTO auction_states(state) VALUES ('FREEZE_FAILED');
-INSERT INTO auction_states(state) VALUES ('PAYMENT_FAILED');
+INSERT INTO auction_states(state) VALUES ('FAILED_TO_FREEZE');
+INSERT INTO auction_states(state) VALUES ('FAILED_TO_PAY');
 
 CREATE TABLE auctions (
     uuid UUID NOT NULL,
