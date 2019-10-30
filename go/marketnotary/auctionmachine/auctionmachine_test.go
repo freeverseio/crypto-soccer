@@ -1,12 +1,16 @@
 package auctionmachine_test
 
 import (
+	"encoding/hex"
 	"math/big"
 	"testing"
 	"time"
 
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
@@ -234,19 +238,101 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = bc.InitOneTimezone(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+
+	tx, err := bc.Leagues.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		1,
+		big.NewInt(0),
+		crypto.PubkeyToAddress(alice.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx, err = bc.Leagues.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		1,
+		big.NewInt(0),
+		crypto.PubkeyToAddress(bob.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = helper.WaitReceipt(bc.Client, tx, 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	validUntil := big.NewInt(2000000000)
+	playerID := big.NewInt(274877906944)
+	currencyID := uint8(1)
+	price := big.NewInt(41234)
+	auctionRnd := big.NewInt(42321)
+	extraPrice := big.NewInt(332)
+	bidRnd := big.NewInt(1243523)
+	teamID := big.NewInt(274877906945)
+	isOffer2StartAuction := true
+
+	signer := signer.NewSigner(bc.Market, nil)
+	hashAuctionMsg, err := signer.HashSellMessage(
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signAuctionMsg, err := signer.Sign(hashAuctionMsg, alice)
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{
 		UUID:       uuid.New(),
-		PlayerID:   big.NewInt(274877906944),
-		CurrencyID: uint8(1),
-		Price:      big.NewInt(41234),
-		Rnd:        big.NewInt(42321),
-		ValidUntil: big.NewInt(2000000000),
-		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
-		State:      storage.AUCTION_PAYING,
+		PlayerID:   playerID,
+		CurrencyID: currencyID,
+		Price:      price,
+		Rnd:        auctionRnd,
+		ValidUntil: validUntil,
+		Signature:  "0x" + hex.EncodeToString(signAuctionMsg),
+		State:      storage.AUCTION_STARTED,
+	}
+
+	hashBidMsg, err := signer.HashBidMessage(
+		currencyID,
+		price,
+		auctionRnd,
+		validUntil,
+		playerID,
+		extraPrice,
+		bidRnd,
+		teamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	signBidMsg, err := signer.Sign(hashBidMsg, bob)
+	if err != nil {
+		t.Fatal(err)
 	}
 	bids := []storage.Bid{
 		storage.Bid{
-			Auction: auction.UUID,
+			Auction:    auction.UUID,
+			ExtraPrice: extraPrice.Int64(),
+			Rnd:        bidRnd.Int64(),
+			TeamID:     teamID,
+			Signature:  "0x" + hex.EncodeToString(signBidMsg),
 		},
 	}
 	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
@@ -257,7 +343,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State == storage.AUCTION_FAILED_TO_PAY {
+	if machine.Auction.State == storage.AUCTION_ASSET_FROZEN {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
 }

@@ -58,7 +58,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 }
 
-func TestBuildPutForSaleMessage(t *testing.T) {
+func TestAuctionMsg(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
