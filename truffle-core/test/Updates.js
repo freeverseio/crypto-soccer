@@ -149,7 +149,6 @@ contract('Updates', (accounts) => {
             // timezone number wraps around: tz = 23, 24, 1, 2...
             if (diff < 0) diff += 24;
             // you change timezone every 4 verses
-            console.log(verse, timeZoneToUpdateBefore[0].toNumber(), diff)
             diff.should.be.equal(Math.floor(verse / 4) % 24);
             await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
             await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
