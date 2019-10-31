@@ -24,6 +24,22 @@ type BlockchainNode struct {
 	Owner   *ecdsa.PrivateKey
 }
 
+func NewBlockchainNodeDeployAndInit() (*BlockchainNode, error) {
+	node, err := NewBlockchainNode()
+	if err != nil {
+		return nil, err
+	}
+	err = node.DeployContracts(node.Owner)
+	if err != nil {
+		return nil, err
+	}
+	err = node.InitOneTimezone(1)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
 func NewBlockchainNode() (*BlockchainNode, error) {
 	client, err := ethclient.Dial("http://localhost:8545")
 	if err != nil {

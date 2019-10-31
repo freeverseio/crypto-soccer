@@ -19,11 +19,7 @@ import (
 )
 
 func TestAuctionWithNoBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,11 +47,7 @@ func TestAuctionWithNoBids(t *testing.T) {
 }
 
 func TestAuctionOutdatedWithNoBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,15 +75,7 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 }
 
 func TestStartedAuctionWithBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.InitOneTimezone(1)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,15 +214,7 @@ func TestPayingAuction(t *testing.T) {
 }
 
 func TestPayingPaymentDoneAuction(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = bc.InitOneTimezone(1)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -334,6 +310,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			Rnd:        bidRnd.Int64(),
 			TeamID:     teamID,
 			Signature:  "0x" + hex.EncodeToString(signBidMsg),
+			State:      storage.BID_ACCEPTED,
 		},
 	}
 	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
@@ -362,5 +339,8 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	}
 	if machine.Auction.State != storage.AUCTION_PAID {
 		t.Fatalf("Expected not %v", machine.Auction.State)
+	}
+	if machine.Bids[0].State != storage.BID_PAID {
+		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
 }

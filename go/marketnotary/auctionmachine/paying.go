@@ -76,6 +76,7 @@ func (m *AuctionMachine) processPaying() error {
 			return nil
 		}
 
+		m.Bids[0].State = storage.BID_PAID
 		m.Auction.State = storage.AUCTION_PAID
 	}
 
