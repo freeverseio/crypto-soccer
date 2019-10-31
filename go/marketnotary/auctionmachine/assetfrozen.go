@@ -7,14 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
-type AssetFrozen struct {
-}
-
-func NewAssetFrozen() State {
-	return &AssetFrozen{}
-}
-
-func (b *AssetFrozen) Process(m *AuctionMachine) error {
+func (m *AuctionMachine) ProcessAssetFrozen() error {
 	if m.Auction.State != storage.AUCTION_ASSET_FROZEN {
 		return errors.New("AssetFrozen: wrong state")
 	}

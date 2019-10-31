@@ -7,14 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type NoBids struct {
-}
-
-func NewNoBids() State {
-	return &NoBids{}
-}
-
-func (b *NoBids) Process(m *AuctionMachine) error {
+func (m *AuctionMachine) ProcessNoBids() error {
 	if m.Auction.State != storage.AUCTION_NO_BIDS {
 		return errors.New("NoBids: wrong state")
 	}

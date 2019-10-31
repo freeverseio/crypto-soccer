@@ -11,14 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Started struct {
-}
-
-func NewStarted() State {
-	return &Started{}
-}
-
-func (b *Started) Process(m *AuctionMachine) error {
+func (m *AuctionMachine) ProcessStarted() error {
 	if m.Auction.State != storage.AUCTION_STARTED {
 		return errors.New("Started: wrong state")
 	}

@@ -11,14 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Paying struct {
-}
-
-func NewPaying() State {
-	return &Paying{}
-}
-
-func (b *Paying) Process(m *AuctionMachine) error {
+func (m *AuctionMachine) ProcessPaying() error {
 	if m.Auction.State != storage.AUCTION_PAYING {
 		return errors.New("Paying: wrong state")
 	}

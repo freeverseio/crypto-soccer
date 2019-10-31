@@ -10,10 +10,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
-type State interface {
-	Process(m *AuctionMachine) error
-}
-
 type AuctionMachine struct {
 	Auction   storage.Auction
 	Bids      []storage.Bid
@@ -50,18 +46,16 @@ func New(
 }
 
 func (b *AuctionMachine) Process() error {
-	var state State
 	switch b.Auction.State {
 	case storage.AUCTION_STARTED:
-		state = NewStarted()
+		return b.ProcessStarted()
 	case storage.AUCTION_ASSET_FROZEN:
-		state = NewAssetFrozen()
+		return b.ProcessAssetFrozen()
 	case storage.AUCTION_PAYING:
-		state = NewPaying()
+		return b.ProcessPaying()
 	case storage.AUCTION_NO_BIDS:
-		state = NewNoBids()
+		return b.ProcessNoBids()
 	default:
 		return errors.New("unknown auction state")
 	}
-	return state.Process(b)
 }
