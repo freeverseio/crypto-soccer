@@ -51,7 +51,6 @@ func (b *Processor) Process() error {
 		if err != nil {
 			return err
 		}
-
 		err = machine.Process()
 		if err != nil {
 			return err
