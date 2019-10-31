@@ -339,6 +339,9 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         else return 3;
     }
     
-    
+    function generateMatchSeed(bytes32 seed, uint256 homeTeamId, uint256 visitorTeamId) public pure returns (bytes32) {
+        return keccak256(abi.encode(seed, homeTeamId, visitorTeamId));
+    }
+ 
 }
 

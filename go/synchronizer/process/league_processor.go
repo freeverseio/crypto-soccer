@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -16,12 +17,13 @@ import (
 type LeagueProcessor struct {
 	engine            *engine.Engine
 	leagues           *leagues.Leagues
+	evolution         *evolution.Evolution
 	storage           *storage.Storage
 	calendarProcessor *Calendar
 	playerHackSkills  *big.Int
 }
 
-func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) (*LeagueProcessor, error) {
+func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evolution *evolution.Evolution, storage *storage.Storage) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, storage)
 	if err != nil {
 		return nil, err
@@ -32,7 +34,14 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage
 	}
 	// playerHackSkills := big.NewInt(0)
 
-	return &LeagueProcessor{engine, leagues, storage, calendarProcessor, playerHackSkills}, nil
+	return &LeagueProcessor{
+		engine,
+		leagues,
+		evolution,
+		storage,
+		calendarProcessor,
+		playerHackSkills,
+	}, nil
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
@@ -90,23 +99,46 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				}
 				is2ndHalf := false
 				isHomeStadium := true
-				result, err := b.engine.PlayMatch(
+				isPlayoff := false
+				var matchLog [2]*big.Int
+				matchLog[0] = big.NewInt(0)
+				matchLog[1] = big.NewInt(0)
+				var matchBools [3]bool
+				matchBools[0] = is2ndHalf
+				matchBools[1] = isHomeStadium
+				matchBools[2] = isPlayoff
+				result, err := b.engine.PlayHalfMatch(
 					&bind.CallOpts{},
 					matchSeed,
+					event.SubmissionTime,
 					states,
 					tactics,
-					is2ndHalf,
-					isHomeStadium,
+					matchLog,
+					matchBools,
 				)
 				if err != nil {
 					log.Fatal(err)
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
+				goalsHome, err := b.evolution.GetNGoals(
+					&bind.CallOpts{},
+					result[0],
+				)
 				if err != nil {
 					return err
 				}
-				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, result[0], result[1])
+				goalsVisitor, err := b.evolution.GetNGoals(
+					&bind.CallOpts{},
+					result[1],
+				)
+				if err != nil {
+					return err
+				}
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
+				if err != nil {
+					return err
+				}
+				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
 				if err != nil {
 					return err
 				}

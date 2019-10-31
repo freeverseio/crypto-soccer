@@ -12,6 +12,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -44,12 +45,13 @@ func NewEventProcessor(
 	leagues *leagues.Leagues,
 	updates *updates.Updates,
 	market *market.Market,
+	evolution *evolution.Evolution,
 ) (*EventProcessor, error) {
 	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, assets, leagues)
 	if err != nil {
 		return nil, err
 	}
-	leagueProcessor, err := NewLeagueProcessor(engine, leagues, db)
+	leagueProcessor, err := NewLeagueProcessor(engine, leagues, evolution, db)
 	if err != nil {
 		return nil, err
 	}
