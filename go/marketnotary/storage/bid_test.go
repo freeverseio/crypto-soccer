@@ -13,20 +13,45 @@ func TestGetbids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetBidsOfAuction(uuid.New())
+	auctionUuid := uuid.New()
+	result, err := sto.GetBidsOfAuction(auctionUuid)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(result) != 0 {
 		t.Fatalf("Expected 0 got %v", len(result))
 	}
-
-	err = sto.CreateBid(storage.Bid{
-		TeamID: big.NewInt(2),
-		State:  storage.BID_ACCEPTED,
+	err = sto.CreateAuction(storage.Auction{
+		UUID:       auctionUuid,
+		PlayerID:   big.NewInt(5),
+		CurrencyID: 1,
+		Price:      big.NewInt(3),
+		Rnd:        big.NewInt(7),
+		ValidUntil: big.NewInt(8),
+		Signature:  "0x0",
+		State:      storage.AUCTION_STARTED,
 	})
-	if err == nil {
+	if err != nil {
 		t.Fatal(err)
+	}
+	err = sto.CreateBid(storage.Bid{
+		Auction: auctionUuid,
+		TeamID:  big.NewInt(2),
+		State:   storage.BID_ACCEPTED,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, err = sto.GetBidsOfAuction(auctionUuid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("Expected 1 got %v", len(result))
+	}
+	bid := result[0]
+	if bid.Is2StartAuction != false {
+		t.Fatal("Expected false but true")
 	}
 }
 

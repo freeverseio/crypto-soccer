@@ -118,12 +118,15 @@ func (b *Signer) HashBidMessage(
 	return hash, err
 }
 
-func (b *Signer) SignCreateAuction(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) (sig []byte, err error) {
-	hash, err := b.HashSellMessage(currencyId, price, rnd, validUntil, playerId)
-	if err != nil {
-		return nil, err
+func (b *Signer) Sign(hash [32]byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
+	sig, err := crypto.Sign(hash[:], pvr)
+	last := len(sig) - 1
+	if sig[last] == 0x00 {
+		sig[last] = 0x1B
+	} else {
+		sig[last] = 0x1C
 	}
-	return crypto.Sign(hash[:], b.pvr)
+	return sig, err
 }
 
 func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {

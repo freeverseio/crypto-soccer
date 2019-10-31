@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
@@ -32,35 +33,6 @@ func TestRSV(t *testing.T) {
 	}
 }
 
-// func TestSignCreateAuction(t *testing.T) {
-// 	bc, err := testutils.NewBlockchainNode()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = bc.DeployContracts(bc.Owner)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	pvr, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	signer := signer.NewSigner(bc.Market, pvr)
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
-// 	sig, err := signer.SignCreateAuction(currencyId, price, rnd, validUntil, playerId)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(sig)
-// 	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
-// 		t.Fatalf("Sign error %v", result)
-// 	}
-// }
-
 func TestAuctionHiddenPrice(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
@@ -86,7 +58,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 }
 
-func TestBuildPutForSaleMessage(t *testing.T) {
+func TestAuctionMsg(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
@@ -113,6 +85,18 @@ func TestBuildPutForSaleMessage(t *testing.T) {
 	result := hex.EncodeToString(hash[:])
 	if result != "c50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796" {
 		t.Fatalf("Hash error %v", result)
+	}
+	pvr, err := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sig, err := signer.Sign(hash, pvr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result = hex.EncodeToString(sig)
+	if result != "075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c" {
+		t.Fatalf("Sign error %v", result)
 	}
 }
 
@@ -152,7 +136,15 @@ func TestHashBidMessage(t *testing.T) {
 	if result != "e04d23ec0424b22adec87879118715ce75997a4fd47897c398f3a8cad79b3041" {
 		t.Fatalf("Hash error %v", result)
 	}
-
+	pvr, err := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
+	sig, err := signer.Sign(hash, pvr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result = hex.EncodeToString(sig)
+	if result != "dbe104e7b51c9b1e38cdda4e31c2036e531f7d3338d392bee2f526c4c892437f5e50ddd44224af8b3bd92916b93e4b0d7af2974175010323da7dedea19f30d621c" {
+		t.Fatalf("Sign error %v", result)
+	}
 }
 
 func TestBidHiddenPrice(t *testing.T) {

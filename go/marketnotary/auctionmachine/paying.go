@@ -24,7 +24,7 @@ func (b *Paying) Process(m *AuctionMachine) error {
 	}
 
 	now := time.Now().Unix()
-	if (now - m.Auction.ValidUntil.Int64()) > 60 {
+	if (now - m.Auction.ValidUntil.Int64()) > 2 {
 		bid := m.Bids[0]
 		isOffer2StartAuction := false
 		bidHiddenPrice, err := m.signer.BidHiddenPrice(big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
