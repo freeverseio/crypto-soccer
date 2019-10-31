@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 )
@@ -24,15 +24,15 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 }
 
 type EventScanner struct {
-	leagues *leagues.Leagues
+	assets  *assets.Assets
 	updates *updates.Updates
 	market  *market.Market
 	Events  []*AbstractEvent
 }
 
-func NewEventScanner(leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) *EventScanner {
-	if leagues != nil && updates != nil {
-		return &EventScanner{leagues, updates, market, []*AbstractEvent{}}
+func NewEventScanner(assets *assets.Assets, updates *updates.Updates, market *market.Market) *EventScanner {
+	if assets != nil && updates != nil {
+		return &EventScanner{assets, updates, market, []*AbstractEvent{}}
 	}
 	return nil
 }
@@ -66,9 +66,9 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 
 // Process: scans all events types and puts them in the Events slice
 // types of events it listens
-// leagues.LeaguesDivisionCreation
-// leagues.LeaguesTeamTransfer
-// leagues.LeaguesPlayerTransfer
+// assets.AssetsDivisionCreation
+// assets.AssetsTeamTransfer
+// assets.AssetsPlayerTransfer
 // updates.UpdatesActionsSubmission
 
 func (s *EventScanner) Process(opts *bind.FilterOpts) error {
@@ -109,20 +109,20 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 }
 
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterDivisionCreation(opts)
+	iter, err := s.assets.FilterDivisionCreation(opts)
 	if err != nil {
 		return err
 	}
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanDivisionCreation timezone %v", e.Timezone)
-		s.addEvent(e.Raw, "LeaguesDivisionCreation", e)
+		s.addEvent(e.Raw, "AssetsDivisionCreation", e)
 	}
 	return nil
 }
 
 func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterPlayerStateChange(opts)
+	iter, err := s.assets.FilterPlayerStateChange(opts)
 	if err != nil {
 		return err
 	}
@@ -135,14 +135,14 @@ func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.leagues.FilterTeamTransfer(opts)
+	iter, err := s.assets.FilterTeamTransfer(opts)
 	if err != nil {
 		return err
 	}
 	for iter.Next() {
 		e := *(iter.Event)
 		log.Debugf("[scanner] scanTeamTransfer teamId %v to %v", e.TeamId, e.To.String())
-		s.addEvent(e.Raw, "LeaguesTeamTransfer", e)
+		s.addEvent(e.Raw, "AssetsTeamTransfer", e)
 	}
 	return nil
 }
@@ -151,7 +151,7 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 //	for iter.Next() {
 //		e := *(iter.Event)
 //		log.Debugf("[scanner] scanPlayerTransfer playerId %v, toTeam %v", e.PlayerId, e.TeamIdTarget.String())
-//		s.addEvent(e.Raw, "LeaguesPlayerTransfer", e)
+//		s.addEvent(e.Raw, "AssetsPlayerTransfer", e)
 //	}
 //	return nil
 //}
