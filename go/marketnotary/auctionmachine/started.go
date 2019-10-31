@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (m *AuctionMachine) ProcessStarted() error {
+func (m *AuctionMachine) processStarted() error {
 	if m.Auction.State != storage.AUCTION_STARTED {
 		return errors.New("Started: wrong state")
 	}

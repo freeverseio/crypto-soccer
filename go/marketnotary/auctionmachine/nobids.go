@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (m *AuctionMachine) ProcessNoBids() error {
+func (m *AuctionMachine) processNoBids() error {
 	if m.Auction.State != storage.AUCTION_NO_BIDS {
 		return errors.New("NoBids: wrong state")
 	}

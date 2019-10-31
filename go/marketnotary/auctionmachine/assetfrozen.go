@@ -7,7 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
-func (m *AuctionMachine) ProcessAssetFrozen() error {
+func (m *AuctionMachine) processAssetFrozen() error {
 	if m.Auction.State != storage.AUCTION_ASSET_FROZEN {
 		return errors.New("AssetFrozen: wrong state")
 	}

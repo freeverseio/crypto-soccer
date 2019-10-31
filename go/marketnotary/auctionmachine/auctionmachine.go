@@ -48,13 +48,13 @@ func New(
 func (b *AuctionMachine) Process() error {
 	switch b.Auction.State {
 	case storage.AUCTION_STARTED:
-		return b.ProcessStarted()
+		return b.processStarted()
 	case storage.AUCTION_ASSET_FROZEN:
-		return b.ProcessAssetFrozen()
+		return b.processAssetFrozen()
 	case storage.AUCTION_PAYING:
-		return b.ProcessPaying()
+		return b.processPaying()
 	case storage.AUCTION_NO_BIDS:
-		return b.ProcessNoBids()
+		return b.processNoBids()
 	default:
 		return errors.New("unknown auction state")
 	}
