@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -22,6 +23,7 @@ type EventProcessor struct {
 	client                    *ethclient.Client
 	db                        *storage.Storage
 	engine                    *engine.Engine
+	assets                    *assets.Assets
 	leagues                   *leagues.Leagues
 	updates                   *updates.Updates
 	market                    *market.Market
@@ -34,8 +36,16 @@ type EventProcessor struct {
 // *****************************************************************************
 
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
-func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *engine.Engine, leagues *leagues.Leagues, updates *updates.Updates, market *market.Market) (*EventProcessor, error) {
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, leagues)
+func NewEventProcessor(
+	client *ethclient.Client,
+	db *storage.Storage,
+	engine *engine.Engine,
+	assets *assets.Assets,
+	leagues *leagues.Leagues,
+	updates *updates.Updates,
+	market *market.Market,
+) (*EventProcessor, error) {
+	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, assets, leagues)
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +57,7 @@ func NewEventProcessor(client *ethclient.Client, db *storage.Storage, engine *en
 		client,
 		db,
 		engine,
+		assets,
 		leagues,
 		updates,
 		market,
@@ -72,7 +83,7 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 		"end":   *opts.End,
 	}).Info("Syncing ...")
 
-	scanner := NewEventScanner(p.leagues, p.updates, p.market)
+	scanner := NewEventScanner(p.assets, p.updates, p.market)
 	if scanner == nil {
 		return opts.Start, errors.New("Unable to create scanner")
 	}
@@ -99,10 +110,10 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
-	case leagues.LeaguesDivisionCreation:
+	case assets.AssetsDivisionCreation:
 		log.Debug("[processor] Dispatching LeaguesDivisionCreation event")
 		return p.divisionCreationProcessor.Process(v)
-	case leagues.LeaguesTeamTransfer:
+	case assets.AssetsTeamTransfer:
 		log.Debug("[processor] dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId
 		newOwner := v.To.String()
@@ -113,15 +124,15 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		// team.State.BlockNumber = blockNumber
 		team.State.Owner = newOwner
 		return p.db.TeamUpdate(teamID, team.State)
-	case leagues.LeaguesPlayerStateChange:
+	case assets.AssetsPlayerStateChange:
 		log.Debug("[processor] dispatching LeaguesPlayerStateChange event")
 		playerID := v.PlayerId
 		state := v.State
-		shirtNumber, err := p.leagues.GetCurrentShirtNum(&bind.CallOpts{}, state)
+		shirtNumber, err := p.assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
 		}
-		teamID, err := p.leagues.GetCurrentTeamId(&bind.CallOpts{}, state)
+		teamID, err := p.assets.GetCurrentTeamId(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
 		}

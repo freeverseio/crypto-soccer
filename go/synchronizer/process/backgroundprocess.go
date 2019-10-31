@@ -5,6 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -22,11 +23,12 @@ func BackgroundProcessNew(
 	client *ethclient.Client,
 	storage *storage.Storage,
 	engineContract *engine.Engine,
+	assetsContract *assets.Assets,
 	leaguesContract *leagues.Leagues,
 	updatesContract *updates.Updates,
 	marketContract *market.Market,
 ) (*BackgroundProcess, error) {
-	eventProcessor, err := NewEventProcessor(client, storage, engineContract, leaguesContract, updatesContract, marketContract)
+	eventProcessor, err := NewEventProcessor(client, storage, engineContract, assetsContract, leaguesContract, updatesContract, marketContract)
 	if err != nil {
 		return nil, err
 	}
