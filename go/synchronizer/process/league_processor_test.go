@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -19,7 +19,7 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, nil)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, sto)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,18 +75,18 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(sto, bc.Leagues)
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(sto, bc.Assets, bc.Leagues)
 	if err != nil {
 		t.Fatal(err)
 	}
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-	err = divisionCreationProcessor.Process(leagues.LeaguesDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
+	err = divisionCreationProcessor.Process(assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, sto)
+	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,14 @@ func TestProcess(t *testing.T) {
 	day := uint8(1)
 	turnInDay := uint8(1)
 	seed := [32]byte{}
-	err = processor.Process(updates.UpdatesActionsSubmission{timezoneIdx, day, turnInDay, seed, nil, types.Log{}})
+	err = processor.Process(updates.UpdatesActionsSubmission{
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(10),
+		types.Log{},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

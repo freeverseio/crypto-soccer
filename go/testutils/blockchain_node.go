@@ -11,6 +11,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -18,13 +19,14 @@ import (
 )
 
 type BlockchainNode struct {
-	Client  *ethclient.Client
-	Assets  *assets.Assets
-	Updates *updates.Updates
-	Leagues *leagues.Leagues
-	Engine  *engine.Engine
-	Market  *market.Market
-	Owner   *ecdsa.PrivateKey
+	Client    *ethclient.Client
+	Assets    *assets.Assets
+	Updates   *updates.Updates
+	Leagues   *leagues.Leagues
+	Engine    *engine.Engine
+	Market    *market.Market
+	Evolution *evolution.Evolution
+	Owner     *ecdsa.PrivateKey
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -46,6 +48,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 
 	return &BlockchainNode{
 		client,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -106,6 +109,16 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
+	evolutionAddress, tx30, evolutionContract, err := evolution.DeployEvolution(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployEvolution failed")
+	fmt.Println("Evolution deployed at:", evolutionAddress.Hex())
+	if err != nil {
+		return err
+	}
+
 	_, err = helper.WaitReceipt(b.Client, tx10, 10)
 	if err != nil {
 		return err
@@ -126,6 +139,10 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	_, err = helper.WaitReceipt(b.Client, tx30, 10)
+	if err != nil {
+		return err
+	}
 	// setup
 	tx0, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in league contract")
@@ -133,6 +150,8 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	AssertNoErr(err, "Error setting Assets address to market")
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), assetsAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
+	tx3, err = evolutionContract.SetEngine(bind.NewKeyedTransactor(owner), engineAddress)
+	AssertNoErr(err, "Error setting engine contract in evolution contract")
 
 	_, err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
@@ -146,12 +165,17 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	_, err = helper.WaitReceipt(b.Client, tx3, 10)
+	if err != nil {
+		return err
+	}
 
 	b.Updates = updatesContract
 	b.Leagues = leaguesContract
 	b.Engine = engineContract
 	b.Market = marketContract
 	b.Assets = assetsContract
+	b.Evolution = evolutionContract
 
 	return nil
 }

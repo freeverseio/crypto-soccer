@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -34,7 +34,7 @@ func TestScanningIniting(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market)
+	scanner := process.NewEventScanner(ganache.Assets, ganache.Updates, ganache.Market)
 	err = scanner.Process(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -46,7 +46,7 @@ func TestScanningIniting(t *testing.T) {
 	}
 	for i := 0; i < 24; i++ {
 		switch event := events[i].Value.(type) {
-		case leagues.LeaguesDivisionCreation:
+		case assets.AssetsDivisionCreation:
 			expected := uint8(i + 1)
 			if event.Timezone != expected {
 				t.Fatalf("Expected %v recived %v", expected, event.Timezone)
@@ -68,7 +68,7 @@ func TestScanningTeamTransfer(t *testing.T) {
 
 	eventCount := 0
 
-	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
+	if scanner := process.NewEventScanner(ganache.Assets, ganache.Updates, ganache.Market); scanner != nil {
 		err = scanner.Process(nil)
 		if err != nil {
 			t.Fatal(err)
@@ -85,19 +85,19 @@ func TestScanningTeamTransfer(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	address := crypto.PubkeyToAddress(ganache.Owner.PublicKey)
-	tx, err := ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
+	tx, err := ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
 	timezoneIdx = uint8(2)
-	tx1, err := ganache.Leagues.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
+	tx1, err := ganache.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(ganache.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
 	helper.WaitReceipt(ganache.Client, tx, 3)
 	helper.WaitReceipt(ganache.Client, tx1, 3)
 
-	if scanner := process.NewEventScanner(ganache.Leagues, ganache.Updates, ganache.Market); scanner != nil {
+	if scanner := process.NewEventScanner(ganache.Assets, ganache.Updates, ganache.Market); scanner != nil {
 		err = scanner.Process(nil)
 		if err != nil {
 			t.Fatal(err)
