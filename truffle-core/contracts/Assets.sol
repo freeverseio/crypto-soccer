@@ -10,8 +10,8 @@ import "./EncodingState.sol";
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     event TeamTransfer(uint256 teamId, address to);
-    event PlayerTransfer(uint256 playerId, uint256 teamIdTarget);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
+    event PlayerStateChange(uint256 playerId, uint256 state);
 
     struct Team {
         uint256[PLAYERS_PER_TEAM_MAX] playerIds; 
@@ -168,8 +168,11 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         require(playerExists(playerId), "unexistent player");
-        uint256 teamId = getCurrentTeamId(getPlayerState(playerId));
-        return getOwnerTeam(teamId);
+        return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
+    }
+    
+    function getCurrentTeamIdFromPlayerId(uint256 playerId) public view returns(uint256) {
+        return getCurrentTeamId(getPlayerState(playerId));
     }
 
     function _wasPlayerCreatedInCountry(uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) private view returns(bool) {
@@ -449,7 +452,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
         (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
-        emit PlayerTransfer(playerId, teamIdTarget);
+        emit PlayerStateChange(playerId, newState);
     }
 
     function countCountries(uint8 timeZone) public view returns (uint256){

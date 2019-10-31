@@ -44,7 +44,8 @@ contract('Encoding', (accounts) => {
         lineupWrong[4] = PLAYERS_PER_TEAM_MAX;
         encoded = await encoding.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
-    
+
+   
     it('encoding and decoding skills', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);

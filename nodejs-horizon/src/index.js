@@ -37,25 +37,35 @@ const main = async () => {
 
   const linkTypeDefs = `
     extend type Player {
-      sellOrderByPlayerId: PlayerSellOrder
+      auctionsByPlayerId: AuctionsConnection
     }
 
-    extend type PlayerSellOrder {
-      playerByPlayerid: Player
+    extend type Team {
+      tacticsByTeamId: TacticsConnection
+    }
+
+    extend type Auction {
+      playerByPlayerId: Player
+    }
+
+    extend type Bid {
+      teamByTeamId: Team
     }
   `;
 
   const resolvers = {
     Player: {
-      sellOrderByPlayerId: {
+      auctionsByPlayerId: {
         fragment: `... on Player { playerId }`,
         resolve(player, args, context, info) {
           return info.mergeInfo.delegateToSchema({
             schema: marketRemoteSchema,
             operation: 'query',
-            fieldName: 'playerSellOrderByPlayerid',
+            fieldName: 'allAuctions',
             args: {
-              playerid: player.playerId,
+              condition: {
+                playerId: player.playerId
+              }
             },
             context,
             info,
@@ -63,23 +73,59 @@ const main = async () => {
         }
       },
     },
-    PlayerSellOrder: {
-      playerByPlayerid: {
-        fragment: `... on PlayerSellOrder { playerid }`,
-        resolve(playerSellOrder, args, context, info) {
+    Team: {
+      tacticsByTeamId: {
+        fragment: `... on Team { teamId }`,
+        resolve(team, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: relayRemoteSchema,
+            operation: 'query',
+            fieldName: 'allTactics',
+            args: {
+              condition: {
+                teamId: team.teamId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+    },
+    Auction: {
+      playerByPlayerId: {
+        fragment: `... on Auction { playerId }`,
+        resolve(auction, args, context, info) {
           return info.mergeInfo.delegateToSchema({
             schema: universeRemoteSchema,
             operation: 'query',
             fieldName: 'playerByPlayerId',
             args: {
-              playerId: playerSellOrder.playerid,
+              playerId: auction.playerId,
             },
             context,
             info,
           })
         }
       }
-    }
+    },
+    Bid: {
+      teamByTeamId: {
+        fragment: `... on Bid { teamId }`,
+        resolve(bid, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: universeRemoteSchema,
+            operation: 'query',
+            fieldName: 'teamByTeamId',
+            args: {
+              teamId: bid.teamId,
+            },
+            context,
+            info,
+          })
+        }
+      }
+    },
   };
 
   const schema = mergeSchemas({

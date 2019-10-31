@@ -2,116 +2,104 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
-jobs:
-  truffle_core:
+version: 2.1
+
+executors:
+  freeverse:
     docker:
       - image: freeverseio/circleci
+      - image: freeverseio/ethereum:test
+        auth:
+          username: $DOCKER_ID
+          password: $DOCKER_PASSWD
+
+jobs:
+  truffle_core:
+    executor: freeverse
     steps:
       - checkout
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go-synchronizer:
-    docker:
-      - image: freeverseio/circleci
+  synchronizer:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go-synchronizer && go build
-      - run: cd go-synchronizer && go test `go list ./... | grep -v github.com/freeverseio/crypto-soccer/go-synchronizer/process`
-      - run: |
-            # run ganache in the background
-            ./go-synchronizer/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until ganache is up and running
-            echo waiting for ganache
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            sleep 1
-            echo ganache is running
-            cd go-synchronizer/process
-            go test
-            #echo ganache PID `grep "ganache-cli --deterministic" | tr -s ' ' | cut -d ' ' -f 2`
-  go-soccer:
-    docker:
-      - image: freeverseio/circleci
-    steps:
-      - checkout
-      - run: cd go-soccer && go build
-      - run: cd go-soccer && go test ./...
-  market.notary:
-    docker:
-      - image: freeverseio/circleci
+      - run: cd go/cmd/ && go build ./synchronizer.go
+      - run: cd go/synchronizer && go test ./...
+  market-notary:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd market/notary && go build
-      - run: |
-            ./market/notary/testutils/run_ganache.sh > /dev/null 2>&1 &
-            # wait until ganache is up and running
-            echo waiting for ganache
-            while [ -z "`lsof -i -P -n | grep 8545`" ]; do sleep 0.1; done
-            sleep 1
-            echo ganache is running
-            cd market/notary && go test ./...
-  relay:
-    docker:
-      - image: freeverseio/circleci
+      - run: cd go/cmd/ && go build ./notary.go
+      - run: cd go/marketnotary && go test ./... -p 1
+  relay-api:
+    executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd relay/nodejs-api && npm install
-      - run: cd relay/nodejs-api && npm test
-  market.trader:
-    docker:
-      - image: freeverseio/circleci
+      - run: cd relay.api && npm install
+      - run: cd relay.api && npm test
+  relay-actions:
+    executor: freeverse
     steps:
       - checkout
-      - run: cd market/trader && npm install
-      - run: cd market/trader && npm test
+      - run: make setup contracts
+      - run: cd go/cmd && go build ./relay.go
+      - run: cd go/relay && go test ./...
+  market-trader:
+    executor: freeverse
+    steps:
+      - checkout
+      - run: cd market.trader && npm install
+      - run: cd market.trader && npm test
   django-centauri:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - checkout
       - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
       - run: cd django-centauri && python3 manage.py test
   dockerization:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
-      - run: cd go-synchronizer && docker build -t freeverseio/synchronizer:dev .
-      - run: cd go-synchronizer/sql && docker build -t freeverseio/postgres:dev .
+      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
+      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
+      - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
+      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd market/db && docker build -t freeverseio/market.db:dev .
-      - run: cd market/trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd market/notary && docker build -t freeverseio/market.notary:dev .
-      - run: cd relay/nodejs-api && docker build -t freeverseio/relay:dev .
-      - run: cd nodejs-universe-api && docker build -t freeverseio/universeapi:dev .
+      - run: cd market.db && docker build -t freeverseio/market.db:dev .
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
+      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:dev
       - run: docker push freeverseio/synchronizer:dev
       - run: docker push freeverseio/horizon:dev
-      - run: docker push freeverseio/postgres:dev
+      - run: docker push freeverseio/universe.db:dev
       - run: docker push freeverseio/market.db:dev
       - run: docker push freeverseio/market.trader:dev
       - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/relay:dev
-      - run: docker push freeverseio/universeapi:dev
-
+      - run: docker push freeverseio/relay.api:dev
+      - run: docker push freeverseio/relay.db:dev
+      - run: docker push freeverseio/universe.api:dev
+      - run: docker push freeverseio/relay.actions:dev
   deploy:
-    docker:
-      - image: freeverseio/circleci
+    executor: freeverse
     steps:
       - add_ssh_keys:
           fingerprints:
             - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - checkout
       - run: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
+      - run: scp -o StrictHostKeyChecking=no ./deployment/.env $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
 
 workflows:
@@ -119,12 +107,12 @@ workflows:
   build_and_test:
     jobs:
       - truffle_core
-      - go-synchronizer
-      - go-soccer
+      - synchronizer
       - django-centauri
-      - market.trader
-      - relay
-      - market.notary
+      - market-trader
+      - relay-actions
+      - relay-api
+      - market-notary
       - dockerization:
           filters:
             branches:
@@ -132,11 +120,12 @@ workflows:
                 - dev
                 - ci
           requires:
-            - go-synchronizer
+            - synchronizer
             - django-centauri
-            - market.trader
-            - relay
-            - market.notary
+            - market-trader
+            - relay-api
+            - relay-actions
+            - market-notary
       - deploy:
           filters:
            branches:
@@ -145,6 +134,3 @@ workflows:
           requires:
             - dockerization
             - truffle_core
-            - go-soccer
-
-

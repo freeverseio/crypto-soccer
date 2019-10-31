@@ -21,4 +21,9 @@ contract('EncodingIDs', (accounts) => {
         value.toNumber().should.be.equal(val);
     });
 
+    it('get playerID of timezone 1, country 0, index in country 0', async () => {
+        encoded = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, indexInCountry = 0).should.be.fulfilled;
+        encoded.should.be.bignumber.equal('274877906944');
+    });
+ 
 });

@@ -1,0 +1,157 @@
+package testutils
+
+import (
+	"crypto/ecdsa"
+	"fmt"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+
+	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/helper"
+)
+
+type BlockchainNode struct {
+	Client  *ethclient.Client
+	Updates *updates.Updates
+	Leagues *leagues.Leagues
+	Engine  *engine.Engine
+	Market  *market.Market
+	Owner   *ecdsa.PrivateKey
+}
+
+func NewBlockchainNode() (*BlockchainNode, error) {
+	client, err := ethclient.Dial("http://localhost:8545")
+	if err != nil {
+		return nil, err
+	}
+	creatorPrivateKey, err := crypto.HexToECDSA("FE058D4CE3446218A7B4E522D9666DF5042CF582A44A9ED64A531A81E7494A85")
+	if err != nil {
+		return nil, err
+	}
+
+	return &BlockchainNode{
+		client,
+		nil,
+		nil,
+		nil,
+		nil,
+		creatorPrivateKey,
+	}, nil
+}
+
+func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
+	leaguesAddress, tx0, leaguesContract, err := leagues.DeployLeagues(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployLeagues failed")
+	fmt.Println("Leagues deployed at:", leaguesAddress.Hex())
+	if err != nil {
+		return err
+	}
+
+	updatesAddress, tx1, updatesContract, err := updates.DeployUpdates(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployUpdates failed")
+	fmt.Println("Updates deployed at:", updatesAddress.Hex())
+	if err != nil {
+		return err
+	}
+
+	engineAddress, tx2, engineContract, err := engine.DeployEngine(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployEngine failed")
+	fmt.Println("Engine deployed at:", engineAddress.Hex())
+	if err != nil {
+		return err
+	}
+
+	marketAddress, tx3, marketContract, err := market.DeployMarket(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployMarket failed")
+	fmt.Println("Market deployed at:", marketAddress.Hex())
+	if err != nil {
+		return err
+	}
+
+	_, err = helper.WaitReceipt(b.Client, tx0, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx1, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx2, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx3, 10)
+	if err != nil {
+		return err
+	}
+	// setup
+	tx0, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
+	AssertNoErr(err, "Error setting engine contract in league contract")
+	tx2, err = marketContract.SetAssetsAddress(bind.NewKeyedTransactor(owner), leaguesAddress)
+	AssertNoErr(err, "Error setting Assets address to market")
+	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), leaguesAddress)
+	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
+
+	_, err = helper.WaitReceipt(b.Client, tx0, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx1, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx2, 10)
+	if err != nil {
+		return err
+	}
+
+	b.Updates = updatesContract
+	b.Leagues = leaguesContract
+	b.Engine = engineContract
+	b.Market = marketContract
+
+	return nil
+}
+
+func (b *BlockchainNode) Init() error {
+	// Initing
+	tx, err := b.Leagues.Init(bind.NewKeyedTransactor(b.Owner))
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx, 10)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *BlockchainNode) InitOneTimezone(timezoneIdx uint8) error {
+	// Initing
+	tx, err := b.Leagues.InitSingleTZ(bind.NewKeyedTransactor(b.Owner), timezoneIdx)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx, 10)
+	if err != nil {
+		return err
+	}
+	return nil
+}

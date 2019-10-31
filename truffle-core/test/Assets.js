@@ -157,7 +157,7 @@ contract('Assets', (accounts) => {
             return event.teamId.should.be.bignumber.equal('274877906944') && event.to.should.be.equal(ALICE);
         });
     });
-    
+
     it('transfer of bot teams', async () =>  {
         tz = 1;
         countryIdxInTZ = 0;
@@ -347,9 +347,9 @@ contract('Assets', (accounts) => {
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, BOB).should.be.fulfilled;
         tx = await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        // teamId2.should.be.equal(false)
-        truffleAssert.eventEmitted(tx, "PlayerTransfer", (event) => {
-            return event.playerId == playerId.toNumber() && event.teamIdTarget == teamId2.toNumber();
+        truffleAssert.eventEmitted(tx, "PlayerStateChange", async (event) => {
+            const currentTeam = await assets.getCurrentTeamId(event.state).should.be.fulfilled;
+            return event.playerId.should.be.bignumber.equal(playerId) && currentTeam.should.be.bignumber.equal(teamId2);
         });
 
         // state of player after selling:

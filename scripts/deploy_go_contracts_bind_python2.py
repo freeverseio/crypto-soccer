@@ -63,11 +63,15 @@ if __name__ == "__main__":
             print 'usage: python deploy_go_contracts_bind_python2.py [abigen_path]'
             sys.exit(-1)
 
-    dests = [os.path.join(parentdir,'go-synchronizer','contracts'),
-             os.path.join(parentdir,'market', 'notary', 'contracts')]
+    dests = [os.path.join(parentdir,'go','contracts'),
+             ]
 
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Assets.json'), 'assets', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Market.json'), 'market', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Updates.json'), 'updates', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Leagues.json'), 'leagues', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'Engine.json'), 'engine', dests)
+
 
 # with open('../truffle-core/build/contracts/TeamState.json', 'r') as fp:
 #     contract = json.load(fp)
