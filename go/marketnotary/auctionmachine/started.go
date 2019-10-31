@@ -27,7 +27,6 @@ func (b *Started) Process(m *AuctionMachine) error {
 	if len(m.Bids) == 0 {
 		if now > m.Auction.ValidUntil.Int64() {
 			m.Auction.State = storage.AUCTION_NO_BIDS
-			m.SetState(NewNoBids())
 		}
 		return nil
 	}
@@ -68,24 +67,20 @@ func (b *Started) Process(m *AuctionMachine) error {
 	if err != nil {
 		log.Error(err)
 		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
-		m.SetState(NewFailedToFreeze())
 		return nil
 	}
 	receipt, err := helper.WaitReceipt(m.client, tx, 60)
 	if err != nil {
 		log.Error("Timeout waiting receipt for freeze")
 		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
-		m.SetState(NewFailedToFreeze())
 		return nil
 	}
 	if receipt.Status == 0 {
 		log.Error("Freeze mined but failed")
 		m.Auction.State = storage.AUCTION_FAILED_TO_FREEZE
-		m.SetState(NewFailedToFreeze())
 		return nil
 	}
 
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
-	m.SetState(NewAssetFrozen())
 	return nil
 }

@@ -69,25 +69,21 @@ func (b *Paying) Process(m *AuctionMachine) error {
 		if err != nil {
 			log.Error(err)
 			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			m.SetState(NewFailedToPay())
 			return nil
 		}
 		receipt, err := helper.WaitReceipt(m.client, tx, 60)
 		if err != nil {
 			log.Error(err)
 			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			m.SetState(NewFailedToPay())
 			return nil
 		}
 		if receipt.Status == 0 {
 			log.Error("Complete mined but failed")
 			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			m.SetState(NewFailedToPay())
 			return nil
 		}
 
 		m.Auction.State = storage.AUCTION_PAID
-		m.SetState(NewPaid())
 	}
 
 	return nil

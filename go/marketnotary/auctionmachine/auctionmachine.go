@@ -17,7 +17,6 @@ type State interface {
 type AuctionMachine struct {
 	Auction   storage.Auction
 	Bids      []storage.Bid
-	current   State
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
@@ -40,21 +39,9 @@ func New(
 	if client == nil {
 		return nil, errors.New("client is nil")
 	}
-	var state State
-	switch auction.State {
-	case storage.AUCTION_STARTED:
-		state = NewStarted()
-	case storage.AUCTION_ASSET_FROZEN:
-		state = NewAssetFrozen()
-	case storage.AUCTION_PAYING:
-		state = NewPaying()
-	default:
-		return nil, errors.New("unknown auction state")
-	}
 	return &AuctionMachine{
 		auction,
 		bids,
-		state,
 		market,
 		freeverse,
 		signer.NewSigner(market, freeverse),
@@ -63,10 +50,18 @@ func New(
 }
 
 func (b *AuctionMachine) Process() error {
-	return b.current.Process(b)
-}
-
-func (b *AuctionMachine) SetState(state State) error {
-	b.current = state
-	return nil
+	var state State
+	switch b.Auction.State {
+	case storage.AUCTION_STARTED:
+		state = NewStarted()
+	case storage.AUCTION_ASSET_FROZEN:
+		state = NewAssetFrozen()
+	case storage.AUCTION_PAYING:
+		state = NewPaying()
+	case storage.AUCTION_NO_BIDS:
+		state = NewNoBids()
+	default:
+		return errors.New("unknown auction state")
+	}
+	return state.Process(b)
 }
