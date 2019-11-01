@@ -26,6 +26,38 @@ func TestPayingAuction(t *testing.T) {
 	}
 }
 
+func TestFirstAlive(t *testing.T) {
+	idx := bidmachine.IndexFirstAlive(nil)
+	if idx != -1 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+	bids := []storage.Bid{}
+	idx = bidmachine.IndexFirstAlive(bids)
+	if idx != -1 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+	bids = []storage.Bid{storage.Bid{State: storage.BID_EXPIRED}}
+	idx = bidmachine.IndexFirstAlive(bids)
+	if idx != -1 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+	bids = append(bids, storage.Bid{State: storage.BID_ACCEPTED, ExtraPrice: 10})
+	idx = bidmachine.IndexFirstAlive(bids)
+	if idx != 1 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+	bids = append(bids, storage.Bid{State: storage.BID_ACCEPTED, ExtraPrice: 11})
+	idx = bidmachine.IndexFirstAlive(bids)
+	if idx != 2 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+	bids = append(bids, storage.Bid{State: storage.BID_PAYING, ExtraPrice: 11})
+	idx = bidmachine.IndexFirstAlive(bids)
+	if idx != 3 {
+		t.Fatalf("Wrong result: %v", idx)
+	}
+}
+
 func TestExpiredBidNoTransit(t *testing.T) {
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
 	bids := []storage.Bid{storage.Bid{State: storage.BID_EXPIRED}}

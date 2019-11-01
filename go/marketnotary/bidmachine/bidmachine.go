@@ -24,32 +24,34 @@ func New(
 	}, nil
 }
 
-func (b *BidMachine) HasAliveBids() bool {
-	for _, bid := range b.Bids {
-		if (bid.State == storage.BID_ACCEPTED) ||
-			(bid.State == storage.BID_PAYING) {
-			return true
+func IndexFirstAlive(bids []storage.Bid) int {
+	// first searching for PAYING bid
+	for i, bid := range bids {
+		if bid.State == storage.BID_PAYING {
+			return i
 		}
 	}
-	return false
-}
-
-func (b *BidMachine) IndexFirstAlive() int {
-	if b.HasAliveBids() == false {
-		return -1
+	// then search for the highest ACCEPTED bid
+	idx := -1
+	extraPrice := int64(-1)
+	for i, bid := range bids {
+		if bid.State == storage.BID_ACCEPTED {
+			if idx == -1 {
+				idx = i
+				extraPrice = bid.ExtraPrice
+			} else {
+				if bid.ExtraPrice > extraPrice {
+					idx = i
+					extraPrice = bid.ExtraPrice
+				}
+			}
+		}
 	}
-
-	// var idx = 0
-	// for i, bid := range b.Bids {
-	// 	if bid.State == storage.BID_ACCEPTED {
-	// 		return idx
-	// 	}
-	// }
-	return -1
+	return idx
 }
 
 func (b *BidMachine) Process() error {
-	idx := b.IndexFirstAlive()
+	idx := IndexFirstAlive(b.Bids)
 	if idx == -1 {
 		return nil
 	}
