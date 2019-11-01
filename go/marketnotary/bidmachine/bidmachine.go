@@ -7,7 +7,7 @@ import (
 )
 
 type BidMachine struct {
-	Auction storage.Auction
+	auction storage.Auction
 	Bids    []storage.Bid
 }
 
@@ -22,4 +22,8 @@ func New(
 		auction,
 		bids,
 	}, nil
+}
+
+func (b *BidMachine) Process() error {
+	return nil
 }
