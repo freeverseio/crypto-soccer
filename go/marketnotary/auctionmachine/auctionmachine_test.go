@@ -74,38 +74,6 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 	}
 }
 
-func TestAuctionOutdatedWithNotAcceptedBids(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := storage.Auction{
-		UUID:       uuid.New(),
-		ValidUntil: big.NewInt(time.Now().Unix() - 10),
-		State:      storage.AUCTION_STARTED,
-	}
-	bids := []storage.Bid{
-		storage.Bid{
-			State: storage.BID_REFUSED,
-		},
-	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = machine.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if machine.Auction.State != storage.AUCTION_NO_BIDS {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, machine.Auction.State)
-	}
-	err = machine.Process()
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 func TestStartedAuctionWithBids(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {

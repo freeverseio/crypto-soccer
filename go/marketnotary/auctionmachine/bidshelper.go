@@ -14,3 +14,29 @@ func OrderByDescExtraPrice(bids []storage.Bid) []storage.Bid {
 	}
 	return bids
 }
+
+func HasAccepted(bids []storage.Bid) bool {
+	return IndexOfFirstAccepted(bids) != -1
+}
+
+func HasPaying(bids []storage.Bid) bool {
+	return IndexOfFirstPaying(bids) != -1
+}
+
+func IndexOfFirstPaying(bids []storage.Bid) int {
+	for idx, bid := range bids {
+		if bid.State == storage.BID_PAYING {
+			return idx
+		}
+	}
+	return -1
+}
+
+func IndexOfFirstAccepted(bids []storage.Bid) int {
+	for idx, bid := range bids {
+		if bid.State == storage.BID_ACCEPTED {
+			return idx
+		}
+	}
+	return -1
+}
