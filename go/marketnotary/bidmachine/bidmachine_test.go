@@ -10,7 +10,8 @@ import (
 
 func TestNotPayingAuction(t *testing.T) {
 	auction := storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
-	_, err := bidmachine.New(auction)
+	bids := []storage.Bid{}
+	_, err := bidmachine.New(auction, bids)
 	if err == nil {
 		t.Fatalf("Accepting %v auction", auction.State)
 	}
@@ -18,7 +19,8 @@ func TestNotPayingAuction(t *testing.T) {
 
 func TestPayingAuction(t *testing.T) {
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
-	_, err := bidmachine.New(auction)
+	bids := []storage.Bid{}
+	_, err := bidmachine.New(auction, bids)
 	if err != nil {
 		t.Fatalf("Not accepting %v auction", auction.State)
 	}
