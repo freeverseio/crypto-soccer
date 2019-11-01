@@ -88,4 +88,11 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if machine.Bids[0].State != storage.BID_PAYING {
 		t.Fatalf("Wrong state %v", machine.Bids[0].State)
 	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if machine.Bids[0].State != storage.BID_PAID {
+		t.Fatalf("Wrong state %v", machine.Bids[0].State)
+	}
 }

@@ -55,6 +55,23 @@ func (b *BidMachine) Process() error {
 	if idx == -1 {
 		return nil
 	}
+	bid := b.Bids[idx]
+	switch bid.State {
+	case storage.BID_PAYING:
+		return b.processPaying(idx)
+	case storage.BID_ACCEPTED:
+		return b.processAccepted(idx)
+	default:
+		return errors.New("Unknown bid state")
+	}
+}
 
+func (b *BidMachine) processPaying(idx int) error {
+	b.Bids[idx].State = storage.BID_PAID
+	return nil
+}
+
+func (b *BidMachine) processAccepted(idx int) error {
+	b.Bids[idx].State = storage.BID_PAYING
 	return nil
 }
