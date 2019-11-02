@@ -15,7 +15,7 @@ import (
 
 type BidMachine struct {
 	auction   storage.Auction
-	Bid       storage.Bid
+	bid       storage.Bid
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
@@ -69,23 +69,21 @@ func IndexFirstAlive(bids []storage.Bid) int {
 }
 
 func (b *BidMachine) Process() (storage.Bid, error) {
-	switch b.Bid.State {
+	switch b.bid.State {
 	case storage.BID_PAYING:
-		return b.Bid, b.processPaying()
+		return b.bid, b.processPaying()
 	case storage.BID_ACCEPTED:
-		return b.Bid, b.processAccepted()
+		return b.bid, b.processAccepted()
 	case storage.BID_FAILED_TO_PAY:
-		return b.Bid, nil
+		return b.bid, nil
 	default:
-		return b.Bid, errors.New("Unknown bid state")
+		return b.bid, errors.New("Unknown bid state")
 	}
 }
 
 func (b *BidMachine) processPaying() error {
-
-	bid := b.Bid
 	isOffer2StartAuction := false
-	bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
+	bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
 	if err != nil {
 		return err
 	}
@@ -101,15 +99,15 @@ func (b *BidMachine) processPaying() error {
 		b.auction.Rnd,
 		b.auction.ValidUntil,
 		b.auction.PlayerID,
-		big.NewInt(bid.ExtraPrice),
-		big.NewInt(bid.Rnd),
-		bid.TeamID,
+		big.NewInt(b.bid.ExtraPrice),
+		big.NewInt(b.bid.Rnd),
+		b.bid.TeamID,
 		isOffer2StartAuction,
 	)
 	if err != nil {
 		return err
 	}
-	sig[1], sig[2], sigV, err = b.signer.RSV(bid.Signature)
+	sig[1], sig[2], sigV, err = b.signer.RSV(b.bid.Signature)
 	if err != nil {
 		return err
 	}
@@ -119,30 +117,29 @@ func (b *BidMachine) processPaying() error {
 		b.auction.ValidUntil,
 		b.auction.PlayerID,
 		bidHiddenPrice,
-		bid.TeamID,
+		b.bid.TeamID,
 		sig,
 		sigV,
 		isOffer2StartAuction,
 	)
 	if err != nil {
-		b.Bid.State = storage.BID_FAILED_TO_PAY
+		b.bid.State = storage.BID_FAILED_TO_PAY
 		return err
 	}
 	receipt, err := helper.WaitReceipt(b.client, tx, 60)
 	if err != nil {
-		b.Bid.State = storage.BID_FAILED_TO_PAY
+		b.bid.State = storage.BID_FAILED_TO_PAY
 		return err
 	}
 	if receipt.Status == 0 {
-		b.Bid.State = storage.BID_FAILED_TO_PAY
+		b.bid.State = storage.BID_FAILED_TO_PAY
 		return err
 	}
-
-	b.Bid.State = storage.BID_PAID
+	b.bid.State = storage.BID_PAID
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	b.Bid.State = storage.BID_PAYING
+	b.bid.State = storage.BID_PAYING
 	return nil
 }
