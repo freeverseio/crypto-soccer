@@ -15,24 +15,33 @@ func (m *AuctionMachine) processPaying() error {
 
 	now := time.Now().Unix()
 	if (now - m.Auction.ValidUntil.Int64()) > 2 {
+		idx := bidmachine.IndexFirstAlive(m.Bids)
+		if idx == -1 {
+			return nil
+		}
 		bidMachine, err := bidmachine.New(
 			m.Auction,
-			m.Bids,
+			m.Bids[idx],
 			m.market,
 			m.freeverse,
-			m.signer,
 			m.client,
 		)
 		if err != nil {
 			return err
 		}
 
-		err = bidMachine.Process()
+		bid, err := bidMachine.Process()
 		if err != nil {
-			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
 			return err
 		}
+		if bid.State == storage.BID_PAYING {
+			return nil
+		}
+		if bid.State == storage.BID_FAILED_TO_PAY {
+			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
+		}
 
+		m.Bids[idx] = bid
 		m.Auction.State = storage.AUCTION_PAID
 	}
 
