@@ -2,13 +2,10 @@ package auctionmachine
 
 import (
 	"errors"
-	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
-	log "github.com/sirupsen/logrus"
 )
 
 func (m *AuctionMachine) processPaying() error {
@@ -18,65 +15,24 @@ func (m *AuctionMachine) processPaying() error {
 
 	now := time.Now().Unix()
 	if (now - m.Auction.ValidUntil.Int64()) > 2 {
-		bid := m.Bids[0]
-		isOffer2StartAuction := false
-		bidHiddenPrice, err := m.signer.BidHiddenPrice(big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
-		if err != nil {
-			return err
-		}
-		auctionHiddenPrice, err := m.signer.HashPrivateMsg(m.Auction.CurrencyID, m.Auction.Price, m.Auction.Rnd)
-		if err != nil {
-			return err
-		}
-		var sig [3][32]byte
-		var sigV uint8
-		sig[0], err = m.signer.HashBidMessage(
-			m.Auction.CurrencyID,
-			m.Auction.Price,
-			m.Auction.Rnd,
-			m.Auction.ValidUntil,
-			m.Auction.PlayerID,
-			big.NewInt(bid.ExtraPrice),
-			big.NewInt(bid.Rnd),
-			bid.TeamID,
-			isOffer2StartAuction,
+		bidMachine, err := bidmachine.New(
+			m.Auction,
+			m.Bids,
+			m.market,
+			m.freeverse,
+			m.signer,
+			m.client,
 		)
 		if err != nil {
 			return err
-		}
-		sig[1], sig[2], sigV, err = m.signer.RSV(bid.Signature)
-		if err != nil {
-			return err
-		}
-		tx, err := m.market.CompletePlayerAuction(
-			bind.NewKeyedTransactor(m.freeverse),
-			auctionHiddenPrice,
-			m.Auction.ValidUntil,
-			m.Auction.PlayerID,
-			bidHiddenPrice,
-			bid.TeamID,
-			sig,
-			sigV,
-			isOffer2StartAuction,
-		)
-		if err != nil {
-			log.Error(err)
-			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			return nil
-		}
-		receipt, err := helper.WaitReceipt(m.client, tx, 60)
-		if err != nil {
-			log.Error(err)
-			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			return nil
-		}
-		if receipt.Status == 0 {
-			log.Error("Complete mined but failed")
-			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
-			return nil
 		}
 
-		m.Bids[0].State = storage.BID_PAID
+		err = bidMachine.Process()
+		if err != nil {
+			m.Auction.State = storage.AUCTION_FAILED_TO_PAY
+			return err
+		}
+
 		m.Auction.State = storage.AUCTION_PAID
 	}
 

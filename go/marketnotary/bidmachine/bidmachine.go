@@ -1,19 +1,34 @@
 package bidmachine
 
 import (
+	"crypto/ecdsa"
 	"errors"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
 )
 
 type BidMachine struct {
-	auction storage.Auction
-	Bids    []storage.Bid
+	auction   storage.Auction
+	Bids      []storage.Bid
+	market    *market.Market
+	freeverse *ecdsa.PrivateKey
+	signer    *signer.Signer
+	client    *ethclient.Client
 }
 
 func New(
 	auction storage.Auction,
 	bids []storage.Bid,
+	market *market.Market,
+	freeverse *ecdsa.PrivateKey,
+	signer *signer.Signer,
+	client *ethclient.Client,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
@@ -21,6 +36,10 @@ func New(
 	return &BidMachine{
 		auction,
 		bids,
+		market,
+		freeverse,
+		signer,
+		client,
 	}, nil
 }
 
@@ -67,6 +86,61 @@ func (b *BidMachine) Process() error {
 }
 
 func (b *BidMachine) processPaying(idx int) error {
+	bid := b.Bids[idx]
+	isOffer2StartAuction := false
+	bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(bid.ExtraPrice), big.NewInt(bid.Rnd))
+	if err != nil {
+		return err
+	}
+	auctionHiddenPrice, err := b.signer.HashPrivateMsg(b.auction.CurrencyID, b.auction.Price, b.auction.Rnd)
+	if err != nil {
+		return err
+	}
+	var sig [3][32]byte
+	var sigV uint8
+	sig[0], err = b.signer.HashBidMessage(
+		b.auction.CurrencyID,
+		b.auction.Price,
+		b.auction.Rnd,
+		b.auction.ValidUntil,
+		b.auction.PlayerID,
+		big.NewInt(bid.ExtraPrice),
+		big.NewInt(bid.Rnd),
+		bid.TeamID,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		return err
+	}
+	sig[1], sig[2], sigV, err = b.signer.RSV(bid.Signature)
+	if err != nil {
+		return err
+	}
+	tx, err := b.market.CompletePlayerAuction(
+		bind.NewKeyedTransactor(b.freeverse),
+		auctionHiddenPrice,
+		b.auction.ValidUntil,
+		b.auction.PlayerID,
+		bidHiddenPrice,
+		bid.TeamID,
+		sig,
+		sigV,
+		isOffer2StartAuction,
+	)
+	if err != nil {
+		b.Bids[idx].State = storage.BID_FAILED_TO_PAY
+		return err
+	}
+	receipt, err := helper.WaitReceipt(b.client, tx, 60)
+	if err != nil {
+		b.Bids[idx].State = storage.BID_FAILED_TO_PAY
+		return err
+	}
+	if receipt.Status == 0 {
+		b.Bids[idx].State = storage.BID_FAILED_TO_PAY
+		return err
+	}
+
 	b.Bids[idx].State = storage.BID_PAID
 	return nil
 }
