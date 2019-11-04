@@ -86,9 +86,9 @@ contract('Updates', (accounts) => {
         isCloseEnough(newNow.toNumber(), now.toNumber()).should.be.equal(true)
     });
     
-    it('submitActions to timezone too early', async () =>  {
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
-    });
+    // it('submitActions to timezone too early', async () =>  {
+    //     await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
+    // });
 
     it('submitActions to timezone', async () =>  {
         timeZoneToUpdateBefore = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
