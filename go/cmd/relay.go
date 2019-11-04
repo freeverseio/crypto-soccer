@@ -18,7 +18,7 @@ import (
 
 func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
