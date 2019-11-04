@@ -1,0 +1,33 @@
+pragma solidity >=0.4.21 <0.6.0;
+
+import "./EncodingMatchLogPart1.sol";
+import "./EncodingMatchLogPart2.sol";
+import "./EncodingMatchLogPart3.sol";
+
+/**
+ * @title Library of functions to serialize matchLogs
+ */
+
+    // uint8 nGoals, // 4b, offset 0
+    // uint8 assistersIdx[14], 4b each, offset 4
+    // uint8 shootersIdx[14], 4b each, offset 60
+    // uint8 shooterFwdPos[14], 2b each, offset 116
+    // bool[7] memory penalties, // 1b each, offset 144
+    // uint8[2] memory outOfGames 4b each
+    // uint8[6] memory yellowCards1, 4b each,
+    // uint8[6] memory yellowCards2, 4b each
+    // uint8[2] memory outOfGameRounds,  
+    // uint8[2] memory typesOutOfGames, 
+    // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,
+    // bool isHomeStadium, // 1b each,
+    // uint8[3] memory halfTimeSubstitutions, // 4b each, offset 201, the first 3 for half 1, the other for half 2
+    // uint8[6] memory ingameSubs, // 2b each, offset 189
+    //                             //  ...the first 3 for half 1, the other for half 2.
+    //                             // ...0: no change required, 1: change happened, 2: change could not happen  
+    // uint8[4] memory numDefTotWinner
+    //                             // [4b, 4b, 4b, 2b], offset 213
+    //                             // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
+    //                             // winner: 0 = home, 1 = away, 2 = draw
+contract EncodingMatchLog is EncodingMatchLogPart1, EncodingMatchLogPart2, EncodingMatchLogPart3 {
+
+}

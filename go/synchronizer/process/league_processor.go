@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -16,23 +17,32 @@ import (
 type LeagueProcessor struct {
 	engine            *engine.Engine
 	leagues           *leagues.Leagues
+	evolution         *evolution.Evolution
 	storage           *storage.Storage
 	calendarProcessor *Calendar
 	playerHackSkills  *big.Int
 }
 
-func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, storage *storage.Storage) (*LeagueProcessor, error) {
+func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evolution *evolution.Evolution, storage *storage.Storage) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, storage)
 	if err != nil {
 		return nil, err
 	}
-	playerHackSkills, _ := new(big.Int).SetString("756225211015655513108133115214810688164347164291028809890931443609804734464", 10)
+
+	playerHackSkills, _ := new(big.Int).SetString("713624055286353394965726120199142814938406092850", 10)
 	if err != nil {
 		return nil, err
 	}
 	// playerHackSkills := big.NewInt(0)
 
-	return &LeagueProcessor{engine, leagues, storage, calendarProcessor, playerHackSkills}, nil
+	return &LeagueProcessor{
+		engine,
+		leagues,
+		evolution,
+		storage,
+		calendarProcessor,
+		playerHackSkills,
+	}, nil
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
@@ -44,15 +54,11 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
-	if (timezoneIdx == 0) ||
-		(timezoneIdx != 1) ||
-		(turnInDay > 1) ||
-		(turnInDay == 1 && day != 1) ||
-		(turnInDay == 0 && (day < 2 || day > 14)) {
+	isFirstHalfLeagueMatch := turnInDay == 0
+	if isFirstHalfLeagueMatch == false {
 		log.Warnf("[LeagueProcessor] ... skipping")
 		return nil
 	}
-	day-- // cause we use 0 starting indexes
 
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
@@ -90,23 +96,45 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				}
 				is2ndHalf := false
 				isHomeStadium := true
-				result, err := b.engine.PlayMatch(
+				isPlayoff := false
+				var matchLog [2]*big.Int
+				matchLog[0] = big.NewInt(0)
+				matchLog[1] = big.NewInt(0)
+				var matchBools [3]bool
+				matchBools[0] = is2ndHalf
+				matchBools[1] = isHomeStadium
+				matchBools[2] = isPlayoff
+				result, err := b.engine.PlayHalfMatch(
 					&bind.CallOpts{},
 					matchSeed,
+					event.SubmissionTime,
 					states,
 					tactics,
-					is2ndHalf,
-					isHomeStadium,
+					matchLog,
+					matchBools,
 				)
 				if err != nil {
-					log.Fatal(err)
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), result[0], result[1])
+				goalsHome, err := b.evolution.GetNGoals(
+					&bind.CallOpts{},
+					result[0],
+				)
 				if err != nil {
 					return err
 				}
-				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, result[0], result[1])
+				goalsVisitor, err := b.evolution.GetNGoals(
+					&bind.CallOpts{},
+					result[1],
+				)
+				if err != nil {
+					return err
+				}
+				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
+				if err != nil {
+					return err
+				}
+				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
 				if err != nil {
 					return err
 				}
@@ -221,8 +249,26 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 
 func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
-	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
-	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
+	var substitutions [3]uint8 = [3]uint8{0, 5, 7}
+	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
+	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	var extraAttack [10]bool
+	extraAttack[3] = true
+	extraAttack[6] = true
+	var tacticsId uint8 = 1
+	tactic, err := b.engine.EncodeTactics(
+		&bind.CallOpts{},
+		substitutions,
+		subsRounds,
+		lineup,
+		extraAttack,
+		tacticsId,
+	)
+	if err != nil {
+		return tactics, err
+	}
+	tactics[0] = tactic
+	tactics[1] = tactic
 	return tactics, nil
 }
 

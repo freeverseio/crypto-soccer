@@ -65,7 +65,7 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			teams, err := b.leagues.GetTeamsInMatch(&bind.CallOpts{}, matchDay, match)
+			teams, err := b.leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
 			if err != nil {
 				return nil
 			}

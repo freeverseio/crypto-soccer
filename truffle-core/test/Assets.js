@@ -13,6 +13,8 @@ contract('Assets', (accounts) => {
     const N_SKILLS = 5;
     let initTx = null;
 
+    const it2 = async(text, f) => {};
+
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
@@ -27,6 +29,32 @@ contract('Assets', (accounts) => {
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         });
+
+        
+    it('create special players', async () => {
+        sk = [16383, 13, 4, 56, 456]
+        sumSkills = sk.reduce((a, b) => a + b, 0);
+        specialPlayerId = await assets.encodePlayerSkills(
+            sk,
+            dayOfBirth = 4*365, 
+            playerId = 144321433,
+            [potential = 5,
+            forwardness = 3,
+            leftishness = 4,
+            aggressiveness = 1],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = true,
+            gamesNonStopping = 2,
+            injuryWeeksLeft = 6,
+            substitutedLastHalf = true,
+            sumSkills
+        ).should.be.fulfilled;
+        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
+        specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
+        skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
+        result = await assets.getShoot(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sk[0]);        
+    });
 
     it('check division event on init', async () => {
         let timezone = 0;
@@ -183,12 +211,12 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('gameDeployMonth', async () => {
-        const gameDeployMonth =  await assets.gameDeployMonth().should.be.fulfilled;
+    it('gameDeployDay', async () => {
+        const gameDeployDay =  await assets.gameDeployDay().should.be.fulfilled;
         currentBlockNum = await web3.eth.getBlockNumber()
         currentBlock = await web3.eth.getBlock(currentBlockNum)
-        currentMonth = Math.floor(currentBlock.timestamp * 12 / (3600 * 24 * 365));
-        gameDeployMonth.toNumber().should.be.equal(currentMonth);
+        currentDay = Math.floor(currentBlock.timestamp / (3600 * 24));
+        gameDeployDay.toNumber().should.be.equal(currentDay);
     });
 
     it('get skills of a GoalKeeper on creation', async () => {
@@ -197,18 +225,25 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        skills = await assets.getSkillsVec(encodedSkills).should.be.fulfilled; 
-        expected = [87, 37, 28, 60, 35];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            skills[sk].toNumber().should.be.equal(expected[sk])
-        }
+        shoot = await assets.getShoot(encodedSkills).should.be.fulfilled; 
+        shoot.toNumber().should.be.equal(44);
+        speed = await assets.getSpeed(encodedSkills).should.be.fulfilled; 
+        speed.toNumber().should.be.equal(63);
+        pass = await assets.getPass(encodedSkills).should.be.fulfilled; 
+        pass.toNumber().should.be.equal(59);
+        defence = await assets.getDefence(encodedSkills).should.be.fulfilled; 
+        defence.toNumber().should.be.equal(40);
+        endurance = await assets.getEndurance(encodedSkills).should.be.fulfilled; 
+        endurance.toNumber().should.be.equal(41);
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
-        gameDeployMonth = await assets.gameDeployMonth().should.be.fulfilled;
-        monthOfBirth =  await assets.getMonthOfBirth(encodedSkills).should.be.fulfilled; 
-        ageInMonths = await assets.getPlayerAgeInMonths(playerId).should.be.fulfilled;
-        ageInMonths.toNumber().should.be.equal(360);
-        (gameDeployMonth.toNumber()-monthOfBirth.toNumber()).should.be.equal(ageInMonths.toNumber());
+        gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
+        dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
+        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+        (Math.abs(ageInDays.toNumber() - 11645) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
+        // check that the ageInDay can be obtained by 7 * (now - dayOfBirth), where
+        // now is approximately gameDeployDay. There is an uncertainty of about 7 days due to rounding.
+        (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
     });
 
     it('get state of player on creation', async () => {
@@ -241,7 +276,7 @@ contract('Assets', (accounts) => {
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(0);
     });
-    
+
     it('get player state of unexistent player', async () => {
         tz = 1;
         countryIdxInTZ = 0;
@@ -531,7 +566,7 @@ contract('Assets', (accounts) => {
         });
     });
 
-    it ('transfer invalid team 0', async () => {
+    it('transfer invalid team 0', async () => {
         await assets.transferTeam(teamId = 0, BOB).should.be.rejected;
     });
         

@@ -1,13 +1,14 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "./EncodingSkills.sol";
+import "./EncodingIDs.sol";
 import "./EncodingState.sol";
 /**
  * @title Creation of all game assets via creation of timezones, countries and divisions
  * @dev Timezones range from 1 to 24, with timeZone = 0 being null.
  */
 
-contract Assets is EncodingSkills, EncodingState {
+contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
@@ -62,13 +63,13 @@ contract Assets is EncodingSkills, EncodingState {
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
     mapping (uint256 => uint256) internal _playerIdxToPlayerState;
-    uint256 public gameDeployMonth;
+    uint256 public gameDeployDay;
     uint256 public currentRound;
     bool private _needsInit = true;
 
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
-        gameDeployMonth = secsToMonths(now);
+        gameDeployDay = secsToDays(now);
         for (uint8 tz = 1; tz < 25; tz++) {
             _initTimeZone(tz);
         }
@@ -79,7 +80,7 @@ contract Assets is EncodingSkills, EncodingState {
     // at some point, remove this option
     function initSingleTZ(uint8 tz) public {
         require(_needsInit == true, "cannot initialize twice");
-        gameDeployMonth = secsToMonths(now);
+        gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
     }
@@ -103,9 +104,9 @@ contract Assets is EncodingSkills, EncodingState {
         return _timeZones[timeZone].lastActionsSubmissionTime;
     }
 
-    function setSkillsRoot(uint8 tz, bytes32 root) external returns(uint256) {
+    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external returns(uint256) {
+        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
         _timeZones[tz].lastUpdateTime = now;
     }
 
@@ -265,22 +266,29 @@ contract Assets is EncodingSkills, EncodingState {
     }
 
     function getPlayerSkillsAtBirth(uint256 playerId) public view returns (uint256) {
+        if (getIsSpecial(playerId)) return getSpecialPlayerSkillsAtBirth(playerId);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 dna = uint256(keccak256(abi.encode(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum)));
-        uint256 playerCreationMonth = (gameDeployMonth * 30 + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND) / 30;
-        return computeSkillsAndEncode(dna, shirtNum, playerCreationMonth, playerId);
+        uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
+        return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
     }
 
+    function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
+        return playerId;
+    }
+
+
+
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
-    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationMonth, uint256 playerId) internal pure returns (uint256) {
-        uint256 monthOfBirth;
-        (monthOfBirth, dna) = computeBirthMonth(dna, playerCreationMonth);
-        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, monthOfBirth, playerId, birthTraits, false, false, 0, 0);
+    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+        uint256 dayOfBirth;
+        (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
+        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint16 sumSkills) = computeSkills(dna, shirtNum);
+        return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
@@ -303,13 +311,12 @@ contract Assets is EncodingSkills, EncodingState {
 
     /// Compute a random age between 16 and 35
     /// @param dna is a random number used as seed of the skills
-    /// @param playerCreationMonth since unix epoch
-    /// @return monthOfBirth since unix epoch
-    function computeBirthMonth(uint256 dna, uint256 playerCreationMonth) public pure returns (uint16, uint256) {
-        require(playerCreationMonth > 40*12, "invalid playerCreationMonth");
-        uint16 age = 16 + uint16((dna % 20));
-        dna >>= 5; // log2(20) = 4.6.... ceil = 5
-        return ( uint16(playerCreationMonth - age * 12), dna);
+    /// @param playerCreationDay since unix epoch
+    /// @return dayOfBirth since unix epoch
+    function computeBirthDay(uint256 dna, uint256 playerCreationDay) public pure returns (uint16, uint256) {
+        uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16*365, 7300 = 20 * 365
+        dna >>= 13; // log2(7300) = 12.8
+        return (uint16(playerCreationDay - ageInDays / 7), dna);
     }
 
     /// Compute the pseudorandom skills, sum of the skills is 250
@@ -318,7 +325,7 @@ contract Assets is EncodingSkills, EncodingState {
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory) {
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint16) {
         uint16[5] memory skills;
         uint16[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
@@ -382,11 +389,13 @@ contract Assets is EncodingSkills, EncodingState {
             dna >>= 6; // los2(50) -> ceil
             excess += skills[i];
         }
+        uint16 delta;
         if (excess < 250) {
-            uint16 delta = (250 - excess) / N_SKILLS;
+            delta = (250 - excess) / N_SKILLS;
             for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
         }
-        return (skills, [potential, forwardness, leftishness, aggressiveness]);
+        // note: final sum of skills = excess + N_SKILLS * delta;
+        return (skills, [potential, forwardness, leftishness, aggressiveness], excess + N_SKILLS * delta);
     }
 
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
@@ -400,16 +409,16 @@ contract Assets is EncodingSkills, EncodingState {
         }
     }
 
-    function secsToMonths(uint256 secs) private pure returns (uint256) {
-        return (secs * 12)/ 31536000;  // 31536000 = 3600 * 24 * 365
+    function secsToDays(uint256 secs) private pure returns (uint256) {
+        return secs / 86400;  // 86400 = 3600 * 24
     }
 
-    function monthsToSecs(uint256 months) private pure returns (uint256) {
-        return (months * 31536000) / 12; // 31536000 = 3600 * 24 * 365
+    function daysToSecs(uint256 dayz) private pure returns (uint256) {
+        return dayz * 86400; // 86400 = 3600 * 24 * 365
     }
 
-    function getPlayerAgeInMonths(uint256 playerId) public view returns (uint256) {
-        return secsToMonths(now - monthsToSecs(getMonthOfBirth(getPlayerSkillsAtBirth(playerId))));
+    function getPlayerAgeInDays(uint256 playerId) public view returns (uint256) {
+        return secsToDays(7 * (now - daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId)))));
     }
 
     function getFreeShirt(uint256 teamId) public view returns(uint8) {

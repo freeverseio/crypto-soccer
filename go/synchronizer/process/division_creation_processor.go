@@ -7,6 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
@@ -15,7 +16,7 @@ import (
 
 type DivisionCreationProcessor struct {
 	db                    *storage.Storage
-	leagues               *leagues.Leagues
+	assets                *assets.Assets
 	SK_SHO                uint8
 	SK_SPE                uint8
 	SK_PAS                uint8
@@ -27,32 +28,32 @@ type DivisionCreationProcessor struct {
 	PLAYERS_PER_TEAM_INIT uint8
 }
 
-func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues) (*DivisionCreationProcessor, error) {
-	SK_SHO, err := leagues.SKSHO(&bind.CallOpts{})
+func NewDivisionCreationProcessor(db *storage.Storage, assets *assets.Assets, leagues *leagues.Leagues) (*DivisionCreationProcessor, error) {
+	SK_SHO, err := assets.SKSHO(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_SPE, err := leagues.SKSPE(&bind.CallOpts{})
+	SK_SPE, err := assets.SKSPE(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_PAS, err := leagues.SKPAS(&bind.CallOpts{})
+	SK_PAS, err := assets.SKPAS(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_DEF, err := leagues.SKDEF(&bind.CallOpts{})
+	SK_DEF, err := assets.SKDEF(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	SK_END, err := leagues.SKEND(&bind.CallOpts{})
+	SK_END, err := assets.SKEND(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	LEAGUES_PER_DIV, err := leagues.LEAGUESPERDIV(&bind.CallOpts{})
+	LEAGUES_PER_DIV, err := assets.LEAGUESPERDIV(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	TEAMS_PER_LEAGUE, err := leagues.TEAMSPERLEAGUE(&bind.CallOpts{})
+	TEAMS_PER_LEAGUE, err := assets.TEAMSPERLEAGUE(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -60,13 +61,13 @@ func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues)
 	if err != nil {
 		return nil, err
 	}
-	PLAYERS_PER_TEAM_INIT, err := leagues.PLAYERSPERTEAMINIT(&bind.CallOpts{})
+	PLAYERS_PER_TEAM_INIT, err := assets.PLAYERSPERTEAMINIT(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
 	return &DivisionCreationProcessor{
 		db,
-		leagues,
+		assets,
 		SK_SHO,
 		SK_SPE,
 		SK_PAS,
@@ -79,7 +80,7 @@ func NewDivisionCreationProcessor(db *storage.Storage, leagues *leagues.Leagues)
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(event leagues.LeaguesDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		if err := b.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
@@ -113,7 +114,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
 		teamIdxEnd := teamIdxBegin + int64(b.TEAMS_PER_LEAGUE)
 		for teamIdxInLeague, teamIdx := uint32(0), teamIdxBegin; teamIdx < teamIdxEnd; teamIdx, teamIdxInLeague = teamIdx+1, teamIdxInLeague+1 {
-			if teamId, err := b.leagues.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
+			if teamId, err := b.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
 			} else {
 				if err := b.db.TeamCreate(
@@ -159,19 +160,27 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
 
 	for i := begin; i < end; i++ {
-		if playerId, err := b.leagues.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
+		if playerId, err := b.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
 			return err
-		} else if encodedSkills, err := b.leagues.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
+		} else if encodedSkills, err := b.assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
 			return err
-		} else if encodedState, err := b.leagues.GetPlayerStateAtBirth(opts, playerId); err != nil {
+		} else if encodedState, err := b.assets.GetPlayerStateAtBirth(opts, playerId); err != nil {
 			return err
-		} else if skills, err := b.leagues.GetSkillsVec(opts, encodedSkills); err != nil {
+		} else if defence, err := b.assets.GetDefence(opts, encodedSkills); err != nil {
+			return err
+		} else if speed, err := b.assets.GetSpeed(opts, encodedSkills); err != nil {
+			return err
+		} else if pass, err := b.assets.GetPass(opts, encodedSkills); err != nil {
+			return err
+		} else if shoot, err := b.assets.GetShoot(opts, encodedSkills); err != nil {
+			return err
+		} else if endurance, err := b.assets.GetEndurance(opts, encodedSkills); err != nil {
 			return err
 		} else if preferredPosition, err := b.getPlayerPreferredPosition(opts, encodedSkills); err != nil {
 			return err
-		} else if potential, err := b.leagues.GetPotential(opts, encodedSkills); err != nil {
+		} else if potential, err := b.assets.GetPotential(opts, encodedSkills); err != nil {
 			return err
-		} else if shirtNumber, err := b.leagues.GetCurrentShirtNum(opts, encodedState); err != nil {
+		} else if shirtNumber, err := b.assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
 		} else if err := b.db.PlayerCreate(
 			storage.Player{
@@ -181,11 +190,11 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 				Potential:         potential.Uint64(),
 				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:        teamId,
-					Defence:       uint64(skills[b.SK_DEF]), // TODO: type should be uint16
-					Speed:         uint64(skills[b.SK_SPE]),
-					Pass:          uint64(skills[b.SK_PAS]),
-					Shoot:         uint64(skills[b.SK_SHO]),
-					Endurance:     uint64(skills[b.SK_END]),
+					Defence:       defence.Uint64(), // TODO: type should be uint16
+					Speed:         speed.Uint64(),
+					Pass:          pass.Uint64(),
+					Shoot:         shoot.Uint64(),
+					Endurance:     endurance.Uint64(),
 					ShirtNumber:   uint8(shirtNumber.Uint64()),
 					EncodedSkills: encodedSkills,
 					EncodedState:  encodedState,
@@ -199,9 +208,9 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 }
 
 func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, encodedSkills *big.Int) (string, error) {
-	if forwardness, err := p.leagues.GetForwardness(opts, encodedSkills); err != nil {
+	if forwardness, err := p.assets.GetForwardness(opts, encodedSkills); err != nil {
 		return "", err
-	} else if leftishness, err := p.leagues.GetLeftishness(opts, encodedSkills); err != nil {
+	} else if leftishness, err := p.assets.GetLeftishness(opts, encodedSkills); err != nil {
 		return "", err
 	} else {
 		if forwardness.Uint64() > 255 {

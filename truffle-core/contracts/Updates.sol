@@ -12,7 +12,7 @@ contract Updates {
 
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
-    uint16 constant VERSES_PER_ROUND = 1536; // 96 * 16
+    uint16 constant VERSES_PER_ROUND = 1344; // 96 * 14
     uint8 constant public NULL_TIMEZONE = 0;
     uint8 constant CHALLENGE_TIME = 60; // in secs
     
@@ -30,16 +30,17 @@ contract Updates {
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         // the call to the contract init() function.
+        // TZ = 1 => starts at 1:00... TZ = 23 => starts at 23:00, TZ = 24, starts at 0:00
         uint256 secsOfDay   = now % (3600 * 24);
         uint256 hour        = secsOfDay / 3600;  // 0, ..., 23
         uint256 minute      = (secsOfDay - hour * 3600) / 60; // 0, ..., 59
         uint256 secs        = (secsOfDay - hour * 3600 - minute * 60); // 0, ..., 59
-        if (minute < 42) {
+        if (minute < 57) {
             timeZoneForRound1 = 1 + uint8(hour);
-            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs);
+            nextVerseTimestamp = now + (59-minute)*60 + (60 - secs);
         } else {
-            timeZoneForRound1 = 2 + uint8(hour);
-            nextVerseTimestamp = now + (44-minute)*60 + (60 - secs) + 3600;
+            timeZoneForRound1 = normalizeTZ(2+uint8(hour));
+            nextVerseTimestamp = now + (59-minute)*60 + (60 - secs) + 3600;
         }
         _needsInitUpdates = false;
     }
@@ -60,17 +61,11 @@ contract Updates {
     function submitActionsRoot(bytes32 actionsRoot) public {
         // require(now > nextVerseTimestamp, "too early to accept actions root");
         (uint8 newTZ, uint8 day, uint8 turnInDay) = nextTimeZoneToUpdate();
-        // (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        (uint8 prevTz,,) = prevTimeZoneToUpdate();
         // make sure the last verse is settled
         // if (prevTz != NULL_TIMEZONE) {
         //     require(now > _assets.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
         // }
-        // if we are precisely at a moment where nothing needs to be done, just move ahead
-        if (newTZ == NULL_TIMEZONE) {
-            incrementVerse() ;
-            emit ActionsSubmission(NULL_TIMEZONE, 0, 0, 0, now);
-            return;
-        }
         _assets.setActionsRoot(newTZ, actionsRoot);
         incrementVerse() ;
         setCurrentVerseSeed(blockhash(block.number-1)); 
@@ -84,17 +79,18 @@ contract Updates {
         uint256 lastActionsSubmissionTime = _assets.getLastActionsSubmissionTime(tz);
         if (lastUpdate > lastActionsSubmissionTime) {
             require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
+            _assets.setSkillsRoot(tz, root, false); // this is a challenge to a previous update
         } else {
             require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
+            _assets.setSkillsRoot(tz, root, true); // first time that we update this TZ
         }
-        _assets.setSkillsRoot(tz, root);
         emit TimeZoneUpdate(tz, root, now);
     }
     
     // each day has 24 hours, each with 4 verses => 96 verses per day.
-    // day = 1,..16
+    // day = 0,..13
     // turnInDay = 0, 1, 2, 3
-    // so for each TZ, we go from (day, turn) = (1, 0) ... (15,3) => a total of 16*4 = 64 turns per timeZone
+    // so for each TZ, we go from (day, turn) = (0, 0) ... (13,3) => a total of 14*4 = 56 turns per timeZone
     // from these, all map easily to timeZones
     function nextTimeZoneToUpdate() public view returns (uint8 timeZone, uint8 day, uint8 turnInDay) {
         return _timeZoneToUpdatePure(currentVerse, timeZoneForRound1);
@@ -111,17 +107,13 @@ contract Updates {
         // if currentVerse = 0, we should be updating timeZoneForRound1
         // recall that timeZones range from 1...24 (not from 0...24)
         uint16 verseInRound = uint16(verse % VERSES_PER_ROUND);
-        if (verseInRound < VERSES_PER_DAY) {
-            timeZone = 1 + uint8((TZForRound1 - 1 + (verseInRound / 4))% 24);
-            day = 1;
-            turnInDay = uint8(verseInRound % 4);
-        } else if (verseInRound == VERSES_PER_DAY) {
-            timeZone = NULL_TIMEZONE;
-        } else {
-            timeZone = 1 + uint8((TZForRound1 - 1 + ((verseInRound - 1) / 4))% 24);
-            day = 1 + uint8((verseInRound - 1) / VERSES_PER_DAY);
-            turnInDay = uint8((verseInRound - 1) % 4);
-        }
+        timeZone = normalizeTZ(TZForRound1 + verseInRound/4);
+        day = uint8(verseInRound / VERSES_PER_DAY);
+        turnInDay = uint8(verseInRound % 4);
+    }
+    
+    function normalizeTZ(uint16 tz) public pure returns (uint8) {
+        return uint8(1 + ((tz - 1)% 24));
     }
 
     function setCurrentVerseSeed(bytes32 seed) public {
@@ -131,6 +123,5 @@ contract Updates {
     function getCurrentVerseSeed() public view returns (bytes32) {
         return _currentVerseSeed;
     }
-        
 
 }
