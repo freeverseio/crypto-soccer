@@ -11,6 +11,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -119,6 +120,16 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
+	engineprecompAddress, tx31, _, err := engineprecomp.DeployEngineprecomp(
+		bind.NewKeyedTransactor(owner),
+		b.Client,
+	)
+	AssertNoErr(err, "DeployEngineprecomp failed")
+	fmt.Println("Engineprecomp deployed at:", engineprecompAddress.Hex())
+	if err != nil {
+		return err
+	}
+
 	_, err = helper.WaitReceipt(b.Client, tx10, 10)
 	if err != nil {
 		return err
@@ -143,6 +154,10 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	if err != nil {
 		return err
 	}
+	_, err = helper.WaitReceipt(b.Client, tx31, 10)
+	if err != nil {
+		return err
+	}
 	// setup
 	tx0, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in league contract")
@@ -152,6 +167,8 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
 	tx3, err = evolutionContract.SetEngine(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in evolution contract")
+	tx30, err = engineContract.SetPreCompAddr(bind.NewKeyedTransactor(owner), engineprecompAddress)
+	AssertNoErr(err, "Error setting engineprecomp contract in engine contract")
 
 	_, err = helper.WaitReceipt(b.Client, tx0, 10)
 	if err != nil {
@@ -166,6 +183,10 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	_, err = helper.WaitReceipt(b.Client, tx3, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx30, 10)
 	if err != nil {
 		return err
 	}

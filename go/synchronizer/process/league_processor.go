@@ -53,15 +53,11 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
-	if (timezoneIdx == 0) ||
-		(timezoneIdx != 1) ||
-		(turnInDay > 1) ||
-		(turnInDay == 1 && day != 1) ||
-		(turnInDay == 0 && (day < 2 || day > 14)) {
+	isFirstHalfLeagueMatch := turnInDay == 0
+	if isFirstHalfLeagueMatch == false {
 		log.Warnf("[LeagueProcessor] ... skipping")
 		return nil
 	}
-	day-- // cause we use 0 starting indexes
 
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
@@ -117,7 +113,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					matchBools,
 				)
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
 					return err
 				}
 				goalsHome, err := b.evolution.GetNGoals(
@@ -253,8 +249,26 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 
 func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
-	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
-	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
+	var substitutions [3]uint8 = [3]uint8{0, 5, 7}
+	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
+	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	var extraAttack [10]bool
+	extraAttack[3] = true
+	extraAttack[6] = true
+	var tacticsId uint8 = 1
+	tactic, err := b.engine.EncodeTactics(
+		&bind.CallOpts{},
+		substitutions,
+		subsRounds,
+		lineup,
+		extraAttack,
+		tacticsId,
+	)
+	if err != nil {
+		return tactics, err
+	}
+	tactics[0] = tactic
+	tactics[1] = tactic
 	return tactics, nil
 }
 

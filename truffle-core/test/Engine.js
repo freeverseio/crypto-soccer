@@ -134,6 +134,25 @@ contract('Engine', (accounts) => {
         events1Half = Array.from(new Array(7), (x,i) => 0);
         events1Half = [events1Half,events1Half];
     });
+
+    it('play a match to estimate cost', async () => {
+        // console.log("------")
+        // console.log("seed: ", seed.toString(10))
+        // console.log("now: ", now)
+        // console.log("tactics: ", tactics0.toString(10))
+        // console.log("log: ", firstHalfLog)
+        // console.log("matchBools: ", matchBools)
+        // for (i = 0; i< PLAYERS_PER_TEAM_MAX; i++) console.log(teamStateAll50Half1[i].toString(10))
+        let teamState0 = teamStateAll50Half1;
+        teamState1 = [...teamStateAll50Half1];
+        let now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
+        await engine.playHalfMatchWithCost(seed, now, [teamState0, teamState1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
+        // playerID: 274877907169
+        teamState1[9] = new BN('705060996546037971347706483447630939389980377122');
+        await engine.playHalfMatchWithCost(seed, now, [teamState0, teamState1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
+        now = 10;
+        await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
+    });
     
     it('computeExceptionalEvents no clashes with redcards', async () => {
         // there is a red card with this seed, to player 9, but he's not involved in any change
