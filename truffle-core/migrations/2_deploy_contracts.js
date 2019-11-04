@@ -24,7 +24,7 @@ module.exports = function (deployer) {
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
-    await updates.initUpdates(leagues.address).should.be.fulfilled;
+    await updates.initUpdates(assets.address).should.be.fulfilled;
     await evolution.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     console.log("Setting up ... done");

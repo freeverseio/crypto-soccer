@@ -61,7 +61,7 @@ services:
       - "4003:4000"
     command: >
       -d postgres://freeverse:freeverse@relay.db:5432/relay
-      --assetsContractAddress "${LEAGUES_CONTRACT_ADDRESS}" 
+      --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
       --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
       --ethereum "http://ethereum:8545"
   relay.db:
