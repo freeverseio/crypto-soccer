@@ -90,12 +90,8 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var event updates.UpdatesActionsSubmission
-	event.Day = 1
-	event.TimeZone = timezoneIdx
-	event.TurnInDay = 1
-	day := uint8(1)
-	turnInDay := uint8(1)
+	day := uint8(0)
+	turnInDay := uint8(0)
 	seed := [32]byte{}
 	err = processor.Process(updates.UpdatesActionsSubmission{
 		timezoneIdx,

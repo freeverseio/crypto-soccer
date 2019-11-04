@@ -53,15 +53,11 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
-	if (timezoneIdx == 0) ||
-		(timezoneIdx != 1) ||
-		(turnInDay > 1) ||
-		(turnInDay == 1 && day != 1) ||
-		(turnInDay == 0 && (day < 2 || day > 14)) {
+	isFirstHalfLeagueMatch := turnInDay == 0
+	if isFirstHalfLeagueMatch == false {
 		log.Warnf("[LeagueProcessor] ... skipping")
 		return nil
 	}
-	day-- // cause we use 0 starting indexes
 
 	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
@@ -117,7 +113,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					matchBools,
 				)
 				if err != nil {
-					log.Fatal(err)
+					log.Error(err)
 					return err
 				}
 				goalsHome, err := b.evolution.GetNGoals(
