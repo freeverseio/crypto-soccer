@@ -116,13 +116,13 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
-
         globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
         globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
+        // hasta aqui llega
         computeRounds(matchLog, seedAndStartTime[IDX_SEED], seedAndStartTime[IDX_ST_TIME], states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
         return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
@@ -148,6 +148,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
+                // hasta aqui llega
                 managesToScore(
                     matchStartTime,
                     matchLog,
@@ -159,6 +160,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
                     [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
             }
+            // aqui no llega
         }
     }
     
@@ -320,8 +322,12 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         if (currentGoals > 13) return matchLog;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 10 : 1) * penaltyPerAge(states[shooter], matchStartTime)/1000000;
-        bool isGoal = throwDice((getShoot(states[shooter])*7)/(shootPenalty*10), blockShoot, rnds[1]) == 0;
+        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
+        // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
+        // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
+        // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
+        bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        // no llego
         if (isGoal) {
             uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog[teamThatAttacks] = addAssister(matchLog[teamThatAttacks], assister, currentGoals);

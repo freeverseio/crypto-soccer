@@ -115,6 +115,7 @@ contract('Engine', (accounts) => {
     beforeEach(async () => {
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
+        await assets.init().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
@@ -369,6 +370,13 @@ contract('Engine', (accounts) => {
 
     it('play a match to estimate cost', async () => {
         const result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
+    });
+        
+    it('play a match with a special playerId that made it fail before fixing a bug', async () => {
+        playerId = 274877907169;
+        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
+        for (i = 0; i< PLAYERS_PER_TEAM_MAX; i++) teamStateAll50Half1[i] = skills;
+        result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
     });
 
     it('penaltyPerAge', async () => {
