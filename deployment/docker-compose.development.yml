@@ -25,6 +25,8 @@ services:
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
       -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
+      -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
+      -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum
