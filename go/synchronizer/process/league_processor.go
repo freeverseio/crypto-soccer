@@ -249,8 +249,26 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 
 func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
-	tactics[0], _ = new(big.Int).SetString("1216069450684002467840", 10)
-	tactics[1], _ = new(big.Int).SetString("1216069450684002467840", 10)
+	var substitutions [3]uint8 = [3]uint8{0, 5, 7}
+	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
+	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	var extraAttack [10]bool
+	extraAttack[3] = true
+	extraAttack[6] = true
+	var tacticsId uint8 = 1
+	tactic, err := b.engine.EncodeTactics(
+		&bind.CallOpts{},
+		substitutions,
+		subsRounds,
+		lineup,
+		extraAttack,
+		tacticsId,
+	)
+	if err != nil {
+		return tactics, err
+	}
+	tactics[0] = tactic
+	tactics[1] = tactic
 	return tactics, nil
 }
 

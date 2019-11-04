@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
@@ -54,6 +55,45 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	err = processor.Process(event)
 	if err == nil {
 		t.Fatal("processing invalid timezone")
+	}
+}
+
+func TestPlayHalfMatch(t *testing.T) {
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seed, _ := new(big.Int).SetString("b0ae22e2f60d41a9c23f77adac5bfdccb8228e51dbd13aa2a3654c5276b2c04a", 16)
+	matchStartTime := big.NewInt(1570147200)
+	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	matchBools := [3]bool{false, false, false}
+	var states [2][25]*big.Int
+	for i := 0; i < 2; i++ {
+		for j := 0; j < 25; j++ {
+			states[i][j], _ = new(big.Int).SetString("7d004266000008225850ad803200c803200c8032", 16)
+		}
+	}
+	var tactics [2]*big.Int
+	tactics[0], _ = new(big.Int).SetString("5cc299ac5a928398a4188200000", 16)
+	tactics[1], _ = new(big.Int).SetString("5cc299ac5a928398a4188200000", 16)
+	result, err := bc.Engine.PlayHalfMatch(
+		&bind.CallOpts{},
+		seed,
+		matchStartTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result[0].String() != "" {
+		t.Fatalf("Received %v", result[0].String())
 	}
 }
 
