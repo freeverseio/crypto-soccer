@@ -28,7 +28,8 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evoluti
 	if err != nil {
 		return nil, err
 	}
-	playerHackSkills, _ := new(big.Int).SetString("756225211015655513108133115214810688164347164291028809890931443609804734464", 10)
+
+	playerHackSkills, _ := new(big.Int).SetString("713624055286353394965726120199142814938406092850", 10)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +114,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					matchBools,
 				)
 				if err != nil {
-					log.Error(err)
 					return err
 				}
 				goalsHome, err := b.evolution.GetNGoals(
