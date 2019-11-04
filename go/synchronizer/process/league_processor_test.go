@@ -67,19 +67,19 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	seed, _ := new(big.Int).SetString("b0ae22e2f60d41a9c23f77adac5bfdccb8228e51dbd13aa2a3654c5276b2c04a", 16)
+	seed, _ := new(big.Int).SetString("79914733518162338039108289434138268582051932490617416751079415725906677907530", 10)
 	matchStartTime := big.NewInt(1570147200)
 	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
 	matchBools := [3]bool{false, false, false}
 	var states [2][25]*big.Int
 	for i := 0; i < 2; i++ {
 		for j := 0; j < 25; j++ {
-			states[i][j], _ = new(big.Int).SetString("7d004266000008225850ad803200c803200c8032", 16)
+			states[i][j], _ = new(big.Int).SetString("713624055286353394965726120199142814938406092850", 10)
 		}
 	}
 	var tactics [2]*big.Int
-	tactics[0], _ = new(big.Int).SetString("5cc299ac5a928398a4188200000", 16)
-	tactics[1], _ = new(big.Int).SetString("5cc299ac5a928398a4188200000", 16)
+	tactics[0], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
+	tactics[1], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
 	result, err := bc.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		seed,
@@ -92,7 +92,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result[0].String() != "" {
+	if result[0].String() != "11519355456996376452661064990627118067406041180784864310617375244288" {
 		t.Fatalf("Received %v", result[0].String())
 	}
 }
