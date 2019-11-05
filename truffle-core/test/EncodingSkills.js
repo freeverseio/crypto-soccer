@@ -124,6 +124,14 @@ contract('Encoding', (accounts) => {
         result = await encoding.getEndurance(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[4]);
 
+        skills = await encoding.setAlignedEndOfLastHalf(skills, true);
+        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        result.should.be.equal(true);
+
+        skills = await encoding.setAlignedEndOfLastHalf(skills, false);
+        result = await encoding.getAlignedEndOfLastHalf(skills).should.be.fulfilled;
+        result.should.be.equal(false);
+        
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
