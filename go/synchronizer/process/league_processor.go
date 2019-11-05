@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -16,6 +17,7 @@ import (
 
 type LeagueProcessor struct {
 	engine            *engine.Engine
+	enginePreComp     *engineprecomp.Engineprecomp
 	leagues           *leagues.Leagues
 	evolution         *evolution.Evolution
 	storage           *storage.Storage
@@ -23,7 +25,13 @@ type LeagueProcessor struct {
 	playerHackSkills  *big.Int
 }
 
-func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evolution *evolution.Evolution, storage *storage.Storage) (*LeagueProcessor, error) {
+func NewLeagueProcessor(
+	engine *engine.Engine,
+	enginePreComp *engineprecomp.Engineprecomp,
+	leagues *leagues.Leagues,
+	evolution *evolution.Evolution,
+	storage *storage.Storage,
+) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, storage)
 	if err != nil {
 		return nil, err
@@ -37,6 +45,7 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evoluti
 
 	return &LeagueProcessor{
 		engine,
+		enginePreComp,
 		leagues,
 		evolution,
 		storage,
@@ -184,7 +193,7 @@ func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, ma
 		if err != nil {
 			return err
 		}
-		player.State.EncodedSkills, err = b.engine.SetAlignedEndOfLastHalf(
+		player.State.EncodedSkills, err = b.evolution.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
 			player.State.EncodedSkills,
 			wasAligned,

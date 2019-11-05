@@ -20,7 +20,7 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	}
 }
 
-func TestProcess(t *testing.T) {
+func TestLeagueProcessMatch(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -126,7 +126,7 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(bc.Engine, bc.EnginePreComp, bc.Leagues, bc.Evolution, sto)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -20,14 +20,15 @@ import (
 )
 
 type BlockchainNode struct {
-	Client    *ethclient.Client
-	Assets    *assets.Assets
-	Updates   *updates.Updates
-	Leagues   *leagues.Leagues
-	Engine    *engine.Engine
-	Market    *market.Market
-	Evolution *evolution.Evolution
-	Owner     *ecdsa.PrivateKey
+	Client        *ethclient.Client
+	Assets        *assets.Assets
+	Updates       *updates.Updates
+	Leagues       *leagues.Leagues
+	Engine        *engine.Engine
+	EnginePreComp *engineprecomp.Engineprecomp
+	Market        *market.Market
+	Evolution     *evolution.Evolution
+	Owner         *ecdsa.PrivateKey
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -65,6 +66,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 
 	return &BlockchainNode{
 		client,
+		nil,
 		nil,
 		nil,
 		nil,
@@ -136,7 +138,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	engineprecompAddress, tx31, _, err := engineprecomp.DeployEngineprecomp(
+	engineprecompAddress, tx31, enginePreComp, err := engineprecomp.DeployEngineprecomp(
 		bind.NewKeyedTransactor(owner),
 		b.Client,
 	)
@@ -213,6 +215,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	b.Market = marketContract
 	b.Assets = assetsContract
 	b.Evolution = evolutionContract
+	b.EnginePreComp = enginePreComp
 
 	return nil
 }
