@@ -157,15 +157,13 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					if err != nil {
 						return err
 					}
-					if !is2ndHalf {
-						err = b.UpdatePlayedHalf1(match.HomeTeamID, tactics[0], logs[0])
-						if err != nil {
-							return err
-						}
-						err = b.UpdatePlayedHalf1(match.VisitorTeamID, tactics[1], logs[1])
-						if err != nil {
-							return err
-						}
+					err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
+					if err != nil {
+						return err
+					}
+					err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
+					if err != nil {
+						return err
 					}
 				}
 			}
@@ -177,8 +175,36 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+	NO_OUT_OF_GAME_PLAYER, err := b.enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	RED_CARD, err := b.enginePreComp.REDCARD(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	SOFTINJURY, err := b.enginePreComp.SOFTINJURY(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	HARDINJURY, err := b.enginePreComp.HARDINJURY(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
 	players, err := b.storage.GetPlayersOfTeam(teamID)
+	if err != nil {
+		return err
+	}
+	decodedTactic, err := b.leagues.DecodeTactics(&bind.CallOpts{}, tactic)
+	if err != nil {
+		return err
+	}
+	outOfGamePlayer, err := b.enginePreComp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
+	if err != nil {
+		return err
+	}
+	outOfGameType, err := b.enginePreComp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
 	if err != nil {
 		return err
 	}
@@ -200,6 +226,33 @@ func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, ma
 		)
 		if err != nil {
 			return err
+		}
+		if outOfGamePlayer.Int64() != int64(NO_OUT_OF_GAME_PLAYER) {
+			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
+				switch outOfGameType.Int64() {
+				case int64(RED_CARD):
+					player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, true)
+					if err != nil {
+						return err
+					}
+				case int64(SOFTINJURY):
+					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
+					if err != nil {
+						return err
+					}
+				case int64(HARDINJURY):
+					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 2)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		if is2ndHalf {
+			player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, false)
+			if err != nil {
+				return err
+			}
 		}
 		b.storage.PlayerUpdate(player.PlayerId, player.State)
 	}
