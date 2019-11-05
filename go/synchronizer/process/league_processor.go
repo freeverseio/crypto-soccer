@@ -102,7 +102,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						matchBools[0] = is2ndHalf
 						matchBools[1] = isHomeStadium
 						matchBools[2] = isPlayoff
-						result, err := b.engine.PlayHalfMatch(
+						logs, err := b.engine.PlayHalfMatch(
 							&bind.CallOpts{},
 							matchSeed,
 							event.SubmissionTime,
@@ -116,19 +116,19 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						}
 						goalsHome, err := b.evolution.GetNGoals(
 							&bind.CallOpts{},
-							result[0],
+							logs[0],
 						)
 						if err != nil {
 							return err
 						}
 						goalsVisitor, err := b.evolution.GetNGoals(
 							&bind.CallOpts{},
-							result[1],
+							logs[1],
 						)
 						if err != nil {
 							return err
 						}
-						err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
+						err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
 						if err != nil {
 							return err
 						}
