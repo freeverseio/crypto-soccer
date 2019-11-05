@@ -57,6 +57,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 
 	switch turnInDay {
 	case 0: // first half league match
+	case 1:
 		{
 			countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
 			if err != nil {
@@ -92,13 +93,20 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						if err != nil {
 							return err
 						}
-						is2ndHalf := false
+						is2ndHalf := turnInDay == 1
 						isHomeStadium := true
 						isPlayoff := false
 						var matchLog [2]*big.Int
-						matchLog[0] = big.NewInt(0)
-						matchLog[1] = big.NewInt(0)
 						var matchBools [3]bool
+						if is2ndHalf {
+							matchLog[0], matchLog[1], err = b.storage.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
+							if err != nil {
+								return nil
+							}
+						} else {
+							matchLog[0] = big.NewInt(0)
+							matchLog[1] = big.NewInt(0)
+						}
 						matchBools[0] = is2ndHalf
 						matchBools[1] = isHomeStadium
 						matchBools[2] = isPlayoff
@@ -139,10 +147,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					}
 				}
 			}
-		}
-	case 1: // second half match league
-		{
-
 		}
 	default:
 		log.Warnf("[LeagueProcessor] ... skipping")

@@ -144,4 +144,16 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	turnInDay = 1
+	err = processor.Process(updates.UpdatesActionsSubmission{
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(10),
+		types.Log{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
