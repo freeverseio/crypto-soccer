@@ -169,11 +169,6 @@ contract EncodingSkills {
         return (encoded | uint256(sumSkills) << 151);
     }
     
-    function setAlignedEndOfLastHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {
-        if (val) return (encodedSkills & ~(uint256(1) << 142)) | (uint256(1) << 142);
-        else return (encodedSkills & ~(uint256(1) << 142));
-    }
-
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
         return uint256(encodedSkills & 0x3fff); // 0x3fff = 2**14 - 1
     }
