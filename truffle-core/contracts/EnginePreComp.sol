@@ -23,7 +23,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     uint8 public constant NO_SUBST  = 11;   // noone was subtituted
-    uint8 public constant NO_CARD  = 14;   // noone saw a card
+    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
+    uint8 public constant SOFT_INJURY  = 1;   // type of event = redCard
+    uint8 public constant HARD_INJURY  = 2;   // type of event = redCard
     uint8 public constant RED_CARD  = 3;   // type of event = redCard
 
 
@@ -74,7 +76,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
         // Build weights for players, based on their aggressiveness.
         // Legit players have > 0, but those already out in first half (teams with 10 players) have 0.
-        for (uint8 p = 0; p < NO_CARD; p++) {
+        for (uint8 p = 0; p < NO_OUT_OF_GAME_PLAYER; p++) {
             if (states[p] != 0) weights[p] = 1 + getAggressiveness(states[p]); // weights must be > 0 to ever be selected
         }
         
@@ -82,7 +84,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 2.5 per game = 1.25 per half => 0.75 per dice thrown
         // weight nothing happens = 9
-        weights[NO_CARD] = 9;
+        weights[NO_OUT_OF_GAME_PLAYER] = 9;
         uint8[2] memory yellowCardeds;
         
         yellowCardeds[0] = throwDiceArray(weights, rnds[2]);
@@ -102,13 +104,13 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         if (is2ndHalf) {
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[0])) {
                 matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[0], matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
-                yellowCardeds[0] = NO_CARD;
+                yellowCardeds[0] = NO_OUT_OF_GAME_PLAYER;
             }
             if (hadReceivedYellowIn1stHalf(matchLog, yellowCardeds[1])) {
                 if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
                     matchLog = logOutOfGame(is2ndHalf, true, yellowCardeds[1],  matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
                 }
-                yellowCardeds[1] = NO_CARD;
+                yellowCardeds[1] = NO_OUT_OF_GAME_PLAYER;
             }
         }
         
@@ -122,7 +124,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // average sumAggressiveness = 11 * 2.5 = 27.5
         // total = 0.07 per game = 0.035 per half => weight nothing happens = 758
         if (getOutOfGameType(matchLog, is2ndHalf) == 0) {
-            weights[NO_CARD] = 758;
+            weights[NO_OUT_OF_GAME_PLAYER] = 758;
             uint8 selectedPlayer = throwDiceArray(weights, rnds[0]);
             matchLog = logOutOfGame(is2ndHalf, false, selectedPlayer, matchLog, substitutions, subsRounds, [rnds[0], rnds[1]]);
         }
@@ -166,7 +168,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint64[2] memory rnds
     ) private pure returns(uint256) 
     {
-        if (selectedPlayer == NO_CARD) return matchLog;
+        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return matchLog;
         
         uint8 minRound = 0;
         uint8 maxRound = ROUNDS_PER_MATCH;
