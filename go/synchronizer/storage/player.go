@@ -91,7 +91,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error {
 	log.Debugf("[DBMS] + update player state %v", playerState)
 
-	_, err := b.db.Exec("UPDATE players SET team_id=$1, defence=$2, speed=$3, pass=$4, shoot=$5, endurance=$6, shirt_number=$7, frozen=$8 WHERE player_id=$9;",
+	_, err := b.db.Exec("UPDATE players SET team_id=$1, defence=$2, speed=$3, pass=$4, shoot=$5, endurance=$6, shirt_number=$7, frozen=$8, encoded_skills=$9 WHERE player_id=$10;",
 		playerState.TeamId.String(),
 		playerState.Defence,
 		playerState.Speed,
@@ -100,6 +100,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 		playerState.Endurance,
 		playerState.ShirtNumber,
 		playerState.Frozen,
+		playerState.EncodedSkills.String(),
 		playerID.String(),
 	)
 	return err

@@ -171,27 +171,25 @@ func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, ma
 	}
 	for i := 0; i < len(players); i++ {
 		player := players[i]
-		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+		// wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+		// 	&bind.CallOpts{},
+		// 	player.State.ShirtNumber,
+		// 	tactic,
+		// 	matchLog,
+		// )
+		// if err != nil {
+		// 	return err
+		// }
+		player.State.EncodedSkills, err = b.engine.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
-			player.State.ShirtNumber,
-			tactic,
-			matchLog,
+			player.State.EncodedSkills,
+			true, // TODO use wasAligned
 		)
 		if err != nil {
 			return err
 		}
-		if wasAligned == true {
-			player.State.EncodedSkills, err = b.engine.SetAlignedEndOfLastHalf(
-				&bind.CallOpts{},
-				player.State.EncodedSkills,
-			)
-			if err != nil {
-				return err
-			}
-			b.storage.PlayerUpdate(player.PlayerId, player.State)
-		}
+		b.storage.PlayerUpdate(player.PlayerId, player.State)
 	}
-
 	return nil
 }
 
@@ -300,7 +298,7 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 
 func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
-	var substitutions [3]uint8 = [3]uint8{0, 5, 7}
+	var substitutions [3]uint8 = [3]uint8{11, 11, 11} // TODO: get the constant from the contracts => 11 means no subs
 	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
 	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	var extraAttack [10]bool
