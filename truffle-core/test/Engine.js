@@ -10,6 +10,7 @@ const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
+const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 
 contract('Engine', (accounts) => {
     const UNDEF = undefined;
@@ -114,6 +115,7 @@ contract('Engine', (accounts) => {
     };
 
     beforeEach(async () => {
+        encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
@@ -626,9 +628,10 @@ contract('Engine', (accounts) => {
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
-
-        log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
-        teamStateAll50Half2[5] = 0;
+        
+        teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
+        result = await precomp.verifyCanPlay(teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
         log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
             nDefs = await encodingLog.getNDefs(log2[team], is2nd = false);
@@ -673,14 +676,20 @@ contract('Engine', (accounts) => {
         // red card fails:
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, 
-            injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;            
-        result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
+            injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;    
+
+        result = await precomp.verifyCanPlay(teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.not.be.bignumber.equal('0');
+        result = await precomp.verifyCanPlay(teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+
         // injured fails
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 2, subLastHalf, sumSkills = 250).should.be.fulfilled;            
-        result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442, tactics1], firstHalfLog, [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
-    });
+        result = await precomp.verifyCanPlay(teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        });
 
     it('computePenaltyBadPositionAndCondition for GK ', async () => {
         playerSkills= await engine.encodePlayerSkills(skills = [1,1,1,1,1], monthOfBirth = 0,  playerId = 232131, [potential = 1,
