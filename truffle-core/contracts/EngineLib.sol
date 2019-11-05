@@ -56,6 +56,7 @@ contract EngineLib is EncodingSkills {
         return rnds;
     }
 
+    // no penalty at all => return 1M,  max penalty => return 0
     // for each day that passes over 31 years (=11315 days), we subtract 0,0274%, so that you get 10.001% less per year
     // on a max of 1M, this is 274 per day.
     // so, 3649 days after 31 (ten years), he will reach penalty 0. He'll be useless when reaching 41.

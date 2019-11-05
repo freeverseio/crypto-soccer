@@ -1,4 +1,6 @@
 pragma solidity >=0.4.21 <0.6.0;
+import "./EncodingMatchLogPart4.sol";
+
 /**
  * @title Library of functions to serialize matchLogs
  */
@@ -24,7 +26,7 @@ pragma solidity >=0.4.21 <0.6.0;
         //                             // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
         //                             // winner: 0 = home, 1 = away, 2 = draw
         // teamSumSkills: 24b // offset 227
-contract EncodingMatchLogPart1 {
+contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
 
     uint256 private constant ONE256       = 1; 
     uint256 private constant CHG_HAPPENED        = uint256(1); 
@@ -80,11 +82,6 @@ contract EncodingMatchLogPart1 {
     function setInGameSubsHappened(uint256 log, uint8 happenedType, uint8 posInHalf, bool is2ndHalf) public pure returns (uint256) {
         uint8 offset = 173 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
         return (log & ~(uint256(3) << offset)) | (uint256(happenedType) << offset);
-    }
-
-    function getInGameSubsHappened(uint256 log, uint8 posInHalf, bool is2ndHalf) public pure returns (uint8) {
-        uint8 offset = 173 + 2 * (posInHalf + (is2ndHalf ? 3 : 0));
-        return uint8((log >> offset) & 3);
     }
 
     function addWinner(uint256 log, uint8 winner)  public pure returns (uint256) {
