@@ -9,6 +9,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -20,7 +21,7 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +37,8 @@ func TestCreateMAtchSeed(t *testing.T) {
 	}
 }
 func TestProcessInvalidTimezone(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +47,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, universedb, relaydb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,7 +100,8 @@ func TestPlayHalfMatch(t *testing.T) {
 }
 
 func TestProcess(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +118,7 @@ func TestProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(sto, bc.Assets, bc.Leagues)
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(universedb, bc.Assets, bc.Leagues)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +129,7 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, universedb, relaydb)
 	if err != nil {
 		t.Fatal(err)
 	}

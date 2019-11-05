@@ -54,7 +54,7 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
-	leagueProcessor, err := NewLeagueProcessor(engine, leagues, evolution, universedb)
+	leagueProcessor, err := NewLeagueProcessor(engine, leagues, evolution, universedb, relaydb)
 	if err != nil {
 		return nil, err
 	}

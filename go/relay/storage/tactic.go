@@ -13,10 +13,8 @@ import (
 
 type Tactic struct {
 	TeamID      *big.Int
-	Defense     uint8
-	Center      uint8
-	Attack      uint8
-	Shirts      [11]uint8
+	TacticID    uint8
+	Shirts      [14]uint8
 	ExtraAttack [10]bool
 }
 
@@ -40,15 +38,19 @@ func computeHash(h hash.Hash, data ...[]byte) []byte {
 	return h.Sum(nil)
 }
 
+func (b *Storage) defaultTactic(teamID *big.Int) *Tactic {
+	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
+	tacticId := uint8(1)
+	return &Tactic{teamID, tacticId, lineup, extraAttack}
+}
 func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	log.Debugf("[DBMS] Create tactic %v", t)
 	_, err := b.db.Exec(
 		`INSERT INTO tactics (
 			team_id,
 			verse,
-                        defense,
-                        center,
-                        attack,
+                        tactic_id,
                         shirt_0,
                         shirt_1,
                         shirt_2,
@@ -60,6 +62,9 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
                         shirt_8,
                         shirt_9,
                         shirt_10,
+                        shirt_11,
+                        shirt_12,
+                        shirt_13,
                         extra_attack_1,
                         extra_attack_2,
                         extra_attack_3,
@@ -96,13 +101,12 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
                         $23,
                         $24,
                         $25,
-                        $26
+                        $26,
+                        $27
 		);`,
 		t.TeamID.String(),
 		verse,
-		t.Defense,
-		t.Center,
-		t.Attack,
+		t.TacticID,
 		t.Shirts[0],
 		t.Shirts[1],
 		t.Shirts[2],
@@ -114,6 +118,9 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 		t.Shirts[8],
 		t.Shirts[9],
 		t.Shirts[10],
+		t.Shirts[11],
+		t.Shirts[12],
+		t.Shirts[13],
 		t.ExtraAttack[0],
 		t.ExtraAttack[1],
 		t.ExtraAttack[2],
@@ -131,9 +138,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
 	rows, err := b.db.Query(
 		`SELECT
-		defense,
-                center,
-                attack,
+		tactic_id,
                 shirt_0,
                 shirt_1,
                 shirt_2,
@@ -145,6 +150,9 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
                 shirt_8,
                 shirt_9,
                 shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
                 extra_attack_1,
                 extra_attack_2,
                 extra_attack_3,
@@ -166,9 +174,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	var t Tactic
 	t.TeamID = teamID
 	err = rows.Scan(
-		&t.Defense,
-		&t.Center,
-		&t.Attack,
+		&t.TacticID,
 		&t.Shirts[0],
 		&t.Shirts[1],
 		&t.Shirts[2],
@@ -180,6 +186,9 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 		&t.Shirts[8],
 		&t.Shirts[9],
 		&t.Shirts[10],
+		&t.Shirts[11],
+		&t.Shirts[12],
+		&t.Shirts[13],
 		&t.ExtraAttack[0],
 		&t.ExtraAttack[1],
 		&t.ExtraAttack[2],
@@ -218,4 +227,15 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+func (b *Storage) GetTacticOrDefault(teamID *big.Int, verse uint64) (*Tactic, error) {
+	if count, err := b.TacticCount(&verse); err != nil {
+		return nil, err
+	} else {
+		if count > 0 {
+			return b.GetTactic(teamID, verse)
+		} else {
+			return b.defaultTactic(teamID), nil
+		}
+	}
 }

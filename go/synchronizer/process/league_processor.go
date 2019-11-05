@@ -9,6 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	log "github.com/sirupsen/logrus"
@@ -18,13 +19,20 @@ type LeagueProcessor struct {
 	engine            *engine.Engine
 	leagues           *leagues.Leagues
 	evolution         *evolution.Evolution
-	storage           *storage.Storage
+	universedb        *storage.Storage
+	relaydb           *relay.Storage
 	calendarProcessor *Calendar
 	playerHackSkills  *big.Int
 }
 
-func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evolution *evolution.Evolution, storage *storage.Storage) (*LeagueProcessor, error) {
-	calendarProcessor, err := NewCalendar(leagues, storage)
+func NewLeagueProcessor(
+	engine *engine.Engine,
+	leagues *leagues.Leagues,
+	evolution *evolution.Evolution,
+	universedb *storage.Storage,
+	relaydb *relay.Storage,
+) (*LeagueProcessor, error) {
+	calendarProcessor, err := NewCalendar(leagues, universedb)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +47,8 @@ func NewLeagueProcessor(engine *engine.Engine, leagues *leagues.Leagues, evoluti
 		engine,
 		leagues,
 		evolution,
-		storage,
+		universedb,
+		relaydb,
 		calendarProcessor,
 		playerHackSkills,
 	}, nil
@@ -60,12 +69,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		return nil
 	}
 
-	countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
+	countryCount, err := b.universedb.CountryInTimezoneCount(timezoneIdx)
 	if err != nil {
 		return err
 	}
 	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-		leagueCount, err := b.storage.LeagueInCountryCount(timezoneIdx, countryIdx)
+		leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 		if err != nil {
 			return err
 		}
@@ -76,7 +85,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					return err
 				}
 			}
-			matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+			matches, err := b.universedb.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 			if err != nil {
 				return err
 			}
@@ -130,7 +139,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				if err != nil {
 					return err
 				}
-				err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
+				err = b.universedb.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
 				if err != nil {
 					return err
 				}
@@ -177,7 +186,7 @@ func (b *LeagueProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, 
 }
 
 func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	teams, err := b.storage.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	teams, err := b.universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -189,7 +198,7 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 		team.State.GoalsAgainst = 0
 		team.State.GoalsForward = 0
 		team.State.Points = 0
-		err = b.storage.TeamUpdate(team.TeamID, team.State)
+		err = b.universedb.TeamUpdate(team.TeamID, team.State)
 		if err != nil {
 			return err
 		}
@@ -206,11 +215,11 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 }
 
 func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam, err := b.storage.GetTeam(homeTeamID)
+	homeTeam, err := b.universedb.GetTeam(homeTeamID)
 	if err != nil {
 		return err
 	}
-	visitorTeam, err := b.storage.GetTeam(visitorTeamID)
+	visitorTeam, err := b.universedb.GetTeam(visitorTeamID)
 	if err != nil {
 		return err
 	}
@@ -236,39 +245,49 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 		visitorTeam.State.Points++
 	}
 
-	err = b.storage.TeamUpdate(homeTeamID, homeTeam.State)
+	err = b.universedb.TeamUpdate(homeTeamID, homeTeam.State)
 	if err != nil {
 		return err
 	}
-	err = b.storage.TeamUpdate(visitorTeamID, visitorTeam.State)
+	err = b.universedb.TeamUpdate(visitorTeamID, visitorTeam.State)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
-	var tactics [2]*big.Int
-	var substitutions [3]uint8 = [3]uint8{0, 5, 7}
-	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
-	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-	var extraAttack [10]bool
-	extraAttack[3] = true
-	extraAttack[6] = true
-	var tacticsId uint8 = 1
-	tactic, err := b.engine.EncodeTactics(
+func (b *LeagueProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
+	substitutions := [3]uint8{11, 11, 11} // 11 no substitutions // TODO (future)
+	subsRounds := [3]uint8{2, 3, 4}       // TODO (future)
+	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
+		return nil, err
+	} else if encodedTactic, err := b.engine.EncodeTactics(
 		&bind.CallOpts{},
 		substitutions,
 		subsRounds,
-		lineup,
-		extraAttack,
-		tacticsId,
-	)
-	if err != nil {
-		return tactics, err
+		tactic.Shirts,
+		tactic.ExtraAttack,
+		tactic.TacticID,
+	); err != nil {
+		return nil, err
+	} else {
+		return encodedTactic, nil
 	}
-	tactics[0] = tactic
-	tactics[1] = tactic
+}
+
+func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
+	var tactics [2]*big.Int
+	verse := uint64(0) // TODO: get verse from event
+	if tactic, err := b.getEncodedTacticAtVerse(homeTeamID, verse); err != nil {
+		return tactics, err
+	} else {
+		tactics[0] = tactic
+	}
+	if tactic, err := b.getEncodedTacticAtVerse(visitorTeamID, verse); err != nil {
+		return tactics, err
+	} else {
+		tactics[1] = tactic
+	}
 	return tactics, nil
 }
 
@@ -292,7 +311,7 @@ func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	for i := 0; i < 25; i++ {
 		state[i] = b.playerHackSkills
 	}
-	players, err := b.storage.GetPlayersOfTeam(teamID)
+	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return state, err
 	}

@@ -2,9 +2,7 @@ CREATE TABLE tactics (
     team_id TEXT NOT NULL,
     verse BIGINT NOT NULL,
 
-    defense INT NOT NULL,
-    center INT NOT NULL,
-    attack INT NOT NULL,
+    tactic_id INT NOT NULL,
 
     shirt_0 INT,
     shirt_1 INT,
@@ -17,6 +15,9 @@ CREATE TABLE tactics (
     shirt_8 INT,
     shirt_9 INT,
     shirt_10 INT,
+    shirt_11 INT,
+    shirt_12 INT,
+    shirt_13 INT,
 
     extra_attack_1  BOOLEAN DEFAULT FALSE,
     extra_attack_2  BOOLEAN DEFAULT FALSE,
