@@ -289,7 +289,7 @@ contract Market {
     }
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
-        require(_assets.playerExists(playerId), "unexistent player");
+        require(_assets.playerExists(playerId) || _assets.getIsSpecial(playerId), "unexistent player");
         return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
