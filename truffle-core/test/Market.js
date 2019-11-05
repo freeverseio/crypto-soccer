@@ -152,7 +152,7 @@ async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sell
     sigSellerMsgRS,
     sigSeller.v
   ).should.be.fulfilled;
-  return tx, sellerHiddenPrice;
+  return tx;
 };
 
 
@@ -198,7 +198,7 @@ async function freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, 
       sigSellerMsgRS,
       sigSeller.v
     ).should.be.fulfilled;
-    return tx, sellerHiddenPrice;
+    return tx;
 }
 
 async function completeTeamAuction(
@@ -232,6 +232,13 @@ async function completeTeamAuction(
     sigBuyer.r,
     sigBuyer.s,
   ];
+
+  // The correctness of the seller message can also be checked in the BC:
+  const sellerHiddenPrice = concatHash(
+    ["uint8", "uint256", "uint256"],
+    [currencyId, price, sellerRnd]
+  );
+  
   tx = await market.completeTeamAuction(
     sellerHiddenPrice,
     validUntil,
@@ -277,6 +284,12 @@ async function completePlayerAuction(
     sigBuyer.r,
     sigBuyer.s,
   ];
+  
+  const sellerHiddenPrice = concatHash(
+    ["uint8", "uint256", "uint256"],
+    [currencyId, price, sellerRnd]
+  );
+
   tx = await market.completePlayerAuction(
     sellerHiddenPrice,
     validUntil,
@@ -313,7 +326,8 @@ function getMessageHash(msg) {
 
 contract("Market", accounts => {
   let ok;
-  
+  const it2 = async(text, f) => {};
+
   beforeEach(async () => {
     assets = await Assets.new().should.be.fulfilled;
     await assets.init().should.be.fulfilled;
@@ -348,7 +362,7 @@ contract("Market", accounts => {
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************
-  it ('players: put for sale msg', async () => {
+  it('players: put for sale msg', async () => {
     const validUntil = 2000000000;
     const playerId = 10;
     const currencyId = 1;
@@ -450,7 +464,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
     
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -469,7 +483,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await freezeTeam(currencyId, price, offererRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -553,7 +567,7 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -574,7 +588,7 @@ contract("Market", accounts => {
   });
 
   it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "TeamFreeze", (event) => {
@@ -594,12 +608,12 @@ contract("Market", accounts => {
     teamId.should.be.bignumber.equal(sellerTeamId);
     
     // put player:
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     
     // fail to put team:
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.rejected;
+    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.rejected;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(false);
     
@@ -621,12 +635,12 @@ contract("Market", accounts => {
     teamId.should.be.bignumber.equal(sellerTeamId);
 
     // put team:
-    tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
+    tx = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
     
     // fail to put player:
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(false);
   });
@@ -638,7 +652,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3000 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -665,7 +679,7 @@ contract("Market", accounts => {
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
     const validUntil = now.toNumber() + 3601 + AUCTION_TIME; // this is, at most, offerValidUntil + AUCTION_TIME
 
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, offererRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -681,9 +695,9 @@ contract("Market", accounts => {
   });
   
   it("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     validUntil = now.toNumber() + 3600*24*2; // two days
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
   
   it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
@@ -700,7 +714,7 @@ contract("Market", accounts => {
     // 8. Freeverse receives confirmation from Paypal, Apple, GooglePay... of payment buyer -> seller
     // 9. Freeverse COMPLETES TRANSFER OF PLAYER USING BLOCKCHAIN
 
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -722,7 +736,7 @@ contract("Market", accounts => {
 
   it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
 
-    tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
@@ -742,24 +756,6 @@ contract("Market", accounts => {
     accountsWeb3[0].should.be.equal(accounts[0]);
   });
   
-  it ('players: put for sale msg', async () => {
-    const validUntil = 2000000000;
-    const playerId = 10;
-    const currencyId = 1;
-    const price = 41234;
-    const rnd = 42321;
-    const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
-
-    const sellerHiddenPrice = await market.hashPrivateMsg(currencyId, price, rnd).should.be.fulfilled;
-    sellerHiddenPrice.should.be.equal('0x4200de738160a9e6b8f69648fbb7feb323f73fac5acff1b7bb546bb7ac3591fa');
-    const message = await market.buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId).should.be.fulfilled;
-    message.should.be.equal('0x07d43490a59d38783f03854081c1ecd738a6cb320c1767befdbc147e6b496eed');
-    const sigSeller = sellerAccount.sign(message);
-    sigSeller.messageHash.should.be.equal('0xc50d978b8a838b6c437a162a94c715f95e92e11fe680cf0f1caf054ad78cd796');
-    sigSeller.signature.should.be.equal('0x075ddf60b307abf0ecf323dcdd57230fcb81b30217fb947ee5dbd683cb8bcf074a63f87c97c736f85cd3e56e95f4fcc1e9b159059817915d0be68f944f5b4e531c');
-  });
-  
-   
   it('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
