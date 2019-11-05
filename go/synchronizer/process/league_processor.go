@@ -55,112 +55,116 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
 
-	switch turnInDay {
-	case 0: // first half league match
-	case 1:
-		{
-			countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
+	// switch turnInDay {
+	// case 0: // first half league match
+	// case 1:
+	if turnInDay < 2 {
+		countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
+		if err != nil {
+			return err
+		}
+		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+			leagueCount, err := b.storage.LeagueInCountryCount(timezoneIdx, countryIdx)
 			if err != nil {
 				return err
 			}
-			for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-				leagueCount, err := b.storage.LeagueInCountryCount(timezoneIdx, countryIdx)
-				if err != nil {
-					return err
-				}
-				for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-					if day == 0 {
-						err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
-						if err != nil {
-							return err
-						}
-					}
-					matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+				if day == 0 {
+					err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
 					if err != nil {
 						return err
 					}
-					for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
-						match := matches[matchIdx]
-						matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+				}
+				matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+				if err != nil {
+					return err
+				}
+				for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
+					match := matches[matchIdx]
+					matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					is2ndHalf := turnInDay == 1
+					isHomeStadium := true
+					isPlayoff := false
+					var matchLog [2]*big.Int
+					var matchBools [3]bool
+					if is2ndHalf {
+						matchLog[0], matchLog[1], err = b.storage.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
+						if err != nil {
+							return nil
+						}
+					} else {
+						for i, skill := range states[0] {
+							b.engine.GetAlignedEndOfLastHalf(&bind.CallOpts{}, skill)
+							log.Infof("idx %v: aligned: %v", i, skill)
+						}
+						matchLog[0] = big.NewInt(0)
+						matchLog[1] = big.NewInt(0)
+					}
+					matchBools[0] = is2ndHalf
+					matchBools[1] = isHomeStadium
+					matchBools[2] = isPlayoff
+					logs, err := b.engine.PlayHalfMatch(
+						&bind.CallOpts{},
+						matchSeed,
+						event.SubmissionTime,
+						states,
+						tactics,
+						matchLog,
+						matchBools,
+					)
+					if err != nil {
+						return err
+					}
+					goalsHome, err := b.evolution.GetNGoals(
+						&bind.CallOpts{},
+						logs[0],
+					)
+					if err != nil {
+						return err
+					}
+					goalsVisitor, err := b.evolution.GetNGoals(
+						&bind.CallOpts{},
+						logs[1],
+					)
+					if err != nil {
+						return err
+					}
+					err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
+					if err != nil {
+						return err
+					}
+					err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+					if err != nil {
+						return err
+					}
+					if !is2ndHalf {
+						err = b.UpdatePlayedHalf1(match.HomeTeamID, tactics[0], logs[0])
 						if err != nil {
 							return err
 						}
-						states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+						err = b.UpdatePlayedHalf1(match.VisitorTeamID, tactics[1], logs[1])
 						if err != nil {
 							return err
-						}
-						tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
-						if err != nil {
-							return err
-						}
-						is2ndHalf := turnInDay == 1
-						isHomeStadium := true
-						isPlayoff := false
-						var matchLog [2]*big.Int
-						var matchBools [3]bool
-						if is2ndHalf {
-							matchLog[0], matchLog[1], err = b.storage.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
-							if err != nil {
-								return nil
-							}
-						} else {
-							matchLog[0] = big.NewInt(0)
-							matchLog[1] = big.NewInt(0)
-						}
-						matchBools[0] = is2ndHalf
-						matchBools[1] = isHomeStadium
-						matchBools[2] = isPlayoff
-						logs, err := b.engine.PlayHalfMatch(
-							&bind.CallOpts{},
-							matchSeed,
-							event.SubmissionTime,
-							states,
-							tactics,
-							matchLog,
-							matchBools,
-						)
-						if err != nil {
-							return err
-						}
-						goalsHome, err := b.evolution.GetNGoals(
-							&bind.CallOpts{},
-							logs[0],
-						)
-						if err != nil {
-							return err
-						}
-						goalsVisitor, err := b.evolution.GetNGoals(
-							&bind.CallOpts{},
-							logs[1],
-						)
-						if err != nil {
-							return err
-						}
-						err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
-						if err != nil {
-							return err
-						}
-						err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
-						if err != nil {
-							return err
-						}
-						if !is2ndHalf {
-							err = b.UpdatePlayedHalf1(match.HomeTeamID, tactics[0], logs[0])
-							if err != nil {
-								return err
-							}
-							err = b.UpdatePlayedHalf1(match.VisitorTeamID, tactics[1], logs[1])
-							if err != nil {
-								return err
-							}
 						}
 					}
 				}
 			}
 		}
-	default:
-		log.Warnf("[LeagueProcessor] ... skipping")
-	} // switch
+	}
+	// default:
+	// 	log.Warnf("[LeagueProcessor] ... skipping")
+	// } // switch
 	return nil
 }
 
@@ -171,19 +175,19 @@ func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, ma
 	}
 	for i := 0; i < len(players); i++ {
 		player := players[i]
-		// wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
-		// 	&bind.CallOpts{},
-		// 	player.State.ShirtNumber,
-		// 	tactic,
-		// 	matchLog,
-		// )
-		// if err != nil {
-		// 	return err
-		// }
+		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			player.State.ShirtNumber,
+			tactic,
+			matchLog,
+		)
+		if err != nil {
+			return err
+		}
 		player.State.EncodedSkills, err = b.engine.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
 			player.State.EncodedSkills,
-			true, // TODO use wasAligned
+			wasAligned,
 		)
 		if err != nil {
 			return err
