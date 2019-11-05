@@ -144,6 +144,16 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						if err != nil {
 							return err
 						}
+						if !is2ndHalf {
+							err = b.UpdatePlayedHalf1(match.HomeTeamID, tactics[0], logs[0])
+							if err != nil {
+								return err
+							}
+							err = b.UpdatePlayedHalf1(match.VisitorTeamID, tactics[1], logs[1])
+							if err != nil {
+								return err
+							}
+						}
 					}
 				}
 			}
@@ -151,6 +161,37 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	default:
 		log.Warnf("[LeagueProcessor] ... skipping")
 	} // switch
+	return nil
+}
+
+func (b *LeagueProcessor) UpdatePlayedHalf1(teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+	players, err := b.storage.GetPlayersOfTeam(teamID)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(players); i++ {
+		player := players[i]
+		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			player.State.ShirtNumber,
+			tactic,
+			matchLog,
+		)
+		if err != nil {
+			return err
+		}
+		if wasAligned == true {
+			player.State.EncodedSkills, err = b.engine.SetAlignedEndOfLastHalf(
+				&bind.CallOpts{},
+				player.State.EncodedSkills,
+			)
+			if err != nil {
+				return err
+			}
+			b.storage.PlayerUpdate(player.PlayerId, player.State)
+		}
+	}
+
 	return nil
 }
 
@@ -299,8 +340,12 @@ func (b *LeagueProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 
 func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
+	freePlayerID, err := b.engine.FREEPLAYERID(&bind.CallOpts{})
+	if err != nil {
+		return state, err
+	}
 	for i := 0; i < 25; i++ {
-		state[i] = b.playerHackSkills
+		state[i] = freePlayerID
 	}
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {
