@@ -494,29 +494,21 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     {
         (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
         uint8 changes;
-        uint8 emptyShirts; 
         uint256 teamSkills;
         
         // Count changes during half-time, as well as not-aligned players
         // ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
-            outStates[p] = states[lineup[p]];
-            if (outStates[p] == 0) {
-                emptyShirts++;
-            } else if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                matchLog = addHalfTimeSubs(matchLog, p, changes);
-                changes++;
-                teamSkills += getSumOfSkills(outStates[p]); 
-            } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 
+            outStates[p] = verifyCanPlay(states[lineup[p]], is2ndHalf, false);
+            if (outStates[p] != 0) {
+                if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
+                    matchLog = addHalfTimeSubs(matchLog, p, changes);
+                    changes++;
+                    teamSkills += getSumOfSkills(outStates[p]); 
+                } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 
+            }
         }
 
-        // if is2ndHalf: make sure we align 10 or 11 players depedning on possible 1st half redcards
-        if (is2ndHalf && getOutOfGameType(matchLog, false) == RED_CARD) {
-            require(emptyShirts == 1, "You cannot line up 11 players if there was a red card in 1st half");
-        } else {
-            require(emptyShirts == 0, "You must line up 11 players");
-        }
-        
         // Count changes ingame during 1st half
         // matchLog >> 189, 190, 191 contain ingameSubsCancelled
         if (is2ndHalf) {
@@ -527,25 +519,19 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
         if (substitutions[0] < 11) {
             changes++;
-            outStates[11] = states[lineup[11]];
-            assertCanPlay(outStates[11]);
-            require(!getAlignedEndOfLastHalf(outStates[11]), "cannot align a player who already left the field once");
+            outStates[11] = verifyCanPlay(states[lineup[11]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[11]); 
         }
         if (substitutions[1] < 11) { 
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
-            outStates[12] = states[lineup[12]];
-            assertCanPlay(outStates[12]);
-            require(!getAlignedEndOfLastHalf(outStates[12]), "cannot align a player who already left the field once");
+            outStates[12] = verifyCanPlay(states[lineup[12]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[12]); 
         }
         if (substitutions[2] < 11) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            outStates[13] = states[lineup[13]];
-            assertCanPlay(outStates[13]);
-            require(!getAlignedEndOfLastHalf(outStates[13]), "cannot align a player who already left the field once");
+            outStates[13] = verifyCanPlay(states[lineup[13]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[13]); 
         }
         require(changes < 4, "max allowed changes in a game is 3");
@@ -555,11 +541,14 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         return (matchLog, outStates, tacticsId);      
     }
 
-    function assertCanPlay(uint256 playerSkills) public pure {
-        require(getPlayerIdFromSkills(playerSkills) != FREE_PLAYER_ID, "free player shirt has been aligned");
-        require(!getRedCardLastGame(playerSkills) && getInjuryWeeksLeft(playerSkills) == 0, "player injured or sanctioned");
-        require(!getSubstitutedLastHalf(playerSkills), "cannot align player who was already substituted");
+    function verifyCanPlay(uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
+        bool isWrong =  (getPlayerIdFromSkills(playerSkills) == FREE_PLAYER_ID) ||
+                        (getInjuryWeeksLeft(playerSkills) != 0) ||
+                        getRedCardLastGame(playerSkills);
+        if (is2ndHalf) isWrong = isWrong || getSubstitutedLastHalf(playerSkills);
+        if (isSubst) isWrong = isWrong || getAlignedEndOfLastHalf(playerSkills);
+        if (isWrong) {return 0;} 
+        else {return playerSkills;}
     }
-
 }
 

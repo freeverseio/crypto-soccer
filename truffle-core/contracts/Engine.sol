@@ -189,12 +189,11 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint8 nDefsInTactics, 
         bool is2ndHalf
     ) private pure returns (uint256) {
-        if (is2ndHalf) {
-            for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
-                if (states[p] == 0) return addNDefs(matchLog, nDefsInTactics - 1, true);
-            }
+        uint8 nDefs = nDefsInTactics;
+        for (uint8 p = 1; p < 1 + nDefsInTactics; p++) {
+            if (states[p] == 0) nDefs--;
         }
-        return addNDefs(matchLog, nDefsInTactics, is2ndHalf);
+        return addNDefs(matchLog, nDefs, is2ndHalf);
     }
 
     /// @dev Rescales global skills of both teams according to their endurance
