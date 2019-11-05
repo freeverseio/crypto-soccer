@@ -65,11 +65,23 @@ func (b *Storage) MatchSetTeams(timezoneIdx uint8, countryIdx uint32, leagueIdx 
 	return err
 }
 
-func (b *Storage) MatchSetResult(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint32, matchIdx uint32, homeGoals uint8, visitorGoals uint8) error {
+func (b *Storage) MatchSetResult(
+	timezoneIdx uint8,
+	countryIdx uint32,
+	leagueIdx uint32,
+	matchDayIdx uint8,
+	matchIdx uint8,
+	homeGoals uint8,
+	visitorGoals uint8,
+	homeMatchLog *big.Int,
+	visitorMatchLog *big.Int,
+) error {
 	log.Debugf("[DBMS] Set result tz %v, c %v, l %v, matchDayIdx %v, matchIdx %v [ %v - %v ]", timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, homeGoals, visitorGoals)
-	_, err := b.db.Exec("UPDATE matches SET home_goals = $1, visitor_goals = $2 WHERE (timezone_idx = $3 AND country_idx = $4 AND league_idx = $5 AND match_day_idx = $6 AND match_idx = $7);",
+	_, err := b.db.Exec("UPDATE matches SET home_goals = $1, visitor_goals = $2, home_match_log = $3, visitor_match_log = $4  WHERE (timezone_idx = $5 AND country_idx = $6 AND league_idx = $7 AND match_day_idx = $8 AND match_idx = $9);",
 		homeGoals,
 		visitorGoals,
+		homeMatchLog.String(),
+		visitorMatchLog.String(),
 		timezoneIdx,
 		countryIdx,
 		leagueIdx,
@@ -77,6 +89,36 @@ func (b *Storage) MatchSetResult(timezoneIdx uint8, countryIdx uint32, leagueIdx
 		matchIdx,
 	)
 	return err
+}
+
+func (b *Storage) GetMatchLogs(
+	timezoneIdx uint8,
+	countryIdx uint32,
+	leagueIdx uint32,
+	matchDayIdx uint8,
+	matchIdx uint8,
+) (*big.Int, *big.Int, error) {
+	log.Debugf("[DBMS] Get Match Logs timezoneIdx %v, countryIdx %v, leagueIdx %v, matchDayIdx %v, matchIdx %v", timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	rows, err := b.db.Query("SELECT home_match_log, visitor_match_log FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4 AND match_idx = $5);", timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, nil, errors.New("GetMatchLogs: Unexistent match")
+	}
+	var homeMatchLogString sql.NullString
+	var visitorMatchLogString sql.NullString
+	err = rows.Scan(
+		&homeMatchLogString,
+		&visitorMatchLogString,
+	)
+	if err != nil {
+		return nil, nil, err
+	}
+	homeMatchLog, _ := new(big.Int).SetString(homeMatchLogString.String, 10)
+	visitorMatchLog, _ := new(big.Int).SetString(visitorMatchLogString.String, 10)
+	return homeMatchLog, visitorMatchLog, nil
 }
 
 func (b *Storage) GetMatchesInDay(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
