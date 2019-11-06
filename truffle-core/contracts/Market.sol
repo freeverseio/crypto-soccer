@@ -135,7 +135,9 @@ contract Market {
                 // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
         if (!ok) return false;
-           
+        if (teamId == _assets.ROSTER_TEAM()) return true;
+        
+        // check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if ((playerIds[p] != FREE_PLAYER_ID) && isPlayerFrozen(playerIds[p])) return false;
@@ -190,7 +192,7 @@ contract Market {
             // check validUntil has not expired
             (now < validUntil) &&
             // check player is not already frozen
-            (!isPlayerFrozen(playerId))) &&  
+            (!isPlayerFrozen(playerId)) &&  
             // check that the team it belongs to not already frozen
             !isTeamFrozen(_assets.getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
@@ -198,7 +200,7 @@ contract Market {
             // check signatures are valid by requiring that they own the asset:
             (_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
-            (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId)) &&
+            (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
             (validUntil < now + MAX_VALID_UNTIL)
         );
@@ -221,6 +223,7 @@ contract Market {
     {
         // the next line will verify that the playerId is the same that was used by the seller to sign
         bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
+
         ok =    // check asset is owned by buyer
                 (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
@@ -231,6 +234,7 @@ contract Market {
                 isPlayerFrozen(playerId) &&
                 // check that they signed what they input data says they signed:
                 sig[IDX_MSG] == prefixed(buildAgreeToBuyPlayerTxMsg(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
+
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
@@ -289,11 +293,13 @@ contract Market {
     }
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
-        require(_assets.playerExists(playerId), "unexistent player");
+        require(_assets.getIsSpecial(playerId) || _assets.playerExists(playerId), "player does not exist");
+        // if (!_assets.getIsSpecial(playerId)) { require(_assets.playerExists(playerId), "unexistent player"); }
         return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
+        if (teamId == _assets.ROSTER_TEAM()) return false;
         require(_assets.teamExists(teamId), "unexistent team");
         return (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
