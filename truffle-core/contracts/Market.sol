@@ -47,8 +47,8 @@ contract Market {
     }
 
     function freezePromoPlayer(
-        uint256 validUntil,
-        uint256 playerId
+        uint256 playerId, 
+        uint256 validUntil
     ) public {
         require(msg.sender == _assets.rosterAddr() , "Only the Roster can create promo players");
         require(!isPlayerFrozen(playerId));
@@ -61,8 +61,8 @@ contract Market {
     }
 
     function completePromoPlayerTransfer(
-        uint256 validUntil,
         uint256 playerId,
+        uint256 validUntil,
         bytes32[3] memory sig,
         uint8 sigV
      ) public {
