@@ -152,11 +152,33 @@ contract('Evolution', (accounts) => {
         events1Half = [events1Half,events1Half];
         POINTS_FOR_HAVING_PLAYED = await evolution.POINTS_FOR_HAVING_PLAYED().should.be.fulfilled;
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
-        
-        
+        MAX_WEIGHT = await evolution.MAX_WEIGHT().should.be.fulfilled;
+        MAX_WEIGHT = MAX_WEIGHT.toNumber();
+        MIN_WEIGHT = await evolution.MIN_WEIGHT().should.be.fulfilled;
+        MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
-    
+    it('getTeamEvolvedSkills', async () => {
+        weights = Array.from(new Array(25), (x,i) => 3*i % 14);
+        specialPlayer = 21;
+        // make sure they sum to MAX_WEIGHT:
+        for (bucket = 0; bucket < 5; bucket++){
+            sum4 = 0;
+            for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
+                sum4 += weights[sk];
+            }
+            weights[5 * bucket + 4] = MAX_WEIGHT - sum4;
+        }        
+        assignment = await evolution.encodeTP(weights, specialPlayer).should.be.fulfilled;
+        matchStartTime = now;
+        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, 200, assignment, matchStartTime);
+        for (p = 0; p < 25; p++) {
+            result = await evolution.getShoot(newSkills[p]);
+            if (p == specialPlayer) result.toNumber().should.be.equal(77);
+            else result.toNumber().should.be.equal(74);
+        }
+    });
+
     it('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [0, 0, 0, 0, 0], 
