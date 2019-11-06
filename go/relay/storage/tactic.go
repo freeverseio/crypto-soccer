@@ -12,10 +12,12 @@ import (
 )
 
 type Tactic struct {
-	TeamID      *big.Int
-	TacticID    uint8
-	Shirts      [14]uint8
-	ExtraAttack [10]bool
+	TeamID        *big.Int
+	TacticID      uint8
+	Shirts        [14]uint8
+	ExtraAttack   [10]bool
+	Substitutions [3]uint8
+	SubsRounds    [3]uint8
 }
 
 // Hash - computes hash for a Tactic
@@ -42,7 +44,9 @@ func (b *Storage) defaultTactic(teamID *big.Int) *Tactic {
 	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
 	tacticId := uint8(1)
-	return &Tactic{teamID, tacticId, lineup, extraAttack}
+	substitutions := [3]uint8{11, 11, 11}
+	subsRounds := [3]uint8{2, 3, 4}
+	return &Tactic{teamID, tacticId, lineup, extraAttack, substitutions, subsRounds}
 }
 func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	log.Debugf("[DBMS] Create tactic %v", t)
@@ -171,8 +175,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	if !rows.Next() {
 		return nil, errors.New("Unexistent tactic")
 	}
-	var t Tactic
-	t.TeamID = teamID
+	t := b.defaultTactic(teamID)
 	err = rows.Scan(
 		&t.TacticID,
 		&t.Shirts[0],
@@ -203,7 +206,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &t, nil
+	return t, nil
 }
 func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	count := uint64(0)

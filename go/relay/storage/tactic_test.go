@@ -16,8 +16,10 @@ func TestTacticCreate(t *testing.T) {
 	teamId := big.NewInt(1)
 	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
 	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
+	substitutions := [3]uint8{11, 11, 11}
+	subsRounds := [3]uint8{2, 3, 4}
 	verse := uint64(10)
-	err = db.TacticCreate(storage.Tactic{teamId, tacticID, shirts, extraAttack}, verse)
+	err = db.TacticCreate(storage.Tactic{teamId, tacticID, shirts, extraAttack, substitutions, subsRounds}, verse)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -257,14 +257,12 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 }
 
 func (b *LeagueProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
-	substitutions := [3]uint8{11, 11, 11} // 11 no substitutions // TODO (future)
-	subsRounds := [3]uint8{2, 3, 4}       // TODO (future)
 	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
 		return nil, err
 	} else if encodedTactic, err := b.engine.EncodeTactics(
 		&bind.CallOpts{},
-		substitutions,
-		subsRounds,
+		tactic.Substitutions,
+		tactic.SubsRounds,
 		tactic.Shirts,
 		tactic.ExtraAttack,
 		tactic.TacticID,
