@@ -74,8 +74,8 @@ CREATE TABLE matches (
     visitor_team_id NUMERIC(78,0) REFERENCES teams(team_id),
     home_goals INT,
     visitor_goals INT,
-    home_match_log TEXT DEFAULT "0",
-    visitor_match_log TEXT DEFAULT "0",
+    home_match_log TEXT DEFAULT '0',
+    visitor_match_log TEXT DEFAULT '0',
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
