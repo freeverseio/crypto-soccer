@@ -166,19 +166,9 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if encodedState, err := b.assets.GetPlayerStateAtBirth(opts, playerId); err != nil {
 			return err
-		} else if defence, err := b.assets.GetDefence(opts, encodedSkills); err != nil {
-			return err
-		} else if speed, err := b.assets.GetSpeed(opts, encodedSkills); err != nil {
-			return err
-		} else if pass, err := b.assets.GetPass(opts, encodedSkills); err != nil {
-			return err
-		} else if shoot, err := b.assets.GetShoot(opts, encodedSkills); err != nil {
-			return err
-		} else if endurance, err := b.assets.GetEndurance(opts, encodedSkills); err != nil {
+		} else if defence, speed, pass, shoot, endurance, potential, err := utils.DecodeSkills(b.assets, encodedSkills); err != nil {
 			return err
 		} else if preferredPosition, err := b.getPlayerPreferredPosition(opts, encodedSkills); err != nil {
-			return err
-		} else if potential, err := b.assets.GetPotential(opts, encodedSkills); err != nil {
 			return err
 		} else if shirtNumber, err := b.assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err

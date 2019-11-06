@@ -196,6 +196,15 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 }
 
 func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *big.Int, matchStartTime *big.Int) error {
+	userAssignment := big.NewInt(5) // TODO
+	newStates, err := b.evolution.GetTeamEvolvedSkills(
+		&bind.CallOpts{},
+		states,
+		trainingPoints,
+		userAssignment,
+		matchStartTime,
+	)
+
 	return nil
 }
 
