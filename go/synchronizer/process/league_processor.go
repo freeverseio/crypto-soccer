@@ -128,6 +128,16 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						if err != nil {
 							return err
 						}
+						for i := 0; i < 2; i++ {
+							trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
+							if err != nil {
+								return err
+							}
+							err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, event.SubmissionTime)
+							if err != nil {
+								return err
+							}
+						}
 					} else { // first half
 						matchLog[0] = big.NewInt(0)
 						matchLog[1] = big.NewInt(0)
@@ -182,6 +192,10 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	// default:
 	// 	log.Warnf("[LeagueProcessor] ... skipping")
 	// } // switch
+	return nil
+}
+
+func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *big.Int, matchStartTime *big.Int) error {
 	return nil
 }
 
