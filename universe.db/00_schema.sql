@@ -56,8 +56,7 @@ CREATE TABLE players (
     shirt_number INT NOT NULL,
     preferred_position TEXT NOT NULL,
     potential INT NOT NULL, 
-    --- TODO remove default
-    age INT NOT NULL DEFAULT 0, 
+    day_of_birth INT NOT NULL, 
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
     frozen BOOLEAN NOT NULL,
