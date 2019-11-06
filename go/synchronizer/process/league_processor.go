@@ -107,34 +107,44 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					isPlayoff := false
 					var matchLog [2]*big.Int
 					var matchBools [3]bool
+					matchBools[0] = is2ndHalf
+					matchBools[1] = isHomeStadium
+					matchBools[2] = isPlayoff
+					var logs [2]*big.Int
 					if is2ndHalf {
 						matchLog[0], matchLog[1], err = b.storage.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
 						if err != nil {
 							return nil
 						}
-					} else {
-						for i, skill := range states[0] {
-							b.engine.GetAlignedEndOfLastHalf(&bind.CallOpts{}, skill)
-							log.Infof("idx %v: aligned: %v", i, skill)
+						logs, err = b.evolution.Play2ndHalfAndEvolve(
+							&bind.CallOpts{},
+							matchSeed,
+							event.SubmissionTime,
+							states,
+							tactics,
+							matchLog,
+							matchBools,
+						)
+						if err != nil {
+							return err
 						}
+					} else { // first half
 						matchLog[0] = big.NewInt(0)
 						matchLog[1] = big.NewInt(0)
+						logs, err = b.engine.PlayHalfMatch(
+							&bind.CallOpts{},
+							matchSeed,
+							event.SubmissionTime,
+							states,
+							tactics,
+							matchLog,
+							matchBools,
+						)
+						if err != nil {
+							return err
+						}
 					}
-					matchBools[0] = is2ndHalf
-					matchBools[1] = isHomeStadium
-					matchBools[2] = isPlayoff
-					logs, err := b.engine.PlayHalfMatch(
-						&bind.CallOpts{},
-						matchSeed,
-						event.SubmissionTime,
-						states,
-						tactics,
-						matchLog,
-						matchBools,
-					)
-					if err != nil {
-						return err
-					}
+
 					goalsHome, err := b.evolution.GetNGoals(
 						&bind.CallOpts{},
 						logs[0],
