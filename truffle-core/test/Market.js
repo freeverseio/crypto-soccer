@@ -784,6 +784,14 @@ contract("Market", accounts => {
     });
     let finalOwner = await assets.getOwnerPlayer(specialPlayerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
+    
+    // test that the new owner can sell freely as always
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, specialPlayerId, buyerAccount).should.be.fulfilled;
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, specialPlayerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
+    ).should.be.fulfilled;
+
   });
   
   it("promo players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
