@@ -53,4 +53,18 @@ contract EncodingSkillsSetters {
         return (encodedSkills & ~(uint256(0x3fff) << 56)) | (val << 56);
     }
 
+    function setAlignedEndOfLastHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {
+        if (val) return (encodedSkills & ~(uint256(1) << 142)) | (uint256(1) << 142);
+        else return (encodedSkills & ~(uint256(1) << 142));
+    }
+
+    function setRedCardLastGame(uint256 encodedSkills, bool val) public pure returns (uint256) {
+        if (val) return (encodedSkills & ~(uint256(1) << 143)) | (uint256(1) << 143);
+        else return (encodedSkills & ~(uint256(1) << 143));
+    }
+
+    function setInjuryWeeksLeft(uint256 encodedSkills, uint8 val) public pure returns (uint256) {
+        return (encodedSkills & ~(uint256(7) << 147)) | (uint256(val) << 147);
+    }
+
 }

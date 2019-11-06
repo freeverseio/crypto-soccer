@@ -12,6 +12,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -41,6 +42,7 @@ func NewEventProcessor(
 	client *ethclient.Client,
 	db *storage.Storage,
 	engine *engine.Engine,
+	enginePreComp *engineprecomp.Engineprecomp,
 	assets *assets.Assets,
 	leagues *leagues.Leagues,
 	updates *updates.Updates,
@@ -51,7 +53,7 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
-	leagueProcessor, err := NewLeagueProcessor(engine, leagues, evolution, db)
+	leagueProcessor, err := NewLeagueProcessor(engine, enginePreComp, leagues, evolution, assets, db)
 	if err != nil {
 		return nil, err
 	}

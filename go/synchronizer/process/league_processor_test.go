@@ -20,7 +20,7 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, ganache.Assets, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, ganache.Assets, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	}
 }
 
-func TestProcess(t *testing.T) {
+func TestLeagueProcessMatch(t *testing.T) {
 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -126,13 +126,25 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, sto)
+	processor, err := process.NewLeagueProcessor(bc.Engine, bc.EnginePreComp, bc.Leagues, bc.Evolution, bc.Assets, sto)
 	if err != nil {
 		t.Fatal(err)
 	}
 	day := uint8(0)
 	turnInDay := uint8(0)
 	seed := [32]byte{}
+	err = processor.Process(updates.UpdatesActionsSubmission{
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(10),
+		types.Log{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	turnInDay = 1
 	err = processor.Process(updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,

@@ -46,8 +46,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
-    address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
+    uint256 constant public ROSTER_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
@@ -62,10 +62,12 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     mapping(uint256 => uint256) private _playerIdToState;
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
-    mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployDay;
     uint256 public currentRound;
     bool private _needsInit = true;
+    address public rosterAddr;
+
+    function setRosterAddr(address addr) public {rosterAddr = addr;}
 
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
@@ -74,6 +76,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
+        setRosterAddr(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -83,6 +86,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
+        setRosterAddr(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
@@ -149,6 +153,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
+        if (teamId == ROSTER_TEAM) return false;
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
@@ -167,6 +172,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
+        if (isRosterPlayer(playerId)) return rosterAddr;
         require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
@@ -301,6 +307,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
+        if (isRosterPlayer(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
         if (isVirtualPlayer(playerId)) {
             return getPlayerStateAtBirth(playerId);
         } else {
@@ -433,13 +440,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         // TODO: checking if they are bots should be done outside this function
-        require(playerExists(playerId) && teamExists(teamIdTarget), "unexistent player or team");
+        require(isRosterPlayer(playerId) || playerExists(playerId), "player does not exist");
+        require(teamExists(teamIdTarget), "unexistent target team");
         uint256 state = getPlayerState(playerId);
         uint256 newState = state;
         uint256 teamIdOrigin = getCurrentTeamId(state);
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-        uint256 shirtOrigin = getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
@@ -448,10 +455,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         newState = setLastSaleBlock(newState, block.number);
         _playerIdToState[playerId] = newState;
 
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
-        (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        if (teamIdOrigin != ROSTER_TEAM) {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
+            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+        }
         emit PlayerStateChange(playerId, newState);
     }
 
@@ -464,5 +474,10 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
         return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
+    }
+    
+    function isRosterPlayer(uint256 playerId) public view returns(bool) {
+        if (_playerIdToState[playerId] != 0) return false;
+        return getIsSpecial(playerId);
     }
 }

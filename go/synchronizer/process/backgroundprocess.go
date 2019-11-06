@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -24,13 +25,14 @@ func BackgroundProcessNew(
 	client *ethclient.Client,
 	storage *storage.Storage,
 	engineContract *engine.Engine,
+	enginePreCompContract *engineprecomp.Engineprecomp,
 	assetsContract *assets.Assets,
 	leaguesContract *leagues.Leagues,
 	updatesContract *updates.Updates,
 	marketContract *market.Market,
 	evolutionContract *evolution.Evolution,
 ) (*BackgroundProcess, error) {
-	eventProcessor, err := NewEventProcessor(client, storage, engineContract, assetsContract, leaguesContract, updatesContract, marketContract, evolutionContract)
+	eventProcessor, err := NewEventProcessor(client, storage, engineContract, enginePreCompContract, assetsContract, leaguesContract, updatesContract, marketContract, evolutionContract)
 	if err != nil {
 		return nil, err
 	}
