@@ -225,7 +225,7 @@ func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *
 		if err != nil {
 			return err
 		}
-		defence, speed, pass, shoot, endurance, _, err := utils.DecodeSkills(b.assets, state)
+		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
 		player.State.Defence = defence.Uint64()
 		player.State.Speed = speed.Uint64()
 		player.State.Pass = pass.Uint64()

@@ -111,7 +111,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 
 func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen FROM players WHERE (player_id = $1);", playerID.String())
+	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth FROM players WHERE (player_id = $1);", playerID.String())
 	if err != nil {
 		return player, err
 	}
@@ -135,6 +135,8 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&encodedState,
 		&player.Potential,
 		&player.State.Frozen,
+		&player.Name,
+		&player.DayOfBirth,
 	)
 	player.PlayerId = playerID
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
