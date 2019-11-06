@@ -45,7 +45,7 @@ func (b *BackgroundProcess) Start() {
 				if err != nil {
 					panic(err)
 				}
-				time.Sleep(1 * time.Second)
+				time.Sleep(10 * time.Second)
 			}
 		}
 		b.stopped <- true
