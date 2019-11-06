@@ -245,4 +245,11 @@ contract EncodingSkills {
         return (encodedSkills | (uint256(1) << 167));
     }
 
+    function addTargetTeamId(uint256 encodedSkills, uint256 targetTeamId) public pure returns (uint256) {
+        return (encodedSkills | (uint256(targetTeamId) << 168));
+    }
+
+    function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
+        return (encodedSkills >> 168) & (2**43-1);
+    }
 }
