@@ -113,10 +113,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 							return nil
 						}
 					} else {
-						for i, skill := range states[0] {
-							b.engine.GetAlignedEndOfLastHalf(&bind.CallOpts{}, skill)
-							log.Infof("idx %v: aligned: %v", i, skill)
-						}
 						matchLog[0] = big.NewInt(0)
 						matchLog[1] = big.NewInt(0)
 					}
