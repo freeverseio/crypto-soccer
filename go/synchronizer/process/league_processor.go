@@ -5,12 +5,14 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -20,9 +22,10 @@ type LeagueProcessor struct {
 	enginePreComp     *engineprecomp.Engineprecomp
 	leagues           *leagues.Leagues
 	evolution         *evolution.Evolution
+	assets            *assets.Assets
 	storage           *storage.Storage
 	calendarProcessor *Calendar
-	playerHackSkills  *big.Int
+	FREEPLAYERID      *big.Int
 }
 
 func NewLeagueProcessor(
@@ -30,6 +33,7 @@ func NewLeagueProcessor(
 	enginePreComp *engineprecomp.Engineprecomp,
 	leagues *leagues.Leagues,
 	evolution *evolution.Evolution,
+	assets *assets.Assets,
 	storage *storage.Storage,
 ) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, storage)
@@ -37,20 +41,20 @@ func NewLeagueProcessor(
 		return nil, err
 	}
 
-	playerHackSkills, _ := new(big.Int).SetString("713624055286353394965726120199142814938406092850", 10)
+	FREEPLAYERID, err := engine.FREEPLAYERID(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	// playerHackSkills := big.NewInt(0)
 
 	return &LeagueProcessor{
 		engine,
 		enginePreComp,
 		leagues,
 		evolution,
+		assets,
 		storage,
 		calendarProcessor,
-		playerHackSkills,
+		FREEPLAYERID,
 	}, nil
 }
 
@@ -196,7 +200,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 }
 
 func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *big.Int, matchStartTime *big.Int) error {
-	userAssignment := big.NewInt(5) // TODO
+	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.evolution.GetTeamEvolvedSkills(
 		&bind.CallOpts{},
 		states,
@@ -204,7 +208,35 @@ func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *
 		userAssignment,
 		matchStartTime,
 	)
+	if err != nil {
+		return err
+	}
 
+	for _, state := range newStates {
+		if state.String() == b.FREEPLAYERID.String() {
+			continue
+		}
+
+		playerID, err := b.leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
+		player, err := b.storage.GetPlayer(playerID)
+		if err != nil {
+			return err
+		}
+		defence, speed, pass, shoot, endurance, _, err := utils.DecodeSkills(b.assets, state)
+		player.State.Defence = defence.Uint64()
+		player.State.Speed = speed.Uint64()
+		player.State.Pass = pass.Uint64()
+		player.State.Shoot = shoot.Uint64()
+		player.State.Defence = endurance.Uint64()
+		player.State.EncodedSkills = state
+		err = b.storage.PlayerUpdate(playerID, player.State)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -437,12 +469,8 @@ func (b *LeagueProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 
 func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
-	freePlayerID, err := b.engine.FREEPLAYERID(&bind.CallOpts{})
-	if err != nil {
-		return state, err
-	}
 	for i := 0; i < 25; i++ {
-		state[i] = freePlayerID
+		state[i] = b.FREEPLAYERID
 	}
 	players, err := b.storage.GetPlayersOfTeam(teamID)
 	if err != nil {

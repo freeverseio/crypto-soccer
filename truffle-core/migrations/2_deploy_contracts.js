@@ -37,6 +37,7 @@ module.exports = function (deployer) {
     console.log("🚀  Deployed on:", deployer.network)
     console.log("------------------------");
     console.log("ENGINE_CONTRACT_ADDRESS=" + engine.address);
+    console.log("ENGINEPRECOMP_CONTRACT_ADDRESS=" + enginePreComp.address);
     console.log("LEAGUES_CONTRACT_ADDRESS=" + leagues.address);
     console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
