@@ -45,7 +45,14 @@ func TestCreateOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	orderID, err := mp.CreateOrder(sellerID, buyerID)
+	name := "This is a name"
+	value := "100" // $$$
+	orderID, err := mp.CreateOrder(
+		sellerID,
+		buyerID,
+		name,
+		value,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

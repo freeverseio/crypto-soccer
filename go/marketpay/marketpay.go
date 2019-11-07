@@ -124,7 +124,7 @@ func (b *MarketPay) CreateOrder(
 	seller *Customer,
 	buyer *Customer,
 	name string,
-	value uint64,
+	value string,
 ) (*Order, error) {
 	url := b.endpoint + "/2.0/orders"
 	method := "POST"
@@ -134,7 +134,7 @@ func (b *MarketPay) CreateOrder(
 	_ = writer.WriteField("buyer_id", fmt.Sprintf("%d", buyer.Data.ID))
 	_ = writer.WriteField("seller_id", fmt.Sprintf("%d", seller.Data.ID))
 	_ = writer.WriteField("name", name)
-	_ = writer.WriteField("value", fmt.Sprintf("%d", value))
+	_ = writer.WriteField("value", value)
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
