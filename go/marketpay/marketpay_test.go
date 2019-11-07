@@ -21,16 +21,19 @@ func TestCreateCustomer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = mp.CreateCustomer("+34", "657497063")
+	customer, err := mp.CreateCustomer("+34", "657497063")
 	if err != nil {
 		t.Fatal(err)
+	}
+	if customer != 817 {
+		t.Fatalf("Expected %v", customer)
 	}
 }
 
 func TestCreateOrder(t *testing.T) {
-	mp, err := marketpay.New()
-	if err != nil {
-		t.Fatal(err)
-	}
+	// mp, err := marketpay.New()
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
 
 }

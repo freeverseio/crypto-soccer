@@ -25,7 +25,7 @@ func New() (*MarketPay, error) {
 func (b *MarketPay) CreateCustomer(
 	prefix string,
 	phoneNumber string,
-) (*Customer, error) {
+) (float64, error) {
 	url := b.endpoint + "/2.0/customers"
 	method := "POST"
 
@@ -35,7 +35,7 @@ func (b *MarketPay) CreateCustomer(
 	_ = writer.WriteField("phone", phoneNumber)
 	err := writer.Close()
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	client := &http.Client{
@@ -45,7 +45,7 @@ func (b *MarketPay) CreateCustomer(
 	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -54,15 +54,19 @@ func (b *MarketPay) CreateCustomer(
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	customer := Customer{}
-	json.Unmarshal(body, &customer)
-	return &customer, nil
+	// fmt.Println(string(body))
+	var dat map[string]interface{}
+	if err := json.Unmarshal(body, &dat); err != nil {
+		panic(err)
+	}
+	customerID := dat["data"].(map[string]interface{})["id"].(float64)
+	return customerID, nil
 }
