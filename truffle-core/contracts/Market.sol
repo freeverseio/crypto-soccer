@@ -46,6 +46,38 @@ contract Market {
         emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
     }
 
+    function freezePromoPlayer(
+        uint256 playerId, 
+        uint256 validUntil
+    ) public {
+        require(msg.sender == _assets.rosterAddr() , "Only the Roster can create promo players");
+        require(!isPlayerFrozen(playerId));
+        require(_assets.teamExists(_assets.getTargetTeamId(playerId)), "cannot offer a promo player to a non-existent team");
+        require(!_assets.isBotTeam(_assets.getTargetTeamId(playerId)), "cannot offer a promo player to a bot team");
+        require(validUntil > now, "validUntil is in the past");
+        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+        playerIdToAuctionData[playerId] = validUntil;
+        emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
+    }
+
+    function completePromoPlayerTransfer(
+        uint256 playerId,
+        uint256 validUntil,
+        bytes32[3] memory sig,
+        uint8 sigV
+     ) public {
+        uint256 buyerTeamId = _assets.getTargetTeamId(playerId);
+        require(isPlayerFrozen(playerId), "promo player not frozen, cannot complete transfer");
+        require(_assets.getOwnerTeam(buyerTeamId) == 
+                    recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]), "Buyer is not own targetTeamId");
+        require(now < validUntil);
+        require(validUntil == playerIdToAuctionData[playerId], "provided validUntil does not match freeze validUntil");
+        require(sig[IDX_MSG] == prefixed(buildAgreeToBuyPromoPlayerTxMsg(playerId, validUntil)), "buyer msg does not match");
+        _assets.transferPlayer(playerId, buyerTeamId);
+        playerIdToAuctionData[playerId] = 1;
+        emit PlayerFreeze(playerId, 1, false);
+    }
+
     function completePlayerAuction(
         bytes32 sellerHiddenPrice,
         uint256 validUntil,
@@ -268,6 +300,10 @@ contract Market {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
     }
 
+    function buildAgreeToBuyPromoPlayerTxMsg(uint256 playerId, uint256 validUntil) public pure returns (bytes32) {
+        return keccak256(abi.encode(playerId, validUntil));
+    }
+
     function buildAgreeToBuyTeamTxMsg(bytes32 sellerTxHash, bytes32 buyerHiddenPrice, bool isOffer2StartAuction) public pure returns (bytes32) {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, isOffer2StartAuction));
     }
@@ -294,7 +330,6 @@ contract Market {
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.getIsSpecial(playerId) || _assets.playerExists(playerId), "player does not exist");
-        // if (!_assets.getIsSpecial(playerId)) { require(_assets.playerExists(playerId), "unexistent player"); }
         return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
