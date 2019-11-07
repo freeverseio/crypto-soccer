@@ -102,7 +102,7 @@ contract EncodingSkills {
     
     /**
      * @dev PlayerSkills serializes a total of 148 bits:  6*14 + 4 + 3+ 3 + 43 + 1 + 1 + 3 + 3 + 3
-     *      5 skills                  = 5 x 14 bits
+     *      5 skills                  = 5 x 16 bits
      *                                = shoot, speed, pass, defence, endurance
      *      dayOfBirth                = 16 bits  (since Unix time, max 180 years)
      *      birthTraits               = variable num of bits: [potential, forwardness, leftishness, aggressiveness]
@@ -119,8 +119,8 @@ contract EncodingSkills {
      *      gamesNonStopping          = 3b (0, 1, ..., 6). Finally, 7 means more than 6.
      *      injuryWeeksLeft           = 3b 
      *      substitutedDuringLastHalf = 1b (bool) 
-     *      sumSkills                 = 16b (must equal sum(skills))
-     *      isSpecialPlayer           = 1b
+     *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
+     *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
@@ -132,16 +132,13 @@ contract EncodingSkills {
         uint8 gamesNonStopping, 
         uint8 injuryWeeksLeft,
         bool substitutedLastHalf,
-        uint16 sumSkills
+        uint32 sumSkills
     )
         public
         pure
         returns (uint256 encoded)
     {
         // checks:
-        for (uint8 sk = 0; sk < N_SKILLS; sk++) {
-            require(skills[sk] < 2**14, "skill out of bound");
-        }
         require(birthTraits[IDX_POT] < 10, "potential out of bound");
         require(birthTraits[IDX_FWD] < 6, "forwardness out of bound");
         require(birthTraits[IDX_LEF] < 8, "lefitshness out of bound");
@@ -153,103 +150,103 @@ contract EncodingSkills {
 
         // start encoding:
         for (uint8 sk = 0; sk < N_SKILLS; sk++) {
-            encoded |= uint256(skills[sk]) << 14 * sk;
+            encoded |= uint256(skills[sk]) << 16 * sk;
         }
-        encoded |= dayOfBirth << 70;
-        encoded |= playerId << 86;
-        encoded |= uint256(birthTraits[IDX_POT]) << 129;
-        encoded |= uint256(birthTraits[IDX_FWD]) << 133;
-        encoded |= uint256(birthTraits[IDX_LEF]) << 136;
-        encoded |= uint256(birthTraits[IDX_AGG]) << 139;
-        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 142;
-        encoded |= uint256(redCardLastGame ? 1 : 0) << 143;
-        encoded |= uint256(gamesNonStopping) << 144;
-        encoded |= uint256(injuryWeeksLeft) << 147;
-        encoded |= uint256(substitutedLastHalf ? 1 : 0) << 150;
-        return (encoded | uint256(sumSkills) << 151);
+        encoded |= dayOfBirth << 80;
+        encoded |= playerId << 96;
+        encoded |= uint256(birthTraits[IDX_POT]) << 139;
+        encoded |= uint256(birthTraits[IDX_FWD]) << 143;
+        encoded |= uint256(birthTraits[IDX_LEF]) << 146;
+        encoded |= uint256(birthTraits[IDX_AGG]) << 149;
+        encoded |= uint256(alignedEndOfLastHalf ? 1 : 0) << 152;
+        encoded |= uint256(redCardLastGame ? 1 : 0) << 153;
+        encoded |= uint256(gamesNonStopping) << 154;
+        encoded |= uint256(injuryWeeksLeft) << 157;
+        encoded |= uint256(substitutedLastHalf ? 1 : 0) << 160;
+        return (encoded | uint256(sumSkills) << 161);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills & 0x3fff); // 0x3fff = 2**14 - 1
+        return uint256(encodedSkills & 65535); // 65535 = 2**16 - 1
     }
     
     function getSpeed(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 14 & 0x3fff);
+        return uint256(encodedSkills >> 16 & 65535);
     }
 
     function getPass(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 28 & 0x3fff);
+        return uint256(encodedSkills >> 32 & 65535);
     }
 
     function getDefence(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 42 & 0x3fff);
+        return uint256(encodedSkills >> 48 & 65535);
     }
 
     function getEndurance(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 56 & 0x3fff);
+        return uint256(encodedSkills >> 64 & 65535);
     }
 
     function getBirthDay(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 70 & 65535);
+        return uint256(encodedSkills >> 80 & 65535);
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 86 & 8796093022207); // 2**43 - 1 = 8796093022207
+        return uint256(encodedSkills >> 96 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 
     function getPotential(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 129 & 15);
+        return uint256(encodedSkills >> 139 & 15);
     }
 
     function getForwardness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 133 & 7);
+        return uint256(encodedSkills >> 143 & 7);
     }
 
     function getLeftishness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 136 & 7);
+        return uint256(encodedSkills >> 146 & 7);
     }
 
     function getAggressiveness(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 139 & 7);
+        return uint256(encodedSkills >> 149 & 7);
     }
 
     function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 142 & 1) == 1;
+        return (encodedSkills >> 152 & 1) == 1;
     }
 
     function getRedCardLastGame(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 143 & 1) == 1;
+        return (encodedSkills >> 153 & 1) == 1;
     }
 
     function getGamesNonStopping(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 144 & 7);
+        return uint256(encodedSkills >> 154 & 7);
     }
 
     function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 147 & 7);
+        return uint256(encodedSkills >> 157 & 7);
     }
 
     function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
-        return (encodedSkills >> 150 & 1) == 1;
+        return (encodedSkills >> 160 & 1) == 1;
     }
 
     function getSumOfSkills(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 151 & 65535); // 2**16-1
+        return uint256(encodedSkills >> 161 & 524287); // 2**19-1
     }
     
     function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {
-        return uint256(encodedSkills >> 167 & 1) == 1; 
+        return uint256(encodedSkills >> 255 & 1) == 1; 
     }
      
     function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills | (uint256(1) << 167));
+        return (encodedSkills | (uint256(1) << 255));
     }
 
     function addTargetTeamId(uint256 encodedSkills, uint256 targetTeamId) public pure returns (uint256) {
-        return (encodedSkills | (uint256(targetTeamId) << 168));
+        return (encodedSkills | (uint256(targetTeamId) << 180));
     }
 
     function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills >> 168) & (2**43-1);
+        return (encodedSkills >> 180) & (2**43-1);
     }
 }

@@ -80,7 +80,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
 	tactics[1], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
-	result, err := bc.Engine.PlayHalfMatch(
+	logs, err := bc.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		seed,
 		matchStartTime,
@@ -92,8 +92,8 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result[0].String() != "11519355456996376452661064990627118067406041180784864310617375244288" {
-		t.Fatalf("Received %v", result[0].String())
+	if logs[0].String() != "1645504557572631091828279073381766814124583466071029250581856256" {
+		t.Fatalf("Received %v", logs[0].String())
 	}
 }
 
