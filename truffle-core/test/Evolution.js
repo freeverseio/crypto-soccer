@@ -327,6 +327,10 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expected[3]);
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[4]);
+
+        expectedSumSkills = expected.reduce((a, b) => a + b, 0);
+        result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expectedSumSkills);
     });
 
     it('test evolvePlayer at non-zero potential and age', async () => {
@@ -359,6 +363,10 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expected[3]);
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[4]);
+        
+        expectedSumSkills = expected.reduce((a, b) => a + b, 0);
+        result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expectedSumSkills);
     });
 
     it('test evolvePlayer with old age', async () => {
