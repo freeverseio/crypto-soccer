@@ -56,7 +56,7 @@ contract Friendlies is SortIdxsAnySize {
     }
     
     function getTeamsInCupMatch(uint8 matchIdxDay, uint8 nTeams, uint256 matchDaySeed) public pure returns (uint8, uint8) {
-        if (matchDaySeed == 0) { return (2 * matchIdxDay, 2 * matchIdxDay - 1);}
+        if (matchDaySeed == 0) { return (2 * matchIdxDay, 2 * matchIdxDay + 1);}
         else {
             uint256[] memory randoms = new uint256[](nTeams);
             uint8[] memory order   = new uint8[](nTeams);
@@ -65,7 +65,7 @@ contract Friendlies is SortIdxsAnySize {
                 randoms[i] = uint256(keccak256(abi.encode(matchDaySeed, i)));
             }
             sortIdxs(randoms, order);
-            return (order[2 * matchIdxDay], order[2 * matchIdxDay - 1]);
+            return (order[2 * matchIdxDay], order[2 * matchIdxDay + 1]);
         }
     }
 }

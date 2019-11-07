@@ -17,9 +17,49 @@ contract('Friendlies', (accounts) => {
 
     beforeEach(async () => {
         friendlies = await Friendlies.new().should.be.fulfilled;
-        });
+    });
 
-        
+    it('getTeamsInCupMatch for 4 teams without shuffling', async () => {
+        nTeams = 4;
+        nMatchesPerDay = nTeams / 2;
+        teamsInMatches = [];
+        expected = Array.from(new Array(nTeams), (x,i) => i);
+        // an array containing the number of matches played by each team:
+        nGamesPlayedByTeam = Array.from(new Array(nTeams), (x,i) => 0);
+        nGamesPlayedByTeamExpected = Array.from(new Array(nTeams), (x,i) => 1);
+
+        for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {  
+            result = await friendlies.getTeamsInCupMatch(matchIdxInDay, nTeams, seed = 0);
+            teamsInMatches.push(result[0]);
+            teamsInMatches.push(result[1]);
+            nGamesPlayedByTeam[result[0].toNumber()] += 1;
+            nGamesPlayedByTeam[result[1].toNumber()] += 1;
+        }
+        debug.compareArrays(teamsInMatches, expected, toNum = true, verbose = false);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+    });  
+    
+    it('getTeamsInCupMatch for 64 teams without shuffling', async () => {
+        nTeams = 64;
+        nMatchesPerDay = nTeams / 2;
+        teamsInMatches = [];
+        expected = Array.from(new Array(nTeams), (x,i) => i);
+        // an array containing the number of matches played by each team:
+        nGamesPlayedByTeam = Array.from(new Array(nTeams), (x,i) => 0);
+        nGamesPlayedByTeamExpected = Array.from(new Array(nTeams), (x,i) => 1);
+
+        for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {  
+            result = await friendlies.getTeamsInCupMatch(matchIdxInDay, nTeams, seed = 0);
+            teamsInMatches.push(result[0]);
+            teamsInMatches.push(result[1]);
+            nGamesPlayedByTeam[result[0].toNumber()] += 1;
+            nGamesPlayedByTeam[result[1].toNumber()] += 1;
+        }
+        debug.compareArrays(teamsInMatches, expected, toNum = true, verbose = false);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+    });     
+    
+        return
     it('getTeamsInLeagueMatch for 4 teams', async () => {
         nTeams = 4;
         nMatchdays = (nTeams - 1) * 2;
