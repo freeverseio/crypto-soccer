@@ -177,10 +177,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					if err != nil {
 						return err
 					}
-					err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
-					if err != nil {
-						return err
-					}
 					err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
 					if err != nil {
 						return err
@@ -188,6 +184,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
 					if err != nil {
 						return err
+					}
+					if is2ndHalf {
+						err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+						if err != nil {
+							return err
+						}
 					}
 				}
 			}
@@ -225,7 +227,7 @@ func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *
 		if err != nil {
 			return err
 		}
-		defence, speed, pass, shoot, endurance, _, err := utils.DecodeSkills(b.assets, state)
+		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
 		player.State.Defence = defence.Uint64()
 		player.State.Speed = speed.Uint64()
 		player.State.Pass = pass.Uint64()

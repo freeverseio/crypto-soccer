@@ -56,8 +56,7 @@ CREATE TABLE players (
     shirt_number INT NOT NULL,
     preferred_position TEXT NOT NULL,
     potential INT NOT NULL, 
-    --- TODO remove default
-    age INT NOT NULL DEFAULT 0, 
+    day_of_birth INT NOT NULL, 
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
     frozen BOOLEAN NOT NULL,
@@ -74,8 +73,8 @@ CREATE TABLE matches (
     visitor_team_id NUMERIC(78,0) REFERENCES teams(team_id),
     home_goals INT,
     visitor_goals INT,
-    home_match_log TEXT DEFAULT "0",
-    visitor_match_log TEXT DEFAULT "0",
+    home_match_log TEXT DEFAULT '0',
+    visitor_match_log TEXT DEFAULT '0',
     PRIMARY KEY(timezone_idx,country_idx, league_idx, match_day_idx, match_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
