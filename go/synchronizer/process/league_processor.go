@@ -177,10 +177,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					if err != nil {
 						return err
 					}
-					err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
-					if err != nil {
-						return err
-					}
 					err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
 					if err != nil {
 						return err
@@ -188,6 +184,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
 					if err != nil {
 						return err
+					}
+					if is2ndHalf {
+						err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+						if err != nil {
+							return err
+						}
 					}
 				}
 			}
