@@ -67,4 +67,9 @@ contract EncodingSkillsSetters {
         return (encodedSkills & ~(uint256(7) << 157)) | (uint256(val) << 157);
     }
 
+    function setSumOfSkills(uint256 encodedSkills, uint32 val) public pure returns (uint256) {
+        return (encodedSkills & ~(uint256(524287) << 161)) | (uint256(val) << 161);
+    }
+    
+
 }

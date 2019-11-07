@@ -147,7 +147,10 @@ contract('Encoding', (accounts) => {
         skills = await encodingSet.setInjuryWeeksLeft(skills, 4);
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(4);
-        
+
+        skills = await encodingSet.setSumOfSkills(skills, sumSkills);
+        result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sumSkills);
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {
