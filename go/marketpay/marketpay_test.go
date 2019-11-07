@@ -26,3 +26,11 @@ func TestCreateCustomer(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestCreateOrder(t *testing.T) {
+	mp, err := marketpay.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}

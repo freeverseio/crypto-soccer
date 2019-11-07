@@ -2,11 +2,15 @@ package marketpay
 
 import (
 	"bytes"
-	"fmt"
+	"encoding/json"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 )
+
+type Customer struct {
+	ID int `json:"id"`
+}
 
 type MarketPay struct {
 	endpoint string
@@ -21,7 +25,7 @@ func New() (*MarketPay, error) {
 func (b *MarketPay) CreateCustomer(
 	prefix string,
 	phoneNumber string,
-) error {
+) (*Customer, error) {
 	url := b.endpoint + "/2.0/customers"
 	method := "POST"
 
@@ -31,7 +35,7 @@ func (b *MarketPay) CreateCustomer(
 	_ = writer.WriteField("phone", phoneNumber)
 	err := writer.Close()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	client := &http.Client{
@@ -41,7 +45,7 @@ func (b *MarketPay) CreateCustomer(
 	}
 	req, err := http.NewRequest(method, url, payload)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -50,14 +54,15 @@ func (b *MarketPay) CreateCustomer(
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println(string(body))
-	return nil
+	customer := Customer{}
+	json.Unmarshal(body, &customer)
+	return &customer, nil
 }
