@@ -221,7 +221,7 @@ contract('Assets', (accounts) => {
         gameDeployDay.toNumber().should.be.equal(currentDay);
     });
 
-    it('get skills of a GoalKeeper on creation', async () => {
+    it2('get skills of a GoalKeeper on creation', async () => {
         tz = 1;
         countryIdxInTZ = 0;
         playerIdxInCountry = 1;
@@ -486,18 +486,14 @@ contract('Assets', (accounts) => {
     it2('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
-        expected = [50, 50, 50, 50, 50];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            skills[sk].toNumber().should.be.equal(expected[sk]);
-        }
+        expected = [1000, 1000, 1000, 1000, 1000];
+        debug.compareArrays(skills, expected, toNum = true, verbose = false);
         // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-        birthTraits[0].toNumber().should.be.equal(0);
-        birthTraits[1].toNumber().should.be.equal(0); // shirtNum = 0 is a GK
-        birthTraits[2].toNumber().should.be.equal(0);
-        birthTraits[3].toNumber().should.be.equal(0);
+        expected = [0, 0, 0, 0]
+        debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
-    it2('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
+    it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
         expected = [50, 50, 50, 50, 50];
