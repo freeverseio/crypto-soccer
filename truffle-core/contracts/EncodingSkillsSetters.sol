@@ -34,37 +34,37 @@ contract EncodingSkillsSetters {
 
     
     function setShoot(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return ((encodedSkills & ~(uint256(0x3fff))) | val);
+        return ((encodedSkills & ~(uint256(65535))) | val);
     }
     
     function setSpeed(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 14)) | (val << 14);
+        return (encodedSkills & ~(uint256(65535) << 16)) | (val << 16);
     }
     
     function setPass(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 28)) | (val << 28);
+        return (encodedSkills & ~(uint256(65535) << 32)) | (val << 32);
     }
     
     function setDefence(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 42)) | (val << 42);
+        return (encodedSkills & ~(uint256(65535) << 48)) | (val << 48);
     }
 
     function setEndurance(uint256 encodedSkills, uint256 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(0x3fff) << 56)) | (val << 56);
+        return (encodedSkills & ~(uint256(65535) << 64)) | (val << 64);
     }
 
     function setAlignedEndOfLastHalf(uint256 encodedSkills, bool val) public pure returns (uint256) {
-        if (val) return (encodedSkills & ~(uint256(1) << 142)) | (uint256(1) << 142);
-        else return (encodedSkills & ~(uint256(1) << 142));
+        if (val) return (encodedSkills & ~(uint256(1) << 152)) | (uint256(1) << 152);
+        else return (encodedSkills & ~(uint256(1) << 152));
     }
 
     function setRedCardLastGame(uint256 encodedSkills, bool val) public pure returns (uint256) {
-        if (val) return (encodedSkills & ~(uint256(1) << 143)) | (uint256(1) << 143);
-        else return (encodedSkills & ~(uint256(1) << 143));
+        if (val) return (encodedSkills & ~(uint256(1) << 153)) | (uint256(1) << 153);
+        else return (encodedSkills & ~(uint256(1) << 153));
     }
 
     function setInjuryWeeksLeft(uint256 encodedSkills, uint8 val) public pure returns (uint256) {
-        return (encodedSkills & ~(uint256(7) << 147)) | (uint256(val) << 147);
+        return (encodedSkills & ~(uint256(7) << 157)) | (uint256(val) << 157);
     }
 
 }
