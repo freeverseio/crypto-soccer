@@ -5,6 +5,7 @@ const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
+const Friendlies = artifacts.require('Friendlies');
 
 
 require('chai')
@@ -20,6 +21,7 @@ module.exports = function (deployer) {
     const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
     const market = await deployer.deploy(Market).should.be.fulfilled;
     const updates = await deployer.deploy(Updates).should.be.fulfilled;
+    const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
 
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;

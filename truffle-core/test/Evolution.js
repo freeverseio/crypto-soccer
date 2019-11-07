@@ -172,7 +172,6 @@ contract('Evolution', (accounts) => {
             weights[5 * bucket + 4] = MAX_WEIGHT - sum4;
         }        
         assignment = await evolution.encodeTP(weights, specialPlayer).should.be.fulfilled;
-        console.log(assignment.toString(10))
         matchStartTime = now;
         newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, 200, assignment, matchStartTime);
         for (p = 0; p < 25; p++) {

@@ -4,33 +4,64 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
-const Assets = artifacts.require('Assets');
+const debug = require('../utils/debugUtils.js');
 
-contract('Assets', (accounts) => {
+const Friendlies = artifacts.require('Friendlies');
+
+contract('Friendlies', (accounts) => {
     const ALICE = accounts[1];
     const BOB = accounts[2];
     const CAROL = accounts[3];
-    const N_SKILLS = 5;
-    let initTx = null;
 
     const it2 = async(text, f) => {};
 
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
-        initTx = await assets.init().should.be.fulfilled;
-        PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
-        PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
-        LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
-        TEAMS_PER_LEAGUE = await assets.TEAMS_PER_LEAGUE().should.be.fulfilled;
-        FREE_PLAYER_ID = await assets.FREE_PLAYER_ID().should.be.fulfilled;
-        NULL_ADDR = await assets.NULL_ADDR().should.be.fulfilled;
-        PLAYERS_PER_TEAM_INIT = PLAYERS_PER_TEAM_INIT.toNumber();
-        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
-        LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
-        TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        friendlies = await Friendlies.new().should.be.fulfilled;
         });
 
         
-    it('create special players', async () => {
+    it('getTeamsInLeagueMatch for 4 teams', async () => {
+        nTeams = 4;
+        nMatchdays = (nTeams - 1) * 2;
+        nMatchesPerDay = nTeams / 2;
+        teamsInLeagueMatches = [];
+        expected = [ 0, 1, 3, 2, 2, 0, 3, 1, 0, 3, 2, 1, 1, 0, 2, 3, 0, 2, 1, 3, 3, 0, 1, 2 ];
+        // an array containing the number of matches played by each team, at home, and away:
+        nGamesPlayedByTeam = Array.from(new Array(nTeams*2), (x,i) => 0);
+        nGamesPlayedByTeamExpected = Array.from(new Array(nTeams*2), (x,i) => nMatchdays/2);
+
+        for (matchday = 0; matchday < nMatchdays; matchday++) {
+            for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {  
+                result = await friendlies.getTeamsInLeagueMatch(matchday, matchIdxInDay, nTeams);
+                teamsInLeagueMatches.push(result[0]);
+                teamsInLeagueMatches.push(result[1]);
+                nGamesPlayedByTeam[result[0].toNumber()] += 1;
+                nGamesPlayedByTeam[nTeams + result[1].toNumber()] += 1;
+            }
+        }
+        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true, verbose = false);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
     });
+    
+    it('getTeamsInLeagueMatch for 6 teams', async () => {
+        nTeams = 6;
+        nMatchdays = (nTeams - 1) * 2;
+        nMatchesPerDay = nTeams / 2;
+        teamsInLeagueMatches = [];
+        expected = [ 0, 1, 5, 2, 4, 3, 2, 0, 3, 1, 4, 5, 0, 3, 2, 4, 1, 5, 4, 0, 5, 3, 1, 2, 0, 5, 4, 1, 3, 2, 1, 0, 2, 5, 3, 4, 0, 2, 1, 3, 5, 4, 3, 0, 4, 2, 5, 1, 0, 4, 3, 5, 2, 1, 5, 0, 1, 4, 2, 3 ];
+        // an array containing the number of matches played by each team, at home, and away:
+        nGamesPlayedByTeam = Array.from(new Array(nTeams*2), (x,i) => 0);
+        nGamesPlayedByTeamExpected = Array.from(new Array(nTeams*2), (x,i) => nMatchdays/2);
+        for (matchday = 0; matchday < nMatchdays; matchday++) {
+            for (matchIdxInDay = 0; matchIdxInDay < nMatchesPerDay; matchIdxInDay++) {  
+                result = await friendlies.getTeamsInLeagueMatch(matchday, matchIdxInDay, nTeams);
+                teamsInLeagueMatches.push(result[0]);
+                teamsInLeagueMatches.push(result[1]);
+                nGamesPlayedByTeam[result[0].toNumber()] += 1;
+                nGamesPlayedByTeam[nTeams + result[1].toNumber()] += 1;            }
+        }
+        debug.compareArrays(teamsInLeagueMatches, expected, toNum = true, verbose = false);
+        debug.compareArrays(nGamesPlayedByTeam, nGamesPlayedByTeamExpected, toNum = false, verbose = false);
+    });
+
 });
