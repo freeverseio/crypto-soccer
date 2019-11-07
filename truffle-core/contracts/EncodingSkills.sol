@@ -238,11 +238,11 @@ contract EncodingSkills {
     }
     
     function getIsSpecial(uint256 encodedSkills) public pure returns (bool) {
-        return uint256(encodedSkills >> 167 & 1) == 1; 
+        return uint256(encodedSkills >> 255 & 1) == 1; 
     }
      
     function addIsSpecial(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills | (uint256(1) << 167));
+        return (encodedSkills | (uint256(1) << 255));
     }
 
 }
