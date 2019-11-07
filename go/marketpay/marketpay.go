@@ -22,7 +22,7 @@ func (b *MarketPay) CreateCustomer(
 	prefix string,
 	phoneNumber string,
 ) error {
-	url := "https://api-sandbox.truust.io/2.0/customers"
+	url := b.endpoint + "/2.0/customers"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
