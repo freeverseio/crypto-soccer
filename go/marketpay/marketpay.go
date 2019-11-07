@@ -123,6 +123,8 @@ func (b *MarketPay) CreateCustomer(
 func (b *MarketPay) CreateOrder(
 	seller *Customer,
 	buyer *Customer,
+	name string,
+	value uint64,
 ) (*Order, error) {
 	url := b.endpoint + "/2.0/orders"
 	method := "POST"
@@ -131,8 +133,8 @@ func (b *MarketPay) CreateOrder(
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("buyer_id", fmt.Sprintf("%d", buyer.Data.ID))
 	_ = writer.WriteField("seller_id", fmt.Sprintf("%d", seller.Data.ID))
-	_ = writer.WriteField("name", "Test Payin Wallet")
-	_ = writer.WriteField("value", "1")
+	_ = writer.WriteField("name", name)
+	_ = writer.WriteField("value", fmt.Sprintf("%d", value))
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
