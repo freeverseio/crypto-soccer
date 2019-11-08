@@ -173,7 +173,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
         if (isRosterPlayer(playerId)) return rosterAddr;
-        require(playerExists(playerId), "unexistent player");
+        if (!getIsSpecial(playerId)) require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
     
@@ -479,7 +479,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
     
     function isRosterPlayer(uint256 playerId) public view returns(bool) {
-        if (_playerIdToState[playerId] != 0) return false;
+        if (_playerIdToState[setTargetTeamId(playerId, 0)] != 0) return false;
         return getIsSpecial(playerId);
     }
 }

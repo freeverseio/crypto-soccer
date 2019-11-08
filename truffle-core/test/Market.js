@@ -98,13 +98,13 @@ function buildOfferToBuyTeamMsg(currencyId, price, rnd, validUntil, playerId) {
   return buyerTxMsg;
 }
 
-async function createPlayerId() {
+async function createSpecialPlayerId(internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
   sumSkills = sk.reduce((a, b) => a + b, 0);
   playerId = await assets.encodePlayerSkills(
       sk,
       dayOfBirth = 4*365, 
-      playerId = 144321433,
+      internalId,
       [potential = 5,
       forwardness = 3,
       leftishness = 4,
@@ -116,6 +116,7 @@ async function createPlayerId() {
       substitutedLastHalf = true,
       sumSkills
   ).should.be.fulfilled;
+  playerId = await assets.addIsSpecial(playerId).should.be.fulfilled;
   return playerId;
 }
 
@@ -739,49 +740,44 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
-  it("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
-    playerId = await createPlayerId();
-    specialPlayerId = await assets.addIsSpecial(playerId).should.be.fulfilled;
+  it2("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+    playerId = await createSpecialPlayerId();
 
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, specialPlayerId, freeverseAccount).should.be.rejected;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
     await assets.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, specialPlayerId, freeverseAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
-    isPlayerFrozen = await market.isPlayerFrozen(specialPlayerId).should.be.fulfilled;
+    isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(specialPlayerId) && event.frozen.should.be.equal(true);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(true);
     });
     
     tx = await completePlayerAuction(
-      currencyId, price,  sellerRnd, validUntil, specialPlayerId, 
+      currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
 
     truffleAssert.eventEmitted(tx, "PlayerFreeze", (event) => {
-      return event.playerId.should.be.bignumber.equal(specialPlayerId) && event.frozen.should.be.equal(false);
+      return event.playerId.should.be.bignumber.equal(playerId) && event.frozen.should.be.equal(false);
     });
-    let finalOwner = await assets.getOwnerPlayer(specialPlayerId).should.be.fulfilled;
+    let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
     
     // test that the new owner can sell freely as always
-    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, specialPlayerId, buyerAccount).should.be.fulfilled;
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, buyerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
-      currencyId, price,  sellerRnd, validUntil, specialPlayerId, 
+      currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, sellerTeamId, sellerAccount
     ).should.be.fulfilled;
     
 
   });
 
-  // check if not freeverse not possible: 
-  // check if not freeverse not targetTeamOwner not possible
-  // catch transfer event
   it("promo players: completes an offering and accepting", async () => {
-    playerId = await createPlayerId();
-    playerId = await assets.addIsSpecial(playerId).should.be.fulfilled;
-    playerId = await assets.addTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+    playerId = await createSpecialPlayerId();
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
 
     sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -800,11 +796,57 @@ contract("Market", accounts => {
     owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     owner.should.be.equal(freeverseAccount.address);
 
+    console.log(playerId)
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
 
-    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    // when transferred, the "targetTeamId" is erased (set to zero)
+    finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
+    owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
 
+    // so if we inquire about the original playerId, it will believe it belongs to the roster (but any attempt to re-offer will fail)
+    console.log(playerId)
+    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(freeverseAccount.address);
+  });
+
+  // check if not freeverse not targetTeamOwner not possible
+  // catch transfer event
+  it2("promo players: cannot offer a promo player that already exists", async () => {
+    await assets.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    playerId = await createSpecialPlayerId();
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+    result = await assets.isPlayerWritten(playerId);
+    result.should.be.equal(false)
+
+    sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
+    sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
+    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
+    owner.should.be.equal(buyerAccount.address);
+    
+    // try to offer the same promo player to another user (e.g. seller)
+    playerId = await createSpecialPlayerId();
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = sellerTeamId).should.be.fulfilled;
+    result = await assets.isPlayerWritten(playerId);
+    result.should.be.equal(true)
+    sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await sellerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
+    sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
+
+    // it would have worked with any other internal playerId
+    playerId = await createSpecialPlayerId(43252432);
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = sellerTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await sellerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
+    sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
+    
   });
   
   it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {

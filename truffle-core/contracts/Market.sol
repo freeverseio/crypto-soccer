@@ -58,6 +58,7 @@ contract Market {
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
         require(!_assets.isPlayerWritten(playerId), "promo player already in the universe");
         uint256 targetTeamId = _assets.getTargetTeamId(playerId);
+        // testing about the target team is already done in _assets.transferPlayer
         require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
         require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
                 
@@ -70,7 +71,7 @@ contract Market {
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
         require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
-        _assets.transferPlayer(playerId, targetTeamId);
+        _assets.transferPlayer(_assets.setTargetTeamId(playerId, 0), targetTeamId);
     }
 
     function completePlayerAuction(

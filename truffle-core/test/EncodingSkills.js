@@ -155,7 +155,7 @@ contract('Encoding', (accounts) => {
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         
-        skills = await encoding.addTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
+        skills = await encoding.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(targetTeamId);
         
