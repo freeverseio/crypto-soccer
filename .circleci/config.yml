@@ -161,8 +161,10 @@ workflows:
           filters:
             branches:
               only:
-                - dev
+                - master
                 - ci-prod
+            tags:
+              only: /.*/
           requires:
             - synchronizer
             - django-centauri
