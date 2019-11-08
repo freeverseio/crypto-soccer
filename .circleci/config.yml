@@ -9,8 +9,6 @@ executors:
     docker:
       - image: freeverseio/circleci
       - image: freeverseio/ethereum:test
-      - environment: 
-          MY_VAR: `git describe --tag`
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
@@ -93,60 +91,36 @@ jobs:
       - run: docker push freeverseio/relay.db:dev
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
-
   dockerization-production:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      # Run a step to setup an environment variable.
-      - run: 
-          name: "Setup custom environment variables"
-          command: |
-            echo $MY_VAR # Redirect MY_ENV_VAR into $BASH_ENV
-      # Run a step to print what branch our code base is on.
-      - run: # test what branch we're on.
-          name: "What branch am I on?"
-          command: echo ${CIRCLE_TAG}
-      # Run another step, the same as above; note that you can
-      # invoke environment variable without curly braces.
-      - run:
-          name: "What branch am I on now?"
-          command: echo $CIRCLE_BRANCH
-      - run:
-          name: "What was my custom environment variable?"
-          command: echo ${MY_ENV_VAR}
-      - run: export VERSION=`git describe --tag`
-      - run: 
-          name: ciao
-          command: echo $CIRCLE_TAG
-      - run: echo ${VERSION}
-      - run: echo "cd django-centauri && docker build -t freeverseio/centauri:${VERSION} ."
       - run: make setup contracts
-      - run: eval "cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} ."
-      - run: eval "cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} ."
-      - run: eval "cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} ."
-      - run: eval "cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} ."
-      - run: eval "cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} ."
-      - run: eval "cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} ."
-      - run: eval "cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} ."
-      - run: eval "cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} ."
-      - run: eval "cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} ."
-      - run: eval "cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} ."
-      - run: eval "cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} ."
+      - run: cd django-centauri && docker build -t freeverseio/centauri:`git describe --tag` .
+      - run: cd market.trader && docker build -t freeverseio/market.trader:`git describe --tag` .
+      - run: eval "cd universe.db && docker build -t freeverseio/universe.db:`git describe --tag` ."
+      - run: eval "cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:`git describe --tag` ."
+      - run: eval "cd relay.api && docker build -t freeverseio/relay.api:`git describe --tag` ."
+      - run: eval "cd relay.db && docker build -t freeverseio/relay.db:`git describe --tag` ."
+      - run: eval "cd nodejs-horizon && docker build -t freeverseio/horizon:`git describe --tag` ."
+      - run: eval "cd market.db && docker build -t freeverseio/market.db:`git describe --tag` ."
+      - run: eval "cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:`git describe --tag` ."
+      - run: eval "cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:`git describe --tag` ."
+      - run: eval "cd universe.api && docker build -t freeverseio/universe.api:`git describe --tag` ."
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: eval "docker push freeverseio/centauri:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/synchronizer:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/horizon:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/universe.db:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/market.db:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/market.trader:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/market.notary:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/relay.api:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/relay.db:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/universe.api:${CIRCLE_TAG}"
-      - run: eval "docker push freeverseio/relay.actions:${CIRCLE_TAG}"
+      - run: eval "docker push freeverseio/centauri:`git describe --tag`"
+      - run: eval "docker push freeverseio/synchronizer:`git describe --tag`"
+      - run: eval "docker push freeverseio/horizon:`git describe --tag`"
+      - run: eval "docker push freeverseio/universe.db:`git describe --tag`"
+      - run: eval "docker push freeverseio/market.db:`git describe --tag`"
+      - run: eval "docker push freeverseio/market.trader:`git describe --tag`"
+      - run: eval "docker push freeverseio/market.notary:`git describe --tag`"
+      - run: eval "docker push freeverseio/relay.api:`git describe --tag`"
+      - run: eval "docker push freeverseio/relay.db:`git describe --tag`"
+      - run: eval "docker push freeverseio/universe.api:`git describe --tag`"
+      - run: eval "docker push freeverseio/relay.actions:`git describe --tag`"
   deploy:
     executor: freeverse
     steps:
