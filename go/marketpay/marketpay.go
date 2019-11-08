@@ -33,7 +33,7 @@ type Order struct {
 		Self           string        `json:"self"`
 		PublicID       string        `json:"public_id"`
 		Name           string        `json:"name"`
-		Value          int           `json:"value"`
+		Value          float64       `json:"value"`
 		Currency       string        `json:"currency"`
 		Amount         string        `json:"amount"`
 		PayinAmount    string        `json:"payin_amount"`

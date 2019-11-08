@@ -46,7 +46,7 @@ func TestCreateOrder(t *testing.T) {
 	}
 
 	name := "This is a name"
-	value := "100" // $$$
+	value := "100.43" // $$$
 	orderID, err := mp.CreateOrder(
 		sellerID,
 		buyerID,
