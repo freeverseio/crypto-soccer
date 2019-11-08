@@ -14,6 +14,10 @@ func TestNotPayingAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
 	bid := storage.Bid{}
 	_, err = bidmachine.New(
@@ -22,6 +26,7 @@ func TestNotPayingAuction(t *testing.T) {
 		bc.Market,
 		bc.Owner,
 		bc.Client,
+		db,
 	)
 	if err == nil {
 		t.Fatalf("Accepting %v auction", auction.State)
@@ -33,6 +38,10 @@ func TestPayingAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
 	bid := storage.Bid{}
 	_, err = bidmachine.New(
@@ -41,6 +50,7 @@ func TestPayingAuction(t *testing.T) {
 		bc.Market,
 		bc.Owner,
 		bc.Client,
+		db,
 	)
 	if err != nil {
 		t.Fatalf("Not accepting %v auction", auction.State)
@@ -84,6 +94,10 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
 	bid := storage.Bid{State: storage.BID_FAILED_TO_PAY}
 	machine, err := bidmachine.New(
@@ -92,6 +106,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 		bc.Market,
 		bc.Owner,
 		bc.Client,
+		db,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -110,6 +125,10 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
 	bid := storage.Bid{State: storage.BID_ACCEPTED}
 	machine, err := bidmachine.New(
@@ -118,6 +137,7 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 		bc.Market,
 		bc.Owner,
 		bc.Client,
+		db,
 	)
 	if err != nil {
 		t.Fatal(err)

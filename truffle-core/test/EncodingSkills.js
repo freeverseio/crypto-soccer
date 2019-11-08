@@ -47,7 +47,7 @@ contract('Encoding', (accounts) => {
 
    
     it('encoding and decoding skills', async () => {
-        sk = [16383, 13, 4, 56, 456]
+        sk = [2**16 - 16383, 2**16 - 13, 2**16 - 4, 2**16 - 56, 2**16 - 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
 
         skills = await encoding.encodePlayerSkills(
@@ -106,7 +106,7 @@ contract('Encoding', (accounts) => {
         result =  await encoding.getIsSpecial(skills2).should.be.fulfilled;
         result.should.be.equal(true);
         
-        sk = [43, 567, 3214, 356, 4556]
+        sk = [2**16 - 43, 2**16 - 567, 0, 2**16 - 356, 2**16 - 4556]
         sumSkills = sk.reduce((a, b) => a + b, 0);
         skills = await encodingSet.setShoot(skills, sk[0]).should.be.fulfilled;
         skills = await encodingSet.setSpeed(skills, sk[1]).should.be.fulfilled;
@@ -147,11 +147,15 @@ contract('Encoding', (accounts) => {
         skills = await encodingSet.setInjuryWeeksLeft(skills, 4).should.be.fulfilled;
         result = await encoding.getInjuryWeeksLeft(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(4);
+
+        skills = await encodingSet.setSumOfSkills(skills, sumSkills);
+        result = await encoding.getSumOfSkills(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(sumSkills);
         
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(0);
         
-        skills = await encoding.addTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
+        skills = await encoding.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(targetTeamId);
         

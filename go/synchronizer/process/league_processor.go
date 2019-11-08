@@ -11,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 
@@ -22,8 +23,9 @@ type LeagueProcessor struct {
 	enginePreComp     *engineprecomp.Engineprecomp
 	leagues           *leagues.Leagues
 	evolution         *evolution.Evolution
+	universedb        *storage.Storage
+	relaydb           *relay.Storage
 	assets            *assets.Assets
-	storage           *storage.Storage
 	calendarProcessor *Calendar
 	FREEPLAYERID      *big.Int
 }
@@ -31,12 +33,13 @@ type LeagueProcessor struct {
 func NewLeagueProcessor(
 	engine *engine.Engine,
 	enginePreComp *engineprecomp.Engineprecomp,
+	assets *assets.Assets,
 	leagues *leagues.Leagues,
 	evolution *evolution.Evolution,
-	assets *assets.Assets,
-	storage *storage.Storage,
+	universedb *storage.Storage,
+	relaydb *relay.Storage,
 ) (*LeagueProcessor, error) {
-	calendarProcessor, err := NewCalendar(leagues, storage)
+	calendarProcessor, err := NewCalendar(leagues, universedb)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +54,9 @@ func NewLeagueProcessor(
 		enginePreComp,
 		leagues,
 		evolution,
+		universedb,
+		relaydb,
 		assets,
-		storage,
 		calendarProcessor,
 		FREEPLAYERID,
 	}, nil
@@ -72,12 +76,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	// case 0: // first half league match
 	// case 1:
 	if turnInDay < 2 {
-		countryCount, err := b.storage.CountryInTimezoneCount(timezoneIdx)
+		countryCount, err := b.universedb.CountryInTimezoneCount(timezoneIdx)
 		if err != nil {
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-			leagueCount, err := b.storage.LeagueInCountryCount(timezoneIdx, countryIdx)
+			leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 			if err != nil {
 				return err
 			}
@@ -88,7 +92,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						return err
 					}
 				}
-				matches, err := b.storage.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+				matches, err := b.universedb.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 				if err != nil {
 					return err
 				}
@@ -116,7 +120,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					matchBools[2] = isPlayoff
 					var logs [2]*big.Int
 					if is2ndHalf {
-						matchLog[0], matchLog[1], err = b.storage.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
+						matchLog[0], matchLog[1], err = b.universedb.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
 						if err != nil {
 							return nil
 						}
@@ -173,7 +177,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					if err != nil {
 						return err
 					}
-					err = b.storage.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
+					err = b.universedb.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
 					if err != nil {
 						return err
 					}
@@ -223,7 +227,7 @@ func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *
 		if err != nil {
 			return err
 		}
-		player, err := b.storage.GetPlayer(playerID)
+		player, err := b.universedb.GetPlayer(playerID)
 		if err != nil {
 			return err
 		}
@@ -234,7 +238,7 @@ func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *
 		player.State.Shoot = shoot.Uint64()
 		player.State.Defence = endurance.Uint64()
 		player.State.EncodedSkills = state
-		err = b.storage.PlayerUpdate(playerID, player.State)
+		err = b.universedb.PlayerUpdate(playerID, player.State)
 		if err != nil {
 			return err
 		}
@@ -259,7 +263,7 @@ func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, ta
 	if err != nil {
 		return err
 	}
-	players, err := b.storage.GetPlayersOfTeam(teamID)
+	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return err
 	}
@@ -321,7 +325,7 @@ func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, ta
 				return err
 			}
 		}
-		b.storage.PlayerUpdate(player.PlayerId, player.State)
+		b.universedb.PlayerUpdate(player.PlayerId, player.State)
 	}
 	return nil
 }
@@ -359,7 +363,7 @@ func (b *LeagueProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, 
 }
 
 func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	teams, err := b.storage.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	teams, err := b.universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -371,7 +375,7 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 		team.State.GoalsAgainst = 0
 		team.State.GoalsForward = 0
 		team.State.Points = 0
-		err = b.storage.TeamUpdate(team.TeamID, team.State)
+		err = b.universedb.TeamUpdate(team.TeamID, team.State)
 		if err != nil {
 			return err
 		}
@@ -388,11 +392,11 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 }
 
 func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam, err := b.storage.GetTeam(homeTeamID)
+	homeTeam, err := b.universedb.GetTeam(homeTeamID)
 	if err != nil {
 		return err
 	}
-	visitorTeam, err := b.storage.GetTeam(visitorTeamID)
+	visitorTeam, err := b.universedb.GetTeam(visitorTeamID)
 	if err != nil {
 		return err
 	}
@@ -418,39 +422,47 @@ func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamI
 		visitorTeam.State.Points++
 	}
 
-	err = b.storage.TeamUpdate(homeTeamID, homeTeam.State)
+	err = b.universedb.TeamUpdate(homeTeamID, homeTeam.State)
 	if err != nil {
 		return err
 	}
-	err = b.storage.TeamUpdate(visitorTeamID, visitorTeam.State)
+	err = b.universedb.TeamUpdate(visitorTeamID, visitorTeam.State)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+func (b *LeagueProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
+	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
+		return nil, err
+	} else if encodedTactic, err := b.engine.EncodeTactics(
+		&bind.CallOpts{},
+		tactic.Substitutions,
+		tactic.SubsRounds,
+		tactic.Shirts,
+		tactic.ExtraAttack,
+		tactic.TacticID,
+	); err != nil {
+		return nil, err
+	} else {
+		return encodedTactic, nil
+	}
+}
+
 func (b *LeagueProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
-	var substitutions [3]uint8 = [3]uint8{11, 11, 11} // TODO: get the constant from the contracts => 11 means no subs
-	var subsRounds [3]uint8 = [3]uint8{2, 3, 4}
-	var lineup [14]uint8 = [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-	var extraAttack [10]bool
-	extraAttack[3] = true
-	extraAttack[6] = true
-	var tacticsId uint8 = 1
-	tactic, err := b.engine.EncodeTactics(
-		&bind.CallOpts{},
-		substitutions,
-		subsRounds,
-		lineup,
-		extraAttack,
-		tacticsId,
-	)
-	if err != nil {
+	verse := uint64(0) // TODO: get verse from event
+	if tactic, err := b.getEncodedTacticAtVerse(homeTeamID, verse); err != nil {
 		return tactics, err
+	} else {
+		tactics[0] = tactic
 	}
-	tactics[0] = tactic
-	tactics[1] = tactic
+	if tactic, err := b.getEncodedTacticAtVerse(visitorTeamID, verse); err != nil {
+		return tactics, err
+	} else {
+		tactics[1] = tactic
+	}
 	return tactics, nil
 }
 
@@ -474,7 +486,7 @@ func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	for i := 0; i < 25; i++ {
 		state[i] = b.FREEPLAYERID
 	}
-	players, err := b.storage.GetPlayersOfTeam(teamID)
+	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return state, err
 	}

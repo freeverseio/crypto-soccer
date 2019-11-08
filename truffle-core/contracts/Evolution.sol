@@ -229,7 +229,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         } else {
             skills = setEndurance(skills, 1);
         }
-        return skills;
+        // 5: sumSkills
+        return setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
     } 
 
 

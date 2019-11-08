@@ -9,6 +9,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -20,7 +21,15 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, ganache.Assets, nil)
+	processor, err := process.NewLeagueProcessor(
+		ganache.Engine,
+		ganache.EnginePreComp,
+		ganache.Assets,
+		ganache.Leagues,
+		ganache.Evolution,
+		nil,
+		nil,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +45,8 @@ func TestCreateMAtchSeed(t *testing.T) {
 	}
 }
 func TestProcessInvalidTimezone(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +55,15 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.EnginePreComp, ganache.Leagues, ganache.Evolution, ganache.Assets, sto)
+	processor, err := process.NewLeagueProcessor(
+		ganache.Engine,
+		ganache.EnginePreComp,
+		ganache.Assets,
+		ganache.Leagues,
+		ganache.Evolution,
+		universedb,
+		relaydb,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +98,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
 	tactics[1], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
-	result, err := bc.Engine.PlayHalfMatch(
+	logs, err := bc.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		seed,
 		matchStartTime,
@@ -92,13 +110,14 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result[0].String() != "11519355456996376452661064990627118067406041180784864310617375244288" {
-		t.Fatalf("Received %v", result[0].String())
+	if logs[0].String() != "1645504557572631091828279073381766814124583466071029250581856256" {
+		t.Fatalf("Received %v", logs[0].String())
 	}
 }
 
 func TestLeagueProcessMatch(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +134,12 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(sto, bc.Assets, bc.Leagues)
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		bc.Assets,
+		bc.Leagues,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,7 +150,15 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.EnginePreComp, bc.Leagues, bc.Evolution, bc.Assets, sto)
+	processor, err := process.NewLeagueProcessor(
+		bc.Engine,
+		bc.EnginePreComp,
+		bc.Assets,
+		bc.Leagues,
+		bc.Evolution,
+		universedb,
+		relaydb,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

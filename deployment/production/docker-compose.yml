@@ -20,7 +20,6 @@ services:
     image: freeverseio/synchronizer:dev
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
-      -relayPostgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"

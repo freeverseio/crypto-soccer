@@ -4,6 +4,8 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
+
 const Assets = artifacts.require('Assets');
 
 contract('Assets', (accounts) => {
@@ -124,7 +126,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('check playerExists and isVirtual', async () =>  {
+    it('check playerExists and isPlayerWritten', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = nTeams;
         playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
@@ -132,12 +134,13 @@ contract('Assets', (accounts) => {
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(true);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-            isVirtual.should.be.equal(true);            
+            isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+            isPlayerWritten.should.be.equal(false);            
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry+1);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(false);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.rejected;
+            isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+            isPlayerWritten.should.be.equal(false);            
         }
     });
 
@@ -225,22 +228,21 @@ contract('Assets', (accounts) => {
         playerIdxInCountry = 1;
         playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
         encodedSkills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        shoot = await assets.getShoot(encodedSkills).should.be.fulfilled; 
-        shoot.toNumber().should.be.equal(44);
-        speed = await assets.getSpeed(encodedSkills).should.be.fulfilled; 
-        speed.toNumber().should.be.equal(63);
-        pass = await assets.getPass(encodedSkills).should.be.fulfilled; 
-        pass.toNumber().should.be.equal(59);
-        defence = await assets.getDefence(encodedSkills).should.be.fulfilled; 
-        defence.toNumber().should.be.equal(40);
-        endurance = await assets.getEndurance(encodedSkills).should.be.fulfilled; 
-        endurance.toNumber().should.be.equal(41);
+        expectedSkills = [ 440, 1068, 1284, 826, 1378 ];
+        resultSkills = [];
+        resultSkills.push(await assets.getShoot(encodedSkills).should.be.fulfilled);
+        resultSkills.push(await assets.getSpeed(encodedSkills).should.be.fulfilled);
+        resultSkills.push(await assets.getPass(encodedSkills).should.be.fulfilled);
+        resultSkills.push(await assets.getDefence(encodedSkills).should.be.fulfilled);
+        resultSkills.push(await assets.getEndurance(encodedSkills).should.be.fulfilled);
+        debug.compareArrays(resultSkills, expectedSkills, toNum = true, verbose = false);
+
         newId =  await assets.getPlayerIdFromSkills(encodedSkills).should.be.fulfilled; 
         newId.should.be.bignumber.equal(playerId);
         gameDeployDay = await assets.gameDeployDay().should.be.fulfilled;
         dayOfBirth =  await assets.getBirthDay(encodedSkills).should.be.fulfilled; 
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        (Math.abs(ageInDays.toNumber() - 11645) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
+        (Math.abs(ageInDays.toNumber() - 11455) <= 7).should.be.equal(true); // we cannot guarantee exactness +/- 1
         // check that the ageInDay can be obtained by 7 * (now - dayOfBirth), where
         // now is approximately gameDeployDay. There is an uncertainty of about 7 days due to rounding.
         (Math.abs(7*(gameDeployDay.toNumber()-dayOfBirth.toNumber())-ageInDays) < 8).should.be.equal(true);
@@ -468,46 +470,38 @@ contract('Assets', (accounts) => {
         exists.should.be.equal(false);
     });
 
-    it('isVirtual after sale', async () => {
+    it('isPlayerWritten after sale', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(true)
+        isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+        isPlayerWritten.should.be.equal(false)
         await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(false)
+        isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+        isPlayerWritten.should.be.equal(true)
     });
 
     
     it('computed skills with rnd = 0 for a goal keeper', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 0).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
-        expected = [50, 50, 50, 50, 50];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            skills[sk].toNumber().should.be.equal(expected[sk]);
-        }
+        expected = [1000, 1000, 1000, 1000, 1000];
+        debug.compareArrays(skills, expected, toNum = true, verbose = false);
         // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-        birthTraits[0].toNumber().should.be.equal(0);
-        birthTraits[1].toNumber().should.be.equal(0); // shirtNum = 0 is a GK
-        birthTraits[2].toNumber().should.be.equal(0);
-        birthTraits[3].toNumber().should.be.equal(0);
+        expected = [0, 0, 0, 0] // shirNum = 0 for a GK
+        debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
-    it('computed skills with rnd = 0 for non goal keepers should be 50 each', async () => {
+    it('computed skills with rnd = 0 for non goal keepers should be 1000 each', async () => {
         let computedSkills = await assets.computeSkills(rnd = 0, shirtNum = 3).should.be.fulfilled;
         const {0: skills, 1: birthTraits} = computedSkills;
-        expected = [50, 50, 50, 50, 50];
-        for (sk = 0; sk < N_SKILLS; sk++) {
-            skills[sk].toNumber().should.be.equal(expected[sk]);
-        }
+        expected = [1000, 1000, 1000, 1000, 1000];
+        debug.compareArrays(skills, expected, toNum = true, verbose = false);
         // birthTraits = [potential, forwardness, leftishness, aggressiveness]
-        birthTraits[0].toNumber().should.be.equal(0);
-        birthTraits[1].toNumber().should.be.equal(1); // defender
-        birthTraits[2].toNumber().should.be.equal(1 + shirtNum);
-        birthTraits[3].toNumber().should.be.equal(0);
+        expected = [0, 1, 1, 0]
+        debug.compareArrays(birthTraits, expected, toNum = true, verbose = false);
     });
 
     it('computed prefPos gives correct number of defenders, mids, etc', async () => {
@@ -521,23 +515,25 @@ contract('Assets', (accounts) => {
     });
 
     it('testing aggressiveness', async () => { 
-        expectedAggr = [ 1, 3, 3, 1, 2, 1, 2, 1, 3, 0, 2, 2, 1, 1, 1, 2, 0, 2 ];
+        expectedAggr = [ 3, 1, 1, 2, 2, 2, 0, 1, 0, 1, 2, 2, 3, 3, 3, 0, 2, 3 ];
+        resultAggr = []
         for (let shirtNum = 0; shirtNum < PLAYERS_PER_TEAM_INIT; shirtNum++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + shirtNum));
             computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
             birthTraits = computedSkills[1];
-            birthTraits[3].toNumber().should.be.equal(expectedAggr[shirtNum]);
+            resultAggr.push(birthTraits[3])
         }
+        debug.compareArrays(resultAggr, expectedAggr, toNum = true, verbose = false);
     });
 
-    it('sum of computed skills is close to 250', async () => {
+    it('sum of computed skills is close to 5000', async () => {
         for (let i = 0; i < 10; i++) {
             seed = web3.utils.toBN(web3.utils.keccak256("32123" + i));
             shirtNum = 3 + (seed % 15); // avoid goalkeepers
             computedSkills = await assets.computeSkills(seed, shirtNum).should.be.fulfilled;
             skills = computedSkills[0];
             const sum = skills.reduce((a, b) => a + b.toNumber(), 0);
-            (Math.abs(sum - 250) < 5).should.be.equal(true);
+            (Math.abs(sum - 5000) < 5).should.be.equal(true);
         }
     });
 

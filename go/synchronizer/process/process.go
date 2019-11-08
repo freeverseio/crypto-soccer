@@ -17,13 +17,15 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	log "github.com/sirupsen/logrus"
 )
 
 type EventProcessor struct {
 	client                    *ethclient.Client
-	db                        *storage.Storage
+	universedb                *storage.Storage
+	relaydb                   *relay.Storage
 	engine                    *engine.Engine
 	assets                    *assets.Assets
 	leagues                   *leagues.Leagues
@@ -40,7 +42,8 @@ type EventProcessor struct {
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
 func NewEventProcessor(
 	client *ethclient.Client,
-	db *storage.Storage,
+	universedb *storage.Storage,
+	relaydb *relay.Storage,
 	engine *engine.Engine,
 	enginePreComp *engineprecomp.Engineprecomp,
 	assets *assets.Assets,
@@ -49,17 +52,31 @@ func NewEventProcessor(
 	market *market.Market,
 	evolution *evolution.Evolution,
 ) (*EventProcessor, error) {
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(db, assets, leagues)
+	divisionCreationProcessor, err := NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		assets,
+		leagues,
+	)
 	if err != nil {
 		return nil, err
 	}
-	leagueProcessor, err := NewLeagueProcessor(engine, enginePreComp, leagues, evolution, assets, db)
+	leagueProcessor, err := NewLeagueProcessor(
+		engine,
+		enginePreComp,
+		assets,
+		leagues,
+		evolution,
+		universedb,
+		relaydb,
+	)
 	if err != nil {
 		return nil, err
 	}
 	return &EventProcessor{
 		client,
-		db,
+		universedb,
+		relaydb,
 		engine,
 		assets,
 		leagues,
@@ -104,7 +121,7 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	deltaBlock := *opts.End - opts.Start
 
 	// store the last block that was scanned
-	return deltaBlock, p.db.SetBlockNumber(*opts.End)
+	return deltaBlock, p.universedb.SetBlockNumber(*opts.End)
 }
 
 // *****************************************************************************
@@ -121,13 +138,13 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		log.Debug("[processor] dispatching LeaguesTeamTransfer event")
 		teamID := v.TeamId
 		newOwner := v.To.String()
-		team, err := p.db.GetTeam(teamID)
+		team, err := p.universedb.GetTeam(teamID)
 		if err != nil {
 			return err
 		}
 		// team.State.BlockNumber = blockNumber
 		team.State.Owner = newOwner
-		return p.db.TeamUpdate(teamID, team.State)
+		return p.universedb.TeamUpdate(teamID, team.State)
 	case assets.AssetsPlayerStateChange:
 		log.Debug("[processor] dispatching LeaguesPlayerStateChange event")
 		playerID := v.PlayerId
@@ -140,25 +157,25 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
-		player, err := p.db.GetPlayer(playerID)
+		player, err := p.universedb.GetPlayer(playerID)
 		if err != nil {
 			return err
 		}
 		player.State.TeamId = teamID
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-		return p.db.PlayerUpdate(playerID, player.State)
+		return p.universedb.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Debug("[processor] Dispatching UpdatesActionsSubmission event")
 		return p.leagueProcessor.Process(v)
 	case market.MarketPlayerFreeze:
 		log.Debug("[processor] Dispatching MarketPlayerFreeze event")
 		playerID := v.PlayerId
-		player, err := p.db.GetPlayer(playerID)
+		player, err := p.universedb.GetPlayer(playerID)
 		if err != nil {
 			return err
 		}
 		player.State.Frozen = v.Frozen
-		return p.db.PlayerUpdate(playerID, player.State)
+		return p.universedb.PlayerUpdate(playerID, player.State)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
@@ -205,7 +222,7 @@ func (p *EventProcessor) clientLastBlockNumber() uint64 {
 	return header.Number.Uint64()
 }
 func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
-	storedLastBlockNumber, err := p.db.GetBlockNumber()
+	storedLastBlockNumber, err := p.universedb.GetBlockNumber()
 	if err != nil {
 		return 0, err
 	}

@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
@@ -15,7 +16,8 @@ import (
 )
 
 type DivisionCreationProcessor struct {
-	db                    *storage.Storage
+	universedb            *storage.Storage
+	relaydb               *relay.Storage
 	assets                *assets.Assets
 	SK_SHO                uint8
 	SK_SPE                uint8
@@ -28,7 +30,12 @@ type DivisionCreationProcessor struct {
 	PLAYERS_PER_TEAM_INIT uint8
 }
 
-func NewDivisionCreationProcessor(db *storage.Storage, assets *assets.Assets, leagues *leagues.Leagues) (*DivisionCreationProcessor, error) {
+func NewDivisionCreationProcessor(
+	universedb *storage.Storage,
+	relaydb *relay.Storage,
+	assets *assets.Assets,
+	leagues *leagues.Leagues,
+) (*DivisionCreationProcessor, error) {
 	SK_SHO, err := assets.SKSHO(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
@@ -57,7 +64,7 @@ func NewDivisionCreationProcessor(db *storage.Storage, assets *assets.Assets, le
 	if err != nil {
 		return nil, err
 	}
-	calendarProcessor, err := NewCalendar(leagues, db)
+	calendarProcessor, err := NewCalendar(leagues, universedb)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +73,8 @@ func NewDivisionCreationProcessor(db *storage.Storage, assets *assets.Assets, le
 		return nil, err
 	}
 	return &DivisionCreationProcessor{
-		db,
+		universedb,
+		relaydb,
 		assets,
 		SK_SHO,
 		SK_SPE,
@@ -83,7 +91,7 @@ func NewDivisionCreationProcessor(db *storage.Storage, assets *assets.Assets, le
 func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
-		if err := b.db.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+		if err := b.universedb.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
 			return err
 		}
 	}
@@ -92,7 +100,7 @@ func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation)
 		if countryIdx > 65535 {
 			return errors.New("Cannot cast country idx to uint16: value too large")
 		}
-		if err := b.db.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
+		if err := b.universedb.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
 			return err
 		}
 		if err := b.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
@@ -108,7 +116,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 	leagueIdxEnd := leagueIdxBegin + int64(b.LEAGUES_PER_DIV)
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
-		if err := b.db.LeagueCreate(storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
+		if err := b.universedb.LeagueCreate(storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
 			return err
 		}
 		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
@@ -117,7 +125,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 			if teamId, err := b.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
 			} else {
-				if err := b.db.TeamCreate(
+				if err := b.universedb.TeamCreate(
 					storage.Team{
 						teamId,
 						names.GenerateTeamName(teamId),
@@ -138,6 +146,8 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 				); err != nil {
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
+					return err
+				} else if err := b.createInitialTactics(teamId); err != nil {
 					return err
 				}
 			}
@@ -172,7 +182,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if shirtNumber, err := b.assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
-		} else if err := b.db.PlayerCreate(
+		} else if err := b.universedb.PlayerCreate(
 			storage.Player{
 				PlayerId:          playerId,
 				Name:              names.GeneratePlayerName(playerId),
@@ -211,4 +221,10 @@ func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOp
 		}
 		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
 	}
+}
+
+func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
+	tactics := b.relaydb.DefaultTactic(teamID)
+	initVerse := uint64(0) // init verse
+	return b.relaydb.TacticCreate(*tactics, initVerse)
 }
