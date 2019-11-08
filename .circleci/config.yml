@@ -98,7 +98,9 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: export VERSION=`git describe --tag`
-      - run: echo $VERSION
+      - run: 
+          name: ciao
+          command: echo $CIRCLE_TAG
       - run: echo ${VERSION}
       - run: echo "cd django-centauri && docker build -t freeverseio/centauri:${VERSION} ."
       - run: make setup contracts
