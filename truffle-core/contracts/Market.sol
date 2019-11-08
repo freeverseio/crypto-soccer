@@ -46,36 +46,31 @@ contract Market {
         emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
     }
 
-    function freezePromoPlayer(
-        uint256 playerId, 
-        uint256 validUntil
-    ) public {
-        require(msg.sender == _assets.rosterAddr() , "Only the Roster can create promo players");
-        require(!isPlayerFrozen(playerId));
-        require(_assets.teamExists(_assets.getTargetTeamId(playerId)), "cannot offer a promo player to a non-existent team");
-        require(!_assets.isBotTeam(_assets.getTargetTeamId(playerId)), "cannot offer a promo player to a bot team");
-        require(validUntil > now, "validUntil is in the past");
-        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        playerIdToAuctionData[playerId] = validUntil;
-        emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
-    }
-
-    function completePromoPlayerTransfer(
+    function transferPromoPlayer(
         uint256 playerId,
         uint256 validUntil,
-        bytes32[3] memory sig,
-        uint8 sigV
+        bytes32[3] memory sigSel,
+        bytes32[3] memory sigBuy,
+        uint8 sigVSel,
+        uint8 sigVBuy
      ) public {
-        uint256 buyerTeamId = _assets.getTargetTeamId(playerId);
-        require(isPlayerFrozen(playerId), "promo player not frozen, cannot complete transfer");
-        require(_assets.getOwnerTeam(buyerTeamId) == 
-                    recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]), "Buyer is not own targetTeamId");
-        require(now < validUntil);
-        require(validUntil == playerIdToAuctionData[playerId], "provided validUntil does not match freeze validUntil");
-        require(sig[IDX_MSG] == prefixed(buildAgreeToBuyPromoPlayerTxMsg(playerId, validUntil)), "buyer msg does not match");
-        _assets.transferPlayer(playerId, buyerTeamId);
-        playerIdToAuctionData[playerId] = 1;
-        emit PlayerFreeze(playerId, 1, false);
+        require(validUntil > now, "validUntil is in the past");
+        require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
+        require(!_assets.isPlayerWritten(playerId), "promo player already in the universe");
+        uint256 targetTeamId = _assets.getTargetTeamId(playerId);
+        require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
+        require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
+                
+        require(_assets.getOwnerTeam(targetTeamId) == 
+                    recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
+         
+        require(_assets.rosterAddr() == 
+                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own roster");
+         
+        bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
+        require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
+        require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
+        _assets.transferPlayer(playerId, targetTeamId);
     }
 
     function completePlayerAuction(
@@ -300,7 +295,7 @@ contract Market {
         return keccak256(abi.encode(sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction));
     }
 
-    function buildAgreeToBuyPromoPlayerTxMsg(uint256 playerId, uint256 validUntil) public pure returns (bytes32) {
+    function buildPromoPlayerTxMsg(uint256 playerId, uint256 validUntil) public pure returns (bytes32) {
         return keccak256(abi.encode(playerId, validUntil));
     }
 

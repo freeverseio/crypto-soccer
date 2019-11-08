@@ -200,6 +200,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
+    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
+
     function isVirtualPlayer(uint256 playerId) public view returns (bool) {
         require(playerExists(playerId), "unexistent player");
         return _playerIdToState[playerId] == 0;
