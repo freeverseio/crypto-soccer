@@ -147,6 +147,8 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
+				} else if err := b.createInitialTactics(teamId); err != nil {
+					return err
 				}
 			}
 		}
@@ -219,4 +221,10 @@ func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOp
 		}
 		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
 	}
+}
+
+func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
+	tactics := b.relaydb.DefaultTactic(teamID)
+	initVerse := uint64(0) // init verse
+	return b.relaydb.TacticCreate(*tactics, initVerse)
 }

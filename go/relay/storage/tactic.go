@@ -40,7 +40,7 @@ func computeHash(h hash.Hash, data ...[]byte) []byte {
 	return h.Sum(nil)
 }
 
-func (b *Storage) defaultTactic(teamID *big.Int) *Tactic {
+func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
 	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
 	tacticId := uint8(1)
@@ -175,7 +175,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	if !rows.Next() {
 		return nil, errors.New("Unexistent tactic")
 	}
-	t := b.defaultTactic(teamID)
+	t := b.DefaultTactic(teamID)
 	err = rows.Scan(
 		&t.TacticID,
 		&t.Shirts[0],
@@ -238,7 +238,7 @@ func (b *Storage) GetTacticOrDefault(teamID *big.Int, verse uint64) (*Tactic, er
 		if count > 0 {
 			return b.GetTactic(teamID, verse)
 		} else {
-			return b.defaultTactic(teamID), nil
+			return b.DefaultTactic(teamID), nil
 		}
 	}
 }
