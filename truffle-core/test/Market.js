@@ -744,7 +744,7 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
-    await assets.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
@@ -785,35 +785,31 @@ contract("Market", accounts => {
     const sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
     const sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
 
-    // init owner is basically whoever called the .init() method in the assets contract:
-    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    owner.should.be.equal(accounts[0]);
+    // it currently does not exist:
+    exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
+    exists.should.be.equal(false);
+
+    // it currently has no owner:
+    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
     // this will fail because we still haven't said that Freeverse owns the roster:
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
     // let's fix it:
-    await assets.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
-    // change of roster address immediately reflects in change of who owns the roster players
-    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    owner.should.be.equal(freeverseAccount.address);
-
-    console.log(playerId)
+    await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
-
+    // change of roster address immediately reflects in change of who owns the roster players
+    owner = await assets.getOwnerPlayer(playerId).should.be.rejected;
     // when transferred, the "targetTeamId" is erased (set to zero)
     finalPlayerId = await assets.setTargetTeamId(playerId, 0).should.be.fulfilled;
+    exists = await assets.playerExists(finalPlayerId).should.be.fulfilled;
+    exists.should.be.equal(true);
     owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
-
-    // so if we inquire about the original playerId, it will believe it belongs to the roster (but any attempt to re-offer will fail)
-    console.log(playerId)
-    owner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
-    owner.should.be.equal(freeverseAccount.address);
   });
 
   // check if not freeverse not targetTeamOwner not possible
   // catch transfer event
   it2("promo players: cannot offer a promo player that already exists", async () => {
-    await assets.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
     result = await assets.isPlayerWritten(playerId);

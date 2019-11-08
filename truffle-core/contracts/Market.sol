@@ -22,16 +22,25 @@ contract Market {
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
+    uint256 constant public ROSTER_TEAM = 1;
 
     Assets private _assets;
 
     mapping (uint256 => uint256) private playerIdToAuctionData;
     mapping (uint256 => uint256) private teamIdToAuctionData;
 
+    address public rosterAddr;
+
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
     }
+    function setRosterAddr(address addr) public {rosterAddr = addr;}
     
+    // function isRosterPlayer(uint256 playerId) public view returns(bool) {
+    //     if (_playerIdToState[setTargetTeamId(playerId, 0)] != 0) return false;
+    //     return getIsSpecial(playerId);
+    // }
+
     // Main PLAYER auction functions: freeze & complete
     function freezePlayer(
         bytes32 sellerHiddenPrice,
@@ -56,7 +65,8 @@ contract Market {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        require(!_assets.isPlayerWritten(playerId), "promo player already in the universe");
+        uint256 playerIdWithoutTargetTeam = _assets.setTargetTeamId(playerId, 0);
+        require(!_assets.isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
         uint256 targetTeamId = _assets.getTargetTeamId(playerId);
         // testing about the target team is already done in _assets.transferPlayer
         require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
@@ -65,13 +75,13 @@ contract Market {
         require(_assets.getOwnerTeam(targetTeamId) == 
                     recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
          
-        require(_assets.rosterAddr() == 
+        require(rosterAddr == 
                     recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own roster");
          
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
         require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
-        _assets.transferPlayer(_assets.setTargetTeamId(playerId, 0), targetTeamId);
+        _assets.transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
     }
 
     function completePlayerAuction(
