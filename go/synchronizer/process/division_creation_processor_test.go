@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -15,11 +16,15 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
-	process, err := process.NewDivisionCreationProcessor(db, bc.Assets, bc.Leagues)
+	process, err := process.NewDivisionCreationProcessor(db, relaydb, bc.Assets, bc.Leagues)
 	if err != nil {
 		t.Fatal(err)
 	}

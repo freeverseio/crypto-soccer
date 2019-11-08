@@ -17,6 +17,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
@@ -24,6 +25,7 @@ import (
 func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
+	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
@@ -107,21 +109,28 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
-	var sto *storage.Storage
+	var universedb *storage.Storage
+	var relaydb *relay.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("./../universe.db/00_schema.sql")
+		universedb, err = storage.NewSqlite3("./../../universe.db/00_schema.sql")
+		relaydb, err = relay.NewSqlite3("./../../relay.db/00_schema.sql")
 	} else {
-		log.Info("Connecting to DBMS: ", *postgresURL)
-		sto, err = storage.NewPostgres(*postgresURL)
-	}
-	if err != nil {
-		log.Fatalf("Failed to connect to DBMS: %v", err)
+		log.Info("Connecting to universe DBMS: ", *postgresURL, " and relay DBMS: ", *relayPostgresURL)
+		universedb, err = storage.NewPostgres(*postgresURL)
+		if err != nil {
+			log.Fatalf("Failed to connect to universe DBMS: %v", err)
+		}
+		relaydb, err = relay.NewPostgres(*relayPostgresURL)
+		if err != nil {
+			log.Fatalf("Failed to connect to relay DBMS: %v", err)
+		}
 	}
 
 	process, err := process.BackgroundProcessNew(
 		client,
-		sto,
+		universedb,
+		relaydb,
 		engineContract,
 		enginePreCompContract,
 		assetsContract,
