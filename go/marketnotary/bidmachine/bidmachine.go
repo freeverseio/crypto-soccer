@@ -3,6 +3,7 @@ package bidmachine
 import (
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,6 +12,9 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/marketpay"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type BidMachine struct {
@@ -20,6 +24,7 @@ type BidMachine struct {
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
+	db        *storage.Storage
 }
 
 func New(
@@ -28,6 +33,7 @@ func New(
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
+	db *storage.Storage,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
@@ -39,6 +45,7 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
+		db,
 	}, nil
 }
 
@@ -82,6 +89,41 @@ func (b *BidMachine) Process() (storage.Bid, error) {
 }
 
 func (b *BidMachine) processPaying() error {
+	if b.bid.PaymentID == "" {
+		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
+		market, err := marketpay.New()
+		if err != nil {
+			return err
+		}
+		seller, err := market.CreateCustomer("+34", "657497063")
+		if err != nil {
+			return err
+		}
+		buyer, err := market.CreateCustomer("+34", "659853780")
+		if err != nil {
+			return err
+		}
+		price := fmt.Sprintf("%.2f", float64(b.auction.Price.Int64()+b.bid.ExtraPrice)/100.0)
+		order, err := market.CreateOrder(seller, buyer, "this is a test", price)
+		if err != nil {
+			return err
+		}
+		err = b.db.UpdateAuctionPaymentUrl(b.auction.UUID, order.Data.SellerLink)
+		if err != nil {
+			return err
+		}
+		err = b.db.UpdateBidPaymentID(b.auction.UUID, b.bid.ExtraPrice, fmt.Sprintf("%d", order.Data.ID))
+		if err != nil {
+			return err
+		}
+		err = b.db.UpdateBidPaymentUrl(b.auction.UUID, b.bid.ExtraPrice, order.Data.BuyerLink)
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order to be processed", b.bid.Auction, b.bid.ExtraPrice)
+	}
+	return nil
 	isOffer2StartAuction := false
 	bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
 	if err != nil {
@@ -140,6 +182,10 @@ func (b *BidMachine) processPaying() error {
 }
 
 func (b *BidMachine) processAccepted() error {
+	err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAYING, "")
+	if err != nil {
+		return err
+	}
 	b.bid.State = storage.BID_PAYING
 	return nil
 }

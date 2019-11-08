@@ -47,6 +47,7 @@ func (b *Processor) Process() error {
 			b.assets,
 			b.freeverse,
 			b.client,
+			b.db,
 		)
 		if err != nil {
 			return err
@@ -59,24 +60,24 @@ func (b *Processor) Process() error {
 		// update auction state if changed
 		newState := machine.Auction.State
 		if newState != auction.State {
-			log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, newState)
-			switch newState {
-			case storage.AUCTION_PAYING:
-				err = b.db.UpdateAuctionPaymentUrl(auction.UUID, "https://www.freeverse.io")
-				if err != nil {
-					return err
-				}
-				bid := bids[0]
-				err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage.BID_PAYING)
-				if err != nil {
-					return err
-				}
-				err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, "http://ninjaflex.com/")
-				if err != nil {
-					return err
-				}
-				break
-			}
+			// log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, newState)
+			// switch newState {
+			// case storage.AUCTION_PAYING:
+			// 	err = b.db.UpdateAuctionPaymentUrl(auction.UUID, "https://www.freeverse.io")
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	bid := bids[0]
+			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage.BID_PAYING, "state extra")
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, "http://ninjaflex.com/")
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	break
+			// }
 
 			err = b.db.UpdateAuctionState(auction.UUID, newState)
 			if err != nil {

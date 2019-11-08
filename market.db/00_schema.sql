@@ -31,6 +31,7 @@ INSERT INTO bid_states(state) VALUES ('REFUSED');
 INSERT INTO bid_states(state) VALUES ('PAYING');
 INSERT INTO bid_states(state) VALUES ('PAID');
 INSERT INTO bid_states(state) VALUES ('FAILED_TO_PAY');
+INSERT INTO bid_states(state) VALUES ('FAILED');
 
 CREATE TABLE bids (
     auction UUID NOT NULL REFERENCES auctions(uuid),
@@ -39,6 +40,8 @@ CREATE TABLE bids (
     team_id TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES bid_states(state),
+    state_extra TEXT NOT NULL DEFAULT '',
+    payment_id TEXT NOT NULL DEFAULT '',
     payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );

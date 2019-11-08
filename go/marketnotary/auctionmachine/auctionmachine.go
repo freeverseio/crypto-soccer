@@ -17,6 +17,7 @@ type AuctionMachine struct {
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
+	db        *storage.Storage
 }
 
 func New(
@@ -25,6 +26,7 @@ func New(
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
+	db *storage.Storage,
 ) (*AuctionMachine, error) {
 	if market == nil {
 		return nil, errors.New("market is nil")
@@ -42,6 +44,7 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
+		db,
 	}, nil
 }
 

@@ -11,6 +11,7 @@ require (
 	github.com/elastic/gosigar v0.10.5 // indirect
 	github.com/ethereum/go-ethereum v1.9.6
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
+	github.com/go-resty/resty/v2 v2.1.0
 	github.com/google/uuid v1.0.0
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
