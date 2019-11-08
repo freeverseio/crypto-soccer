@@ -9,6 +9,8 @@ executors:
     docker:
       - image: freeverseio/circleci
       - image: freeverseio/ethereum:test
+      - environment: 
+          MY_VAR: `git describe --tag`
         auth:
           username: $DOCKER_ID
           password: $DOCKER_PASSWD
@@ -101,7 +103,7 @@ jobs:
       - run: 
           name: "Setup custom environment variables"
           command: |
-            echo 'export MY_ENV_VAR="FOO"' >> $BASH_ENV # Redirect MY_ENV_VAR into $BASH_ENV
+            echo $MY_VAR # Redirect MY_ENV_VAR into $BASH_ENV
       # Run a step to print what branch our code base is on.
       - run: # test what branch we're on.
           name: "What branch am I on?"
