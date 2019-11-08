@@ -12,6 +12,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -33,6 +34,7 @@ func main() {
 	marketContractAddress := flag.String("marketContractAddress", "", "")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	engineContractAddress := flag.String("engineContractAddress", "", "")
+	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	flag.Parse()
 
 	if *leaguesContractAddress == "" {
@@ -89,6 +91,12 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
+	log.Info("Creating EnginePreComp bindings to: ", *enginePreCompContractAddress)
+	enginePreCompContract, err := engineprecomp.NewEngineprecomp(common.HexToAddress(*enginePreCompContractAddress), client)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+
 	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
 	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
 	if err != nil {
@@ -124,6 +132,7 @@ func main() {
 		universedb,
 		relaydb,
 		engineContract,
+		enginePreCompContract,
 		assetsContract,
 		leaguesContract,
 		updatesContract,

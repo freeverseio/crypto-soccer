@@ -21,7 +21,15 @@ func TestCreateMAtchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, nil, nil)
+	processor, err := process.NewLeagueProcessor(
+		ganache.Engine,
+		ganache.EnginePreComp,
+		ganache.Assets,
+		ganache.Leagues,
+		ganache.Evolution,
+		nil,
+		nil,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +55,15 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		t.Fatal(err)
 	}
 	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(ganache.Engine, ganache.Leagues, ganache.Evolution, universedb, relaydb)
+	processor, err := process.NewLeagueProcessor(
+		ganache.Engine,
+		ganache.EnginePreComp,
+		ganache.Assets,
+		ganache.Leagues,
+		ganache.Evolution,
+		universedb,
+		relaydb,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +98,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
 	tactics[1], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
-	result, err := bc.Engine.PlayHalfMatch(
+	logs, err := bc.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		seed,
 		matchStartTime,
@@ -94,12 +110,12 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result[0].String() != "11519355456996376452661064990627118067406041180784864310617375244288" {
-		t.Fatalf("Received %v", result[0].String())
+	if logs[0].String() != "1645504557572631091828279073381766814124583466071029250581856256" {
+		t.Fatalf("Received %v", logs[0].String())
 	}
 }
 
-func TestProcess(t *testing.T) {
+func TestLeagueProcessMatch(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
@@ -129,13 +145,33 @@ func TestProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	processor, err := process.NewLeagueProcessor(bc.Engine, bc.Leagues, bc.Evolution, universedb, relaydb)
+	processor, err := process.NewLeagueProcessor(
+		bc.Engine,
+		bc.EnginePreComp,
+		bc.Assets,
+		bc.Leagues,
+		bc.Evolution,
+		universedb,
+		relaydb,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	day := uint8(0)
 	turnInDay := uint8(0)
 	seed := [32]byte{}
+	err = processor.Process(updates.UpdatesActionsSubmission{
+		timezoneIdx,
+		day,
+		turnInDay,
+		seed,
+		big.NewInt(10),
+		types.Log{},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	turnInDay = 1
 	err = processor.Process(updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,

@@ -62,10 +62,45 @@ func TestPlayerUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var playerState storage.PlayerState
-	err = sto.PlayerUpdate(big.NewInt(1), playerState)
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	var team storage.Team
+	team.TeamID = big.NewInt(10)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	sto.TeamCreate(team)
+	var player storage.Player
+	player.PlayerId = big.NewInt(33)
+	player.State.TeamId = big.NewInt(10)
+	player.State.EncodedSkills = big.NewInt(4)
+	err = sto.PlayerCreate(player)
 	if err != nil {
 		t.Fatal(err)
+	}
+	player2, err := sto.GetPlayer(player.PlayerId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if player2.State.EncodedSkills.String() != player.State.EncodedSkills.String() {
+		t.Fatal("Skills are different")
+	}
+	player2.State.EncodedSkills = big.NewInt(3)
+	err = sto.PlayerUpdate(player2.PlayerId, player2.State)
+	if err != nil {
+		t.Fatal(err)
+	}
+	player3, err := sto.GetPlayer(player.PlayerId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if player2.State.EncodedSkills.String() != player3.State.EncodedSkills.String() {
+		t.Fatal("Skills player 3 are different")
 	}
 }
 

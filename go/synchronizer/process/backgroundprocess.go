@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
@@ -26,6 +27,7 @@ func BackgroundProcessNew(
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
 	engineContract *engine.Engine,
+	enginePreCompContract *engineprecomp.Engineprecomp,
 	assetsContract *assets.Assets,
 	leaguesContract *leagues.Leagues,
 	updatesContract *updates.Updates,
@@ -37,12 +39,14 @@ func BackgroundProcessNew(
 		universedb,
 		relaydb,
 		engineContract,
+		enginePreCompContract,
 		assetsContract,
 		leaguesContract,
 		updatesContract,
 		marketContract,
 		evolutionContract,
 	)
+
 	if err != nil {
 		return nil, err
 	}

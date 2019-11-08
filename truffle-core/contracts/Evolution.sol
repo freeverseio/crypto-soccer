@@ -10,7 +10,7 @@ import "./EncodingSkillsSetters.sol";
 contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
-    uint8 public constant NO_CARD  = 14;   // noone saw a card
+    uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
@@ -89,10 +89,10 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
             pointsNeg[team] += 
                     (getOutOfGameType(matchLog[team], false) == RED_CARD ? 3 : 0)
                 +   (getOutOfGameType(matchLog[team], true)  == RED_CARD ? 3 : 0)
-                +   ((getYellowCard(matchLog[team], 0, false) < NO_CARD) ? 1 : 0) 
-                +   ((getYellowCard(matchLog[team], 1, false) < NO_CARD) ? 1 : 0)
-                +   ((getYellowCard(matchLog[team], 0, true)  < NO_CARD) ? 1 : 0) 
-                +   ((getYellowCard(matchLog[team], 1, true)  < NO_CARD) ? 1 : 0);
+                +   ((getYellowCard(matchLog[team], 0, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+                +   ((getYellowCard(matchLog[team], 1, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0)
+                +   ((getYellowCard(matchLog[team], 0, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+                +   ((getYellowCard(matchLog[team], 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
         }
         
         // require(pointsNeg[0] == 10, "....");
@@ -229,7 +229,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         } else {
             skills = setEndurance(skills, 1);
         }
-        return skills;
+        // 5: sumSkills
+        return setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
     } 
 
 

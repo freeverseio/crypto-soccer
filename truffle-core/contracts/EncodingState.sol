@@ -25,7 +25,6 @@ contract EncodingState {
         pure
         returns (uint256)
     {
-        require(playerId > 0 && playerId < 2**43, "playerId out of bound");
         uint256 state = uint256(playerId) << 213;  // 256 - 43
         state = setCurrentTeamId(state, currentTeamId);
         state = setCurrentShirtNum(state, currentShirtNum);

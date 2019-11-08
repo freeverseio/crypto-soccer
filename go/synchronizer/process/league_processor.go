@@ -5,28 +5,35 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
+	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type LeagueProcessor struct {
 	engine            *engine.Engine
+	enginePreComp     *engineprecomp.Engineprecomp
 	leagues           *leagues.Leagues
 	evolution         *evolution.Evolution
 	universedb        *storage.Storage
 	relaydb           *relay.Storage
+	assets            *assets.Assets
 	calendarProcessor *Calendar
-	playerHackSkills  *big.Int
+	FREEPLAYERID      *big.Int
 }
 
 func NewLeagueProcessor(
 	engine *engine.Engine,
+	enginePreComp *engineprecomp.Engineprecomp,
+	assets *assets.Assets,
 	leagues *leagues.Leagues,
 	evolution *evolution.Evolution,
 	universedb *storage.Storage,
@@ -37,20 +44,21 @@ func NewLeagueProcessor(
 		return nil, err
 	}
 
-	playerHackSkills, _ := new(big.Int).SetString("713624055286353394965726120199142814938406092850", 10)
+	FREEPLAYERID, err := engine.FREEPLAYERID(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	// playerHackSkills := big.NewInt(0)
 
 	return &LeagueProcessor{
 		engine,
+		enginePreComp,
 		leagues,
 		evolution,
 		universedb,
 		relaydb,
+		assets,
 		calendarProcessor,
-		playerHackSkills,
+		FREEPLAYERID,
 	}, nil
 }
 
@@ -63,92 +71,261 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
-	isFirstHalfLeagueMatch := turnInDay == 0
-	if isFirstHalfLeagueMatch == false {
-		log.Warnf("[LeagueProcessor] ... skipping")
-		return nil
-	}
 
-	countryCount, err := b.universedb.CountryInTimezoneCount(timezoneIdx)
-	if err != nil {
-		return err
-	}
-	for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-		leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
+	// switch turnInDay {
+	// case 0: // first half league match
+	// case 1:
+	if turnInDay < 2 {
+		countryCount, err := b.universedb.CountryInTimezoneCount(timezoneIdx)
 		if err != nil {
 			return err
 		}
-		for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-			if day == 0 {
-				err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
-				if err != nil {
-					return err
-				}
-			}
-			matches, err := b.universedb.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+			leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 			if err != nil {
 				return err
 			}
-			for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
-				match := matches[matchIdx]
-				matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+				if day == 0 {
+					err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
+					if err != nil {
+						return err
+					}
+				}
+				matches, err := b.universedb.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
 				if err != nil {
 					return err
 				}
-				states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
-				if err != nil {
-					return err
-				}
-				tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
-				if err != nil {
-					return err
-				}
-				is2ndHalf := false
-				isHomeStadium := true
-				isPlayoff := false
-				var matchLog [2]*big.Int
-				matchLog[0] = big.NewInt(0)
-				matchLog[1] = big.NewInt(0)
-				var matchBools [3]bool
-				matchBools[0] = is2ndHalf
-				matchBools[1] = isHomeStadium
-				matchBools[2] = isPlayoff
-				result, err := b.engine.PlayHalfMatch(
-					&bind.CallOpts{},
-					matchSeed,
-					event.SubmissionTime,
-					states,
-					tactics,
-					matchLog,
-					matchBools,
-				)
-				if err != nil {
-					return err
-				}
-				goalsHome, err := b.evolution.GetNGoals(
-					&bind.CallOpts{},
-					result[0],
-				)
-				if err != nil {
-					return err
-				}
-				goalsVisitor, err := b.evolution.GetNGoals(
-					&bind.CallOpts{},
-					result[1],
-				)
-				if err != nil {
-					return err
-				}
-				err = b.universedb.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, uint32(day), uint32(matchIdx), goalsHome, goalsVisitor)
-				if err != nil {
-					return err
-				}
-				err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
-				if err != nil {
-					return err
+				for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
+					match := matches[matchIdx]
+					matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+					if err != nil {
+						return err
+					}
+					is2ndHalf := turnInDay == 1
+					isHomeStadium := true
+					isPlayoff := false
+					var matchLog [2]*big.Int
+					var matchBools [3]bool
+					matchBools[0] = is2ndHalf
+					matchBools[1] = isHomeStadium
+					matchBools[2] = isPlayoff
+					var logs [2]*big.Int
+					if is2ndHalf {
+						matchLog[0], matchLog[1], err = b.universedb.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
+						if err != nil {
+							return nil
+						}
+						logs, err = b.evolution.Play2ndHalfAndEvolve(
+							&bind.CallOpts{},
+							matchSeed,
+							event.SubmissionTime,
+							states,
+							tactics,
+							matchLog,
+							matchBools,
+						)
+						if err != nil {
+							return err
+						}
+						for i := 0; i < 2; i++ {
+							trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
+							if err != nil {
+								return err
+							}
+							err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, event.SubmissionTime)
+							if err != nil {
+								return err
+							}
+						}
+					} else { // first half
+						matchLog[0] = big.NewInt(0)
+						matchLog[1] = big.NewInt(0)
+						logs, err = b.engine.PlayHalfMatch(
+							&bind.CallOpts{},
+							matchSeed,
+							event.SubmissionTime,
+							states,
+							tactics,
+							matchLog,
+							matchBools,
+						)
+						if err != nil {
+							return err
+						}
+					}
+
+					goalsHome, err := b.evolution.GetNGoals(
+						&bind.CallOpts{},
+						logs[0],
+					)
+					if err != nil {
+						return err
+					}
+					goalsVisitor, err := b.evolution.GetNGoals(
+						&bind.CallOpts{},
+						logs[1],
+					)
+					if err != nil {
+						return err
+					}
+					err = b.universedb.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx), goalsHome, goalsVisitor, logs[0], logs[1])
+					if err != nil {
+						return err
+					}
+					err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
+					if err != nil {
+						return err
+					}
+					err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
+					if err != nil {
+						return err
+					}
+					if is2ndHalf {
+						err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+						if err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
+	}
+	// default:
+	// 	log.Warnf("[LeagueProcessor] ... skipping")
+	// } // switch
+	return nil
+}
+
+func (b *LeagueProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *big.Int, matchStartTime *big.Int) error {
+	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
+	newStates, err := b.evolution.GetTeamEvolvedSkills(
+		&bind.CallOpts{},
+		states,
+		trainingPoints,
+		userAssignment,
+		matchStartTime,
+	)
+	if err != nil {
+		return err
+	}
+
+	for _, state := range newStates {
+		if state.String() == b.FREEPLAYERID.String() {
+			continue
+		}
+
+		playerID, err := b.leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
+		player, err := b.universedb.GetPlayer(playerID)
+		if err != nil {
+			return err
+		}
+		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
+		player.State.Defence = defence.Uint64()
+		player.State.Speed = speed.Uint64()
+		player.State.Pass = pass.Uint64()
+		player.State.Shoot = shoot.Uint64()
+		player.State.Defence = endurance.Uint64()
+		player.State.EncodedSkills = state
+		err = b.universedb.PlayerUpdate(playerID, player.State)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+	NO_OUT_OF_GAME_PLAYER, err := b.enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	RED_CARD, err := b.enginePreComp.REDCARD(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	SOFTINJURY, err := b.enginePreComp.SOFTINJURY(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	HARDINJURY, err := b.enginePreComp.HARDINJURY(&bind.CallOpts{})
+	if err != nil {
+		return err
+	}
+	players, err := b.universedb.GetPlayersOfTeam(teamID)
+	if err != nil {
+		return err
+	}
+	decodedTactic, err := b.leagues.DecodeTactics(&bind.CallOpts{}, tactic)
+	if err != nil {
+		return err
+	}
+	outOfGamePlayer, err := b.enginePreComp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
+	if err != nil {
+		return err
+	}
+	outOfGameType, err := b.enginePreComp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
+	if err != nil {
+		return err
+	}
+	for i := 0; i < len(players); i++ {
+		player := players[i]
+		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			player.State.ShirtNumber,
+			tactic,
+			matchLog,
+		)
+		if err != nil {
+			return err
+		}
+		player.State.EncodedSkills, err = b.evolution.SetAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			player.State.EncodedSkills,
+			wasAligned,
+		)
+		if err != nil {
+			return err
+		}
+		if outOfGamePlayer.Int64() != int64(NO_OUT_OF_GAME_PLAYER) {
+			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
+				switch outOfGameType.Int64() {
+				case int64(RED_CARD):
+					player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, true)
+					if err != nil {
+						return err
+					}
+				case int64(SOFTINJURY):
+					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
+					if err != nil {
+						return err
+					}
+				case int64(HARDINJURY):
+					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 2)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+		if is2ndHalf {
+			player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, false)
+			if err != nil {
+				return err
+			}
+		}
+		b.universedb.PlayerUpdate(player.PlayerId, player.State)
 	}
 	return nil
 }
@@ -307,7 +484,7 @@ func (b *LeagueProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID 
 func (b *LeagueProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
-		state[i] = b.playerHackSkills
+		state[i] = b.FREEPLAYERID
 	}
 	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {

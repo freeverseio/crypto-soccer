@@ -46,8 +46,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint8 constant public LEAGUES_PER_DIV = 16;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
-    address constant public FREEVERSE = address(1);
     uint256 constant public DAYS_PER_ROUND = 16;
+    uint256 constant public ROSTER_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
@@ -62,10 +62,12 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     mapping(uint256 => uint256) private _playerIdToState;
 
     TimeZone[25] public _timeZones;  // timeZone = 0 is a dummy one, without any country. Forbidden to use timeZone[0].
-    mapping (uint256 => uint256) internal _playerIdxToPlayerState;
     uint256 public gameDeployDay;
     uint256 public currentRound;
     bool private _needsInit = true;
+    address public rosterAddr;
+
+    function setRosterAddr(address addr) public {rosterAddr = addr;}
 
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
@@ -74,6 +76,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
+        setRosterAddr(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -83,6 +86,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
+        setRosterAddr(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
@@ -149,6 +153,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
+        if (teamId == ROSTER_TEAM) return false;
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
@@ -167,6 +172,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
+        if (isRosterPlayer(playerId)) return rosterAddr;
         require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
@@ -272,7 +278,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
-        uint256 dna = uint256(keccak256(abi.encode(timeZone, countryIdxInTZ, teamIdxInCountry, shirtNum)));
+        // compute a dna that is unique to this player, since it is made of a unique playerId:
+        uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
         return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
     }
@@ -281,13 +288,11 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return playerId;
     }
 
-
-
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
     function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
         uint256 dayOfBirth;
         (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
-        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint16 sumSkills) = computeSkills(dna, shirtNum);
+        (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(dna, shirtNum);
         return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
@@ -301,6 +306,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
+        if (isRosterPlayer(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
         if (isVirtualPlayer(playerId)) {
             return getPlayerStateAtBirth(playerId);
         } else {
@@ -319,62 +325,64 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return (uint16(playerCreationDay - ageInDays / 7), dna);
     }
 
-    /// Compute the pseudorandom skills, sum of the skills is 250
+    /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
     /// @param dna is a random number used as seed of the skills
     /// skills have currently, 16bits each, and there are 5 of them
     /// potential is a number between 0 and 9 => takes 4 bit
     /// 0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
     /// @return uint16[N_SKILLS] skills, uint8 potential, uint8 forwardness, uint8 leftishness
-    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint16) {
+    function computeSkills(uint256 dna, uint8 shirtNum) public pure returns (uint16[N_SKILLS] memory, uint8[4] memory, uint32) {
         uint16[5] memory skills;
         uint16[N_SKILLS] memory correctFactor;
         uint8 potential = uint8(dna % 10);
+        dna >>= 4; // log2(10) = 3.3 => ceil = 4
         uint8 forwardness;
         uint8 leftishness;
-        uint8 aggressiveness = uint8((dna % 87343)%4);
-        dna >>= 4; // log2(10) = 3.3 => ceil = 4
+        uint8 aggressiveness = uint8(dna % 4);
+        dna >>= 2; // log2(4) = 2
+        // correctFactor/1000 increases a particular skill depending on player's forwardness
         if (shirtNum < 3) {
             // 3 GoalKeepers:
-            correctFactor[SK_SHO] = 200;
+            correctFactor[SK_SHO] = 2000;
             forwardness = IDX_GK;
             leftishness = 0;
         } else if (shirtNum < 8) {
             // 5 Defenders
-            correctFactor[SK_SHO] = 40;
-            correctFactor[SK_DEF] = 160;
+            correctFactor[SK_SHO] = 400;
+            correctFactor[SK_DEF] = 1600;
             forwardness = IDX_D;
-            leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 10) {
             // 2 Pure Midfielders
-            correctFactor[SK_PAS] = 160;
+            correctFactor[SK_PAS] = 1600;
             forwardness = IDX_M;
-            leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 12) {
             // 2 Defensive Midfielders
-            correctFactor[SK_PAS] = 130;
-            correctFactor[SK_SHO] = 70;
+            correctFactor[SK_PAS] = 1300;
+            correctFactor[SK_SHO] = 700;
             forwardness = IDX_MD;
-            leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 14) {
             // 2 Attachking Midfielders
-            correctFactor[SK_PAS] = 130;
-            correctFactor[SK_DEF] = 70;
+            correctFactor[SK_PAS] = 1300;
+            correctFactor[SK_DEF] = 700;
             forwardness = IDX_MF;
-            leftishness = uint8(1+ ((dna + shirtNum) % 7));
+            leftishness = uint8(1+ (dna % 7));
         } else if (shirtNum < 16) {
             // 2 Forwards that play center-left
-            correctFactor[SK_SHO] = 160;
-            correctFactor[SK_DEF] = 70;
+            correctFactor[SK_SHO] = 1600;
+            correctFactor[SK_DEF] = 700;
             forwardness = IDX_F;
             leftishness = 6;
         } else {
             // 2 Forwards that play center-right
-            correctFactor[SK_SHO] = 160;
-            correctFactor[SK_DEF] = 70;
+            correctFactor[SK_SHO] = 1600;
+            correctFactor[SK_DEF] = 700;
             forwardness = IDX_F;
             leftishness = 3;
         }
-        dna >>= 51; // log2(7) = 2.9 => ceil = 3, times 17 players => 51                       
+        dna >>= 3; // log2(7) = 2.9 => ceil = 3                      
 
         /// Compute initial skills, as a random with [0, 49] 
         /// ...apply correction factor depending on preferred pos,
@@ -382,20 +390,19 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         uint16 excess;
         for (uint8 i = 0; i < N_SKILLS; i++) {
             if (correctFactor[i] == 0) {
-                skills[i] = uint16(dna % 50);
+                skills[i] = uint16(dna % 1000);
             } else {
-                skills[i] = (uint16(dna % 50) * correctFactor[i])/100;
+                skills[i] = (uint16(dna % 1000) * correctFactor[i])/1000;
             }
-            dna >>= 6; // los2(50) -> ceil
             excess += skills[i];
+            dna >>= 10; // los2(1000) -> ceil
         }
+        // at this point, excess is, at most, 5*999 = 4995, so (5000 - excess) > 0
         uint16 delta;
-        if (excess < 250) {
-            delta = (250 - excess) / N_SKILLS;
-            for (uint8 i = 0; i < 5; i++) skills[i] = skills[i] + delta;
-        }
+        delta = (5000 - excess) / N_SKILLS;
+        for (uint8 i = 0; i < N_SKILLS; i++) skills[i] = skills[i] + delta;
         // note: final sum of skills = excess + N_SKILLS * delta;
-        return (skills, [potential, forwardness, leftishness, aggressiveness], excess + N_SKILLS * delta);
+        return (skills, [potential, forwardness, leftishness, aggressiveness], uint32(excess + N_SKILLS * delta));
     }
 
     function isFreeShirt(uint256 teamId, uint8 shirtNum) public view returns (bool) {
@@ -433,13 +440,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         // TODO: checking if they are bots should be done outside this function
-        require(playerExists(playerId) && teamExists(teamIdTarget), "unexistent player or team");
+        require(isRosterPlayer(playerId) || playerExists(playerId), "player does not exist");
+        require(teamExists(teamIdTarget), "unexistent target team");
         uint256 state = getPlayerState(playerId);
         uint256 newState = state;
         uint256 teamIdOrigin = getCurrentTeamId(state);
         require(teamIdOrigin != teamIdTarget, "cannot transfer to original team");
         require(!isBotTeam(teamIdOrigin) && !isBotTeam(teamIdTarget), "cannot transfer player when at least one team is a bot");
-        uint256 shirtOrigin = getCurrentShirtNum(state);
         uint8 shirtTarget = getFreeShirt(teamIdTarget);
         require(shirtTarget != PLAYERS_PER_TEAM_MAX, "target team for transfer is already full");
         
@@ -448,10 +455,13 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         newState = setLastSaleBlock(newState, block.number);
         _playerIdToState[playerId] = newState;
 
-        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
-        _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
-        (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
+        (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
+        if (teamIdOrigin != ROSTER_TEAM) {
+            uint256 shirtOrigin = getCurrentShirtNum(state);
+            (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
+            _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;
+        }
         emit PlayerStateChange(playerId, newState);
     }
 
@@ -464,5 +474,10 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
         return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
+    }
+    
+    function isRosterPlayer(uint256 playerId) public view returns(bool) {
+        if (_playerIdToState[playerId] != 0) return false;
+        return getIsSpecial(playerId);
     }
 }

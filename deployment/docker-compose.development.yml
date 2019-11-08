@@ -24,6 +24,7 @@ services:
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
+      -enginePreCompContractAddress "${ENGINEPRECOMP_CONTRACT_ADDRESS}"
       -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
