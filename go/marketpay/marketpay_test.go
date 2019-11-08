@@ -59,4 +59,10 @@ func TestCreateOrder(t *testing.T) {
 	if orderID.Data.ID == 0 {
 		t.Fatalf("order wrong %v", orderID)
 	}
+	if orderID.Data.SellerLink == "" {
+		t.Fatal("Seller link is empty")
+	}
+	if orderID.Data.BuyerLink == "" {
+		t.Fatal("Buyer link is empty")
+	}
 }
