@@ -52,7 +52,12 @@ func NewEventProcessor(
 	market *market.Market,
 	evolution *evolution.Evolution,
 ) (*EventProcessor, error) {
-	divisionCreationProcessor, err := NewDivisionCreationProcessor(universedb, assets, leagues)
+	divisionCreationProcessor, err := NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		assets,
+		leagues,
+	)
 	if err != nil {
 		return nil, err
 	}

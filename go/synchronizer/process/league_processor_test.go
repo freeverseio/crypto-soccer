@@ -134,7 +134,12 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(universedb, bc.Assets, bc.Leagues)
+	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		bc.Assets,
+		bc.Leagues,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

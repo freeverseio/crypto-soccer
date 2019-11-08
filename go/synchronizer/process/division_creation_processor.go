@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
@@ -16,6 +17,7 @@ import (
 
 type DivisionCreationProcessor struct {
 	universedb            *storage.Storage
+	relaydb               *relay.Storage
 	assets                *assets.Assets
 	SK_SHO                uint8
 	SK_SPE                uint8
@@ -28,7 +30,12 @@ type DivisionCreationProcessor struct {
 	PLAYERS_PER_TEAM_INIT uint8
 }
 
-func NewDivisionCreationProcessor(universedb *storage.Storage, assets *assets.Assets, leagues *leagues.Leagues) (*DivisionCreationProcessor, error) {
+func NewDivisionCreationProcessor(
+	universedb *storage.Storage,
+	relaydb *relay.Storage,
+	assets *assets.Assets,
+	leagues *leagues.Leagues,
+) (*DivisionCreationProcessor, error) {
 	SK_SHO, err := assets.SKSHO(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
@@ -67,6 +74,7 @@ func NewDivisionCreationProcessor(universedb *storage.Storage, assets *assets.As
 	}
 	return &DivisionCreationProcessor{
 		universedb,
+		relaydb,
 		assets,
 		SK_SHO,
 		SK_SPE,
