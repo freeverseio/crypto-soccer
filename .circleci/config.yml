@@ -97,6 +97,7 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
+      - run: echo ${CIRCLE_TAG}
       - run: make setup contracts
       - run: eval "cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} ."
       - run: eval "cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} ."
