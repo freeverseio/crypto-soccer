@@ -100,27 +100,27 @@ jobs:
       - run: make setup contracts
       - run: cd django-centauri && docker build -t freeverseio/centauri:`git describe --tag` .
       - run: cd market.trader && docker build -t freeverseio/market.trader:`git describe --tag` .
-      - run: eval "cd universe.db && docker build -t freeverseio/universe.db:`git describe --tag` ."
-      - run: eval "cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:`git describe --tag` ."
-      - run: eval "cd relay.api && docker build -t freeverseio/relay.api:`git describe --tag` ."
-      - run: eval "cd relay.db && docker build -t freeverseio/relay.db:`git describe --tag` ."
-      - run: eval "cd nodejs-horizon && docker build -t freeverseio/horizon:`git describe --tag` ."
-      - run: eval "cd market.db && docker build -t freeverseio/market.db:`git describe --tag` ."
-      - run: eval "cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:`git describe --tag` ."
-      - run: eval "cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:`git describe --tag` ."
-      - run: eval "cd universe.api && docker build -t freeverseio/universe.api:`git describe --tag` ."
+      - run: cd universe.db && docker build -t freeverseio/universe.db:`git describe --tag` .
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:`git describe --tag` .
+      - run: cd relay.api && docker build -t freeverseio/relay.api:`git describe --tag` .
+      - run: cd relay.db && docker build -t freeverseio/relay.db:`git describe --tag` .
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:`git describe --tag` .
+      - run: cd market.db && docker build -t freeverseio/market.db:`git describe --tag` .
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:`git describe --tag` .
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:`git describe --tag` .
+      - run: cd universe.api && docker build -t freeverseio/universe.api:`git describe --tag` .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: eval "docker push freeverseio/centauri:`git describe --tag`"
-      - run: eval "docker push freeverseio/synchronizer:`git describe --tag`"
-      - run: eval "docker push freeverseio/horizon:`git describe --tag`"
-      - run: eval "docker push freeverseio/universe.db:`git describe --tag`"
-      - run: eval "docker push freeverseio/market.db:`git describe --tag`"
-      - run: eval "docker push freeverseio/market.trader:`git describe --tag`"
-      - run: eval "docker push freeverseio/market.notary:`git describe --tag`"
-      - run: eval "docker push freeverseio/relay.api:`git describe --tag`"
-      - run: eval "docker push freeverseio/relay.db:`git describe --tag`"
-      - run: eval "docker push freeverseio/universe.api:`git describe --tag`"
-      - run: eval "docker push freeverseio/relay.actions:`git describe --tag`"
+      - run: docker push freeverseio/centauri:`git describe --tag`
+      - run: docker push freeverseio/synchronizer:`git describe --tag`
+      - run: docker push freeverseio/horizon:`git describe --tag`
+      - run: docker push freeverseio/universe.db:`git describe --tag`
+      - run: docker push freeverseio/market.db:`git describe --tag`
+      - run: docker push freeverseio/market.trader:`git describe --tag`
+      - run: docker push freeverseio/market.notary:`git describe --tag`
+      - run: docker push freeverseio/relay.api:`git describe --tag`
+      - run: docker push freeverseio/relay.db:`git describe --tag`
+      - run: docker push freeverseio/universe.api:`git describe --tag`
+      - run: docker push freeverseio/relay.actions:`git describe --tag`
   deploy:
     executor: freeverse
     steps:
@@ -164,7 +164,13 @@ workflows:
                 - ci-prod
             tags:
               only: /.*/
-
+          requires:
+            - synchronizer
+            - django-centauri
+            - market-trader
+            - relay-api
+            - relay-actions
+            - market-notary
       - deploy:
           filters:
            branches:
