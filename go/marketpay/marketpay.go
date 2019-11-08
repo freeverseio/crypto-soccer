@@ -27,14 +27,13 @@ type Customer struct {
 		} `json:"connections"`
 	} `json:"data"`
 }
-
 type Order struct {
 	Data struct {
 		ID             int           `json:"id"`
 		Self           string        `json:"self"`
 		PublicID       string        `json:"public_id"`
 		Name           string        `json:"name"`
-		Value          string        `json:"value"`
+		Value          int           `json:"value"`
 		Currency       string        `json:"currency"`
 		Amount         string        `json:"amount"`
 		PayinAmount    string        `json:"payin_amount"`
@@ -48,12 +47,16 @@ type Order struct {
 		Images         []interface{} `json:"images"`
 		Tag            interface{}   `json:"tag"`
 		Metadata       interface{}   `json:"metadata"`
-		CreatedAt      time.Time     `json:"created_at"`
-		PublishedAt    interface{}   `json:"published_at"`
-		AcceptedAt     interface{}   `json:"accepted_at"`
-		ValidatedAt    interface{}   `json:"validated_at"`
-		ReleasedAt     interface{}   `json:"released_at"`
-		Connections    struct {
+		Refund         struct {
+			Status      interface{} `json:"status"`
+			ReferenceID interface{} `json:"reference_id"`
+		} `json:"refund"`
+		CreatedAt   time.Time   `json:"created_at"`
+		PublishedAt interface{} `json:"published_at"`
+		AcceptedAt  interface{} `json:"accepted_at"`
+		ValidatedAt interface{} `json:"validated_at"`
+		ReleasedAt  interface{} `json:"released_at"`
+		Connections struct {
 			Wallet string `json:"wallet"`
 			Buyer  string `json:"buyer"`
 			Payins string `json:"payins"`
@@ -68,7 +71,7 @@ type MarketPay struct {
 
 func New() (*MarketPay, error) {
 	return &MarketPay{
-		"https://api-sandbox.truust.io",
+		"https://api.truust.io",
 	}, nil
 }
 
@@ -99,7 +102,7 @@ func (b *MarketPay) CreateCustomer(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_stage_P4aQCVzTRGhub2p4k2Fl6YxQ")
+	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -151,7 +154,7 @@ func (b *MarketPay) CreateOrder(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_stage_P4aQCVzTRGhub2p4k2Fl6YxQ")
+	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -165,7 +168,7 @@ func (b *MarketPay) CreateOrder(
 	}
 
 	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
-
+	// fmt.Println(string(body))
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
