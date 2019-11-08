@@ -8,6 +8,7 @@ import (
 )
 
 func (m *AuctionMachine) processPaying() error {
+
 	if m.Auction.State != storage.AUCTION_PAYING {
 		return errors.New("Paying: wrong state")
 	}
@@ -22,6 +23,7 @@ func (m *AuctionMachine) processPaying() error {
 		m.market,
 		m.freeverse,
 		m.client,
+		m.db,
 	)
 	if err != nil {
 		return err
