@@ -25,8 +25,8 @@ func TestCreateCustomer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if customer.Data.ID != 817 {
-		t.Fatalf("Expected %v", customer)
+	if customer.Data.ID == 0 {
+		t.Fatal("customer Id is 0")
 	}
 }
 

@@ -104,7 +104,8 @@ func (b *BidMachine) processPaying() error {
 			return err
 		}
 		price := fmt.Sprintf("%.2f", float64(b.auction.Price.Int64()+b.bid.ExtraPrice)/100.0)
-		order, err := market.CreateOrder(seller, buyer, "this is a test", price)
+		name := "Freeverse Player transaction"
+		order, err := market.CreateOrder(seller, buyer, name, price)
 		if err != nil {
 			return err
 		}
@@ -112,11 +113,11 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentID(b.auction.UUID, b.bid.ExtraPrice, fmt.Sprintf("%d", order.Data.ID))
+		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, fmt.Sprintf("%d", order.Data.ID))
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentUrl(b.auction.UUID, b.bid.ExtraPrice, order.Data.BuyerLink)
+		err = b.db.UpdateBidPaymentUrl(b.bid.Auction, b.bid.ExtraPrice, order.Data.BuyerLink)
 		if err != nil {
 			return err
 		}
