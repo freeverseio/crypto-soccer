@@ -36,10 +36,9 @@ contract Market {
     }
     function setRosterAddr(address addr) public {rosterAddr = addr;}
     
-    // function isRosterPlayer(uint256 playerId) public view returns(bool) {
-    //     if (_playerIdToState[setTargetTeamId(playerId, 0)] != 0) return false;
-    //     return getIsSpecial(playerId);
-    // }
+    function isRosterPlayer(uint256 playerId) public view returns(bool) {
+        return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));
+    }
 
     // Main PLAYER auction functions: freeze & complete
     function freezePlayer(
@@ -226,6 +225,7 @@ contract Market {
         view 
         returns (bool)
     {
+        address prevOwner = isRosterPlayer(playerId) ? rosterAddr : _assets.getOwnerPlayer(playerId);
         return (
             // check validUntil has not expired
             (now < validUntil) &&
@@ -234,9 +234,9 @@ contract Market {
             // check that the team it belongs to not already frozen
             !isTeamFrozen(_assets.getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
-            (_assets.getOwnerPlayer(playerId) != address(0)) && 
+            (prevOwner != address(0)) &&  // toni
             // check signatures are valid by requiring that they own the asset:
-            (_assets.getOwnerPlayer(playerId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
+            (prevOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
             (sig[IDX_MSG] == prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId))) &&
             // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
