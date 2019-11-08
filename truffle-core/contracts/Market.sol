@@ -234,7 +234,7 @@ contract Market {
             // check that the team it belongs to not already frozen
             !isTeamFrozen(_assets.getCurrentTeamIdFromPlayerId(playerId)) &&
             // check asset is owned by legit address
-            (prevOwner != address(0)) &&  // toni
+            (prevOwner != address(0)) && 
             // check signatures are valid by requiring that they own the asset:
             (prevOwner == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&    
             // check that they signed what they input data says they signed:
