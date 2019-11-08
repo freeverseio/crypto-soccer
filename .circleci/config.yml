@@ -98,29 +98,29 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:{$CIRCLE_TAG} .
-      - run: cd market.trader && docker build -t freeverseio/market.trader:{$CIRCLE_TAG} .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:{$CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:{$CIRCLE_TAG} .
-      - run: cd relay.api && docker build -t freeverseio/relay.api:{$CIRCLE_TAG} .
-      - run: cd relay.db && docker build -t freeverseio/relay.db:{$CIRCLE_TAG} .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:{$CIRCLE_TAG} .
-      - run: cd market.db && docker build -t freeverseio/market.db:{$CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:{$CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:{$CIRCLE_TAG} .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:{$CIRCLE_TAG} .
-      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:{$CIRCLE_TAG}
-      - run: docker push freeverseio/synchronizer:{$CIRCLE_TAG}
-      - run: docker push freeverseio/horizon:{$CIRCLE_TAG}
-      - run: docker push freeverseio/universe.db:{$CIRCLE_TAG}
-      - run: docker push freeverseio/market.db:{$CIRCLE_TAG}
-      - run: docker push freeverseio/market.trader:{$CIRCLE_TAG}
-      - run: docker push freeverseio/market.notary:{$CIRCLE_TAG}
-      - run: docker push freeverseio/relay.api:{$CIRCLE_TAG}
-      - run: docker push freeverseio/relay.db:{$CIRCLE_TAG}
-      - run: docker push freeverseio/universe.api:{$CIRCLE_TAG}
-      - run: docker push freeverseio/relay.actions:{$CIRCLE_TAG}
+      - run: `"cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} ."`
+      - run: `"cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} ."`
+      - run: `"cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} ."`
+      - run: `"cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} ."`
+      - run: `"cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} ."`
+      - run: `"cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} ."`
+      - run: `"cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} ."`
+      - run: `"cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} ."`
+      - run: `"cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} ."`
+      - run: `"cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} ."`
+      - run: `"cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} ."`
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin`
+      - run: `"docker push freeverseio/centauri:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/synchronizer:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/horizon:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/universe.db:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/market.db:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/market.trader:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/market.notary:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/relay.api:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/relay.db:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/universe.api:${CIRCLE_TAG}"`
+      - run: `"docker push freeverseio/relay.actions:${CIRCLE_TAG}"`
   deploy:
     executor: freeverse
     steps:
