@@ -65,9 +65,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint256 public gameDeployDay;
     uint256 public currentRound;
     bool private _needsInit = true;
-    address public rosterAddr;
-
-    function setRosterAddr(address addr) public {rosterAddr = addr;}
 
     function init() public {
         require(_needsInit == true, "cannot initialize twice");
@@ -76,7 +73,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
-        setRosterAddr(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -86,7 +82,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
-        setRosterAddr(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
@@ -172,7 +167,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     // returns NULL_ADDR if team is bot
     function getOwnerPlayer(uint256 playerId) public view returns(address) {
-        if (isRosterPlayer(playerId)) return rosterAddr;
         require(playerExists(playerId), "unexistent player");
         return getOwnerTeam(getCurrentTeamIdFromPlayerId(playerId));
     }
@@ -195,15 +189,12 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     function playerExists(uint256 playerId) public view returns (bool) {
         if (playerId == 0) return false;
-        if (_playerIdToState[playerId] != 0) return true;
+        if (getIsSpecial(playerId)) return (_playerIdToState[playerId] != 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         return _wasPlayerCreatedInCountry(timeZone, countryIdxInTZ, playerIdxInCountry);
     }
 
-    function isVirtualPlayer(uint256 playerId) public view returns (bool) {
-        require(playerExists(playerId), "unexistent player");
-        return _playerIdToState[playerId] == 0;
-    }
+    function isPlayerWritten(uint256 playerId) public view returns (bool) { return (_playerIdToState[playerId] != 0); }       
 
     function transferFirstBotToAddr(uint8 timeZone, uint256 countryIdxInTZ, address addr) external {
         uint256 firstBotIdx = _timeZones[timeZone].countries[countryIdxInTZ].nHumanTeams;
@@ -297,6 +288,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
+        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
@@ -306,14 +298,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerState(uint256 playerId) public view returns (uint256) {
-        if (isRosterPlayer(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
-        if (isVirtualPlayer(playerId)) {
-            return getPlayerStateAtBirth(playerId);
-        } else {
-            return _playerIdToState[playerId];
-        }
+        return (isPlayerWritten(playerId) ? _playerIdToState[playerId] : getPlayerStateAtBirth(playerId));
     }
-
 
     /// Compute a random age between 16 and 35
     /// @param dna is a random number used as seed of the skills
@@ -440,7 +426,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function transferPlayer(uint256 playerId, uint256 teamIdTarget) public  {
         // warning: check of ownership of players and teams should be done before calling this function
         // TODO: checking if they are bots should be done outside this function
-        require(isRosterPlayer(playerId) || playerExists(playerId), "player does not exist");
+        require(getIsSpecial(playerId) || playerExists(playerId), "player does not exist");
         require(teamExists(teamIdTarget), "unexistent target team");
         uint256 state = getPlayerState(playerId);
         uint256 newState = state;
@@ -476,8 +462,4 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return _timeZones[timeZone].countries[countryIdxInTZ].nDivisions * TEAMS_PER_DIVISION;
     }
     
-    function isRosterPlayer(uint256 playerId) public view returns(bool) {
-        if (_playerIdToState[playerId] != 0) return false;
-        return getIsSpecial(playerId);
-    }
 }

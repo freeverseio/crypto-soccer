@@ -126,7 +126,7 @@ contract('Assets', (accounts) => {
         }
     });
 
-    it('check playerExists and isVirtual', async () =>  {
+    it('check playerExists and isPlayerWritten', async () =>  {
         countryIdxInTZ = 0;
         teamIdxInCountry = nTeams;
         playerIdxInCountry = teamIdxInCountry * PLAYERS_PER_TEAM_INIT - 1;
@@ -134,12 +134,13 @@ contract('Assets', (accounts) => {
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(true);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-            isVirtual.should.be.equal(true);            
+            isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+            isPlayerWritten.should.be.equal(false);            
             playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry+1);
             playerExists = await assets.playerExists(playerId).should.be.fulfilled;
             playerExists.should.be.equal(false);            
-            isVirtual = await assets.isVirtualPlayer(playerId).should.be.rejected;
+            isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+            isPlayerWritten.should.be.equal(false);            
         }
     });
 
@@ -469,17 +470,17 @@ contract('Assets', (accounts) => {
         exists.should.be.equal(false);
     });
 
-    it('isVirtual after sale', async () => {
+    it('isPlayerWritten after sale', async () => {
         playerId    = await assets.encodeTZCountryAndVal(tz1 = 1, countryIdxInTZ1 = 0, playerIdxInCountry1 = 3).should.be.fulfilled; 
         teamId1     = await assets.encodeTZCountryAndVal(tz1, countryIdxInTZ1, teamIdxInCountry = 0).should.be.fulfilled; 
         teamId2     = await assets.encodeTZCountryAndVal(tz2 = 2, countryIdxInTZ2 = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         await assets.transferFirstBotToAddr(tz1, countryIdxInTZ1, ALICE).should.be.fulfilled;
         await assets.transferFirstBotToAddr(tz2, countryIdxInTZ2, ALICE).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(true)
+        isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+        isPlayerWritten.should.be.equal(false)
         await assets.transferPlayer(playerId, teamId2).should.be.fulfilled;
-        isVirtual = await assets.isVirtualPlayer(playerId).should.be.fulfilled;
-        isVirtual.should.be.equal(false)
+        isPlayerWritten = await assets.isPlayerWritten(playerId).should.be.fulfilled;
+        isPlayerWritten.should.be.equal(true)
     });
 
     
