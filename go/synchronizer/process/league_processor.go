@@ -190,7 +190,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 						return err
 					}
 					if is2ndHalf {
-						err = b.updateTeamStatistics(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+						err = b.updateTeamLeaderBoard(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
 						if err != nil {
 							return err
 						}
@@ -331,28 +331,6 @@ func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, ta
 }
 
 func (b *LeagueProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) (*big.Int, error) {
-	// uint256Ty, _ := abi.NewType("uint256", nil)
-	// bytes32Ty, _ := abi.NewType("bytes32", nil)
-
-	// arguments := abi.Arguments{
-	// 	{
-	// 		Type: bytes32Ty,
-	// 	},
-	// 	{
-	// 		Type: uint256Ty,
-	// 	},
-	// 	{
-	// 		Type: uint256Ty,
-	// 	},
-	// }
-
-	// bytes, _ := arguments.Pack(
-	// 	seed,
-	// 	homeTeamID,
-	// 	visitorTeamID,
-	// )
-	// crypto.Keccak256(bytes)
-
 	matchSeed, err := b.engine.GenerateMatchSeed(&bind.CallOpts{}, seed, homeTeamID, visitorTeamID)
 	if err != nil {
 		return nil, err
@@ -391,7 +369,7 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 	return nil
 }
 
-func (b *LeagueProcessor) updateTeamStatistics(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
+func (b *LeagueProcessor) updateTeamLeaderBoard(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
 	homeTeam, err := b.universedb.GetTeam(homeTeamID)
 	if err != nil {
 		return err
