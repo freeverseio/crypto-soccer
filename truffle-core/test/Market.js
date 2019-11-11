@@ -5,6 +5,7 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const timeTravel = require('../utils/TimeTravel.js');
 
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
@@ -403,9 +404,8 @@ contract("Market", accounts => {
 
   });
 
-  it('encoding of constraints in friendlies)', async () => {
+  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
     maxNumConstraints = 7;
-    teamId = buyerTeamId;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
       acq = c;
@@ -419,8 +419,36 @@ contract("Market", accounts => {
       valid.toNumber().should.be.equal(valUnt);
       num.toNumber().should.be.equal(numRemain);
     }
+});
+  
+  it('addAcquisitionConstraint of constraints in friendlies', async () => {
+    maxNumConstraints = 7;
+    teamId = buyerTeamId;
+    remainingAcqs = 0;
+    for (c = 0; c < maxNumConstraints; c++) {
+      await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;
+    }
+    // the team is full already
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
+    // as just enough time passes it can do one more submission again:
+    await timeTravel.advanceTime(4400 + 1000);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
   });
   
+
+  it('encoding of constraints pass with time', async () => {
+    teamId = buyerTeamId;
+    remainingAcqs = 0;
+    acq = 5;
+    isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+    isIt.should.be.equal(true);
+    remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() - 10, numRemain = c, acq).should.be.fulfilled;
+    isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+    isIt.should.be.equal(true);
+  });
+
   return
   // *************************************************************************
   // *********************************   TEST  *******************************
