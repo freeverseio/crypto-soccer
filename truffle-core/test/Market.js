@@ -408,7 +408,12 @@ contract("Market", accounts => {
     teamId = buyerTeamId;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
-      remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq = c).should.be.fulfilled;
+      acq = c;
+      isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+      isIt.should.be.equal(true);
+      remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq).should.be.fulfilled;
+      isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+      isIt.should.be.equal(false);
       valid = await market.getAcquisitionConstraintValidUntil(remainingAcqs, acq = c).should.be.fulfilled;
       num = await market.getAcquisitionConstraintNumRemain(remainingAcqs, acq = c).should.be.fulfilled;
       valid.toNumber().should.be.equal(valUnt);
