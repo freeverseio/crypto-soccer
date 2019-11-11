@@ -82,7 +82,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-			if day == 0 {
+			if (day == 0) && (turnInDay == 0) {
 				err = b.shuffleTeamsInCountry(timezoneIdx, countryIdx)
 				if err != nil {
 					return err
@@ -213,6 +213,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 }
 
 func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
 	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 	if err != nil {
