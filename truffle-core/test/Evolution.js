@@ -196,7 +196,7 @@ contract('Evolution', (accounts) => {
         newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 0, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 623, 440, 829, 811, 723, 701, 554, 735, 815, 1465, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
             result0 = await evolution.getShoot(teamState[p]);
@@ -222,7 +222,7 @@ contract('Evolution', (accounts) => {
         newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 30, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 624, 441, 830, 819, 737, 702, 555, 736, 825, 1467, 691, 942, 1199, 1097, 710, 634, 568, 943 ];
+        expectedNewShoot  = [ 624, 441, 830, 819, 737, 703, 555, 736, 825, 1468, 691, 943, 1199, 1097, 710, 634, 568, 943 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
             result0 = await evolution.getShoot(teamState[p]);
