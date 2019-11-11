@@ -22,15 +22,48 @@ contract Market {
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
+    uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
 
     Assets private _assets;
 
-    mapping (uint256 => uint256) private playerIdToAuctionData;
-    mapping (uint256 => uint256) private teamIdToAuctionData;
+    mapping (uint256 => uint256) private _playerIdToAuctionData;
+    mapping (uint256 => uint256) private _teamIdToAuctionData;
+    mapping (uint256 => uint256) private _teamIdToRemainingAcqs;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
     }
+    
+    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 numRemain) public view {
+        uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
+        for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
+            if (isAcquisitionFree(remainingAcqs, acq) == false) {
+                remainingAcqs = setAcquisitionConstraint(remainingAcqs, validUntil, numRemain, acq);
+            }
+        }
+        require(false, "this team is already signed up in 7 contrained friendly championships");
+    }
+    
+    function isAcquisitionFree(uint256 remainingAcqs, uint8 acq) private view returns (bool) {
+        uint32 validUntil = getAcquisitionConstraintValidUntil(remainingAcqs, acq);
+        return (validUntil == 0) || (validUntil < now);
+    }
+    
+    function getAcquisitionConstraintValidUntil(uint256 remainingAcqs, uint8 acq) private pure returns (uint32) {
+        return uint32((remainingAcqs >> 36 * acq) & (2**32-1)) ; 
+    }
+
+    function getAcquisitionConstraintNumRemain(uint256 remainingAcqs, uint8 acq) private pure returns (uint8) {
+        return uint8((remainingAcqs >> 32 + 36 * acq) & 15); 
+    }
+    
+    function setAcquisitionConstraint(uint256 remainingAcqs, uint32 validUntil, uint8 numRemain, uint8 acq) public pure returns (uint256) {
+        remainingAcqs = (remainingAcqs & ~(uint256(2**36-1) << (36 * acq))) 
+                        | (validUntil << (36 * acq))
+                        | (numRemain << (32 + 36 * acq));
+    }
+
+    
     
     // Main PLAYER auction functions: freeze & complete
     function freezePlayer(
@@ -42,8 +75,8 @@ contract Market {
     ) public {
         require(areFreezePlayerRequirementsOK(sellerHiddenPrice, validUntil, playerId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
-        emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
+        _playerIdToAuctionData[playerId] = validUntil + uint256(sellerHiddenPrice << 34);
+        emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
     function freezePromoPlayer(
@@ -56,8 +89,8 @@ contract Market {
         require(!_assets.isBotTeam(_assets.getTargetTeamId(playerId)), "cannot offer a promo player to a bot team");
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        playerIdToAuctionData[playerId] = validUntil;
-        emit PlayerFreeze(playerId, playerIdToAuctionData[playerId], true);
+        _playerIdToAuctionData[playerId] = validUntil;
+        emit PlayerFreeze(playerId, _playerIdToAuctionData[playerId], true);
     }
 
     function completePromoPlayerTransfer(
@@ -71,10 +104,10 @@ contract Market {
         require(_assets.getOwnerTeam(buyerTeamId) == 
                     recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s]), "Buyer is not own targetTeamId");
         require(now < validUntil);
-        require(validUntil == playerIdToAuctionData[playerId], "provided validUntil does not match freeze validUntil");
+        require(validUntil == _playerIdToAuctionData[playerId], "provided validUntil does not match freeze validUntil");
         require(sig[IDX_MSG] == prefixed(buildAgreeToBuyPromoPlayerTxMsg(playerId, validUntil)), "buyer msg does not match");
         _assets.transferPlayer(playerId, buyerTeamId);
-        playerIdToAuctionData[playerId] = 1;
+        _playerIdToAuctionData[playerId] = 1;
         emit PlayerFreeze(playerId, 1, false);
     }
 
@@ -100,7 +133,7 @@ contract Market {
             , "requirements to complete auction are not met"    
         );
         _assets.transferPlayer(playerId, buyerTeamId);
-        playerIdToAuctionData[playerId] = 1;
+        _playerIdToAuctionData[playerId] = 1;
         emit PlayerFreeze(playerId, 1, false);
     }
     
@@ -114,8 +147,8 @@ contract Market {
     ) public {
         require(areFreezeTeamRequirementsOK(sellerHiddenPrice, validUntil, teamId, sig, sigV), "FreePlayer requirements not met");
         // // Freeze player
-        teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
-        emit TeamFreeze(teamId, teamIdToAuctionData[teamId], true);
+        _teamIdToAuctionData[teamId] = validUntil + uint256(sellerHiddenPrice << 34);
+        emit TeamFreeze(teamId, _teamIdToAuctionData[teamId], true);
     }
 
     function completeTeamAuction(
@@ -138,7 +171,7 @@ contract Market {
         );
         require(ok, "requirements to complete auction are not met");
         _assets.transferTeam(teamId, buyerAddress);
-        teamIdToAuctionData[teamId] = 1;
+        _teamIdToAuctionData[teamId] = 1;
         emit TeamFreeze(teamId, 1, false);
     }
 
@@ -195,7 +228,7 @@ contract Market {
         ok =    // check buyerAddress is legit and signature is valid
                 (buyerAddress != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (teamIdToAuctionData[teamId] >> 34)) &&
+                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (_teamIdToAuctionData[teamId] >> 34)) &&
                 // // check player is still frozen
                 isTeamFrozen(teamId) &&
                 // // check that they signed what they input data says they signed:
@@ -203,9 +236,9 @@ contract Market {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            ok = ok && (validUntil > (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) - AUCTION_TIME);
         } else {
-            ok = ok && (validUntil == (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
+            ok = ok && (validUntil == (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK));
         } 
     }
 
@@ -259,7 +292,7 @@ contract Market {
         ok =    // check asset is owned by buyer
                 (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
-                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (playerIdToAuctionData[playerId] >> 34)) &&
+                ((uint256(sellerHiddenPrice) % 2**(256-34)) == (_playerIdToAuctionData[playerId] >> 34)) &&
                 // check signatures are valid by requiring that they own the asset:
                 (_assets.getOwnerTeam(buyerTeamId) == recoverAddr(sig[IDX_MSG], sigV, sig[IDX_r], sig[IDX_s])) &&
                 // check player is still frozen
@@ -270,9 +303,9 @@ contract Market {
 
         if (isOffer2StartAuction) {
             // in this case: validUntil is interpreted as offerValidUntil
-            ok = ok && (validUntil > (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
+            ok = ok && (validUntil > (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) - AUCTION_TIME);
         } else {
-            ok = ok && (validUntil == (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
+            ok = ok && (validUntil == (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK));
         } 
     }
 
@@ -330,12 +363,12 @@ contract Market {
 
     function isPlayerFrozen(uint256 playerId) public view returns (bool) {
         require(_assets.getIsSpecial(playerId) || _assets.playerExists(playerId), "player does not exist");
-        return (playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_playerIdToAuctionData[playerId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
         if (teamId == _assets.ROSTER_TEAM()) return false;
         require(_assets.teamExists(teamId), "unexistent team");
-        return (teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
+        return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }
 }
