@@ -7,44 +7,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
-// func TestTeamStateUpdate(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	team := storage.Team{
-// 		TeamID:      big.NewInt(4),
-// 		TimezoneIdx: 5,
-// 		CountryIdx:  1,
-// 		State: storage.TeamState{
-// 			Owner: "io",
-// 		},
-// 	}
-// 	err = sto.TeamCreate(team)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	team.State = storage.TeamState{
-// 		BlockNumber:          6,
-// 		Owner:                "tu",
-// 		CurrentLeagueId:      6,
-// 		PosInCurrentLeagueId: 3,
-// 		PrevLeagueId:         1,
-// 		PosInPrevLeagueId:    0,
-// 	}
-// 	err = sto.TeamStateUpdate(team.Id, team.State)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result, err := sto.GetTeam(team.Id)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if team != result {
-// 		t.Fatalf("Expected %v got %v", team, result)
-// 	}
-// }
-
 func TestTeamCount(t *testing.T) {
 	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
@@ -87,6 +49,14 @@ func TestTeamCreate(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("Expected 1 result %v", count)
 	}
+	teamResult, err := sto.GetTeam(team.TeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if teamResult.State.RankingPoints != 10 {
+		t.Fatalf("Wrong ranking points %v", teamResult.State.RankingPoints)
+	}
+
 }
 
 func TestGetTeamOfUnexistenTeamID(t *testing.T) {

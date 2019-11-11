@@ -18,6 +18,7 @@ type TeamState struct {
 	L               uint32
 	GoalsForward    uint32
 	GoalsAgainst    uint32
+	RankingPoints   uint32
 }
 
 type Team struct {
@@ -77,8 +78,9 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 						d=$6,
 						l=$7,
 						goals_forward=$8,
-						goals_against=$9
-						WHERE team_id=$10`,
+						goals_against=$9,
+						ranking_points=$10
+						WHERE team_id=$11`,
 		teamState.Owner,
 		teamState.LeagueIdx,
 		teamState.TeamIdxInLeague,
@@ -88,6 +90,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.L,
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
+		teamState.RankingPoints,
 		teamID.String(),
 	)
 	return err
@@ -167,7 +170,7 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
 	var team Team
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against FROM teams WHERE (team_id = $1);", teamID.String())
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against, ranking_points FROM teams WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return team, err
 	}
@@ -188,6 +191,7 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.State.L,
 		&team.State.GoalsForward,
 		&team.State.GoalsAgainst,
+		&team.State.RankingPoints,
 	)
 	if err != nil {
 		return team, err

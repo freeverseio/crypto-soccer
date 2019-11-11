@@ -67,3 +67,56 @@ func TestSetMatchLogs(t *testing.T) {
 		t.Fatalf("Visitor match log error %v", visitorLog)
 	}
 }
+
+func TestMatchReset(t *testing.T) {
+	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	var team storage.Team
+	team.TeamID = big.NewInt(10)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	sto.TeamCreate(team)
+	matchDayIdx := uint8(3)
+	matchIdx := uint8(4)
+	err = sto.MatchCreate(storage.Match{
+		TimezoneIdx:   timezoneIdx,
+		CountryIdx:    countryIdx,
+		LeagueIdx:     leagueIdx,
+		MatchDayIdx:   matchDayIdx,
+		MatchIdx:      matchIdx,
+		HomeTeamID:    big.NewInt(10),
+		VisitorTeamID: big.NewInt(10),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, 10, 3, big.NewInt(4), big.NewInt(5))
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = sto.MatchReset(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	homeLog, visitorLog, err := sto.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if homeLog.String() != "0" {
+		t.Fatalf("Home match log error %v", homeLog)
+	}
+	if visitorLog.String() != "0" {
+		t.Fatalf("Visitor match log error %v", visitorLog)
+	}
+}

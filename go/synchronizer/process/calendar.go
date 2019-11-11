@@ -77,7 +77,7 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 			if err != nil {
 				return err
 			}
-			err = b.storage.MatchSetTeams(timezoneIdx, countryIdx, leagueIdx, uint32(matchDay), uint32(match), homeTeamID, visitorTeamID)
+			err = b.storage.MatchSetTeams(timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID)
 			if err != nil {
 				return err
 			}
@@ -97,7 +97,7 @@ func (b *Calendar) Reset(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32)
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			err = b.storage.MatchReset(timezoneIdx, countryIdx, leagueIdx, uint32(matchDay), uint32(match))
+			err = b.storage.MatchReset(timezoneIdx, countryIdx, leagueIdx, matchDay, match)
 			if err != nil {
 				return err
 			}
