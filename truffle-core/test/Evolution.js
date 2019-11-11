@@ -129,6 +129,38 @@ contract('Evolution', (accounts) => {
         return teamState;
     };
 
+    const createHardcodedTeam = function () {
+        // returns 18 players generated with the following code. We hardcode it to avoid the "deployDate" time-dependency
+        // teamState = [];
+        // playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdx = 0, playerIdx = 0).should.be.fulfilled;
+        // for (p = 0; p < 18; p++) {
+        //     skills = await assets.getPlayerSkillsAtBirth(playerId0.toNumber() + p);
+        //     teamState.push(skills);
+        //     console.log(skills.toString(10))
+        // }
+        return [
+            '14606248079918261338806855150670198598294524424421999',
+            '14603325075249802958062362651785117246719383552393656',
+            '14615017086954653606499907426763036762091679724733245',
+            '14609171184243174825485386589332947715467405749846827',
+            '14615017461189033969342085869889674545308663693968083',
+            '14603325891317697566792669908219362044711638355411673',
+            '14606249873734453245614329076439313941148075272765994',
+            '14603324461979309998470701478621001103697221903123183',
+            '14606248281321866413037179508268863783570851530343215',
+            '14606249082057998697777445123967984023640370982880706',
+            '14603327085801362263089568768708477093108613577769640',
+            '14612095382001501327618929648053879079031002742916002',
+            '14603326117112742701915784319947485139466656825672861',
+            '14612093787498219632679532865607761507997232766977103',
+            '14609173081200313275497388848716119026424650418029241',
+            '14603326360330245023390630956127251848106222989410926',
+            '14606249807529115937477333996086265720951632055960118',
+            '14603326808435843856365497638008216685947959514366883'
+        ];
+    };
+
+    
     beforeEach(async () => {
         evolution = await Evolution.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
@@ -172,7 +204,6 @@ contract('Evolution', (accounts) => {
             weights[5 * bucket + 4] = MAX_WEIGHT - sum4;
         }        
         assignment = await evolution.encodeTP(weights, specialPlayer).should.be.fulfilled;
-        console.log(assignment.toString(10))
         matchStartTime = now;
         newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, 200, assignment, matchStartTime);
         for (p = 0; p < 25; p++) {
@@ -183,12 +214,7 @@ contract('Evolution', (accounts) => {
     });
 
     it('getTeamEvolvedSkills with realistic team and zero TPs', async () => {
-        teamState = [];
-        playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdx = 0, playerIdx = 0).should.be.fulfilled;
-        for (p = 0; p < 18; p++) {
-            skills = await assets.getPlayerSkillsAtBirth(playerId0.toNumber() + p);
-            teamState.push(skills);
-        }
+        teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
         assignment = await evolution.encodeTP(weights, specialPlayer = 12).should.be.fulfilled;
@@ -209,12 +235,7 @@ contract('Evolution', (accounts) => {
     });
     
     it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
-        teamState = [];
-        playerId0 = await assets.encodeTZCountryAndVal(tz = 1, countryIdx = 0, playerIdx = 0).should.be.fulfilled;
-        for (p = 0; p < 18; p++) {
-            skills = await assets.getPlayerSkillsAtBirth(playerId0.toNumber() + p);
-            teamState.push(skills);
-        }
+        teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
         assignment = await evolution.encodeTP(weights, specialPlayer = 12).should.be.fulfilled;
