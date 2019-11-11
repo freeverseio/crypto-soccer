@@ -4,6 +4,8 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
+
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
 
@@ -401,6 +403,20 @@ contract("Market", accounts => {
 
   });
 
+  it('encoding of constraints in friendlies)', async () => {
+    maxNumConstraints = 7;
+    teamId = buyerTeamId;
+    remainingAcqs = 0;
+    for (c = 0; c < maxNumConstraints; c++) {
+      remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq = c).should.be.fulfilled;
+      valid = await market.getAcquisitionConstraintValidUntil(remainingAcqs, acq = c).should.be.fulfilled;
+      num = await market.getAcquisitionConstraintNumRemain(remainingAcqs, acq = c).should.be.fulfilled;
+      valid.toNumber().should.be.equal(valUnt);
+      num.toNumber().should.be.equal(numRemain);
+    }
+  });
+  
+  return
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************

@@ -49,18 +49,18 @@ contract Market {
         return (validUntil == 0) || (validUntil < now);
     }
     
-    function getAcquisitionConstraintValidUntil(uint256 remainingAcqs, uint8 acq) private pure returns (uint32) {
+    function getAcquisitionConstraintValidUntil(uint256 remainingAcqs, uint8 acq) public pure returns (uint32) {
         return uint32((remainingAcqs >> 36 * acq) & (2**32-1)) ; 
     }
 
-    function getAcquisitionConstraintNumRemain(uint256 remainingAcqs, uint8 acq) private pure returns (uint8) {
+    function getAcquisitionConstraintNumRemain(uint256 remainingAcqs, uint8 acq) public pure returns (uint8) {
         return uint8((remainingAcqs >> 32 + 36 * acq) & 15); 
     }
     
     function setAcquisitionConstraint(uint256 remainingAcqs, uint32 validUntil, uint8 numRemain, uint8 acq) public pure returns (uint256) {
-        remainingAcqs = (remainingAcqs & ~(uint256(2**36-1) << (36 * acq))) 
-                        | (validUntil << (36 * acq))
-                        | (numRemain << (32 + 36 * acq));
+        return  (remainingAcqs & ~(uint256(2**36-1) << (36 * acq)))
+                | (uint256(validUntil) << (36 * acq))
+                | (uint256(numRemain) << (32 + 36 * acq));
     }
 
     
