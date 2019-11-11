@@ -82,7 +82,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
-			if day == 0 {
+			if (day == 0) && (turnInDay == 0) {
 				err = b.shuffleTeamsInCountry(timezoneIdx, countryIdx)
 				if err != nil {
 					return err
@@ -213,6 +213,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 }
 
 func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
 	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 	if err != nil {
@@ -232,29 +233,30 @@ func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx ui
 			if err != nil {
 				return err
 			}
-			newRankingPoints, err := b.leagues.ComputeTeamRankingPoints(
+			team.State.RankingPoints, err = b.leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
 				teamState,
 				uint8(position),
-				big.NewInt(int64(team.State.RankingPoints)),
+				team.State.RankingPoints,
 			)
 			if err != nil {
 				return err
 			}
 			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newRankingPoints)
-			team.State.RankingPoints = uint32(newRankingPoints.Uint64())
 			orgMap = append(orgMap, team)
-			sort.Slice(orgMap[:], func(i, j int) bool {
-				return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
-			})
-			for i, team := range orgMap {
-				team.State.LeagueIdx = uint32(i / 8)
-				team.State.TeamIdxInLeague = uint32(i % 8)
-				err = b.universedb.TeamUpdate(team.TeamID, team.State)
-				if err != nil {
-					return err
-				}
-			}
+		}
+	}
+	// ordening all the teams by ranking points
+	sort.Slice(orgMap[:], func(i, j int) bool {
+		return orgMap[i].State.RankingPoints.Cmp(orgMap[j].State.RankingPoints) == 1
+	})
+	// create the new leagues
+	for i, team := range orgMap {
+		team.State.LeagueIdx = uint32(i / 8)
+		team.State.TeamIdxInLeague = uint32(i % 8)
+		err = b.universedb.TeamUpdate(team.TeamID, team.State)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
