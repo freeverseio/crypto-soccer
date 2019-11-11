@@ -52,7 +52,7 @@ contract Market {
         require(false, "this team is already signed up in 7 contrained friendly championships");
     }
     
-    function isAcquisitionFree(uint256 remainingAcqs, uint8 acq) private view returns (bool) {
+    function isAcquisitionFree(uint256 remainingAcqs, uint8 acq) public view returns (bool) {
         uint32 validUntil = getAcquisitionConstraintValidUntil(remainingAcqs, acq);
         return (validUntil == 0) || (validUntil < now);
     }
