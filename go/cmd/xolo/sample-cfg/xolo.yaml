@@ -1,0 +1,10 @@
+pools:
+  goerli:
+    waitreceipt: 4s
+    rpcs:
+      - url: https://goerli.infura.io/v3/9c24cba6b7b647d28deb48817cf605ce
+    signers:
+      - path   : ./be3a732e058fdfdb3457ba1bb1d87f9c200982f2.json
+        passwd : 11111111 
+
+waitOutQueue : 4s
