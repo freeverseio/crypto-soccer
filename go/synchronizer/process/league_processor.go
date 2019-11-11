@@ -233,23 +233,22 @@ func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx ui
 			if err != nil {
 				return err
 			}
-			newRankingPoints, err := b.leagues.ComputeTeamRankingPoints(
+			team.State.RankingPoints, err = b.leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
 				teamState,
 				uint8(position),
-				big.NewInt(int64(team.State.RankingPoints)),
+				team.State.RankingPoints,
 			)
 			if err != nil {
 				return err
 			}
 			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newRankingPoints)
-			team.State.RankingPoints = uint32(newRankingPoints.Uint64())
 			orgMap = append(orgMap, team)
 		}
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
+		return orgMap[i].State.RankingPoints.Cmp(orgMap[j].State.RankingPoints) == 1
 	})
 	// create the new leagues
 	for i, team := range orgMap {
