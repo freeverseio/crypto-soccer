@@ -3,6 +3,7 @@ package process
 import (
 	"errors"
 	"math/big"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
@@ -81,6 +82,12 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+			if day == 0 {
+				err = b.shuffleTeamsInCountry(timezoneIdx, countryIdx)
+				if err != nil {
+					return err
+				}
+			}
 			leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
 			if err != nil {
 				return err
@@ -202,6 +209,54 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	// default:
 	// 	log.Warnf("[LeagueProcessor] ... skipping")
 	// } // switch
+	return nil
+}
+
+func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+	var orgMap []storage.Team
+	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
+	if err != nil {
+		return err
+	}
+	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+		teams, err := b.universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+		if err != nil {
+			return err
+		}
+		// ordening by points
+		sort.Slice(teams[:], func(i, j int) bool {
+			return teams[i].State.Points > teams[j].State.Points
+		})
+		for position, team := range teams {
+			teamState, err := b.GetTeamState(team.TeamID)
+			if err != nil {
+				return err
+			}
+			newRankingPoints, err := b.leagues.ComputeTeamRankingPoints(
+				&bind.CallOpts{},
+				teamState,
+				uint8(position),
+				big.NewInt(int64(team.State.RankingPoints)),
+			)
+			if err != nil {
+				return err
+			}
+			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newRankingPoints)
+			team.State.RankingPoints = uint32(newRankingPoints.Uint64())
+			orgMap = append(orgMap, team)
+			sort.Slice(orgMap[:], func(i, j int) bool {
+				return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
+			})
+			for i, team := range orgMap {
+				team.State.LeagueIdx = uint32(i / 8)
+				team.State.TeamIdxInLeague = uint32(i % 8)
+				err = b.universedb.TeamUpdate(team.TeamID, team.State)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 

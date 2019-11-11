@@ -78,8 +78,9 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 						d=$6,
 						l=$7,
 						goals_forward=$8,
-						goals_against=$9
-						WHERE team_id=$10`,
+						goals_against=$9,
+						ranking_points=$10
+						WHERE team_id=$11`,
 		teamState.Owner,
 		teamState.LeagueIdx,
 		teamState.TeamIdxInLeague,
@@ -89,6 +90,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.L,
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
+		teamState.RankingPoints,
 		teamID.String(),
 	)
 	return err
