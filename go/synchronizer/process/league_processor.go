@@ -245,17 +245,19 @@ func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx ui
 			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newRankingPoints)
 			team.State.RankingPoints = uint32(newRankingPoints.Uint64())
 			orgMap = append(orgMap, team)
-			sort.Slice(orgMap[:], func(i, j int) bool {
-				return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
-			})
-			for i, team := range orgMap {
-				team.State.LeagueIdx = uint32(i / 8)
-				team.State.TeamIdxInLeague = uint32(i % 8)
-				err = b.universedb.TeamUpdate(team.TeamID, team.State)
-				if err != nil {
-					return err
-				}
-			}
+		}
+	}
+	// ordening all the teams by ranking points
+	sort.Slice(orgMap[:], func(i, j int) bool {
+		return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
+	})
+	// create the new leagues
+	for i, team := range orgMap {
+		team.State.LeagueIdx = uint32(i / 8)
+		team.State.TeamIdxInLeague = uint32(i % 8)
+		err = b.universedb.TeamUpdate(team.TeamID, team.State)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
