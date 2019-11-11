@@ -42,14 +42,18 @@ contract Market {
         return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));
     }
 
-    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 numRemain) public view {
+    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 numRemain) public {
+        require(numRemain > 0, "numRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
+        bool success;
         for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
-            if (isAcquisitionFree(remainingAcqs, acq) == false) {
-                remainingAcqs = setAcquisitionConstraint(remainingAcqs, validUntil, numRemain, acq);
+            if (isAcquisitionFree(remainingAcqs, acq) == true) {
+                _teamIdToRemainingAcqs[teamId] = setAcquisitionConstraint(remainingAcqs, validUntil, numRemain, acq);
+                success = true;
+                continue;
             }
         }
-        require(false, "this team is already signed up in 7 contrained friendly championships");
+        require(success, "this team is already signed up in 7 contrained friendly championships");
     }
     
     function isAcquisitionFree(uint256 remainingAcqs, uint8 acq) public view returns (bool) {
