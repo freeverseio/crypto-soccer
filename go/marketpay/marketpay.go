@@ -33,7 +33,7 @@ type Order struct {
 		Self           string        `json:"self"`
 		PublicID       string        `json:"public_id"`
 		Name           string        `json:"name"`
-		Value          float64       `json:"value"`
+		Value          string        `json:"value"`
 		Currency       string        `json:"currency"`
 		Amount         string        `json:"amount"`
 		PayinAmount    string        `json:"payin_amount"`
@@ -65,7 +65,10 @@ type Order struct {
 	} `json:"data"`
 }
 
+const sandboxURL = "https://api-sandbox.truust.io"
 const sandBoxBearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
+
+const productionURL = "https://api.truust.io"
 const productionBearerToken = "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
 
 type MarketPay struct {
@@ -75,7 +78,7 @@ type MarketPay struct {
 
 func New() (*MarketPay, error) {
 	return &MarketPay{
-		"https://api-sandbox.truust.io",
+		sandboxURL,
 		sandBoxBearerToken,
 	}, nil
 }
