@@ -143,7 +143,7 @@ func TestUpdatePaymentId(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	paymentID := "435565645"
+	paymentID := 35565645
 	err = sto.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, paymentID)
 	if err != nil {
 		t.Fatal(err)

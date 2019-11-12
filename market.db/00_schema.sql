@@ -41,7 +41,7 @@ CREATE TABLE bids (
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES bid_states(state),
     state_extra TEXT NOT NULL DEFAULT '',
-    payment_id TEXT NOT NULL DEFAULT '',
+    payment_id INT NOT NULL DEFAULT -1,
     payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );
