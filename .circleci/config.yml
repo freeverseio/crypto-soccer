@@ -162,7 +162,6 @@ workflows:
               only: /vvvvv.*/
             branches:
               only:
-                - master
                 - ci-prod
           requires:
             - synchronizer
