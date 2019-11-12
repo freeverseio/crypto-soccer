@@ -89,7 +89,7 @@ func (b *BidMachine) Process() (storage.Bid, error) {
 }
 
 func (b *BidMachine) processPaying() error {
-	if b.bid.PaymentID == "" {
+	if b.bid.PaymentID < 0 {
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
 		market, err := marketpay.New()
 		if err != nil {
@@ -113,7 +113,7 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, fmt.Sprintf("%d", order.Data.ID))
+		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, order.Data.ID)
 		if err != nil {
 			return err
 		}
@@ -122,63 +122,89 @@ func (b *BidMachine) processPaying() error {
 			return err
 		}
 	} else {
-		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order to be processed", b.bid.Auction, b.bid.ExtraPrice)
+		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
+		market, err := marketpay.New()
+		if err != nil {
+			return err
+		}
+		order, err := market.GetOrder(b.bid.PaymentID)
+		if err != nil {
+			return err
+		}
+		paid := market.IsPaid(order)
+		if paid {
+			isOffer2StartAuction := false
+			bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
+			if err != nil {
+				return err
+			}
+			auctionHiddenPrice, err := b.signer.HashPrivateMsg(b.auction.CurrencyID, b.auction.Price, b.auction.Rnd)
+			if err != nil {
+				return err
+			}
+			var sig [3][32]byte
+			var sigV uint8
+			sig[0], err = b.signer.HashBidMessage(
+				b.auction.CurrencyID,
+				b.auction.Price,
+				b.auction.Rnd,
+				b.auction.ValidUntil,
+				b.auction.PlayerID,
+				big.NewInt(b.bid.ExtraPrice),
+				big.NewInt(b.bid.Rnd),
+				b.bid.TeamID,
+				isOffer2StartAuction,
+			)
+			if err != nil {
+				return err
+			}
+			sig[1], sig[2], sigV, err = b.signer.RSV(b.bid.Signature)
+			if err != nil {
+				return err
+			}
+			tx, err := b.market.CompletePlayerAuction(
+				bind.NewKeyedTransactor(b.freeverse),
+				auctionHiddenPrice,
+				b.auction.ValidUntil,
+				b.auction.PlayerID,
+				bidHiddenPrice,
+				b.bid.TeamID,
+				sig,
+				sigV,
+				isOffer2StartAuction,
+			)
+			if err != nil {
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
+				if err != nil {
+					return err
+				}
+				b.bid.State = storage.BID_FAILED
+				return err
+			}
+			receipt, err := helper.WaitReceipt(b.client, tx, 60)
+			if err != nil {
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
+				if err != nil {
+					return err
+				}
+				b.bid.State = storage.BID_FAILED
+				return err
+			}
+			if receipt.Status == 0 {
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, "receipt.Status == 0")
+				if err != nil {
+					return err
+				}
+				b.bid.State = storage.BID_FAILED
+				return err
+			}
+			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAID, "")
+			if err != nil {
+				return err
+			}
+			b.bid.State = storage.BID_PAID
+		}
 	}
-	return nil
-	isOffer2StartAuction := false
-	bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
-	if err != nil {
-		return err
-	}
-	auctionHiddenPrice, err := b.signer.HashPrivateMsg(b.auction.CurrencyID, b.auction.Price, b.auction.Rnd)
-	if err != nil {
-		return err
-	}
-	var sig [3][32]byte
-	var sigV uint8
-	sig[0], err = b.signer.HashBidMessage(
-		b.auction.CurrencyID,
-		b.auction.Price,
-		b.auction.Rnd,
-		b.auction.ValidUntil,
-		b.auction.PlayerID,
-		big.NewInt(b.bid.ExtraPrice),
-		big.NewInt(b.bid.Rnd),
-		b.bid.TeamID,
-		isOffer2StartAuction,
-	)
-	if err != nil {
-		return err
-	}
-	sig[1], sig[2], sigV, err = b.signer.RSV(b.bid.Signature)
-	if err != nil {
-		return err
-	}
-	tx, err := b.market.CompletePlayerAuction(
-		bind.NewKeyedTransactor(b.freeverse),
-		auctionHiddenPrice,
-		b.auction.ValidUntil,
-		b.auction.PlayerID,
-		bidHiddenPrice,
-		b.bid.TeamID,
-		sig,
-		sigV,
-		isOffer2StartAuction,
-	)
-	if err != nil {
-		b.bid.State = storage.BID_FAILED_TO_PAY
-		return err
-	}
-	receipt, err := helper.WaitReceipt(b.client, tx, 60)
-	if err != nil {
-		b.bid.State = storage.BID_FAILED_TO_PAY
-		return err
-	}
-	if receipt.Status == 0 {
-		b.bid.State = storage.BID_FAILED_TO_PAY
-		return err
-	}
-	b.bid.State = storage.BID_PAID
 	return nil
 }
 
