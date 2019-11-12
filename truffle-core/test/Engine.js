@@ -580,15 +580,21 @@ contract('Engine', (accounts) => {
 
     it('teamSkills are added from 1st to 2nd half', async () => {
         seedDraw = 12;
-        tactics442TwoChanges = await engine.encodeTactics([3,1,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics442WithNoChanges = await engine.encodeTactics([11,11,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        subs = [3,1,11];
+        tactics442TwoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        subs = [11,11,11];
+        tactics442WithNoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expected = [3250, 2750];
         for (team = 0; team < 2; team++) {
             teamSkills = await encodingLog.getTeamSumSkills(log0[team]).should.be.fulfilled;
             teamSkills.toNumber().should.be.equal(expected[team]);
         }
-        tactics442OneChange = await engine.encodeTactics([3,11,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        subs = [3,11,11];
+        tactics442OneChange = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442OneChange, tactics442WithNoChanges], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expected = [3322, 2750];
         for (team = 0; team < 2; team++) {
@@ -673,11 +679,15 @@ contract('Engine', (accounts) => {
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;            
         teamStateAll50Half2[lineupConsecutive[1]] = messi; 
-        tactics442TwoChanges = await engine.encodeTactics([3,1,11], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        subst = [3,1,11];
+        tactics442TwoChanges = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineupConsecutive, subst),
+            extraAttackNull, tacticId442).should.be.fulfilled;
         result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442TwoChanges, tactics442NoChanges], firstHalfLog, 
             [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // create a 2nd half using 1 players that already played in the 1st half, and 3 changes... should fail
-        tactics442ThreeChanges = await engine.encodeTactics([3,1,5], subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        subst = [3,1,5];
+        tactics442ThreeChanges = await engine.encodeTactics(subst, subsRounds, setNoSubstInLineUp(lineupConsecutive, subst),
+            extraAttackNull, tacticId442).should.be.fulfilled;
         result = await engine.playHalfMatch(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics442ThreeChanges, tactics442NoChanges], firstHalfLog, 
             [is2nd = true, isHomeStadium, isPlayoff]).should.be.rejected;
     });
