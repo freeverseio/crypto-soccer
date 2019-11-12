@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -183,4 +184,44 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 	return order, nil
+}
+
+func (b *MarketPay) IsOrderPaid(orderID int) (bool, error) {
+	url := b.endpoint + "/2.0/orders/" + strconv.Itoa(orderID)
+	method := "GET"
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return false, err
+	}
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
+
+	res, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return false, err
+	}
+	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
+	// fmt.Println(string(body))
+	order := &Order{}
+	err = json.Unmarshal(body, order)
+	if err != nil {
+		return false, err
+	}
+
+	return order.Data.Status == "PUBLISHED", nil
 }

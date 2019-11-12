@@ -66,3 +66,36 @@ func TestCreateOrder(t *testing.T) {
 		t.Fatal("Buyer link is empty")
 	}
 }
+
+func TestIsPaid(t *testing.T) {
+	mp, err := marketpay.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	sellerID, err := mp.CreateCustomer("+34", "657497063")
+	if err != nil {
+		t.Fatal(err)
+	}
+	buyerID, err := mp.CreateCustomer("+34", "659853780")
+	if err != nil {
+		t.Fatal(err)
+	}
+	name := "This is a name"
+	value := "100.43" // $$$
+	orderID, err := mp.CreateOrder(
+		sellerID,
+		buyerID,
+		name,
+		value,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	paid, err := mp.IsOrderPaid(orderID.Data.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if paid {
+		t.Fatal("The order should not be paid")
+	}
+}
