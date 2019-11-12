@@ -159,7 +159,7 @@ workflows:
       - dockerization-production:
           filters:
             tags:
-              only: /.*/
+              only: /vvvvv.*/
             branches:
               only:
                 - master
