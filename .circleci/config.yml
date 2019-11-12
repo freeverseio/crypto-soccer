@@ -158,12 +158,12 @@ workflows:
             - market-notary
       - dockerization-production:
           filters:
+            tags:
+              only: /.*/
             branches:
               only:
                 - master
                 - ci-prod
-            tags:
-              only: /.*/
           requires:
             - synchronizer
             - django-centauri
