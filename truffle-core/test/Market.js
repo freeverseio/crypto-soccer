@@ -480,7 +480,16 @@ contract("Market", accounts => {
     var {0: isConstrained, 1: nRemain} = result;
     isConstrained.should.be.equal(true);
     nRemain.toNumber().should.be.equal(n);
+    // after a long time, it's ready again
+    await timeTravel.advanceTime(6666 + 1000);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(false);
+    nRemain.toNumber().should.be.equal(0);
   });
+  
+  return
 
   // *************************************************************************
   // *********************************   TEST  *******************************
