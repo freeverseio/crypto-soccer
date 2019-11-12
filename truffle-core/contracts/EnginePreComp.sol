@@ -477,6 +477,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             else if (forwardness == IDX_D) {return 2000;}
     }
 
+    // Important: the spec is that all entries in lineup ** must be different **
+    // If substitution number "i" (i=0,1,2) is not set (so that sub[i] = 11) 
+    //  => the corresponding lineup must be (25 + i) (25, 26 or 27 respectively)
     function getLinedUpStates(
         uint256 matchLog, 
         uint256 tactics, 
