@@ -122,7 +122,7 @@ func (b *BidMachine) processPaying() error {
 			return err
 		}
 	} else {
-		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order to be processed", b.bid.Auction, b.bid.ExtraPrice)
+		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
 	}
 	return nil
 	isOffer2StartAuction := false
