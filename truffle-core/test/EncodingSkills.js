@@ -22,16 +22,17 @@ contract('Encoding', (accounts) => {
         lineup = Array.from(new Array(14), (x,i) => i);
         substitutions = [4,10,2];
         subsRounds = [3,7,1];
-        extraAttack = Array.from(new Array(10), (x,i) => i%2);
+        extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
         encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
         decoded = await encoding.decodeTactics(encoded).should.be.fulfilled;
+
         let {0: subs, 1: roun, 2: line, 3: attk, 4: tact} = decoded;
         tact.toNumber().should.be.equal(tacticsId);
         for (p = 0; p < 14; p++) {
             line[p].toNumber().should.be.equal(lineup[p]);
         }
         for (p = 0; p < 10; p++) {
-            attk[p].should.be.equal(extraAttack[p] == 1 ? true : false);
+            attk[p].should.be.equal(extraAttack[p]);
         }
         for (p = 0; p < 3; p++) {
             subs[p].toNumber().should.be.equal(substitutions[p]);
