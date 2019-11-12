@@ -186,7 +186,7 @@ func (b *MarketPay) CreateOrder(
 	return order, nil
 }
 
-func (b *MarketPay) IsOrderPaid(orderID int) (bool, error) {
+func (b *MarketPay) GetOrder(orderID int) (*Order, error) {
 	url := b.endpoint + "/2.0/orders/" + strconv.Itoa(orderID)
 	method := "GET"
 
@@ -197,31 +197,32 @@ func (b *MarketPay) IsOrderPaid(orderID int) (bool, error) {
 	}
 	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-
 	if err != nil {
 		fmt.Println(err)
 	}
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Authorization", b.bearerToken)
-
 	res, err := client.Do(req)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
 	// fmt.Println(string(body))
 	order := &Order{}
 	err = json.Unmarshal(body, order)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
+	return order, nil
+}
 
-	return order.Data.Status == "PUBLISHED", nil
+func (b *MarketPay) IsPaid(order *Order) bool {
+	return order.Data.Status == "PUBLISHED"
 }

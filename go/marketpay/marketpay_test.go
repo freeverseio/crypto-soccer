@@ -82,7 +82,7 @@ func TestIsPaid(t *testing.T) {
 	}
 	name := "This is a name"
 	value := "100.43" // $$$
-	orderID, err := mp.CreateOrder(
+	order, err := mp.CreateOrder(
 		sellerID,
 		buyerID,
 		name,
@@ -91,11 +91,12 @@ func TestIsPaid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	paid, err := mp.IsOrderPaid(orderID.Data.ID)
+	order, err = mp.GetOrder(order.Data.ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if paid {
-		t.Fatal("The order should not be paid")
+	isPaid := mp.IsPaid(order)
+	if isPaid {
+		t.Fatal("The order shouldn't be paid")
 	}
 }
