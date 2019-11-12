@@ -157,9 +157,9 @@ workflows:
             - relay-actions
             - market-notary
       - dockerization-production:
-          branches:
-            ignore: /.*/
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /.*/
           requires:
