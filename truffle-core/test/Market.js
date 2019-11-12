@@ -385,7 +385,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+  it2('setAcquisitionConstraint of constraints in friendlies)', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -402,7 +402,7 @@ contract("Market", accounts => {
     }
   });
   
-  it('addAcquisitionConstraint of constraints in friendlies', async () => {
+  it2('addAcquisitionConstraint of constraints in friendlies', async () => {
     maxNumConstraints = 7;
     teamId = buyerTeamId;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -417,7 +417,7 @@ contract("Market", accounts => {
     await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
   });
 
-  it('encoding of constraints pass with time', async () => {
+  it2('encoding of constraints pass with time', async () => {
     teamId = buyerTeamId;
     remainingAcqs = 0;
     acq = 5;
@@ -428,7 +428,7 @@ contract("Market", accounts => {
     isIt.should.be.equal(true);
   });
 
-  it('getMaxAllowedAcquisitions and decreaseMaxAllowedAcquisitions', async () => {
+  it2('getMaxAllowedAcquisitions and decreaseMaxAllowedAcquisitions', async () => {
     teamId = buyerTeamId;
     // initially, isContrained = false
     result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
@@ -836,15 +836,23 @@ contract("Market", accounts => {
   
   it("players: tests constraints on players", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
+    // first acquisition works:
+    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     tx = await completePlayerAuction(
       currencyId, price,  sellerRnd, validUntil, playerId, 
       extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
     ).should.be.fulfilled;
-    
+    // second acquisition should fail:
+    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.rejected;
   });  
   
-  it("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it2("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
@@ -879,7 +887,7 @@ contract("Market", accounts => {
 
   });
   
-  it("promo players: completes an offering and accepting", async () => {
+  it2("promo players: completes an offering and accepting", async () => {
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
 
@@ -913,7 +921,7 @@ contract("Market", accounts => {
     owner.should.be.equal(buyerAccount.address);
   });
 
-  it("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
+  it2("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
@@ -924,7 +932,7 @@ contract("Market", accounts => {
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
   });
   
-  it("promo players: cannot offer a promo player that already exists", async () => {
+  it2("promo players: cannot offer a promo player that already exists", async () => {
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
@@ -965,7 +973,7 @@ contract("Market", accounts => {
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
   });
   
-  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
+  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
