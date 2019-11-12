@@ -385,7 +385,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+  it2('setAcquisitionConstraint of constraints in friendlies)', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -396,13 +396,13 @@ contract("Market", accounts => {
       isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
       isIt.should.be.equal(false);
       valid = await market.getAcquisitionConstraintValidUntil(remainingAcqs, acq = c).should.be.fulfilled;
-      num = await market.getAcquisitionConstraintNumRemain(remainingAcqs, acq = c).should.be.fulfilled;
+      num = await market.getAcquisitionConstraintNRemain(remainingAcqs, acq = c).should.be.fulfilled;
       valid.toNumber().should.be.equal(valUnt);
       num.toNumber().should.be.equal(numRemain);
     }
 });
   
-  it('addAcquisitionConstraint of constraints in friendlies', async () => {
+  it2('addAcquisitionConstraint of constraints in friendlies', async () => {
     maxNumConstraints = 7;
     teamId = buyerTeamId;
     remainingAcqs = 0;
@@ -419,7 +419,7 @@ contract("Market", accounts => {
   });
   
 
-  it('encoding of constraints pass with time', async () => {
+  it2('encoding of constraints pass with time', async () => {
     teamId = buyerTeamId;
     remainingAcqs = 0;
     acq = 5;
@@ -430,7 +430,39 @@ contract("Market", accounts => {
     isIt.should.be.equal(true);
   });
 
-  return
+  it('getMaxAllowedAcquisitions', async () => {
+    teamId = buyerTeamId;
+    // initially, isContrained = false
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(false);
+    nRemain.toNumber().should.be.equal(0);
+    // we add 1 contraint
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 4400, numRemain = 8).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(numRemain);
+    // we another constraint, but in the past, so nothing changes
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() - 4400, n = 7).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(numRemain);
+    // we another constraint, it takes into account the lowest constaint (in this case, the newest)
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 6666, n = 7).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(n);
+    // we another constraint, it takes into account the lowest constaint (in this case, the previous one)
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 6666, n2 = 15).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(n);
+  });
+
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************
