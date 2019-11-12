@@ -41,7 +41,7 @@ func computeHash(h hash.Hash, data ...[]byte) []byte {
 }
 
 func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
-	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27}
 	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
 	tacticId := uint8(1)
 	substitutions := [3]uint8{11, 11, 11}

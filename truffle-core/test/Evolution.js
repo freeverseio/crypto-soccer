@@ -71,7 +71,16 @@ contract('Evolution', (accounts) => {
     const trainingPointsInit = 0;
     
     const it2 = async(text, f) => {};
-       
+
+    function setNoSubstInLineUp(lineup, substitutions) {
+        modifiedLineup = [...lineup];
+        NO_SUBST = 11;
+        for (s = 0; s < 3; s++) {
+            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = 25 + s;
+        }
+        return modifiedLineup;
+    }
+
     function daysToSecs(dayz) {
         return (dayz * 24 * 3600); 
     }
@@ -170,11 +179,16 @@ contract('Evolution', (accounts) => {
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
         await evolution.setEngine(engine.address).should.be.fulfilled;
-        tactics0 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics1 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId433).should.be.fulfilled;
-        tactics442 = await engine.encodeTactics(substitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
-        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, lineupConsecutive, extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics1NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId433).should.be.fulfilled;
+        tactics442 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions),
+            extraAttackNull, tacticId442).should.be.fulfilled;
+        tactics442NoChanges = await engine.encodeTactics(noSubstitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, noSubstitutions), 
+            extraAttackNull, tacticId442).should.be.fulfilled;
         teamStateAll50Half1 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
         teamStateAll1Half1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine, forwardness = 3, leftishness = 2, aligned = [false, false]).should.be.fulfilled;
         teamStateAll50Half2 = await createTeamStateFromSinglePlayer([50, 50, 50, 50, 50], engine, forwardness = 3, leftishness = 2, aligned = [true, false]).should.be.fulfilled;

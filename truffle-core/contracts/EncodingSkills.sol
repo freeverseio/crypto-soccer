@@ -10,6 +10,7 @@ contract EncodingSkills {
     uint8 constant public MIN_PLAYER_AGE_AT_BIRTH = 16;
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
     uint8 constant public N_SKILLS = 5;
+    uint8 constant public NO_SUBST = 11;
 
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant private IDX_POT = 0;
@@ -54,15 +55,20 @@ contract EncodingSkills {
         require(tacticsId < 64, "tacticsId should fit in 64 bit");
         uint256 encoded = uint256(tacticsId);
         for (uint8 p = 0; p < 10; p++) {
-            encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + 1 * p;
+            encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + p;
         }          
-        for (uint8 p = 0; p < 14; p++) {
+        for (uint8 p = 0; p < 11; p++) {
             require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
         for (uint8 p = 0; p < 3; p++) {
             require(substitutions[p] < 12, "incorrect lineup entry");
             require(subsRounds[p] < 12, "incorrect round");
+            // requirement: if there is no subst at "i", lineup[i + 11] = 25 + p (so that all lineups are different, and sortable)
+            if (substitutions[p] == NO_SUBST) {
+                require(lineup[p + 11] == 25 + p, "incorrect lineup entry for no substituted player");
+            }
+            encoded |= uint256(lineup[p + 11]) << 16 + 5 * (p + 11);
             encoded |= uint256(substitutions[p]) << 86 + 4 * p;
             encoded |= uint256(subsRounds[p]) << 98 + 4 * p;
         }          
@@ -78,25 +84,21 @@ contract EncodingSkills {
     ) {
         require(tactics < 2**110, "tacticsId should fit in 98 bit");
         tacticsId = uint8(tactics & 63);
-        tactics >>= 6;
         for (uint8 p = 0; p < 10; p++) {
-            extraAttack[p] = ((tactics & 1) == 1 ? true : false); // 2^1 - 1
-            tactics >>= 1;
+            extraAttack[p] = (((tactics >> (6 + p)) & 1) == 1 ? true : false); // 2^1 - 1
+        }          
+        for (uint8 p = 0; p < 3; p++) {
+            substitutions[p] = uint8((tactics >> (86 + 4 * p)) & 15); // 2^4 - 1
+            // require(substitutions[p] < 12, "incorrect substitutions entry"); // 11 is used as "no substitution"
         }          
         for (uint8 p = 0; p < 14; p++) {
-            lineup[p] = uint8(tactics & 31); // 2^5 - 1
-            require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
-            tactics >>= 5;
+            lineup[p] = uint8((tactics >> (16 + 5 * p)) & 31); // 2^5 - 1
+            // if ((p > 10) && (substitutions[p - 11] == NO_SUBST)) require(lineup[p] == 14 + p, "incorrect lineup entry for no substituted player");
+            // else require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
         }          
         for (uint8 p = 0; p < 3; p++) {
-            substitutions[p] = uint8(tactics & 15); // 2^4 - 1
-            require(substitutions[p] < 12, "incorrect lineup entry"); // 11 is used as "no substitution"
-            tactics >>= 4;
-        }          
-        for (uint8 p = 0; p < 3; p++) {
-            subsRounds[p] = uint8(tactics & 15); // 2^4 - 1
-            require(subsRounds[p] < 12, "incorrect round entry");
-            tactics >>= 4;
+            subsRounds[p] = uint8(tactics >> (98 + 4 * p) & 15); // 2^4 - 1
+            // require(subsRounds[p] < 12, "incorrect round entry");
         }          
     }
     
