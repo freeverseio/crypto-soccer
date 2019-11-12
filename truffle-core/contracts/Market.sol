@@ -48,6 +48,17 @@ contract Market {
         require(success, "this team is already signed up in 7 contrained friendly championships");
     }
     
+    function decreaseMaxAllowedAcquisitions(uint256 teamId) public {
+        uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
+        if (remainingAcqs == 0) return;
+        for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
+            if (!isAcquisitionFree(remainingAcqs, acq)) {
+                remainingAcqs = decreaseAcquisitionConstraint(remainingAcqs, acq);
+            }
+        }
+        _teamIdToRemainingAcqs[teamId] = remainingAcqs;
+    }
+    
     function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         if (remainingAcqs == 0) return (false, 0);
@@ -82,7 +93,10 @@ contract Market {
                 | (uint256(nRemain) << (32 + 36 * acq));
     }
 
-    
+    function decreaseAcquisitionConstraint(uint256 remainingAcqs, uint8 acq) public pure returns (uint256) {
+        uint8 nRemain = getAcquisitionConstraintNRemain(remainingAcqs, acq);
+        return (remainingAcqs & ~(uint256(15) << (32 + 36 * acq))) | (uint256(nRemain-1) << (32 + 36 * acq));
+    }
     
     // Main PLAYER auction functions: freeze & complete
     function freezePlayer(
@@ -153,6 +167,7 @@ contract Market {
         );
         _assets.transferPlayer(playerId, buyerTeamId);
         _playerIdToAuctionData[playerId] = 1;
+        decreaseMaxAllowedAcquisitions(buyerTeamId);
         emit PlayerFreeze(playerId, 1, false);
     }
     
@@ -307,7 +322,9 @@ contract Market {
     {
         // the next line will verify that the playerId is the same that was used by the seller to sign
         bytes32 sellerTxHash = prefixed(buildPutAssetForSaleTxMsg(sellerHiddenPrice, validUntil, playerId));
-
+        
+        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(buyerTeamId);
+        if (isConstrained && nRemain == 0) return false;
         ok =    // check asset is owned by buyer
                 (_assets.getOwnerTeam(buyerTeamId) != address(0)) && 
                 // check buyer and seller refer to the exact same auction
