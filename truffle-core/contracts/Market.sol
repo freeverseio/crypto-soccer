@@ -130,9 +130,12 @@ contract Market {
      ) public {
         require(validUntil > now, "validUntil is in the past");
         require(validUntil < now + MAX_VALID_UNTIL, "validUntil is too large");
-        uint256 playerIdWithoutTargetTeam = _assets.setTargetTeamId(playerId, 0);
+         uint256 playerIdWithoutTargetTeam = _assets.setTargetTeamId(playerId, 0);
         require(!_assets.isPlayerWritten(playerIdWithoutTargetTeam), "promo player already in the universe");
         uint256 targetTeamId = _assets.getTargetTeamId(playerId);
+        // require that team does not have any constraint from friendlies
+        (bool isConstrained, uint8 nRemain) = getMaxAllowedAcquisitions(targetTeamId);
+        require(!(isConstrained && (nRemain == 0)), "trying to accept a promo player, but team is busy in constrained friendlies");
         // testing about the target team is already done in _assets.transferPlayer
         require(_assets.teamExists(targetTeamId), "cannot offer a promo player to a non-existent team");
         require(!_assets.isBotTeam(targetTeamId), "cannot offer a promo player to a bot team");
@@ -147,6 +150,7 @@ contract Market {
         require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
         require(sigSel[IDX_MSG] == signedMsg, "seller msg does not match");
         _assets.transferPlayer(playerIdWithoutTargetTeam, targetTeamId);
+        decreaseMaxAllowedAcquisitions(targetTeamId);
     }
 
     function completePlayerAuction(
