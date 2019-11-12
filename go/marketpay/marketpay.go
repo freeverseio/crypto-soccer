@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -33,7 +34,7 @@ type Order struct {
 		Self           string        `json:"self"`
 		PublicID       string        `json:"public_id"`
 		Name           string        `json:"name"`
-		Value          float64       `json:"value"`
+		Value          string        `json:"value"`
 		Currency       string        `json:"currency"`
 		Amount         string        `json:"amount"`
 		PayinAmount    string        `json:"payin_amount"`
@@ -65,13 +66,21 @@ type Order struct {
 	} `json:"data"`
 }
 
+const sandboxURL = "https://api-sandbox.truust.io"
+const sandBoxBearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
+
+const productionURL = "https://api.truust.io"
+const productionBearerToken = "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
+
 type MarketPay struct {
-	endpoint string
+	endpoint    string
+	bearerToken string
 }
 
 func New() (*MarketPay, error) {
 	return &MarketPay{
-		"https://api.truust.io",
+		sandboxURL,
+		sandBoxBearerToken,
 	}, nil
 }
 
@@ -102,7 +111,7 @@ func (b *MarketPay) CreateCustomer(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
+	req.Header.Add("Authorization", b.bearerToken)
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -154,7 +163,7 @@ func (b *MarketPay) CreateOrder(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
+	req.Header.Add("Authorization", b.bearerToken)
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -175,4 +184,45 @@ func (b *MarketPay) CreateOrder(
 		return nil, err
 	}
 	return order, nil
+}
+
+func (b *MarketPay) GetOrder(orderID int) (*Order, error) {
+	url := b.endpoint + "/2.0/orders/" + strconv.Itoa(orderID)
+	method := "GET"
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", b.bearerToken)
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	body = bytes.TrimPrefix(body, []byte("\xef\xbb\xbf"))
+	// fmt.Println(string(body))
+	order := &Order{}
+	err = json.Unmarshal(body, order)
+	if err != nil {
+		return nil, err
+	}
+	return order, nil
+}
+
+func (b *MarketPay) IsPaid(order *Order) bool {
+	return order.Data.Status == "PUBLISHED"
 }
