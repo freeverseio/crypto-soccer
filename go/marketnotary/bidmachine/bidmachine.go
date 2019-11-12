@@ -191,7 +191,7 @@ func (b *BidMachine) processPaying() error {
 				return err
 			}
 			if receipt.Status == 0 {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, "receipt.Status == 0")
 				if err != nil {
 					return err
 				}
