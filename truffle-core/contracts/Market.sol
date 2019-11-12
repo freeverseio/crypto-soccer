@@ -34,19 +34,34 @@ contract Market {
         _assets = Assets(addr);
     }
     
-    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 numRemain) public {
-        require(numRemain > 0, "numRemain = 0, which does not make sense for a constraint");
+    function addAcquisitionConstraint(uint256 teamId, uint32 validUntil, uint8 nRemain) public {
+        require(nRemain > 0, "nRemain = 0, which does not make sense for a constraint");
         uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
         bool success;
         for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
-            if (isAcquisitionFree(remainingAcqs, acq) == true) {
-                _teamIdToRemainingAcqs[teamId] = setAcquisitionConstraint(remainingAcqs, validUntil, numRemain, acq);
+            if (isAcquisitionFree(remainingAcqs, acq)) {
+                _teamIdToRemainingAcqs[teamId] = setAcquisitionConstraint(remainingAcqs, validUntil, nRemain, acq);
                 success = true;
                 continue;
             }
         }
         require(success, "this team is already signed up in 7 contrained friendly championships");
     }
+    
+    function getMaxAllowedAcquisitions(uint256 teamId) public view returns (bool isConstrained, uint8) {
+        uint256 remainingAcqs = _teamIdToRemainingAcqs[teamId];
+        if (remainingAcqs == 0) return (false, 0);
+        uint8 nRemain = 255;
+        for (uint8 acq = 0; acq < MAX_ACQUISITON_CONSTAINTS; acq++) {
+            if (!isAcquisitionFree(remainingAcqs, acq)) {
+                uint8 thisNRemain = getAcquisitionConstraintNRemain(remainingAcqs, acq);
+                if (thisNRemain == 0) return (true, 0);
+                if (thisNRemain < nRemain) nRemain = thisNRemain;
+                
+            }
+        }
+        return (nRemain == 255) ? (false, 0) : (true, nRemain);
+    }    
     
     function isAcquisitionFree(uint256 remainingAcqs, uint8 acq) public view returns (bool) {
         uint32 validUntil = getAcquisitionConstraintValidUntil(remainingAcqs, acq);
@@ -57,14 +72,14 @@ contract Market {
         return uint32((remainingAcqs >> 36 * acq) & (2**32-1)) ; 
     }
 
-    function getAcquisitionConstraintNumRemain(uint256 remainingAcqs, uint8 acq) public pure returns (uint8) {
+    function getAcquisitionConstraintNRemain(uint256 remainingAcqs, uint8 acq) public pure returns (uint8) {
         return uint8((remainingAcqs >> 32 + 36 * acq) & 15); 
     }
     
-    function setAcquisitionConstraint(uint256 remainingAcqs, uint32 validUntil, uint8 numRemain, uint8 acq) public pure returns (uint256) {
+    function setAcquisitionConstraint(uint256 remainingAcqs, uint32 validUntil, uint8 nRemain, uint8 acq) public pure returns (uint256) {
         return  (remainingAcqs & ~(uint256(2**36-1) << (36 * acq)))
                 | (uint256(validUntil) << (36 * acq))
-                | (uint256(numRemain) << (32 + 36 * acq));
+                | (uint256(nRemain) << (32 + 36 * acq));
     }
 
     
