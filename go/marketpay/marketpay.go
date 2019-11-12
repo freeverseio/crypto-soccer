@@ -65,13 +65,18 @@ type Order struct {
 	} `json:"data"`
 }
 
+const sandBoxBearerToken = "Bearer sk_stage_NCzkqJwQTNVStxDxVxmSflVv"
+const productionBearerToken = "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2"
+
 type MarketPay struct {
-	endpoint string
+	endpoint    string
+	bearerToken string
 }
 
 func New() (*MarketPay, error) {
 	return &MarketPay{
-		"https://api.truust.io",
+		"https://api-sandbox.truust.io",
+		sandBoxBearerToken,
 	}, nil
 }
 
@@ -102,7 +107,7 @@ func (b *MarketPay) CreateCustomer(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
+	req.Header.Add("Authorization", b.bearerToken)
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -154,7 +159,7 @@ func (b *MarketPay) CreateOrder(
 	}
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer sk_production_AjWbpOPwS3HNi821Ma9mIgA2")
+	req.Header.Add("Authorization", b.bearerToken)
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
