@@ -157,13 +157,11 @@ workflows:
             - relay-actions
             - market-notary
       - dockerization-production:
+          branches:
+            ignore: /.*/
           filters:
             tags:
               only: /.*/
-            branches:
-              only:
-                - master
-                - ci-prod
           requires:
             - synchronizer
             - django-centauri
