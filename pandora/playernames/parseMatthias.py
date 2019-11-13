@@ -43,16 +43,12 @@ with open(database_name, 'r', newline='\n') as file:
             nFields = len(fields)
         else:
             thisLine = line.split(";")
-            if thisLine[IDX_GENDER] == "M":
+            if strcmp(thisLine[IDX_GENDER], "M") or strcmp(thisLine[IDX_GENDER], "?M"):
                 assert len(thisLine) == nFields, "wrong num of fields"
                 allNames.append(thisLine)
 
-print(fields)
-for field in fields[2:-1]:
-    namesInCountry = getNamesFromCountry(field, fields, allNames)
-    print(field, len(namesInCountry))
+for country in fields[2:-1]:
+    namesInCountry = getNamesFromCountry(country, fields, allNames)
+    str = "" if len(namesInCountry) > 100 else " - WARNING"
+    print(country, len(namesInCountry), str)
 
-
-a = 2
-    # for row in reader:
-    #     print(row[0], row[1])
