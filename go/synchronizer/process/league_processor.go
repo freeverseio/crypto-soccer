@@ -62,12 +62,12 @@ func NewLeagueProcessor(
 		FREEPLAYERID,
 	}, nil
 }
-func (b *LeagueProcessor) processHalfMatch(
+
+func (b *LeagueProcessor) process1stHalf(
 	match storage.Match,
 	tactics [2]*big.Int,
 	seed [32]byte,
 	startTime *big.Int,
-	is2ndHalf bool,
 ) (logs [2]*big.Int, err error) {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
@@ -80,48 +80,75 @@ func (b *LeagueProcessor) processHalfMatch(
 
 	isHomeStadium := true
 	isPlayoff := false
+	is2ndHalf := false
+	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
+	return b.engine.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		startTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+}
+
+func (b *LeagueProcessor) process2ndHalf(
+	match storage.Match,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+) (logs [2]*big.Int, err error) {
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return logs, err
+	}
+	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return logs, err
+	}
+	isHomeStadium := true
+	isPlayoff := false
+	is2ndHalf := true
 	matchLog := [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	if is2ndHalf {
-		logs, err = b.evolution.Play2ndHalfAndEvolve(
-			&bind.CallOpts{},
-			matchSeed,
-			startTime,
-			states,
-			tactics,
-			matchLog,
-			matchBools,
-		)
+	logs, err = b.evolution.Play2ndHalfAndEvolve(
+		&bind.CallOpts{},
+		matchSeed,
+		startTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+	if err != nil {
+		return logs, err
+	}
+	for i := 0; i < 2; i++ {
+		trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
 		if err != nil {
 			return logs, err
 		}
-		for i := 0; i < 2; i++ {
-			trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
-			if err != nil {
-				return logs, err
-			}
-			err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, startTime)
-			if err != nil {
-				return logs, err
-			}
-		}
-	} else { // first half
-		matchLog[0] = big.NewInt(0)
-		matchLog[1] = big.NewInt(0)
-		logs, err = b.engine.PlayHalfMatch(
-			&bind.CallOpts{},
-			matchSeed,
-			startTime,
-			states,
-			tactics,
-			matchLog,
-			matchBools,
-		)
+		err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, startTime)
 		if err != nil {
 			return logs, err
 		}
 	}
 	return logs, err
+}
+
+func (b *LeagueProcessor) processHalfMatch(
+	match storage.Match,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+	is2ndHalf bool,
+) (logs [2]*big.Int, err error) {
+	if is2ndHalf {
+		return b.process2ndHalf(match, tactics, seed, startTime)
+	}
+	return b.process1stHalf(match, tactics, seed, startTime)
 }
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
