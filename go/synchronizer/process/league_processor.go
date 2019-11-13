@@ -62,7 +62,13 @@ func NewLeagueProcessor(
 		FREEPLAYERID,
 	}, nil
 }
-func (b *LeagueProcessor) processHalfMatch(match storage.Match, tactics [2]*big.Int, seed [32]byte, startTime *big.Int, is2ndHalf bool) (logs [2]*big.Int, err error) {
+func (b *LeagueProcessor) processHalfMatch(
+	match storage.Match,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+	is2ndHalf bool,
+) (logs [2]*big.Int, err error) {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return logs, err
@@ -74,13 +80,8 @@ func (b *LeagueProcessor) processHalfMatch(match storage.Match, tactics [2]*big.
 
 	isHomeStadium := true
 	isPlayoff := false
-	var matchLog [2]*big.Int
-	var matchBools [3]bool
-	matchBools[0] = is2ndHalf
-	matchBools[1] = isHomeStadium
-	matchBools[2] = isPlayoff
-	matchLog[0] = match.HomeMatchLog
-	matchLog[1] = match.VisitorMatchLog
+	matchLog := [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
+	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
 	if is2ndHalf {
 		logs, err = b.evolution.Play2ndHalfAndEvolve(
 			&bind.CallOpts{},
