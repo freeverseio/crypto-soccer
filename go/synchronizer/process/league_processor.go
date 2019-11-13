@@ -62,6 +62,68 @@ func NewLeagueProcessor(
 		FREEPLAYERID,
 	}, nil
 }
+func (b *LeagueProcessor) processTurn(match storage.Match, tactics [2]*big.Int, seed [32]byte, startTime *big.Int, is2ndHalf bool) (logs [2]*big.Int, err error) {
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return logs, err
+	}
+	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return logs, err
+	}
+
+	isHomeStadium := true
+	isPlayoff := false
+	var matchLog [2]*big.Int
+	var matchBools [3]bool
+	matchBools[0] = is2ndHalf
+	matchBools[1] = isHomeStadium
+	matchBools[2] = isPlayoff
+	if is2ndHalf {
+		matchLog[0], matchLog[1], err = b.universedb.GetMatchLogs(match.TimezoneIdx, match.CountryIdx, match.LeagueIdx, match.MatchDayIdx, match.MatchIdx)
+		if err != nil {
+			return logs, nil
+		}
+		logs, err = b.evolution.Play2ndHalfAndEvolve(
+			&bind.CallOpts{},
+			matchSeed,
+			startTime,
+			states,
+			tactics,
+			matchLog,
+			matchBools,
+		)
+		if err != nil {
+			return logs, err
+		}
+		for i := 0; i < 2; i++ {
+			trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
+			if err != nil {
+				return logs, err
+			}
+			err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, startTime)
+			if err != nil {
+				return logs, err
+			}
+		}
+	} else { // first half
+		matchLog[0] = big.NewInt(0)
+		matchLog[1] = big.NewInt(0)
+		logs, err = b.engine.PlayHalfMatch(
+			&bind.CallOpts{},
+			matchSeed,
+			startTime,
+			states,
+			tactics,
+			matchLog,
+			matchBools,
+		)
+		if err != nil {
+			return logs, err
+		}
+	}
+	return logs, err
+}
 
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
 	day := event.Day
@@ -105,71 +167,15 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				}
 				for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
 					match := matches[matchIdx]
-					matchSeed, err := b.GenerateMatchSeed(event.Seed, match.HomeTeamID, match.VisitorTeamID)
-					if err != nil {
-						return err
-					}
-					states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
-					if err != nil {
-						return err
-					}
+					is2ndHalf := turnInDay == 1
 					tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
 					if err != nil {
 						return err
 					}
-					is2ndHalf := turnInDay == 1
-					isHomeStadium := true
-					isPlayoff := false
-					var matchLog [2]*big.Int
-					var matchBools [3]bool
-					matchBools[0] = is2ndHalf
-					matchBools[1] = isHomeStadium
-					matchBools[2] = isPlayoff
-					var logs [2]*big.Int
-					if is2ndHalf {
-						matchLog[0], matchLog[1], err = b.universedb.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, day, uint8(matchIdx))
-						if err != nil {
-							return nil
-						}
-						logs, err = b.evolution.Play2ndHalfAndEvolve(
-							&bind.CallOpts{},
-							matchSeed,
-							event.SubmissionTime,
-							states,
-							tactics,
-							matchLog,
-							matchBools,
-						)
-						if err != nil {
-							return err
-						}
-						for i := 0; i < 2; i++ {
-							trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
-							if err != nil {
-								return err
-							}
-							err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, event.SubmissionTime)
-							if err != nil {
-								return err
-							}
-						}
-					} else { // first half
-						matchLog[0] = big.NewInt(0)
-						matchLog[1] = big.NewInt(0)
-						logs, err = b.engine.PlayHalfMatch(
-							&bind.CallOpts{},
-							matchSeed,
-							event.SubmissionTime,
-							states,
-							tactics,
-							matchLog,
-							matchBools,
-						)
-						if err != nil {
-							return err
-						}
+					logs, err := b.processTurn(match, tactics, event.Seed, event.SubmissionTime, is2ndHalf)
+					if err != nil {
+						return err
 					}
-
 					goalsHome, err := b.evolution.GetNGoals(
 						&bind.CallOpts{},
 						logs[0],
