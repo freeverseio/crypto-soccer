@@ -1,4 +1,4 @@
-
+great entry point: https://github.com/philipperemy/name-dataset.git
 
 bc-popular-boys-names.xlsx: 
 - only names, no surnames, 
@@ -41,9 +41,24 @@ englishGivenNames:
 - classified per country (55 countries!)
 - many are almost duplicated, but checkable via function
 
+MatthiasWinkelmann_firstname-database
+- only names
+- per country!!!
+- looks like 55Countries but in CSV directly
+
+mbejda.github.io
+- both surnames and names, for:
+	- hispanic
+	- indian (only names)
+	- black
+	- white
+
 
 Possibility: 
-- names: given from the 55 countries
+- names: 
+	- given from the 55 countries
+	- or better, from MatthiasWinkelmann_firstname-database
+
 - surnames:  given from the englishSurnames, using procedence
 
 
