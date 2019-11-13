@@ -1,0 +1,51 @@
+
+
+bc-popular-boys-names.xlsx: 
+- only names, no surnames, 
+- from all around, 
+- no geo,
+- frequency
+
+name_gender.xlsx: 
+- both names & surnames (no way to differenciate!!)
+- from all around
+- no geo
+
+
+spanishSurnames:
+- only surnames, no names
+- spanish only
+
+
+englishSurnames: (151K !!)
+- mostly surnames only (a few names, e.g. Antonio)
+- it tells you the procedence!!!
+	pctwhite: 	Percent Non-Hispanic White Only
+	pctblack: 	Percent Non-Hispanic Black Only
+	pctapi: 	Percent Non-Hispanic Asian and Pacific Islander Only
+	pctaian: 	Percent Non-Hispanic American Indian and Alaskan Native Only
+	pct2prace: 	Percent Non-Hispanic of Two or More Races
+	pcthispanic: Percent Hispanic Origin 
+- origin: 
+	- https://data.world/len/us-first-names-database
+	- https://www2.census.gov/topics/genealogy/2000surnames/surnames.pdf#
+
+
+
+englishGivenNames:
+- only names 
+- only english
+
+55 Countries Names:
+- only names (50K entries!)
+- classified per country (55 countries!)
+- many are almost duplicated, but checkable via function
+
+
+Possibility: 
+- names: given from the 55 countries
+- surnames:  given from the englishSurnames, using procedence
+
+
+
+
