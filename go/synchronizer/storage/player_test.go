@@ -91,6 +91,7 @@ func TestPlayerUpdate(t *testing.T) {
 		t.Fatal("Skills are different")
 	}
 	player2.State.EncodedSkills = big.NewInt(3)
+	player2.State.RedCard = true
 	err = sto.PlayerUpdate(player2.PlayerId, player2.State)
 	if err != nil {
 		t.Fatal(err)
@@ -98,6 +99,9 @@ func TestPlayerUpdate(t *testing.T) {
 	player3, err := sto.GetPlayer(player.PlayerId)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if player2.State.RedCard != player3.State.RedCard {
+		t.Fatal("Wrong RedCard")
 	}
 	if player2.State.EncodedSkills.String() != player3.State.EncodedSkills.String() {
 		t.Fatal("Skills player 3 are different")

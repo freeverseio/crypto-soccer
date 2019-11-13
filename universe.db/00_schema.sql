@@ -60,7 +60,8 @@ CREATE TABLE players (
     day_of_birth INT NOT NULL, 
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
-    frozen BOOLEAN NOT NULL,
+    frozen BOOLEAN NOT NULL DEFAULT FALSE,
+    red_card BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY(player_id)
 );
 
