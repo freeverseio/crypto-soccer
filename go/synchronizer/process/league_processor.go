@@ -359,10 +359,7 @@ func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, ta
 			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(RED_CARD):
-					player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, true)
-					if err != nil {
-						return err
-					}
+					player.State.RedCard = true
 				case int64(SOFTINJURY):
 					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
 					if err != nil {
@@ -377,12 +374,15 @@ func (b *LeagueProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, ta
 			}
 		}
 		if is2ndHalf {
-			player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, false)
-			if err != nil {
-				return err
-			}
+			player.State.RedCard = false
 		}
-		b.universedb.PlayerUpdate(player.PlayerId, player.State)
+		player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCard)
+		if err != nil {
+			return err
+		}
+		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {
+			return nil
+		}
 	}
 	return nil
 }
