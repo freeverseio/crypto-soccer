@@ -62,7 +62,7 @@ func NewLeagueProcessor(
 		FREEPLAYERID,
 	}, nil
 }
-func (b *LeagueProcessor) processTurn(match storage.Match, tactics [2]*big.Int, seed [32]byte, startTime *big.Int, is2ndHalf bool) (logs [2]*big.Int, err error) {
+func (b *LeagueProcessor) processHalfMatch(match storage.Match, tactics [2]*big.Int, seed [32]byte, startTime *big.Int, is2ndHalf bool) (logs [2]*big.Int, err error) {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return logs, err
@@ -172,7 +172,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 					if err != nil {
 						return err
 					}
-					logs, err := b.processTurn(match, tactics, event.Seed, event.SubmissionTime, is2ndHalf)
+					logs, err := b.processHalfMatch(match, tactics, event.Seed, event.SubmissionTime, is2ndHalf)
 					if err != nil {
 						return err
 					}
