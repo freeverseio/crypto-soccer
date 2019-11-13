@@ -57,9 +57,13 @@ mbejda.github.io
 Possibility: 
 - names: 
 	- given from the 55 countries
-	- or better, from MatthiasWinkelmann_firstname-database
+	- (DONE) from MatthiasWinkelmann_firstname-database
+		- no CHINA, no POLAND, little VIETNAM
 
-- surnames:  given from the englishSurnames, using procedence
+- surnames: 
+	- (DONE) given from the englishSurnames, using procedence
+		- Asia is too generic
+	- add hispanic 
 
 
 
