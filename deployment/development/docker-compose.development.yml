@@ -2,7 +2,7 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/ethereum:dev
-    command: --mine 
+    command: --mine --bootnodes ${ENODE}
     ports: 
       - "30303:30303"
       - "30303:30303/udp"
