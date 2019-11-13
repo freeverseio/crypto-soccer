@@ -79,11 +79,9 @@ func (b *LeagueProcessor) processHalfMatch(match storage.Match, tactics [2]*big.
 	matchBools[0] = is2ndHalf
 	matchBools[1] = isHomeStadium
 	matchBools[2] = isPlayoff
+	matchLog[0] = match.HomeMatchLog
+	matchLog[1] = match.VisitorMatchLog
 	if is2ndHalf {
-		matchLog[0], matchLog[1], err = b.universedb.GetMatchLogs(match.TimezoneIdx, match.CountryIdx, match.LeagueIdx, match.MatchDayIdx, match.MatchIdx)
-		if err != nil {
-			return logs, nil
-		}
 		logs, err = b.evolution.Play2ndHalfAndEvolve(
 			&bind.CallOpts{},
 			matchSeed,
