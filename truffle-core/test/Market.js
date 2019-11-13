@@ -4,6 +4,9 @@ require('chai')
     .use(require('chai-bn')(BN))
     .should();
 const truffleAssert = require('truffle-assertions');
+const debug = require('../utils/debugUtils.js');
+const timeTravel = require('../utils/TimeTravel.js');
+
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
 
@@ -382,6 +385,97 @@ contract("Market", accounts => {
 
   });
 
+  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+    maxNumConstraints = 7;
+    remainingAcqs = 0;
+    for (c = 0; c < maxNumConstraints; c++) {
+      acq = c;
+      isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+      isIt.should.be.equal(true);
+      remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() + c * 4400, numRemain = c, acq).should.be.fulfilled;
+      isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+      isIt.should.be.equal(false);
+      valid = await market.getAcquisitionConstraintValidUntil(remainingAcqs, acq = c).should.be.fulfilled;
+      num = await market.getAcquisitionConstraintNRemain(remainingAcqs, acq = c).should.be.fulfilled;
+      valid.toNumber().should.be.equal(valUnt);
+      num.toNumber().should.be.equal(numRemain);
+    }
+  });
+  
+  it('addAcquisitionConstraint of constraints in friendlies', async () => {
+    maxNumConstraints = 7;
+    teamId = buyerTeamId;
+    for (c = 0; c < maxNumConstraints; c++) {
+      await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;
+    }
+    // the team is full already
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
+    // as just enough time passes it can do one more submission again:
+    await timeTravel.advanceTime(4400 + 1000);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.fulfilled;
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
+  });
+
+  it('encoding of constraints pass with time', async () => {
+    teamId = buyerTeamId;
+    remainingAcqs = 0;
+    acq = 5;
+    isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+    isIt.should.be.equal(true);
+    remainingAcqs = await market.setAcquisitionConstraint(remainingAcqs, valUnt = now.toNumber() - 10, numRemain = c, acq).should.be.fulfilled;
+    isIt = await market.isAcquisitionFree(remainingAcqs, acq).should.be.fulfilled;
+    isIt.should.be.equal(true);
+  });
+
+  it('getMaxAllowedAcquisitions and decreaseMaxAllowedAcquisitions', async () => {
+    teamId = buyerTeamId;
+    // initially, isContrained = false
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(false);
+    nRemain.toNumber().should.be.equal(0);
+    // we add 1 contraint
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 4400, numRemain = 8).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(numRemain);
+    // we another constraint, but in the past, so nothing changes
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() - 4400, n = 7).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(numRemain);
+    // we another constraint, it takes into account the lowest constaint (in this case, the newest)
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 6666, n = 7).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(n);
+    // we another constraint, it takes into account the lowest constaint (in this case, the previous one)
+    await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + 6666, n2 = 15).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(n);
+    // decreaseMaxAllowedAcquisitions twice
+    await market.decreaseMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    await market.decreaseMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(true);
+    nRemain.toNumber().should.be.equal(n-2);
+    // after a long time, it's ready again
+    await timeTravel.advanceTime(6666 + 1000);
+    await timeTravel.advanceBlock().should.be.fulfilled;
+    result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
+    var {0: isConstrained, 1: nRemain} = result;
+    isConstrained.should.be.equal(false);
+    nRemain.toNumber().should.be.equal(0);
+  });
+  
+
   // *************************************************************************
   // *********************************   TEST  *******************************
   // *************************************************************************
@@ -739,7 +833,25 @@ contract("Market", accounts => {
     let finalOwner = await assets.getOwnerPlayer(playerId).should.be.fulfilled;
     finalOwner.should.be.equal(buyerAccount.address);
   });
-
+  
+  it("players: tests constraints on players", async () => {
+    await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
+    // first acquisition works:
+    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.fulfilled;
+    // second acquisition should fail:
+    playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 5);
+    tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
+    tx = await completePlayerAuction(
+      currencyId, price,  sellerRnd, validUntil, playerId, 
+      extraPrice, buyerRnd, isOffer2StartAuctionSig = false, isOffer2StartAuctionBC = false, buyerTeamId, buyerAccount
+    ).should.be.rejected;
+  });  
+  
   it("special players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     playerId = await createSpecialPlayerId();
 
@@ -807,6 +919,27 @@ contract("Market", accounts => {
     exists.should.be.equal(true);
     owner = await assets.getOwnerPlayer(finalPlayerId).should.be.fulfilled;
     owner.should.be.equal(buyerAccount.address);
+  });
+
+  it("promo players: effect of constraints", async () => {
+    await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
+    await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    // first acquisition works:
+    playerId = await createSpecialPlayerId();
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
+    sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
+    // first acquisition fails:
+    playerId = await createSpecialPlayerId(432153);
+    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+    sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
+    sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
+    sigBuyerMsgRS  = [sigBuyer.messageHash, sigBuyer.r, sigBuyer.s];
+    tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
   });
 
   it("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
