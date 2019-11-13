@@ -1,18 +1,24 @@
 import csv
 
-database_name = "matthias.csv"
+database_name = "englishSurnames.csv"
+
+# pctwhite: 	Percent Non-Hispanic White Only
+# pctblack: 	Percent Non-Hispanic Black Only
+# pctapi: 	    Percent Non-Hispanic Asian and Pacific Islander Only
+# pctaian: 	    Percent Non-Hispanic American Indian and Alaskan Native Only
+# pct2prace: 	Percent Non-Hispanic of Two or More Races
+# pcthispanic:  Percent Hispanic Origin
 
 IDX_NAME = 0
-IDX_GENDER = 1
-MIN_SCORE = 5
+MIN_SCORE = 45
 
 def strcmp(str1, str2):
     return str1.casefold() == str2.casefold()
 
 def belongsEnough(str, minScore = MIN_SCORE):
-    if strcmp(str, ""):
+    if strcmp(str, "") or strcmp(str, "(S)"):
         return False
-    return abs(int(str)) > minScore
+    return abs(float(str)) > minScore
 
 
 def getCountryIdx(fields, countryName):
@@ -29,7 +35,7 @@ def getNamesFromCountry(countryName, fields, allNames):
         if (score < MIN_SCORE):
             print("reducing min_score for: ", countryName)
         names = [line[IDX_NAME] for line in allNames if belongsEnough(line[getCountryIdx(fields, countryName)], score)]
-        score -= 1
+        score -= 10
     return names
 
 
@@ -39,15 +45,14 @@ nFields = 0
 with open(database_name, 'r', newline='\n') as file:
     for (l, line) in enumerate(file):
         if l == 0:
-            fields = line.rstrip('\n').split(";")
+            fields = line.rstrip('\n').split(",")
             nFields = len(fields)
         else:
-            thisLine = line.rstrip('\n').split(";")
-            if strcmp(thisLine[IDX_GENDER], "M") or strcmp(thisLine[IDX_GENDER], "?M"):
-                assert len(thisLine) == nFields, "wrong num of fields"
-                allNames.append(thisLine)
+            thisLine = line.rstrip('\n').split(",")
+            assert len(thisLine) == nFields, "wrong num of fields"
+            allNames.append(thisLine)
 
-for country in fields[2:-1]:
+for country in fields[5:-1]:
     namesInCountry = getNamesFromCountry(country, fields, allNames)
     str = "" if len(namesInCountry) > 100 else " - WARNING"
     print(country, len(namesInCountry), str)
