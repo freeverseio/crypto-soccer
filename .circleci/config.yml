@@ -128,8 +128,9 @@ jobs:
           fingerprints:
             - "1f:0d:ef:01:c6:82:5d:62:6c:2c:3f:57:37:ac:b9:13"
       - checkout
-      - run: scp -o StrictHostKeyChecking=no ./deployment/docker-compose.development.yml $DROPLET_USER@$DROPLET_IP:./
-      - run: scp -o StrictHostKeyChecking=no ./deployment/.env $DROPLET_USER@$DROPLET_IP:./
+      - run: scp -o StrictHostKeyChecking=no ./deployment/development/docker-compose.yml $DROPLET_USER@$DROPLET_IP:./
+      - run: scp -o StrictHostKeyChecking=no ./deployment/development/.env $DROPLET_USER@$DROPLET_IP:./
+      - run: scp -o StrictHostKeyChecking=no ./deployment/development/deploy.sh $DROPLET_USER@$DROPLET_IP:./
       - run: ssh -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP "./deploy.sh"
 
 workflows:
