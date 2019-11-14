@@ -43,8 +43,10 @@ def getCountryIdFromPlayerId(playerId):
     else:
         return 42364373724
 
-def getRndFromSeed(seed, maxVal):
-    return Web3.toInt(Web3.keccak(seed)) % maxVal
+def getRndFromSeed(seed, maxVal, iterations):
+    for i in range(iterations):
+        seed = Web3.toInt(Web3.keccak(seed))
+    return seed % maxVal
 
 
 def getRndNameFromCountry(countryCodeForNames, playerId, onlyThisCountry):
@@ -53,7 +55,7 @@ def getRndNameFromCountry(countryCodeForNames, playerId, onlyThisCountry):
         names = [name[1] for name in allNames if name[0] == countryCodeForNames]
     else:
         names = [name[1] for name in allNames if name[0] != countryCodeForNames]
-    return names[getRndFromSeed(playerId + 1, len(names))]
+    return names[getRndFromSeed(playerId, len(names), 2)]
 
 def getRndSurnameFromCountry(countryCodeForSurnames, playerId, onlyThisCountry):
     allNames = readNames(surnamesFile)
@@ -61,7 +63,7 @@ def getRndSurnameFromCountry(countryCodeForSurnames, playerId, onlyThisCountry):
         names = [name[1] for name in allNames if name[0] == countryCodeForSurnames]
     else:
         names = [name[1] for name in allNames if name[0] != countryCodeForSurnames]
-    return names[getRndFromSeed(playerId + 3, len(names))]
+    return names[getRndFromSeed(playerId, len(names), 4)]
 
 
 def getNameFromPlayerId(playerId):
@@ -70,7 +72,7 @@ def getNameFromPlayerId(playerId):
     country = countryIdToCode[countryId]
 
     maxVal = 100
-    dice = getRndFromSeed(playerId, maxVal)
+    dice = getRndFromSeed(playerId, maxVal, 1)
     if dice < (PURE_PURE_RATIO + PURE_FOREIGN_RATIO):
         name = getRndNameFromCountry(country.countryCodeForNames, playerId, True)
     else:
@@ -86,7 +88,7 @@ def getSurnameFromPlayerId(playerId):
     country = countryIdToCode[countryId]
 
     maxVal = 100
-    dice = getRndFromSeed(playerId+2, maxVal)
+    dice = getRndFromSeed(playerId+2, maxVal, 3)
     if dice < (PURE_PURE_RATIO + FOREIGN_PURE_RATIO):
         name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, True)
     else:
@@ -96,12 +98,11 @@ def getSurnameFromPlayerId(playerId):
     return name
 
 
-
 # TEST 1
 str = ''
 for i in range(10):
     str += getNameFromPlayerId(i)
-if str == 'VinzentPalmoJaumeCletoRogelioShengXoanEdmeoLuIdo':
+if str == 'PrimianoLidianoMargaritoMansuetoLaurentinoLiOtilioVladimiroWaalkeDuilio':
     print("TEST PASSED")
 else:
     print("TEST FAILED: ", str)
@@ -112,7 +113,7 @@ print("------------")
 str = ''
 for i in range(10):
     str += getSurnameFromPlayerId(i)
-if str == 'MartezPanoraViezcasPohorenceCasillaDetrinidadCeelyDejesusFriedbergSampel':
+if str == 'IrahetaDiuguidHiremathBaratzVisonTineoMolieriLoeraChaimowitzPozuelos':
     print("TEST PASSED")
 else:
     print("TEST FAILED: ", str)
