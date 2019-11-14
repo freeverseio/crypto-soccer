@@ -11,14 +11,15 @@ FOREIGN_FOREIGN_RATIO = 25
 
 
 class CountryDNA:
-    def __init__(self, officialName, countryCode):
+    def __init__(self, officialName, countryCodeForNames, countryCodeForSurnames):
         self.officialName = officialName
-        self.countryCode = countryCode
+        self.countryCodeForNames = countryCodeForNames
+        self.countryCodeForSurnames = countryCodeForSurnames
 
 
 countryIdToCode = {
-    54392874534: CountryDNA("Spain", 8),
-    42364373724: CountryDNA("Italy", 5)
+    54392874534: CountryDNA("Spain", 8, 1010),
+    42364373724: CountryDNA("Italy", 5, 1010)
 }
 
 # def readCountryCodes(countryCodesFile):
@@ -46,13 +47,21 @@ def getRndFromSeed(seed, maxVal):
     return Web3.toInt(Web3.keccak(seed)) % maxVal
 
 
-def getRndNameFromCountry(countryCode, playerId, onlyThisCountry):
+def getRndNameFromCountry(countryCodeForNames, playerId, onlyThisCountry):
     allNames = readNames(namesFile)
     if onlyThisCountry:
-        names = [name[1] for name in allNames if name[0] == countryCode]
+        names = [name[1] for name in allNames if name[0] == countryCodeForNames]
     else:
-        names = [name[1] for name in allNames if name[0] != countryCode]
+        names = [name[1] for name in allNames if name[0] != countryCodeForNames]
     return names[getRndFromSeed(playerId + 1, len(names))]
+
+def getRndSurnameFromCountry(countryCodeForSurnames, playerId, onlyThisCountry):
+    allNames = readNames(surnamesFile)
+    if onlyThisCountry:
+        names = [name[1] for name in allNames if name[0] == countryCodeForSurnames]
+    else:
+        names = [name[1] for name in allNames if name[0] != countryCodeForSurnames]
+    return names[getRndFromSeed(playerId + 3, len(names))]
 
 
 def getNameFromPlayerId(playerId):
@@ -63,11 +72,27 @@ def getNameFromPlayerId(playerId):
     maxVal = 100
     dice = getRndFromSeed(playerId, maxVal)
     if dice < (PURE_PURE_RATIO + PURE_FOREIGN_RATIO):
-        name = getRndNameFromCountry(country.countryCode, playerId, True)
+        name = getRndNameFromCountry(country.countryCodeForNames, playerId, True)
     else:
-        name = getRndNameFromCountry(country.countryCode, playerId, False)
+        name = getRndNameFromCountry(country.countryCodeForNames, playerId, False)
 
-    print(name, " from ", country.officialName, country.countryCode)
+    print(name, " from ", country.officialName, country.countryCodeForNames)
+    return name
+
+
+def getSurnameFromPlayerId(playerId):
+    countryId = getCountryIdFromPlayerId(playerId)
+    assert (countryId in countryIdToCode), "Player belongs to a country not yet specified by Freeverse"
+    country = countryIdToCode[countryId]
+
+    maxVal = 100
+    dice = getRndFromSeed(playerId+2, maxVal)
+    if dice < (PURE_PURE_RATIO + FOREIGN_PURE_RATIO):
+        name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, True)
+    else:
+        name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, False)
+
+    print(name, " from ", country.officialName, country.countryCodeForSurnames)
     return name
 
 
@@ -79,7 +104,18 @@ for i in range(10):
 if str == 'VinzentPalmoJaumeCletoRogelioShengXoanEdmeoLuIdo':
     print("TEST PASSED")
 else:
-    print("TEST FAILED")
+    print("TEST FAILED: ", str)
+
+print("------------")
+
+# TEST 2
+str = ''
+for i in range(10):
+    str += getSurnameFromPlayerId(i)
+if str == 'MartezPanoraViezcasPohorenceCasillaDetrinidadCeelyDejesusFriedbergSampel':
+    print("TEST PASSED")
+else:
+    print("TEST FAILED: ", str)
 
 
 
