@@ -160,9 +160,7 @@ workflows:
       - dockerization-production:
           filters:
             branches:
-              only:
-                - master
-                - ci-prod
+              ignore: /.*/
             tags:
               only: /.*/
           requires:
