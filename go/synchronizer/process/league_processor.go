@@ -67,7 +67,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	day := event.Day
 	turnInDay := event.TurnInDay
 	timezoneIdx := event.TimeZone
-	log.Infof("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
+	log.Debugf("[LeagueProcessor] Processing timezone %v, day %v, turnInDay %v", timezoneIdx, day, turnInDay)
 
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
