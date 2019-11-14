@@ -1,8 +1,8 @@
 from web3 import Web3
 
 countryCodesFile = 'goalRevCountryCodes'
-nameFile = 'goalRevNames'
-surnameFile = 'goalRevSurnames'
+namesFile = 'goalRevNames'
+surnamesFile = 'goalRevSurnames'
 
 PURE_PURE_RATIO = 35
 PURE_FOREIGN_RATIO = 20
@@ -28,6 +28,13 @@ countryIdToCode = {
 #             codes.append(line.split(","))
 #     return codes
 
+def readNames(filename):
+    names = []
+    with open(filename, 'r', newline='\n') as file:
+        for line in file:
+            splitted = line.rstrip('\n').split(",")
+            names.append([int(splitted[0]), splitted[1]])
+    return names
 
 def getCountryIdFromPlayerId(playerId):
     if playerId % 2 == 0:
@@ -39,14 +46,18 @@ def getRndFromSeed(seed, maxVal):
     return Web3.toInt(Web3.keccak(seed)) % maxVal
 
 
-def getRndNameFromCountry(country.countryCode, playerId, False)
-
+def getRndNameFromCountry(countryCode, playerId, onlyThisCountry):
+    allNames = readNames(namesFile)
+    if onlyThisCountry:
+        names = [name[1] for name in allNames if name[0] == countryCode]
+    else:
+        names = [name[1] for name in allNames if name[0] != countryCode]
+    return names[getRndFromSeed(playerId + 1, len(names))]
 
 
 def getNameFromPlayerId(playerId):
     countryId = getCountryIdFromPlayerId(playerId)
     assert (countryId in countryIdToCode), "Player belongs to a country not yet specified by Freeverse"
-
     country = countryIdToCode[countryId]
 
     maxVal = 100
@@ -56,11 +67,14 @@ def getNameFromPlayerId(playerId):
     else:
         name = getRndNameFromCountry(country.countryCode, playerId, False)
 
-    print(country.officialName, country.countryCode)
+    print(name, " from ", country.officialName, country.countryCode)
+    return name
 
+for i in range(10):
+    getNameFromPlayerId(2*i)
 
-getNameFromPlayerId(2349874534)
-
+for i in range(10):
+    getNameFromPlayerId(2*i+1)
 
 
 
