@@ -1,5 +1,9 @@
 import csv
 
+writeCountryCodes = False
+writeNames = False
+writeSurnames = True
+
 database_name = "matthias.csv"
 
 IDX_NAME = 0
@@ -36,7 +40,7 @@ def getCountryIdx(fields, countryName):
     assert False, "country not found"
 
 
-def getNamesFromCountry(countryName, fields, allNames):
+def getNamesFromCountry(countryName, fields, allNames, getSurname = False):
     names = []
     score = MIN_SCORE
     while len(names) < 100 and score > 1:
@@ -48,10 +52,11 @@ def getNamesFromCountry(countryName, fields, allNames):
         if strcmp(countryName, "China"):
             # chinese names are written in format:  surname+name
             chineseNames = []
+            idx = 0 if getSurname == True else 1
             for name in names:
                 name = name.split("+")
-                if len(name) == 2 and not strcmp(name[1], ""):
-                    chineseNames.append(name[1])
+                if len(name) == 2 and not strcmp(name[idx], ""):
+                    chineseNames.append(name[idx])
             names = chineseNames
         if strcmp(countryName, "Korea"):
             # korean names are all compound, and here written in format:  name1+name2
@@ -77,37 +82,52 @@ with open(database_name, 'r', newline='\n') as file:
                 allNames.append(thisLine)
 
 
-# Writing Country Codes:
-outCountryCodesFile = open("goalRevCountryCodes", 'w')
-for country in fields[2:-1]:
-    countryCode = getCountryIdx(fields, country)
-    altNames = country.split("/")
-    str = "%i" % (countryCode)
-    for name in altNames:
-        str += ",%s" % name
-    for n in range(10-len(altNames)):
-        str += ","
-    outCountryCodesFile.write("%s\n" % str)
-outCountryCodesFile.close()
+if writeCountryCodes:
+    outCountryCodesFile = open("goalRevCountryCodes", 'w')
+    for country in fields[2:-1]:
+        countryCode = getCountryIdx(fields, country)
+        altNames = country.split("/")
+        str = "%i" % (countryCode)
+        for name in altNames:
+            str += ",%s" % name
+        for n in range(10-len(altNames)):
+            str += ","
+        outCountryCodesFile.write("%s\n" % str)
+    outCountryCodesFile.close()
 
-assert False
+if writeNames:
+    totalEntries = 0
+    outNamesFile = open("goalRevNames", 'w')
+    # for country in fields[-6:-1]:
+    for country in fields[2:-1]:
+        countryCode = getCountryIdx(fields, country)
+        namesInCountry = getNamesFromCountry(country, fields, allNames)
+        for name in namesInCountry:
+            str = "%i,%s\n" % (countryCode, name)
+            outNamesFile.write(str)
 
-# Writing actual names
-totalEntries = 0
-outNamesFile = open("goalRevNames", 'w')
-# for country in fields[-6:-1]:
-for country in fields[2:-1]:
+        str = "" if len(namesInCountry) > 100 else " - WARNING"
+        print(country, len(namesInCountry), str)
+        totalEntries += len(namesInCountry)
+        findNonValid(namesInCountry)
+    outNamesFile.close()
+
+if writeSurnames:
+    totalEntries = 0
+    outNamesFile = open("goalRevSurnames", 'w')
+    country = "China"
     countryCode = getCountryIdx(fields, country)
-    namesInCountry = getNamesFromCountry(country, fields, allNames)
+    namesInCountry = getNamesFromCountry(country, fields, allNames, getSurname = True)
+    different = []
     for name in namesInCountry:
-        str = "%i,%s\n" % (countryCode, name)
-        outNamesFile.write(str)
+        if name not in different:
+            str = "%i,%s\n" % (countryCode, name)
+            outNamesFile.write(str)
+            different.append(name)
+            totalEntries += 1
 
-    str = "" if len(namesInCountry) > 100 else " - WARNING"
-    print(country, len(namesInCountry), str)
-    totalEntries += len(namesInCountry)
+    print(country, totalEntries)
     findNonValid(namesInCountry)
-outNamesFile.close()
+    outNamesFile.close()
 
-print("Total Entries: ", totalEntries)
 
