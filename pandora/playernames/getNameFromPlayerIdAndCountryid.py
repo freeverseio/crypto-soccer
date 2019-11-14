@@ -70,12 +70,16 @@ def getNameFromPlayerId(playerId):
     print(name, " from ", country.officialName, country.countryCode)
     return name
 
-for i in range(10):
-    getNameFromPlayerId(2*i)
 
-for i in range(10):
-    getNameFromPlayerId(2*i+1)
 
+# TEST 1
+str = ''
+for i in range(10):
+    str += getNameFromPlayerId(i)
+if str == 'VinzentPalmoJaumeCletoRogelioShengXoanEdmeoLuIdo':
+    print("TEST PASSED")
+else:
+    print("TEST FAILED")
 
 
 
