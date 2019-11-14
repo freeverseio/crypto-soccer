@@ -62,6 +62,7 @@ CREATE TABLE players (
     encoded_state TEXT NOT NULL,
     frozen BOOLEAN NOT NULL DEFAULT FALSE,
     red_card BOOLEAN NOT NULL DEFAULT FALSE,
+    injury_matches_left INT NOT NULL DEFAULT 0,
     PRIMARY KEY(player_id)
 );
 
