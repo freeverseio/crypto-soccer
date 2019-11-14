@@ -9,6 +9,10 @@ PURE_FOREIGN_RATIO = 20
 FOREIGN_PURE_RATIO = 20
 FOREIGN_FOREIGN_RATIO = 25
 
+PURE_PURE_RATIO = 100
+PURE_FOREIGN_RATIO = 0
+FOREIGN_PURE_RATIO = 0
+FOREIGN_FOREIGN_RATIO = 0
 
 class CountryDNA:
     def __init__(self, officialName, countryCodeForNames, countryCodeForSurnames):
@@ -19,7 +23,8 @@ class CountryDNA:
 
 countryIdToCode = {
     54392874534: CountryDNA("Spain", 8, 1010),
-    42364373724: CountryDNA("Italy", 5, 1010)
+    42364373724: CountryDNA("Italy", 5, 1010),
+    42364373721: CountryDNA("China", 51, 51)
 }
 
 # def readCountryCodes(countryCodesFile):
@@ -38,10 +43,12 @@ def readNames(filename):
     return names
 
 def getCountryIdFromPlayerId(playerId):
-    if playerId % 2 == 0:
+    if playerId % 3 == 0:
         return 54392874534
-    else:
+    elif playerId % 3 == 1:
         return 42364373724
+    else:
+        return 42364373721
 
 def getRndFromSeed(seed, maxVal, iterations):
     for i in range(iterations):
@@ -77,8 +84,6 @@ def getNameFromPlayerId(playerId):
         name = getRndNameFromCountry(country.countryCodeForNames, playerId, True)
     else:
         name = getRndNameFromCountry(country.countryCodeForNames, playerId, False)
-
-    print(name, " from ", country.officialName, country.countryCodeForNames)
     return name
 
 
@@ -93,8 +98,6 @@ def getSurnameFromPlayerId(playerId):
         name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, True)
     else:
         name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, False)
-
-    print(name, " from ", country.officialName, country.countryCodeForSurnames)
     return name
 
 
@@ -102,10 +105,10 @@ def getSurnameFromPlayerId(playerId):
 str = ''
 for i in range(10):
     str += getNameFromPlayerId(i)
-if str == 'PrimianoLidianoMargaritoMansuetoLaurentinoLiOtilioVladimiroWaalkeDuilio':
-    print("TEST PASSED")
+if str == 'OrlandoLidianoSongEfraínDorandoFengOtilioVladimiroGuangBenigno':
+    print("NAMES TEST PASSED")
 else:
-    print("TEST FAILED: ", str)
+    print("NAMES TEST FAILED: ", str)
 
 print("------------")
 
@@ -113,10 +116,18 @@ print("------------")
 str = ''
 for i in range(10):
     str += getSurnameFromPlayerId(i)
-if str == 'IrahetaDiuguidHiremathBaratzVisonTineoMolieriLoeraChaimowitzPozuelos':
-    print("TEST PASSED")
+if str == 'IrahetaMorfeShenCueroGarciaalvarezLuMolieriLoeraHsinPozuelos':
+    print("SURNAMES TEST PASSED")
 else:
-    print("TEST FAILED: ", str)
+    print("SURNAMES TEST FAILED: ", str)
+
+print("------------")
+
+# Print examples
+if False:
+    countries = ["Spain", "Italy", "China"]
+    for i in range(20):
+        print(countries[i%3]+":", getNameFromPlayerId(i), getSurnameFromPlayerId(i))
 
 
 
