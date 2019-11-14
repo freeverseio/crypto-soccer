@@ -1,9 +1,5 @@
 import csv
 
-writeCountryCodes = False
-writeNames = False
-writeSurnames = True
-
 database_name = "matthias.csv"
 
 IDX_NAME = 0
@@ -82,7 +78,7 @@ with open(database_name, 'r', newline='\n') as file:
                 allNames.append(thisLine)
 
 
-if writeCountryCodes:
+def writeCountryCodes():
     outCountryCodesFile = open("goalRevCountryCodes", 'w')
     for country in fields[2:-1]:
         countryCode = getCountryIdx(fields, country)
@@ -95,7 +91,7 @@ if writeCountryCodes:
         outCountryCodesFile.write("%s\n" % str)
     outCountryCodesFile.close()
 
-if writeNames:
+def writeNames():
     totalEntries = 0
     outNamesFile = open("goalRevNames", 'w')
     # for country in fields[-6:-1]:
@@ -112,7 +108,7 @@ if writeNames:
         findNonValid(namesInCountry)
     outNamesFile.close()
 
-if writeSurnames:
+def writeSurnames():
     totalEntries = 0
     outNamesFile = open("goalRevSurnames", 'w')
     country = "China"
@@ -130,4 +126,6 @@ if writeSurnames:
     findNonValid(namesInCountry)
     outNamesFile.close()
 
-
+writeCountryCodes()
+writeNames()
+writeSurnames()

@@ -20,7 +20,7 @@ def isNotEmpty(str):
 
 def findNonValid(names):
     for name in names:
-        if strcmp(name, "") or contains(name, "?") or contains(name, "/") or contains(name, "+"):# or contains(name, "-"):
+        if strcmp(name, "") or contains(name, "?") or contains(name, "/") or contains(name, "+") or contains(name, "-"):
             print("WARNING: apparently invalid name: ", name)
 
 def contains(str, substr):
@@ -68,25 +68,37 @@ with open(database_name, 'r', newline='\n') as file:
 
 
 # Append Country Codes:
-# outCountryCodesFile = open("goalRevCountryCodes", 'a+')
-# readableCountryNames = ["nonHispWhite", "nonHispBlack", "nonHispAsianPacificIslander", "nonHispAmerIndian", "twoOrMore", "hispanic"]
-# # we will use country codes starting from 1000 not to overlap with previous dataset
-# for (c, country) in enumerate(fields[5:]):
-#     countryCode = getCountryIdx(fields, country)
-#     str = "%s" % readableCountryNames[c]
-#     for n in range(9):
-#         str += ","
-#     outCountryCodesFile.write("%i,%s\n" % (countryCode + 1000, str))
-# outCountryCodesFile.close()
+def writeCountryCodes():
+    outCountryCodesFile = open("goalRevCountryCodes", 'a+')
+    readableCountryNames = ["nonHispWhite", "nonHispBlack", "nonHispAsianPacificIslander", "nonHispAmerIndian", "twoOrMore", "hispanic"]
+    # we will use country codes starting from 1000 not to overlap with previous dataset
+    for (c, country) in enumerate(fields[5:]):
+        countryCode = getCountryIdx(fields, country)
+        str = "%s" % readableCountryNames[c]
+        for n in range(9):
+            str += ","
+        outCountryCodesFile.write("%i,%s\n" % (countryCode + 1000, str))
+    outCountryCodesFile.close()
+
+def writeSurnames():
+    outNamesFile = open("goalRevSurnames", 'a+')
+    totalEntries = 0
+    for country in fields[5:]:
+        countryCode = 1000 + getCountryIdx(fields, country)
+        namesInCountry = getNamesFromCountry(country, fields, allNames)
+        for name in namesInCountry:
+            name = name.title()
+            str = "%i,%s\n" % (countryCode, name)
+            outNamesFile.write(str)
+
+        findNonValid(namesInCountry)
+        str = "" if len(namesInCountry) > 100 else " - WARNING"
+        print(country, len(namesInCountry), str)
+        totalEntries += len(namesInCountry)
+
+    outNamesFile.close()
+    print("Total Entries: ", totalEntries)
 
 
-# outNamesFile = open("goalRevSurnames", 'w')
-# totalEntries = 0
-# for country in fields[5:]:
-#     namesInCountry = getNamesFromCountry(country, fields, allNames)
-#     str = "" if len(namesInCountry) > 100 else " - WARNING"
-#     print(country, len(namesInCountry), str)
-#     totalEntries += len(namesInCountry)
-#
-# print("Total Entries: ", totalEntries)
-
+writeCountryCodes()
+writeSurnames()
