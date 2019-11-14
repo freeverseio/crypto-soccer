@@ -18,17 +18,18 @@ type Player struct {
 }
 
 type PlayerState struct {
-	TeamId        *big.Int
-	Defence       uint64
-	Speed         uint64
-	Pass          uint64
-	Shoot         uint64
-	Endurance     uint64
-	ShirtNumber   uint8
-	EncodedSkills *big.Int
-	EncodedState  *big.Int
-	Frozen        bool
-	RedCard       bool
+	TeamId            *big.Int
+	Defence           uint64
+	Speed             uint64
+	Pass              uint64
+	Shoot             uint64
+	Endurance         uint64
+	ShirtNumber       uint8
+	EncodedSkills     *big.Int
+	EncodedState      *big.Int
+	Frozen            bool
+	RedCard           bool
+	InjuryMatchesLeft int
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -45,6 +46,8 @@ func (b *Player) Equal(player Player) bool {
 		b.State.EncodedSkills.String() == player.State.EncodedSkills.String() &&
 		b.State.EncodedState.String() == player.State.EncodedState.String() &&
 		b.State.Frozen == player.State.Frozen &&
+		b.State.RedCard == player.State.RedCard &&
+		b.State.InjuryMatchesLeft == player.State.InjuryMatchesLeft &&
 		b.Name == player.Name &&
 		b.DayOfBirth == player.DayOfBirth
 }
@@ -104,8 +107,9 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 	shirt_number=$7,
 	frozen=$8, 
 	encoded_skills=$9,
-	red_card=$10
-	WHERE player_id=$11;`,
+	red_card=$10,
+	injury_matches_left=$11
+	WHERE player_id=$12;`,
 		playerState.TeamId.String(),
 		playerState.Defence,
 		playerState.Speed,
@@ -116,6 +120,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 		playerState.Frozen,
 		playerState.EncodedSkills.String(),
 		playerState.RedCard,
+		playerState.InjuryMatchesLeft,
 		playerID.String(),
 	)
 	return err
@@ -123,7 +128,23 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 
 func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player := Player{}
-	rows, err := b.db.Query("SELECT team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth, red_card FROM players WHERE (player_id = $1);", playerID.String())
+	rows, err := b.db.Query(`SELECT team_id, 
+	defence,
+	speed,
+	pass, 
+	shoot, 
+	endurance, 
+	shirt_number, 
+	preferred_position, 
+	encoded_skills, 
+	encoded_state, 
+	potential, 
+	frozen, 
+	name, 
+	day_of_birth, 
+	red_card,
+	injury_matches_left
+	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
 		return player, err
 	}
@@ -150,6 +171,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&player.Name,
 		&player.DayOfBirth,
 		&player.State.RedCard,
+		&player.State.InjuryMatchesLeft,
 	)
 	player.PlayerId = playerID
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
