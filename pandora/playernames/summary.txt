@@ -44,7 +44,7 @@ englishGivenNames:
 MatthiasWinkelmann_firstname-database
 - only names
 - per country!!!
-- looks like 55Countries but in CSV directly
+- it is identical to 55Countries but in CSV directly
 
 mbejda.github.io
 - both surnames and names, for:
@@ -56,14 +56,13 @@ mbejda.github.io
 
 Possibility: 
 - names: 
-	- given from the 55 countries
 	- (DONE) from MatthiasWinkelmann_firstname-database
 		- no CHINA, no POLAND, little VIETNAM
 
 - surnames: 
 	- (DONE) given from the englishSurnames, using procedence
 		- Asia is too generic
-	- add hispanic 
+
 
 
 
