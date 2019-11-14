@@ -9,30 +9,25 @@ PURE_FOREIGN_RATIO = 20
 FOREIGN_PURE_RATIO = 20
 FOREIGN_FOREIGN_RATIO = 25
 
-PURE_PURE_RATIO = 100
-PURE_FOREIGN_RATIO = 0
-FOREIGN_PURE_RATIO = 0
-FOREIGN_FOREIGN_RATIO = 0
+# PURE_PURE_RATIO = 100
+# PURE_FOREIGN_RATIO = 0
+# FOREIGN_PURE_RATIO = 0
+# FOREIGN_FOREIGN_RATIO = 0
 
+DEFAULT_MIX_RATIOS = [PURE_PURE_RATIO, PURE_FOREIGN_RATIO, FOREIGN_PURE_RATIO, FOREIGN_FOREIGN_RATIO]
 class CountryDNA:
-    def __init__(self, officialName, countryCodeForNames, countryCodeForSurnames):
+    def __init__(self, officialName, countryCodeForNames, countryCodeForSurnames, mixRatios):
         self.officialName = officialName
         self.countryCodeForNames = countryCodeForNames
         self.countryCodeForSurnames = countryCodeForSurnames
+        self.mixRatios = mixRatios
 
 
-countryIdToCode = {
-    54392874534: CountryDNA("Spain", 8, 1010),
-    42364373724: CountryDNA("Italy", 5, 1010),
-    42364373721: CountryDNA("China", 51, 51)
+countryIdToCountrySpec = {
+    54392874534: CountryDNA("Spain", 8, 1010, DEFAULT_MIX_RATIOS),
+    42364373724: CountryDNA("Italy", 5, 1010, DEFAULT_MIX_RATIOS),
+    42364373721: CountryDNA("China", 51, 51,  DEFAULT_MIX_RATIOS)
 }
-
-# def readCountryCodes(countryCodesFile):
-#     codes = []
-#     with open(countryCodesFile, 'r', newline='\n') as file:
-#         for line in file:
-#             codes.append(line.split(","))
-#     return codes
 
 def readNames(filename):
     names = []
@@ -75,12 +70,12 @@ def getRndSurnameFromCountry(countryCodeForSurnames, playerId, onlyThisCountry):
 
 def getNameFromPlayerId(playerId):
     countryId = getCountryIdFromPlayerId(playerId)
-    assert (countryId in countryIdToCode), "Player belongs to a country not yet specified by Freeverse"
-    country = countryIdToCode[countryId]
+    assert (countryId in countryIdToCountrySpec), "Player belongs to a country not yet specified by Freeverse"
+    country = countryIdToCountrySpec[countryId]
 
     maxVal = 100
     dice = getRndFromSeed(playerId, maxVal, 1)
-    if dice < (PURE_PURE_RATIO + PURE_FOREIGN_RATIO):
+    if dice < (country.mixRatios[0] + country.mixRatios[1]):  #PURE_PURE_RATIO + PURE_FOREIGN_RATIO:
         name = getRndNameFromCountry(country.countryCodeForNames, playerId, True)
     else:
         name = getRndNameFromCountry(country.countryCodeForNames, playerId, False)
@@ -89,23 +84,25 @@ def getNameFromPlayerId(playerId):
 
 def getSurnameFromPlayerId(playerId):
     countryId = getCountryIdFromPlayerId(playerId)
-    assert (countryId in countryIdToCode), "Player belongs to a country not yet specified by Freeverse"
-    country = countryIdToCode[countryId]
+    assert (countryId in countryIdToCountrySpec), "Player belongs to a country not yet specified by Freeverse"
+    country = countryIdToCountrySpec[countryId]
 
     maxVal = 100
     dice = getRndFromSeed(playerId+2, maxVal, 3)
-    if dice < (PURE_PURE_RATIO + FOREIGN_PURE_RATIO):
+    if dice < (country.mixRatios[0] + country.mixRatios[2]): # PURE_PURE_RATIO + FOREIGN_PURE_RATIO:
         name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, True)
     else:
         name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, False)
     return name
 
+def getFullNameFromPlayerId(playerId):
+    return getNameFromPlayerId(playerId) + " " + getSurnameFromPlayerId(playerId)
 
 # TEST 1
 str = ''
 for i in range(10):
     str += getNameFromPlayerId(i)
-if str == 'OrlandoLidianoSongEfraínDorandoFengOtilioVladimiroGuangBenigno':
+if str == 'PrimianoLidianoSongEfraínDorandoChuOtilioVladimiroLeonBenigno':
     print("NAMES TEST PASSED")
 else:
     print("NAMES TEST FAILED: ", str)
@@ -116,7 +113,7 @@ print("------------")
 str = ''
 for i in range(10):
     str += getSurnameFromPlayerId(i)
-if str == 'IrahetaMorfeShenCueroGarciaalvarezLuMolieriLoeraHsinPozuelos':
+if str == 'IrahetaDiuguidSummerBaratzVisonLuMolieriLoeraPrimaPozuelos':
     print("SURNAMES TEST PASSED")
 else:
     print("SURNAMES TEST FAILED: ", str)
@@ -124,10 +121,10 @@ else:
 print("------------")
 
 # Print examples
-if False:
+if True:
     countries = ["Spain", "Italy", "China"]
     for i in range(20):
-        print(countries[i%3]+":", getNameFromPlayerId(i), getSurnameFromPlayerId(i))
+        print(countries[i % 3]+":", getFullNameFromPlayerId(i))
 
 
 
