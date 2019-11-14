@@ -15,8 +15,7 @@ def isNotEmpty(str):
 def findNonValid(names):
     for name in names:
         if strcmp(name, "") or contains(name, "?") or contains(name, "/") or contains(name, "+"):# or contains(name, "-"):
-            print(name)
-            a=2
+            print("WARNING: apparently invalid name: ", name)
 
 def strcmp(str1, str2):
     return str1.casefold() == str2.casefold()
@@ -57,9 +56,11 @@ def getNamesFromCountry(countryName, fields, allNames):
         if strcmp(countryName, "Korea"):
             # korean names are all compound, and here written in format:  name1+name2
             names = [name.replace("+", "-") for name in names]
+        if strcmp(countryName, "Arabia/Persia"):
+            # some persian names are written in format name+surname
+            names = [name.split("+")[0] for name in names]
         score -= 1
     return names
-
 
 
 allNames = []
@@ -92,8 +93,8 @@ outCountryCodesFile.close()
 # Writing actual names
 totalEntries = 0
 outNamesFile = open("goalRevNames", 'w')
-for country in fields[-6:-1]:
-# for country in fields[2:-1]:
+# for country in fields[-6:-1]:
+for country in fields[2:-1]:
     countryCode = getCountryIdx(fields, country)
     namesInCountry = getNamesFromCountry(country, fields, allNames)
     for name in namesInCountry:
