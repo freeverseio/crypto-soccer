@@ -98,29 +98,29 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:`git describe --tag` .
-      - run: cd market.trader && docker build -t freeverseio/market.trader:`git describe --tag` .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:`git describe --tag` .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:`git describe --tag` .
-      - run: cd relay.api && docker build -t freeverseio/relay.api:`git describe --tag` .
-      - run: cd relay.db && docker build -t freeverseio/relay.db:`git describe --tag` .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:`git describe --tag` .
-      - run: cd market.db && docker build -t freeverseio/market.db:`git describe --tag` .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:`git describe --tag` .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:`git describe --tag` .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:`git describe --tag` .
+      - run: cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} .
+      - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
+      - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
+      - run: cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} .
+      - run: cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} .
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
+      - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
+      - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:`git describe --tag`
-      - run: docker push freeverseio/synchronizer:`git describe --tag`
-      - run: docker push freeverseio/horizon:`git describe --tag`
-      - run: docker push freeverseio/universe.db:`git describe --tag`
-      - run: docker push freeverseio/market.db:`git describe --tag`
-      - run: docker push freeverseio/market.trader:`git describe --tag`
-      - run: docker push freeverseio/market.notary:`git describe --tag`
-      - run: docker push freeverseio/relay.api:`git describe --tag`
-      - run: docker push freeverseio/relay.db:`git describe --tag`
-      - run: docker push freeverseio/universe.api:`git describe --tag`
-      - run: docker push freeverseio/relay.actions:`git describe --tag`
+      - run: docker push freeverseio/centauri:${CIRCLE_TAG}
+      - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
+      - run: docker push freeverseio/horizon:${CIRCLE_TAG}
+      - run: docker push freeverseio/universe.db:${CIRCLE_TAG}
+      - run: docker push freeverseio/market.db:${CIRCLE_TAG}
+      - run: docker push freeverseio/market.trader:${CIRCLE_TAG}
+      - run: docker push freeverseio/market.notary:${CIRCLE_TAG}
+      - run: docker push freeverseio/relay.api:${CIRCLE_TAG}
+      - run: docker push freeverseio/relay.db:${CIRCLE_TAG}
+      - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
+      - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
   deploy:
     executor: freeverse
     steps:
@@ -137,19 +137,39 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - truffle_core
-      - synchronizer
-      - django-centauri
-      - market-trader
-      - relay-actions
-      - relay-api
-      - market-notary
+      - truffle_core:
+          filters:
+            tags:
+              only: /.*/
+      - synchronizer:
+          filters:
+            tags:
+              only: /.*/
+      - django-centauri:
+          filters:
+            tags:
+              only: /.*/
+      - market-trader:
+          filters:
+            tags:
+              only: /.*/
+      - relay-actions:
+          filters:
+            tags:
+              only: /.*/
+      - relay-api:
+          filters:
+            tags:
+              only: /.*/
+      - market-notary:
+          filters:
+            tags:
+              only: /.*/
       - dockerization-development:
           filters:
             branches:
               only:
                 - dev
-                - ci
           requires:
             - synchronizer
             - django-centauri
@@ -159,10 +179,10 @@ workflows:
             - market-notary
       - dockerization-production:
           filters:
+            tags:
+              only: /[0-9]+\.[0-9]+\.[0-9]+.+/
             branches:
               ignore: /.*/
-            tags:
-              only: /.*/
           requires:
             - synchronizer
             - django-centauri
