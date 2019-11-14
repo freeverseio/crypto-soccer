@@ -82,13 +82,15 @@ outCountryCodesFile = open("goalRevCountryCodes", 'w')
 for country in fields[2:-1]:
     countryCode = getCountryIdx(fields, country)
     altNames = country.split("/")
-    for n in range(10-len(altNames)):
-        altNames.append(",")
     str = "%i" % (countryCode)
     for name in altNames:
         str += ",%s" % name
+    for n in range(10-len(altNames)):
+        str += ","
     outCountryCodesFile.write("%s\n" % str)
 outCountryCodesFile.close()
+
+assert False
 
 # Writing actual names
 totalEntries = 0

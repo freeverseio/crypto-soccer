@@ -12,6 +12,20 @@ database_name = "englishSurnames.csv"
 IDX_NAME = 0
 MIN_SCORE = 45
 
+def isNotFemale(str):
+    return strcmp(str, "M") or strcmp(str, "?M") or strcmp(str, "?")
+
+def isNotEmpty(str):
+    return not strcmp(str, "")
+
+def findNonValid(names):
+    for name in names:
+        if strcmp(name, "") or contains(name, "?") or contains(name, "/") or contains(name, "+"):# or contains(name, "-"):
+            print("WARNING: apparently invalid name: ", name)
+
+def contains(str, substr):
+    return substr.casefold() in str.casefold()
+
 def strcmp(str1, str2):
     return str1.casefold() == str2.casefold()
 
@@ -52,12 +66,27 @@ with open(database_name, 'r', newline='\n') as file:
             assert len(thisLine) == nFields, "wrong num of fields"
             allNames.append(thisLine)
 
-totalEntries = 0
-for country in fields[5:]:
-    namesInCountry = getNamesFromCountry(country, fields, allNames)
-    str = "" if len(namesInCountry) > 100 else " - WARNING"
-    print(country, len(namesInCountry), str)
-    totalEntries += len(namesInCountry)
 
-print("Total Entries: ", totalEntries)
+# Append Country Codes:
+outCountryCodesFile = open("goalRevCountryCodes", 'a+')
+readableCountryNames = ["nonHispWhite", "nonHispBlack", "nonHispAsianPacificIslander", "nonHispAmerIndian", "twoOrMore", "hispanic"]
+# we will use country codes starting from 1000 not to overlap with previous dataset
+for (c, country) in enumerate(fields[5:]):
+    countryCode = getCountryIdx(fields, country)
+    str = "%s" % readableCountryNames[c]
+    for n in range(9):
+        str += ","
+    outCountryCodesFile.write("%i,%s\n" % (countryCode + 1000, str))
+outCountryCodesFile.close()
+
+
+
+# totalEntries = 0
+# for country in fields[5:]:
+#     namesInCountry = getNamesFromCountry(country, fields, allNames)
+#     str = "" if len(namesInCountry) > 100 else " - WARNING"
+#     print(country, len(namesInCountry), str)
+#     totalEntries += len(namesInCountry)
+
+# print("Total Entries: ", totalEntries)
 
