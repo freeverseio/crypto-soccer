@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:dev
+    image: freeverseio/ethereum:$TAG
     command: --mine --bootnodes ${ENODE}
     ports: 
       - "30303:30303"
@@ -9,15 +9,15 @@ services:
     volumes:
       - ethereum-data:/test
   centauri:
-    image: freeverseio/centauri:dev
+    image: freeverseio/centauri:$TAG
     ports: 
       - "8000:8000"
     volumes:
       - centauri-data:/app/db
   universe.db:
-    image: freeverseio/universe.db:dev
+    image: freeverseio/universe.db:$TAG
   synchronizer:
-    image: freeverseio/synchronizer:dev
+    image: freeverseio/synchronizer:$TAG
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ethereum http://ethereum:8545
@@ -32,21 +32,21 @@ services:
       - universe.db
       - ethereum
   universe.api:
-    image: freeverseio/universe.api:dev
+    image: freeverseio/universe.api:$TAG
     depends_on:
       - universe.db
     command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
     ports:
       - "4001:4000"
   market.db:
-    image: freeverseio/market.db:dev
+    image: freeverseio/market.db:$TAG
   market.trader:
-    image: freeverseio/market.trader:dev
+    image: freeverseio/market.trader:$TAG
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
     ports:
       - "4002:4000"
   market.notary:
-    image: freeverseio/market.notary:dev
+    image: freeverseio/market.notary:$TAG
     depends_on:
       - ethereum
     command: >
@@ -55,7 +55,7 @@ services:
       -ethereum http://ethereum:8545 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
   relay.api:
-    image: freeverseio/relay.api:dev
+    image: freeverseio/relay.api:$TAG
     depends_on:
       - ethereum
     ports:
@@ -66,9 +66,9 @@ services:
       --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
       --ethereum "http://ethereum:8545"
   relay.db:
-    image: freeverseio/relay.db:dev
+    image: freeverseio/relay.db:$TAG
   horizon:
-    image: freeverseio/horizon:dev
+    image: freeverseio/horizon:$TAG
     depends_on:
       - universe.api
       - market.trader
@@ -80,7 +80,7 @@ services:
     ports:
       - "4000:4000"
   relay.actions:
-    image: freeverseio/relay.actions:dev
+    image: freeverseio/relay.actions:$TAG
     depends_on:
       - ethereum
     command: >
