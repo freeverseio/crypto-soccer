@@ -58,6 +58,8 @@ Possibility:
 - names: 
 	- (DONE) from MatthiasWinkelmann_firstname-database
 		- no CHINA, no POLAND, little VIETNAM
+		- with china, problem is that it is impossible to know if M/F
+			- note that it is written in format Surname+Name
 
 - surnames: 
 	- (DONE) given from the englishSurnames, using procedence
