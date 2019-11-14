@@ -52,8 +52,12 @@ with open(database_name, 'r', newline='\n') as file:
             assert len(thisLine) == nFields, "wrong num of fields"
             allNames.append(thisLine)
 
+totalEntries = 0
 for country in fields[5:]:
     namesInCountry = getNamesFromCountry(country, fields, allNames)
     str = "" if len(namesInCountry) > 100 else " - WARNING"
     print(country, len(namesInCountry), str)
+    totalEntries += len(namesInCountry)
+
+print("Total Entries: ", totalEntries)
 
