@@ -80,12 +80,16 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
+	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
 	// play the match half
 	var logs [2]*big.Int
 	if is2ndHalf {
-		logs, err = b.process2ndHalf(match, tactics, seed, startTime)
+		logs, err = b.process2ndHalf(match, states, tactics, seed, startTime)
 	} else {
-		logs, err = b.process1stHalf(match, tactics, seed, startTime)
+		logs, err = b.process1stHalf(match, states, tactics, seed, startTime)
 	}
 	if err != nil {
 		return err
@@ -128,6 +132,14 @@ func (b *MatchProcessor) Process(
 		return err
 	}
 	if is2ndHalf {
+		err = b.UpdateTeamSkills(states[0], startTime, logs[0])
+		if err != nil {
+			return err
+		}
+		err = b.UpdateTeamSkills(states[1], startTime, logs[1])
+		if err != nil {
+			return err
+		}
 		err = b.updateTeamLeaderBoard(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
 		if err != nil {
 			return err
@@ -179,15 +191,12 @@ func (b *MatchProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID *
 
 func (b *MatchProcessor) process1stHalf(
 	match storage.Match,
+	states [2][25]*big.Int,
 	tactics [2]*big.Int,
 	seed [32]byte,
 	startTime *big.Int,
 ) (logs [2]*big.Int, err error) {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
-	if err != nil {
-		return logs, err
-	}
-	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return logs, err
 	}
@@ -210,15 +219,12 @@ func (b *MatchProcessor) process1stHalf(
 
 func (b *MatchProcessor) process2ndHalf(
 	match storage.Match,
+	states [2][25]*big.Int,
 	tactics [2]*big.Int,
 	seed [32]byte,
 	startTime *big.Int,
 ) (logs [2]*big.Int, err error) {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
-	if err != nil {
-		return logs, err
-	}
-	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return logs, err
 	}
