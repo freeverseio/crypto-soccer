@@ -169,7 +169,8 @@ allCodes = readCodes(countryCodesFile)
 
 
 
-con = sqlite3.connect(':memory:') # connect to the database
+# con = sqlite3.connect(':memory:') # connect to the database
+con = sqlite3.connect('goalRev.db') # connect to the database
 cur = con.cursor() # instantiate a cursor obj
 cur.execute("PRAGMA foreign_keys = ON;")
 countries_sql = """
@@ -196,9 +197,11 @@ for code in allCodes:
     cur.execute("INSERT INTO countries VALUES ('%i', '%s', '%s', '%s');" %(code[0],code[1], code[2], code[3]))
 
 for name in allNames:
-    cur.execute("INSERT INTO names VALUES ('$$%s$$', '%i');" %(name[1],name[0]))
+    cur.execute("INSERT INTO names VALUES ('%s', '%i');" %(name[1],name[0]))
 
 for surname in allSurnames:
     cur.execute("INSERT INTO surnames VALUES ('%s', '%i');" %(surname[1],surname[0]))
 
+con.commit()
+con.close()
 
