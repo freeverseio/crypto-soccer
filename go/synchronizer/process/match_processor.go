@@ -240,11 +240,7 @@ func (b *MatchProcessor) process2ndHalf(
 		return logs, err
 	}
 	for i := 0; i < 2; i++ {
-		trainingPointHomeTeam, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs[i])
-		if err != nil {
-			return logs, err
-		}
-		err = b.UpdateTeamSkills(states[i], trainingPointHomeTeam, startTime)
+		err = b.UpdateTeamSkills(states[i], startTime, logs[i])
 		if err != nil {
 			return logs, err
 		}
@@ -394,7 +390,15 @@ func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) 
 	}
 }
 
-func (b *MatchProcessor) UpdateTeamSkills(states [25]*big.Int, trainingPoints *big.Int, matchStartTime *big.Int) error {
+func (b *MatchProcessor) UpdateTeamSkills(
+	states [25]*big.Int,
+	matchStartTime *big.Int,
+	logs *big.Int,
+) error {
+	trainingPoints, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs)
+	if err != nil {
+		return err
+	}
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.evolution.GetTeamEvolvedSkills(
 		&bind.CallOpts{},
