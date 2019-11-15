@@ -10,7 +10,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-func TestCreateMAtchSeed(t *testing.T) {
+func TestCreateMatchSeed(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	ganache, err := testutils.NewBlockchainNode()
