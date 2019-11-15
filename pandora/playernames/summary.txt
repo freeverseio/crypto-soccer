@@ -74,6 +74,9 @@ Possibility:
 
 
 
+
+
+
 -----
 /Users/toni/venv/merkleVerifier/bin/python /Users/toni/gits/crypto-soccer/pandora/playernames/parseMatthias.py
 Great Britain 922 
@@ -149,3 +152,8 @@ Total Entries:  29011
 
 
 
+From Google Datasets:
+
+catalan https://opendata.terrassa.cat/DADES_DEMOGRAFIQUES/Primers-Cognoms-m-s-freq-ents-Primeros-Apellidos-m/8p8f-sina
+russia https://github.com/datacoon/russiannames -- https://zenodo.org/record/2747011
+brazil https://plos.figshare.com/articles/Surnames_and_ancestry_in_Brazil/4984046
