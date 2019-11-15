@@ -15,14 +15,18 @@ import (
 )
 
 type MatchProcessor struct {
-	universedb    *storage.Storage
-	relaydb       *relay.Storage
-	assets        *assets.Assets
-	leagues       *leagues.Leagues
-	evolution     *evolution.Evolution
-	engine        *engine.Engine
-	enginePreComp *engineprecomp.Engineprecomp
-	FREEPLAYERID  *big.Int
+	universedb        *storage.Storage
+	relaydb           *relay.Storage
+	assets            *assets.Assets
+	leagues           *leagues.Leagues
+	evolution         *evolution.Evolution
+	engine            *engine.Engine
+	enginePreComp     *engineprecomp.Engineprecomp
+	FREEPLAYERID      *big.Int
+	NOOUTOFGAMEPLAYER uint8
+	REDCARD           uint8
+	SOFTINJURY        uint8
+	HARDINJURY        uint8
 }
 
 func NewMatchProcessor(
@@ -34,20 +38,36 @@ func NewMatchProcessor(
 	engine *engine.Engine,
 	enginePreComp *engineprecomp.Engineprecomp,
 ) (*MatchProcessor, error) {
-	FREEPLAYERID, err := engine.FREEPLAYERID(&bind.CallOpts{})
+	processor := MatchProcessor{}
+	var err error
+	processor.FREEPLAYERID, err = engine.FREEPLAYERID(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	return &MatchProcessor{
-		universedb,
-		relaydb,
-		assets,
-		leagues,
-		evolution,
-		engine,
-		enginePreComp,
-		FREEPLAYERID,
-	}, nil
+	processor.NOOUTOFGAMEPLAYER, err = enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	processor.REDCARD, err = enginePreComp.REDCARD(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	processor.SOFTINJURY, err = enginePreComp.SOFTINJURY(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	processor.HARDINJURY, err = enginePreComp.HARDINJURY(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+	processor.universedb = universedb
+	processor.relaydb = relaydb
+	processor.assets = assets
+	processor.leagues = leagues
+	processor.evolution = evolution
+	processor.engine = engine
+	processor.enginePreComp = enginePreComp
+	return &processor, nil
 }
 
 func (b *MatchProcessor) Process(
@@ -70,6 +90,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
+
 	goalsHome, err := b.evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[0],
@@ -234,36 +255,20 @@ func (b *MatchProcessor) process2ndHalf(
 func (b *MatchProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big.Int) ([2]*big.Int, error) {
 	var tactics [2]*big.Int
 	verse := uint64(0) // TODO: get verse from event
-	if tactic, err := b.getEncodedTacticAtVerse(homeTeamID, verse); err != nil {
+	tactic, err := b.getEncodedTacticAtVerse(homeTeamID, verse)
+	if err != nil {
 		return tactics, err
-	} else {
-		tactics[0] = tactic
 	}
-	if tactic, err := b.getEncodedTacticAtVerse(visitorTeamID, verse); err != nil {
+	tactics[0] = tactic
+	tactic, err = b.getEncodedTacticAtVerse(visitorTeamID, verse)
+	if err != nil {
 		return tactics, err
-	} else {
-		tactics[1] = tactic
 	}
+	tactics[1] = tactic
 	return tactics, nil
 }
 
 func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
-	NO_OUT_OF_GAME_PLAYER, err := b.enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
-	if err != nil {
-		return err
-	}
-	RED_CARD, err := b.enginePreComp.REDCARD(&bind.CallOpts{})
-	if err != nil {
-		return err
-	}
-	SOFTINJURY, err := b.enginePreComp.SOFTINJURY(&bind.CallOpts{})
-	if err != nil {
-		return err
-	}
-	HARDINJURY, err := b.enginePreComp.HARDINJURY(&bind.CallOpts{})
-	if err != nil {
-		return err
-	}
 	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {
 		return err
@@ -280,8 +285,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 	if err != nil {
 		return err
 	}
-	for i := 0; i < len(players); i++ {
-		player := players[i]
+	for _, player := range players {
 		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
 			&bind.CallOpts{},
 			player.State.ShirtNumber,
@@ -299,17 +303,17 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 		if err != nil {
 			return err
 		}
-		if outOfGamePlayer.Int64() != int64(NO_OUT_OF_GAME_PLAYER) {
+		if outOfGamePlayer.Int64() != int64(b.NOOUTOFGAMEPLAYER) {
 			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
-				case int64(RED_CARD):
+				case int64(b.REDCARD):
 					player.State.RedCard = true
-				case int64(SOFTINJURY):
+				case int64(b.SOFTINJURY):
 					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
 					if err != nil {
 						return err
 					}
-				case int64(HARDINJURY):
+				case int64(b.HARDINJURY):
 					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 2)
 					if err != nil {
 						return err
