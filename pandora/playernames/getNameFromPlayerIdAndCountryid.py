@@ -71,16 +71,14 @@ def getRndFromSeed(seed, maxVal, iterations):
     return seed % maxVal
 
 
-def getRndNameFromCountry(countryCodeForNames, playerId, onlyThisCountry):
-    allNames = readNames(namesFile)
+def getRndNameFromCountry(allNames, countryCodeForNames, playerId, onlyThisCountry):
     if onlyThisCountry:
         names = [name[1] for name in allNames if name[0] == countryCodeForNames]
     else:
         names = [name[1] for name in allNames if name[0] != countryCodeForNames]
     return names[getRndFromSeed(playerId, len(names), 2)]
 
-def getRndSurnameFromCountry(countryCodeForSurnames, playerId, onlyThisCountry):
-    allNames = readNames(surnamesFile)
+def getRndSurnameFromCountry(allNames, countryCodeForSurnames, playerId, onlyThisCountry):
     if onlyThisCountry:
         names = [name[1] for name in allNames if name[0] == countryCodeForSurnames]
     else:
@@ -96,7 +94,7 @@ def getCountryNameFromPlayerId(playerId):
 
 
 
-def getNameFromPlayerId(playerId):
+def getNameFromPlayerId(playerId, allNames):
     countryId = getCountryIdFromPlayerId(playerId)
     assert (countryId in countryIdToCountrySpec), "Player belongs to a country not yet specified by Freeverse"
     country = countryIdToCountrySpec[countryId]
@@ -104,13 +102,13 @@ def getNameFromPlayerId(playerId):
     maxVal = 100
     dice = getRndFromSeed(playerId, maxVal, 1)
     if dice < (country.mixRatios[0] + country.mixRatios[1]):  #PURE_PURE_RATIO + PURE_FOREIGN_RATIO:
-        name = getRndNameFromCountry(country.countryCodeForNames, playerId, True)
+        name = getRndNameFromCountry(allNames, country.countryCodeForNames, playerId, True)
     else:
-        name = getRndNameFromCountry(country.countryCodeForNames, playerId, False)
+        name = getRndNameFromCountry(allNames, country.countryCodeForNames, playerId, False)
     return name
 
 
-def getSurnameFromPlayerId(playerId):
+def getSurnameFromPlayerId(playerId, allSurnames):
     countryId = getCountryIdFromPlayerId(playerId)
     assert (countryId in countryIdToCountrySpec), "Player belongs to a country not yet specified by Freeverse"
     country = countryIdToCountrySpec[countryId]
@@ -118,59 +116,63 @@ def getSurnameFromPlayerId(playerId):
     maxVal = 100
     dice = getRndFromSeed(playerId+2, maxVal, 3)
     if dice < (country.mixRatios[0] + country.mixRatios[2]): # PURE_PURE_RATIO + FOREIGN_PURE_RATIO:
-        name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, True)
+        name = getRndSurnameFromCountry(allSurnames, country.countryCodeForSurnames, playerId, True)
     else:
-        name = getRndSurnameFromCountry(country.countryCodeForSurnames, playerId, False)
+        name = getRndSurnameFromCountry(allSurnames, country.countryCodeForSurnames, playerId, False)
     return name
 
 def getFullNameFromPlayerId(playerId):
-    return getNameFromPlayerId(playerId) + " " + getSurnameFromPlayerId(playerId)
+    return getNameFromPlayerId(playerId, allNames)# + " " + getSurnameFromPlayerId(playerId)
 
-# # TEST 1
-# str = ''
-# for i in range(10):
-#     str += getNameFromPlayerId(i)
-# if str == 'PrimianoLidianoSongEfraínDorandoChuOtilioVladimiroLeonBenigno':
-#     print("NAMES TEST PASSED")
-# else:
-#     print("NAMES TEST FAILED: ", str)
-#
-# print("------------")
-#
-# # TEST 2
-# str = ''
-# for i in range(10):
-#     str += getSurnameFromPlayerId(i)
-# if str == 'IrahetaDiuguidSummerBaratzVisonLuMolieriLoeraPrimaPozuelos':
-#     print("SURNAMES TEST PASSED")
-# else:
-#     print("SURNAMES TEST FAILED: ", str)
-#
-# print("------------")
+
+allNames = readNames(namesFile)
+allSurnames = readNames(surnamesFile)
+
+# TEST 1
+str = ''
+for i in range(10):
+    str += getNameFromPlayerId(i, allNames)
+if str == 'PrimianoLidianoSongConallLaurentinoLiGangNikWaalkeDuilio':
+    print("NAMES TEST PASSED")
+else:
+    print("NAMES TEST FAILED: ", str)
+
+print("------------")
+
+# TEST 2
+str = ''
+for i in range(10):
+    str += getSurnameFromPlayerId(i, allSurnames)
+if str == 'IrahetaDiuguidSummerHsuVisonTineoJiaJorgensenChaimowitzPozuelos':
+    print("SURNAMES TEST PASSED")
+else:
+    print("SURNAMES TEST FAILED: ", str)
+
+print("------------")
 
 # Print examples
-# if False:
-#     countries = ["Spain", "Italy", "China"]
-#     for i in range(50):
-#         a = 4*i+0
-#         print(getCountryNameFromPlayerId(a)+":", getFullNameFromPlayerId(a))
+if False:
+    countries = ["Spain", "Italy", "China"]
+    for i in range(50):
+        a = 4*i+0
+        print(getCountryNameFromPlayerId(a)+":", getFullNameFromPlayerId(a))
 
 
-con = sqlite3.connect(':memory:') # connect to the database
-cur = con.cursor() # instantiate a cursor obj
-countries_sql = """
-CREATE TABLE countries (
-    country_id integer PRIMARY KEY,
-    country_name_0 text NOT NULL,
-    country_name_1 text,
-    country_name_2 text)"""
-cur.execute(countries_sql)
-names_sql = """
-CREATE TABLE names (
-    name text PRIMARY KEY,
-    country_id integer REFERENCES countries(country_id))"""
-cur.execute(names_sql)
-
-cur.execute("INSERT INTO countries VALUES ('0', 'Spain', NULL, NULL);")
+# con = sqlite3.connect(':memory:') # connect to the database
+# cur = con.cursor() # instantiate a cursor obj
+# countries_sql = """
+# CREATE TABLE countries (
+#     country_id integer PRIMARY KEY,
+#     country_name_0 text NOT NULL,
+#     country_name_1 text,
+#     country_name_2 text)"""
+# cur.execute(countries_sql)
+# names_sql = """
+# CREATE TABLE names (
+#     name text PRIMARY KEY,
+#     country_id integer REFERENCES countries(country_id))"""
+# cur.execute(names_sql)
+#
+# cur.execute("INSERT INTO countries VALUES ('0', 'Spain', NULL, NULL);")
 
 
