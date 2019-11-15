@@ -70,6 +70,21 @@ func NewMatchProcessor(
 	return &processor, nil
 }
 
+func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoals uint8, err error) {
+	homeGoals, err = b.evolution.GetNGoals(
+		&bind.CallOpts{},
+		logs[0],
+	)
+	if err != nil {
+		return homeGoals, visitorGoals, err
+	}
+	visitorGoals, err = b.evolution.GetNGoals(
+		&bind.CallOpts{},
+		logs[1],
+	)
+	return homeGoals, visitorGoals, err
+}
+
 func (b *MatchProcessor) Process(
 	match storage.Match,
 	seed [32]byte,
@@ -94,18 +109,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-
-	goalsHome, err := b.evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[0],
-	)
-	if err != nil {
-		return err
-	}
-	goalsVisitor, err := b.evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[1],
-	)
+	goalsHome, goalsVisitor, err := b.GetGoals(logs)
 	if err != nil {
 		return err
 	}
@@ -147,6 +151,7 @@ func (b *MatchProcessor) Process(
 	}
 	return nil
 }
+
 func (b *MatchProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
