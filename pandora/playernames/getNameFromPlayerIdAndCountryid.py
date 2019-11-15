@@ -47,6 +47,14 @@ def db_connect():
         if conn:
             conn.close()
 
+def readCodes(filename):
+    names = []
+    with open(filename, 'r', newline='\n') as file:
+        for line in file:
+            splitted = line.rstrip('\n').split(",")
+            names.append([int(splitted[0]), splitted[1], splitted[2], splitted[3]])
+    return names
+
 def readNames(filename):
     names = []
     with open(filename, 'r', newline='\n') as file:
@@ -127,52 +135,67 @@ def getFullNameFromPlayerId(playerId):
 
 allNames = readNames(namesFile)
 allSurnames = readNames(surnamesFile)
+allCodes = readCodes(countryCodesFile)
 
-# TEST 1
-str = ''
-for i in range(10):
-    str += getNameFromPlayerId(i, allNames)
-if str == 'PrimianoLidianoSongConallLaurentinoLiGangNikWaalkeDuilio':
-    print("NAMES TEST PASSED")
-else:
-    print("NAMES TEST FAILED: ", str)
-
-print("------------")
-
-# TEST 2
-str = ''
-for i in range(10):
-    str += getSurnameFromPlayerId(i, allSurnames)
-if str == 'IrahetaDiuguidSummerHsuVisonTineoJiaJorgensenChaimowitzPozuelos':
-    print("SURNAMES TEST PASSED")
-else:
-    print("SURNAMES TEST FAILED: ", str)
-
-print("------------")
+# # TEST 1
+# str = ''
+# for i in range(10):
+#     str += getNameFromPlayerId(i, allNames)
+# if str == 'PrimianoLidianoSongConallLaurentinoLiGangNikWaalkeDuilio':
+#     print("NAMES TEST PASSED")
+# else:
+#     print("NAMES TEST FAILED: ", str)
+#
+# print("------------")
+#
+# # TEST 2
+# str = ''
+# for i in range(10):
+#     str += getSurnameFromPlayerId(i, allSurnames)
+# if str == 'IrahetaDiuguidSummerHsuVisonTineoJiaJorgensenChaimowitzPozuelos':
+#     print("SURNAMES TEST PASSED")
+# else:
+#     print("SURNAMES TEST FAILED: ", str)
+#
+# print("------------")
 
 # Print examples
-if False:
-    countries = ["Spain", "Italy", "China"]
-    for i in range(50):
-        a = 4*i+0
-        print(getCountryNameFromPlayerId(a)+":", getFullNameFromPlayerId(a))
+# if False:
+#     countries = ["Spain", "Italy", "China"]
+#     for i in range(50):
+#         a = 4*i+0
+#         print(getCountryNameFromPlayerId(a)+":", getFullNameFromPlayerId(a))
 
 
-# con = sqlite3.connect(':memory:') # connect to the database
-# cur = con.cursor() # instantiate a cursor obj
-# countries_sql = """
-# CREATE TABLE countries (
-#     country_id integer PRIMARY KEY,
-#     country_name_0 text NOT NULL,
-#     country_name_1 text,
-#     country_name_2 text)"""
-# cur.execute(countries_sql)
-# names_sql = """
-# CREATE TABLE names (
-#     name text PRIMARY KEY,
-#     country_id integer REFERENCES countries(country_id))"""
-# cur.execute(names_sql)
-#
-# cur.execute("INSERT INTO countries VALUES ('0', 'Spain', NULL, NULL);")
+
+
+con = sqlite3.connect(':memory:') # connect to the database
+cur = con.cursor() # instantiate a cursor obj
+countries_sql = """
+CREATE TABLE countries (
+    country_id integer PRIMARY KEY,
+    country_name_0 text NOT NULL,
+    country_name_1 text,
+    country_name_2 text)"""
+cur.execute(countries_sql)
+names_sql = """
+CREATE TABLE names (
+    name text PRIMARY KEY,
+    country_id integer REFERENCES countries(country_id))"""
+cur.execute(names_sql)
+surnames_sql = """
+CREATE TABLE surnames (
+    surname text PRIMARY KEY,
+    country_id integer REFERENCES countries(country_id))"""
+cur.execute(surnames_sql)
+
+for code in allCodes:
+    cur.execute("INSERT INTO countries VALUES ('%i', '%s', '%s', '%s');" %(code[0],code[1], code[2], code[3]))
+
+for name in allNames:
+    cur.execute("INSERT INTO names VALUES ('%s', '%i');" %(name[1],name[0]))
+
+for surname in allSurnames:
+    cur.execute("INSERT INTO surnames VALUES ('%s', '%i');" %(surname[1],surname[0]))
 
 
