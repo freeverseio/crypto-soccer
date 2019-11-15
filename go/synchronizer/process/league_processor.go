@@ -138,19 +138,6 @@ func (b *LeagueProcessor) process2ndHalf(
 	return logs, err
 }
 
-func (b *LeagueProcessor) processHalfMatch(
-	match storage.Match,
-	tactics [2]*big.Int,
-	seed [32]byte,
-	startTime *big.Int,
-	is2ndHalf bool,
-) (logs [2]*big.Int, err error) {
-	if is2ndHalf {
-		return b.process2ndHalf(match, tactics, seed, startTime)
-	}
-	return b.process1stHalf(match, tactics, seed, startTime)
-}
-
 func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
 	day := event.Day
 	turnInDay := event.TurnInDay
@@ -170,8 +157,9 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+			// if a new league is starting shuffle the teams
 			if (day == 0) && (turnInDay == 0) {
-				err = b.shuffleTeamsInCountry(timezoneIdx, countryIdx)
+				err = b.ShuffleTeamsInCountry(timezoneIdx, countryIdx)
 				if err != nil {
 					return err
 				}
@@ -191,14 +179,19 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 				if err != nil {
 					return err
 				}
-				for matchIdx := 0; matchIdx < len(matches); matchIdx++ {
-					match := matches[matchIdx]
+				for matchIdx, match := range matches {
 					is2ndHalf := turnInDay == 1
 					tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
 					if err != nil {
 						return err
 					}
-					logs, err := b.processHalfMatch(match, tactics, event.Seed, event.SubmissionTime, is2ndHalf)
+					// play the match half
+					var logs [2]*big.Int
+					if is2ndHalf {
+						logs, err = b.process2ndHalf(match, tactics, event.Seed, event.SubmissionTime)
+					} else {
+						logs, err = b.process1stHalf(match, tactics, event.Seed, event.SubmissionTime)
+					}
 					if err != nil {
 						return err
 					}
@@ -244,7 +237,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) shuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+func (b *LeagueProcessor) ShuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
 	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
