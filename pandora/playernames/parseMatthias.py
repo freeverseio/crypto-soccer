@@ -61,8 +61,10 @@ def getNamesFromCountry(countryName, fields, allNames, getSurname = False):
             # some persian names are written in format name+surname
             names = [name.split("+")[0] for name in names]
         score -= 1
-    return names
+    return removeDuplications(names)
 
+def removeDuplications(names):
+    return list(dict.fromkeys(names))
 
 allNames = []
 nFields = 0
@@ -72,7 +74,7 @@ with open(database_name, 'r', newline='\n') as file:
             fields = line.rstrip('\n').split(";")
             nFields = len(fields)
         else:
-            thisLine = line.rstrip('\n').split(";")
+            thisLine = line.rstrip('\n').replace("'","").split(";")
             if isNotFemale(thisLine[IDX_GENDER]):
                 assert len(thisLine) == nFields, "wrong num of fields"
                 allNames.append(thisLine)

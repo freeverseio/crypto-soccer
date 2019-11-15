@@ -171,6 +171,7 @@ allCodes = readCodes(countryCodesFile)
 
 con = sqlite3.connect(':memory:') # connect to the database
 cur = con.cursor() # instantiate a cursor obj
+cur.execute("PRAGMA foreign_keys = ON;")
 countries_sql = """
 CREATE TABLE countries (
     country_id integer PRIMARY KEY,
@@ -180,20 +181,22 @@ CREATE TABLE countries (
 cur.execute(countries_sql)
 names_sql = """
 CREATE TABLE names (
-    name text PRIMARY KEY,
-    country_id integer REFERENCES countries(country_id))"""
+    name text NOT NULL,
+    country_id integer REFERENCES countries(country_id),
+    PRIMARY KEY (name, country_id))"""
 cur.execute(names_sql)
 surnames_sql = """
 CREATE TABLE surnames (
-    surname text PRIMARY KEY,
-    country_id integer REFERENCES countries(country_id))"""
+    surname text NOT NULL,
+    country_id integer REFERENCES countries(country_id),
+    PRIMARY KEY (surname, country_id))"""
 cur.execute(surnames_sql)
 
 for code in allCodes:
     cur.execute("INSERT INTO countries VALUES ('%i', '%s', '%s', '%s');" %(code[0],code[1], code[2], code[3]))
 
 for name in allNames:
-    cur.execute("INSERT INTO names VALUES ('%s', '%i');" %(name[1],name[0]))
+    cur.execute("INSERT INTO names VALUES ('$$%s$$', '%i');" %(name[1],name[0]))
 
 for surname in allSurnames:
     cur.execute("INSERT INTO surnames VALUES ('%s', '%i');" %(surname[1],surname[0]))

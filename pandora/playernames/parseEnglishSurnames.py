@@ -50,8 +50,10 @@ def getNamesFromCountry(countryName, fields, allNames):
             print("reducing min_score for: ", countryName)
         names = [line[IDX_NAME] for line in allNames if belongsEnough(line[getCountryIdx(fields, countryName)], score)]
         score -= 10
-    return names
+    return removeDuplications(names)
 
+def removeDuplications(names):
+    return list(dict.fromkeys(names))
 
 
 allNames = []
