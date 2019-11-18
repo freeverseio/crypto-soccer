@@ -129,10 +129,6 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) IsBotTeam(team storage.Team) bool {
-	return team.State.Owner == "0x0000000000000000000000000000000000000000"
-}
-
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
@@ -154,7 +150,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 			if err != nil {
 				return err
 			}
-			if !b.IsBotTeam(team) {
+			if !storage.IsBotTeam(team) {
 				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
