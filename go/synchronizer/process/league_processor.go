@@ -2,7 +2,6 @@ package process
 
 import (
 	"errors"
-	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -27,7 +26,6 @@ type LeagueProcessor struct {
 	relaydb           *relay.Storage
 	assets            *assets.Assets
 	calendarProcessor *Calendar
-	FREEPLAYERID      *big.Int
 	matchProcessor    *MatchProcessor
 }
 
@@ -41,10 +39,6 @@ func NewLeagueProcessor(
 	relaydb *relay.Storage,
 ) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, universedb)
-	if err != nil {
-		return nil, err
-	}
-	FREEPLAYERID, err := engine.FREEPLAYERID(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +63,6 @@ func NewLeagueProcessor(
 		relaydb,
 		assets,
 		calendarProcessor,
-		FREEPLAYERID,
 		matchProcessor,
 	}, nil
 }
@@ -157,14 +150,20 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 			if err != nil {
 				return err
 			}
-			team.State.PrevPerfPoints, err = b.leagues.ComputeTeamRankingPoints(
-				&bind.CallOpts{},
-				teamState,
-				uint8(position),
-				team.State.PrevPerfPoints,
-			)
+			isBotTeam, err := b.assets.IsBotTeam(&bind.CallOpts{}, team.TeamID)
 			if err != nil {
 				return err
+			}
+			if !isBotTeam {
+				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.leagues.ComputeTeamRankingPoints(
+					&bind.CallOpts{},
+					teamState,
+					uint8(position),
+					team.State.PrevPerfPoints,
+				)
+				if err != nil {
+					return err
+				}
 			}
 			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newPrevPerfPoints)
 			orgMap = append(orgMap, team)
@@ -172,7 +171,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].State.PrevPerfPoints.Cmp(orgMap[j].State.PrevPerfPoints) == 1
+		return orgMap[i].State.RankingPoints.Cmp(orgMap[j].State.RankingPoints) == 1
 	})
 	// create the new leagues
 	for i, team := range orgMap {

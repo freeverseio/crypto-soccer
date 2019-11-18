@@ -70,7 +70,7 @@ func TestGetPlayerState(t *testing.T) {
 		t.Fatalf("Wrong team state count %v", len(teamState))
 	}
 	for _, state := range teamState {
-		if state != processor.FREEPLAYERID {
+		if state.String() != "0" {
 			t.Fatalf("Wrong state %v", state)
 		}
 	}

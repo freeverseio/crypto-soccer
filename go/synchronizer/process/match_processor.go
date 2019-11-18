@@ -22,7 +22,6 @@ type MatchProcessor struct {
 	evolution         *evolution.Evolution
 	engine            *engine.Engine
 	enginePreComp     *engineprecomp.Engineprecomp
-	FREEPLAYERID      *big.Int
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
 	SOFTINJURY        uint8
@@ -40,10 +39,6 @@ func NewMatchProcessor(
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
 	var err error
-	processor.FREEPLAYERID, err = engine.FREEPLAYERID(&bind.CallOpts{})
-	if err != nil {
-		return nil, err
-	}
 	processor.NOOUTOFGAMEPLAYER, err = enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
@@ -155,7 +150,7 @@ func (b *MatchProcessor) Process(
 func (b *MatchProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
-		state[i] = b.FREEPLAYERID
+		state[i] = big.NewInt(0)
 	}
 	players, err := b.universedb.GetPlayersOfTeam(teamID)
 	if err != nil {
@@ -423,7 +418,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	}
 
 	for _, state := range newStates {
-		if state.String() == b.FREEPLAYERID.String() {
+		if state.String() == "0" {
 			continue
 		}
 

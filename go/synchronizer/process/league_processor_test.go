@@ -167,11 +167,23 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = bc.DeployContracts(bc.Owner)
+	divisionProcessor, err := process.NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		bc.Assets,
+		bc.Leagues,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(0)
+	leagueIdx := uint32(0)
+	err = divisionProcessor.Process(assets.AssetsDivisionCreation{timezoneIdx, big.NewInt(int64(countryIdx)), big.NewInt(int64(leagueIdx)), types.Log{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,24 +199,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezoneIdx := uint8(1)
-	countryIdx := uint32(0)
-	leagueIdx := uint32(0)
-	var team storage.Team
-	team.TimezoneIdx = timezoneIdx
-	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	universedb.TimezoneCreate(storage.Timezone{timezoneIdx})
-	universedb.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, 0})
-	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, 1})
-	for i := 0; i < 10; i++ {
-		team.TeamID = big.NewInt(int64(i))
-		universedb.TeamCreate(team)
-		team.State.PrevPerfPoints = big.NewInt(10)
-		universedb.TeamUpdate(team.TeamID, team.State)
-	}
+
 	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, countryIdx)
 	if err != nil {
 		t.Fatal(err)
@@ -213,19 +208,19 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	team = teams[0]
+	team := teams[0]
 	// if team.TeamID.String() != "2" {
 	// 	t.Fatalf("Wrong first team %v", team.TeamID)
 	// }
 	for _, team = range teams {
-		log.Infof("team %v, league %v, idx in league %v, ranking points %v", team.TeamID, team.State.LeagueIdx, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
 	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, team = range teams {
-		log.Infof("team %v, league %v, idx in league %v, ranking points %v", team.TeamID, team.State.LeagueIdx, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
 	// if teams[0].State.TeamIdxInLeague != 1 {
 	// 	t.Fatalf("Wrong team %v idx into league %v, indexInLeague %v", teams[0].TeamID, teams[0].State.LeagueIdx, team)
