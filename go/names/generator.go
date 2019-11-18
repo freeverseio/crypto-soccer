@@ -39,10 +39,10 @@ func New() (*Generator, error) {
 }
 
 // comparer is either "=" or "!="
-func (b *Generator) NamesCount(condition string) (uint64, error) {
+func (b *Generator) NamesCount(tableName string, condition string) (uint64, error) {
 	count := uint64(0)
 	var err error
-	var cmd string = `SELECT COUNT(*) FROM names ` + condition
+	var cmd string = `SELECT COUNT(*) FROM ` + tableName + ` ` + condition
 	rows, err := b.db.Query(cmd)
 	if err != nil {
 		return 0, err
@@ -65,18 +65,18 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GeneratePlayerName(playerId *big.Int, country_code int, purity int, nLayers1 int, nLayers2 int) (string, error) {
-	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
+func (b *Generator) GenerateName(tableName string, playerId *big.Int, country_code int, purity int, nLayers1 int, nLayers2 int) (string, error) {
+	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
 	dice := b.GenerateRnd(playerId, 100, nLayers1)
 	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
 	if int(dice) < purity {
 		condition = `WHERE country_code != ` + strconv.Itoa(country_code) + ";"
 	}
-	num_names, err := b.NamesCount(condition)
+	num_names, err := b.NamesCount(tableName, condition)
 	if err != nil {
 		return "", err
 	}
-	rows, err := b.db.Query(`SELECT name FROM names ` + condition)
+	rows, err := b.db.Query(`SELECT name FROM ` + tableName + ` ` + condition)
 	if err != nil {
 		return "", err
 	}
@@ -122,11 +122,11 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	if err != nil {
 		return "", err
 	}
-	name, err := b.GeneratePlayerName(playerId, code_name, pure_pure+pure_foreign, 1, 2)
+	name, err := b.GenerateName("names", playerId, code_name, pure_pure+pure_foreign, 1, 2)
 	if err != nil {
 		return "", err
 	}
-	// surname, err := b.GeneratePlayerName(playerId, code_surname, pure_pure+pure_foreign)
+	// surname, err := b.GenerateName("surname", playerId, code_surname, pure_pure+pure_foreign)
 	// if err != nil {
 	// 	return "", err
 	// }
