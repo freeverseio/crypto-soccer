@@ -8,9 +8,16 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 )
 
-func TestSubmitActionRoot(t *testing.T) {
+func TestGeneratePlayerName(t *testing.T) {
+	generator, err := names.New()
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
 	for i := 0; i < 10; i++ {
-		name := names.GeneratePlayerName(big.NewInt(int64(i)))
+		name, err := generator.GeneratePlayerName(big.NewInt(int64(i)), big.NewInt(int64(5)))
+		if err != nil {
+			t.Fatalf("error creating database for player names: %s", err)
+		}
 		fmt.Println(name)
 		if len(name) == 0 {
 			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
