@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -15,35 +16,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-func TestCreateMAtchSeed(t *testing.T) {
-	ganache, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache.DeployContracts(ganache.Owner)
-	processor, err := process.NewLeagueProcessor(
-		ganache.Engine,
-		ganache.EnginePreComp,
-		ganache.Assets,
-		ganache.Leagues,
-		ganache.Evolution,
-		nil,
-		nil,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	seed := [32]byte{0x0}
-	homeTeamID := big.NewInt(3)
-	visitorTeamID := big.NewInt(5)
-	result, err := processor.GenerateMatchSeed(seed, homeTeamID, visitorTeamID)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result.Text(16) != "33c646d693b716acb3a01ae35dd9ed16191786670a88f4c086b7223851a750d" {
-		t.Fatalf("Received %v", result.Text(16))
-	}
-}
 func TestProcessInvalidTimezone(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
@@ -67,12 +39,11 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return // TODO check
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 25
 	err = processor.Process(event)
 	if err == nil {
-		t.Fatal("processing invalid timezone")
+		t.Fatal(err)
 	}
 }
 
@@ -188,4 +159,70 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestLeagueShuffling(t *testing.T) {
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	divisionProcessor, err := process.NewDivisionCreationProcessor(
+		universedb,
+		relaydb,
+		bc.Assets,
+		bc.Leagues,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(0)
+	leagueIdx := uint32(0)
+	err = divisionProcessor.Process(assets.AssetsDivisionCreation{timezoneIdx, big.NewInt(int64(countryIdx)), big.NewInt(int64(leagueIdx)), types.Log{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	processor, err := process.NewLeagueProcessor(
+		bc.Engine,
+		bc.EnginePreComp,
+		bc.Assets,
+		bc.Leagues,
+		bc.Evolution,
+		universedb,
+		relaydb,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, countryIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	teams, err := universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	team := teams[0]
+	// if team.TeamID.String() != "2" {
+	// 	t.Fatalf("Wrong first team %v", team.TeamID)
+	// }
+	for _, team = range teams {
+		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+	}
+	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, team = range teams {
+		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+	}
+	// if teams[0].State.TeamIdxInLeague != 1 {
+	// 	t.Fatalf("Wrong team %v idx into league %v, indexInLeague %v", teams[0].TeamID, teams[0].State.LeagueIdx, team)
+	// }
 }

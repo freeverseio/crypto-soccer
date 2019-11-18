@@ -18,6 +18,7 @@ type TeamState struct {
 	L               uint32
 	GoalsForward    uint32
 	GoalsAgainst    uint32
+	PrevPerfPoints  *big.Int
 	RankingPoints   *big.Int
 }
 
@@ -79,8 +80,9 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 						l=$7,
 						goals_forward=$8,
 						goals_against=$9,
-						ranking_points=$10
-						WHERE team_id=$11`,
+						prev_perf_points=$10,
+						ranking_points=$11
+						WHERE team_id=$12`,
 		teamState.Owner,
 		teamState.LeagueIdx,
 		teamState.TeamIdxInLeague,
@@ -90,6 +92,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.L,
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
+		teamState.PrevPerfPoints.String(),
 		teamState.RankingPoints.String(),
 		teamID.String(),
 	)
@@ -170,7 +173,19 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
 	var team Team
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, owner, league_idx, team_idx_in_league, points, w,d,l, goals_forward, goals_against, ranking_points FROM teams WHERE (team_id = $1);", teamID.String())
+	rows, err := b.db.Query(`SELECT 
+	timezone_idx,
+	country_idx, 
+	owner, 
+	league_idx, 
+	team_idx_in_league, 
+	points, 
+	w,d,l, 
+	goals_forward, 
+	goals_against, 
+	prev_perf_points,
+	ranking_points 
+	FROM teams WHERE (team_id = $1);`, teamID.String())
 	if err != nil {
 		return team, err
 	}
@@ -179,6 +194,7 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		return team, errors.New("Unexistent team")
 	}
 	team.TeamID = teamID
+	var prevPerfPoints sql.NullString
 	var rankingPoints sql.NullString
 	err = rows.Scan(
 		&team.TimezoneIdx,
@@ -192,8 +208,10 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.State.L,
 		&team.State.GoalsForward,
 		&team.State.GoalsAgainst,
+		&prevPerfPoints,
 		&rankingPoints,
 	)
+	team.State.PrevPerfPoints, _ = new(big.Int).SetString(prevPerfPoints.String, 10)
 	team.State.RankingPoints, _ = new(big.Int).SetString(rankingPoints.String, 10)
 	if err != nil {
 		return team, err

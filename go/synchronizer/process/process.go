@@ -132,10 +132,10 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 
 	switch v := e.Value.(type) {
 	case assets.AssetsDivisionCreation:
-		log.Debug("[processor] Dispatching LeaguesDivisionCreation event")
+		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
 		return p.divisionCreationProcessor.Process(v)
 	case assets.AssetsTeamTransfer:
-		log.Debug("[processor] dispatching LeaguesTeamTransfer event")
+		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
 		teamID := v.TeamId
 		newOwner := v.To.String()
 		team, err := p.universedb.GetTeam(teamID)
@@ -146,7 +146,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		team.State.Owner = newOwner
 		return p.universedb.TeamUpdate(teamID, team.State)
 	case assets.AssetsPlayerStateChange:
-		log.Debug("[processor] dispatching LeaguesPlayerStateChange event")
+		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
 		playerID := v.PlayerId
 		state := v.State
 		shirtNumber, err := p.assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
@@ -165,10 +165,10 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.universedb.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Debug("[processor] Dispatching UpdatesActionsSubmission event")
+		log.Infof("[processor] Dispatching UpdatesActionsSubmission event Timezone: %v, Day: %v, TurnInDay: %v", v.TimeZone, v.Day, v.TurnInDay)
 		return p.leagueProcessor.Process(v)
 	case market.MarketPlayerFreeze:
-		log.Debug("[processor] Dispatching MarketPlayerFreeze event")
+		log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
 		playerID := v.PlayerId
 		player, err := p.universedb.GetPlayer(playerID)
 		if err != nil {

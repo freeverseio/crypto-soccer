@@ -28,6 +28,7 @@ type DivisionCreationProcessor struct {
 	TEAMS_PER_LEAGUE      uint8
 	calendarProcessor     *Calendar
 	PLAYERS_PER_TEAM_INIT uint8
+	namesGenerator        *names.Generator
 }
 
 func NewDivisionCreationProcessor(
@@ -72,6 +73,10 @@ func NewDivisionCreationProcessor(
 	if err != nil {
 		return nil, err
 	}
+	namesGenerator, err := names.New()
+	if err != nil {
+		return nil, err
+	}
 	return &DivisionCreationProcessor{
 		universedb,
 		relaydb,
@@ -85,6 +90,7 @@ func NewDivisionCreationProcessor(
 		TEAMS_PER_LEAGUE,
 		calendarProcessor,
 		PLAYERS_PER_TEAM_INIT,
+		namesGenerator,
 	}, nil
 }
 
@@ -142,6 +148,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 							0,
 							0,
 							big.NewInt(10),
+							big.NewInt(0),
 						},
 					},
 				); err != nil {
@@ -183,10 +190,12 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if shirtNumber, err := b.assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
+		} else if name, err := b.namesGenerator.GeneratePlayerFullName(playerId, timezone, countryIdx.Uint64()); err != nil {
+			return err
 		} else if err := b.universedb.PlayerCreate(
 			storage.Player{
 				PlayerId:          playerId,
-				Name:              names.GeneratePlayerName(playerId),
+				Name:              name,
 				PreferredPosition: preferredPosition,
 				Potential:         potential.Uint64(),
 				DayOfBirth:        dayOfBirth.Uint64(),
