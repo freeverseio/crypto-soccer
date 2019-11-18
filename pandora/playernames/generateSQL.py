@@ -4,9 +4,9 @@ from db_utils import db_connect
 import os
 
 db_name = "goalRev.db"
-countryCodesFile = 'goalRevCountryCodes'
-namesFile = 'goalRevNames'
-surnamesFile = 'goalRevSurnames'
+countryCodesFile = 'tmp/goalRevCountryCodes'
+namesFile = 'tmp/goalRevNames'
+surnamesFile = 'tmp/goalRevSurnames'
 
 PURE_PURE_RATIO = 35
 PURE_FOREIGN_RATIO = 20

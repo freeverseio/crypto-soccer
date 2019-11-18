@@ -1,6 +1,10 @@
+mkdir -p tmp
 python3 parseMatthias.py
+echo "...purging Spanish names..."
+patch tmp/goalRevNames purgeSpanishNames.patch
 python3 parseEnglishSurnames.py
 python3 generateSQL.py
-echo "...purging Spanish names..."
-patch patch goalRevNames purgeSpanishNames.patch
 echo "...generated database: goalRev.db...DONE"
+echo "run this command to update the GO code:"
+echo "run this command to update the GO code:"
+echo "cp goalRev.db ~/gits/crypto-soccer/go/names/sql/00_goalRev.db"

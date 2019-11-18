@@ -1,6 +1,9 @@
 import csv
 
 database_name = "sources/matthias.csv"
+out_codes_file = "tmp/goalRevCountryCodes"
+out_names_file = "tmp/goalRevNames"
+out_surnames_file = "tmp/goalRevSurnames"
 
 IDX_NAME = 0
 IDX_GENDER = 1
@@ -81,7 +84,7 @@ with open(database_name, 'r', newline='\n') as file:
 
 
 def writeCountryCodes():
-    outCountryCodesFile = open("goalRevCountryCodes", 'w')
+    outCountryCodesFile = open(out_codes_file, 'w')
     for country in fields[2:-1]:
         countryCode = getCountryIdx(fields, country)
         altNames = country.split("/")
@@ -95,7 +98,7 @@ def writeCountryCodes():
 
 def writeNames():
     totalEntries = 0
-    outNamesFile = open("goalRevNames", 'w')
+    outNamesFile = open(out_names_file, 'w')
     # for country in fields[-6:-1]:
     for country in fields[2:-1]:
         countryCode = getCountryIdx(fields, country)
@@ -112,7 +115,7 @@ def writeNames():
 
 def writeSurnames():
     totalEntries = 0
-    outNamesFile = open("goalRevSurnames", 'w')
+    outNamesFile = open(out_surnames_file, 'w')
     country = "China"
     countryCode = getCountryIdx(fields, country)
     namesInCountry = getNamesFromCountry(country, fields, allNames, getSurname = True)

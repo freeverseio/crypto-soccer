@@ -1,6 +1,9 @@
 import csv
 
 database_name = "sources/englishSurnames.csv"
+out_codes_file = "tmp/goalRevCountryCodes"
+out_names_file = "tmp/goalRevNames"
+out_surnames_file = "tmp/goalRevSurnames"
 
 # pctwhite: 	Percent Non-Hispanic White Only
 # pctblack: 	Percent Non-Hispanic Black Only
@@ -71,7 +74,7 @@ with open(database_name, 'r', newline='\n') as file:
 
 # Append Country Codes:
 def writeCountryCodes():
-    outCountryCodesFile = open("goalRevCountryCodes", 'a+')
+    outCountryCodesFile = open(out_codes_file, 'a+')
     readableCountryNames = ["nonHispWhite", "nonHispBlack", "nonHispAsianPacificIslander", "nonHispAmerIndian", "twoOrMore", "hispanic"]
     # we will use country codes starting from 1000 not to overlap with previous dataset
     for (c, country) in enumerate(fields[5:]):
@@ -83,7 +86,7 @@ def writeCountryCodes():
     outCountryCodesFile.close()
 
 def writeSurnames():
-    outNamesFile = open("goalRevSurnames", 'a+')
+    outNamesFile = open(out_surnames_file, 'a+')
     totalEntries = 0
     for country in fields[5:]:
         countryCode = 1000 + getCountryIdx(fields, country)
