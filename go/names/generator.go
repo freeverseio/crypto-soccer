@@ -38,10 +38,12 @@ func New() (*Generator, error) {
 	return &generator, nil
 }
 
-func (b *Generator) NamesCount(teamId *big.Int) (uint64, error) {
+// comparer is either "=" or "!="
+func (b *Generator) NamesCount(condition string) (uint64, error) {
 	count := uint64(0)
 	var err error
-	rows, err := b.db.Query(`SELECT COUNT(*) FROM names WHERE country_code = $1;`, teamId.String())
+	var cmd string = `SELECT COUNT(*) FROM names ` + condition
+	rows, err := b.db.Query(cmd)
 	if err != nil {
 		return 0, err
 	}
@@ -63,21 +65,26 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, layers int) uint6
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GeneratePlayerName(playerId *big.Int, countryId *big.Int) (string, error) {
-	_ = playerId
+func (b *Generator) GeneratePlayerName(playerId *big.Int, country_code int, purity int) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
-	num_names, err := b.NamesCount(countryId)
+	dice := b.GenerateRnd(playerId, 100, 1)
+	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
+	if int(dice) < purity {
+		condition = `WHERE country_code != ` + strconv.Itoa(country_code) + ";"
+	}
+
+	num_names, err := b.NamesCount(condition)
 	if err != nil {
 		return "", err
 	}
-	rows, err := b.db.Query(`SELECT name FROM names WHERE country_code = $1;`, countryId.String())
+	rows, err := b.db.Query(`SELECT name FROM names ` + condition)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
-	var selected_player uint64 = b.GenerateRnd(playerId, num_names, 1)
+	var selected_player uint64 = b.GenerateRnd(playerId, num_names, 2)
 	var i uint64
-	for i = 0; i < selected_player; i++ {
+	for i = 0; i <= selected_player; i++ {
 		if !rows.Next() {
 			return "", errors.New("Rnd choice selected a player too too far in the database")
 		}
@@ -99,16 +106,27 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 		foreign_pure,
 		foreign_foreign
 	FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
-	_ = rows
 	if err != nil {
 		return "", err
 	}
-
-	var name string
-	// name, err := b.GeneratePlayerName(playerId, nameCountryIdName)
-	// if err != nil {
-	// 	return "", err
-	// }
+	var code_name int
+	var code_surname int
+	var pure_pure int
+	var pure_foreign int
+	var foreign_pure int
+	var foreign_foreign int
+	defer rows.Close()
+	if !rows.Next() {
+		return "", errors.New("Rnd choice selected a player too too far in the database")
+	}
+	err = rows.Scan(&code_name, &code_surname, &pure_pure, &pure_foreign, &foreign_pure, &foreign_foreign)
+	if err != nil {
+		return "", err
+	}
+	name, err := b.GeneratePlayerName(playerId, code_name, pure_pure+pure_foreign)
+	if err != nil {
+		return "", err
+	}
 	return name, nil
 }
 
