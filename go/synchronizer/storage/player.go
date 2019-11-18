@@ -29,7 +29,7 @@ type PlayerState struct {
 	EncodedState      *big.Int
 	Frozen            bool
 	RedCard           bool
-	InjuryMatchesLeft int
+	InjuryMatchesLeft uint8
 }
 
 func (b *Player) Equal(player Player) bool {
