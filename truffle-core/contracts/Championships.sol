@@ -14,7 +14,6 @@ contract Championships is SortIdxs, EncodingSkills {
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
-    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant private INERTIA = 4;
     uint256 constant private WEIGHT_SKILLS = 100;
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
@@ -137,7 +136,7 @@ contract Championships is SortIdxs, EncodingSkills {
         returns (uint256 teamSkills, uint256)
     {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            if (states[p] != 0 && states[p] != FREE_PLAYER_ID)
+            if (states[p] != 0)
                 teamSkills += getSumOfSkills(states[p]);
         }
         
