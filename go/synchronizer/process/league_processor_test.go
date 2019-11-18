@@ -38,7 +38,6 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return // TODO check
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 25
 	err = processor.Process(event)
@@ -158,5 +157,65 @@ func TestLeagueProcessMatch(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestLeagueShuffling(t *testing.T) {
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = bc.DeployContracts(bc.Owner)
+	if err != nil {
+		t.Fatal(err)
+	}
+	processor, err := process.NewLeagueProcessor(
+		bc.Engine,
+		bc.EnginePreComp,
+		bc.Assets,
+		bc.Leagues,
+		bc.Evolution,
+		universedb,
+		relaydb,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(0)
+	leagueIdx := uint32(0)
+	var team storage.Team
+	team.TeamID = big.NewInt(11)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	universedb.TimezoneCreate(storage.Timezone{timezoneIdx})
+	universedb.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	universedb.TeamCreate(team)
+	teams, err := universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = processor.ShuffleTeamsInCountry(timezoneIdx, countryIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	leagueIdx = uint32(0)
+	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(teams) != 1 {
+		t.Fatalf("Wrong number of teams %v", len(teams))
+	}
+	if teams[0].State.RankingPoints.String() != "54000" {
+		t.Fatalf("Wronf ranking points %v", teams[0].State.RankingPoints)
 	}
 }
