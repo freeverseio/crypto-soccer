@@ -43,7 +43,7 @@ func New() (*Generator, error) {
 	return &generator, nil
 }
 
-func GeneratePlayerName(playerId *big.Int) string {
+func GeneratePlayerName(playerId *big.Int, teamId *big.Int) string {
 	_ = playerId
 	return "s"
 	//	return sillyname.GenerateStupidName()
