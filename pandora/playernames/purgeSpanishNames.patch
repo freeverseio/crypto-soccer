@@ -1,7 +1,7 @@
-diff --git a/pandora/playernames/goalRevNames b/pandora/playernames/goalRevNames
+diff --git a/pandora/playernames/tmp/goalRevNames b/pandora/playernames/tmp/goalRevNames
 index 38327fda..d5504b75 100644
---- a/pandora/playernames/goalRevNames
-+++ b/pandora/playernames/goalRevNames
+--- a/pandora/playernames/tmp/goalRevNames
++++ b/pandora/playernames/tmp/goalRevNames
 @@ -4362,607 +4362,253 @@
  7,Zeferino
  8,Aarón
