@@ -56,23 +56,22 @@ func (b *Generator) NamesCount(condition string) (uint64, error) {
 	return count, nil
 }
 
-func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, layers int) uint64 {
+func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint64 {
 	var iterated_seed uint64
 	iterated_seed = int_hash(seed.String())
-	for i := 1; i < layers; i++ {
+	for i := 1; i < nLayers; i++ {
 		iterated_seed = int_hash(big.NewInt(int64(iterated_seed)).String())
 	}
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GeneratePlayerName(playerId *big.Int, country_code int, purity int) (string, error) {
+func (b *Generator) GeneratePlayerName(playerId *big.Int, country_code int, purity int, nLayers1 int, nLayers2 int) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
-	dice := b.GenerateRnd(playerId, 100, 1)
+	dice := b.GenerateRnd(playerId, 100, nLayers1)
 	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
 	if int(dice) < purity {
 		condition = `WHERE country_code != ` + strconv.Itoa(country_code) + ";"
 	}
-
 	num_names, err := b.NamesCount(condition)
 	if err != nil {
 		return "", err
@@ -82,7 +81,7 @@ func (b *Generator) GeneratePlayerName(playerId *big.Int, country_code int, puri
 		return "", err
 	}
 	defer rows.Close()
-	var selected_player uint64 = b.GenerateRnd(playerId, num_names, 2)
+	var selected_player uint64 = b.GenerateRnd(playerId, num_names, nLayers2)
 	var i uint64
 	for i = 0; i <= selected_player; i++ {
 		if !rows.Next() {
@@ -123,10 +122,14 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	if err != nil {
 		return "", err
 	}
-	name, err := b.GeneratePlayerName(playerId, code_name, pure_pure+pure_foreign)
+	name, err := b.GeneratePlayerName(playerId, code_name, pure_pure+pure_foreign, 1, 2)
 	if err != nil {
 		return "", err
 	}
+	// surname, err := b.GeneratePlayerName(playerId, code_surname, pure_pure+pure_foreign)
+	// if err != nil {
+	// 	return "", err
+	// }
 	return name, nil
 }
 
