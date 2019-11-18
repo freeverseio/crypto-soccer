@@ -9,15 +9,17 @@ import (
 )
 
 type Match struct {
-	TimezoneIdx   uint8
-	CountryIdx    uint32
-	LeagueIdx     uint32
-	MatchDayIdx   uint8
-	MatchIdx      uint8
-	HomeTeamID    *big.Int
-	VisitorTeamID *big.Int
-	HomeGoals     *uint8
-	VisitorGoals  *uint8
+	TimezoneIdx     uint8
+	CountryIdx      uint32
+	LeagueIdx       uint32
+	MatchDayIdx     uint8
+	MatchIdx        uint8
+	HomeTeamID      *big.Int
+	VisitorTeamID   *big.Int
+	HomeGoals       *uint8
+	VisitorGoals    *uint8
+	HomeMatchLog    *big.Int
+	VisitorMatchLog *big.Int
 }
 
 func (b *Storage) MatchCreate(match Match) error {
@@ -123,40 +125,22 @@ func (b *Storage) GetMatchLogs(
 
 func (b *Storage) GetMatchesInDay(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := b.db.Query("SELECT match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND match_day_idx = $4);", timezoneIdx, countryIdx, leagueIdx, matchDayIdx)
+	var matchesInDay []Match
+	matches, err := b.GetMatches(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
-		return nil, err
+		return matchesInDay, err
 	}
-	defer rows.Close()
-	var matches []Match
-	for rows.Next() {
-		var match Match
-		var homeTeamID sql.NullString
-		var visitorTeamID sql.NullString
-		err = rows.Scan(
-			&match.MatchIdx,
-			&homeTeamID,
-			&visitorTeamID,
-			&match.HomeGoals,
-			&match.VisitorGoals,
-		)
-		if err != nil {
-			return nil, err
+	for _, match := range matches {
+		if match.MatchDayIdx == matchDayIdx {
+			matchesInDay = append(matchesInDay, match)
 		}
-		match.TimezoneIdx = timezoneIdx
-		match.CountryIdx = countryIdx
-		match.LeagueIdx = leagueIdx
-		match.MatchDayIdx = matchDayIdx
-		match.HomeTeamID, _ = new(big.Int).SetString(homeTeamID.String, 10)
-		match.VisitorTeamID, _ = new(big.Int).SetString(visitorTeamID.String, 10)
-		matches = append(matches, match)
 	}
-	return matches, nil
+	return matchesInDay, nil
 }
 
 func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals, home_match_log, visitor_match_log FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
@@ -166,6 +150,8 @@ func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uin
 		var match Match
 		var homeTeamID sql.NullString
 		var visitorTeamID sql.NullString
+		var homeMatchLog sql.NullString
+		var visitorMatchLog sql.NullString
 		err = rows.Scan(
 			&match.TimezoneIdx,
 			&match.CountryIdx,
@@ -176,12 +162,16 @@ func (b *Storage) GetMatches(timezoneIdx uint8, countryIdx uint32, leagueIdx uin
 			&visitorTeamID,
 			&match.HomeGoals,
 			&match.VisitorGoals,
+			&homeMatchLog,
+			&visitorMatchLog,
 		)
 		if err != nil {
 			return nil, err
 		}
 		match.HomeTeamID, _ = new(big.Int).SetString(homeTeamID.String, 10)
 		match.VisitorTeamID, _ = new(big.Int).SetString(visitorTeamID.String, 10)
+		match.HomeMatchLog, _ = new(big.Int).SetString(homeMatchLog.String, 10)
+		match.VisitorMatchLog, _ = new(big.Int).SetString(visitorMatchLog.String, 10)
 		matches = append(matches, match)
 	}
 	return matches, nil

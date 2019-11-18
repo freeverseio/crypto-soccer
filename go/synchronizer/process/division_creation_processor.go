@@ -148,6 +148,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 							0,
 							0,
 							big.NewInt(10),
+							big.NewInt(0),
 						},
 					},
 				); err != nil {

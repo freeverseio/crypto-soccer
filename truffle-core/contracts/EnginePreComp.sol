@@ -6,7 +6,6 @@ import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
-    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 private constant ONE256              = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 
@@ -545,7 +544,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     }
 
     function verifyCanPlay(uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
-        bool isWrong =  (getPlayerIdFromSkills(playerSkills) == FREE_PLAYER_ID) ||
+        bool isWrong =  (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
         if (is2ndHalf) isWrong = isWrong || getSubstitutedLastHalf(playerSkills);
