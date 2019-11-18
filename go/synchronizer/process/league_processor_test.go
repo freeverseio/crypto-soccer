@@ -6,7 +6,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -208,21 +207,13 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	team := teams[0]
-	// if team.TeamID.String() != "2" {
-	// 	t.Fatalf("Wrong first team %v", team.TeamID)
-	// }
-	for _, team = range teams {
-		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+	for _, team := range teams {
+		if team.State.RankingPoints.Cmp(big.NewInt(0)) != 0 {
+			t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
+		}
+		if team.State.PrevPerfPoints.Cmp(big.NewInt(0)) != 0 {
+			t.Fatalf("bot team %v has prev perf points points %v", team.TeamID, team.State.PrevPerfPoints)
+		}
+		// log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
-	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, team = range teams {
-		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
-	}
-	// if teams[0].State.TeamIdxInLeague != 1 {
-	// 	t.Fatalf("Wrong team %v idx into league %v, indexInLeague %v", teams[0].TeamID, teams[0].State.LeagueIdx, team)
-	// }
 }

@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const BotOwner = "0x0000000000000000000000000000000000000000"
+
 type TeamState struct {
 	Owner           string
 	LeagueIdx       uint32
@@ -28,6 +30,10 @@ type Team struct {
 	TimezoneIdx uint8
 	CountryIdx  uint32
 	State       TeamState
+}
+
+func IsBotTeam(team Team) bool {
+	return team.State.Owner == BotOwner
 }
 
 func (b *Storage) TeamCreate(team Team) error {

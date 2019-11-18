@@ -242,15 +242,6 @@ func (b *MatchProcessor) process2ndHalf(
 		matchLog,
 		matchBools,
 	)
-	if err != nil {
-		return logs, err
-	}
-	for i := 0; i < 2; i++ {
-		err = b.UpdateTeamSkills(states[i], startTime, logs[i])
-		if err != nil {
-			return logs, err
-		}
-	}
 	return logs, err
 }
 
@@ -311,24 +302,17 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 				case int64(b.REDCARD):
 					player.State.RedCard = true
 				case int64(b.SOFTINJURY):
-					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
-					if err != nil {
-						return err
-					}
+					player.State.InjuryMatchesLeft = 1
 				case int64(b.HARDINJURY):
-					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 2)
-					if err != nil {
-						return err
-					}
+					player.State.InjuryMatchesLeft = 2
+				}
+				if player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCard); err != nil {
+					return err
+				}
+				if player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
+					return err
 				}
 			}
-		}
-		if is2ndHalf {
-			player.State.RedCard = false
-		}
-		player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCard)
-		if err != nil {
-			return err
 		}
 		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {
 			return nil
