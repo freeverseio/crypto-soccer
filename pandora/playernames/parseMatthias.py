@@ -1,6 +1,6 @@
 import csv
 
-database_name = "matthias.csv"
+database_name = "sources/matthias.csv"
 
 IDX_NAME = 0
 IDX_GENDER = 1

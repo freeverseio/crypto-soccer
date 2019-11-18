@@ -1,6 +1,6 @@
 import csv
 
-database_name = "englishSurnames.csv"
+database_name = "sources/englishSurnames.csv"
 
 # pctwhite: 	Percent Non-Hispanic White Only
 # pctblack: 	Percent Non-Hispanic Black Only
