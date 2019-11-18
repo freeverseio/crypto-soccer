@@ -95,13 +95,13 @@ for code in allCodes:
 # ---------- Country Specs ----------
 specs_sql = """
 CREATE TABLE country_specs (
-    country_tz_idx integer PRIMARY KEY,
-    country_code_name integer NOT NULL,
-    country_code_surname integer NOT NULL,
-    country_pure_pure integer NOT NULL,
-    country_pure_foreign integer NOT NULL,
-    country_foreign_pure integer NOT NULL,
-    country_foreign_foreign integer NOT NULL)"""
+    tz_idx integer PRIMARY KEY,
+    code_name integer REFERENCES countries(country_code),
+    code_surname integer REFERENCES countries(country_code),
+    pure_pure integer NOT NULL,
+    pure_foreign integer NOT NULL,
+    foreign_pure integer NOT NULL,
+    foreign_foreign integer NOT NULL)"""
 cur.execute(specs_sql)
 for country_id, spec in countryIdToCountrySpec.items():
     cur.execute("INSERT INTO country_specs VALUES ('%i', '%i', '%i', '%i', '%i', '%i', '%i');" %( \

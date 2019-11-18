@@ -5,6 +5,7 @@ import (
 	"errors"
 	"hash/fnv"
 	"math/big"
+	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -40,7 +41,7 @@ func New() (*Generator, error) {
 func (b *Generator) NamesCount(teamId *big.Int) (uint64, error) {
 	count := uint64(0)
 	var err error
-	rows, err := b.db.Query(`SELECT COUNT(*) FROM names WHERE country_id = $1;`, teamId.String())
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM names WHERE country_code = $1;`, teamId.String())
 	if err != nil {
 		return 0, err
 	}
@@ -69,7 +70,7 @@ func (b *Generator) GeneratePlayerName(playerId *big.Int, countryId *big.Int) (s
 	if err != nil {
 		return "", err
 	}
-	rows, err := b.db.Query(`SELECT name FROM names WHERE country_id = $1;`, countryId.String())
+	rows, err := b.db.Query(`SELECT name FROM names WHERE country_code = $1;`, countryId.String())
 	if err != nil {
 		return "", err
 	}
@@ -86,14 +87,28 @@ func (b *Generator) GeneratePlayerName(playerId *big.Int, countryId *big.Int) (s
 	return name, nil
 }
 
-func (b *Generator) GeneratePlayerFullName(playerId *big.Int, nameCountryIdName *big.Int, surnameCountryId *big.Int) (string, error) {
-	_ = playerId
-	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
-	var name string
-	name, err := b.GeneratePlayerName(playerId, nameCountryIdName)
+func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
+	var country_id uint64
+	country_id = uint64(timezone)*1000000 + countryIdxInTZ
+	rows, err := b.db.Query(`SELECT 
+		code_name,
+		code_surname,
+		pure_pure,
+		pure_foreign,
+		foreign_pure,
+		foreign_foreign
+	FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
+	_ = rows
 	if err != nil {
 		return "", err
 	}
+
+	var name string
+	// name, err := b.GeneratePlayerName(playerId, nameCountryIdName)
+	// if err != nil {
+	// 	return "", err
+	// }
 	return name, nil
 }
 

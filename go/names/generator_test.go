@@ -13,8 +13,14 @@ func TestGeneratePlayerName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
+	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
+	var timezone uint8
+	var countryIdxInTZ uint64
 	for i := 0; i < 10; i++ {
-		name, err := generator.GeneratePlayerFullName(big.NewInt(int64(i)), big.NewInt(int64(5+i)), big.NewInt(int64(5+i)))
+		playerId := big.NewInt(int64(i))
+		timezone = 19
+		countryIdxInTZ = 0
+		name, err := generator.GeneratePlayerFullName(playerId, timezone, countryIdxInTZ)
 		if err != nil {
 			t.Fatalf("error generating name for player: %s", err)
 		}
