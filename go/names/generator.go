@@ -62,14 +62,14 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, layers int) uint6
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GeneratePlayerName(playerId *big.Int, teamId *big.Int) (string, error) {
+func (b *Generator) GeneratePlayerName(playerId *big.Int, countryId *big.Int) (string, error) {
 	_ = playerId
 	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
-	num_names, err := b.NamesCount(teamId)
+	num_names, err := b.NamesCount(countryId)
 	if err != nil {
 		return "", err
 	}
-	rows, err := b.db.Query(`SELECT name FROM names WHERE country_id = $1;`, teamId.String())
+	rows, err := b.db.Query(`SELECT name FROM names WHERE country_id = $1;`, countryId.String())
 	if err != nil {
 		return "", err
 	}
@@ -81,9 +81,19 @@ func (b *Generator) GeneratePlayerName(playerId *big.Int, teamId *big.Int) (stri
 			return "", errors.New("Rnd choice selected a player too too far in the database")
 		}
 	}
-
 	var name string
 	rows.Scan(&name)
+	return name, nil
+}
+
+func (b *Generator) GeneratePlayerFullName(playerId *big.Int, nameCountryIdName *big.Int, surnameCountryId *big.Int) (string, error) {
+	_ = playerId
+	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
+	var name string
+	name, err := b.GeneratePlayerName(playerId, nameCountryIdName)
+	if err != nil {
+		return "", err
+	}
 	return name, nil
 }
 

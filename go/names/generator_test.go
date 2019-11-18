@@ -14,7 +14,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
 	for i := 0; i < 10; i++ {
-		name, err := generator.GeneratePlayerName(big.NewInt(int64(i)), big.NewInt(int64(5+i)))
+		name, err := generator.GeneratePlayerFullName(big.NewInt(int64(i)), big.NewInt(int64(5+i)), big.NewInt(int64(5+i)))
 		if err != nil {
 			t.Fatalf("error generating name for player: %s", err)
 		}
