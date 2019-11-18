@@ -208,21 +208,14 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	team := teams[0]
-	// if team.TeamID.String() != "2" {
-	// 	t.Fatalf("Wrong first team %v", team.TeamID)
-	// }
-	for _, team = range teams {
+	for _, team := range teams {
 		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
 	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, team = range teams {
+	for _, team := range teams {
 		log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
-	// if teams[0].State.TeamIdxInLeague != 1 {
-	// 	t.Fatalf("Wrong team %v idx into league %v, indexInLeague %v", teams[0].TeamID, teams[0].State.LeagueIdx, team)
-	// }
 }
