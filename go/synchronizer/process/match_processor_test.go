@@ -41,3 +41,37 @@ func TestCreateMatchSeed(t *testing.T) {
 		t.Fatalf("Received %v", result.Text(16))
 	}
 }
+
+func TestGetPlayerState(t *testing.T) {
+	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	ganache, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ganache.DeployContracts(ganache.Owner)
+	processor, err := process.NewMatchProcessor(
+		universedb,
+		relaydb,
+		ganache.Assets,
+		ganache.Leagues,
+		ganache.Evolution,
+		ganache.Engine,
+		ganache.EnginePreComp,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	teamState, err := processor.GetTeamState(big.NewInt(3))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(teamState) != 25 {
+		t.Fatalf("Wrong team state count %v", len(teamState))
+	}
+	for _, state := range teamState {
+		if state != processor.FREEPLAYERID {
+			t.Fatalf("Wrong state %v", state)
+		}
+	}
+}
