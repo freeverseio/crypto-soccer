@@ -95,7 +95,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 			// if a new league is starting shuffle the teams
 			if (day == 0) && (turnInDay == 0) {
-				err = b.ShuffleTeamsInCountry(timezoneIdx, countryIdx)
+				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, countryIdx)
 				if err != nil {
 					return err
 				}
@@ -136,7 +136,7 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) ShuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
 	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
@@ -157,22 +157,22 @@ func (b *LeagueProcessor) ShuffleTeamsInCountry(timezoneIdx uint8, countryIdx ui
 			if err != nil {
 				return err
 			}
-			team.State.RankingPoints, err = b.leagues.ComputeTeamRankingPoints(
+			team.State.PrevPerfPoints, err = b.leagues.ComputeTeamRankingPoints(
 				&bind.CallOpts{},
 				teamState,
 				uint8(position),
-				team.State.RankingPoints,
+				team.State.PrevPerfPoints,
 			)
 			if err != nil {
 				return err
 			}
-			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newRankingPoints)
+			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newPrevPerfPoints)
 			orgMap = append(orgMap, team)
 		}
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].State.RankingPoints.Cmp(orgMap[j].State.RankingPoints) == 1
+		return orgMap[i].State.PrevPerfPoints.Cmp(orgMap[j].State.PrevPerfPoints) == 1
 	})
 	// create the new leagues
 	for i, team := range orgMap {

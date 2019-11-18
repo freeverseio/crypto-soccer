@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
@@ -190,32 +191,43 @@ func TestLeagueShuffling(t *testing.T) {
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	var team storage.Team
-	team.TeamID = big.NewInt(11)
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	universedb.TimezoneCreate(storage.Timezone{timezoneIdx})
 	universedb.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	universedb.TeamCreate(team)
+	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, 0})
+	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, 1})
+	for i := 0; i < 10; i++ {
+		team.TeamID = big.NewInt(int64(i))
+		universedb.TeamCreate(team)
+		team.State.PrevPerfPoints = big.NewInt(10)
+		universedb.TeamUpdate(team.TeamID, team.State)
+	}
+	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, countryIdx)
+	if err != nil {
+		t.Fatal(err)
+	}
 	teams, err := universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = processor.ShuffleTeamsInCountry(timezoneIdx, countryIdx)
+	team = teams[0]
+	// if team.TeamID.String() != "2" {
+	// 	t.Fatalf("Wrong first team %v", team.TeamID)
+	// }
+	for _, team = range teams {
+		log.Infof("team %v, league %v, idx in league %v, ranking points %v", team.TeamID, team.State.LeagueIdx, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
+	}
+	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	leagueIdx = uint32(0)
-	teams, err = universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
-	if err != nil {
-		t.Fatal(err)
+	for _, team = range teams {
+		log.Infof("team %v, league %v, idx in league %v, ranking points %v", team.TeamID, team.State.LeagueIdx, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
-	if len(teams) != 1 {
-		t.Fatalf("Wrong number of teams %v", len(teams))
-	}
-	if teams[0].State.RankingPoints.String() != "54000" {
-		t.Fatalf("Wronf ranking points %v", teams[0].State.RankingPoints)
-	}
+	// if teams[0].State.TeamIdxInLeague != 1 {
+	// 	t.Fatalf("Wrong team %v idx into league %v, indexInLeague %v", teams[0].TeamID, teams[0].State.LeagueIdx, team)
+	// }
 }

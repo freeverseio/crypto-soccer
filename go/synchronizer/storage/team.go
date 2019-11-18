@@ -18,7 +18,7 @@ type TeamState struct {
 	L               uint32
 	GoalsForward    uint32
 	GoalsAgainst    uint32
-	RankingPoints   *big.Int
+	PrevPerfPoints   *big.Int
 }
 
 type Team struct {
@@ -90,7 +90,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.L,
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
-		teamState.RankingPoints.String(),
+		teamState.PrevPerfPoints.String(),
 		teamID.String(),
 	)
 	return err
@@ -179,7 +179,7 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		return team, errors.New("Unexistent team")
 	}
 	team.TeamID = teamID
-	var rankingPoints sql.NullString
+	var PrevPerfPoints sql.NullString
 	err = rows.Scan(
 		&team.TimezoneIdx,
 		&team.CountryIdx,
@@ -192,9 +192,9 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.State.L,
 		&team.State.GoalsForward,
 		&team.State.GoalsAgainst,
-		&rankingPoints,
+		&PrevPerfPoints,
 	)
-	team.State.RankingPoints, _ = new(big.Int).SetString(rankingPoints.String, 10)
+	team.State.PrevPerfPoints, _ = new(big.Int).SetString(PrevPerfPoints.String, 10)
 	if err != nil {
 		return team, err
 	}
