@@ -65,8 +65,19 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GenerateName(tableName string, playerId *big.Int, country_code int, purity int, nLayers1 int, nLayers2 int) (string, error) {
+func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code int, purity int) (string, error) {
 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
+	nLayers1 := 1
+	nLayers2 := 2
+	tableName := "names"
+	colName := "name"
+	if isSurname {
+		nLayers1 = 3
+		nLayers2 = 4
+		tableName = "surnames"
+		colName = "surname"
+	}
+
 	dice := b.GenerateRnd(playerId, 100, nLayers1)
 	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
 	if int(dice) < purity {
@@ -76,7 +87,7 @@ func (b *Generator) GenerateName(tableName string, playerId *big.Int, country_co
 	if err != nil {
 		return "", err
 	}
-	rows, err := b.db.Query(`SELECT name FROM ` + tableName + ` ` + condition)
+	rows, err := b.db.Query(`SELECT ` + colName + ` FROM ` + tableName + ` ` + condition)
 	if err != nil {
 		return "", err
 	}
@@ -122,15 +133,15 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	if err != nil {
 		return "", err
 	}
-	name, err := b.GenerateName("names", playerId, code_name, pure_pure+pure_foreign, 1, 2)
+	name, err := b.GenerateName(false, playerId, code_name, pure_pure+pure_foreign)
 	if err != nil {
 		return "", err
 	}
-	// surname, err := b.GenerateName("surname", playerId, code_surname, pure_pure+pure_foreign)
-	// if err != nil {
-	// 	return "", err
-	// }
-	return name, nil
+	surname, err := b.GenerateName(true, playerId, code_surname, pure_pure+foreign_pure)
+	if err != nil {
+		return "", err
+	}
+	return name + " " + surname, nil
 }
 
 func GenerateTeamName(teamId *big.Int) string {
