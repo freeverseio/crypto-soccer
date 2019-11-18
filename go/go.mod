@@ -9,7 +9,7 @@ require (
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.10.5 // indirect
-	github.com/ethereum/go-ethereum v1.9.6
+	github.com/ethereum/go-ethereum v1.9.7
 	github.com/fatih/color v1.7.0
 	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
 	github.com/gin-gonic/gin v1.4.0

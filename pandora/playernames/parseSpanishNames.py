@@ -59,9 +59,16 @@ def removeDuplications(names):
     return list(dict.fromkeys(names))
 
 def writeNames(allNames):
+    outCodesFile = open(out_codes_file, 'a+')
+    countryCode = 100
+    str = "%i,SpainNames" % (countryCode)
+    for n in range(8):
+        str += ","
+    outCodesFile.write("%s\n" % str)
+    outCodesFile.close()
+
     outNamesFile = open(out_names_file, 'a+')
     totalEntries = 0
-    countryCode = 100
     findNonValid(allNames)
     allNames = removeDuplications(allNames)
     for name in allNames:

@@ -26,7 +26,7 @@ def getCountryId(tz, countryIdxInTz):
     return tz * 1000000 + countryIdxInTz
 
 countryIdToCountrySpec = {
-    getCountryId(19, 0): CountryDNA("Spain", 8, 1010, DEFAULT_MIX_RATIOS),
+    getCountryId(19, 0): CountryDNA("Spain", 100, 1100, DEFAULT_MIX_RATIOS),
     getCountryId(19, 1): CountryDNA("Italy", 5, 1010, DEFAULT_MIX_RATIOS),
     getCountryId(16, 0): CountryDNA("China", 51, 51,  DEFAULT_MIX_RATIOS),
     getCountryId(18, 2): CountryDNA("UK", 2, 1005, DEFAULT_MIX_RATIOS)
@@ -109,9 +109,9 @@ for country_id, spec in countryIdToCountrySpec.items():
         spec.countryCodeForNames, \
         spec.countryCodeForSurnames, \
         spec.mixRatios[0], \
-        spec.mixRatios[1],
-        spec.mixRatios[2],
-        spec.mixRatios[3]
+        spec.mixRatios[1], \
+        spec.mixRatios[2], \
+        spec.mixRatios[3] \
     ))
 
 

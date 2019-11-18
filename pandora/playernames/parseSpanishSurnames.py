@@ -1,6 +1,6 @@
 import csv
 
-database_name = "sources/spanish-names/hombres.csv"
+database_name = "sources/spanish-names/apellidos.csv"
 out_codes_file = "tmp/goalRevCountryCodes"
 out_names_file = "tmp/goalRevNames"
 out_surnames_file = "tmp/goalRevSurnames"
@@ -59,9 +59,16 @@ def removeDuplications(names):
     return list(dict.fromkeys(names))
 
 def writeNames(allNames):
-    outNamesFile = open(out_names_file, 'a+')
+    outCodesFile = open(out_codes_file, 'a+')
+    countryCode = 1100
+    str = "%i,SpainSurnames" % (countryCode)
+    for n in range(8):
+        str += ","
+    outCodesFile.write("%s\n" % str)
+    outCodesFile.close()
+
+    outNamesFile = open(out_surnames_file, 'a+')
     totalEntries = 0
-    countryCode = 100
     findNonValid(allNames)
     allNames = removeDuplications(allNames)
     for name in allNames:
@@ -89,8 +96,6 @@ with open(database_name, 'r', newline='\n') as file:
                 continue
             thisLine = line.rstrip('\n').split(",")
             assert len(thisLine) == nFields, "wrong num of fields"
-            if float(thisLine[2]) > 40:
-                continue
             name0 = thisLine[0].split(" ")
             allNames.append(name0[0])
 
