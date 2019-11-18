@@ -31,11 +31,30 @@ func New() (*Generator, error) {
 	return &generator, nil
 }
 
+func (b *Generator) NamesCount(teamId *big.Int) (uint64, error) {
+	count := uint64(0)
+	var err error
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM names WHERE country_id = $1;`, teamId.String())
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 func (b *Generator) GeneratePlayerName(playerId *big.Int, teamId *big.Int) (string, error) {
 	_ = playerId
 	log.Debugf("[NAMES] GeneratePlayerName of playerId %v", playerId)
-	rows, err := b.db.Query(
-		`SELECT name FROM names WHERE country_id = 5;`) //, teamID.String(), verse)
+	_, err := b.NamesCount(teamId)
+	if err != nil {
+		return "", err
+	}
+	rows, err := b.db.Query(`SELECT name FROM names WHERE country_id = $1;`, teamId.String())
 	if err != nil {
 		return "", err
 	}
