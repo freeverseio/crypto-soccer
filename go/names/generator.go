@@ -80,7 +80,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code
 
 	dice := b.GenerateRnd(playerId, 100, nLayers1)
 	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
-	if int(dice) < purity {
+	if int(dice) > purity {
 		condition = `WHERE country_code != ` + strconv.Itoa(country_code) + ";"
 	}
 	num_names, err := b.NamesCount(tableName, condition)
