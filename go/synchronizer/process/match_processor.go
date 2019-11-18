@@ -242,15 +242,6 @@ func (b *MatchProcessor) process2ndHalf(
 		matchLog,
 		matchBools,
 	)
-	if err != nil {
-		return logs, err
-	}
-	for i := 0; i < 2; i++ {
-		err = b.UpdateTeamSkills(states[i], startTime, logs[i])
-		if err != nil {
-			return logs, err
-		}
-	}
 	return logs, err
 }
 
