@@ -21,10 +21,10 @@ func int_hash(s string) uint64 {
 	return h.Sum64()
 }
 
-func New() (*Generator, error) {
+func New(db_filename string) (*Generator, error) {
 	var err error
 	generator := Generator{}
-	generator.db, err = sql.Open("sqlite3", "./sql/00_goalRev.db")
+	generator.db, err = sql.Open("sqlite3", db_filename)
 	if err != nil {
 		return nil, err
 	}

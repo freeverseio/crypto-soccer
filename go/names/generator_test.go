@@ -16,7 +16,7 @@ func int_hash(s string) uint64 {
 }
 
 func TestGeneratePlayerName(t *testing.T) {
-	generator, err := names.New()
+	generator, err := names.New("./sql/00_goalRev.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
