@@ -38,7 +38,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(17812773480143861807) {
+	if int_hash(result) != uint64(7002044471848631757) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")

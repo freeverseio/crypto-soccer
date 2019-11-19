@@ -4,6 +4,7 @@ python3 parseMatthias.py
 echo "...purging Spanish names..."
 patch tmp/goalRevNames purgeSpanishNames.patch
 python3 parseSpanishNames.py
+patch tmp/goalRevNames purgeSpanishNames2.patch
 python3 parseSpanishSurnames.py
 python3 parseEnglishSurnames.py
 python3 generateSQL.py
