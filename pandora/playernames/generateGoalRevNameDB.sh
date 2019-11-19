@@ -5,8 +5,8 @@ echo "...purging Spanish names..."
 patch tmp/goalRevNames purgeSpanishNames.patch
 python3 parseSpanishNames.py
 patch tmp/goalRevNames purgeSpanishNames2.patch
-python3 parseSpanishSurnames.py
 python3 parseEnglishSurnames.py
+python3 parseSpanishSurnames.py
 python3 generateSQL.py
 echo "...generated database: goalRev.db...DONE"
 echo "run this command to update the GO code:"

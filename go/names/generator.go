@@ -12,7 +12,10 @@ import (
 )
 
 type Generator struct {
-	db *sql.DB
+	db                    *sql.DB
+	countryCodes4Names    []uint
+	countryCodes4Surnames []uint
+	namesInCountry        map[uint]uint
 }
 
 func int_hash(s string) uint64 {
@@ -35,25 +38,35 @@ func New(db_filename string) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := generator.countDB(); err != nil {
+		return nil, err
+	}
 	return &generator, nil
 }
 
-// comparer is either "=" or "!="
-func (b *Generator) NamesCount(tableName string, condition string) (uint64, error) {
-	count := uint64(0)
+func (b *Generator) countDB() error {
 	var err error
-	var cmd string = `SELECT COUNT(*) FROM ` + tableName + ` ` + condition
-	rows, err := b.db.Query(cmd)
+	rows, err := b.db.Query(`SELECT country_code, num_names FROM countries`)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	defer rows.Close()
-	rows.Next()
-	err = rows.Scan(&count)
-	if err != nil {
-		return 0, err
+	var country_code uint
+	var num_names uint
+	b.namesInCountry = make(map[uint]uint)
+	for rows.Next() {
+		err = rows.Scan(&country_code, &num_names)
+		if err != nil {
+			return err
+		}
+		if country_code < 1000 {
+			b.countryCodes4Names = append(b.countryCodes4Names, country_code)
+		} else {
+			b.countryCodes4Surnames = append(b.countryCodes4Surnames, country_code)
+		}
+		b.namesInCountry[country_code] = num_names
 	}
-	return count, nil
+	return nil
 }
 
 func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint64 {
@@ -65,39 +78,42 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint
 	return iterated_seed % max_val
 }
 
-func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code int, purity int) (string, error) {
+func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code uint, purity int) (string, error) {
 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
 	nLayers1 := 1
 	nLayers2 := 2
+	nLayers3 := 1
 	tableName := "names"
 	colName := "name"
+	codes := b.countryCodes4Names
 	if isSurname {
 		nLayers1 = 3
 		nLayers2 = 4
+		nLayers3 = 2
 		tableName = "surnames"
 		colName = "surname"
+		codes = b.countryCodes4Surnames
 	}
-
 	dice := b.GenerateRnd(playerId, 100, nLayers1)
-	var condition string = `WHERE country_code = ` + strconv.Itoa(country_code) + ";"
 	if int(dice) > purity {
-		condition = `WHERE country_code != ` + strconv.Itoa(country_code) + ";"
+		// pick a different country
+		var nCountryCodes = len(codes)
+		var rnd_idx int = int(b.GenerateRnd(playerId, uint64(nCountryCodes), nLayers3))
+		if country_code == codes[rnd_idx] {
+			country_code = codes[(rnd_idx+1)%nCountryCodes]
+		} else {
+			country_code = codes[rnd_idx]
+		}
 	}
-	num_names, err := b.NamesCount(tableName, condition)
-	if err != nil {
-		return "", err
-	}
-	rows, err := b.db.Query(`SELECT ` + colName + ` FROM ` + tableName + ` ` + condition)
+	var namesInCountry uint = b.namesInCountry[country_code]
+	var idxInCountry uint64 = b.GenerateRnd(playerId, uint64(namesInCountry), nLayers2)
+	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
-	var selected_player uint64 = b.GenerateRnd(playerId, num_names, nLayers2)
-	var i uint64
-	for i = 0; i <= selected_player; i++ {
-		if !rows.Next() {
-			return "", errors.New("Rnd choice selected a player too too far in the database")
-		}
+	if !rows.Next() {
+		return "", errors.New("Rnd choice selected a player too too far in the database")
 	}
 	var name string
 	rows.Scan(&name)
@@ -144,8 +160,8 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	if err != nil {
 		return "", err
 	}
-	var code_name int
-	var code_surname int
+	var code_name uint
+	var code_surname uint
 	var pure_pure int
 	var pure_foreign int
 	var foreign_pure int
