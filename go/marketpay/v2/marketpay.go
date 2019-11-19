@@ -1,4 +1,4 @@
-package marketpay
+package v2
 
 import (
 	"bytes"
