@@ -44,3 +44,32 @@ func TestGeneratePlayerName(t *testing.T) {
 		t.Fatal("result of generating names not as expected")
 	}
 }
+
+func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
+	generator, err := names.New("./sql/00_goalRev.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	var timezone uint8
+	var countryIdxInTZ uint64
+	var result string = ""
+	for i := 0; i < 10; i++ {
+		playerId := big.NewInt(int64(i))
+		timezone = uint8(1 + i)
+		countryIdxInTZ = uint64(3*i + 2)
+		name, err := generator.GeneratePlayerFullName(playerId, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for player: %s", err)
+		}
+		fmt.Println(name)
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		}
+		result += name
+	}
+	if int_hash(result) != uint64(7002044471848631757) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(result))
+		t.Fatal("result of generating names not as expected")
+	}
+}

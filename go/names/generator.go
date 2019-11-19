@@ -104,10 +104,35 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code
 	return name, nil
 }
 
+// comparer is either "=" or "!="
+func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
+	var err error
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	rows.Next()
+	count := uint64(0)
+	err = rows.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return (count == 1), nil
+}
+
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
 	var country_id uint64
 	country_id = uint64(timezone)*1000000 + countryIdxInTZ
+	// if the country is not defined, we use a default country: Spain, at tz = 19
+	isSpecified, err := b.isCountrySpecified(country_id)
+	if err != nil {
+		return "", err
+	}
+	if !isSpecified {
+		country_id = uint64(19)*1000000 + 0
+	}
 	rows, err := b.db.Query(`SELECT 
 		code_name,
 		code_surname,
