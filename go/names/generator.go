@@ -59,6 +59,7 @@ func (b *Generator) countDB() error {
 		if err != nil {
 			return err
 		}
+		// all country_codes for names have code < 1000, all surnames are > 1000
 		if country_code < 1000 {
 			b.countryCodes4Names = append(b.countryCodes4Names, country_code)
 		} else {
@@ -113,7 +114,10 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return "", errors.New("Rnd choice selected a player too too far in the database")
+		var str string = "Rnd choice failed, country_code = " + strconv.FormatInt(int64(country_code), 10) +
+			", idxInCountry = " + strconv.FormatInt(int64(idxInCountry), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
 	}
 	var name string
 	rows.Scan(&name)
@@ -140,12 +144,14 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
 	var country_id uint64
+	// country_id is an encoding of (tz, countryIdx):
 	country_id = uint64(timezone)*1000000 + countryIdxInTZ
 	// if the country is not defined, we use a default country: Spain, at tz = 19
 	isSpecified, err := b.isCountrySpecified(country_id)
 	if err != nil {
 		return "", err
 	}
+	// Spain is the default country if you query for one that is not specified
 	if !isSpecified {
 		country_id = uint64(19)*1000000 + 0
 	}
@@ -168,7 +174,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	var foreign_foreign int
 	defer rows.Close()
 	if !rows.Next() {
-		return "", errors.New("Rnd choice selected a player too too far in the database")
+		return "", errors.New("Cannot find specs for country_id = %s" + strconv.FormatInt(int64(country_id), 10))
 	}
 	err = rows.Scan(&code_name, &code_surname, &pure_pure, &pure_foreign, &foreign_pure, &foreign_foreign)
 	if err != nil {

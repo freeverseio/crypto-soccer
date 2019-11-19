@@ -38,7 +38,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(5076896022977641113) {
+	if int_hash(result) != uint64(9973775471242569687) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -67,7 +67,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(5076896022977641113) {
+	if int_hash(result) != uint64(9973775471242569687) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")

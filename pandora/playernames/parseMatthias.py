@@ -94,6 +94,8 @@ def writeCountryCodes():
         for n in range(10-len(altNames)):
             str += ","
         outCountryCodesFile.write("%s\n" % str)
+    # add china code = 1051
+    outCountryCodesFile.write("1051,ChinaSurnames,,,,,,,,,\n")
     outCountryCodesFile.close()
 
 def writeNames():
@@ -120,9 +122,10 @@ def writeSurnames():
     countryCode = getCountryIdx(fields, country)
     namesInCountry = getNamesFromCountry(country, fields, allNames, getSurname = True)
     different = []
+    chinaCodeAsSurnames = 1000 + countryCode
     for name in namesInCountry:
         if name not in different:
-            str = "%i,%s\n" % (countryCode, name)
+            str = "%i,%s\n" % (chinaCodeAsSurnames, name)
             outNamesFile.write(str)
             different.append(name)
             totalEntries += 1

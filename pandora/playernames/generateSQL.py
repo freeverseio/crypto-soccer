@@ -25,10 +25,11 @@ class CountryDNA:
 def getCountryId(tz, countryIdxInTz):
     return tz * 1000000 + countryIdxInTz
 
+# convention: country codes < 1000 for names, and >= 1000 for surnames
 countryIdToCountrySpec = {
     getCountryId(19, 0): CountryDNA("Spain", 100, 1100, DEFAULT_MIX_RATIOS),
     getCountryId(19, 1): CountryDNA("Italy", 5, 1010, DEFAULT_MIX_RATIOS),
-    getCountryId(16, 0): CountryDNA("China", 51, 51,  DEFAULT_MIX_RATIOS),
+    getCountryId(16, 0): CountryDNA("China", 51, 1051,  DEFAULT_MIX_RATIOS),
     getCountryId(18, 2): CountryDNA("UK", 2, 1005, DEFAULT_MIX_RATIOS)
 }
 
@@ -98,8 +99,8 @@ CREATE TABLE countries (
 cur.execute(countries_sql)
 for code in allCodes:
     written_per_country[code[0]] = 0
-    cur.execute("INSERT INTO countries VALUES ('%i', '%i', '%s', '%s', '%s');" %(code[0], getNumInCountry(code[0], allNames, allSurnames), code[1], code[2], code[3]))
     print(code[0], getNumInCountry(code[0], allNames, allSurnames))
+    cur.execute("INSERT INTO countries VALUES ('%i', '%i', '%s', '%s', '%s');" %(code[0], getNumInCountry(code[0], allNames, allSurnames), code[1], code[2], code[3]))
 
 # ---------- Country Specs ----------
 specs_sql = """
@@ -136,6 +137,7 @@ cur.execute(names_sql)
 
 for name in allNames:
     cur.execute("INSERT INTO names VALUES ('%s', '%i', '%i');" %(name[1], name[0], written_per_country[name[0]]))
+    print(name[1], name[0], written_per_country[name[0]])
     written_per_country[name[0]] += 1
 
 # ---------- Surnames ----------
@@ -148,7 +150,7 @@ CREATE TABLE surnames (
 cur.execute(surnames_sql)
 for surname in allSurnames:
     cur.execute("INSERT INTO surnames VALUES ('%s', '%i', '%i');" %(surname[1], surname[0], written_per_country[surname[0]]))
-    print(surname[1], surname[0], written_per_country[surname[0]])
+    # print(surname[1], surname[0], written_per_country[surname[0]])
     written_per_country[surname[0]] += 1
 
 
