@@ -28,7 +28,7 @@ type Bid struct {
 	Signature       string
 	State           BidState
 	StateExtra      string
-	PaymentID       int
+	PaymentID       string
 }
 
 func (b *Storage) CreateBid(bid Bid) error {
@@ -49,7 +49,7 @@ func (b *Storage) UpdateBidState(auction uuid.UUID, extra_price int64, state Bid
 	return err
 }
 
-func (b *Storage) UpdateBidPaymentID(auction uuid.UUID, extra_price int64, ID int) error {
+func (b *Storage) UpdateBidPaymentID(auction uuid.UUID, extra_price int64, ID string) error {
 	_, err := b.db.Exec("UPDATE bids SET payment_id=$1 WHERE auction=$2 AND extra_price=$3;", ID, auction, extra_price)
 	return err
 }

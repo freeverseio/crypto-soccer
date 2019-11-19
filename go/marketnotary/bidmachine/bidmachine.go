@@ -12,7 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
 	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
-	"github.com/freeverseio/crypto-soccer/go/marketpay"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -89,35 +89,23 @@ func (b *BidMachine) Process() (storage.Bid, error) {
 }
 
 func (b *BidMachine) processPaying() error {
-	if b.bid.PaymentID < 0 {
+	if b.bid.PaymentID == "" {
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
 		market, err := marketpay.New()
 		if err != nil {
 			return err
 		}
-		seller, err := market.CreateCustomer("+34", "657497063")
-		if err != nil {
-			return err
-		}
-		buyer, err := market.CreateCustomer("+34", "659853780")
-		if err != nil {
-			return err
-		}
 		price := fmt.Sprintf("%.2f", float64(b.auction.Price.Int64()+b.bid.ExtraPrice)/100.0)
 		name := "Freeverse Player transaction"
-		order, err := market.CreateOrder(seller, buyer, name, price)
+		order, err := market.CreateOrder(name, price)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateAuctionPaymentUrl(b.auction.UUID, order.Data.SellerLink)
+		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, order.TrusteeShortlink.Hash)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, order.Data.ID)
-		if err != nil {
-			return err
-		}
-		err = b.db.UpdateBidPaymentUrl(b.bid.Auction, b.bid.ExtraPrice, order.Data.BuyerLink)
+		err = b.db.UpdateBidPaymentUrl(b.bid.Auction, b.bid.ExtraPrice, order.TrusteeShortlink.ShortURL)
 		if err != nil {
 			return err
 		}
@@ -127,11 +115,10 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		order, err := market.GetOrder(b.bid.PaymentID)
+		paid, err := market.IsPaid(b.bid.PaymentID)
 		if err != nil {
 			return err
 		}
-		paid := market.IsPaid(order)
 		if paid {
 			isOffer2StartAuction := false
 			bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
