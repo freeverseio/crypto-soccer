@@ -206,6 +206,14 @@ contract('Evolution', (accounts) => {
         MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
+    it('evolveRedCardAndInjuries', async () => {
+        let encodedSkills = "14603336799169692798100352328576084717139115721098027";
+        const redCard = true;
+        encodedSkills = await evolution.setRedCardLastGame(encodedSkills, redCard).should.be.fulfilled;
+        encodedSkills = await evolution.setInjuryWeeksLeft(encodedSkills, 0).should.be.fulfilled;
+    });
+    return;
+
     it('getTeamEvolvedSkills', async () => {
         weights = Array.from(new Array(25), (x,i) => 3*i % 14);
         specialPlayer = 21;
