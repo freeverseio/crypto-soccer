@@ -73,7 +73,7 @@ func NewDivisionCreationProcessor(
 	if err != nil {
 		return nil, err
 	}
-	namesGenerator, err := names.New()
+	namesGenerator, err := names.New("../../names/sql/00_goalRev.db")
 	if err != nil {
 		return nil, err
 	}
