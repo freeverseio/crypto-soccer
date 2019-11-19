@@ -251,8 +251,4 @@ contract EncodingSkills {
     function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills >> 180) & (2**43-1);
     }
-
-    function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
-        return (encodedSkills >> 223) & 63;
-    }
 }
