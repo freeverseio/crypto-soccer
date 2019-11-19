@@ -300,13 +300,13 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(b.REDCARD):
-					player.State.RedCard = true
+					player.State.RedCardMatchesLeft = 2
 				case int64(b.SOFTINJURY):
-					player.State.InjuryMatchesLeft = 1
+					player.State.InjuryMatchesLeft = 3
 				case int64(b.HARDINJURY):
-					player.State.InjuryMatchesLeft = 2
+					player.State.InjuryMatchesLeft = 7
 				}
-				if player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCard); err != nil {
+				if player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft == 0); err != nil {
 					return err
 				}
 				if player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
