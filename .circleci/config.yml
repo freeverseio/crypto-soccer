@@ -26,14 +26,14 @@ jobs:
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go/cmd/ && go build ./synchronizer.go
+      - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer && go test ./...
   market-notary:
     executor: freeverse
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go/cmd/ && go build ./notary.go
+      - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/marketnotary && go test ./... -p 1
   relay-api:
     executor: freeverse
@@ -47,7 +47,7 @@ jobs:
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go/cmd && go build ./relay.go
+      - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
   market-trader:
     executor: freeverse
