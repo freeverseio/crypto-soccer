@@ -52,17 +52,21 @@ contract('Assets', (accounts) => {
         bDay = await assets.getBirthDay(skills).should.be.fulfilled;
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
 
+        // first, double check that ageInDays is as expected
         ageInSecs = 7 * (nowSecs - bDay*24*3600)
         ageInDays2 = Math.floor(ageInSecs / (3600*24))
         ageInDays.toNumber().should.be.equal(ageInDays2)
 
+        // advance to the moment where the player is almost to become 27:
+        // ...and check that the bday is still as always:
         secsToBecome37 = Math.floor((37*365*24*3600 - ageInSecs)/7);
-
         await timeTravel.advanceTime(secsToBecome37 - 100).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
         bDayNew.toNumber().should.be.equal(bDay.toNumber())
+        // advance to the moment where the player is has just become 27:
+        // ...and check that the bday has moved:
         await timeTravel.advanceTime(200).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
