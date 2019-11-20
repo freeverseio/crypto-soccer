@@ -5,6 +5,7 @@ INSERT INTO auction_states(state) VALUES ('STARTED');
 INSERT INTO auction_states(state) VALUES ('ASSET_FROZEN');
 INSERT INTO auction_states(state) VALUES ('PAYING');
 INSERT INTO auction_states(state) VALUES ('PAID');
+INSERT INTO auction_states(state) VALUES ('WITHDRAWAL');
 INSERT INTO auction_states(state) VALUES ('NO_BIDS');
 INSERT INTO auction_states(state) VALUES ('CANCELLED_BY_SELLER');
 INSERT INTO auction_states(state) VALUES ('FAILED_TO_FREEZE');
