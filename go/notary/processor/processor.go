@@ -71,7 +71,6 @@ func (b *Processor) updateAuction(auction *storage.Auction) error {
 }
 
 func (b *Processor) updateBids(bids []*storage.Bid) error {
-	// TODO
 	for _, bid := range bids {
 		err := b.db.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, bid.PaymentID)
 		if err != nil {
