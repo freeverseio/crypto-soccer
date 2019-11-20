@@ -3,9 +3,9 @@ package auctionmachine_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func TestOrderByDEscExtraPrice(t *testing.T) {

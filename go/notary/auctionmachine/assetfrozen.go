@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func (m *AuctionMachine) processAssetFrozen() error {

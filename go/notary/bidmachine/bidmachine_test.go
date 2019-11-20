@@ -3,10 +3,10 @@ package bidmachine_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/bidmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func TestNotPayingAuction(t *testing.T) {
