@@ -223,6 +223,6 @@ func (b *MarketPay) GetOrder(orderID int) (*Order, error) {
 	return order, nil
 }
 
-func (b *MarketPay) IsPaid(order *Order) bool {
+func (b *MarketPay) IsPaid(order Order) bool {
 	return order.Data.Status == "PUBLISHED"
 }

@@ -183,10 +183,6 @@ func (b *MarketPay) GetOrder(hash string) (*Order, error) {
 	return order, nil
 }
 
-func (b *MarketPay) IsPaid(hash string) (bool, error) {
-	order, err := b.GetOrder(hash)
-	if err != nil {
-		return false, err
-	}
-	return order.Status == "PUBLISHED", nil
+func (b *MarketPay) IsPaid(order Order) bool {
+	return order.Status == "PUBLISHED"
 }

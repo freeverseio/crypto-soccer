@@ -66,10 +66,7 @@ func TestIsPaid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	isPaid, err := mp.IsPaid(order.TrusteeShortlink.Hash)
-	if err != nil {
-		t.Fatal(err)
-	}
+	isPaid := mp.IsPaid(*order)
 	if isPaid {
 		t.Fatal("Should not be paid")
 	}

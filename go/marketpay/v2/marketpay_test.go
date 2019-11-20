@@ -95,7 +95,7 @@ func TestIsPaid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	isPaid := mp.IsPaid(order)
+	isPaid := mp.IsPaid(*order)
 	if isPaid {
 		t.Fatal("The order shouldn't be paid")
 	}

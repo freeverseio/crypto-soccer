@@ -115,10 +115,11 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		paid, err := market.IsPaid(b.bid.PaymentID)
+		order, err := market.GetOrder(b.bid.PaymentID)
 		if err != nil {
 			return err
 		}
+		paid := market.IsPaid(*order)
 		if paid {
 			isOffer2StartAuction := false
 			bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
@@ -183,6 +184,10 @@ func (b *BidMachine) processPaying() error {
 					return err
 				}
 				b.bid.State = storage.BID_FAILED
+				return err
+			}
+			err = b.db.UpdateAuctionPaymentUrl(b.bid.Auction, order.SettlorShortlink.ShortURL)
+			if err != nil {
 				return err
 			}
 			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAID, "")
