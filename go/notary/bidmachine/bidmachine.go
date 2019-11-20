@@ -157,15 +157,18 @@ func (b *BidMachine) processPaying() error {
 			)
 			if err != nil {
 				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = err.Error()
 				return err
 			}
 			receipt, err := helper.WaitReceipt(b.client, tx, 60)
 			if err != nil {
 				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Timeout waiting for the receipt"
 				return err
 			}
 			if receipt.Status == 0 {
 				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Mined but receipt.Status == 0"
 				return err
 			}
 			b.auction.PaymentURL = order.SettlorShortlink.ShortURL

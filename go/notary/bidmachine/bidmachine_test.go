@@ -52,27 +52,27 @@ func TestFirstAlive(t *testing.T) {
 	if idx != -1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids := []storage.Bid{}
+	bids := []*storage.Bid{}
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != -1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = []storage.Bid{storage.Bid{State: storage.BIDFAILEDTOPAY}}
+	bids = []*storage.Bid{&storage.Bid{State: storage.BIDFAILEDTOPAY}}
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != -1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
+	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
+	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 2 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BIDPAYING, ExtraPrice: 11})
+	bids = append(bids, &storage.Bid{State: storage.BIDPAYING, ExtraPrice: 11})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 3 {
 		t.Fatalf("Wrong result: %v", idx)

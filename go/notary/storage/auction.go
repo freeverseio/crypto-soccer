@@ -48,17 +48,17 @@ func (b *Storage) CreateAuction(order Auction) error {
 	return err
 }
 
-func (b *Storage) GetOpenAuctions() ([]Auction, error) {
+func (b *Storage) GetOpenAuctions() ([]*Auction, error) {
 	auctions, err := b.GetAuctions()
 	if err != nil {
 		return nil, err
 	}
-	var openAunction []Auction
+	var openAunction []*Auction
 	for _, auction := range auctions {
 		if auction.State == "STARTED" ||
 			auction.State == "ASSET_FROZEN" ||
 			auction.State == "PAYING" {
-			openAunction = append(openAunction, auction)
+			openAunction = append(openAunction, &auction)
 		}
 	}
 	return openAunction, nil
