@@ -25,7 +25,7 @@ func HasPaying(bids []storage.Bid) bool {
 
 func IndexOfFirstPaying(bids []storage.Bid) int {
 	for idx, bid := range bids {
-		if bid.State == storage.BID_PAYING {
+		if bid.State == storage. BIDPAYING {
 			return idx
 		}
 	}
@@ -34,7 +34,7 @@ func IndexOfFirstPaying(bids []storage.Bid) int {
 
 func IndexOfFirstAccepted(bids []storage.Bid) int {
 	for idx, bid := range bids {
-		if bid.State == storage.BID_ACCEPTED {
+		if bid.State == storage.BIDACCEPTED {
 			return idx
 		}
 	}

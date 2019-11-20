@@ -52,7 +52,7 @@ func New(
 func IndexFirstAlive(bids []storage.Bid) int {
 	// first searching for PAYING bid
 	for i, bid := range bids {
-		if bid.State == storage.BID_PAYING {
+		if bid.State == storage. BIDPAYING {
 			return i
 		}
 	}
@@ -60,7 +60,7 @@ func IndexFirstAlive(bids []storage.Bid) int {
 	idx := -1
 	extraPrice := int64(-1)
 	for i, bid := range bids {
-		if bid.State == storage.BID_ACCEPTED {
+		if bid.State == storage.BIDACCEPTED {
 			if idx == -1 {
 				idx = i
 				extraPrice = bid.ExtraPrice
@@ -77,11 +77,11 @@ func IndexFirstAlive(bids []storage.Bid) int {
 
 func (b *BidMachine) Process() (storage.Bid, error) {
 	switch b.bid.State {
-	case storage.BID_PAYING:
+	case storage. BIDPAYING:
 		return b.bid, b.processPaying()
-	case storage.BID_ACCEPTED:
+	case storage.BIDACCEPTED:
 		return b.bid, b.processAccepted()
-	case storage.BID_FAILED_TO_PAY:
+	case storage.  BIDFAILEDTOPAY:
 		return b.bid, nil
 	default:
 		return b.bid, errors.New("Unknown bid state")
@@ -162,49 +162,49 @@ func (b *BidMachine) processPaying() error {
 				isOffer2StartAuction,
 			)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, err.Error())
 				if err != nil {
 					return err
 				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage. BIDFAILED
 				return err
 			}
 			receipt, err := helper.WaitReceipt(b.client, tx, 60)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, err.Error())
 				if err != nil {
 					return err
 				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage. BIDFAILED
 				return err
 			}
 			if receipt.Status == 0 {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, "receipt.Status == 0")
+				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, "receipt.Status == 0")
 				if err != nil {
 					return err
 				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage. BIDFAILED
 				return err
 			}
 			err = b.db.UpdateAuctionPaymentUrl(b.bid.Auction, order.SettlorShortlink.ShortURL)
 			if err != nil {
 				return err
 			}
-			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAID, "")
+			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDPAID, "")
 			if err != nil {
 				return err
 			}
-			b.bid.State = storage.BID_PAID
+			b.bid.State = storage. BIDPAID
 		}
 	}
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAYING, "")
+	err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDPAYING, "")
 	if err != nil {
 		return err
 	}
-	b.bid.State = storage.BID_PAYING
+	b.bid.State = storage. BIDPAYING
 	return nil
 }

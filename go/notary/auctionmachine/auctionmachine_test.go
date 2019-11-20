@@ -340,7 +340,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			Rnd:        bidRnd.Int64(),
 			TeamID:     teamID,
 			Signature:  "0x" + hex.EncodeToString(signBidMsg),
-			State:      storage.BID_ACCEPTED,
+			State:      storage.BIDACCEPTED,
 		},
 	}
 	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
@@ -362,13 +362,13 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
-	if machine.Bids[0].State != storage.BID_PAYING {
+	if machine.Bids[0].State != storage. BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
-	if machine.Bids[0].State != storage.BID_PAYING {
+	if machine.Bids[0].State != storage. BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
 	// time.Sleep(2 * time.Second)
@@ -379,7 +379,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	// if machine.Auction.State != storage.AUCTION_PAID {
 	// 	t.Fatalf("Expected not %v", machine.Auction.State)
 	// }
-	// if machine.Bids[0].State != storage.BID_PAID {
+	// if machine.Bids[0].State != storage. BIDPAID {
 	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
 	// }
 }

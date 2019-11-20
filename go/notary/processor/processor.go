@@ -68,7 +68,7 @@ func (b *Processor) Process() error {
 			// 		return err
 			// 	}
 			// 	bid := bids[0]
-			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage.BID_PAYING, "state extra")
+			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage. BIDPAYING, "state extra")
 			// 	if err != nil {
 			// 		return err
 			// 	}

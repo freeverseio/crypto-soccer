@@ -33,10 +33,10 @@ func (m *AuctionMachine) processPaying() error {
 	if err != nil {
 		return err
 	}
-	if m.Bids[idx].State == storage.BID_PAYING {
+	if m.Bids[idx].State == storage. BIDPAYING {
 		return nil
 	}
-	if m.Bids[idx].State == storage.BID_FAILED_TO_PAY {
+	if m.Bids[idx].State == storage.  BIDFAILEDTOPAY {
 		m.Auction.State = storage.AUCTION_FAILED_TO_PAY
 	}
 	m.Auction.State = storage.AUCTION_PAID
