@@ -41,7 +41,7 @@ contract('Assets', (accounts) => {
         await timeTravel.revertToSnapShot(snapshotId);
     });
 
-    it('generation makes them younger', async () =>  {
+    it('generation makes them younger, and check isReplacedByChildInInterval', async () =>  {
         snapShot = await timeTravel.takeSnapshot();
         snapshotId = snapShot['result'];
         nowSecs = await updates.getNow().should.be.fulfilled;
@@ -62,6 +62,8 @@ contract('Assets', (accounts) => {
         secsToBecome37 = Math.floor((37*365*24*3600 - ageInSecs)/7);
         await timeTravel.advanceTime(secsToBecome37 - 100).should.be.fulfilled;
         await timeTravel.advanceBlock().should.be.fulfilled;
+        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+        ageInDays.toNumber().should.be.equal(37*365-1);
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
         bDayNew.toNumber().should.be.equal(bDay.toNumber())
@@ -72,6 +74,12 @@ contract('Assets', (accounts) => {
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
         (bDayNew.toNumber() > bDay.toNumber()).should.be.equal(true);
+        
+        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+        ageInDays.toNumber().should.be.equal(16*365);
+
+        // check about notifying it
+        result =  await assets.isReplacedByChildInInterval(playerId, 1, 2).should.be.rejected; // too early
     });
     
     return
