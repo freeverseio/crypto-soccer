@@ -47,7 +47,6 @@ func (b *Processor) Process() error {
 			b.assets,
 			b.freeverse,
 			b.client,
-			b.db,
 		)
 		if err != nil {
 			return err

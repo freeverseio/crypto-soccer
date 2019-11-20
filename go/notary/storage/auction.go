@@ -30,6 +30,7 @@ type Auction struct {
 	ValidUntil *big.Int
 	Signature  string
 	State      AuctionState
+	PaymentURL string
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
@@ -75,7 +76,7 @@ func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
 
 func (b *Storage) GetAuctions() ([]Auction, error) {
 	var orders []Auction
-	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state FROM auctions;")
+	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url FROM auctions;")
 	if err != nil {
 		return orders, err
 	}
@@ -95,6 +96,7 @@ func (b *Storage) GetAuctions() ([]Auction, error) {
 			&validUntil,
 			&order.Signature,
 			&order.State,
+			&order.PaymentURL,
 		)
 		if err != nil {
 			return orders, err

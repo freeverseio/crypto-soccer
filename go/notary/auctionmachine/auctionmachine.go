@@ -11,22 +11,20 @@ import (
 )
 
 type AuctionMachine struct {
-	Auction   storage.Auction
-	Bids      []storage.Bid
+	Auction   *storage.Auction
+	Bids      []*storage.Bid
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
-	db        *storage.Storage
 }
 
 func New(
-	auction storage.Auction,
-	bids []storage.Bid,
+	auction *storage.Auction,
+	bids []*storage.Bid,
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
-	db *storage.Storage,
 ) (*AuctionMachine, error) {
 	if market == nil {
 		return nil, errors.New("market is nil")
@@ -44,7 +42,6 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
-		db,
 	}, nil
 }
 
