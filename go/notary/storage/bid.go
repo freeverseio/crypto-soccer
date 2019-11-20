@@ -17,6 +17,7 @@ const (
 	BID_PAID          BidState = "PAID"
 	BID_FAILED        BidState = "FAILED"
 	BID_FAILED_TO_PAY BidState = "FAILED_TO_PAY"
+	WITHDRAWAL        BidState = "WITHDRAWAL"
 )
 
 type Bid struct {
