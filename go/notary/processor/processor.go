@@ -6,14 +6,14 @@ import (
 	"errors"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 type Processor struct {
@@ -68,7 +68,7 @@ func (b *Processor) Process() error {
 			// 		return err
 			// 	}
 			// 	bid := bids[0]
-			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage.BID_PAYING, "state extra")
+			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage. BIDPAYING, "state extra")
 			// 	if err != nil {
 			// 		return err
 			// 	}

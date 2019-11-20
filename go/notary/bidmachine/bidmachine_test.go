@@ -3,10 +3,10 @@ package bidmachine_test
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/bidmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func TestNotPayingAuction(t *testing.T) {
@@ -67,22 +67,22 @@ func TestFirstAlive(t *testing.T) {
 	if idx != -1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = []storage.Bid{storage.Bid{State: storage.BID_FAILED_TO_PAY}}
+	bids = []storage.Bid{storage.Bid{State: storage.  BIDFAILEDTOPAY}}
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != -1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BID_ACCEPTED, ExtraPrice: 10})
+	bids = append(bids, storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 1 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BID_ACCEPTED, ExtraPrice: 11})
+	bids = append(bids, storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 2 {
 		t.Fatalf("Wrong result: %v", idx)
 	}
-	bids = append(bids, storage.Bid{State: storage.BID_PAYING, ExtraPrice: 11})
+	bids = append(bids, storage.Bid{State: storage. BIDPAYING, ExtraPrice: 11})
 	idx = bidmachine.IndexFirstAlive(bids)
 	if idx != 3 {
 		t.Fatalf("Wrong result: %v", idx)
@@ -99,7 +99,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
-	bid := storage.Bid{State: storage.BID_FAILED_TO_PAY}
+	bid := storage.Bid{State: storage.  BIDFAILEDTOPAY}
 	machine, err := bidmachine.New(
 		auction,
 		bid,
@@ -115,7 +115,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.State != storage.BID_FAILED_TO_PAY {
+	if bid.State != storage.  BIDFAILEDTOPAY {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
 }
@@ -130,7 +130,7 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 		t.Fatal(err)
 	}
 	auction := storage.Auction{State: storage.AUCTION_PAYING}
-	bid := storage.Bid{State: storage.BID_ACCEPTED}
+	bid := storage.Bid{State: storage.BIDACCEPTED}
 	machine, err := bidmachine.New(
 		auction,
 		bid,
@@ -146,7 +146,7 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.State != storage.BID_PAYING {
+	if bid.State != storage. BIDPAYING {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
 }

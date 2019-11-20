@@ -7,7 +7,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	log "github.com/sirupsen/logrus"
 )
 

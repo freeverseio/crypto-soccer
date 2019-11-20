@@ -3,8 +3,8 @@ package auctionmachine
 import (
 	"errors"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/bidmachine"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 func (m *AuctionMachine) processPaying() error {
@@ -33,10 +33,10 @@ func (m *AuctionMachine) processPaying() error {
 	if err != nil {
 		return err
 	}
-	if m.Bids[idx].State == storage.BID_PAYING {
+	if m.Bids[idx].State == storage. BIDPAYING {
 		return nil
 	}
-	if m.Bids[idx].State == storage.BID_FAILED_TO_PAY {
+	if m.Bids[idx].State == storage.  BIDFAILEDTOPAY {
 		m.Auction.State = storage.AUCTION_FAILED_TO_PAY
 	}
 	m.Auction.State = storage.AUCTION_PAID

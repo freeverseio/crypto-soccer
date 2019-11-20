@@ -11,12 +11,13 @@ import (
 type BidState string
 
 const (
-	BID_ACCEPTED      BidState = "ACCEPTED"
-	BID_REFUSED       BidState = "REFUSED"
-	BID_PAYING        BidState = "PAYING"
-	BID_PAID          BidState = "PAID"
-	BID_FAILED        BidState = "FAILED"
-	BID_FAILED_TO_PAY BidState = "FAILED_TO_PAY"
+	BIDACCEPTED    BidState = "ACCEPTED"
+	BIDREFUSED     BidState = "REFUSED"
+	BIDPAYING      BidState = "PAYING"
+	BIDPAID        BidState = "PAID"
+	BIDFAILED      BidState = "FAILED"
+	BIDFAILEDTOPAY BidState = "FAILED_TO_PAY"
+	WITHDRAWAL     BidState = "WITHDRAWAL"
 )
 
 type Bid struct {
