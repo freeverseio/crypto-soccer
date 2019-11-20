@@ -5,8 +5,10 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
+const timeTravel = require('../utils/TimeTravel.js');
 
 const Assets = artifacts.require('Assets');
+const Updates = artifacts.require('Updates');
 
 contract('Assets', (accounts) => {
     const ALICE = accounts[1];
@@ -20,6 +22,7 @@ contract('Assets', (accounts) => {
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
+        updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
@@ -30,9 +33,63 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
+        snapShot = await timeTravel.takeSnapshot();
+        snapshotId = snapShot['result'];
         });
-
         
+    afterEach(async() => {
+        await timeTravel.revertToSnapShot(snapshotId);
+    });
+
+    it('generation makes them younger', async () =>  {
+        snapShot = await timeTravel.takeSnapshot();
+        snapshotId = snapShot['result'];
+        nowSecs = await updates.getNow().should.be.fulfilled;
+        nowSecs = nowSecs.toNumber()
+
+        playerId  = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 0);
+        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
+        bDay = await assets.getBirthDay(skills).should.be.fulfilled;
+        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+
+        ageInSecs = 7 * (nowSecs - bDay*24*3600)
+        ageInDays2 = Math.floor(ageInSecs / (3600*24))
+        ageInDays.toNumber().should.be.equal(ageInDays2)
+
+        secsToBecome37 = Math.floor((37*365*24*3600 - ageInSecs)/7);
+
+        await timeTravel.advanceTime(secsToBecome37 - 100).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
+        bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
+        bDayNew.toNumber().should.be.equal(bDay.toNumber())
+        await timeTravel.advanceTime(200).should.be.fulfilled;
+        await timeTravel.advanceBlock().should.be.fulfilled;
+        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
+        bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
+        (bDayNew.toNumber() > bDay.toNumber()).should.be.equal(true);
+    });
+    
+    return
+    
+    
+    it('isReplacedByChildInInterval', async () =>  {
+        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry);
+        result =  await assets.isReplacedByChildInInterval(playerId, 1, 2).should.be.rejected; // too early
+        nowSecs = gameDeployDay.toNumber()*24*3600;
+        result =  await assets.isReplacedByChildInInterval(playerId, nowSecs-1000, nowSecs+1000).should.be.fulfilled; // too early
+        result.should.be.equal(false)
+        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
+        secsToBecome37 = Math.floor((37*365-ageInDays.toNumber())*24*3600/7); // 54678857 = 1.7 human years = 12.1 game years
+        secs0 = nowSecs + secsToBecome37 - 10000;  // 1628876857 = 
+        secs1 = nowSecs + secsToBecome37 + 10000;
+        bdaySecs= Math.floor(nowSecs - ageInDays*24*3600/7)
+        ageInSecs0 = 7 * (secs0 - bdaySecs)/(3600*24*365)
+        console.log(bdaySecs, ageInSecs0, secsToBecome37)
+        result =  await assets.isReplacedByChildInInterval(playerId, secs0, secs1).should.be.fulfilled; // too early
+        result.should.be.equal(true)
+    });
+
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
@@ -57,7 +114,7 @@ contract('Assets', (accounts) => {
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
-
+        
     it('check division event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {

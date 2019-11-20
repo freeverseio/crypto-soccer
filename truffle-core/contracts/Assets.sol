@@ -280,7 +280,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
-    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal view returns (uint256) {
         uint256 dayOfBirth;
         (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
         (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(dna, shirtNum);
@@ -305,10 +305,29 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     /// @param dna is a random number used as seed of the skills
     /// @param playerCreationDay since unix epoch
     /// @return dayOfBirth since unix epoch
-    function computeBirthDay(uint256 dna, uint256 playerCreationDay) public pure returns (uint16, uint256) {
+    function computeBirthDay(uint256 dna, uint256 playerCreationDay) public view returns (uint16, uint256) {
         uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16*365, 7300 = 20 * 365
+        // minAge = 16,  retirementAge = 37  (so that 37 = 16 + 3 * 7)
+        // gen0Bday = playerCreationDay - ageInDays / 7
+        // ageInSecs = 7 * (now - gen0Bday * day2secs)
+        // generation = (ageInYears - 16)// 21 = (ageInSecs - 16 * year2secs) // (21 * year2secs)
+        // bday = gen0Bday + 21 * generation * 365 / 7  = gen0Bday + 3 * 365 * generation
         dna >>= 13; // log2(7300) = 12.8
-        return (uint16(playerCreationDay - ageInDays / 7), dna);
+        uint256 gen0Bday = playerCreationDay - ageInDays / 7;
+        uint256 ageInSecs = 7 * (now - gen0Bday * 86400);  // 86400 = day2secs
+        uint256 gen = (ageInSecs - 504576000) / 662256000;  // 504576000 = 16* year2secs,  662256000 = 21 * year2secs
+        return (uint16(gen0Bday + gen * 1095), dna); // 1095 = 3 * 365
+    }
+    
+    function isReplacedByChildInInterval(uint256 playerId, uint256 secsInit, uint256 secsFinal) public view returns (bool) {
+        require(secsInit < secsFinal, "wrong interval");
+        // generation = (ageInYears - 16)// 21
+        // generation = (ageInSecs - 16*365*3600)// 21*365*3600 = (ageInSecs - 21024000) // 27594000
+        // ageInSecs(secs) = 7 * (secs - bdayInSecs)
+        // generation = (7 * secs - 7 * bdayInSecs - 21024000) // 27594000
+        uint256 bDayInSecsWRT16 = daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId))) + 21024000;
+        require(secsInit > bDayInSecsWRT16, "interval too early");
+        return ((secsFinal - bDayInSecsWRT16) / 27594000) > ((secsInit - bDayInSecsWRT16) / 27594000);
     }
 
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
