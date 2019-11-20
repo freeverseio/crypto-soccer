@@ -53,10 +53,12 @@ func TestTeamCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if teamResult.State.RankingPoints.String() != "10" {
+	if teamResult.State.PrevPerfPoints.String() != "0" {
+		t.Fatalf("Wrong ranking points %v", teamResult.State.PrevPerfPoints)
+	}
+	if teamResult.State.RankingPoints.String() != "0" {
 		t.Fatalf("Wrong ranking points %v", teamResult.State.RankingPoints)
 	}
-
 }
 
 func TestGetTeamOfUnexistenTeamID(t *testing.T) {

@@ -12,7 +12,6 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
-    uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
     uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
@@ -135,10 +134,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         uint256 state;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             state = states[p];
-            if (state != FREE_PLAYER_ID) {
-                quality +=  getShoot(state) + getSpeed(state) + getPass(state)
-                        +   getDefence(state) + getEndurance(state);
-            }
+            quality +=  getShoot(state) + getSpeed(state) + getPass(state)
+                    +   getDefence(state) + getEndurance(state);
         }
     }
     
@@ -169,7 +166,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 skills = states[p];
-            if (skills == FREE_PLAYER_ID || skills == 0) continue; 
+            if (skills == 0) continue; 
             uint8 offset = 0;
             if (p == specialPlayer) offset = 20;
             else if(getForwardness(skills) == IDX_GK) offset = 0;

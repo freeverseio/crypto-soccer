@@ -91,7 +91,8 @@ func TestPlayerUpdate(t *testing.T) {
 		t.Fatal("Skills are different")
 	}
 	player2.State.EncodedSkills = big.NewInt(3)
-	player2.State.RedCard = true
+	player2.State.RedCardMatchesLeft = 1
+	player2.State.InjuryMatchesLeft = 3
 	err = sto.PlayerUpdate(player2.PlayerId, player2.State)
 	if err != nil {
 		t.Fatal(err)
@@ -100,8 +101,11 @@ func TestPlayerUpdate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player2.State.RedCard != player3.State.RedCard {
+	if player2.State.RedCardMatchesLeft != player3.State.RedCardMatchesLeft {
 		t.Fatal("Wrong RedCard")
+	}
+	if player2.State.InjuryMatchesLeft != player3.State.InjuryMatchesLeft {
+		t.Fatal("Wrong InjuryMatchesLeft")
 	}
 	if player2.State.EncodedSkills.String() != player3.State.EncodedSkills.String() {
 		t.Fatal("Skills player 3 are different")

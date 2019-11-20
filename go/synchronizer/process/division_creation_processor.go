@@ -132,7 +132,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
-							"0x0000000000000000000000000000000000000000",
+							storage.BotOwner,
 							uint32(leagueIdx),
 							teamIdxInLeague,
 							0,
@@ -142,6 +142,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 							0,
 							0,
 							big.NewInt(10),
+							big.NewInt(0),
 						},
 					},
 				); err != nil {

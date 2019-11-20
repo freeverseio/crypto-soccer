@@ -39,7 +39,8 @@ CREATE TABLE teams (
     l INT NOT NULL DEFAULT 0,
     goals_forward INT NOT NULL DEFAULT 0,
     goals_against INT NOT NULL DEFAULT 0,
-    ranking_points TEXT NOT NULL DEFAULT '10',
+    prev_perf_points TEXT NOT NULL DEFAULT '0',
+    ranking_points TEXT NOT NULL DEFAULT '0',
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
@@ -61,7 +62,8 @@ CREATE TABLE players (
     encoded_skills TEXT NOT NULL,
     encoded_state TEXT NOT NULL,
     frozen BOOLEAN NOT NULL DEFAULT FALSE,
-    red_card BOOLEAN NOT NULL DEFAULT FALSE,
+    red_card_matches_left INT NOT NULL DEFAULT 0,
+    injury_matches_left INT NOT NULL DEFAULT 0,
     PRIMARY KEY(player_id)
 );
 
