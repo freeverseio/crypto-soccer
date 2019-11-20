@@ -320,13 +320,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         return (uint16(gen0Bday + gen * 1095), dna, gen); // 1095 = 3 * 365
     }
     
-    function isReplacedByChildInInterval(uint256 playerId, uint256 secsInit, uint256 secsFinal) public view returns (bool) {
-        require(secsInit < secsFinal, "wrong interval");
-        uint256 bDayInSecsWRT16 = daysToSecs(getBirthDay(getPlayerSkillsAtBirth(playerId))) + 21024000;
-        require(secsInit > bDayInSecsWRT16, "interval too early");
-        return ((secsFinal - bDayInSecsWRT16) / 27594000) > ((secsInit - bDayInSecsWRT16) / 27594000);
-    }
-
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
     /// @param dna is a random number used as seed of the skills
     /// skills have currently, 16bits each, and there are 5 of them

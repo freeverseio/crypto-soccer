@@ -78,8 +78,6 @@ contract('Assets', (accounts) => {
         ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
         ageInDays.toNumber().should.be.equal(16*365);
 
-        // check about notifying it
-        result =  await assets.isReplacedByChildInInterval(playerId, 1, 2).should.be.rejected; // too early
     });
     
     return
