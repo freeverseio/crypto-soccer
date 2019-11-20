@@ -18,25 +18,26 @@ import (
 )
 
 type BidMachine struct {
-	auction   storage.Auction
-	bid       storage.Bid
+	auction   *storage.Auction
+	bid       *storage.Bid
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
-	db        *storage.Storage
 }
 
 func New(
-	auction storage.Auction,
-	bid storage.Bid,
+	auction *storage.Auction,
+	bid *storage.Bid,
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
-	db *storage.Storage,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
+	}
+	if auction.UUID != bid.Auction {
+		return nil, errors.New("Bid of wrong auction")
 	}
 	return &BidMachine{
 		auction,
@@ -45,14 +46,13 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
-		db,
 	}, nil
 }
 
-func IndexFirstAlive(bids []storage.Bid) int {
+func IndexFirstAlive(bids []*storage.Bid) int {
 	// first searching for PAYING bid
 	for i, bid := range bids {
-		if bid.State == storage. BIDPAYING {
+		if bid.State == storage.BIDPAYING {
 			return i
 		}
 	}
@@ -75,16 +75,16 @@ func IndexFirstAlive(bids []storage.Bid) int {
 	return idx
 }
 
-func (b *BidMachine) Process() (storage.Bid, error) {
+func (b *BidMachine) Process() error {
 	switch b.bid.State {
-	case storage. BIDPAYING:
-		return b.bid, b.processPaying()
+	case storage.BIDPAYING:
+		return b.processPaying()
 	case storage.BIDACCEPTED:
-		return b.bid, b.processAccepted()
-	case storage.  BIDFAILEDTOPAY:
-		return b.bid, nil
+		return b.processAccepted()
+	case storage.BIDFAILEDTOPAY:
+		return nil
 	default:
-		return b.bid, errors.New("Unknown bid state")
+		return errors.New("Unknown bid state")
 	}
 }
 
@@ -101,14 +101,8 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, order.TrusteeShortlink.Hash)
-		if err != nil {
-			return err
-		}
-		err = b.db.UpdateBidPaymentUrl(b.bid.Auction, b.bid.ExtraPrice, order.TrusteeShortlink.ShortURL)
-		if err != nil {
-			return err
-		}
+		b.bid.PaymentID = order.TrusteeShortlink.Hash
+		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
 	} else {
 		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
 		market, err := marketpay.New()
@@ -162,49 +156,29 @@ func (b *BidMachine) processPaying() error {
 				isOffer2StartAuction,
 			)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, err.Error())
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage. BIDFAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = err.Error()
 				return err
 			}
 			receipt, err := helper.WaitReceipt(b.client, tx, 60)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, err.Error())
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage. BIDFAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Timeout waiting for the receipt"
 				return err
 			}
 			if receipt.Status == 0 {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDFAILED, "receipt.Status == 0")
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage. BIDFAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Mined but receipt.Status == 0"
 				return err
 			}
-			err = b.db.UpdateAuctionPaymentUrl(b.bid.Auction, order.SettlorShortlink.ShortURL)
-			if err != nil {
-				return err
-			}
-			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDPAID, "")
-			if err != nil {
-				return err
-			}
-			b.bid.State = storage. BIDPAID
+			b.auction.PaymentURL = order.SettlorShortlink.ShortURL
+			b.bid.State = storage.BIDPAID
 		}
 	}
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage. BIDPAYING, "")
-	if err != nil {
-		return err
-	}
-	b.bid.State = storage. BIDPAYING
+	b.bid.State = storage.BIDPAYING
 	return nil
 }

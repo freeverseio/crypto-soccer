@@ -23,20 +23,19 @@ func (m *AuctionMachine) processPaying() error {
 		m.market,
 		m.freeverse,
 		m.client,
-		m.db,
 	)
 	if err != nil {
 		return err
 	}
 
-	m.Bids[idx], err = bidMachine.Process()
+	err = bidMachine.Process()
 	if err != nil {
 		return err
 	}
-	if m.Bids[idx].State == storage. BIDPAYING {
+	if m.Bids[idx].State == storage.BIDPAYING {
 		return nil
 	}
-	if m.Bids[idx].State == storage.  BIDFAILEDTOPAY {
+	if m.Bids[idx].State == storage.BIDFAILEDTOPAY {
 		m.Auction.State = storage.AUCTION_FAILED_TO_PAY
 	}
 	m.Auction.State = storage.AUCTION_PAID

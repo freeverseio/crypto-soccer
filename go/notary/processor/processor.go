@@ -1,14 +1,10 @@
 package processor
 
 import (
-	"context"
 	"crypto/ecdsa"
-	"errors"
-	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -47,7 +43,6 @@ func (b *Processor) Process() error {
 			b.assets,
 			b.freeverse,
 			b.client,
-			b.db,
 		)
 		if err != nil {
 			return err
@@ -57,93 +52,38 @@ func (b *Processor) Process() error {
 			return err
 		}
 
-		// update auction state if changed
-		newState := machine.Auction.State
-		if newState != auction.State {
-			// log.Infof("Auction %v: %v -> %v", auction.UUID, auction.State, newState)
-			// switch newState {
-			// case storage.AUCTION_PAYING:
-			// 	err = b.db.UpdateAuctionPaymentUrl(auction.UUID, "https://www.freeverse.io")
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	bid := bids[0]
-			// 	err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, storage. BIDPAYING, "state extra")
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, "http://ninjaflex.com/")
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// 	break
-			// }
-
-			err = b.db.UpdateAuctionState(auction.UUID, newState)
-			if err != nil {
-				return err
-			}
+		err = b.updateAuction(auction)
+		if err != nil {
+			return err
 		}
+		err = b.updateBids(bids)
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
 }
 
-// func (b *Processor) FreezePlayer(Auction storage.Auction) error {
-// 	sellerHiddenPrice, err := b.signer.HashPrivateMsg(
-// 		Auction.CurrencyID,
-// 		Auction.Price,
-// 		Auction.Rnd,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	var sigs [3][32]byte
-// 	var vs uint8
-// 	sigs[0], err = b.signer.HashSellMessage(
-// 		Auction.CurrencyID,
-// 		Auction.Price,
-// 		Auction.Rnd,
-// 		Auction.ValidUntil,
-// 		Auction.PlayerID,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	sigs[1], sigs[2], vs, err = b.signer.RSV(Auction.Signature)
-// 	if err != nil {
-// 		log.Error(err)
-// 	}
-// 	tx, err := b.assets.FreezePlayer(
-// 		bind.NewKeyedTransactor(b.freeverse),
-// 		sellerHiddenPrice,
-// 		Auction.ValidUntil,
-// 		Auction.PlayerID,
-// 		sigs,
-// 		vs,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	err = b.waitReceipt(tx, 10)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func (b *Processor) updateAuction(auction *storage.Auction) error {
+	return b.db.UpdateAuctionState(auction.UUID, auction.State)
+}
 
-func (b *Processor) waitReceipt(tx *types.Transaction, timeoutSec uint8) error {
-	receiptTimeout := time.Second * time.Duration(timeoutSec)
-	start := time.Now()
-	ctx := context.TODO()
-	var receipt *types.Receipt
-
-	for receipt == nil && time.Now().Sub(start) < receiptTimeout {
-		receipt, err := b.client.TransactionReceipt(ctx, tx.Hash())
-		if err == nil && receipt != nil {
-			return nil
+func (b *Processor) updateBids(bids []*storage.Bid) error {
+	for _, bid := range bids {
+		err := b.db.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, bid.PaymentID)
+		if err != nil {
+			return err
 		}
-		time.Sleep(200 * time.Millisecond)
+		err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, bid.PaymentURL)
+		if err != nil {
+			return err
+		}
+		err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, bid.State, bid.StateExtra)
+		if err != nil {
+			return err
+		}
 	}
-	return errors.New("Timeout waiting for receipt")
+	return nil
 }

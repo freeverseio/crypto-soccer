@@ -30,6 +30,7 @@ type Bid struct {
 	State           BidState
 	StateExtra      string
 	PaymentID       string
+	PaymentURL      string
 }
 
 func (b *Storage) CreateBid(bid Bid) error {
@@ -60,9 +61,9 @@ func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url 
 	return err
 }
 
-func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]Bid, error) {
-	var bids []Bid
-	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id FROM bids WHERE auction=$1;", auctionUUID)
+func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
+	var bids []*Bid
+	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url FROM bids WHERE auction=$1;", auctionUUID)
 	if err != nil {
 		return bids, err
 	}
@@ -78,13 +79,14 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]Bid, error) {
 			&bid.State,
 			&bid.StateExtra,
 			&bid.PaymentID,
+			&bid.PaymentURL,
 		)
 		if err != nil {
 			return bids, err
 		}
 		bid.Auction = auctionUUID
 		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
-		bids = append(bids, bid)
+		bids = append(bids, &bid)
 	}
 	return bids, nil
 }
