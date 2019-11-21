@@ -67,7 +67,7 @@ func (b *Processor) Process() error {
 }
 
 func (b *Processor) updateAuction(auction *storage.Auction) error {
-	return b.db.UpdateAuctionState(auction.UUID, auction.State)
+	return b.db.UpdateAuctionState(auction.UUID, auction.State, auction.StateExtra)
 }
 
 func (b *Processor) updateBids(bids []*storage.Bid) error {

@@ -99,8 +99,8 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auctions[0].State != storage.AUCTION_FAILED_TO_FREEZE {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, auctions[0].State)
+	if auctions[0].State != storage.AUCTION_FAILED {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED, auctions[0].State)
 	}
 	bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
 	if err != nil {
