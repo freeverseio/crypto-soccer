@@ -49,11 +49,11 @@ func New(
 	}, nil
 }
 
-func IndexFirstAlive(bids []*storage.Bid) int {
+func FirstAlive(bids []*storage.Bid) *storage.Bid {
 	// first searching for PAYING bid
-	for i, bid := range bids {
-		if bid.State == storage.BIDPAYING {
-			return i
+	for i := range bids {
+		if bids[i].State == storage.BIDPAYING {
+			return bids[i]
 		}
 	}
 	// then search for the highest ACCEPTED bid
@@ -72,7 +72,10 @@ func IndexFirstAlive(bids []*storage.Bid) int {
 			}
 		}
 	}
-	return idx
+	if idx == -1 {
+		return nil
+	}
+	return bids[idx]
 }
 
 func (b *BidMachine) Process() error {
@@ -81,7 +84,7 @@ func (b *BidMachine) Process() error {
 		return b.processPaying()
 	case storage.BIDACCEPTED:
 		return b.processAccepted()
-	case storage.BIDFAILEDTOPAY:
+	case storage.BIDFAILED:
 		return nil
 	default:
 		return errors.New("Unknown bid state")

@@ -5,21 +5,25 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 func (m *AuctionMachine) processPaying() error {
 
 	if m.Auction.State != storage.AUCTION_PAYING {
-		return errors.New("Paying: wrong state")
+		return errors.New("Paying: wrong state : " + string(m.Auction.State))
 	}
 
-	idx := bidmachine.IndexFirstAlive(m.Bids)
-	if idx == -1 {
+	bid := bidmachine.FirstAlive(m.Bids)
+	if bid == nil {
+		m.Auction.State = storage.AUCTION_FAILED
+		m.Auction.StateExtra = "Failed to pay"
 		return nil
 	}
+
 	bidMachine, err := bidmachine.New(
 		m.Auction,
-		m.Bids[idx],
+		bid,
 		m.market,
 		m.freeverse,
 		m.client,
@@ -32,14 +36,10 @@ func (m *AuctionMachine) processPaying() error {
 	if err != nil {
 		return err
 	}
-	if m.Bids[idx].State == storage.BIDPAYING {
-		return nil
+	if bid.State == storage.BIDPAID {
+		log.Infof("[auction] %v PAYING -> PAID", m.Auction.UUID)
+		m.Auction.State = storage.AUCTION_PAID
 	}
-	if m.Bids[idx].State == storage.BIDFAILEDTOPAY {
-		m.Auction.State = storage.AUCTION_FAILED
-		m.Auction.StateExtra = "Faild to pay"
-	}
-	m.Auction.State = storage.AUCTION_PAID
 
 	return nil
 }

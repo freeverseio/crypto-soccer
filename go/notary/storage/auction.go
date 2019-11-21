@@ -57,10 +57,10 @@ func (b *Storage) GetOpenAuctions() ([]*Auction, error) {
 	}
 	var openAunction []*Auction
 	for _, auction := range auctions {
-		if auction.State == "STARTED" ||
-			auction.State == "ASSET_FROZEN" ||
-			auction.State == "PAYING" {
-			openAunction = append(openAunction, &auction)
+		if auction.State == AUCTION_STARTED ||
+			auction.State == AUCTION_ASSET_FROZEN ||
+			auction.State == AUCTION_PAYING {
+			openAunction = append(openAunction, auction)
 		}
 	}
 	return openAunction, nil
@@ -76,8 +76,8 @@ func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
 	return err
 }
 
-func (b *Storage) GetAuctions() ([]Auction, error) {
-	var orders []Auction
+func (b *Storage) GetAuctions() ([]*Auction, error) {
+	var orders []*Auction
 	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra FROM auctions;")
 	if err != nil {
 		return orders, err
@@ -108,7 +108,7 @@ func (b *Storage) GetAuctions() ([]Auction, error) {
 		order.Price, _ = new(big.Int).SetString(price.String, 10)
 		order.Rnd, _ = new(big.Int).SetString(rnd.String, 10)
 		order.ValidUntil, _ = new(big.Int).SetString(validUntil.String, 10)
-		orders = append(orders, order)
+		orders = append(orders, &order)
 	}
 	return orders, nil
 }

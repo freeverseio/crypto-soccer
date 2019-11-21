@@ -19,6 +19,7 @@ func (m *AuctionMachine) processStarted() error {
 
 	if len(m.Bids) == 0 {
 		if now > m.Auction.ValidUntil.Int64() {
+			log.Infof("Auction %v STARTED -> %v", m.Auction.UUID, m.Auction.State)
 			m.Auction.State = storage.AUCTION_NO_BIDS
 		}
 		return nil
@@ -77,6 +78,7 @@ func (m *AuctionMachine) processStarted() error {
 		return nil
 	}
 
+	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.Auction.UUID)
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
 	return nil
 }

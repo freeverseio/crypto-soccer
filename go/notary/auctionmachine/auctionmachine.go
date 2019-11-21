@@ -55,8 +55,6 @@ func (b *AuctionMachine) Process() error {
 		return b.processAssetFrozen()
 	case storage.AUCTION_PAYING:
 		return b.processPaying()
-	case storage.AUCTION_NO_BIDS:
-		return b.processNoBids()
 	default:
 		return b.processUnknownState()
 	}

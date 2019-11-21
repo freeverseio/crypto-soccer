@@ -48,34 +48,34 @@ func TestPayingAuction(t *testing.T) {
 }
 
 func TestFirstAlive(t *testing.T) {
-	idx := bidmachine.IndexFirstAlive(nil)
-	if idx != -1 {
-		t.Fatalf("Wrong result: %v", idx)
+	bid := bidmachine.FirstAlive(nil)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
 	}
 	bids := []*storage.Bid{}
-	idx = bidmachine.IndexFirstAlive(bids)
-	if idx != -1 {
-		t.Fatalf("Wrong result: %v", idx)
+	bid = bidmachine.FirstAlive(bids)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
 	}
-	bids = []*storage.Bid{&storage.Bid{State: storage.BIDFAILEDTOPAY}}
-	idx = bidmachine.IndexFirstAlive(bids)
-	if idx != -1 {
-		t.Fatalf("Wrong result: %v", idx)
+	bids = []*storage.Bid{&storage.Bid{State: storage.BIDFAILED}}
+	bid = bidmachine.FirstAlive(bids)
+	if bid != nil {
+		t.Fatalf("Wrong result: %v", bid)
 	}
 	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 10})
-	idx = bidmachine.IndexFirstAlive(bids)
-	if idx != 1 {
-		t.Fatalf("Wrong result: %v", idx)
+	bid = bidmachine.FirstAlive(bids)
+	if bid != bids[1] {
+		t.Fatalf("Expected %v result: %v", bids[0], bid)
 	}
 	bids = append(bids, &storage.Bid{State: storage.BIDACCEPTED, ExtraPrice: 11})
-	idx = bidmachine.IndexFirstAlive(bids)
-	if idx != 2 {
-		t.Fatalf("Wrong result: %v", idx)
+	bid = bidmachine.FirstAlive(bids)
+	if bid != bids[2] {
+		t.Fatalf("Wrong result: %v", bid)
 	}
 	bids = append(bids, &storage.Bid{State: storage.BIDPAYING, ExtraPrice: 11})
-	idx = bidmachine.IndexFirstAlive(bids)
-	if idx != 3 {
-		t.Fatalf("Wrong result: %v", idx)
+	bid = bidmachine.FirstAlive(bids)
+	if bid != bids[3] {
+		t.Fatalf("Wrong result: %v", bid)
 	}
 }
 
@@ -85,7 +85,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 		t.Fatal(err)
 	}
 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-	bid := &storage.Bid{State: storage.BIDFAILEDTOPAY}
+	bid := &storage.Bid{State: storage.BIDFAILED}
 	machine, err := bidmachine.New(
 		auction,
 		bid,
@@ -100,7 +100,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bid.State != storage.BIDFAILEDTOPAY {
+	if bid.State != storage.BIDFAILED {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
 }
