@@ -57,9 +57,9 @@ func (b *Storage) GetOpenAuctions() ([]*Auction, error) {
 	}
 	var openAunction []*Auction
 	for _, auction := range auctions {
-		if auction.State == "STARTED" ||
-			auction.State == "ASSET_FROZEN" ||
-			auction.State == "PAYING" {
+		if auction.State == AUCTION_STARTED ||
+			auction.State == AUCTION_ASSET_FROZEN ||
+			auction.State == AUCTION_PAYING {
 			openAunction = append(openAunction, &auction)
 		}
 	}
