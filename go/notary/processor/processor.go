@@ -32,7 +32,7 @@ func (b *Processor) Process() error {
 	}
 
 	for _, auction := range openedAuctions {
-		log.Infof("[processor] process auction %v", auction.UUID)
+		log.Infof("[processor] process auction %v, state: ", auction.UUID, auction.State)
 		bids, err := b.db.GetBidsOfAuction(auction.UUID)
 		if err != nil {
 			return err
