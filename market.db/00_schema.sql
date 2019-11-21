@@ -10,6 +10,7 @@ INSERT INTO auction_states(state) VALUES ('NO_BIDS');
 INSERT INTO auction_states(state) VALUES ('CANCELLED_BY_SELLER');
 INSERT INTO auction_states(state) VALUES ('FAILED_TO_FREEZE');
 INSERT INTO auction_states(state) VALUES ('FAILED_TO_PAY');
+INSERT INTO auction_states(state) VALUES ('FAILED');
 
 CREATE TABLE auctions (
     uuid UUID NOT NULL,
@@ -20,6 +21,7 @@ CREATE TABLE auctions (
     valid_until TEXT NOT NULL,
     signature TEXT NOT NULL,
     state TEXT NOT NULL REFERENCES auction_states(state),
+    state_extra TEXT NOT NULL DEFAULT '',
     payment_url TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(uuid)
 );
