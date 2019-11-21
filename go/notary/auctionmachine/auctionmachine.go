@@ -56,6 +56,6 @@ func (b *AuctionMachine) Process() error {
 	case storage.AUCTION_NO_BIDS:
 		return b.processNoBids()
 	default:
-		return errors.New("unknown auction state")
+		return errors.New("Auction " + b.Auction.UUID.String() + ": unknown auction state " + string(b.Auction.State))
 	}
 }
