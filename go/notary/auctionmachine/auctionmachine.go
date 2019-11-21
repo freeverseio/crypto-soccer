@@ -64,6 +64,7 @@ func (b *AuctionMachine) Process() error {
 
 func (b *AuctionMachine) processUnknownState() error {
 	log.Infof("[auction] %v: unknown state %v", b.Auction.UUID, b.Auction.State)
-
+	b.Auction.StateExtra = "Unknown state " + string(b.Auction.State)
+	b.Auction.State = storage.AUCTION_FAILED
 	return nil
 }
