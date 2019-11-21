@@ -198,6 +198,7 @@ func TestPayingAuction(t *testing.T) {
 	bids := []*storage.Bid{
 		&storage.Bid{
 			Auction: auction.UUID,
+			State:   storage.BIDACCEPTED,
 		},
 	}
 	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)

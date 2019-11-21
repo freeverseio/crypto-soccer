@@ -8,8 +8,6 @@ INSERT INTO auction_states(state) VALUES ('PAID');
 INSERT INTO auction_states(state) VALUES ('WITHDRAWAL');
 INSERT INTO auction_states(state) VALUES ('NO_BIDS');
 INSERT INTO auction_states(state) VALUES ('CANCELLED_BY_SELLER');
-INSERT INTO auction_states(state) VALUES ('FAILED_TO_FREEZE');
-INSERT INTO auction_states(state) VALUES ('FAILED_TO_PAY');
 INSERT INTO auction_states(state) VALUES ('FAILED');
 
 CREATE TABLE auctions (
@@ -33,7 +31,6 @@ INSERT INTO bid_states(state) VALUES ('ACCEPTED');
 INSERT INTO bid_states(state) VALUES ('REFUSED');
 INSERT INTO bid_states(state) VALUES ('PAYING');
 INSERT INTO bid_states(state) VALUES ('PAID');
-INSERT INTO bid_states(state) VALUES ('FAILED_TO_PAY');
 INSERT INTO bid_states(state) VALUES ('FAILED');
 
 CREATE TABLE bids (

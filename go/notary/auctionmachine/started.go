@@ -77,6 +77,7 @@ func (m *AuctionMachine) processStarted() error {
 		return nil
 	}
 
+	log.Infof("[auction] %v STARTER -> ASSET_FROZEN", m.Auction.UUID)
 	m.Auction.State = storage.AUCTION_ASSET_FROZEN
 	return nil
 }
