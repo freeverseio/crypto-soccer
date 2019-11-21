@@ -112,8 +112,8 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State != storage.AUCTION_FAILED_TO_FREEZE {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, machine.Auction.State)
+	if machine.Auction.State != storage.AUCTION_FAILED {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED, machine.Auction.State)
 	}
 }
 

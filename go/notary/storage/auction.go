@@ -17,8 +17,8 @@ const (
 	AUCTION_PAID                AuctionState = "PAID"
 	AUCTION_NO_BIDS             AuctionState = "NO_BIDS"
 	AUCTION_CANCELLED_BY_SELLER AuctionState = "CANCELLED_BY_SELLER"
-	AUCTION_FAILED_TO_PAY       AuctionState = "FAILED_TO_PAY"
-	AUCTION_FAILED_TO_FREEZE    AuctionState = "FAILED_TO_FREEZE"
+	AUCTION_WITHDRAWAL          AuctionState = "WITHDRAWAL"
+	AUCTION_FAILED              AuctionState = "FAILED"
 )
 
 type Auction struct {
@@ -30,12 +30,13 @@ type Auction struct {
 	ValidUntil *big.Int
 	Signature  string
 	State      AuctionState
+	StateExtra string
 	PaymentURL string
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
 	log.Infof("[DBMS] + create Auction %v", order)
-	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
 		order.UUID,
 		order.PlayerID.String(),
 		order.CurrencyID,
@@ -44,6 +45,7 @@ func (b *Storage) CreateAuction(order Auction) error {
 		order.ValidUntil.String(),
 		order.Signature,
 		order.State,
+		order.StateExtra,
 	)
 	return err
 }
@@ -64,8 +66,8 @@ func (b *Storage) GetOpenAuctions() ([]*Auction, error) {
 	return openAunction, nil
 }
 
-func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState) error {
-	_, err := b.db.Exec("UPDATE auctions SET state=$1 WHERE uuid=$2;", state, uuid)
+func (b *Storage) UpdateAuctionState(uuid uuid.UUID, state AuctionState, stateExtra string) error {
+	_, err := b.db.Exec("UPDATE auctions SET state=$1, state_extra=$2 WHERE uuid=$3;", state, stateExtra, uuid)
 	return err
 }
 
@@ -76,7 +78,7 @@ func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
 
 func (b *Storage) GetAuctions() ([]Auction, error) {
 	var orders []Auction
-	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url FROM auctions;")
+	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra FROM auctions;")
 	if err != nil {
 		return orders, err
 	}
@@ -97,6 +99,7 @@ func (b *Storage) GetAuctions() ([]Auction, error) {
 			&order.Signature,
 			&order.State,
 			&order.PaymentURL,
+			&order.StateExtra,
 		)
 		if err != nil {
 			return orders, err

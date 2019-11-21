@@ -8,6 +8,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type AuctionMachine struct {
@@ -56,6 +58,13 @@ func (b *AuctionMachine) Process() error {
 	case storage.AUCTION_NO_BIDS:
 		return b.processNoBids()
 	default:
-		return errors.New("unknown auction state")
+		return b.processUnknownState()
 	}
+}
+
+func (b *AuctionMachine) processUnknownState() error {
+	log.Infof("[auction] %v: unknown state %v", b.Auction.UUID, b.Auction.State)
+	b.Auction.StateExtra = "Unknown state " + string(b.Auction.State)
+	b.Auction.State = storage.AUCTION_FAILED
+	return nil
 }
