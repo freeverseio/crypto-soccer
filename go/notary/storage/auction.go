@@ -17,9 +17,8 @@ const (
 	AUCTION_PAID                AuctionState = "PAID"
 	AUCTION_NO_BIDS             AuctionState = "NO_BIDS"
 	AUCTION_CANCELLED_BY_SELLER AuctionState = "CANCELLED_BY_SELLER"
-	AUCTION_FAILED_TO_PAY       AuctionState = "FAILED_TO_PAY"
+	AUCTION_WITHDRAWAL          AuctionState = "WITHDRAWAL"
 	AUCTION_FAILED              AuctionState = "FAILED"
-	AUCTION_FAILED_TO_FREEZE    AuctionState = "FAILED_TO_FREEZE"
 )
 
 type Auction struct {

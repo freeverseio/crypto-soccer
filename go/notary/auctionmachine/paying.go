@@ -36,7 +36,8 @@ func (m *AuctionMachine) processPaying() error {
 		return nil
 	}
 	if m.Bids[idx].State == storage.BIDFAILEDTOPAY {
-		m.Auction.State = storage.AUCTION_FAILED_TO_PAY
+		m.Auction.State = storage.AUCTION_FAILED
+		m.Auction.StateExtra = "Faild to pay"
 	}
 	m.Auction.State = storage.AUCTION_PAID
 
