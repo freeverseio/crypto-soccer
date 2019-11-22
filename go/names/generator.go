@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"strconv"
 
+	"github.com/Pallinder/sillyname-go"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 )
@@ -193,6 +194,5 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 
 func GenerateTeamName(teamId *big.Int) string {
 	_ = teamId
-	return "s"
-	//	return sillyname.GenerateStupidName()
+	return sillyname.GenerateStupidName()
 }
