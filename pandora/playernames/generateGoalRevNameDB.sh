@@ -10,4 +10,4 @@ python3 parseSpanishSurnames.py
 python3 generateSQL.py
 echo "...generated database: goalRev.db...DONE"
 echo "run this command to update the GO code:"
-echo "cp goalRev.db ~/gits/crypto-soccer/go/names/sql/00_goalRev.db"
+echo "cp goalRev.db ~/gits/crypto-soccer/go/names/sql/names.db"

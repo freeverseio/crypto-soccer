@@ -105,7 +105,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	namesdb, err := names.New("../../names/sql/00_goalRev.db")
+	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	namesdb, err := names.New("../../names/sql/00_goalRev.db")
+	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
