@@ -32,11 +32,12 @@ type Auction struct {
 	State      AuctionState
 	StateExtra string
 	PaymentURL string
+	Seller     string
 }
 
 func (b *Storage) CreateAuction(order Auction) error {
 	log.Infof("[DBMS] + create Auction %v", order)
-	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
+	_, err := b.db.Exec("INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state, state_extra, seller) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 		order.UUID,
 		order.PlayerID.String(),
 		order.CurrencyID,
@@ -46,6 +47,7 @@ func (b *Storage) CreateAuction(order Auction) error {
 		order.Signature,
 		order.State,
 		order.StateExtra,
+		order.Seller,
 	)
 	return err
 }
@@ -78,7 +80,7 @@ func (b *Storage) UpdateAuctionPaymentUrl(uuid uuid.UUID, url string) error {
 
 func (b *Storage) GetAuctions() ([]*Auction, error) {
 	var orders []*Auction
-	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra FROM auctions;")
+	rows, err := b.db.Query("SELECT uuid, player_id, currency_id, price, rnd, valid_until, signature, state, payment_url, state_extra, seller FROM auctions;")
 	if err != nil {
 		return orders, err
 	}
@@ -100,6 +102,7 @@ func (b *Storage) GetAuctions() ([]*Auction, error) {
 			&order.State,
 			&order.PaymentURL,
 			&order.StateExtra,
+			&order.Seller,
 		)
 		if err != nil {
 			return orders, err

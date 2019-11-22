@@ -21,6 +21,7 @@ CREATE TABLE auctions (
     state TEXT NOT NULL REFERENCES auction_states(state),
     state_extra TEXT NOT NULL DEFAULT '',
     payment_url TEXT NOT NULL DEFAULT '',
+    seller TEXT NOT NULL,
     PRIMARY KEY(uuid)
 );
 
