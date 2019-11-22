@@ -207,6 +207,48 @@ contract('Evolution', (accounts) => {
         MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
+    it('evolution leading to children', async () => {
+        playerSkills = await engine.encodePlayerSkills(
+            skills = [100, 100, 100, 100, 100], 
+            dayOfBirth = 30*365, // 30 years after unix time 
+            gen = 3,
+            playerId = 2132321,
+            [potential = 2, forwardness, leftishness, aggr = 0],
+            alignedEndOfLastHalf = true,
+            redCardLastGame = false,
+            gamesNonStopping = 0,
+            injuryWeeksLeft = 0,
+            subLastHalf,
+            sumSkills = 5
+        ).should.be.fulfilled;
+        age = 40;
+        matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
+        
+        TPs = 20;
+        weights = [10, 20, 30, 40, 50];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        expected = [ 809, 1199, 947, 799, 1244 ];
+        results = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        results.push(result)
+        result = await engine.getSpeed(newSkills).should.be.fulfilled;
+        results.push(result)
+        result = await engine.getPass(newSkills).should.be.fulfilled;
+        results.push(result)
+        result = await engine.getDefence(newSkills).should.be.fulfilled;
+        results.push(result)
+        result = await engine.getEndurance(newSkills).should.be.fulfilled;
+        results.push(result)
+        debug.compareArrays(results, expected, toNum = true, verbose = false);
+        
+        expectedSumSkills = expected.reduce((a, b) => a + b, 0);
+        result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
+        result.toNumber().should.be.equal(expectedSumSkills);
+        
+        
+    });
+
+    
     it2('getTeamEvolvedSkills', async () => {
         weights = Array.from(new Array(25), (x,i) => 3*i % 14);
         specialPlayer = 21;
@@ -374,7 +416,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expectedSumSkills);
     });
 
-    it('test evolvePlayer at non-zero potential and age', async () => {
+    it2('test evolvePlayer at non-zero potential and age', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
