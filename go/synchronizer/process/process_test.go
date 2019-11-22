@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/freeverseio/crypto-soccer/go/helper"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -27,11 +28,15 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	p, err := process.NewEventProcessor(
 		bc.Client,
 		universedb,
 		relaydb,
+		namesdb,
 		bc.Engine,
 		bc.EnginePreComp,
 		bc.Assets,

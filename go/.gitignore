@@ -1,4 +1,2 @@
-cmd/relay
-cmd/synchronizer
-cmd/notary
 contracts/
+cmd/synchronizer/synchronizer
