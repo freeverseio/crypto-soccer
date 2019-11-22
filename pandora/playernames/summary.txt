@@ -1,0 +1,164 @@
+great entry point: https://github.com/philipperemy/name-dataset.git
+
+bc-popular-boys-names.xlsx: 
+- only names, no surnames, 
+- from all around, 
+- no geo,
+- frequency
+
+name_gender.xlsx: 
+- both names & surnames (no way to differenciate!!)
+- from all around
+- no geo
+
+
+spanishSurnames:
+- only surnames, no names
+- spanish only
+
+
+englishSurnames: (151K !!)
+- mostly surnames only (a few names, e.g. Antonio)
+- it tells you the procedence!!!
+	pctwhite: 	Percent Non-Hispanic White Only
+	pctblack: 	Percent Non-Hispanic Black Only
+	pctapi: 	Percent Non-Hispanic Asian and Pacific Islander Only
+	pctaian: 	Percent Non-Hispanic American Indian and Alaskan Native Only
+	pct2prace: 	Percent Non-Hispanic of Two or More Races
+	pcthispanic: Percent Hispanic Origin 
+- origin: 
+	- https://data.world/len/us-first-names-database
+	- https://www2.census.gov/topics/genealogy/2000surnames/surnames.pdf#
+
+
+
+englishGivenNames:
+- only names 
+- only english
+
+55 Countries Names:
+- only names (50K entries!)
+- classified per country (55 countries!)
+- many are almost duplicated, but checkable via function
+
+MatthiasWinkelmann_firstname-database
+- only names
+- per country!!!
+- it is identical to 55Countries but in CSV directly
+
+mbejda.github.io
+- both surnames and names, for:
+	- hispanic
+	- indian (only names)
+	- black
+	- white
+
+
+Possibility: 
+- names: 
+	- (DONE) from MatthiasWinkelmann_firstname-database
+		- no CHINA, no POLAND, little VIETNAM
+		- with china, problem is that it is impossible to know if M/F
+			- note that it is written in format Surname+Name
+		- for Korea, they are written as Name1-Name2 (all names in Korean are compound), we do not have Korean surnames in this file
+		- so far: 29011 total names
+
+
+- surnames: 
+	- (DONE) given from the englishSurnames, using procedence
+		- Asia is too generic
+	- we dont have Korean surnames
+
+
+
+
+
+
+
+
+
+-----
+/Users/toni/venv/merkleVerifier/bin/python /Users/toni/gits/crypto-soccer/pandora/playernames/parseMatthias.py
+Great Britain 922 
+Ireland 238 
+U.S.A. 1393 
+Italy 1233 
+Malta 202 
+Portugal 374 
+Spain 603 
+France 499 
+Belgium 361 
+Luxembourg 114 
+the Netherlands 1203 
+East Frisia 1183 
+Germany 1091 
+Austria 523 
+Swiss 797 
+Iceland 355 
+Denmark 297 
+Norway 336 
+Sweden 254 
+Finland 210 
+Estonia 347 
+Latvia 144 
+Lithuania 369 
+reducing min_score for:  Poland
+Poland 100  - WARNING
+reducing min_score for:  Czech Republic
+Czech Republic 114 
+reducing min_score for:  Slovakia
+Slovakia 148 
+reducing min_score for:  Hungary
+reducing min_score for:  Hungary
+Hungary 118 
+Romania 612 
+Bulgaria 517 
+Bosnia and Herzegovina 371 
+Croatia 310 
+Kosovo 270 
+Macedonia 304 
+Montenegro 180 
+Serbia 193 
+Slovenia 168 
+Albania 632 
+Greece 185 
+reducing min_score for:  Russia
+Russia 110 
+reducing min_score for:  Belarus
+Belarus 118 
+reducing min_score for:  Moldova
+Moldova 110 
+reducing min_score for:  Ukraine
+Ukraine 115 
+Armenia 150 
+Azerbaijan 249 
+reducing min_score for:  Georgia
+reducing min_score for:  Georgia
+Georgia 112 
+Kazakhstan/Uzbekistan,etc. 170 
+Turkey 700 
+Arabia/Persia 821 
+Israel 326 
+China 6795 
+India/Sri Lanka 658 
+Japan 559 
+Korea 648 
+reducing min_score for:  Vietnam
+Vietnam 100  - WARNING
+Total Entries:  29011
+
+
+
+
+
+
+From Google Datasets:
+
+catalan https://opendata.terrassa.cat/DADES_DEMOGRAFIQUES/Primers-Cognoms-m-s-freq-ents-Primeros-Apellidos-m/8p8f-sina
+russia https://github.com/datacoon/russiannames -- https://zenodo.org/record/2747011
+brazil https://plos.figshare.com/articles/Surnames_and_ancestry_in_Brazil/4984046
+
+https://isogg.org/wiki/Surname_mapping
+https://www.facebook.com/notes/surname-distribution-maps/surname-mapping-resources/585381134813675/
+
+correcte: 22334

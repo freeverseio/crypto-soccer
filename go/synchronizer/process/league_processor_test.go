@@ -9,6 +9,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -104,9 +105,14 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
 		universedb,
 		relaydb,
+		namesdb,
 		bc.Assets,
 		bc.Leagues,
 	)
@@ -175,9 +181,14 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	divisionProcessor, err := process.NewDivisionCreationProcessor(
 		universedb,
 		relaydb,
+		namesdb,
 		bc.Assets,
 		bc.Leagues,
 	)

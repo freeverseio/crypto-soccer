@@ -17,6 +17,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	log "github.com/sirupsen/logrus"
@@ -44,6 +45,7 @@ func NewEventProcessor(
 	client *ethclient.Client,
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
+	namesdb *names.Generator,
 	engine *engine.Engine,
 	enginePreComp *engineprecomp.Engineprecomp,
 	assets *assets.Assets,
@@ -55,6 +57,7 @@ func NewEventProcessor(
 	divisionCreationProcessor, err := NewDivisionCreationProcessor(
 		universedb,
 		relaydb,
+		namesdb,
 		assets,
 		leagues,
 	)
