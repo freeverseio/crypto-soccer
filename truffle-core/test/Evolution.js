@@ -272,7 +272,7 @@ contract('Evolution', (accounts) => {
 
     it('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
-            skills = [0, 0, 0, 0, 0], 
+            skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
             playerId = 2132321,
@@ -291,7 +291,7 @@ contract('Evolution', (accounts) => {
         weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [2,4,6,8,10];
+        expected = [102,104,106,108,110];
         result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[1]);
@@ -339,7 +339,7 @@ contract('Evolution', (accounts) => {
     
     it('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
-            skills = [0, 0, 0, 0, 0], 
+            skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
             playerId = 2132321,
@@ -358,7 +358,7 @@ contract('Evolution', (accounts) => {
         weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [2,5,7,10,13];
+        expected = [102,105,107,110,113];
         result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[1]);
