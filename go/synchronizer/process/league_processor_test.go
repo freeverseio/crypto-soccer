@@ -18,6 +18,10 @@ import (
 
 func TestProcessInvalidTimezone(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -35,6 +39,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		ganache.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -134,6 +139,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		bc.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -210,6 +216,7 @@ func TestLeagueShuffling(t *testing.T) {
 		bc.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)

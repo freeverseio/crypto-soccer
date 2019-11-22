@@ -72,6 +72,7 @@ func NewEventProcessor(
 		evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		return nil, err

@@ -9,6 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
@@ -22,6 +23,7 @@ type MatchProcessor struct {
 	evolution         *evolution.Evolution
 	engine            *engine.Engine
 	enginePreComp     *engineprecomp.Engineprecomp
+	namesdb           *names.Generator
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
 	SOFTINJURY        uint8
@@ -36,6 +38,7 @@ func NewMatchProcessor(
 	evolution *evolution.Evolution,
 	engine *engine.Engine,
 	enginePreComp *engineprecomp.Engineprecomp,
+	namesdb *names.Generator,
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
 	var err error
@@ -62,6 +65,8 @@ func NewMatchProcessor(
 	processor.evolution = evolution
 	processor.engine = engine
 	processor.enginePreComp = enginePreComp
+	processor.namesdb = namesdb
+
 	return &processor, nil
 }
 
@@ -410,7 +415,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		return err
 	}
 
-	for _, state := range newStates {
+	for s, state := range newStates {
 		if state.String() == "0" {
 			continue
 		}
@@ -422,6 +427,25 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		player, err := b.universedb.GetPlayer(playerID)
 		if err != nil {
 			return err
+		}
+		oldGen, err := b.assets.GetGeneration(&bind.CallOpts{}, states[s])
+		if err != nil {
+			return err
+		}
+		newGen, err := b.assets.GetGeneration(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
+		if newGen.Cmp(oldGen) != 0 {
+			timezone, countryIdx, _, err := b.assets.DecodeTZCountryAndVal(&bind.CallOpts{}, player.PlayerId)
+			if err != nil {
+				return err
+			}
+			newName, err := b.namesdb.GeneratePlayerFullName(player.PlayerId, uint8(newGen.Uint64()), timezone, countryIdx.Uint64())
+			if err != nil {
+				return err
+			}
+			player.Name = newName
 		}
 		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
 		player.State.Defence = defence.Uint64()
