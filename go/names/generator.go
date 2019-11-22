@@ -77,17 +77,27 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint
 	for i := 1; i < nLayers; i++ {
 		iterated_seed = int_hash(big.NewInt(int64(iterated_seed)).String())
 	}
-	return iterated_seed % max_val
+	if max_val == 0 {
+		return iterated_seed
+	} else {
+		return iterated_seed % max_val
+	}
 }
 
-func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code uint, purity int) (string, error) {
+func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
+	isRosterPlayer := generation > 31
+	if isRosterPlayer {
+		generation = generation - 32
+	}
 	nLayers1 := 1
 	nLayers2 := 2
 	nLayers3 := 1
 	tableName := "names"
 	colName := "name"
 	codes := b.countryCodes4Names
+	// ensure that names are always different for all generations
+	seedTemp := b.GenerateRnd(playerId, 0, 1) + uint64(generation)
 	if isSurname {
 		nLayers1 = 3
 		nLayers2 = 4
@@ -95,12 +105,18 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code
 		tableName = "surnames"
 		colName = "surname"
 		codes = b.countryCodes4Surnames
+		seedTemp = b.GenerateRnd(playerId, 0, 2) + uint64(generation)
+		isActualSon := generation > 0 && !isRosterPlayer
+		if isActualSon {
+			seedTemp -= 1
+		}
 	}
-	dice := b.GenerateRnd(playerId, 100, nLayers1)
+	seed := big.NewInt(int64(seedTemp))
+	dice := b.GenerateRnd(seed, 100, nLayers1)
 	if int(dice) > purity {
 		// pick a different country
 		var nCountryCodes = len(codes)
-		var rnd_idx int = int(b.GenerateRnd(playerId, uint64(nCountryCodes), nLayers3))
+		var rnd_idx int = int(b.GenerateRnd(seed, uint64(nCountryCodes), nLayers3))
 		if country_code == codes[rnd_idx] {
 			country_code = codes[(rnd_idx+1)%nCountryCodes]
 		} else {
@@ -108,7 +124,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, country_code
 		}
 	}
 	var namesInCountry uint = b.namesInCountry[country_code]
-	var idxInCountry uint64 = b.GenerateRnd(playerId, uint64(namesInCountry), nLayers2)
+	var idxInCountry uint64 = b.GenerateRnd(seed, uint64(namesInCountry), nLayers2)
 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
 	if err != nil {
 		return "", err
@@ -181,15 +197,16 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	if err != nil {
 		return "", err
 	}
-	name, err := b.GenerateName(false, playerId, code_name, pure_pure+pure_foreign)
+	name, err := b.GenerateName(false, playerId, generation, code_name, pure_pure+pure_foreign)
 	if err != nil {
 		return "", err
 	}
-	surname, err := b.GenerateName(true, playerId, code_surname, pure_pure+foreign_pure)
+	surname, err := b.GenerateName(true, playerId, generation, code_surname, pure_pure+foreign_pure)
 	if err != nil {
 		return "", err
 	}
-	if generation > 0 {
+	isActualSon := generation > 0 && generation < 32
+	if isActualSon {
 		surname += " Jr."
 	}
 	return name + " " + surname, nil
