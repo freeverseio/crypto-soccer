@@ -174,6 +174,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 	begin := teamIdxInCountry * int64(b.PLAYERS_PER_TEAM_INIT)
 	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
 
+	generation := uint8(0)
 	for i := begin; i < end; i++ {
 		if playerId, err := b.assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
 			return err
@@ -187,7 +188,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if shirtNumber, err := b.assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
-		} else if name, err := b.namesGenerator.GeneratePlayerFullName(playerId, timezone, countryIdx.Uint64()); err != nil {
+		} else if name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); err != nil {
 			return err
 		} else if err := b.universedb.PlayerCreate(
 			storage.Player{

@@ -142,7 +142,7 @@ func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 	return (count == 1), nil
 }
 
-func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	log.Debugf("[NAMES] GeneratePlayerFullName of playerId %v", playerId)
 	var country_id uint64
 	// country_id is an encoding of (tz, countryIdx):
@@ -188,6 +188,9 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, timezone uint8, co
 	surname, err := b.GenerateName(true, playerId, code_surname, pure_pure+foreign_pure)
 	if err != nil {
 		return "", err
+	}
+	if generation > 0 {
+		surname += " Jr."
 	}
 	return name + " " + surname, nil
 }
