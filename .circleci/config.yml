@@ -33,7 +33,7 @@ jobs:
     steps:
       - checkout
       - run: make setup contracts
-      - run: cd go/cmd/ && go build ./notary.go
+      - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary && go test ./... -p 1
   relay-api:
     executor: freeverse
