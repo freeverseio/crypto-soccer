@@ -68,7 +68,11 @@ func (b *Processor) Process() error {
 }
 
 func (b *Processor) updateAuction(auction *storage.Auction) error {
-	return b.db.UpdateAuctionState(auction.UUID, auction.State, auction.StateExtra)
+	err := b.db.UpdateAuctionState(auction.UUID, auction.State, auction.StateExtra)
+	if err != nil {
+		return err
+	}
+	return b.db.UpdateAuctionPaymentUrl(auction.UUID, auction.PaymentURL)
 }
 
 func (b *Processor) updateBids(bids []*storage.Bid) error {
