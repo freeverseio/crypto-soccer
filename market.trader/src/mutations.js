@@ -25,7 +25,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             ${sql.value(validUntil)},
             ${sql.value(signature)},
             ${sql.value('STARTED')},
-            ${sql.value(seller)}, 
+            ${sql.value(seller)}
             )`;
           const {text, values} = sql.compile(query);
           await context.pgClient.query(text, values);
