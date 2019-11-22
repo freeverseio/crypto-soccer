@@ -1,5 +1,6 @@
 pragma solidity ^0.5.0;
 
+import "./Assets.sol";
 import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
@@ -23,9 +24,14 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
     uint8 constant public SK_DEF = 3;
     uint8 constant public SK_END = 4;
 
+    Assets private _assets;
     Engine private _engine;
 
     bool dummyBoolToEstimateCost;
+
+    function setAssetsAddress(address addr) public {
+        _assets = Assets(addr);
+    }
 
     function setEngine(address addr) public {
         _engine = Engine(addr);
@@ -158,7 +164,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         uint256 matchStartTime
     ) 
         public
-        pure
+        view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
         (uint8[25] memory weights, uint8 specialPlayer) = decodeTP(userAssignment);
@@ -188,9 +194,8 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
     // skill(i)     = max(0, skill(i) + deltaS(i))
     // 
     // shoot, speed, pass, defence, endurance
-    function evolvePlayer(uint256 skills, uint256 TPs, uint8[5] memory weights, uint256 matchStartTime) public pure returns(uint256) {
+    function evolvePlayer(uint256 skills, uint256 TPs, uint8[5] memory weights, uint256 matchStartTime) public view returns(uint256) {
         uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
-        // bool generatesChild = (ageInSecs > 1166832000); // 1166832000 = 37 * Ys
 
         uint256 potential = getPotential(skills);
         uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
@@ -232,9 +237,22 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
             skills = setEndurance(skills, 1);
         }
         // 5: sumSkills
-        return setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
+        skills = setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
+        return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
 
-
+    function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
+        if ((getSumOfSkills(skills) > 200) && (ageInSecs < 1166832000)) {   // 1166832000 = 37 * Ys
+            return skills;
+        }
+        uint256 dna = uint256(keccak256(abi.encode(skills, ageInSecs)));
+        ageInSecs = 504576000 + (dna % 126144000);  // 504576000 = 16 * years2secs, 126144000 = 4 * years2secs
+        uint256 dayOfBirth = (matchStartTime - ageInSecs / 7)/86400; // 86400 = 24 * 3600
+        dna >>= 13; // log2(7300) = 12.8
+        uint256 playerId = getPlayerIdFromSkills(skills);
+        uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_assets.getPlayerStateAtBirth(playerId)));
+        (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(dna, shirtNum);
+        encodePlayerSkills(newSkills, dayOfBirth, uint8(getGeneration(skills) + 1), playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+    }
 }
 

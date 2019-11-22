@@ -279,20 +279,18 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
-    function computeSkillsAndEncode(uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal view returns (uint256) {
+    function computeSkillsAndEncode(uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
         uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 dayOfBirth;
-        uint8 generation;
-        (dayOfBirth, dna, generation) = computeBirthDay(dna, playerCreationDay);
+        (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
         (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, dayOfBirth, generation, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+        return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
-    function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
+    function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
         if (getIsSpecial(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
@@ -306,18 +304,10 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     /// @param dna is a random number used as seed of the skills
     /// @param playerCreationDay since unix epoch
     /// @return dayOfBirth since unix epoch
-    function computeBirthDay(uint256 dna, uint256 playerCreationDay) public view returns (uint16, uint256, uint8) {
+    function computeBirthDay(uint256 dna, uint256 playerCreationDay) public pure returns (uint16, uint256) {
         uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16*365, 7300 = 20 * 365
-        // minAge = 16,  retirementAge = 37  (so that 37 = 16 + 3 * 7)
-        // gen0Bday = playerCreationDay - ageInDays / 7
-        // ageInSecs = 7 * (now - gen0Bday * day2secs)
-        // generation = (ageInYears - 16)// 21 = (ageInSecs - 16 * year2secs) // (21 * year2secs)
-        // bday = gen0Bday + 21 * generation * 365 / 7  = gen0Bday + 3 * 365 * generation
         dna >>= 13; // log2(7300) = 12.8
-        uint256 gen0Bday = playerCreationDay - ageInDays / 7;
-        uint256 ageInSecs = 7 * (now - gen0Bday * 86400);  // 86400 = day2secs
-        uint8 gen = uint8((ageInSecs - 504576000) / 662256000);  // 504576000 = 16* year2secs,  662256000 = 21 * year2secs
-        return (uint16(gen0Bday + gen * 1095), dna, gen); // 1095 = 3 * 365
+        return (uint16(playerCreationDay - ageInDays / 7), dna); // 1095 = 3 * 365
     }
     
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)

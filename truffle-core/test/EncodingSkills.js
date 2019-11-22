@@ -162,7 +162,11 @@ contract('Encoding', (accounts) => {
         skills = await encoding.setTargetTeamId(skills, targetTeamId = 2**40).should.be.fulfilled;
         result = await encoding.getTargetTeamId(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(targetTeamId);
-        
+
+        skills = await encodingSet.setGeneration(skills, gen = 2).should.be.fulfilled;
+        result = await encoding.getGeneration(skills).should.be.fulfilled;
+        result.toNumber().should.be.equal(gen);
+
     });
 
     it('encoding skills with wrong forwardness and leftishness', async () =>  {

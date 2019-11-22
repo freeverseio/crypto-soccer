@@ -107,6 +107,7 @@ async function createSpecialPlayerId(internalId = 144321433) {
   playerId = await assets.encodePlayerSkills(
       sk,
       dayOfBirth = 4*365, 
+      gen = 0,
       internalId,
       [potential = 5,
       forwardness = 3,
