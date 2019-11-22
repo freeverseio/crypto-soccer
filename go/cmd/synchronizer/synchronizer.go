@@ -27,7 +27,7 @@ func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
-	nameDatabase := flag.String("nameDatabase", "", "name database path")
+	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
@@ -39,9 +39,9 @@ func main() {
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	flag.Parse()
 
-	if _, err := os.Stat(*nameDatabase); err != nil {
+	if _, err := os.Stat(*namesDatabase); err != nil {
 		if os.IsNotExist(err) {
-			log.Fatalf("no file at %v", *nameDatabase)
+			log.Fatalf("no names database file at %v", *namesDatabase)
 		}
 	}
 
@@ -135,7 +135,7 @@ func main() {
 		}
 	}
 
-	namesdb, err := names.New(*nameDatabase)
+	namesdb, err := names.New(*namesDatabase)
 	if err != nil {
 		log.Fatalf("Failed to connect to names DBMS: %v", err)
 	}
