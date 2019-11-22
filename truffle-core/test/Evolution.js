@@ -207,7 +207,7 @@ contract('Evolution', (accounts) => {
         MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
-    it('getTeamEvolvedSkills', async () => {
+    it2('getTeamEvolvedSkills', async () => {
         weights = Array.from(new Array(25), (x,i) => 3*i % 14);
         specialPlayer = 21;
         // make sure they sum to MAX_WEIGHT:
@@ -228,7 +228,7 @@ contract('Evolution', (accounts) => {
         }
     });
     
-    it('getTeamEvolvedSkills with realistic team and zero TPs', async () => {
+    it2('getTeamEvolvedSkills with realistic team and zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
@@ -249,7 +249,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
     
-    it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
+    it2('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
@@ -270,7 +270,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
 
-    it('test evolvePlayer at zero potential', async () => {
+    it2('test evolvePlayer at zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -303,7 +303,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expected[4]);
     });
     
-    it('test evolvePlayer with TPs= 0', async () => {
+    it2('test evolvePlayer with TPs= 0', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [12, 13, 155, 242, 32], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -337,7 +337,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('test evolvePlayer at non-zero potential', async () => {
+    it2('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -376,7 +376,7 @@ contract('Evolution', (accounts) => {
 
     it('test evolvePlayer at non-zero potential and age', async () => {
         playerSkills = await engine.encodePlayerSkills(
-            skills = [10, 10, 10, 10, 10], 
+            skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
             gen = 0,
             playerId = 2132321,
@@ -395,7 +395,7 @@ contract('Evolution', (accounts) => {
         weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [14, 18, 22, 27, 31];
+        expected = [114, 118, 122, 127, 131];
         result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[1]);
@@ -411,7 +411,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expectedSumSkills);
     });
 
-    it('test evolvePlayer with old age', async () => {
+    it2('test evolvePlayer with old age', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [1000, 2000, 3000, 4000, 5000], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -444,7 +444,7 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expected[4]);
     });
 
-    it('test that we can a 2nd half and include the evolution points too', async () => {
+    it2('test that we can a 2nd half and include the evolution points too', async () => {
         matchLog = await evolution.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
@@ -459,7 +459,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points: estimate cost', async () => {
+    it2('training points: estimate cost', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
@@ -467,7 +467,7 @@ contract('Evolution', (accounts) => {
         logFinal = await evolution.computeTrainingPointsWithCost([log0, log0]);
     });    
         
-    it('training points with random inputs', async () => {
+    it2('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];
         outGames = [9, 14]
@@ -492,7 +492,7 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points with no goals nor anything else', async () => {
+    it2('training points with no goals nor anything else', async () => {
         log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
@@ -507,7 +507,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by attackers', async () => {
+    it2('training points with many goals by attackers', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
         shoot   = Array.from(new Array(goals), (x,i) => 10);
@@ -527,7 +527,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by mids', async () => {
+    it2('training points with many goals by mids', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 6);
@@ -547,7 +547,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals by defs with assists', async () => {
+    it2('training points with many goals by defs with assists', async () => {
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 6);
         shoot   = Array.from(new Array(goals), (x,i) => 2);
@@ -568,7 +568,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals with a winner at home', async () => {
+    it2('training points with many goals with a winner at home', async () => {
         win = 0;
         isHome = true;
 
@@ -600,7 +600,7 @@ contract('Evolution', (accounts) => {
         }
     });    
 
-    it('training points with many goals with a winner away', async () => {
+    it2('training points with many goals with a winner away', async () => {
         win = 1;
         isHome = true;
 
@@ -633,7 +633,7 @@ contract('Evolution', (accounts) => {
         }
     });    
     
-    it('training points with no goals but cards', async () => {
+    it2('training points with no goals but cards', async () => {
         outGames    = [4, 6];
         types       = [RED_CARD, RED_CARD];
         yellows1    = [3, 7];
@@ -653,7 +653,7 @@ contract('Evolution', (accounts) => {
         }
     });    
     
-    it('training points with many goals by attackers... and different teamSumSkills', async () => {
+    it2('training points with many goals by attackers... and different teamSumSkills', async () => {
         // first get the resulting Traning points with teamSkills difference: [25, 25]
         goals = 5;
         ass     = Array.from(new Array(goals), (x,i) => 10);
