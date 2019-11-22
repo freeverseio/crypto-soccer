@@ -5,7 +5,6 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
-const timeTravel = require('../utils/TimeTravel.js');
 
 const Assets = artifacts.require('Assets');
 const Updates = artifacts.require('Updates');
@@ -33,53 +32,8 @@ contract('Assets', (accounts) => {
         PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
-        snapShot = await timeTravel.takeSnapshot();
-        snapshotId = snapShot['result'];
         });
         
-    afterEach(async() => {
-        await timeTravel.revertToSnapShot(snapshotId);
-    });
-
-    it('generation makes them younger, and check isReplacedByChildInInterval', async () =>  {
-        snapShot = await timeTravel.takeSnapshot();
-        snapshotId = snapShot['result'];
-        nowSecs = await updates.getNow().should.be.fulfilled;
-        nowSecs = nowSecs.toNumber()
-
-        playerId  = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 0);
-        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        bDay = await assets.getBirthDay(skills).should.be.fulfilled;
-        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-
-        // first, double check that ageInDays is as expected
-        ageInSecs = 7 * (nowSecs - bDay*24*3600)
-        ageInDays2 = Math.floor(ageInSecs / (3600*24))
-        ageInDays.toNumber().should.be.equal(ageInDays2)
-
-        // advance to the moment where the player is almost to become 27:
-        // ...and check that the bday is still as always:
-        secsToBecome37 = Math.floor((37*365*24*3600 - ageInSecs)/7);
-        await timeTravel.advanceTime(secsToBecome37 - 100).should.be.fulfilled;
-        await timeTravel.advanceBlock().should.be.fulfilled;
-        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        ageInDays.toNumber().should.be.equal(37*365-1);
-        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
-        bDayNew.toNumber().should.be.equal(bDay.toNumber())
-        // advance to the moment where the player is has just become 27:
-        // ...and check that the bday has moved:
-        await timeTravel.advanceTime(200).should.be.fulfilled;
-        await timeTravel.advanceBlock().should.be.fulfilled;
-        skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
-        bDayNew = await assets.getBirthDay(skills).should.be.fulfilled;
-        (bDayNew.toNumber() > bDay.toNumber()).should.be.equal(true);
-        
-        ageInDays = await assets.getPlayerAgeInDays(playerId).should.be.fulfilled;
-        ageInDays.toNumber().should.be.equal(16*365);
-
-    });
-    
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
         sumSkills = sk.reduce((a, b) => a + b, 0);
@@ -105,7 +59,6 @@ contract('Assets', (accounts) => {
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
-    return
         
     it('check division event on init', async () => {
         let timezone = 0;
@@ -327,28 +280,6 @@ contract('Assets', (accounts) => {
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(0);
     });
-
-    it('get player state of unexistent player', async () => {
-        tz = 1;
-        countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1; // last player that exists
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.fulfilled;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT; // player not existing
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 0; // dummy timeZone
-        countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 1; 
-        countryIdxInTZ = 1; // country not existing
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-    });
-
 
     it('isFreeShirt', async () => {
         tz = 1;
