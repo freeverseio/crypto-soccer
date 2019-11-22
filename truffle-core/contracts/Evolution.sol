@@ -252,6 +252,7 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         uint256 playerId = getPlayerIdFromSkills(skills);
         uint8 shirtNum = uint8(_assets.getCurrentShirtNum(_assets.getPlayerStateAtBirth(playerId)));
         (uint16[N_SKILLS] memory newSkills, uint8[4] memory birthTraits, uint32 sumSkills) = _assets.computeSkills(dna, shirtNum);
+        // if dna is even => leads to child, if odd => leads to roster player
         uint8 generation = uint8(getGeneration(skills) + 1 + (dna % 2 == 0 ? 0 : 32));
         return encodePlayerSkills(newSkills, dayOfBirth, generation, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
