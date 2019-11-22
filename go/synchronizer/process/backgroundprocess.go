@@ -12,6 +12,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
@@ -26,6 +27,7 @@ func BackgroundProcessNew(
 	client *ethclient.Client,
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
+	namesdb *names.Generator,
 	engineContract *engine.Engine,
 	enginePreCompContract *engineprecomp.Engineprecomp,
 	assetsContract *assets.Assets,
@@ -38,6 +40,7 @@ func BackgroundProcessNew(
 		client,
 		universedb,
 		relaydb,
+		namesdb,
 		engineContract,
 		enginePreCompContract,
 		assetsContract,

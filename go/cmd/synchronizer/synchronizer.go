@@ -17,6 +17,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -26,6 +27,7 @@ func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
 	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
+	nameDatabase := flag.String("nameDatabase", "", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	leaguesContractAddress := flag.String("leaguesContractAddress", "", "")
@@ -36,6 +38,12 @@ func main() {
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
 	flag.Parse()
+
+	if _, err := os.Stat(*nameDatabase); err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalf("no file at %v", *nameDatabase)
+		}
+	}
 
 	if *leaguesContractAddress == "" {
 		log.Fatal("no league contract address")
@@ -127,10 +135,16 @@ func main() {
 		}
 	}
 
+	namesdb, err := names.New(*nameDatabase)
+	if err != nil {
+		log.Fatalf("Failed to connect to names DBMS: %v", err)
+	}
+
 	process, err := process.BackgroundProcessNew(
 		client,
 		universedb,
 		relaydb,
+		namesdb,
 		engineContract,
 		enginePreCompContract,
 		assetsContract,

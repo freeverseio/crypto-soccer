@@ -34,6 +34,7 @@ type DivisionCreationProcessor struct {
 func NewDivisionCreationProcessor(
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
+	namesdb *names.Generator,
 	assets *assets.Assets,
 	leagues *leagues.Leagues,
 ) (*DivisionCreationProcessor, error) {
@@ -73,10 +74,6 @@ func NewDivisionCreationProcessor(
 	if err != nil {
 		return nil, err
 	}
-	namesGenerator, err := names.New("../../names/sql/00_goalRev.db")
-	if err != nil {
-		return nil, err
-	}
 	return &DivisionCreationProcessor{
 		universedb,
 		relaydb,
@@ -90,7 +87,7 @@ func NewDivisionCreationProcessor(
 		TEAMS_PER_LEAGUE,
 		calendarProcessor,
 		PLAYERS_PER_TEAM_INIT,
-		namesGenerator,
+		namesdb,
 	}, nil
 }
 

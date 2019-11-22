@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -20,11 +21,15 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	namesdb, err := names.New("../../names/sql/00_goalRev.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
-	process, err := process.NewDivisionCreationProcessor(db, relaydb, bc.Assets, bc.Leagues)
+	process, err := process.NewDivisionCreationProcessor(db, relaydb, namesdb, bc.Assets, bc.Leagues)
 	if err != nil {
 		t.Fatal(err)
 	}
