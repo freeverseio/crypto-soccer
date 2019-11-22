@@ -395,7 +395,7 @@ contract('Evolution', (accounts) => {
         weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [114, 118, 122, 127, 131];
+        expected = [104, 108, 112, 117, 121];
         result.toNumber().should.be.equal(expected[0]);
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(expected[1]);
