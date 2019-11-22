@@ -183,6 +183,8 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	AssertNoErr(err, "Error setting Assets address to market")
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), assetsAddress)
 	AssertNoErr(err, "Updates::InitUpdates(leagues) failed")
+	tx31, err = evolutionContract.SetAssetsAddress(bind.NewKeyedTransactor(owner), assetsAddress)
+	AssertNoErr(err, "Error setting engine contract in evolution contract")
 	tx3, err = evolutionContract.SetEngine(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in evolution contract")
 	tx30, err = engineContract.SetPreCompAddr(bind.NewKeyedTransactor(owner), engineprecompAddress)
