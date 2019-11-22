@@ -44,6 +44,7 @@ CREATE TABLE bids (
     state_extra TEXT NOT NULL DEFAULT '',
     payment_id TEXT NOT NULL DEFAULT '',
     payment_url TEXT NOT NULL DEFAULT '',
+    payment_timeout TEXT NOT NULL DEFAULT '',
     PRIMARY KEY(auction, extra_price)
 );
 
