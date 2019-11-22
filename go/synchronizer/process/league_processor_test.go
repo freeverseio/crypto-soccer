@@ -135,12 +135,17 @@ func TestLeagueProcessMatch(t *testing.T) {
 	day := uint8(0)
 	turnInDay := uint8(0)
 	seed := [32]byte{}
+	gameDeployDay, err := bc.Assets.GameDeployDay(&bind.CallOpts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	err = processor.Process(updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,
 		turnInDay,
 		seed,
-		big.NewInt(10),
+		big.NewInt(actionsSubmissionTime),
 		types.Log{},
 	})
 	if err != nil {
@@ -152,7 +157,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		day,
 		turnInDay,
 		seed,
-		big.NewInt(10),
+		big.NewInt(actionsSubmissionTime),
 		types.Log{},
 	})
 	if err != nil {
