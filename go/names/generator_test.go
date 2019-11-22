@@ -85,7 +85,7 @@ func TestGenerateChildName(t *testing.T) {
 	var timezone uint8
 	var countryIdxInTZ uint64
 	// if generation < 32, it means that it is an actual son
-	generation := uint8(1)
+	generation := uint8(0)
 	playerId := big.NewInt(int64(1))
 	timezone = 19
 	countryIdxInTZ = 0
@@ -97,7 +97,17 @@ func TestGenerateChildName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if int_hash(name) != uint64(543199398477969290) {
+	generation = uint8(1)
+	name2, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	if err != nil {
+		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+	}
+	fmt.Println(name2)
+	if len(name2) == 0 {
+		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+	}
+	name = name + " " + name2
+	if name != "Vicent Jessmer Edvin Jessmer Jr." {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -126,7 +136,7 @@ func TestGenerateRosterName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if int_hash(name) != uint64(8304443467234196407) {
+	if name != "Edvin Blasco" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
