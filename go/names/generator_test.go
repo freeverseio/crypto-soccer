@@ -84,7 +84,6 @@ func TestGenerateChildName(t *testing.T) {
 	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
 	var timezone uint8
 	var countryIdxInTZ uint64
-	var result string = ""
 	generation := uint8(1)
 	playerId := big.NewInt(int64(1))
 	timezone = 19
@@ -97,7 +96,7 @@ func TestGenerateChildName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if int_hash(name) != uint64(9973775471242569687) {
+	if int_hash(name) != uint64(3255245798050204676) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		t.Fatal("result of generating names not as expected")
