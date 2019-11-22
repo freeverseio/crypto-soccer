@@ -18,6 +18,10 @@ import (
 
 func TestProcessInvalidTimezone(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -35,6 +39,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 		ganache.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -134,6 +139,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		bc.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -141,12 +147,17 @@ func TestLeagueProcessMatch(t *testing.T) {
 	day := uint8(0)
 	turnInDay := uint8(0)
 	seed := [32]byte{}
+	gameDeployDay, err := bc.Assets.GameDeployDay(&bind.CallOpts{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	err = processor.Process(updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,
 		turnInDay,
 		seed,
-		big.NewInt(10),
+		big.NewInt(actionsSubmissionTime),
 		types.Log{},
 	})
 	if err != nil {
@@ -158,7 +169,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		day,
 		turnInDay,
 		seed,
-		big.NewInt(10),
+		big.NewInt(actionsSubmissionTime),
 		types.Log{},
 	})
 	if err != nil {
@@ -205,6 +216,7 @@ func TestLeagueShuffling(t *testing.T) {
 		bc.Evolution,
 		universedb,
 		relaydb,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)

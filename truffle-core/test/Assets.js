@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
 const Assets = artifacts.require('Assets');
+const Updates = artifacts.require('Updates');
 
 contract('Assets', (accounts) => {
     const ALICE = accounts[1];
@@ -20,6 +21,7 @@ contract('Assets', (accounts) => {
     beforeEach(async () => {
         assets = await Assets.new().should.be.fulfilled;
         initTx = await assets.init().should.be.fulfilled;
+        updates = await Updates.new().should.be.fulfilled;
         PLAYERS_PER_TEAM_INIT = await assets.PLAYERS_PER_TEAM_INIT().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await assets.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         LEAGUES_PER_DIV = await assets.LEAGUES_PER_DIV().should.be.fulfilled;
@@ -31,7 +33,6 @@ contract('Assets', (accounts) => {
         LEAGUES_PER_DIV = LEAGUES_PER_DIV.toNumber();
         TEAMS_PER_LEAGUE = TEAMS_PER_LEAGUE.toNumber();
         });
-
         
     it('create special players', async () => {
         sk = [16383, 13, 4, 56, 456]
@@ -39,6 +40,7 @@ contract('Assets', (accounts) => {
         specialPlayerId = await assets.encodePlayerSkills(
             sk,
             dayOfBirth = 4*365, 
+            generation = 0,
             playerId = 144321433,
             [potential = 5,
             forwardness = 3,
@@ -57,7 +59,7 @@ contract('Assets', (accounts) => {
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
-
+        
     it('check division event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
@@ -278,28 +280,6 @@ contract('Assets', (accounts) => {
         shirtNum =  await assets.getCurrentShirtNum(state).should.be.fulfilled; 
         shirtNum.toNumber().should.be.equal(0);
     });
-
-    it('get player state of unexistent player', async () => {
-        tz = 1;
-        countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1; // last player that exists
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.fulfilled;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT; // player not existing
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 0; // dummy timeZone
-        countryIdxInTZ = 0;
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-        tz = 1; 
-        countryIdxInTZ = 1; // country not existing
-        playerIdxInCountry = LEAGUES_PER_DIV * TEAMS_PER_LEAGUE * PLAYERS_PER_TEAM_INIT - 1;
-        playerId = await assets.encodeTZCountryAndVal(tz, countryIdxInTZ, playerIdxInCountry).should.be.fulfilled; 
-        state = await assets.getPlayerState(playerId).should.be.rejected;
-    });
-
 
     it('isFreeShirt', async () => {
         tz = 1;

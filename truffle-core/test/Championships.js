@@ -25,7 +25,7 @@ contract('Championships', (accounts) => {
         teamState = []
         sumSkills = skills.reduce((a, b) => a + b, 0);
         var playerStateTemp = await engine.encodePlayerSkills(
-            skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;
@@ -34,7 +34,7 @@ contract('Championships', (accounts) => {
         }
 
         playerStateTemp = await engine.encodePlayerSkills(
-            skills, dayOfBirth21, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
+            skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
             alignedEndOfLastHalfTwoVec[1], redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills
         ).should.be.fulfilled;

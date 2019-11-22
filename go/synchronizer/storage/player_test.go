@@ -78,6 +78,7 @@ func TestPlayerUpdate(t *testing.T) {
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
 	player.State.TeamId = big.NewInt(10)
+	player.State.Name = "Iam Awesome"
 	player.State.EncodedSkills = big.NewInt(4)
 	err = sto.PlayerCreate(player)
 	if err != nil {
@@ -93,6 +94,7 @@ func TestPlayerUpdate(t *testing.T) {
 	player2.State.EncodedSkills = big.NewInt(3)
 	player2.State.RedCardMatchesLeft = 1
 	player2.State.InjuryMatchesLeft = 3
+	player2.State.Name = "Iam Sad"
 	err = sto.PlayerUpdate(player2.PlayerId, player2.State)
 	if err != nil {
 		t.Fatal(err)
@@ -110,6 +112,10 @@ func TestPlayerUpdate(t *testing.T) {
 	if player2.State.EncodedSkills.String() != player3.State.EncodedSkills.String() {
 		t.Fatal("Skills player 3 are different")
 	}
+	if player3.State.Name != "Iam Sad" {
+		t.Fatal("Wrong Name")
+	}
+
 }
 
 func TestGetPlayer(t *testing.T) {

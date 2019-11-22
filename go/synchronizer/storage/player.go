@@ -10,7 +10,6 @@ import (
 
 type Player struct {
 	PlayerId          *big.Int
-	Name              string
 	PreferredPosition string
 	Potential         uint64
 	DayOfBirth        uint64
@@ -19,6 +18,7 @@ type Player struct {
 
 type PlayerState struct {
 	TeamId             *big.Int
+	Name               string
 	Defence            uint64
 	Speed              uint64
 	Pass               uint64
@@ -48,7 +48,7 @@ func (b *Player) Equal(player Player) bool {
 		b.State.Frozen == player.State.Frozen &&
 		b.State.RedCardMatchesLeft == player.State.RedCardMatchesLeft &&
 		b.State.InjuryMatchesLeft == player.State.InjuryMatchesLeft &&
-		b.Name == player.Name &&
+		b.State.Name == player.State.Name &&
 		b.DayOfBirth == player.DayOfBirth
 }
 
@@ -80,7 +80,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 		player.State.EncodedState.String(),
 		player.Potential,
 		player.State.Frozen,
-		player.Name,
+		player.State.Name,
 		player.DayOfBirth,
 	)
 	if err != nil {
@@ -108,8 +108,9 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 	frozen=$8, 
 	encoded_skills=$9,
 	red_card_matches_left=$10,
-	injury_matches_left=$11
-	WHERE player_id=$12;`,
+	injury_matches_left=$11,
+	name=$12
+	WHERE player_id=$13;`,
 		playerState.TeamId.String(),
 		playerState.Defence,
 		playerState.Speed,
@@ -121,6 +122,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 		playerState.EncodedSkills.String(),
 		playerState.RedCardMatchesLeft,
 		playerState.InjuryMatchesLeft,
+		playerState.Name,
 		playerID.String(),
 	)
 	return err
@@ -168,7 +170,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&encodedState,
 		&player.Potential,
 		&player.State.Frozen,
-		&player.Name,
+		&player.State.Name,
 		&player.DayOfBirth,
 		&player.State.RedCardMatchesLeft,
 		&player.State.InjuryMatchesLeft,

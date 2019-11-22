@@ -123,10 +123,13 @@ contract EncodingSkills {
      *      substitutedDuringLastHalf = 1b (bool) 
      *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
      *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
+     *      targetTeamId              = 43b
+     *      generation                = 8b 
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
         uint256 dayOfBirth, 
+        uint8 generation,
         uint256 playerId, 
         uint8[4] memory birthTraits,
         bool alignedEndOfLastHalf, 
@@ -165,7 +168,8 @@ contract EncodingSkills {
         encoded |= uint256(gamesNonStopping) << 154;
         encoded |= uint256(injuryWeeksLeft) << 157;
         encoded |= uint256(substitutedLastHalf ? 1 : 0) << 160;
-        return (encoded | uint256(sumSkills) << 161);
+        encoded |= uint256(sumSkills) << 161;
+        return (encoded | uint256(generation) << 223);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -250,5 +254,9 @@ contract EncodingSkills {
 
     function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills >> 180) & (2**43-1);
+    }
+
+    function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
+        return (encodedSkills >> 223) & 255;
     }
 }

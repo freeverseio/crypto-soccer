@@ -11,6 +11,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
 	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
 	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
@@ -37,6 +38,7 @@ func NewLeagueProcessor(
 	evolution *evolution.Evolution,
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
+	namesdb *names.Generator,
 ) (*LeagueProcessor, error) {
 	calendarProcessor, err := NewCalendar(leagues, universedb)
 	if err != nil {
@@ -50,6 +52,7 @@ func NewLeagueProcessor(
 		evolution,
 		engine,
 		enginePreComp,
+		namesdb,
 	)
 	if err != nil {
 		return nil, err
