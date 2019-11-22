@@ -193,12 +193,12 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 		} else if err := b.universedb.PlayerCreate(
 			storage.Player{
 				PlayerId:          playerId,
-				Name:              name,
 				PreferredPosition: preferredPosition,
 				Potential:         potential.Uint64(),
 				DayOfBirth:        dayOfBirth.Uint64(),
 				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC
 					TeamId:        teamId,
+					Name:          name,
 					Defence:       defence.Uint64(), // TODO: type should be uint16
 					Speed:         speed.Uint64(),
 					Pass:          pass.Uint64(),

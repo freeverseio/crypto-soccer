@@ -445,7 +445,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			if err != nil {
 				return err
 			}
-			player.Name = newName
+			player.State.Name = newName
 		}
 		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
 		player.State.Defence = defence.Uint64()

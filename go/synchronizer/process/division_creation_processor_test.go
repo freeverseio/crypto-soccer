@@ -47,7 +47,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.Name == "" {
+	if player.State.Name == "" {
 		t.Fatal("name is empty")
 	}
 	if player.DayOfBirth == 0 {
