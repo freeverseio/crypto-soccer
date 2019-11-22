@@ -242,15 +242,6 @@ func (b *MatchProcessor) process2ndHalf(
 		matchLog,
 		matchBools,
 	)
-	if err != nil {
-		return logs, err
-	}
-	for i := 0; i < 2; i++ {
-		err = b.UpdateTeamSkills(states[i], startTime, logs[i])
-		if err != nil {
-			return logs, err
-		}
-	}
 	return logs, err
 }
 
@@ -309,25 +300,27 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(b.REDCARD):
-					player.State.RedCard = true
+					player.State.RedCardMatchesLeft = 2
 				case int64(b.SOFTINJURY):
-					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 1)
-					if err != nil {
-						return err
-					}
+					player.State.InjuryMatchesLeft = 3
 				case int64(b.HARDINJURY):
-					player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, 2)
-					if err != nil {
-						return err
-					}
+					player.State.InjuryMatchesLeft = 7
 				}
 			}
 		}
 		if is2ndHalf {
-			player.State.RedCard = false
+			if player.State.RedCardMatchesLeft > 0 {
+				player.State.RedCardMatchesLeft--
+			}
+			if player.State.InjuryMatchesLeft > 0 {
+				player.State.InjuryMatchesLeft--
+			}
 		}
-		player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCard)
-		if err != nil {
+		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.State.EncodedSkills, player.State.RedCardMatchesLeft, player.State.InjuryMatchesLeft)
+		if player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft != 0); err != nil {
+			return err
+		}
+		if player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
 			return err
 		}
 		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {

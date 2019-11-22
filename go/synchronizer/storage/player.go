@@ -18,18 +18,18 @@ type Player struct {
 }
 
 type PlayerState struct {
-	TeamId            *big.Int
-	Defence           uint64
-	Speed             uint64
-	Pass              uint64
-	Shoot             uint64
-	Endurance         uint64
-	ShirtNumber       uint8
-	EncodedSkills     *big.Int
-	EncodedState      *big.Int
-	Frozen            bool
-	RedCard           bool
-	InjuryMatchesLeft int
+	TeamId             *big.Int
+	Defence            uint64
+	Speed              uint64
+	Pass               uint64
+	Shoot              uint64
+	Endurance          uint64
+	ShirtNumber        uint8
+	EncodedSkills      *big.Int
+	EncodedState       *big.Int
+	Frozen             bool
+	RedCardMatchesLeft uint8
+	InjuryMatchesLeft  uint8
 }
 
 func (b *Player) Equal(player Player) bool {
@@ -46,7 +46,7 @@ func (b *Player) Equal(player Player) bool {
 		b.State.EncodedSkills.String() == player.State.EncodedSkills.String() &&
 		b.State.EncodedState.String() == player.State.EncodedState.String() &&
 		b.State.Frozen == player.State.Frozen &&
-		b.State.RedCard == player.State.RedCard &&
+		b.State.RedCardMatchesLeft == player.State.RedCardMatchesLeft &&
 		b.State.InjuryMatchesLeft == player.State.InjuryMatchesLeft &&
 		b.Name == player.Name &&
 		b.DayOfBirth == player.DayOfBirth
@@ -107,7 +107,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 	shirt_number=$7,
 	frozen=$8, 
 	encoded_skills=$9,
-	red_card=$10,
+	red_card_matches_left=$10,
 	injury_matches_left=$11
 	WHERE player_id=$12;`,
 		playerState.TeamId.String(),
@@ -119,7 +119,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 		playerState.ShirtNumber,
 		playerState.Frozen,
 		playerState.EncodedSkills.String(),
-		playerState.RedCard,
+		playerState.RedCardMatchesLeft,
 		playerState.InjuryMatchesLeft,
 		playerID.String(),
 	)
@@ -142,7 +142,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	frozen, 
 	name, 
 	day_of_birth, 
-	red_card,
+	red_card_matches_left,
 	injury_matches_left
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
@@ -170,7 +170,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 		&player.State.Frozen,
 		&player.Name,
 		&player.DayOfBirth,
-		&player.State.RedCard,
+		&player.State.RedCardMatchesLeft,
 		&player.State.InjuryMatchesLeft,
 	)
 	player.PlayerId = playerID

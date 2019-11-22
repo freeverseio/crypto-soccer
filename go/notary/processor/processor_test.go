@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/processor"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
@@ -81,7 +81,7 @@ func TestAuctionWithBid(t *testing.T) {
 	}
 	bid := storage.Bid{
 		Auction: auction.UUID,
-		State:   storage.BID_ACCEPTED,
+		State:   storage.BIDACCEPTED,
 	}
 	err = sto.CreateBid(bid)
 	if err != nil {
@@ -99,15 +99,15 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if auctions[0].State != storage.AUCTION_FAILED_TO_FREEZE {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, auctions[0].State)
+	if auctions[0].State != storage.AUCTION_FAILED {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED, auctions[0].State)
 	}
 	bids, err := sto.GetBidsOfAuction(auctions[0].UUID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bids[0].State != storage.BID_ACCEPTED {
-		t.Fatalf("Expects %v got %v", storage.BID_ACCEPTED, bids[0].State)
+	if bids[0].State != storage.BIDACCEPTED {
+		t.Fatalf("Expects %v got %v", storage.BIDACCEPTED, bids[0].State)
 	}
 }
 

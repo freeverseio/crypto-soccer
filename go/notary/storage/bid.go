@@ -11,12 +11,11 @@ import (
 type BidState string
 
 const (
-	BID_ACCEPTED      BidState = "ACCEPTED"
-	BID_REFUSED       BidState = "REFUSED"
-	BID_PAYING        BidState = "PAYING"
-	BID_PAID          BidState = "PAID"
-	BID_FAILED        BidState = "FAILED"
-	BID_FAILED_TO_PAY BidState = "FAILED_TO_PAY"
+	BIDACCEPTED BidState = "ACCEPTED"
+	BIDREFUSED  BidState = "REFUSED"
+	BIDPAYING   BidState = "PAYING"
+	BIDPAID     BidState = "PAID"
+	BIDFAILED   BidState = "FAILED"
 )
 
 type Bid struct {
@@ -28,7 +27,8 @@ type Bid struct {
 	Signature       string
 	State           BidState
 	StateExtra      string
-	PaymentID       int
+	PaymentID       string
+	PaymentURL      string
 }
 
 func (b *Storage) CreateBid(bid Bid) error {
@@ -49,7 +49,7 @@ func (b *Storage) UpdateBidState(auction uuid.UUID, extra_price int64, state Bid
 	return err
 }
 
-func (b *Storage) UpdateBidPaymentID(auction uuid.UUID, extra_price int64, ID int) error {
+func (b *Storage) UpdateBidPaymentID(auction uuid.UUID, extra_price int64, ID string) error {
 	_, err := b.db.Exec("UPDATE bids SET payment_id=$1 WHERE auction=$2 AND extra_price=$3;", ID, auction, extra_price)
 	return err
 }
@@ -59,9 +59,9 @@ func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url 
 	return err
 }
 
-func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]Bid, error) {
-	var bids []Bid
-	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id FROM bids WHERE auction=$1;", auctionUUID)
+func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
+	var bids []*Bid
+	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url FROM bids WHERE auction=$1;", auctionUUID)
 	if err != nil {
 		return bids, err
 	}
@@ -77,13 +77,14 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]Bid, error) {
 			&bid.State,
 			&bid.StateExtra,
 			&bid.PaymentID,
+			&bid.PaymentURL,
 		)
 		if err != nil {
 			return bids, err
 		}
 		bid.Auction = auctionUUID
 		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
-		bids = append(bids, bid)
+		bids = append(bids, &bid)
 	}
 	return bids, nil
 }

@@ -24,17 +24,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	timezoneIdx := uint8(1)
-	err = bc.InitOneTimezone(timezoneIdx)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,6 +101,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	playerIdx := big.NewInt(0)
 	playerID, err := bc.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
@@ -121,7 +112,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if owner.String() != "0x0000000000000000000000000000000000000000" {
+	if owner.String() != storage.BotOwner {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 

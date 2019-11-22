@@ -8,8 +8,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/processor"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/processor"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
 )

@@ -6,27 +6,27 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type AuctionMachine struct {
-	Auction   storage.Auction
-	Bids      []storage.Bid
+	Auction   *storage.Auction
+	Bids      []*storage.Bid
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
-	db        *storage.Storage
 }
 
 func New(
-	auction storage.Auction,
-	bids []storage.Bid,
+	auction *storage.Auction,
+	bids []*storage.Bid,
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
-	db *storage.Storage,
 ) (*AuctionMachine, error) {
 	if market == nil {
 		return nil, errors.New("market is nil")
@@ -44,7 +44,6 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
-		db,
 	}, nil
 }
 
@@ -56,9 +55,14 @@ func (b *AuctionMachine) Process() error {
 		return b.processAssetFrozen()
 	case storage.AUCTION_PAYING:
 		return b.processPaying()
-	case storage.AUCTION_NO_BIDS:
-		return b.processNoBids()
 	default:
-		return errors.New("unknown auction state")
+		return b.processUnknownState()
 	}
+}
+
+func (b *AuctionMachine) processUnknownState() error {
+	log.Infof("[auction] %v: unknown state %v", b.Auction.UUID, b.Auction.State)
+	b.Auction.StateExtra = "Unknown state " + string(b.Auction.State)
+	b.Auction.State = storage.AUCTION_FAILED
+	return nil
 }

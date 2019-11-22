@@ -150,11 +150,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 			if err != nil {
 				return err
 			}
-			isBotTeam, err := b.assets.IsBotTeam(&bind.CallOpts{}, team.TeamID)
-			if err != nil {
-				return err
-			}
-			if !isBotTeam {
+			if !storage.IsBotTeam(team) {
 				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,

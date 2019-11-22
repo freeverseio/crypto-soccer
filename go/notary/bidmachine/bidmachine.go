@@ -10,33 +10,34 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts/market"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
-	"github.com/freeverseio/crypto-soccer/go/marketpay"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type BidMachine struct {
-	auction   storage.Auction
-	bid       storage.Bid
+	auction   *storage.Auction
+	bid       *storage.Bid
 	market    *market.Market
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
 	client    *ethclient.Client
-	db        *storage.Storage
 }
 
 func New(
-	auction storage.Auction,
-	bid storage.Bid,
+	auction *storage.Auction,
+	bid *storage.Bid,
 	market *market.Market,
 	freeverse *ecdsa.PrivateKey,
 	client *ethclient.Client,
-	db *storage.Storage,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
+	}
+	if auction.UUID != bid.Auction {
+		return nil, errors.New("Bid of wrong auction")
 	}
 	return &BidMachine{
 		auction,
@@ -45,22 +46,21 @@ func New(
 		freeverse,
 		signer.NewSigner(market, freeverse),
 		client,
-		db,
 	}, nil
 }
 
-func IndexFirstAlive(bids []storage.Bid) int {
+func FirstAlive(bids []*storage.Bid) *storage.Bid {
 	// first searching for PAYING bid
-	for i, bid := range bids {
-		if bid.State == storage.BID_PAYING {
-			return i
+	for i := range bids {
+		if bids[i].State == storage.BIDPAYING {
+			return bids[i]
 		}
 	}
 	// then search for the highest ACCEPTED bid
 	idx := -1
 	extraPrice := int64(-1)
 	for i, bid := range bids {
-		if bid.State == storage.BID_ACCEPTED {
+		if bid.State == storage.BIDACCEPTED {
 			if idx == -1 {
 				idx = i
 				extraPrice = bid.ExtraPrice
@@ -72,55 +72,40 @@ func IndexFirstAlive(bids []storage.Bid) int {
 			}
 		}
 	}
-	return idx
+	if idx == -1 {
+		return nil
+	}
+	return bids[idx]
 }
 
-func (b *BidMachine) Process() (storage.Bid, error) {
+func (b *BidMachine) Process() error {
 	switch b.bid.State {
-	case storage.BID_PAYING:
-		return b.bid, b.processPaying()
-	case storage.BID_ACCEPTED:
-		return b.bid, b.processAccepted()
-	case storage.BID_FAILED_TO_PAY:
-		return b.bid, nil
+	case storage.BIDPAYING:
+		return b.processPaying()
+	case storage.BIDACCEPTED:
+		return b.processAccepted()
+	case storage.BIDFAILED:
+		return nil
 	default:
-		return b.bid, errors.New("Unknown bid state")
+		return errors.New("Unknown bid state")
 	}
 }
 
 func (b *BidMachine) processPaying() error {
-	if b.bid.PaymentID < 0 {
+	if b.bid.PaymentID == "" {
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
 		market, err := marketpay.New()
 		if err != nil {
 			return err
 		}
-		seller, err := market.CreateCustomer("+34", "657497063")
-		if err != nil {
-			return err
-		}
-		buyer, err := market.CreateCustomer("+34", "659853780")
-		if err != nil {
-			return err
-		}
 		price := fmt.Sprintf("%.2f", float64(b.auction.Price.Int64()+b.bid.ExtraPrice)/100.0)
 		name := "Freeverse Player transaction"
-		order, err := market.CreateOrder(seller, buyer, name, price)
+		order, err := market.CreateOrder(name, price)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateAuctionPaymentUrl(b.auction.UUID, order.Data.SellerLink)
-		if err != nil {
-			return err
-		}
-		err = b.db.UpdateBidPaymentID(b.bid.Auction, b.bid.ExtraPrice, order.Data.ID)
-		if err != nil {
-			return err
-		}
-		err = b.db.UpdateBidPaymentUrl(b.bid.Auction, b.bid.ExtraPrice, order.Data.BuyerLink)
-		if err != nil {
-			return err
-		}
+		b.bid.PaymentID = order.TrusteeShortlink.Hash
+		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
 	} else {
 		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
 		market, err := marketpay.New()
@@ -131,7 +116,7 @@ func (b *BidMachine) processPaying() error {
 		if err != nil {
 			return err
 		}
-		paid := market.IsPaid(order)
+		paid := market.IsPaid(*order)
 		if paid {
 			isOffer2StartAuction := false
 			bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))
@@ -174,45 +159,29 @@ func (b *BidMachine) processPaying() error {
 				isOffer2StartAuction,
 			)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = err.Error()
 				return err
 			}
 			receipt, err := helper.WaitReceipt(b.client, tx, 60)
 			if err != nil {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, err.Error())
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Timeout waiting for the receipt"
 				return err
 			}
 			if receipt.Status == 0 {
-				err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_FAILED, "receipt.Status == 0")
-				if err != nil {
-					return err
-				}
-				b.bid.State = storage.BID_FAILED
+				b.bid.State = storage.BIDFAILED
+				b.bid.StateExtra = "Mined but receipt.Status == 0"
 				return err
 			}
-			err = b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAID, "")
-			if err != nil {
-				return err
-			}
-			b.bid.State = storage.BID_PAID
+			b.auction.PaymentURL = order.SettlorShortlink.ShortURL
+			b.bid.State = storage.BIDPAID
 		}
 	}
 	return nil
 }
 
 func (b *BidMachine) processAccepted() error {
-	err := b.db.UpdateBidState(b.bid.Auction, b.bid.ExtraPrice, storage.BID_PAYING, "")
-	if err != nil {
-		return err
-	}
-	b.bid.State = storage.BID_PAYING
+	b.bid.State = storage.BIDPAYING
 	return nil
 }

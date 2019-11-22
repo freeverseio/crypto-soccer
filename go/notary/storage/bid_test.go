@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/google/uuid"
 )
 
@@ -37,7 +37,7 @@ func TestGetbids(t *testing.T) {
 	err = sto.CreateBid(storage.Bid{
 		Auction: auctionUuid,
 		TeamID:  big.NewInt(2),
-		State:   storage.BID_ACCEPTED,
+		State:   storage.BIDACCEPTED,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -84,13 +84,13 @@ func TestUpdateBidState(t *testing.T) {
 	bid := storage.Bid{
 		Auction: auctionUuid,
 		TeamID:  big.NewInt(2),
-		State:   storage.BID_ACCEPTED,
+		State:   storage.BIDACCEPTED,
 	}
 	err = sto.CreateBid(bid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	bidState := storage.BID_FAILED
+	bidState := storage. BIDFAILED
 	bidStateExtra := "it's just a game dude!"
 	err = sto.UpdateBidState(bid.Auction, bid.ExtraPrice, bidState, bidStateExtra)
 	if err != nil {
@@ -137,13 +137,13 @@ func TestUpdatePaymentId(t *testing.T) {
 	bid := storage.Bid{
 		Auction: auctionUuid,
 		TeamID:  big.NewInt(2),
-		State:   storage.BID_ACCEPTED,
+		State:   storage.BIDACCEPTED,
 	}
 	err = sto.CreateBid(bid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	paymentID := 35565645
+	paymentID := "35565645"
 	err = sto.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, paymentID)
 	if err != nil {
 		t.Fatal(err)

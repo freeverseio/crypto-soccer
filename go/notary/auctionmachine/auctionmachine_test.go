@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/signer"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/freeverseio/crypto-soccer/go/helper"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/auctionmachine"
-	"github.com/freeverseio/crypto-soccer/go/marketnotary/storage"
+	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 	"github.com/google/uuid"
 )
@@ -23,17 +23,13 @@ func TestAuctionWithNoBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
 		State:      storage.AUCTION_STARTED,
 	}
-	bids := []storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	bids := []*storage.Bid{}
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,18 +51,13 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 10),
 		State:      storage.AUCTION_STARTED,
 	}
-	bids := []storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	bids := []*storage.Bid{}
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,11 +79,6 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	tx, err := bc.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
@@ -103,7 +89,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		PlayerID:   big.NewInt(274877906944),
 		CurrencyID: uint8(1),
@@ -113,12 +99,12 @@ func TestStartedAuctionWithBids(t *testing.T) {
 		Signature:  "0x4cc92984c7ee4fe678b0c9b1da26b6757d9000964d514bdaddc73493393ab299276bad78fd41091f9fe6c169adaa3e8e7db146a83e0a2e1b60480320443919471c",
 		State:      storage.AUCTION_STARTED,
 	}
-	bids := []storage.Bid{
-		storage.Bid{
+	bids := []*storage.Bid{
+		&storage.Bid{
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -126,8 +112,8 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if machine.Auction.State != storage.AUCTION_FAILED_TO_FREEZE {
-		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED_TO_FREEZE, machine.Auction.State)
+	if machine.Auction.State != storage.AUCTION_FAILED {
+		t.Fatalf("Expected %v but %v", storage.AUCTION_FAILED, machine.Auction.State)
 	}
 }
 
@@ -136,25 +122,21 @@ func TestFrozenAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = bc.DeployContracts(bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() + 100),
 		State:      storage.AUCTION_ASSET_FROZEN,
 	}
-	bids := []storage.Bid{
-		storage.Bid{
+	bids := []*storage.Bid{
+		&storage.Bid{
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,25 +154,21 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = bc.DeployContracts(bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 100),
 		State:      storage.AUCTION_ASSET_FROZEN,
 	}
-	bids := []storage.Bid{
-		storage.Bid{
+	bids := []*storage.Bid{
+		&storage.Bid{
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -208,25 +186,22 @@ func TestPayingAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	err = bc.DeployContracts(bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		ValidUntil: big.NewInt(time.Now().Unix() - 1),
 		State:      storage.AUCTION_PAYING,
 	}
-	bids := []storage.Bid{
-		storage.Bid{
+	bids := []*storage.Bid{
+		&storage.Bid{
 			Auction: auction.UUID,
+			State:   storage.BIDACCEPTED,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -241,10 +216,6 @@ func TestPayingAuction(t *testing.T) {
 
 func TestPayingPaymentDoneAuction(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -304,7 +275,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := storage.Auction{
+	auction := &storage.Auction{
 		UUID:       uuid.New(),
 		PlayerID:   playerID,
 		CurrencyID: currencyID,
@@ -333,17 +304,17 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bids := []storage.Bid{
-		storage.Bid{
+	bids := []*storage.Bid{
+		&storage.Bid{
 			Auction:    auction.UUID,
 			ExtraPrice: extraPrice.Int64(),
 			Rnd:        bidRnd.Int64(),
 			TeamID:     teamID,
 			Signature:  "0x" + hex.EncodeToString(signBidMsg),
-			State:      storage.BID_ACCEPTED,
+			State:      storage.BIDACCEPTED,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client, db)
+	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,16 +333,17 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
-	if machine.Bids[0].State != storage.BID_PAYING {
+	if machine.Bids[0].State != storage.BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
-	if machine.Bids[0].State != storage.BID_PAYING {
+	if machine.Bids[0].State != storage.BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
-	// time.Sleep(2 * time.Second)
+	// following is commented because we need an action from the user to make marketpay set it as PAID
+	// time.Sleep(10 * time.Second)
 	// err = machine.Process()
 	// if err != nil {
 	// 	t.Fatal(err)
@@ -379,7 +351,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	// if machine.Auction.State != storage.AUCTION_PAID {
 	// 	t.Fatalf("Expected not %v", machine.Auction.State)
 	// }
-	// if machine.Bids[0].State != storage.BID_PAID {
+	// if machine.Bids[0].State != storage.BIDPAID {
 	// 	t.Fatalf("Expected not %v", machine.Bids[0].State)
 	// }
 }

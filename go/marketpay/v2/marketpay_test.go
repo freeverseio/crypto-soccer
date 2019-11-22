@@ -1,13 +1,13 @@
-package marketpay_test
+package v2_test
 
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/marketpay"
+	v2 "github.com/freeverseio/crypto-soccer/go/marketpay/v2"
 )
 
 func TestCreation(t *testing.T) {
-	mp, err := marketpay.New()
+	mp, err := v2.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +17,7 @@ func TestCreation(t *testing.T) {
 }
 
 func TestCreateCustomer(t *testing.T) {
-	mp, err := marketpay.New()
+	mp, err := v2.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestCreateCustomer(t *testing.T) {
 }
 
 func TestCreateOrder(t *testing.T) {
-	mp, err := marketpay.New()
+	mp, err := v2.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp, err := marketpay.New()
+	mp, err := v2.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestIsPaid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	isPaid := mp.IsPaid(order)
+	isPaid := mp.IsPaid(*order)
 	if isPaid {
 		t.Fatal("The order shouldn't be paid")
 	}
