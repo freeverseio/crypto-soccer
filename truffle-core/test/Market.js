@@ -9,6 +9,7 @@ const timeTravel = require('../utils/TimeTravel.js');
 
 const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
+const Privileged = artifacts.require('Privileged');
 
 
 // THE 2 MAIN API FUNCTIONS: signPutAssetForSaleMTx & signAgreeToBuyPlayerMTx:
@@ -103,24 +104,14 @@ function buildOfferToBuyTeamMsg(currencyId, price, rnd, validUntil, playerId) {
 
 async function createSpecialPlayerId(internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
-  sumSkills = sk.reduce((a, b) => a + b, 0);
-  playerId = await assets.encodePlayerSkills(
-      sk,
-      dayOfBirth = 4*365, 
-      gen = 0,
-      internalId,
-      [potential = 5,
-      forwardness = 3,
-      leftishness = 4,
-      aggressiveness = 1],
-      alignedEndOfLastHalf = true,
-      redCardLastGame = true,
-      gamesNonStopping = 2,
-      injuryWeeksLeft = 6,
-      substitutedLastHalf = true,
-      sumSkills
+  traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
+  secsInYear = 365*24*3600
+  playerId = await privileged.createSpecialPlayer(
+    sk,
+    age = 24 * secsInYear,
+    traits,
+    internalId
   ).should.be.fulfilled;
-  playerId = await assets.addIsSpecial(playerId).should.be.fulfilled;
   return playerId;
 }
 
@@ -361,6 +352,7 @@ contract("Market", accounts => {
     await assets.init().should.be.fulfilled;
     market = await Market.new().should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
+    privileged = await Privileged.new().should.be.fulfilled;
     encoding = assets;
     sellerAccount = await web3.eth.accounts.create("iamaseller");
     buyerAccount = await web3.eth.accounts.create("iamabuyer");
@@ -386,7 +378,7 @@ contract("Market", accounts => {
 
   });
 
-  it('setAcquisitionConstraint of constraints in friendlies)', async () => {
+  it2('setAcquisitionConstraint of constraints in friendlies)', async () => {
     maxNumConstraints = 7;
     remainingAcqs = 0;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -403,7 +395,7 @@ contract("Market", accounts => {
     }
   });
   
-  it('addAcquisitionConstraint of constraints in friendlies', async () => {
+  it2('addAcquisitionConstraint of constraints in friendlies', async () => {
     maxNumConstraints = 7;
     teamId = buyerTeamId;
     for (c = 0; c < maxNumConstraints; c++) {
@@ -418,7 +410,7 @@ contract("Market", accounts => {
     await market.addAcquisitionConstraint(teamId, valUnt = now.toNumber() + (c + 1) * 4400, numRemain = c + 1).should.be.rejected;
   });
 
-  it('encoding of constraints pass with time', async () => {
+  it2('encoding of constraints pass with time', async () => {
     teamId = buyerTeamId;
     remainingAcqs = 0;
     acq = 5;
@@ -429,7 +421,7 @@ contract("Market", accounts => {
     isIt.should.be.equal(true);
   });
 
-  it('getMaxAllowedAcquisitions and decreaseMaxAllowedAcquisitions', async () => {
+  it2('getMaxAllowedAcquisitions and decreaseMaxAllowedAcquisitions', async () => {
     teamId = buyerTeamId;
     // initially, isContrained = false
     result = await  market.getMaxAllowedAcquisitions(teamId).should.be.fulfilled;
@@ -481,7 +473,7 @@ contract("Market", accounts => {
   // *********************************   TEST  *******************************
   // *************************************************************************
    
-  it('players: deterministic sign (values used in market.notary test)', async () => {
+  it2('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
     sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
@@ -519,7 +511,7 @@ contract("Market", accounts => {
     sigBuyer.signature.should.be.equal('0xdbe104e7b51c9b1e38cdda4e31c2036e531f7d3338d392bee2f526c4c892437f5e50ddd44224af8b3bd92916b93e4b0d7af2974175010323da7dedea19f30d621c');
   });
 
-  it('teams: deterministic sign (values used in market.notary test)', async () => {
+  it2('teams: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
 
     const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
@@ -559,7 +551,7 @@ contract("Market", accounts => {
   // ------------------------------------------------------------------------------------
   // ------------------------------------------------------------------------------------
   
-  it("teams: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it2("teams: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -578,7 +570,7 @@ contract("Market", accounts => {
     ).should.be.fulfilled;
   });
   
-  it("teams: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
+  it2("teams: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -597,7 +589,7 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
 
-  it("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
+  it2("teams: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
     validUntil = now.toNumber() + 3600*24*2; // two days
 
     sigSeller = await signPutAssetForSaleMTx(
@@ -654,7 +646,7 @@ contract("Market", accounts => {
     ).should.be.rejected;
   });
   
-  it("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it2("teams: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
@@ -688,7 +680,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
 
-  it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
+  it2("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx, sellerHiddenPrice = await freezeTeam(currencyId, price, sellerRnd, validUntil, sellerTeamId, sellerAccount).should.be.fulfilled;
     isTeamFrozen = await market.isTeamFrozen(sellerTeamId.toNumber()).should.be.fulfilled;
     isTeamFrozen.should.be.equal(true);
@@ -702,7 +694,7 @@ contract("Market", accounts => {
     ).should.be.rejected;    
   });
 
-  it("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
+  it2("teams: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because one of its players already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
     teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
@@ -729,7 +721,7 @@ contract("Market", accounts => {
   // ------------------------------------------------------------------------------------
   // ------------------------------------------------------------------------------------
 
-  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
+  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because his team is already frozen", async () => {
 
     // make sure we'll put for sale a player who belongs to the team that we will also put for sale.
     teamId = await assets.getCurrentTeamIdFromPlayerId(playerId).should.be.fulfilled;
@@ -747,7 +739,7 @@ contract("Market", accounts => {
   });
   
   
-  it("players: completes a MAKE_AN_OFFER via MTXs", async () => {
+  it2("players: completes a MAKE_AN_OFFER via MTXs", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -774,7 +766,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
+  it2("players: fails a MAKE_AN_OFFER via MTXs because offerValidUntil had expired", async () => {
     // now, sellerRnd is fixed by offerer
     offererRnd = 23987435;
     offerValidUntil = now.toNumber() + 3600; // valid for an hour
@@ -795,13 +787,13 @@ contract("Market", accounts => {
     
   });
   
-  it("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
+  it2("players: fails a MAKE_AN_OFFER via MTXs because validUntil is too large", async () => {
     tx, sellerHiddenPrice = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     validUntil = now.toNumber() + 3600*24*2; // two days
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.rejected;
   });
   
-  it("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
+  it2("players: completes a PUT_FOR_SALE and AGREE_TO_BUY via MTXs", async () => {
     // 1. buyer's mobile app sends to Freeverse: sigBuyer AND params (currencyId, price, ....)
     // 2. Freeverse checks signature and returns to buyer: OK, failed
     // 3. Freeverse advertises to owner that there is an offer to buy his asset at price
@@ -835,7 +827,7 @@ contract("Market", accounts => {
     finalOwner.should.be.equal(buyerAccount.address);
   });
   
-  it("players: tests constraints on players", async () => {
+  it2("players: tests constraints on players", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     // first acquisition works:
     playerId = await encoding.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, playerIdxInCountry = 4);
@@ -888,7 +880,7 @@ contract("Market", accounts => {
 
   });
 
-  it("promo players: completes an offering and accepting", async () => {
+  it2("promo players: completes an offering and accepting", async () => {
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
 
@@ -922,7 +914,7 @@ contract("Market", accounts => {
     owner.should.be.equal(buyerAccount.address);
   });
 
-  it("promo players: effect of constraints", async () => {
+  it2("promo players: effect of constraints", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     // first acquisition works:
@@ -943,7 +935,7 @@ contract("Market", accounts => {
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
   });
 
-  it("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
+  it2("promo players: a promo player cannot be acquired by any team other than targetTeam", async () => {
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
@@ -954,7 +946,7 @@ contract("Market", accounts => {
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.rejected;
   });
   
-  it("promo players: cannot offer a promo player that already exists", async () => {
+  it2("promo players: cannot offer a promo player that already exists", async () => {
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     playerId = await createSpecialPlayerId();
     playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
@@ -995,7 +987,7 @@ contract("Market", accounts => {
     tx = await market.transferPromoPlayer(playerId.toString(), validUntil, sigSellerMsgRS, sigBuyerMsgRS, sigSeller.v, sigBuyer.v).should.be.fulfilled;
   });
   
-  it("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
+  it2("players: fails a PUT_FOR_SALE and AGREE_TO_BUY via MTXs because isOffer2StartAuction is not correctly set ", async () => {
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, sellerAccount).should.be.fulfilled;
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
     isPlayerFrozen.should.be.equal(true);
@@ -1011,12 +1003,12 @@ contract("Market", accounts => {
   
   // OTHER TESTS
   
-  it("test accounts from truffle and web3", async () => {
+  it2("test accounts from truffle and web3", async () => {
     accountsWeb3 = await web3.eth.getAccounts().should.be.fulfilled;
     accountsWeb3[0].should.be.equal(accounts[0]);
   });
   
-  it('players: put for sale msg', async () => {
+  it2('players: put for sale msg', async () => {
     const validUntil = 2000000000;
     const playerId = 10;
     const currencyId = 1;
@@ -1034,7 +1026,7 @@ contract("Market", accounts => {
   });
   
    
-  it('players: deterministic sign (values used in market.notary test)', async () => {
+  it2('players: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
     buyerTeamId.should.be.bignumber.equal('274877906945');
     sellerTeamPlayerIds = await assets.getPlayerIdsInTeam(sellerTeamId).should.be.fulfilled;
@@ -1069,7 +1061,7 @@ contract("Market", accounts => {
     sigBuyer.signature.should.be.equal('0xdbe104e7b51c9b1e38cdda4e31c2036e531f7d3338d392bee2f526c4c892437f5e50ddd44224af8b3bd92916b93e4b0d7af2974175010323da7dedea19f30d621c');
   });
 
-  it('teams: deterministic sign (values used in market.notary test)', async () => {
+  it2('teams: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
 
     const sellerAccount = web3.eth.accounts.privateKeyToAccount('0x3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54');
