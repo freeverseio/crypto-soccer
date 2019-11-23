@@ -37,4 +37,17 @@ contract Privileged is EncodingSkills, EncodingSkillsSetters {
         );
         return addIsSpecial(skills);
     }
+    
+    function createPromoPlayer(
+        uint16[N_SKILLS] memory skillsVec,
+        uint256 ageInSecs,
+        uint8[4] memory birthTraits,
+        uint256 playerId,
+        uint256 targetTeamId
+    ) public view returns (uint256) {
+        return setTargetTeamId(
+            createSpecialPlayer(skillsVec, ageInSecs, birthTraits, playerId),
+            targetTeamId
+        );
+    }
 }

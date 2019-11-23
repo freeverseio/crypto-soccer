@@ -102,6 +102,20 @@ function buildOfferToBuyTeamMsg(currencyId, price, rnd, validUntil, playerId) {
   return buyerTxMsg;
 }
 
+async function createPromoPlayer(targetTeamId, internalId = 144321433) {
+  sk = [16383, 13, 4, 56, 456];
+  traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1];
+  secsInYear = 365*24*3600;
+  playerId = await privileged.createPromoPlayer(
+    sk,
+    age = 24 * secsInYear,
+    traits,
+    internalId,
+    targetTeamId
+  ).should.be.fulfilled;
+  return playerId;
+}
+
 async function createSpecialPlayerId(internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1]
@@ -883,9 +897,8 @@ contract("Market", accounts => {
 
   });
 
-  it2("promo players: completes an offering and accepting", async () => {
-    playerId = await createSpecialPlayerId();
-    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+  it("promo players: completes an offering and accepting", async () => {
+    playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
 
     sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
@@ -917,12 +930,11 @@ contract("Market", accounts => {
     owner.should.be.equal(buyerAccount.address);
   });
 
-  it2("promo players: effect of constraints", async () => {
+  it("promo players: effect of constraints", async () => {
     await market.addAcquisitionConstraint(buyerTeamId, valUnt = now.toNumber() + 1000, n = 1).should.be.fulfilled;
     await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
     // first acquisition works:
-    playerId = await createSpecialPlayerId();
-    playerId = await assets.setTargetTeamId(playerId, targetTeamId = buyerTeamId).should.be.fulfilled;
+    playerId = await createPromoPlayer(targetTeamId = buyerTeamId).should.be.fulfilled;
     sigSeller = await freeverseAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigBuyer = await buyerAccount.sign(concatHash(["uint256", "uint256"], [playerId.toString(), validUntil]));
     sigSellerMsgRS = [sigSeller.messageHash, sigSeller.r, sigSeller.s];
