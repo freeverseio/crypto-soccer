@@ -4,8 +4,7 @@ import (
 	"crypto/ecdsa"
 	"errors"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
@@ -15,35 +14,29 @@ import (
 type AuctionMachine struct {
 	Auction   *storage.Auction
 	Bids      []*storage.Bid
-	market    *market.Market
+	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
-	client    *ethclient.Client
 }
 
 func New(
 	auction *storage.Auction,
 	bids []*storage.Bid,
-	market *market.Market,
+	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
-	client *ethclient.Client,
 ) (*AuctionMachine, error) {
-	if market == nil {
+	if contracts.Market == nil {
 		return nil, errors.New("market is nil")
 	}
 	if freeverse == nil {
 		return nil, errors.New("owner is nil")
 	}
-	if client == nil {
-		return nil, errors.New("client is nil")
-	}
 	return &AuctionMachine{
 		auction,
 		bids,
-		market,
+		contracts,
 		freeverse,
-		signer.NewSigner(market, freeverse),
-		client,
+		signer.NewSigner(contracts, freeverse),
 	}, nil
 }
 

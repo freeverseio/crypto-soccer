@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
 	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
@@ -29,6 +30,7 @@ type BlockchainNode struct {
 	Market        *market.Market
 	Evolution     *evolution.Evolution
 	Owner         *ecdsa.PrivateKey
+	Contracts     *contracts.Contracts
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -74,6 +76,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 		nil,
 		nil,
 		creatorPrivateKey,
+		nil,
 	}, nil
 }
 
@@ -218,6 +221,11 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	b.Assets = assetsContract
 	b.Evolution = evolutionContract
 	b.EnginePreComp = enginePreComp
+
+	b.Contracts = &contracts.Contracts{
+		b.Client,
+		marketContract,
+	}
 
 	return nil
 }

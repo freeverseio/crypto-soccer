@@ -8,16 +8,16 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
 type Signer struct {
-	assets *market.Market
-	pvr    *ecdsa.PrivateKey
+	contracts *contracts.Contracts
+	pvr       *ecdsa.PrivateKey
 }
 
-func NewSigner(marketContract *market.Market, pvr *ecdsa.PrivateKey) *Signer {
-	return &Signer{marketContract, pvr}
+func NewSigner(contracts *contracts.Contracts, pvr *ecdsa.PrivateKey) *Signer {
+	return &Signer{contracts, pvr}
 }
 
 func (b *Signer) RSV(signature string) (r [32]byte, s [32]byte, v uint8, err error) {
@@ -41,7 +41,7 @@ func (b *Signer) RSV(signature string) (r [32]byte, s [32]byte, v uint8, err err
 }
 
 func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) ([32]byte, error) {
-	privateHash, err := b.assets.HashPrivateMsg(
+	privateHash, err := b.contracts.Market.HashPrivateMsg(
 		&bind.CallOpts{},
 		currencyId,
 		price,
@@ -52,7 +52,7 @@ func (b *Signer) HashPrivateMsg(currencyId uint8, price *big.Int, rnd *big.Int) 
 
 func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int) ([32]byte, error) {
 	var hash [32]byte
-	hashPrivateMessage, err := b.assets.HashPrivateMsg(
+	hashPrivateMessage, err := b.contracts.Market.HashPrivateMsg(
 		&bind.CallOpts{},
 		currencyId,
 		price,
@@ -61,7 +61,7 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.BuildPutAssetForSaleTxMsg(
+	hash, err = b.contracts.Market.BuildPutAssetForSaleTxMsg(
 		&bind.CallOpts{},
 		hashPrivateMessage,
 		validUntil,
@@ -70,7 +70,7 @@ func (b *Signer) HashSellMessage(currencyId uint8, price *big.Int, rnd *big.Int,
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+	hash, err = b.contracts.Market.Prefixed(&bind.CallOpts{}, hash)
 	return hash, err
 }
 
@@ -96,7 +96,7 @@ func (b *Signer) HashBidMessage(
 	if err != nil {
 		return hash, err
 	}
-	bidHiddenPrice, err := b.assets.HashBidHiddenPrice(
+	bidHiddenPrice, err := b.contracts.Market.HashBidHiddenPrice(
 		&bind.CallOpts{},
 		extraPrice,
 		bidRnd,
@@ -104,7 +104,7 @@ func (b *Signer) HashBidMessage(
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.BuildAgreeToBuyPlayerTxMsg(
+	hash, err = b.contracts.Market.BuildAgreeToBuyPlayerTxMsg(
 		&bind.CallOpts{},
 		auctionHashMsg,
 		bidHiddenPrice,
@@ -114,7 +114,7 @@ func (b *Signer) HashBidMessage(
 	if err != nil {
 		return hash, err
 	}
-	hash, err = b.assets.Prefixed(&bind.CallOpts{}, hash)
+	hash, err = b.contracts.Market.Prefixed(&bind.CallOpts{}, hash)
 	return hash, err
 }
 
@@ -130,7 +130,7 @@ func (b *Signer) Sign(hash [32]byte, pvr *ecdsa.PrivateKey) ([]byte, error) {
 }
 
 func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, error) {
-	return b.assets.HashBidHiddenPrice(
+	return b.contracts.Market.HashBidHiddenPrice(
 		&bind.CallOpts{},
 		extraPrice,
 		rnd,
@@ -139,7 +139,7 @@ func (b *Signer) BidHiddenPrice(extraPrice *big.Int, rnd *big.Int) ([32]byte, er
 
 // func (b *Signer) HashBuyMessage(currencyId uint8, price *big.Int, rnd *big.Int, validUntil *big.Int, playerId *big.Int, teamId *big.Int) ([32]byte, error) {
 // 	var hash [32]byte
-// 	hashPrivateMessage, err := b.assets.HashPrivateMsg(
+// 	hashPrivateMessage, err := b.contracts.Market.HashPrivateMsg(
 // 		&bind.CallOpts{},
 // 		currencyId,
 // 		price,

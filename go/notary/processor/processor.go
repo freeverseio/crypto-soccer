@@ -5,22 +5,20 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 type Processor struct {
 	db        *storage.Storage
-	client    *ethclient.Client
-	assets    *market.Market
+	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 }
 
-func NewProcessor(db *storage.Storage, ethereumClient *ethclient.Client, assetsContract *market.Market, freeverse *ecdsa.PrivateKey) (*Processor, error) {
-	return &Processor{db, ethereumClient, assetsContract, freeverse}, nil
+func NewProcessor(db *storage.Storage, contracts *contracts.Contracts, freeverse *ecdsa.PrivateKey) (*Processor, error) {
+	return &Processor{db, contracts, freeverse}, nil
 }
 
 func (b *Processor) Process() error {
@@ -41,9 +39,8 @@ func (b *Processor) Process() error {
 		machine, err := auctionmachine.New(
 			auction,
 			bids,
-			b.assets,
+			b.contracts,
 			b.freeverse,
-			b.client,
 		)
 		if err != nil {
 			return err

@@ -19,9 +19,8 @@ func TestNotPayingAuction(t *testing.T) {
 	_, err = bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err == nil {
 		t.Fatalf("Accepting %v auction", auction.State)
@@ -38,9 +37,8 @@ func TestPayingAuction(t *testing.T) {
 	_, err = bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatalf("Not accepting %v auction", auction.State)
@@ -89,9 +87,8 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	machine, err := bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -115,9 +112,8 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	machine, err := bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatal(err)

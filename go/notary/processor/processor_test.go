@@ -35,7 +35,7 @@ func TestOutdatedAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	processor, err := processor.NewProcessor(sto, bc.Client, bc.Market, bc.Owner)
+	processor, err := processor.NewProcessor(sto, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestAuctionWithBid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	processor, err := processor.NewProcessor(sto, bc.Client, bc.Market, bc.Owner)
+	processor, err := processor.NewProcessor(sto, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
