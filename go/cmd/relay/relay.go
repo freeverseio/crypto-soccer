@@ -23,6 +23,7 @@ func main() {
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
+	delay := flag.Int("delay", 5, "seconds of delay for the next submit")
 	flag.Parse()
 
 	if *updatesContractAddress == "" {
@@ -62,7 +63,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Unable to obtain privateLey")
 	}
-	process, err := relay.BackgroundProcessNew(client, privateKey, sto, updatesContract)
+	process, err := relay.BackgroundProcessNew(client, privateKey, sto, updatesContract, *delay)
 	if err != nil {
 		log.Fatal(err)
 	}
