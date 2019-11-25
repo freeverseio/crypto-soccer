@@ -29,7 +29,7 @@ type Bid struct {
 	StateExtra      string
 	PaymentID       string
 	PaymentURL      string
-	PaymentDeadline string
+	PaymentDeadline *big.Int
 }
 
 func (b *Storage) CreateBid(bid Bid) error {
@@ -60,8 +60,8 @@ func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url 
 	return err
 }
 
-func (b *Storage) UpdateBidPaymentDeadline(auction uuid.UUID, extra_price int64, deadline string) error {
-	_, err := b.db.Exec("UPDATE bids SET payment_deadline=$1 WHERE auction=$2 AND extra_price=$3;", deadline, auction, extra_price)
+func (b *Storage) UpdateBidPaymentDeadline(auction uuid.UUID, extra_price int64, deadline *big.Int) error {
+	_, err := b.db.Exec("UPDATE bids SET payment_deadline=$1 WHERE auction=$2 AND extra_price=$3;", deadline.String(), auction, extra_price)
 	return err
 }
 
@@ -75,6 +75,7 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
 	for rows.Next() {
 		var bid Bid
 		var teamID sql.NullString
+		var paymentDeadline sql.NullString
 		err = rows.Scan(
 			&bid.ExtraPrice,
 			&bid.Rnd,
@@ -84,13 +85,14 @@ func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
 			&bid.StateExtra,
 			&bid.PaymentID,
 			&bid.PaymentURL,
-			&bid.PaymentDeadline,
+			&paymentDeadline,
 		)
 		if err != nil {
 			return bids, err
 		}
 		bid.Auction = auctionUUID
 		bid.TeamID, _ = new(big.Int).SetString(teamID.String, 10)
+		bid.PaymentDeadline, _ = new(big.Int).SetString(paymentDeadline.String, 10)
 		bids = append(bids, &bid)
 	}
 	return bids, nil

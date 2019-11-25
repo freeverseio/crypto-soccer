@@ -86,6 +86,10 @@ func (b *Processor) updateBids(bids []*storage.Bid) error {
 		if err != nil {
 			return err
 		}
+		err = b.db.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, bid.PaymentDeadline)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

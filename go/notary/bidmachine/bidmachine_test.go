@@ -1,6 +1,7 @@
 package bidmachine_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
@@ -107,8 +108,14 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-	bid := &storage.Bid{State: storage.BIDACCEPTED}
+	auction := &storage.Auction{
+		State:      storage.AUCTION_PAYING,
+		ValidUntil: big.NewInt(10),
+	}
+	bid := &storage.Bid{
+		State:           storage.BIDACCEPTED,
+		PaymentDeadline: big.NewInt(3),
+	}
 	machine, err := bidmachine.New(
 		auction,
 		bid,
@@ -124,5 +131,8 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	}
 	if bid.State != storage.BIDPAYING {
 		t.Fatalf("Wrong state %v", bid.State)
+	}
+	if bid.PaymentDeadline.String() != "21610" {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
 	}
 }

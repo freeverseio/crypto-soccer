@@ -17,11 +17,12 @@ import (
 )
 
 type BidMachine struct {
-	auction   *storage.Auction
-	bid       *storage.Bid
-	contracts *contracts.Contracts
-	freeverse *ecdsa.PrivateKey
-	signer    *signer.Signer
+	auction         *storage.Auction
+	bid             *storage.Bid
+	contracts       *contracts.Contracts
+	freeverse       *ecdsa.PrivateKey
+	signer          *signer.Signer
+	postAuctionTime *big.Int
 }
 
 func New(
@@ -36,12 +37,17 @@ func New(
 	if auction.UUID != bid.Auction {
 		return nil, errors.New("Bid of wrong auction")
 	}
+	postAuctionTime, err := contracts.Market.POSTAUCTIONTIME(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
 	return &BidMachine{
 		auction,
 		bid,
 		contracts,
 		freeverse,
 		signer.NewSigner(contracts, freeverse),
+		postAuctionTime,
 	}, nil
 }
 
@@ -178,6 +184,11 @@ func (b *BidMachine) processPaying() error {
 }
 
 func (b *BidMachine) processAccepted() error {
+	if b.auction.ValidUntil == nil {
+		return errors.New("nil valid until")
+	}
 	b.bid.State = storage.BIDPAYING
+	b.bid.PaymentDeadline = big.NewInt(0)
+	b.bid.PaymentDeadline.Add(b.auction.ValidUntil, b.postAuctionTime)
 	return nil
 }
