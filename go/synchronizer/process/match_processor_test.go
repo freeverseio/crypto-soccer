@@ -18,19 +18,15 @@ func TestCreateMatchSeed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache.DeployContracts(ganache.Owner)
+	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
+		bc.Contracts,
 		universedb,
 		relaydb,
-		ganache.Assets,
-		ganache.Leagues,
-		ganache.Evolution,
-		ganache.Engine,
-		ganache.EnginePreComp,
 		namesdb,
 	)
 	if err != nil {
@@ -55,19 +51,15 @@ func TestGetPlayerState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache, err := testutils.NewBlockchainNode()
+	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache.DeployContracts(ganache.Owner)
+	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
+		bc.Contracts,
 		universedb,
 		relaydb,
-		ganache.Assets,
-		ganache.Leagues,
-		ganache.Evolution,
-		ganache.Engine,
-		ganache.EnginePreComp,
 		namesdb,
 	)
 	if err != nil {
