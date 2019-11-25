@@ -54,8 +54,8 @@ func main() {
 	}
 	contracts, err := contracts.New(
 		client,
-		*marketContractAddress,
 		"", "", "", "", "", "",
+		*marketContractAddress,
 	)
 	if err != nil {
 		log.Fatal(err)
