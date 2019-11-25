@@ -136,6 +136,21 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     ) 
         public
         pure
+        returns (uint256 rankingPoints, uint256)
+    {
+        (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
+        (, , uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        return ((rankingPoints << 28) + teamIdxInCountry, prevPerfPoints);
+    }
+
+
+    function computeTeamRankingPointsPure(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint8 leagueRanking,
+        uint256 prevPerfPoints
+    ) 
+        public
+        pure
         returns (uint256, uint256)
     {
         uint256 teamSkills;
@@ -164,9 +179,8 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
         uint256 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
         uint256 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
         prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague)/10;
-        (, , uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
-        if (pos > neg) return (((pos-neg) << 28) + teamIdxInCountry, prevPerfPoints);
-        else return (teamIdxInCountry, prevPerfPoints);
+        if (pos > neg) return (pos-neg, prevPerfPoints);
+        else return (0, prevPerfPoints);
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
