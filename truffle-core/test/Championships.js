@@ -99,20 +99,20 @@ contract('Championships', (accounts) => {
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
         TWO_TO_28 = 2**28;
+        MAX_TEAMIDX_IN_COUNTRY = TWO_TO_28 - 1;
         teamId = await champs.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0)
         // the team is Still a Bot:
         result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(0 * TWO_TO_28 + teamIdxInCountry);
+        result[0].toNumber().should.be.equal(0 * TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         result[1].toNumber().should.be.equal(0);
         // make it human:
         await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0]).should.be.fulfilled;
         result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + teamIdxInCountry);
+        result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });
 
-    return;
     it('computeLeagueLeaderBoard almost no clashes', async () =>  {
         MATCHES_PER_LEAGUE = 56;
         matchDay = 13;

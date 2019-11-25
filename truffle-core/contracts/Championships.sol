@@ -20,6 +20,7 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     uint256 constant private INERTIA = 4;
     uint256 constant private WEIGHT_SKILLS = 100;
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+    uint256 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
 
     Engine private _engine;
     Assets private _assets;
@@ -143,9 +144,9 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
         (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
         (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
-            return (teamIdxInCountry, 0); 
+            return (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry, 0); 
         }
-        return ((rankingPoints << 28) + teamIdxInCountry, prevPerfPoints);
+        return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry), prevPerfPoints);
     }
 
 
