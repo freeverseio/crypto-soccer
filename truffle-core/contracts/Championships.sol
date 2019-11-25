@@ -133,8 +133,9 @@ contract Championships is SortIdxs, EncodingSkills {
     ) 
         public
         pure
-        returns (uint256 teamSkills, uint256)
+        returns (uint256, uint256)
     {
+        uint256 teamSkills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (states[p] != 0)
                 teamSkills += getSumOfSkills(states[p]);
