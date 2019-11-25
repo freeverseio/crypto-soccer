@@ -1,5 +1,6 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+import "./Assets.sol";
 import "./Engine.sol";
 import "./SortIdxs.sol";
 import "./EncodingSkills.sol";
@@ -21,13 +22,14 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
 
     Engine private _engine;
+    Assets private _assets;
 
     function setEngineAdress(address addr) public {
         _engine = Engine(addr);
     }
 
-    function getEngineAddress() public view returns (address) {
-        return address(_engine);
+    function setAssetsAdress(address addr) public {
+        _assets = Assets(addr);
     }
 
     // groupIdx = 0,...,15
@@ -135,11 +137,14 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
         uint256 teamId
     ) 
         public
-        pure
+        view
         returns (uint256 rankingPoints, uint256)
     {
         (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
-        (, , uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
+            return (teamIdxInCountry, 0); 
+        }
         return ((rankingPoints << 28) + teamIdxInCountry, prevPerfPoints);
     }
 

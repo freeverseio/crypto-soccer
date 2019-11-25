@@ -7,6 +7,7 @@ const truffleAssert = require('truffle-assertions');
 const debug = require('../utils/debugUtils.js');
 
 const Championships = artifacts.require('Championships');
+const Assets = artifacts.require('Assets');
 const Engine = artifacts.require('Engine');
 
 contract('Championships', (accounts) => {
@@ -14,7 +15,8 @@ contract('Championships', (accounts) => {
     const dayOfBirth21 = secsToDays(now) - 21*365/7; // = exactly 17078, no need to round
     const subLastHalf = false;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
-
+    const INIT_TZ = 4;
+    
     const it2 = async(text, f) => {};
     
     function secsToDays(secs) {
@@ -60,7 +62,10 @@ contract('Championships', (accounts) => {
     beforeEach(async () => {
         champs = await Championships.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
+        assets = await Assets.new().should.be.fulfilled;
+        await assets.initSingleTZ(INIT_TZ).should.be.fulfilled;
         await champs.setEngineAdress(engine.address).should.be.fulfilled;
+        await champs.setAssetsAdress(assets.address).should.be.fulfilled;
         TEAMS_PER_LEAGUE = await champs.TEAMS_PER_LEAGUE().should.be.fulfilled;
         PLAYERS_PER_TEAM_MAX = await champs.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
         MATCHDAYS = await champs.MATCHDAYS().should.be.fulfilled;
@@ -69,34 +74,38 @@ contract('Championships', (accounts) => {
         teamStateAll1 = await createTeamStateFromSinglePlayer([1,1,1,1,1], engine);
     });
 
-    // it('computeTeamRankingPoints with no previous points', async () =>  {
-    //     // teamSkills = 5*25
-    //     // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-    //     // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
-    //     TWO_TO_28 = 2**28;
-    //     result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0, teamId = 0).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(143000*TWO_TO_28);
-    //     // prevPerfPoints = 0.6 * 20 = 12
-    //     result[1].toNumber().should.be.equal(12);
-    // });
+    it('computeTeamRankingPoints with no previous points', async () =>  {
+        // teamSkills = 5*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
+        result = await champs.computeTeamRankingPointsPure(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(143000);
+        // prevPerfPoints = 0.6 * 20 = 12
+        result[1].toNumber().should.be.equal(12);
+    });
 
-    // it('computeTeamRankingPoints with previous points', async () =>  {
-    //     // teamSkills = 5*50*25
-    //     // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
-    //     // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
-    //     TWO_TO_28 = 2**28;
-    //     result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId = 0).should.be.fulfilled;
-    //     result[0].toNumber().should.be.equal(6206800*TWO_TO_28);
-    //     // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
-    //     result[1].toNumber().should.be.equal(5);
-    // });
+    it('computeTeamRankingPoints with previous points', async () =>  {
+        // teamSkills = 5*50*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        result = await champs.computeTeamRankingPointsPure(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(6206800);
+        // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
+        result[1].toNumber().should.be.equal(5);
+    });
 
     it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
         TWO_TO_28 = 2**28;
-        teamId = await champs.encodeTZCountryAndVal(tz=1, countryIdxInTZ = 2, teamIdxInCountry = 61)
+        teamId = await champs.encodeTZCountryAndVal(tz = INIT_TZ, countryIdxInTZ = 0, teamIdxInCountry = 0)
+        // the team is Still a Bot:
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(0 * TWO_TO_28 + teamIdxInCountry);
+        result[1].toNumber().should.be.equal(0);
+        // make it human:
+        await assets.transferFirstBotToAddr(tz, countryIdxInTZ, accounts[0]).should.be.fulfilled;
         result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
         result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
