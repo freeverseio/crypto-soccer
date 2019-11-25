@@ -224,9 +224,14 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 
 	b.Contracts = &contracts.Contracts{
 		b.Client,
+		leaguesContract,
+		assetsContract,
+		evolutionContract,
+		engineContract,
+		enginePreComp,
+		updatesContract,
 		marketContract,
 	}
-
 	return nil
 }
 

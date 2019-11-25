@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/notary/processor"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
@@ -38,7 +39,7 @@ func main() {
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("../../market.db/00_schema.sql")
+		sto, err = storage.NewSqlite3("../../../market.db/00_schema.sql")
 	} else {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)
@@ -46,8 +47,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
-
-	contracts, err := contracts.New(*ethereumClient, *marketContractAddress)
+	log.Info("Dial the Ethereum client: ", *ethereumClient)
+	client, err := ethclient.Dial(*ethereumClient)
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+	}
+	contracts, err := contracts.New(
+		client,
+		*marketContractAddress,
+		"", "", "", "", "", "",
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
