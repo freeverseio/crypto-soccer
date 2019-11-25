@@ -7,8 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -20,18 +19,16 @@ import (
 type BidMachine struct {
 	auction   *storage.Auction
 	bid       *storage.Bid
-	market    *market.Market
+	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
 	signer    *signer.Signer
-	client    *ethclient.Client
 }
 
 func New(
 	auction *storage.Auction,
 	bid *storage.Bid,
-	market *market.Market,
+	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
-	client *ethclient.Client,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
@@ -42,10 +39,9 @@ func New(
 	return &BidMachine{
 		auction,
 		bid,
-		market,
+		contracts,
 		freeverse,
-		signer.NewSigner(market, freeverse),
-		client,
+		signer.NewSigner(contracts, freeverse),
 	}, nil
 }
 
@@ -147,7 +143,7 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			tx, err := b.market.CompletePlayerAuction(
+			tx, err := b.contracts.Market.CompletePlayerAuction(
 				bind.NewKeyedTransactor(b.freeverse),
 				auctionHiddenPrice,
 				b.auction.ValidUntil,
@@ -163,7 +159,7 @@ func (b *BidMachine) processPaying() error {
 				b.bid.StateExtra = err.Error()
 				return err
 			}
-			receipt, err := helper.WaitReceipt(b.client, tx, 60)
+			receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 			if err != nil {
 				b.bid.State = storage.BIDFAILED
 				b.bid.StateExtra = "Timeout waiting for the receipt"

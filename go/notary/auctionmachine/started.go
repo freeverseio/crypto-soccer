@@ -50,7 +50,7 @@ func (m *AuctionMachine) processStarted() error {
 	if err != nil {
 		return err
 	}
-	tx, err := m.market.FreezePlayer(
+	tx, err := m.contracts.Market.FreezePlayer(
 		bind.NewKeyedTransactor(m.freeverse),
 		auctionHiddenPrice,
 		m.Auction.ValidUntil,
@@ -64,7 +64,7 @@ func (m *AuctionMachine) processStarted() error {
 		m.Auction.StateExtra = "Failed to freeze: " + err.Error()
 		return nil
 	}
-	receipt, err := helper.WaitReceipt(m.client, tx, 60)
+	receipt, err := helper.WaitReceipt(m.contracts.Client, tx, 60)
 	if err != nil {
 		log.Error("Timeout waiting receipt for freeze")
 		m.Auction.State = storage.AUCTION_FAILED

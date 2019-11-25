@@ -29,7 +29,7 @@ func TestAuctionWithNoBids(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []*storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 		State:      storage.AUCTION_STARTED,
 	}
 	bids := []*storage.Bid{}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +79,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx, err := bc.Assets.TransferFirstBotToAddr(
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
@@ -104,7 +104,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +168,7 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 			Auction: auction.UUID,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -201,7 +201,7 @@ func TestPayingAuction(t *testing.T) {
 			State:   storage.BIDACCEPTED,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -222,7 +222,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 
-	tx, err := bc.Assets.TransferFirstBotToAddr(
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
@@ -235,7 +235,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx, err = bc.Assets.TransferFirstBotToAddr(
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
@@ -260,7 +260,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	teamID := big.NewInt(274877906945)
 	isOffer2StartAuction := false
 
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	hashAuctionMsg, err := signer.HashSellMessage(
 		currencyID,
 		price,
@@ -314,7 +314,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 			State:      storage.BIDACCEPTED,
 		},
 	}
-	machine, err := auctionmachine.New(auction, bids, bc.Market, bc.Owner, bc.Client)
+	machine, err := auctionmachine.New(auction, bids, bc.Contracts, bc.Owner)
 	if err != nil {
 		t.Fatal(err)
 	}

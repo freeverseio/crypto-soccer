@@ -24,9 +24,8 @@ func (m *AuctionMachine) processPaying() error {
 	bidMachine, err := bidmachine.New(
 		m.Auction,
 		bid,
-		m.market,
+		m.contracts,
 		m.freeverse,
-		m.client,
 	)
 	if err != nil {
 		return err

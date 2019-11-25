@@ -40,7 +40,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
@@ -65,7 +65,7 @@ func TestAuctionMsg(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -106,7 +106,7 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(274877906944)
@@ -156,7 +156,7 @@ func TestBidHiddenPrice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
 
