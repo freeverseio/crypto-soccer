@@ -73,8 +73,9 @@ contract('Championships', (accounts) => {
         // teamSkills = 5*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5 * 25 + 18*50 *(6*20-100) = 143000
-        result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(143000);
+        TWO_TO_28 = 2**28;
+        result = await champs.computeTeamRankingPoints(teamStateAll1, leagueRanking = 0, prevPerfPoints = 0, teamId = 0).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(143000*TWO_TO_28);
         // prevPerfPoints = 0.6 * 20 = 12
         result[1].toNumber().should.be.equal(12);
     });
@@ -83,8 +84,21 @@ contract('Championships', (accounts) => {
         // teamSkills = 5*50*25
         // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
         // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
-        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10).should.be.fulfilled;
-        result[0].toNumber().should.be.equal(6206800);
+        TWO_TO_28 = 2**28;
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId = 0).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(6206800*TWO_TO_28);
+        // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
+        result[1].toNumber().should.be.equal(5);
+    });
+
+    it('computeTeamRankingPoints with previous points and non-null teamId', async () =>  {
+        // teamSkills = 5*50*25
+        // rankingPoints = 5*25*100 + ( (6000*2/10000) - 10 ) * 900 = 5*25*100 - 9*900 = 4400
+        // 10W SK + SK0 (I P0 + (10-I)P1 - 100) = 10* 100 * 5*50 * 25 + 18*50 *(4*10+ 6 * 2 -100) = 6206800
+        TWO_TO_28 = 2**28;
+        teamId = await champs.encodeTZCountryAndVal(tz=1, countryIdxInTZ = 2, teamIdxInCountry = 61)
+        result = await champs.computeTeamRankingPoints(teamStateAll50, leagueRanking = 7, prevPerfPoints = 10, teamId).should.be.fulfilled;
+        result[0].toNumber().should.be.equal(6206800*TWO_TO_28 + teamIdxInCountry);
         // prevPerfPoints = 0.6 * 2 + 0.4 * 10 = 5.2
         result[1].toNumber().should.be.equal(5);
     });

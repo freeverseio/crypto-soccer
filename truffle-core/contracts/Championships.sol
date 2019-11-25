@@ -3,11 +3,13 @@ pragma solidity >=0.4.21 <0.6.0;
 import "./Engine.sol";
 import "./SortIdxs.sol";
 import "./EncodingSkills.sol";
+import "./EncodingIDs.sol";
+
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships is SortIdxs, EncodingSkills {
+contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -129,7 +131,8 @@ contract Championships is SortIdxs, EncodingSkills {
     function computeTeamRankingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8 leagueRanking,
-        uint256 prevPerfPoints
+        uint256 prevPerfPoints,
+        uint256 teamId
     ) 
         public
         pure
@@ -161,8 +164,9 @@ contract Championships is SortIdxs, EncodingSkills {
         uint256 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
         uint256 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
         prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague)/10;
-        if (pos > neg) return (pos-neg, prevPerfPoints);
-        else return (0, prevPerfPoints);
+        (, , uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        if (pos > neg) return (((pos-neg) << 28) + teamIdxInCountry, prevPerfPoints);
+        else return (teamIdxInCountry, prevPerfPoints);
     }
 
     function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
