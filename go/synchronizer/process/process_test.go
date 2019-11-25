@@ -76,7 +76,7 @@ func TestSyncTeams(t *testing.T) {
 	var txs []*types.Transaction
 	for i := 0; i < 24*4; i++ {
 		var root [32]byte
-		tx, err := bc.Updates.SubmitActionsRoot(
+		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
 			root,
 		)
@@ -97,11 +97,11 @@ func TestSyncTeams(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	playerIdx := big.NewInt(0)
-	playerID, err := bc.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
+	playerID, err := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	owner, err := bc.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err := bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 
-	tx, err := bc.Assets.TransferFirstBotToAddr(
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
@@ -128,7 +128,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	owner, err = bc.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
+	owner, err = bc.Contracts.Assets.GetOwnerPlayer(&bind.CallOpts{}, playerID)
 	if err != nil {
 		t.Fatal(err)
 	}

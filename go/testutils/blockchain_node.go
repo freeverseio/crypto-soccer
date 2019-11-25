@@ -21,16 +21,9 @@ import (
 )
 
 type BlockchainNode struct {
-	Client        *ethclient.Client
-	Assets        *assets.Assets
-	Updates       *updates.Updates
-	Leagues       *leagues.Leagues
-	Engine        *engine.Engine
-	EnginePreComp *engineprecomp.Engineprecomp
-	Market        *market.Market
-	Evolution     *evolution.Evolution
-	Owner         *ecdsa.PrivateKey
-	Contracts     *contracts.Contracts
+	Client    *ethclient.Client
+	Owner     *ecdsa.PrivateKey
+	Contracts *contracts.Contracts
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -68,13 +61,6 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 
 	return &BlockchainNode{
 		client,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
-		nil,
 		creatorPrivateKey,
 		nil,
 	}, nil
@@ -214,14 +200,6 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	b.Updates = updatesContract
-	b.Leagues = leaguesContract
-	b.Engine = engineContract
-	b.Market = marketContract
-	b.Assets = assetsContract
-	b.Evolution = evolutionContract
-	b.EnginePreComp = enginePreComp
-
 	b.Contracts = &contracts.Contracts{
 		b.Client,
 		leaguesContract,
@@ -237,7 +215,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 
 func (b *BlockchainNode) Init() error {
 	// Initing
-	tx, err := b.Assets.Init(bind.NewKeyedTransactor(b.Owner))
+	tx, err := b.Contracts.Assets.Init(bind.NewKeyedTransactor(b.Owner))
 	if err != nil {
 		return err
 	}
@@ -250,7 +228,7 @@ func (b *BlockchainNode) Init() error {
 
 func (b *BlockchainNode) InitOneTimezone(timezoneIdx uint8) error {
 	// Initing
-	tx, err := b.Assets.InitSingleTZ(bind.NewKeyedTransactor(b.Owner), timezoneIdx)
+	tx, err := b.Contracts.Assets.InitSingleTZ(bind.NewKeyedTransactor(b.Owner), timezoneIdx)
 	if err != nil {
 		return err
 	}

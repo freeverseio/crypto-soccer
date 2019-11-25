@@ -70,7 +70,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	var tactics [2]*big.Int
 	tactics[0], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
 	tactics[1], _ = new(big.Int).SetString("117587469164573768163156115324928", 10)
-	logs, err := bc.Engine.PlayHalfMatch(
+	logs, err := bc.Contracts.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		seed,
 		matchStartTime,
@@ -138,7 +138,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	day := uint8(0)
 	turnInDay := uint8(0)
 	seed := [32]byte{}
-	gameDeployDay, err := bc.Assets.GameDeployDay(&bind.CallOpts{})
+	gameDeployDay, err := bc.Contracts.Assets.GameDeployDay(&bind.CallOpts{})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -85,12 +85,12 @@ func TestScanningTeamTransfer(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	address := crypto.PubkeyToAddress(bc.Owner.PublicKey)
-	tx, err := bc.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bc.Owner), timezoneIdx, countryIdx, address)
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bc.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
 	timezoneIdx = uint8(2)
-	tx1, err := bc.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bc.Owner), timezoneIdx, countryIdx, address)
+	tx1, err := bc.Contracts.Assets.TransferFirstBotToAddr(bind.NewKeyedTransactor(bc.Owner), timezoneIdx, countryIdx, address)
 	if err != nil {
 		t.Fatal(err)
 	}
