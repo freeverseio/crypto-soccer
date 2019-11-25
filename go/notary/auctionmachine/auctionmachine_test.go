@@ -333,14 +333,21 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
-	if machine.Bids[0].State != storage.BIDPAYING {
+	if machine.Bids[0].State != storage.BIDACCEPTED {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
 	}
 	if machine.Auction.State != storage.AUCTION_PAYING {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
 	if machine.Bids[0].State != storage.BIDPAYING {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
+	}
+	if machine.Bids[0].PaymentDeadline.String() == "0" {
+		t.Fatalf("Wrong bid timeout %v", machine.Bids[0].PaymentDeadline)
 	}
 	// following is commented because we need an action from the user to make marketpay set it as PAID
 	// time.Sleep(10 * time.Second)
