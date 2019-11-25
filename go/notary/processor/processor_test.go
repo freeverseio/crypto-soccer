@@ -80,8 +80,9 @@ func TestAuctionWithBid(t *testing.T) {
 		t.Fatal(err)
 	}
 	bid := storage.Bid{
-		Auction: auction.UUID,
-		State:   storage.BIDACCEPTED,
+		Auction:         auction.UUID,
+		State:           storage.BIDACCEPTED,
+		PaymentDeadline: big.NewInt(0),
 	}
 	err = sto.CreateBid(bid)
 	if err != nil {

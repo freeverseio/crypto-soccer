@@ -2,6 +2,7 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 	"math/big"
 
 	"github.com/google/uuid"
@@ -61,6 +62,9 @@ func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url 
 }
 
 func (b *Storage) UpdateBidPaymentDeadline(auction uuid.UUID, extra_price int64, deadline *big.Int) error {
+	if deadline == nil {
+		return errors.New("nil deadline")
+	}
 	_, err := b.db.Exec("UPDATE bids SET payment_deadline=$1 WHERE auction=$2 AND extra_price=$3;", deadline.String(), auction, extra_price)
 	return err
 }
