@@ -188,7 +188,6 @@ func (b *BidMachine) processAccepted() error {
 		return errors.New("nil valid until")
 	}
 	b.bid.State = storage.BIDPAYING
-	// b.bid.PaymentDeadline = big.NewInt(0)
-	b.bid.PaymentDeadline.Add(b.auction.ValidUntil, b.postAuctionTime)
+	b.bid.PaymentDeadline = new(big.Int).Add(b.auction.ValidUntil, b.postAuctionTime)
 	return nil
 }
