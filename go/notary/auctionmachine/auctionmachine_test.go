@@ -79,7 +79,7 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx, err := bc.Assets.TransferFirstBotToAddr(
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
@@ -222,7 +222,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	alice, _ := crypto.HexToECDSA("3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54")
 	bob, _ := crypto.HexToECDSA("3693a221b147b7338490aa65a86dbef946eccaff76cc1fc93265468822dfb882")
 
-	tx, err := bc.Assets.TransferFirstBotToAddr(
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
@@ -235,7 +235,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tx, err = bc.Assets.TransferFirstBotToAddr(
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		1,
 		big.NewInt(0),
