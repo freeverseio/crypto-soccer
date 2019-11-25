@@ -13,13 +13,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-func TestScanningNothing(t *testing.T) {
-	scanner := process.NewEventScanner(nil)
-	if scanner != nil {
-		t.Fatal("scanner cannot be created with null contracts")
-	}
-}
-
 func TestScanningIniting(t *testing.T) {
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
