@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -94,7 +95,13 @@ func (b *BidMachine) Process() error {
 }
 
 func (b *BidMachine) processPaying() error {
-	if b.bid.PaymentID == "" {
+	now := time.Now().Unix()
+	if now > b.bid.PaymentDeadline.Int64() {
+		b.bid.State = storage.BIDFAILED
+		b.bid.StateExtra = "Expired"
+		return nil
+	}
+	if b.bid.PaymentID == "" { // create order
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
 		market, err := marketpay.New()
 		if err != nil {
@@ -108,7 +115,7 @@ func (b *BidMachine) processPaying() error {
 		}
 		b.bid.PaymentID = order.TrusteeShortlink.Hash
 		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
-	} else {
+	} else { // check if order is paid
 		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
 		market, err := marketpay.New()
 		if err != nil {

@@ -3,6 +3,7 @@ package bidmachine_test
 import (
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -134,5 +135,41 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	}
 	if bid.PaymentDeadline.String() != "21610" {
 		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+}
+
+func TestBidPayingExpires(t *testing.T) {
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().Unix()
+	auction := &storage.Auction{
+		Price:      big.NewInt(3),
+		State:      storage.AUCTION_PAYING,
+		ValidUntil: big.NewInt(now - 3),
+	}
+	bid := &storage.Bid{
+		State:           storage.BIDPAYING,
+		PaymentDeadline: big.NewInt(now - 1),
+	}
+	machine, err := bidmachine.New(
+		auction,
+		bid,
+		bc.Contracts,
+		bc.Owner,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bid.PaymentDeadline.String() != big.NewInt(now-1).String() {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+	if bid.State != storage.BIDFAILED {
+		t.Fatalf("Wrong state %v", bid.State)
 	}
 }
