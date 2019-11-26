@@ -14,7 +14,7 @@ type BackgroundProcess struct {
 	relay     *Processor
 	queryStop chan (bool)
 	stopped   chan (bool)
-	delay     int
+	delay     time.Duration
 }
 
 func BackgroundProcessNew(
@@ -22,7 +22,7 @@ func BackgroundProcessNew(
 	privateKey *ecdsa.PrivateKey,
 	storage *storage.Storage,
 	updatesContract *updates.Updates,
-	delay int,
+	delay time.Duration,
 ) (*BackgroundProcess, error) {
 	processor, err := NewProcessor(client, privateKey, storage, updatesContract)
 	if err != nil {
@@ -32,6 +32,7 @@ func BackgroundProcessNew(
 		relay:     processor,
 		queryStop: make(chan (bool)),
 		stopped:   make(chan (bool)),
+		delay:     delay,
 	}, nil
 }
 
@@ -47,7 +48,7 @@ func (b *BackgroundProcess) Start() {
 				if err != nil {
 					panic(err)
 				}
-				time.Sleep(time.Duration(b.delay) * time.Second)
+				time.Sleep(b.delay)
 			}
 		}
 		b.stopped <- true
