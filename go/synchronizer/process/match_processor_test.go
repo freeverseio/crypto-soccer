@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
@@ -13,19 +14,20 @@ import (
 func TestCreateMatchSeed(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
-	ganache, err := testutils.NewBlockchainNode()
+	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache.DeployContracts(ganache.Owner)
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
+		bc.Contracts,
 		universedb,
 		relaydb,
-		ganache.Assets,
-		ganache.Leagues,
-		ganache.Evolution,
-		ganache.Engine,
-		ganache.EnginePreComp,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -45,19 +47,20 @@ func TestCreateMatchSeed(t *testing.T) {
 func TestGetPlayerState(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
-	ganache, err := testutils.NewBlockchainNode()
+	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache.DeployContracts(ganache.Owner)
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
+		bc.Contracts,
 		universedb,
 		relaydb,
-		ganache.Assets,
-		ganache.Leagues,
-		ganache.Evolution,
-		ganache.Engine,
-		ganache.EnginePreComp,
+		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)

@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . /app
 
 RUN apk add --no-cache alpine-sdk linux-headers
-RUN cd cmd && go build ./relay.go
+RUN cd cmd/relay && go build ./relay.go
 
-ENTRYPOINT ["./cmd/relay"]
+ENTRYPOINT ["./cmd/relay/relay"]

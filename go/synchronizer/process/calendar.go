@@ -5,27 +5,27 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 type Calendar struct {
-	leagues     *leagues.Leagues
+	contracts   *contracts.Contracts
 	storage     *storage.Storage
 	MatchDays   uint8
 	MatchPerDay uint8
 }
 
-func NewCalendar(leagues *leagues.Leagues, storage *storage.Storage) (*Calendar, error) {
-	matchDays, err := leagues.MATCHDAYS(&bind.CallOpts{})
+func NewCalendar(contracts *contracts.Contracts, storage *storage.Storage) (*Calendar, error) {
+	matchDays, err := contracts.Leagues.MATCHDAYS(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	matchPerDay, err := leagues.MATCHESPERDAY(&bind.CallOpts{})
+	matchPerDay, err := contracts.Leagues.MATCHESPERDAY(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	return &Calendar{leagues, storage, matchDays, matchPerDay}, nil
+	return &Calendar{contracts, storage, matchDays, matchPerDay}, nil
 }
 
 func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
@@ -65,7 +65,7 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			teams, err := b.leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
+			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
 			if err != nil {
 				return nil
 			}

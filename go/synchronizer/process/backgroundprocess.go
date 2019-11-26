@@ -3,15 +3,8 @@ package process
 import (
 	"time"
 
-	"github.com/ethereum/go-ethereum/ethclient"
-
-	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
-	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
@@ -23,28 +16,16 @@ type BackgroundProcess struct {
 }
 
 func BackgroundProcessNew(
-	client *ethclient.Client,
+	contracts *contracts.Contracts,
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
-	engineContract *engine.Engine,
-	enginePreCompContract *engineprecomp.Engineprecomp,
-	assetsContract *assets.Assets,
-	leaguesContract *leagues.Leagues,
-	updatesContract *updates.Updates,
-	marketContract *market.Market,
-	evolutionContract *evolution.Evolution,
+	namesdb *names.Generator,
 ) (*BackgroundProcess, error) {
 	eventProcessor, err := NewEventProcessor(
-		client,
+		contracts,
 		universedb,
 		relaydb,
-		engineContract,
-		enginePreCompContract,
-		assetsContract,
-		leaguesContract,
-		updatesContract,
-		marketContract,
-		evolutionContract,
+		namesdb,
 	)
 
 	if err != nil {

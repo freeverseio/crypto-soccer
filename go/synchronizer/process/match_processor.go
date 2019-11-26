@@ -4,24 +4,18 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
-	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 )
 
 type MatchProcessor struct {
+	contracts         *contracts.Contracts
 	universedb        *storage.Storage
 	relaydb           *relay.Storage
-	assets            *assets.Assets
-	leagues           *leagues.Leagues
-	evolution         *evolution.Evolution
-	engine            *engine.Engine
-	enginePreComp     *engineprecomp.Engineprecomp
+	namesdb           *names.Generator
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
 	SOFTINJURY        uint8
@@ -29,51 +23,47 @@ type MatchProcessor struct {
 }
 
 func NewMatchProcessor(
+	contracts *contracts.Contracts,
 	universedb *storage.Storage,
 	relaydb *relay.Storage,
-	assets *assets.Assets,
-	leagues *leagues.Leagues,
-	evolution *evolution.Evolution,
-	engine *engine.Engine,
-	enginePreComp *engineprecomp.Engineprecomp,
+	namesdb *names.Generator,
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
 	var err error
-	processor.NOOUTOFGAMEPLAYER, err = enginePreComp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
+	processor.NOOUTOFGAMEPLAYER, err = contracts.Engineprecomp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	processor.REDCARD, err = enginePreComp.REDCARD(&bind.CallOpts{})
+	processor.REDCARD, err = contracts.Engineprecomp.REDCARD(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	processor.SOFTINJURY, err = enginePreComp.SOFTINJURY(&bind.CallOpts{})
+	processor.SOFTINJURY, err = contracts.Engineprecomp.SOFTINJURY(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	processor.HARDINJURY, err = enginePreComp.HARDINJURY(&bind.CallOpts{})
+	processor.HARDINJURY, err = contracts.Engineprecomp.HARDINJURY(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
+
+	processor.contracts = contracts
 	processor.universedb = universedb
 	processor.relaydb = relaydb
-	processor.assets = assets
-	processor.leagues = leagues
-	processor.evolution = evolution
-	processor.engine = engine
-	processor.enginePreComp = enginePreComp
+	processor.namesdb = namesdb
+
 	return &processor, nil
 }
 
 func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoals uint8, err error) {
-	homeGoals, err = b.evolution.GetNGoals(
+	homeGoals, err = b.contracts.Evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[0],
 	)
 	if err != nil {
 		return homeGoals, visitorGoals, err
 	}
-	visitorGoals, err = b.evolution.GetNGoals(
+	visitorGoals, err = b.contracts.Evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[1],
 	)
@@ -166,7 +156,7 @@ func (b *MatchProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
 }
 
 func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) (*big.Int, error) {
-	matchSeed, err := b.engine.GenerateMatchSeed(&bind.CallOpts{}, seed, homeTeamID, visitorTeamID)
+	matchSeed, err := b.contracts.Engine.GenerateMatchSeed(&bind.CallOpts{}, seed, homeTeamID, visitorTeamID)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +196,7 @@ func (b *MatchProcessor) process1stHalf(
 	is2ndHalf := false
 	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	return b.engine.PlayHalfMatch(
+	return b.contracts.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		matchSeed,
 		startTime,
@@ -233,7 +223,7 @@ func (b *MatchProcessor) process2ndHalf(
 	is2ndHalf := true
 	matchLog := [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	logs, err = b.evolution.Play2ndHalfAndEvolve(
+	logs, err = b.contracts.Evolution.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		matchSeed,
 		startTime,
@@ -266,20 +256,20 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 	if err != nil {
 		return err
 	}
-	decodedTactic, err := b.leagues.DecodeTactics(&bind.CallOpts{}, tactic)
+	decodedTactic, err := b.contracts.Leagues.DecodeTactics(&bind.CallOpts{}, tactic)
 	if err != nil {
 		return err
 	}
-	outOfGamePlayer, err := b.enginePreComp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
+	outOfGamePlayer, err := b.contracts.Engineprecomp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
 	if err != nil {
 		return err
 	}
-	outOfGameType, err := b.enginePreComp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
+	outOfGameType, err := b.contracts.Engineprecomp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
 	if err != nil {
 		return err
 	}
 	for _, player := range players {
-		wasAligned, err := b.engine.WasPlayerAlignedEndOfLastHalf(
+		wasAligned, err := b.contracts.Engine.WasPlayerAlignedEndOfLastHalf(
 			&bind.CallOpts{},
 			player.State.ShirtNumber,
 			tactic,
@@ -288,7 +278,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 		if err != nil {
 			return err
 		}
-		player.State.EncodedSkills, err = b.evolution.SetAlignedEndOfLastHalf(
+		player.State.EncodedSkills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
 			player.State.EncodedSkills,
 			wasAligned,
@@ -317,10 +307,10 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 			}
 		}
 		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.State.EncodedSkills, player.State.RedCardMatchesLeft, player.State.InjuryMatchesLeft)
-		if player.State.EncodedSkills, err = b.evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft != 0); err != nil {
+		if player.State.EncodedSkills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft != 0); err != nil {
 			return err
 		}
-		if player.State.EncodedSkills, err = b.evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
+		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
 			return err
 		}
 		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {
@@ -375,7 +365,7 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeamID *big.Int, visitorTeamI
 func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
 	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
 		return nil, err
-	} else if encodedTactic, err := b.engine.EncodeTactics(
+	} else if encodedTactic, err := b.contracts.Engine.EncodeTactics(
 		&bind.CallOpts{},
 		tactic.Substitutions,
 		tactic.SubsRounds,
@@ -394,12 +384,12 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	matchStartTime *big.Int,
 	logs *big.Int,
 ) error {
-	trainingPoints, err := b.evolution.GetTrainingPoints(&bind.CallOpts{}, logs)
+	trainingPoints, err := b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, logs)
 	if err != nil {
 		return err
 	}
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
-	newStates, err := b.evolution.GetTeamEvolvedSkills(
+	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
 		&bind.CallOpts{},
 		states,
 		trainingPoints,
@@ -410,12 +400,12 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		return err
 	}
 
-	for _, state := range newStates {
+	for s, state := range newStates {
 		if state.String() == "0" {
 			continue
 		}
 
-		playerID, err := b.leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
+		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
 		}
@@ -423,7 +413,26 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		if err != nil {
 			return err
 		}
-		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.assets, state)
+		oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
+		if err != nil {
+			return err
+		}
+		newGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, state)
+		if err != nil {
+			return err
+		}
+		if newGen.Cmp(oldGen) != 0 {
+			timezone, countryIdx, _, err := b.contracts.Assets.DecodeTZCountryAndVal(&bind.CallOpts{}, player.PlayerId)
+			if err != nil {
+				return err
+			}
+			newName, err := b.namesdb.GeneratePlayerFullName(player.PlayerId, uint8(newGen.Uint64()), timezone, countryIdx.Uint64())
+			if err != nil {
+				return err
+			}
+			player.State.Name = newName
+		}
+		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, state)
 		player.State.Defence = defence.Uint64()
 		player.State.Speed = speed.Uint64()
 		player.State.Pass = pass.Uint64()

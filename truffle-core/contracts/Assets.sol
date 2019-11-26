@@ -270,9 +270,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         // compute a dna that is unique to this player, since it is made of a unique playerId:
-        uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
-        return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
+        return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
     }
 
     function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
@@ -280,18 +279,18 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
-    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+    function computeSkillsAndEncode(uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+        uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 dayOfBirth;
         (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
         (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+        return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
-    function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
+    function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
         if (getIsSpecial(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
@@ -308,9 +307,9 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function computeBirthDay(uint256 dna, uint256 playerCreationDay) public pure returns (uint16, uint256) {
         uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16*365, 7300 = 20 * 365
         dna >>= 13; // log2(7300) = 12.8
-        return (uint16(playerCreationDay - ageInDays / 7), dna);
+        return (uint16(playerCreationDay - ageInDays / 7), dna); // 1095 = 3 * 365
     }
-
+    
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
     /// @param dna is a random number used as seed of the skills
     /// skills have currently, 16bits each, and there are 5 of them
