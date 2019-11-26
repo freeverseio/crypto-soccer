@@ -8,6 +8,9 @@ executors:
   freeverse:
     docker:
       - image: freeverseio/circleci
+  freeverse_ethereum:
+    docker:
+      - image: freeverseio/circleci
       - image: freeverseio/ethereum:test
         auth:
           username: $DOCKER_ID
@@ -22,14 +25,14 @@ jobs:
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
   synchronizer:
-    executor: freeverse
+    executor: freeverse_ethereum
     steps:
       - checkout
       - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer && go test ./...
   market-notary:
-    executor: freeverse
+    executor: freeverse_ethereum
     steps:
       - checkout
       - run: make setup contracts
@@ -43,7 +46,7 @@ jobs:
       - run: cd relay.api && npm install
       - run: cd relay.api && npm test
   relay-actions:
-    executor: freeverse
+    executor: freeverse_ethereum
     steps:
       - checkout
       - run: make setup contracts
@@ -55,12 +58,6 @@ jobs:
       - checkout
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
-  django-centauri:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
-      - run: cd django-centauri && python3 manage.py test
   dockerization-development:
     executor: freeverse
     steps:
@@ -145,10 +142,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - django-centauri:
-          filters:
-            tags:
-              only: /.*/
       - market-trader:
           filters:
             tags:
@@ -172,7 +165,6 @@ workflows:
                 - dev
           requires:
             - synchronizer
-            - django-centauri
             - market-trader
             - relay-api
             - relay-actions
@@ -185,7 +177,6 @@ workflows:
               ignore: /.*/
           requires:
             - synchronizer
-            - django-centauri
             - market-trader
             - relay-api
             - relay-actions
