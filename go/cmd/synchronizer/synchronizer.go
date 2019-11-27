@@ -6,17 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engine"
-	"github.com/freeverseio/crypto-soccer/go/contracts/engineprecomp"
-	"github.com/freeverseio/crypto-soccer/go/contracts/evolution"
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
@@ -74,47 +67,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
-
-	log.Info("Creating Leagues bindings to: ", *leaguesContractAddress)
-	leaguesContract, err := leagues.NewLeagues(common.HexToAddress(*leaguesContractAddress), client)
+	contracts, err := contracts.New(
+		client,
+		*leaguesContractAddress,
+		*assetsContractAddress,
+		*evolutionContractAddress,
+		*engineContractAddress,
+		*enginePreCompContractAddress,
+		*updatesContractAddress,
+		*marketContractAddress,
+	)
 	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Assets bindings to: ", *assetsContractAddress)
-	assetsContract, err := assets.NewAssets(common.HexToAddress(*assetsContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Evolution bindings to: ", *evolutionContractAddress)
-	evolutionContract, err := evolution.NewEvolution(common.HexToAddress(*evolutionContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Engine bindings to: ", *engineContractAddress)
-	engineContract, err := engine.NewEngine(common.HexToAddress(*engineContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating EnginePreComp bindings to: ", *enginePreCompContractAddress)
-	enginePreCompContract, err := engineprecomp.NewEngineprecomp(common.HexToAddress(*enginePreCompContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Updates bindings to: ", *updatesContractAddress)
-	updatesContract, err := updates.NewUpdates(common.HexToAddress(*updatesContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
-	}
-
-	log.Info("Creating Market bindings to: ", *marketContractAddress)
-	marketContract, err := market.NewMarket(common.HexToAddress(*marketContractAddress), client)
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
+		log.Fatalf(err.Error())
 	}
 
 	var universedb *storage.Storage
@@ -141,17 +105,10 @@ func main() {
 	}
 
 	process, err := process.BackgroundProcessNew(
-		client,
+		contracts,
 		universedb,
 		relaydb,
 		namesdb,
-		engineContract,
-		enginePreCompContract,
-		assetsContract,
-		leaguesContract,
-		updatesContract,
-		marketContract,
-		evolutionContract,
 	)
 	if err != nil {
 		log.Fatal(err)

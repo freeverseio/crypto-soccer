@@ -1,7 +1,9 @@
 package bidmachine_test
 
 import (
+	"math/big"
 	"testing"
+	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
@@ -19,9 +21,8 @@ func TestNotPayingAuction(t *testing.T) {
 	_, err = bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err == nil {
 		t.Fatalf("Accepting %v auction", auction.State)
@@ -38,9 +39,8 @@ func TestPayingAuction(t *testing.T) {
 	_, err = bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatalf("Not accepting %v auction", auction.State)
@@ -89,9 +89,8 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	machine, err := bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -110,14 +109,19 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	auction := &storage.Auction{State: storage.AUCTION_PAYING}
-	bid := &storage.Bid{State: storage.BIDACCEPTED}
+	auction := &storage.Auction{
+		State:      storage.AUCTION_PAYING,
+		ValidUntil: big.NewInt(10),
+	}
+	bid := &storage.Bid{
+		State:           storage.BIDACCEPTED,
+		PaymentDeadline: big.NewInt(3),
+	}
 	machine, err := bidmachine.New(
 		auction,
 		bid,
-		bc.Market,
+		bc.Contracts,
 		bc.Owner,
-		bc.Client,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -127,6 +131,45 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 		t.Fatal(err)
 	}
 	if bid.State != storage.BIDPAYING {
+		t.Fatalf("Wrong state %v", bid.State)
+	}
+	if bid.PaymentDeadline.String() != "21610" {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+}
+
+func TestBidPayingExpires(t *testing.T) {
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().Unix()
+	auction := &storage.Auction{
+		Price:      big.NewInt(3),
+		State:      storage.AUCTION_PAYING,
+		ValidUntil: big.NewInt(now - 3),
+	}
+	bid := &storage.Bid{
+		State:           storage.BIDPAYING,
+		PaymentDeadline: big.NewInt(now - 1),
+	}
+	machine, err := bidmachine.New(
+		auction,
+		bid,
+		bc.Contracts,
+		bc.Owner,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = machine.Process()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bid.PaymentDeadline.String() != big.NewInt(now-1).String() {
+		t.Fatalf("Wrong deadline %v", bid.PaymentDeadline)
+	}
+	if bid.State != storage.BIDFAILED {
 		t.Fatalf("Wrong state %v", bid.State)
 	}
 }

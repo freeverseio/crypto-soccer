@@ -13,7 +13,8 @@ contract Privileged is EncodingSkills, EncodingSkillsSetters {
     // prefPosition: GoalKeeper, Defender, Midfielder, Forward, MidDefender, MidAttacker
     // leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
 
-    function createSpecialPlayerId(
+    function createSpecialPlayer(
+
         uint16[N_SKILLS] memory skillsVec,
         uint256 ageInSecs,
         uint8[4] memory birthTraits,
@@ -35,6 +36,19 @@ contract Privileged is EncodingSkills, EncodingSkillsSetters {
             false, 
             sumSkills
         );
+        return addIsSpecial(skills);
     }
-
+    
+    function createPromoPlayer(
+        uint16[N_SKILLS] memory skillsVec,
+        uint256 ageInSecs,
+        uint8[4] memory birthTraits,
+        uint256 playerId,
+        uint256 targetTeamId
+    ) public view returns (uint256) {
+        return setTargetTeamId(
+            createSpecialPlayer(skillsVec, ageInSecs, birthTraits, playerId),
+            targetTeamId
+        );
+    }
 }

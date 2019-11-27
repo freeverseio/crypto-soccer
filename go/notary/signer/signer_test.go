@@ -40,7 +40,7 @@ func TestAuctionHiddenPrice(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	currencyId := uint8(1)
 	price := big.NewInt(41234)
 	rnd := big.NewInt(42321)
@@ -65,7 +65,7 @@ func TestAuctionMsg(t *testing.T) {
 	}
 
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(10)
 	currencyId := uint8(1)
@@ -106,7 +106,7 @@ func TestHashBidMessage(t *testing.T) {
 		t.Fatal(err)
 	}
 	err = bc.DeployContracts(bc.Owner)
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 
 	validUntil := big.NewInt(2000000000)
 	playerId := big.NewInt(274877906944)
@@ -156,7 +156,7 @@ func TestBidHiddenPrice(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signer := signer.NewSigner(bc.Market, nil)
+	signer := signer.NewSigner(bc.Contracts, nil)
 	extraPrice := big.NewInt(332)
 	buyerRandom := big.NewInt(1243523)
 
@@ -169,31 +169,3 @@ func TestBidHiddenPrice(t *testing.T) {
 		t.Fatalf("Hash error %v", result)
 	}
 }
-
-// func TestHashAgreeToBuyMessage(t *testing.T) {
-// 	ganache := testutils.NewGanache()
-// 	signer := processor.NewSigner(ganache.Market)
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
-// 	typeOfTx := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
-
-// 	hash, err := signer.HashBuyMessage(
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 		validUntil,
-// 		playerId,
-// 		typeOfTx,
-// 		big.NewInt(2),
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(hash[:])
-// 	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
-// 		t.Fatalf("Hash error %v", result)
-// 	}
-// }

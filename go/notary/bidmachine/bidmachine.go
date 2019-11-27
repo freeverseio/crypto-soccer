@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
@@ -18,20 +18,19 @@ import (
 )
 
 type BidMachine struct {
-	auction   *storage.Auction
-	bid       *storage.Bid
-	market    *market.Market
-	freeverse *ecdsa.PrivateKey
-	signer    *signer.Signer
-	client    *ethclient.Client
+	auction         *storage.Auction
+	bid             *storage.Bid
+	contracts       *contracts.Contracts
+	freeverse       *ecdsa.PrivateKey
+	signer          *signer.Signer
+	postAuctionTime *big.Int
 }
 
 func New(
 	auction *storage.Auction,
 	bid *storage.Bid,
-	market *market.Market,
+	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
-	client *ethclient.Client,
 ) (*BidMachine, error) {
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
@@ -39,13 +38,17 @@ func New(
 	if auction.UUID != bid.Auction {
 		return nil, errors.New("Bid of wrong auction")
 	}
+	postAuctionTime, err := contracts.Market.POSTAUCTIONTIME(&bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
 	return &BidMachine{
 		auction,
 		bid,
-		market,
+		contracts,
 		freeverse,
-		signer.NewSigner(market, freeverse),
-		client,
+		signer.NewSigner(contracts, freeverse),
+		postAuctionTime,
 	}, nil
 }
 
@@ -92,7 +95,13 @@ func (b *BidMachine) Process() error {
 }
 
 func (b *BidMachine) processPaying() error {
-	if b.bid.PaymentID == "" {
+	now := time.Now().Unix()
+	if now > b.bid.PaymentDeadline.Int64() {
+		b.bid.State = storage.BIDFAILED
+		b.bid.StateExtra = "Expired"
+		return nil
+	}
+	if b.bid.PaymentID == "" { // create order
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
 		market, err := marketpay.New()
 		if err != nil {
@@ -106,7 +115,7 @@ func (b *BidMachine) processPaying() error {
 		}
 		b.bid.PaymentID = order.TrusteeShortlink.Hash
 		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
-	} else {
+	} else { // check if order is paid
 		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
 		market, err := marketpay.New()
 		if err != nil {
@@ -147,7 +156,7 @@ func (b *BidMachine) processPaying() error {
 			if err != nil {
 				return err
 			}
-			tx, err := b.market.CompletePlayerAuction(
+			tx, err := b.contracts.Market.CompletePlayerAuction(
 				bind.NewKeyedTransactor(b.freeverse),
 				auctionHiddenPrice,
 				b.auction.ValidUntil,
@@ -163,7 +172,7 @@ func (b *BidMachine) processPaying() error {
 				b.bid.StateExtra = err.Error()
 				return err
 			}
-			receipt, err := helper.WaitReceipt(b.client, tx, 60)
+			receipt, err := helper.WaitReceipt(b.contracts.Client, tx, 60)
 			if err != nil {
 				b.bid.State = storage.BIDFAILED
 				b.bid.StateExtra = "Timeout waiting for the receipt"
@@ -182,6 +191,10 @@ func (b *BidMachine) processPaying() error {
 }
 
 func (b *BidMachine) processAccepted() error {
+	if b.auction.ValidUntil == nil {
+		return errors.New("nil valid until")
+	}
 	b.bid.State = storage.BIDPAYING
+	b.bid.PaymentDeadline = new(big.Int).Add(b.auction.ValidUntil, b.postAuctionTime)
 	return nil
 }
