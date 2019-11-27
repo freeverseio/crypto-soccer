@@ -35,7 +35,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/synchronizer:${TAG}
@@ -51,7 +51,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/market.notary:${TAG}
@@ -67,7 +67,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd relay.api && docker build -t freeverseio/relay.api:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/relay.api:${TAG}
@@ -83,7 +83,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/relay.actions:${TAG}
@@ -98,7 +98,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd market.trader && docker build -t freeverseio/market.trader:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/market.trader:${TAG}
@@ -113,7 +113,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd django-centauri && docker build -t freeverseio/centauri:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:${TAG}
@@ -126,7 +126,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd universe.db && docker build -t freeverseio/universe.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/universe.db:${TAG}
@@ -139,7 +139,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd relay.db && docker build -t freeverseio/relay.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/relay.db:${TAG}
@@ -152,7 +152,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/horizon:${TAG}
@@ -165,7 +165,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd market.db && docker build -t freeverseio/market.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/market.db:${TAG}
@@ -178,7 +178,7 @@ jobs:
       - run:
           name: Decide docker image tag
           command: |
-            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi; echo $TAG
       - run: cd universe.api && docker build -t freeverseio/universe.api:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/universe.api:${TAG}
