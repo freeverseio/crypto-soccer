@@ -138,11 +138,6 @@ jobs:
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/universe.api:dev
-  dockerization-development:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: echo "This is a blank job"
   dockerization-production:
     executor: freeverse
     steps:
@@ -217,19 +212,26 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - dockerization-development:
+      - universe-db:
           filters:
-            branches:
-              only:
-                - dev
-                - circleci-parallelization
-          requires:
-            - synchronizer
-            - django-centauri
-            - market-trader
-            - relay-api
-            - relay-actions
-            - market-notary
+            tags:
+              only: /.*/
+      - relay-db:
+          filters:
+            tags:
+              only: /.*/
+      - horizon:
+          filters:
+            tags:
+              only: /.*/
+      - market-db:
+          filters:
+            tags:
+              only: /.*/
+      - universe-api:
+          filters:
+            tags:
+              only: /.*/
       - dockerization-production:
           filters:
             tags:
@@ -249,5 +251,15 @@ workflows:
               only:
                 - dev
           requires:
-            - dockerization-development
+            - synchronizer
+            - django-centauri
+            - market-trader
+            - relay-api
+            - relay-actions
+            - market-notary
             - truffle_core
+            - universe-db
+            - relay-db
+            - horizon
+            - market-db
+            - universe-api
