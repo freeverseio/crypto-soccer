@@ -32,9 +32,13 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer && go test ./...
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/synchronizer:dev
+      - run: docker push freeverseio/synchronizer:${TAG}
   market-notary:
     executor: freeverse
     steps:
@@ -44,9 +48,13 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary && go test ./... -p 1
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/market.notary:dev
+      - run: docker push freeverseio/market.notary:${TAG}
   relay-api:
     executor: freeverse
     steps:
@@ -56,9 +64,13 @@ jobs:
       - run: make setup contracts
       - run: cd relay.api && npm install
       - run: cd relay.api && npm test
-      - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd relay.api && docker build -t freeverseio/relay.api:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/relay.api:dev
+      - run: docker push freeverseio/relay.api:${TAG}
   relay-actions:
     executor: freeverse
     steps:
@@ -68,9 +80,13 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/relay.actions:dev
+      - run: docker push freeverseio/relay.actions:${TAG}
   market-trader:
     executor: freeverse
     steps:
@@ -79,9 +95,13 @@ jobs:
           docker_layer_caching: true # (3)
       - run: cd market.trader && npm install
       - run: cd market.trader && npm test
-      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd market.trader && docker build -t freeverseio/market.trader:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/market.trader:dev
+      - run: docker push freeverseio/market.trader:${TAG}
   django-centauri:
     executor: freeverse
     steps:
@@ -90,84 +110,78 @@ jobs:
           docker_layer_caching: true # (3)
       - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
       - run: cd django-centauri && python3 manage.py test
-      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd django-centauri && docker build -t freeverseio/centauri:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:dev
+      - run: docker push freeverseio/centauri:${TAG}
   universe-db:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd universe.db && docker build -t freeverseio/universe.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/universe.db:dev
+      - run: docker push freeverseio/universe.db:${TAG}
   relay-db:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd relay.db && docker build -t freeverseio/relay.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/relay.db:dev
+      - run: docker push freeverseio/relay.db:${TAG}
   horizon:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/horizon:dev
+      - run: docker push freeverseio/horizon:${TAG}
   market-db:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd market.db && docker build -t freeverseio/market.db:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd market.db && docker build -t freeverseio/market.db:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/market.db:dev
+      - run: docker push freeverseio/market.db:${TAG}
   universe-api:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
+      - run:
+          name: Decide docker image tag
+          command: |
+            TAG="dev"; if ! [ -z ${CIRCLE_TAG+x} ]; then TAG=$CIRCLE_TAG; fi
+      - run: cd universe.api && docker build -t freeverseio/universe.api:${TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/universe.api:dev
-  dockerization-production:
-    executor: freeverse
-    steps:
-      - checkout
-      - setup_remote_docker:   # (2)
-          docker_layer_caching: true # (3)
-      - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} .
-      - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
-      - run: cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} .
-      - run: cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
-      - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
-      - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
-      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:${CIRCLE_TAG}
-      - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
-      - run: docker push freeverseio/horizon:${CIRCLE_TAG}
-      - run: docker push freeverseio/universe.db:${CIRCLE_TAG}
-      - run: docker push freeverseio/market.db:${CIRCLE_TAG}
-      - run: docker push freeverseio/market.trader:${CIRCLE_TAG}
-      - run: docker push freeverseio/market.notary:${CIRCLE_TAG}
-      - run: docker push freeverseio/relay.api:${CIRCLE_TAG}
-      - run: docker push freeverseio/relay.db:${CIRCLE_TAG}
-      - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
-      - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
+      - run: docker push freeverseio/universe.api:${TAG}
   deploy:
     executor: freeverse
     steps:
@@ -232,19 +246,6 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - dockerization-production:
-          filters:
-            tags:
-              only: /[0-9]+\.[0-9]+\.[0-9]+.+/
-            branches:
-              ignore: /.*/
-          requires:
-            - synchronizer
-            - django-centauri
-            - market-trader
-            - relay-api
-            - relay-actions
-            - market-notary
       - deploy:
           filters:
            branches:
