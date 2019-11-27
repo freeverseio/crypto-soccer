@@ -6,6 +6,7 @@ const Leagues = artifacts.require('Leagues');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Friendlies = artifacts.require('Friendlies');
+const Privileged = artifacts.require('Privileged');
 
 
 require('chai')
@@ -22,7 +23,8 @@ module.exports = function (deployer) {
     const market = await deployer.deploy(Market).should.be.fulfilled;
     const updates = await deployer.deploy(Updates).should.be.fulfilled;
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
-
+    const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
+    
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
@@ -46,6 +48,7 @@ module.exports = function (deployer) {
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
     console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
+    console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
   });
 };
 
