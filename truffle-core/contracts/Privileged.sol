@@ -14,6 +14,7 @@ contract Privileged is EncodingSkills, EncodingSkillsSetters {
     // leftishness:   0: 000, 1: 001, 2: 010, 3: 011, 4: 100, 5: 101, 6: 110, 7: 111
 
     function createSpecialPlayer(
+
         uint16[N_SKILLS] memory skillsVec,
         uint256 ageInSecs,
         uint8[4] memory birthTraits,

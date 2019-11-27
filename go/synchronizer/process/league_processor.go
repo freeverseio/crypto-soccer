@@ -139,6 +139,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 					teamState,
 					uint8(position),
 					team.State.PrevPerfPoints,
+					team.TeamID,
 				)
 				if err != nil {
 					return err
