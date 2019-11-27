@@ -18,6 +18,8 @@ jobs:
     executor: freeverse
     steps:
       - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
@@ -25,72 +27,122 @@ jobs:
     executor: freeverse
     steps:
       - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer && go test ./...
+      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/synchronizer:dev
   market-notary:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: make setup contracts
-      - run: cd go/cmd/notary && go build ./notary.go
-      - run: cd go/notary && go test ./... -p 1
-  relay-api:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: make setup contracts
-      - run: cd relay.api && npm install
-      - run: cd relay.api && npm test
-  relay-actions:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: make setup contracts
-      - run: cd go/cmd/relay && go build ./relay.go
-      - run: cd go/relay && go test ./...
-  market-trader:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: cd market.trader && npm install
-      - run: cd market.trader && npm test
-  django-centauri:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
-      - run: cd django-centauri && python3 manage.py test
-  dockerization-development:
     executor: freeverse
     steps:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
-      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
-      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
-      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
-      - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
-      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
-      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
-      - run: cd market.db && docker build -t freeverseio/market.db:dev .
-      - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
+      - run: cd go/cmd/notary && go build ./notary.go
+      - run: cd go/notary && go test ./... -p 1
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
-      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/market.notary:dev
+  relay-api:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: make setup contracts
+      - run: cd relay.api && npm install
+      - run: cd relay.api && npm test
+      - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/relay.api:dev
+  relay-actions:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: make setup contracts
+      - run: cd go/cmd/relay && go build ./relay.go
+      - run: cd go/relay && go test ./...
+      - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/relay.actions:dev
+  market-trader:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd market.trader && npm install
+      - run: cd market.trader && npm test
+      - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/market.trader:dev
+  django-centauri:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd django-centauri && pip3 install django && pip3 install djangorestframework && pip3 install requests
+      - run: cd django-centauri && python3 manage.py test
+      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/centauri:dev
-      - run: docker push freeverseio/synchronizer:dev
-      - run: docker push freeverseio/horizon:dev
+  universe-db:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/universe.db:dev
-      - run: docker push freeverseio/market.db:dev
-      - run: docker push freeverseio/market.trader:dev
-      - run: docker push freeverseio/market.notary:dev
-      - run: docker push freeverseio/relay.api:dev
+  relay-db:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/relay.db:dev
+  horizon:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/horizon:dev
+  market-db:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd market.db && docker build -t freeverseio/market.db:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
+      - run: docker push freeverseio/market.db:dev
+  universe-api:
+    executor: freeverse
+    steps:
+      - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
+      - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
+      - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
       - run: docker push freeverseio/universe.api:dev
-      - run: docker push freeverseio/relay.actions:dev
+  dockerization-development:
+    executor: freeverse
+    steps:
+      - checkout
+      - run: echo "This is a blank job"
   dockerization-production:
     executor: freeverse
     steps:
@@ -170,6 +222,7 @@ workflows:
             branches:
               only:
                 - dev
+                - circleci-parallelization
           requires:
             - synchronizer
             - django-centauri
