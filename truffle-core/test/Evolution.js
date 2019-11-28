@@ -207,7 +207,7 @@ contract('Evolution', (accounts) => {
         MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
-    it('evolution leading to a roster player', async () => {
+    it('evolution leading to a academy player', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -229,8 +229,8 @@ contract('Evolution', (accounts) => {
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
 
         // checks that the generation increases by 1. 
-        // It sets a "32" at the beginning if it is a Roster player, otherwise it is a child
-        // In this case, the randomness leads to a Roster player
+        // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
+        // In this case, the randomness leads to a Academy player
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
@@ -277,7 +277,7 @@ contract('Evolution', (accounts) => {
         weights = [10, 20, 30, 40, 50];
         newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime + 2);
 
-        // checks that the generation increases by 1. It sets a "32" at the beginning if it is a Roster player, otherwise it is a child.
+        // checks that the generation increases by 1. It sets a "32" at the beginning if it is a Academy player, otherwise it is a child.
         // In this case, randomness leads to a son.
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(0 * 32 + gen + 1)
