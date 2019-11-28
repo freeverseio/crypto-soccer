@@ -4,16 +4,6 @@ import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 const uuidv1 = require('uuid/v1');
 
-// const GET_PLAYERS = gql`
-// {
-//     allAuctions {
-//         nodes {
-//             uuid
-//         }
-//     }
-// }
-// `;
-
 const CREATE_AUCTION = gql`
 mutation CreateAuction(
   $uuid: UUID!
@@ -55,22 +45,6 @@ export default function SpecialPlayer(props) {
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
     const [createAuction] = useMutation(CREATE_AUCTION);
-
-    //     const { loading, error, data } = useQuery(GET_PLAYERS, {
-    //         pollInterval: 500,
-    //     });
-
-    //     console.log("here")
-    //     if (loading) return null;
-    //     if (error) return `Error! ${error}`;
-    //     console.log(data);
-
-    //     return (
-    //         <div>
-    //             {data.allAuctions.nodes.map(auction => <div key={auction.uuid}>{auction.uuid}</div>)}
-    //         </div>
-    //     );
-    // }
 
     async function generatePlayerId() {
         const { privileged } = props;
@@ -114,7 +88,6 @@ export default function SpecialPlayer(props) {
             seller: seller,
         }});
     }
-
 
     return (
         <Container style={{ margin: 20 }} >
