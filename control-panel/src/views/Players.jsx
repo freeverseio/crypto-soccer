@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Container, Form, Segment } from 'semantic-ui-react';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 
 const GET_PLAYERS = gql`
 {
@@ -13,11 +13,37 @@ const GET_PLAYERS = gql`
 }
 `;
 
+const CREATE_AUCTION = gql`
+mutation CreateAuction(
+  $uuid: UUID!
+  $playerId: String!
+  $currencyId: Int!
+  $price: Int!
+  $rnd: Int!
+  $validUntil: String!
+  $signature: String!
+  $seller: String!
+) {
+  createAuction(
+    input: {
+      uuid: $uuid
+      playerId: $playerId
+      currencyId: $currencyId
+      price: $price
+      rnd: $rnd
+      validUntil: $validUntil
+      signature: $signature
+      seller: $seller
+    }
+  )
+}
+`;
+
 class SpecialPlayer extends Component {
     constructor(props) {
         super(props);
 
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.generatePlayerId = this.generatePlayerId.bind(this);
 
         this.state = {
             shoot: '2000',
@@ -51,7 +77,7 @@ class SpecialPlayer extends Component {
         );
     }
 
-    async handleSubmit(event) {
+    async generatePlayerId() {
         const { privileged } = this.props;
         const { 
             shoot, 
@@ -78,14 +104,21 @@ class SpecialPlayer extends Component {
             internalId
         ).call();
 
-        console.log(playerId)
+        return playerId;
     }
 
     render() {
+        // const [createAuction] = useMutation(CREATE_AUCTION);
+
         return (
             <Container style={{ margin: 20 }} >
                 <Segment>
-                    <Form onSubmit={this.handleSubmit}>
+                    <Form onSubmit={e => {
+                        e.preventDefault();
+                        const playerId = this.generatePlayerId();
+                        console.log(playerId);
+                    }}
+                    >
                         <Form.Field>
                             <label>Name</label>
                             <input placeholder='Name' value={this.state.name} onChange={event => this.setState({ name: event.target.value })} />
