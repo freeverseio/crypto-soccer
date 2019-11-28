@@ -31,12 +31,17 @@ contract Market {
     mapping (uint256 => uint256) private _teamIdToAuctionData;
     mapping (uint256 => uint256) private _teamIdToRemainingAcqs;
 
+    event TeamTransfer(uint256 teamId, address to);
+
     address public rosterAddr;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
     }
-    function setRosterAddr(address addr) public {rosterAddr = addr;}
+    function setRosterAddr(address addr) public {
+        rosterAddr = addr;
+        emit TeamTransfer(ROSTER_TEAM, addr);        
+    }
     
     function isRosterPlayer(uint256 playerId) public view returns(bool) {
         return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));

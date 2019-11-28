@@ -863,7 +863,11 @@ contract("Market", accounts => {
     playerId = await createSpecialPlayerId();
 
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.rejected;
-    await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    tx = await market.setRosterAddr(freeverseAccount.address).should.be.fulfilled;
+    truffleAssert.eventEmitted(tx, "TeamTransfer", (event) => {
+      return event.teamId.toNumber() == 1 && event.to == freeverseAccount.address;
+    });
+
     tx = await freezePlayer(currencyId, price, sellerRnd, validUntil, playerId, freeverseAccount).should.be.fulfilled;
 
     isPlayerFrozen = await market.isPlayerFrozen(playerId).should.be.fulfilled;
