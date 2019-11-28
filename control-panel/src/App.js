@@ -11,7 +11,7 @@ import Header from './views/Header';
 import Main from './views/Main';
 const privilegedJSON = require("./contracts/Privileged.json");
 
-const web3 = new Web3('http://localhost:8545');
+const web3 = new Web3(Web3.givenProvider || 'http://localhost:8545');
 const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x72a2F9bfCD665Efadc58A05bCaf7Be380a8dE03B");
 
 const url = 'http://165.22.66.118:4000/graphiql';

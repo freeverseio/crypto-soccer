@@ -107,8 +107,8 @@ export default function SpecialPlayer(props) {
             uuid: uuidv1(),
             playerId: playerId,
             currencyId: 1,
-            price: price,
-            rnd: rnd,
+            price: Number(price),
+            rnd: Number(rnd),
             validUntil: validUntil,
             signature: signature,
             seller: seller,
@@ -121,15 +121,10 @@ export default function SpecialPlayer(props) {
             <Segment>
                 <Form onSubmit={handleSubmit}>
                     <Form.Field>
-                        <Input labelPosition='right' type='text' value={name} onChange={event => setName(event.target.value)}>
+                        <Input labelPosition='left' type='text' value={name} onChange={event => setName(event.target.value)}>
                             <Label basic>Name</Label>
                             <input />
                         </Input>
-                    </Form.Field>
-
-                    <Form.Field>
-                        <label>Name</label>
-                        <input placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
                     </Form.Field>
                     <Form.Group>
                         <Form.Field>
