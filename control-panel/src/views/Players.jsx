@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { Container, Form, Segment } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
@@ -39,64 +39,43 @@ mutation CreateAuction(
 }
 `;
 
-class SpecialPlayer extends Component {
-    constructor(props) {
-        super(props);
+export default function SpecialPlayer(props) {
+    const [shoot, setShoot] = useState('2000');
+    const [speed, setSpeed] = useState('2000');
+    const [pass, setPass] = useState('2000');
+    const [defence, setDefence] = useState('2000');
+    const [endurance, setEndurance] = useState('2000');
+    const [potential, setPotential] = useState('2000');
+    const [forwardness, setForwardness] = useState('2000');
+    const [leftishness, setLeftishness] = useState('2000');
+    const [aggressiveness, setAggressiveness] = useState('2000');
+    const [age, setAge] = useState('2000');
+    const [name, setName] = useState('Johnnie Freeverse');
 
-        this.generatePlayerId = this.generatePlayerId.bind(this);
+    //     const { loading, error, data } = useQuery(GET_PLAYERS, {
+    //         pollInterval: 500,
+    //     });
 
-        this.state = {
-            shoot: '2000',
-            speed: '2000',
-            pass: '2000',
-            defence: '2000',
-            endurance: '2000',
-            potential: '5',
-            forwardness: '3',
-            leftishness: '3',
-            aggressiveness: '2',
-            age: '17',
-            name: 'Johnnie Freeverse',
-        }
-    }
+    //     console.log("here")
+    //     if (loading) return null;
+    //     if (error) return `Error! ${error}`;
+    //     console.log(data);
 
-    GetPlayers() {
-        const { loading, error, data } = useQuery(GET_PLAYERS, {
-            pollInterval: 500,
-        });
+    //     return (
+    //         <div>
+    //             {data.allAuctions.nodes.map(auction => <div key={auction.uuid}>{auction.uuid}</div>)}
+    //         </div>
+    //     );
+    // }
 
-        console.log("here")
-        if (loading) return null;
-        if (error) return `Error! ${error}`;
-        console.log(data);
+    async function generatePlayerId() {
+        const { privileged } = props;
 
-        return (
-            <div>
-                {data.allAuctions.nodes.map(auction => <div key={auction.uuid}>{auction.uuid}</div>)}
-            </div>
-        );
-    }
-
-    async generatePlayerId() {
-        const { privileged } = this.props;
-        const { 
-            shoot, 
-            speed, 
-            pass, 
-            defence, 
-            endurance,
-            potential,
-            forwardness,
-            leftishness,
-            aggressiveness,
-            age,
-        } = this.state;
-
-        const sk = [shoot, speed, pass, defence, endurance ];
-        const traits = [potential, forwardness,  leftishness, aggressiveness];
+        const sk = [shoot, speed, pass, defence, endurance];
+        const traits = [potential, forwardness, leftishness, aggressiveness];
         const secsInYear = 365 * 24 * 3600
-        const internalId = Math.floor(Math.random()*1000000);
-        
+        const internalId = Math.floor(Math.random() * 1000000);
+
         const playerId = await privileged.methods.createSpecialPlayer(
             sk,
             age * secsInYear,
@@ -107,73 +86,70 @@ class SpecialPlayer extends Component {
         return playerId;
     }
 
-    render() {
-        // const [createAuction] = useMutation(CREATE_AUCTION);
+    async function handleSubmit(e) {
+        e.preventDefault();
 
-        return (
-            <Container style={{ margin: 20 }} >
-                <Segment>
-                    <Form onSubmit={e => {
-                        e.preventDefault();
-                        const playerId = this.generatePlayerId();
-                        console.log(playerId);
-                    }}
-                    >
-                        <Form.Field>
-                            <label>Name</label>
-                            <input placeholder='Name' value={this.state.name} onChange={event => this.setState({ name: event.target.value })} />
-                        </Form.Field>
-                        <Form.Group>
-                            <Form.Field>
-                                <label>Shoot</label>
-                                <input placeholder='Shoot' type='number' value={this.state.shoot} onChange={event => this.setState({ shoot: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Speed</label>
-                                <input placeholder='Speed' type='number' value={this.state.speed} onChange={event => this.setState({ speed: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Pass</label>
-                                <input placeholder='Pass' type='number' value={this.state.pass} onChange={event => this.setState({ pass: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Defence</label>
-                                <input placeholder='Defence' type='number' value={this.state.defence} onChange={event => this.setState({ defence: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Endurance</label>
-                                <input placeholder='Endurance' type='number' value={this.state.endurance} onChange={event => this.setState({ endurance: event.target.value })} />
-                            </Form.Field>
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Field>
-                                <label>Potential</label>
-                                <input placeholder='Potential' type='number' value={this.state.potential} onChange={event => this.setState({ potential: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Forwardness</label>
-                                <input placeholder='Forwardness' type='number' value={this.state.forwardness} onChange={event => this.setState({ forwardness: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Leftishness</label>
-                                <input placeholder='Leftishness' type='number' value={this.state.leftishness} onChange={event => this.setState({ leftishness: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Aggressiveness</label>
-                                <input placeholder='Aggressiveness' type='number' value={this.state.aggressiveness} onChange={event => this.setState({ aggressiveness: event.target.value })} />
-                            </Form.Field>
-                            <Form.Field>
-                                <label>Age</label>
-                                <input placeholder='Age' type='number' value={this.state.age} onChange={event => this.setState({ age: event.target.value })} />
-                            </Form.Field>
-                        </Form.Group>
-                        <Form.Button type='submit'>Create</Form.Button>
-                    </Form>
-                </Segment>
-                <this.GetPlayers/>
-            </Container>
-        );
+        const playerId = await generatePlayerId();
+        console.log(playerId);
     }
-};
 
-export default SpecialPlayer;
+    // const [createAuction] = useMutation(CREATE_AUCTION);
+
+    return (
+        <Container style={{ margin: 20 }} >
+            <Segment>
+                <Form onSubmit={handleSubmit}>
+                    <Form.Field>
+                        <label>Name</label>
+                        <input placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
+                    </Form.Field>
+                    <Form.Group>
+                        <Form.Field>
+                            <label>Shoot</label>
+                            <input placeholder='Shoot' type='number' value={shoot} onChange={event => setShoot(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Speed</label>
+                            <input placeholder='Speed' type='number' value={speed} onChange={event => setSpeed(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Pass</label>
+                            <input placeholder='Pass' type='number' value={pass} onChange={event => setPass(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Defence</label>
+                            <input placeholder='Defence' type='number' value={defence} onChange={event => setDefence(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Endurance</label>
+                            <input placeholder='Endurance' type='number' value={endurance} onChange={event => setEndurance(event.target.value)} />
+                        </Form.Field>
+                    </Form.Group>
+                    <Form.Group>
+                        <Form.Field>
+                            <label>Potential</label>
+                            <input placeholder='Potential' type='number' value={potential} onChange={event => setPotential(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Forwardness</label>
+                            <input placeholder='Forwardness' type='number' value={forwardness} onChange={event => setForwardness(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Leftishness</label>
+                            <input placeholder='Leftishness' type='number' value={leftishness} onChange={event => setLeftishness(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Aggressiveness</label>
+                            <input placeholder='Aggressiveness' type='number' value={aggressiveness} onChange={event => setAggressiveness(event.target.value)} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>Age</label>
+                            <input placeholder='Age' type='number' value={age} onChange={event => setAge(event.target.value)} />
+                        </Form.Field>
+                    </Form.Group>
+                    <Form.Button type='submit'>Create</Form.Button>
+                </Form>
+            </Segment>
+        </Container>
+    );
+};
