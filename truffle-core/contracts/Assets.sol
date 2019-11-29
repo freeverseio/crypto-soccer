@@ -9,6 +9,7 @@ import "./EncodingState.sol";
  */
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
+    event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
@@ -73,6 +74,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -82,6 +84,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {

@@ -50,21 +50,24 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal("processed 0 blocks")
 	}
 
+	// the null timezone (0) is only used by the Academy Team
 	if count, err := universedb.TimezoneCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 1 {
-		t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
+	} else if count != 2 {
+		t.Fatalf("Expected 2 time zones at time of creation,  actual %v", count)
 	}
 
+	// one country belongs to timezone = 0
 	if count, err := universedb.CountryCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 1 {
-		t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
+	} else if count != 2 {
+		t.Fatalf("Expected 2 countries at time of creation,  actual %v", count)
 	}
 
+	// one team (the Academy) belongs to timezone = 0
 	if count, err := universedb.TeamCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 128 {
+	} else if count != (128 + 1) {
 		t.Fatalf("Expected 128 actual %v", count)
 	}
 	if count, err := universedb.PlayerCount(); err != nil {

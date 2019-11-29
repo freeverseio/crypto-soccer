@@ -65,6 +65,9 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // updates.UpdatesActionsSubmission
 
 func (s *EventScanner) Process(opts *bind.FilterOpts) error {
+	if err := s.scanAssetsInit(opts); err != nil {
+		return err
+	}
 	if err := s.scanDivisionCreation(opts); err != nil {
 		return err
 	}
@@ -99,6 +102,19 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 
 func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
 	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
+}
+
+func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
+	iter, err := s.contracts.Assets.FilterAssetsInit(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanAssetsInit")
+		s.addEvent(e.Raw, "AssetsInit", e)
+	}
+	return nil
 }
 
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
