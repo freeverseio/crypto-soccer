@@ -46,11 +46,7 @@ func TestAssetsInitProcess(t *testing.T) {
 	if team.Name != "Academy" {
 		t.Fatalf("Wrong team name. Expected: Academy, result: %v", team)
 	}
-
-	// if player.State.Name == "" {
-	// 	t.Fatal("name is empty")
-	// }
-	// if player.DayOfBirth == 0 {
-	// 	t.Fatal("dayOfBirth is 0")
-	// }
+	if team.State.Owner != creator.String() {
+		t.Fatalf("Wrong team owner: %v", team.State.Owner)
+	}
 }
