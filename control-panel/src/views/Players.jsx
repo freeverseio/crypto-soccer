@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Form, Segment, Label, Input } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
 // const GET_PLAYERS = gql`
@@ -14,104 +15,7 @@ const uuidv1 = require('uuid/v1');
 // }
 // `;
 
-function assert(boolean, msg) {
-    if (boolean == false) {
-        console.log("WARNING! ASSERTION FAILED: " + msg);
-    }
-}
 
-function concatHash(web3, types, vals) {
-    assert(types.length == vals.length, "Length of inputs should be equal")
-    return web3.utils.keccak256(
-        web3.eth.abi.encodeParameters(types, vals)
-    )
-  }
-  
-  // this function does the crazy thing solidity does for hex...
-  function getMessageHash(web3, msg) {
-    assert(web3.utils.isHexStrict(msg), "We currently only support signing hashes, which are 0x stating hex numbers")
-    var message = web3.utils.hexToBytes(msg);
-    var messageBuffer = Buffer.from(message);
-    var preamble = "\x19Ethereum Signed Message:\n" + message.length;
-    var preambleBuffer = Buffer.from(preamble);
-    var ethMessage = Buffer.signature([preambleBuffer, messageBuffer]);
-    return web3.utils.keccak256(ethMessage);
-  }
-  
-  async function becomeOwnerOfAcademy(market, addr) {
-      await market.methods.setAcademyAddr(addr);
-  }
-  
-  async function signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, asssetId, sellerAccount) {
-    const hiddenPrice = concatHash(
-        web3,
-        ['uint8', 'uint256', 'uint256'],
-        [currencyId, price, rnd]
-    )
-    const sellerTxMsg = concatHash(
-        web3,
-        ['bytes32', 'uint256', 'uint256'],
-        [hiddenPrice, validUntil, asssetId]
-    )
-    
-    const sigSeller = await sellerAccount.sign(sellerTxMsg);
-    return sigSeller;
-  }
-  
-  // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-  async function signAgreeToBuyPlayerMTx(web3, currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
-    const sellerHiddenPrice = concatHash(
-        web3,
-        ['uint8', 'uint256', 'uint256'],
-        [currencyId, price, sellerRnd]
-    )
-    const buyerHiddenPrice = concatHash(
-        web3,
-        ['uint256', 'uint256'],
-        [extraPrice, buyerRnd]
-    )
-    const sellerTxMsg = concatHash(
-        web3,
-        ['bytes32', 'uint256', 'uint256'],
-        [sellerHiddenPrice, validUntil, playerId]
-    )
-    const sellerTxHash = getMessageHash(sellerTxMsg);
-    const buyerTxMsg = concatHash(
-        web3,
-        ['bytes32', 'bytes32', 'uint256', 'bool'],
-        [sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction]
-    )
-    const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-    return sigBuyer;
-  }
-  
-  // Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-  async function signAgreeToBuyTeamMTx(web3, currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerAccount) {
-    const sellerHiddenPrice = concatHash(
-        web3,
-        ['uint8', 'uint256', 'uint256'],
-        [currencyId, price, sellerRnd]
-    )
-    const buyerHiddenPrice = concatHash(
-        web3,
-        ['uint256', 'uint256'],
-        [extraPrice, buyerRnd]
-    )
-    const sellerTxMsg = concatHash(
-        web3,
-        ['bytes32', 'uint256', 'uint256'],
-        [sellerHiddenPrice, validUntil, playerId]
-    )
-    const sellerTxHash = getMessageHash(sellerTxMsg);
-    const buyerTxMsg = concatHash(
-        web3,
-        ['bytes32', 'bytes32', 'bool'],
-        [sellerTxHash, buyerHiddenPrice, isOffer2StartAuction]
-    )
-    const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-    return sigBuyer;
-  }
-  
 
 
 const CREATE_AUCTION = gql`
@@ -199,7 +103,10 @@ export default function SpecialPlayer(props) {
         const now = new Date();
         const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
         const sellerAccount = await web3.eth.accounts.create("iamaseller");
-        becomeOwnerOfAcademy(market, sellerAccount.address);
+        console.log("Becoming the owner of the Academy...");
+        await market.methods.setAcademyAddr(sellerAccount.address);
+        console.log("Becoming the owner of the Academy...done");
+      
         const currencyId = 1;
         const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, playerId, sellerAccount);
         const seller = sellerAccount.address;
@@ -213,6 +120,7 @@ export default function SpecialPlayer(props) {
             signature: signature.signature,
             seller: seller,
         }});
+        console.log("Correctly sent new Academy player creation!");
     }
 
 
