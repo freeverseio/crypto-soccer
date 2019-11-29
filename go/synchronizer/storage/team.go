@@ -190,7 +190,8 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	goals_forward, 
 	goals_against, 
 	prev_perf_points,
-	ranking_points 
+	ranking_points,
+	name
 	FROM teams WHERE (team_id = $1);`, teamID.String())
 	if err != nil {
 		return team, err
@@ -216,6 +217,7 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.State.GoalsAgainst,
 		&prevPerfPoints,
 		&rankingPoints,
+		&team.Name,
 	)
 	team.State.PrevPerfPoints, _ = new(big.Int).SetString(prevPerfPoints.String, 10)
 	team.State.RankingPoints, _ = new(big.Int).SetString(rankingPoints.String, 10)
