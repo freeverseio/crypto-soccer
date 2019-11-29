@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+// const marketUtils = require('marketUtils.js');
+// import * as marketUtils from './marketUtils';
 
 ReactDOM.render(<App />, document.getElementById('root'));
 

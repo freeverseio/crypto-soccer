@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Container, Form, Segment, Label, Input } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
 // const GET_PLAYERS = gql`
@@ -13,6 +14,9 @@ const uuidv1 = require('uuid/v1');
 //     }
 // }
 // `;
+
+
+
 
 const CREATE_AUCTION = gql`
 mutation CreateAuction(
@@ -91,28 +95,32 @@ export default function SpecialPlayer(props) {
     }
 
     async function handleSubmit(e) {
+        const { web3, market } = props;
         e.preventDefault();
 
         const playerId = await generatePlayerId();
         const rnd = Math.floor(Math.random() * 1000000);
         const now = new Date();
         const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
-
-        // TODO 
-        const signature = "";
-        const seller = "";
-
-        console.log(playerId);
+        const sellerAccount = await web3.eth.accounts.create("iamaseller");
+        console.log("Becoming the owner of the Academy...");
+        await market.methods.setAcademyAddr(sellerAccount.address);
+        console.log("Becoming the owner of the Academy...done");
+      
+        const currencyId = 1;
+        const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, playerId, sellerAccount);
+        const seller = sellerAccount.address;
         createAuction({variables: {
             uuid: uuidv1(),
             playerId: playerId,
-            currencyId: 1,
+            currencyId: currencyId,
             price: price,
             rnd: rnd,
             validUntil: validUntil,
-            signature: signature,
+            signature: signature.signature,
             seller: seller,
         }});
+        console.log("Correctly sent new Academy player creation!");
     }
 
 
