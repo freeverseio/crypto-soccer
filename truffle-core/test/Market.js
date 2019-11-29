@@ -12,78 +12,6 @@ const Market = artifacts.require("Market");
 const Assets = artifacts.require('Assets');
 const Privileged = artifacts.require('Privileged');
 
-
-// Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyPlayerMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerTeamId, buyerAccount) {
-  const sellerHiddenPrice = marketUtils.concatHash(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId, price, sellerRnd]
-  )
-  const buyerHiddenPrice = marketUtils.concatHash(
-    ['uint256', 'uint256'],
-    [extraPrice, buyerRnd]
-  )
-  const sellerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [sellerHiddenPrice, validUntil, playerId]
-  )
-  const sellerTxHash = marketUtils.getMessageHash(sellerTxMsg);
-  buyerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'bytes32', 'uint256', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, buyerTeamId, isOffer2StartAuction]
-  )
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
-}
-
-// Buyer explicitly agrees to all of sellers data, and only adds the 'buyerTeamId' to it.
-async function signAgreeToBuyTeamMTx(currencyId, price, extraPrice, sellerRnd, buyerRnd, validUntil, playerId, isOffer2StartAuction, buyerAccount) {
-  const sellerHiddenPrice = marketUtils.concatHash(
-    ['uint8', 'uint256', 'uint256'],
-    [currencyId, price, sellerRnd]
-  )
-  const buyerHiddenPrice = marketUtils.concatHash(
-    ['uint256', 'uint256'],
-    [extraPrice, buyerRnd]
-  )
-  const sellerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [sellerHiddenPrice, validUntil, playerId]
-  )
-  const sellerTxHash = marketUtils.getMessageHash(sellerTxMsg);
-  buyerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'bytes32', 'bool'],
-      [sellerTxHash, buyerHiddenPrice, isOffer2StartAuction]
-  )
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  return sigBuyer;
-}
-
-
-function buildOfferToBuyPlayerMsg(currencyId, price, rnd, validUntil, playerId, buyerTeamId) {
-  const privHash = marketUtils.concatHash(
-      ['uint8', 'uint256', 'uint256'],
-      [currencyId, price, rnd]
-  )
-  const buyerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'uint256', 'uint256', 'uint256'],
-      [privHash, validUntil, playerId, buyerTeamId]
-  )
-  return buyerTxMsg;
-}
-
-function buildOfferToBuyTeamMsg(currencyId, price, rnd, validUntil, playerId) {
-  const privHash = marketUtils.concatHash(
-      ['uint8', 'uint256', 'uint256'],
-      [currencyId, price, rnd]
-  )
-  const buyerTxMsg = marketUtils.concatHash(
-      ['bytes32', 'uint256', 'uint256'],
-      [privHash, validUntil, playerId]
-  )
-  return buyerTxMsg;
-}
-
 async function createPromoPlayer(targetTeamId, internalId = 144321433) {
   sk = [16383, 13, 4, 56, 456];
   traits = [potential = 5, forwardness = 3, leftishness = 4, aggressiveness = 1];
@@ -112,19 +40,6 @@ async function createSpecialPlayerId(internalId = 144321433) {
 }
 
 
-async function signOfferToBuyPlayerMTx(currencyId, price, rnd, validUntil, playerId, buyerTeamId, buyerAccount) {
-  const buyerTxMsg = buildOfferToBuyPlayerMsg(currencyId, price, rnd, validUntil, playerId, buyerTeamId);
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  sigBuyer.message.should.be.equal(buyerTxMsg);
-  return sigBuyer;
-}
-
-async function signOfferToBuyTeamMTx(currencyId, price, rnd, validUntil, playerId, buyerAccount) {
-  const buyerTxMsg = buildOfferToBuyPlayerMsg(currencyId, price, rnd, validUntil, playerId);
-  const sigBuyer = await buyerAccount.sign(buyerTxMsg);
-  sigBuyer.message.should.be.equal(buyerTxMsg);
-  return sigBuyer;
-}
 
 async function freezeTeam(currencyId, price, sellerRnd, validUntil, teamId, sellerAccount) {
   // Mobile app does this:
@@ -224,7 +139,7 @@ async function completeTeamAuction(
     ["uint256", "uint256"],
     [extraPrice, buyerRnd]
   );
-  let sigBuyer = await signAgreeToBuyTeamMTx(
+  let sigBuyer = await marketUtils.signAgreeToBuyTeamMTx(
     currencyId,
     price,
     extraPrice,
@@ -275,7 +190,7 @@ async function completePlayerAuction(
     [extraPrice, buyerRnd]
   );
 
-  let sigBuyer = await signAgreeToBuyPlayerMTx(
+  let sigBuyer = await marketUtils.signAgreeToBuyPlayerMTx(
     currencyId,
     price,
     extraPrice,
@@ -490,7 +405,6 @@ contract("Market", accounts => {
     sigBuyer.signature.should.be.equal('0xdbe104e7b51c9b1e38cdda4e31c2036e531f7d3338d392bee2f526c4c892437f5e50ddd44224af8b3bd92916b93e4b0d7af2974175010323da7dedea19f30d621c');
   });
 
-  return
   it('teams: deterministic sign (values used in market.notary test)', async () => {
     sellerTeamId.should.be.bignumber.equal('274877906944');
 
