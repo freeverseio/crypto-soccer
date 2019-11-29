@@ -1,3 +1,11 @@
+CREATE TABLE params (
+    name TEXT NOT NULL,
+    value TEXT NOT NULL,
+    PRIMARY KEY(name)
+);
+
+INSERT INTO params (name, value) VALUES ('verse', '0');
+
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
     verse BIGINT NOT NULL,
