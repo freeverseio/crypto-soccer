@@ -72,6 +72,12 @@ contract('Assets', (accounts) => {
         await assets.init().should.be.rejected;
     });
 
+    it('emit event upon creation', async () =>  {
+        truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
+            return event.creatorAddr.should.be.equal(accounts[0]);
+        });
+    });
+
     it('check initial and max number of players per team', async () =>  {
         PLAYERS_PER_TEAM_INIT.should.be.equal(18);
         PLAYERS_PER_TEAM_MAX.should.be.equal(25);

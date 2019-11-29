@@ -56,6 +56,7 @@ github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5/go.mod h1:VvhXpOYNQvB+
 github.com/freeverseio/crypto-soccer v0.0.0-20190617104939-25ba93b31f33 h1:KtU9iOQqHmHwhhLmu5fIZU4geaStQlJSj5kyBchbW1M=
 github.com/freeverseio/crypto-soccer v0.0.0-20191114162425-2149de6ee901 h1:GE6x8Ubp1yaGmFt+E9bNkrSmCcUGNy6mkQtGorM4n2s=
 github.com/freeverseio/crypto-soccer v0.0.0-20191118160814-feb71bb6ab6b h1:h18HJRKa5jPU/XEH1y4V3GExp8Qour0nHDPeKGXf9xA=
+github.com/freeverseio/crypto-soccer v0.0.0-20191128171501-51e0ea62942d h1:ADEfbWFhoDmb60C2VBC+uIYl42j+TjQlIUcTDMLBsFQ=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/garyburd/redigo v1.6.0/go.mod h1:NR3MbYisc3/PwhQ00EMzDiPmrwpPxAn5GI05/YaO1SY=
