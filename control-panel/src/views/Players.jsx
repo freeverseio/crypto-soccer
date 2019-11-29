@@ -5,19 +5,6 @@ import { useMutation } from '@apollo/react-hooks';
 import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
-// const GET_PLAYERS = gql`
-// {
-//     allAuctions {
-//         nodes {
-//             uuid
-//         }
-//     }
-// }
-// `;
-
-
-
-
 const CREATE_AUCTION = gql`
 mutation CreateAuction(
   $uuid: UUID!
@@ -60,22 +47,6 @@ export default function SpecialPlayer(props) {
     const [timeout, setTimeout] = useState(3600);
     const [createAuction] = useMutation(CREATE_AUCTION);
 
-    //     const { loading, error, data } = useQuery(GET_PLAYERS, {
-    //         pollInterval: 500,
-    //     });
-
-    //     console.log("here")
-    //     if (loading) return null;
-    //     if (error) return `Error! ${error}`;
-    //     console.log(data);
-
-    //     return (
-    //         <div>
-    //             {data.allAuctions.nodes.map(auction => <div key={auction.uuid}>{auction.uuid}</div>)}
-    //         </div>
-    //     );
-    // }
-
     async function generatePlayerId() {
         const { privileged } = props;
 
@@ -114,8 +85,8 @@ export default function SpecialPlayer(props) {
             uuid: uuidv1(),
             playerId: playerId,
             currencyId: currencyId,
-            price: price,
-            rnd: rnd,
+            price: Number(price),
+            rnd: Number(rnd),
             validUntil: validUntil,
             signature: signature.signature,
             seller: seller,
@@ -123,21 +94,15 @@ export default function SpecialPlayer(props) {
         console.log("Correctly sent new Academy player creation!");
     }
 
-
     return (
         <Container style={{ margin: 20 }} >
             <Segment>
                 <Form onSubmit={handleSubmit}>
                     <Form.Field>
-                        <Input labelPosition='right' type='text' value={name} onChange={event => setName(event.target.value)}>
+                        <Input labelPosition='left' type='text' value={name} onChange={event => setName(event.target.value)}>
                             <Label basic>Name</Label>
                             <input />
                         </Input>
-                    </Form.Field>
-
-                    <Form.Field>
-                        <label>Name</label>
-                        <input placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
                     </Form.Field>
                     <Form.Group>
                         <Form.Field>
