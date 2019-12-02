@@ -37,7 +37,7 @@ CREATE TABLE tactics (
 CREATE TABLE training (
     timestamp BIGINT NOT NULL,
     team_id TEXT NOT NULL,
-    special_shirt INT CHECK (special_shirt >= 0 AND special_shirt <= 24),
+    special_shirt INT CHECK (special_shirt >= -1 AND special_shirt <= 24),
 
     shirt_0 INT CHECK (shirt_0 >= 0),
     shirt_1 INT CHECK (shirt_1 >= 0),
