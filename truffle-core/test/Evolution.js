@@ -203,7 +203,7 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    it2('evolution leading to an actual son', async () => {
+    it('evolution leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -230,7 +230,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(gen + 1)
 
-        expected = [ 786, 936, 1071, 726, 1480 ];
+        expected = [ 748, 1031, 983, 742, 1496 ];
         results = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         results.push(result)
@@ -250,7 +250,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it('evolution leading to an academy', async () => {
+    it2('evolution leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await engine.encodePlayerSkills(
@@ -278,7 +278,7 @@ contract('Evolution', (accounts) => {
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
         result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 878, 950, 1211, 850, 1111 ];
+        expected = [ 755, 920, 1455, 762, 1107 ];
         results = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         results.push(result)
@@ -290,7 +290,7 @@ contract('Evolution', (accounts) => {
         results.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
         results.push(result)
-        debug.compareArrays(results, expected, toNum = true, verbose = true);
+        debug.compareArrays(results, expected, toNum = true, verbose = false);
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
