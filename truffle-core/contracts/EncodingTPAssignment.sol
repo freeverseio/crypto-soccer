@@ -8,7 +8,7 @@ contract EncodingTPAssignment {
     // We have 5 buckets: GK, D, M, A, Special
     // We need 5 TPperSkill per bucket
     //      that sum(TPperSkill) < TP
-    // 9 bit per TP
+    // 9 bit per TP  => max val = 511
     // 9 bit per each of the TPperSkill
     // 5 bit for specialPlayer
     

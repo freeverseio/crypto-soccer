@@ -182,16 +182,14 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     // 
     // shoot, speed, pass, defence, endurance
     function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
-        uint256 TPs;
-        for (uint8 s = 0; s < N_SKILLS; s++) TPs += TPperSkill[s];
         uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
         uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
         uint256 multiplier;
         // if (potential * 2920 + 17520 > 3 * ageDays + 2190) {
         if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs + 189216000) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
-            multiplier = (TPs*(getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs))/189216000;
+            multiplier = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs)/189216000;
         } else {
-            multiplier = TPs;
+            multiplier = 1;
         }
         // 0: shoot
         if (getShoot(skills) + (multiplier * TPperSkill[SK_SHO]) > deltaNeg) {

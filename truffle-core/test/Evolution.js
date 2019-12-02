@@ -301,23 +301,24 @@ contract('Evolution', (accounts) => {
     
     
     it('getTeamEvolvedSkills', async () => {
-        TPperSkill = Array.from(new Array(25), (x,i) => 3*i % 14);
+        TP = 200;
+        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
         specialPlayer = 21;
-        // make sure they sum to MAX_WEIGHT:
+        // make sure they sum to TP:
         for (bucket = 0; bucket < 5; bucket++){
             sum4 = 0;
             for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
                 sum4 += TPperSkill[sk];
             }
-            TPperSkill[5 * bucket + 4] = MAX_WEIGHT - sum4;
+            TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
-        assignment = await evolution.encodeTP(TPperSkill, specialPlayer).should.be.fulfilled;
+        assignment = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, 200, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment, matchStartTime);
         for (p = 0; p < 25; p++) {
-            result = await evolution.getShoot(newSkills[p]);
-            if (p == specialPlayer) result.toNumber().should.be.equal(77);
-            else result.toNumber().should.be.equal(74);
+            result = await evolution.getShoot(newSkills[p]).should.be.fulfilled;
+            if (p == specialPlayer) result.toNumber().should.be.equal(90);
+            else result.toNumber().should.be.equal(87);
         }
     });
     
