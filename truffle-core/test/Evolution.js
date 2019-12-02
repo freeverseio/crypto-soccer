@@ -250,7 +250,7 @@ contract('Evolution', (accounts) => {
         
     });
     
-    it2('evolution leading to an academy', async () => {
+    it('evolution leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await engine.encodePlayerSkills(
@@ -311,13 +311,13 @@ contract('Evolution', (accounts) => {
             }
             TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
-        assignment = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         matchStartTime = now;
         newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment, matchStartTime);
         for (p = 0; p < 25; p++) {
             result = await evolution.getShoot(newSkills[p]).should.be.fulfilled;
-            if (p == specialPlayer) result.toNumber().should.be.equal(90);
-            else result.toNumber().should.be.equal(87);
+            if (p == specialPlayer) result.toNumber().should.be.equal(110);
+            else result.toNumber().should.be.equal(105);
         }
     });
     
@@ -353,8 +353,8 @@ contract('Evolution', (accounts) => {
         newSkills = await evolution.getTeamEvolvedSkills(teamState, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 663, 480, 869, 959, 982, 739, 591, 772, 975, 1506, 880, 1170, 1421, 1135, 882, 807, 603, 1116 ];
-        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 673, 480, 869, 987, 1015, 739, 591, 772, 1009, 1506, 906, 1178, 1452, 1147, 905, 816, 603, 1120 ];
+        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554,  751,  815, 1474, 680,  930, 1181, 1103, 697, 622, 566,  931 ];
         for (p = 0; p < 18; p++) {
             result0 = await evolution.getShoot(teamState[p]);
             result1 = await evolution.getShoot(newSkills[p]);
@@ -436,7 +436,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('test evolvePlayer at non-zero potential', async () => {
+    it2('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
