@@ -271,7 +271,6 @@ contract('Evolution', (accounts) => {
         
         TPs = 20;
         TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
-
         newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime + 2).should.be.fulfilled;
 
         // checks that the generation increases by 1. It sets a "32" at the beginning if it is a Academy player, otherwise it is a child.
@@ -300,7 +299,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it('getTeamEvolvedSkills', async () => {
+    it2('getTeamEvolvedSkills', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
         specialPlayer = 21;
@@ -325,17 +324,18 @@ contract('Evolution', (accounts) => {
     it2('getTeamEvolvedSkills with realistic team and zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
-        TPperSkill = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
-        assignment = await evolution.encodeTP(TPperSkill, specialPlayer = 12).should.be.fulfilled;
+        TPperSkill = Array.from(new Array(25), (x,i) => 0);
+        TP = TPperSkill.reduce((a, b) => a + b, 0);
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 0, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamState, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
         expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
-            result0 = await evolution.getShoot(teamState[p]);
-            result1 = await evolution.getShoot(newSkills[p]);
+            result0 = await evolution.getShoot(teamState[p]).should.be.fulfilled;
+            result1 = await evolution.getShoot(newSkills[p]).should.be.fulfilled;
             initShoot.push(result0)
             newShoot.push(result1)
         }
@@ -343,16 +343,17 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
     
-    it2('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
+    it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
-        TPperSkill = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
-        assignment = await evolution.encodeTP(TPperSkill, specialPlayer = 12).should.be.fulfilled;
+        TPperSkill = [ 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46 ];
+        TP = 200;
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 30, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamState, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 624, 441, 830, 819, 737, 703, 555, 736, 825, 1468, 691, 943, 1199, 1097, 710, 634, 568, 943 ];
+        expectedNewShoot  = [ 663, 480, 869, 959, 982, 739, 591, 772, 975, 1506, 880, 1170, 1421, 1135, 882, 807, 603, 1116 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
             result0 = await evolution.getShoot(teamState[p]);
@@ -360,8 +361,8 @@ contract('Evolution', (accounts) => {
             initShoot.push(result0)
             newShoot.push(result1)
         }
-        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
-        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
+        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = true);
+        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = true);
     });
 
     it2('test evolvePlayer at zero potential', async () => {
