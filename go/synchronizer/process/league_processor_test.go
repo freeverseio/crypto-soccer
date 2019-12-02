@@ -217,10 +217,10 @@ func TestLeagueShuffling(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, team := range teams {
-		if team.State.RankingPoints.Cmp(big.NewInt(0)) != 0 {
+		if team.State.RankingPoints != 0 {
 			t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
 		}
-		if team.State.PrevPerfPoints.Cmp(big.NewInt(0)) != 0 {
+		if team.State.PrevPerfPoints != 0 {
 			t.Fatalf("bot team %v has prev perf points points %v", team.TeamID, team.State.PrevPerfPoints)
 		}
 		// log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
