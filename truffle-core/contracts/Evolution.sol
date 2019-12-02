@@ -173,58 +173,39 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         return states;
     }
     
-    // deltaS(i)    = TP(i) * max[ TP,  TP* (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
     // If age is in days, define Yd = year2days
-    // deltaS(i)    = TP(i) * max[ TP,  TP * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*8/Yd)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*8/Yd)
     // If age is in secs, define Ys = year2secs
-    // deltaS(i)    = TP(i) * max[ TP,  TP * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*8/Ys)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*8/Ys)
     // skill(i)     = max(0, skill(i) + deltaS(i))
-    // 
+    // deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*8/Ys)
+    // skill(i)     = max(0, skill(i) + deltaS(i))
     // shoot, speed, pass, defence, endurance
     function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
         uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
         uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
-        uint256 multiplier;
-        // if (potential * 2920 + 17520 > 3 * ageDays + 2190) {
-        if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs + 189216000) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
-            multiplier = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs)/189216000;
+        uint256 numerator;
+        if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
+            numerator = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs);
         } else {
-            multiplier = 1;
+            numerator = 0;
         }
-        // 0: shoot
-        if (getShoot(skills) + (multiplier * TPperSkill[SK_SHO]) > deltaNeg) {
-            skills = setShoot(skills, getShoot(skills) + (multiplier * TPperSkill[SK_SHO]) - deltaNeg);
-        } else {
-            skills = setShoot(skills, 1);
-        }
-        // 1: speed
-        if (getSpeed(skills) + (multiplier * TPperSkill[SK_SPE]) > deltaNeg) {
-            skills = setSpeed(skills, getSpeed(skills) + (multiplier * TPperSkill[SK_SPE]) - deltaNeg);
-        } else {
-            skills = setSpeed(skills, 1);
-        }
-        // 2: pass
-        if (getPass(skills) + (multiplier * TPperSkill[SK_PAS]) > deltaNeg) {
-            skills = setPass(skills, getPass(skills) + (multiplier * TPperSkill[SK_PAS]) - deltaNeg);
-        } else {
-            skills = setPass(skills, 1);
-        }
-        // 3: defence
-        if (getDefence(skills) + (multiplier * TPperSkill[SK_DEF]) > deltaNeg) {
-            skills = setDefence(skills, getDefence(skills) + (multiplier * TPperSkill[SK_DEF]) - deltaNeg);
-        } else {
-            skills = setDefence(skills, 1);
-        }
-        // 4: endurance
-        if (getEndurance(skills) + (multiplier * TPperSkill[SK_END]) > deltaNeg) {
-            skills = setEndurance(skills, getEndurance(skills) + (multiplier * TPperSkill[SK_END]) - deltaNeg);
-        } else {
-            skills = setEndurance(skills, 1);
-        }
-        // 5: sumSkills
+        skills = setShoot(skills, getNewSkill(getShoot(skills), TPperSkill[SK_SHO], numerator, 189216000, deltaNeg));
+        skills = setSpeed(skills, getNewSkill(getSpeed(skills), TPperSkill[SK_SPE], numerator, 189216000, deltaNeg));
+        skills = setPass(skills, getNewSkill(getPass(skills), TPperSkill[SK_PAS], numerator, 189216000, deltaNeg));
+        skills = setDefence(skills, getNewSkill(getDefence(skills), TPperSkill[SK_DEF], numerator, 189216000, deltaNeg));
+        skills = setEndurance(skills, getNewSkill(getEndurance(skills), TPperSkill[SK_END], numerator, 189216000, deltaNeg));
         skills = setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
         return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
+
+    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
+        uint256 term1 = (TPthisSkill*numerator) / denominator;
+        term1 = (term1 > TPthisSkill) ? term1 : TPthisSkill;
+        if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;
+        return 1;
+    }
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
         if ((getSumOfSkills(skills) > 200) && (ageInSecs < 1166832000)) {   // 1166832000 = 37 * Ys

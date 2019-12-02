@@ -343,7 +343,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
     
-    it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
+    it2('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
         TPperSkill = [ 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46 ];
@@ -361,8 +361,8 @@ contract('Evolution', (accounts) => {
             initShoot.push(result0)
             newShoot.push(result1)
         }
-        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = true);
-        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = true);
+        debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
+        debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
 
     it2('test evolvePlayer at zero potential', async () => {
@@ -384,18 +384,20 @@ contract('Evolution', (accounts) => {
         
         TPs = 20;
         TPperSkill = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, TPperSkill, matchStartTime).should.be.fulfilled;
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
+        expected = [110,120,130,140,150]; // at zero potential, it's easy
+        res = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [102,104,106,108,110];
-        result.toNumber().should.be.equal(expected[0]);
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
     });
     
     it2('test evolvePlayer with TPs= 0', async () => {
@@ -415,24 +417,26 @@ contract('Evolution', (accounts) => {
         age = 16;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 0;
-        TPperSkill = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, TPperSkill, matchStartTime).should.be.fulfilled;
+        TPperSkill = [0, 0, 0, 0, 00];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         expected = skills;
-        result.toNumber().should.be.equal(expected[0]);
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
     });
     
     
-    it2('test evolvePlayer at non-zero potential', async () => {
+    it('test evolvePlayer at non-zero potential', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -449,20 +453,22 @@ contract('Evolution', (accounts) => {
         age = 16;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 20;
         TPperSkill = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, TPperSkill, matchStartTime).should.be.fulfilled;
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [102,105,107,110,113];
-        result.toNumber().should.be.equal(expected[0]);
+        expected = [ 113, 126, 140, 153, 166 ];
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
 
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
