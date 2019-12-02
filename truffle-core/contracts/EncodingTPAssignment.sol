@@ -37,8 +37,7 @@ contract EncodingTPAssignment {
                 TPperSkill[sk] = uint16((encoded >> 9 * sk) & 511);
             }
         }
-        specialPlayer = uint8((encoded >> 234) & 31);
-        TP = uint16((encoded >> 225) & 511);
+        return (TPperSkill, uint8((encoded >> 234) & 31), uint16((encoded >> 225) & 511));
     } 
         
 }
