@@ -2,6 +2,7 @@ package process
 
 import (
 	"errors"
+	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -134,16 +135,18 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 				return err
 			}
 			if !storage.IsBotTeam(team) {
-				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
+				rankingPoints, prevPerfPoints, err := b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
-					team.State.PrevPerfPoints,
+					big.NewInt(int64(team.State.PrevPerfPoints)),
 					team.TeamID,
 				)
 				if err != nil {
 					return err
 				}
+				team.State.RankingPoints = uint32(rankingPoints.Uint64())
+				team.State.PrevPerfPoints = uint32(prevPerfPoints.Uint64())
 			}
 			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newPrevPerfPoints)
 			orgMap = append(orgMap, team)
@@ -151,7 +154,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].State.RankingPoints.Cmp(orgMap[j].State.RankingPoints) == 1
+		return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
 	})
 	// create the new leagues
 	for i, team := range orgMap {

@@ -11,6 +11,7 @@ import (
 const BotOwner = "0x0000000000000000000000000000000000000000"
 
 type TeamState struct {
+	Name            string
 	Owner           string
 	LeagueIdx       uint32
 	TeamIdxInLeague uint32
@@ -20,16 +21,39 @@ type TeamState struct {
 	L               uint32
 	GoalsForward    uint32
 	GoalsAgainst    uint32
-	PrevPerfPoints  *big.Int
-	RankingPoints   *big.Int
+	PrevPerfPoints  uint32
+	RankingPoints   uint32
+	TrainingPoints  uint32
 }
 
 type Team struct {
 	TeamID      *big.Int
-	Name        string
 	TimezoneIdx uint8
 	CountryIdx  uint32
 	State       TeamState
+}
+
+func (b *TeamState) Equal(state TeamState) bool {
+	return b.Owner == state.Owner &&
+		b.Name == state.Name &&
+		b.LeagueIdx == state.LeagueIdx &&
+		b.TeamIdxInLeague == state.TeamIdxInLeague &&
+		b.Points == state.Points &&
+		b.W == state.W &&
+		b.D == state.D &&
+		b.L == state.L &&
+		b.GoalsForward == state.GoalsForward &&
+		b.GoalsAgainst == state.GoalsAgainst &&
+		b.PrevPerfPoints == state.PrevPerfPoints &&
+		b.RankingPoints == state.RankingPoints &&
+		b.TrainingPoints == state.TrainingPoints
+}
+
+func (b *Team) Equal(team Team) bool {
+	return b.TeamID.Cmp(team.TeamID) == 0 &&
+		b.CountryIdx == team.CountryIdx &&
+		b.TimezoneIdx == team.TimezoneIdx &&
+		b.State.Equal(team.State)
 }
 
 func IsBotTeam(team Team) bool {
@@ -45,7 +69,7 @@ func (b *Storage) TeamCreate(team Team) error {
 		team.State.Owner,
 		team.State.LeagueIdx,
 		team.State.TeamIdxInLeague,
-		team.Name,
+		team.State.Name,
 	)
 	if err != nil {
 		return err
@@ -87,8 +111,10 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 						goals_forward=$8,
 						goals_against=$9,
 						prev_perf_points=$10,
-						ranking_points=$11
-						WHERE team_id=$12`,
+						ranking_points=$11,
+						training_points=$12,
+						name=$13
+						WHERE team_id=$14`,
 		teamState.Owner,
 		teamState.LeagueIdx,
 		teamState.TeamIdxInLeague,
@@ -98,8 +124,10 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.L,
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
-		teamState.PrevPerfPoints.String(),
-		teamState.RankingPoints.String(),
+		teamState.PrevPerfPoints,
+		teamState.RankingPoints,
+		teamState.TrainingPoints,
+		teamState.Name,
 		teamID.String(),
 	)
 	return err
@@ -191,7 +219,8 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	goals_against, 
 	prev_perf_points,
 	ranking_points,
-	name
+	name,
+	training_points
 	FROM teams WHERE (team_id = $1);`, teamID.String())
 	if err != nil {
 		return team, err
@@ -201,8 +230,6 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		return team, errors.New("Unexistent team")
 	}
 	team.TeamID = teamID
-	var prevPerfPoints sql.NullString
-	var rankingPoints sql.NullString
 	err = rows.Scan(
 		&team.TimezoneIdx,
 		&team.CountryIdx,
@@ -215,12 +242,11 @@ func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 		&team.State.L,
 		&team.State.GoalsForward,
 		&team.State.GoalsAgainst,
-		&prevPerfPoints,
-		&rankingPoints,
-		&team.Name,
+		&team.State.PrevPerfPoints,
+		&team.State.RankingPoints,
+		&team.State.Name,
+		&team.State.TrainingPoints,
 	)
-	team.State.PrevPerfPoints, _ = new(big.Int).SetString(prevPerfPoints.String, 10)
-	team.State.RankingPoints, _ = new(big.Int).SetString(rankingPoints.String, 10)
 	if err != nil {
 		return team, err
 	}
