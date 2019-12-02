@@ -20,9 +20,7 @@ contract EncodingTPAssignment {
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
                 uint16 skill = TPperSkill[sk];
-                // require((100*skill > minRHS) && (100*skill < maxRHS), "one of the assigned TPs is too large or too small");
-                require((100*skill > minRHS) , "one of the assigned TPs is too small ");
-                require((100*skill < maxRHS), "one of the assigned TPs is too large");
+                require((100*skill >= minRHS) && (100*skill <= maxRHS), "one of the assigned TPs is too large or too small");
                 sum += skill;
                 encoded |= uint256(skill) << 9 * sk;
             }
@@ -33,14 +31,14 @@ contract EncodingTPAssignment {
         encoded |= uint256(specialPlayer) << 234;
     } 
 
-    function decodeTP(uint256 encoded) public pure returns(uint16[25] memory skillWeights, uint8 specialPlayer, uint16 TP) {
-        // for (uint8 bucket = 0; bucket < 5; bucket++) {
-        //     for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
-        //         skillWeights[sk] = uint16((encoded >> 9 * sk) & 511);
-        //     }
-        // }
-        // specialPlayer = uint8((encoded >> 234) & 31);
-        // TP = uint16((encoded >> 225) & 511);
+    function decodeTP(uint256 encoded) public pure returns(uint16[25] memory TPperSkill, uint8 specialPlayer, uint16 TP) {
+        for (uint8 bucket = 0; bucket < 5; bucket++) {
+            for (uint8 sk = 5 * bucket; sk < 5* (bucket+1); sk++) {
+                TPperSkill[sk] = uint16((encoded >> 9 * sk) & 511);
+            }
+        }
+        specialPlayer = uint8((encoded >> 234) & 31);
+        TP = uint16((encoded >> 225) & 511);
     } 
         
 }

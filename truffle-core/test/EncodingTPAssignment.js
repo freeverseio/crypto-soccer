@@ -27,30 +27,30 @@ contract('EncodingTPAssignment', (accounts) => {
         TPperSkill =  Array.from(new Array(25), (x,i) => 1 + Math.floor(TP/5));
         result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.rejected;
     });
-    return
+
     it('encode and decode matchlog', async () =>  {
-        weights = Array.from(new Array(25), (x,i) => 3*i % 14);
         specialPlayer = 21;
-        // make sure they sum to MAX_PERCENT:
+        TP = 40;
+        TPperSkill = Array.from(new Array(25), (x,i) => 2 + 3*i % 5);
+        // make sure they sum to TP:
         for (bucket = 0; bucket < 5; bucket++){
             sum4 = 0;
             for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
-                sum4 += weights[sk];
+                sum4 += TPperSkill[sk];
             }
-            weights[5 * bucket + 4] = MAX_PERCENT - sum4;
+            TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
-        
-        expectedWeights = Array.from(weights, (x,i) => x + MIN_PERCENT);
-        result = await encoding.encodeTP(weights, specialPlayer).should.be.fulfilled;
+        result = await encoding.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         decoded = await encoding.decodeTP(result).should.be.fulfilled;
         for (bucket = 0; bucket < 5; bucket++){
             sum = 0;
             for (sk = 0; sk < 5; sk++) {
-                decoded.skillWeights[5*bucket + sk].toNumber().should.be.equal(expectedWeights[5*bucket + sk]);
-                sum += decoded.skillWeights[5*bucket + sk].toNumber();
+                decoded.TPperSkill[5*bucket + sk].toNumber().should.be.equal(TPperSkill[5*bucket + sk]);
+                sum += decoded.TPperSkill[5*bucket + sk].toNumber();
             }
-            (0*decoded.specialPlayer.toNumber() + sum).should.be.equal(100);
+            (0*decoded.specialPlayer.toNumber() + sum).should.be.equal(TP);
         }
         decoded.specialPlayer.toNumber().should.be.equal(specialPlayer);
+        decoded.TP.toNumber().should.be.equal(TP);
     });
 });
