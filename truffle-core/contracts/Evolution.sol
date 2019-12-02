@@ -167,21 +167,21 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
-        (uint8[25] memory weights, uint8 specialPlayer) = decodeTP(userAssignment);
+        (uint16[25] memory weights, uint8 specialPlayer, ) = decodeTP(userAssignment);
         uint8[5] memory singleWeights;
         
-        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
-            uint256 skills = states[p];
-            if (skills == 0) continue; 
-            uint8 offset = 0;
-            if (p == specialPlayer) offset = 20;
-            else if(getForwardness(skills) == IDX_GK) offset = 0;
-            else if(getForwardness(skills) == IDX_D) offset = 5;
-            else if(getForwardness(skills) == IDX_F) offset = 15;
-            else offset = 10;
-            for (uint8 w = 0; w < 5; w++) singleWeights[w] = weights[offset + w];
-            states[p] = evolvePlayer(skills, TPs, singleWeights, matchStartTime);
-        }    
+        // for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+        //     uint256 skills = states[p];
+        //     if (skills == 0) continue; 
+        //     uint8 offset = 0;
+        //     if (p == specialPlayer) offset = 20;
+        //     else if(getForwardness(skills) == IDX_GK) offset = 0;
+        //     else if(getForwardness(skills) == IDX_D) offset = 5;
+        //     else if(getForwardness(skills) == IDX_F) offset = 15;
+        //     else offset = 10;
+        //     for (uint8 w = 0; w < 5; w++) singleWeights[w] = weights[offset + w];
+        //     states[p] = evolvePlayer(skills, TPs, singleWeights, matchStartTime);
+        // }    
         return states;
     }
     
