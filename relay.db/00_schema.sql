@@ -15,6 +15,7 @@ CREATE TABLE tactics (
     shirt_8 INT CHECK (shirt_8 >= 0),
     shirt_9 INT CHECK (shirt_9 >= 0),
     shirt_10 INT CHECK (shirt_10 >= 0),
+
     shirt_11 INT CHECK (shirt_11 >= 0),
     shirt_12 INT CHECK (shirt_12 >= 0),
     shirt_13 INT CHECK (shirt_13 >= 0),
@@ -31,4 +32,38 @@ CREATE TABLE tactics (
     extra_attack_10 BOOLEAN DEFAULT FALSE,
 
     PRIMARY KEY(team_id, verse)
-)
+);
+
+CREATE TABLE training (
+    timestamp BIGINT NOT NULL,
+    team_id TEXT NOT NULL,
+    special_shirt INT CHECK (special_shirt >= -1 AND special_shirt <= 24),
+
+    shirt_0 INT CHECK (shirt_0 >= 0),
+    shirt_1 INT CHECK (shirt_1 >= 0),
+    shirt_2 INT CHECK (shirt_2 >= 0),
+    shirt_3 INT CHECK (shirt_3 >= 0),
+    shirt_4 INT CHECK (shirt_4 >= 0),
+    shirt_5 INT CHECK (shirt_5 >= 0),
+    shirt_6 INT CHECK (shirt_6 >= 0),
+    shirt_7 INT CHECK (shirt_7 >= 0),
+    shirt_8 INT CHECK (shirt_8 >= 0),
+    shirt_9 INT CHECK (shirt_9 >= 0),
+    shirt_10 INT CHECK (shirt_10 >= 0),
+    shirt_11 INT CHECK (shirt_11 >= 0),
+    shirt_12 INT CHECK (shirt_12 >= 0),
+    shirt_13 INT CHECK (shirt_13 >= 0),
+    shirt_14 INT CHECK (shirt_14 >= 0),
+    shirt_15 INT CHECK (shirt_15 >= 0),
+    shirt_16 INT CHECK (shirt_16 >= 0),
+    shirt_17 INT CHECK (shirt_17 >= 0),
+    shirt_18 INT CHECK (shirt_18 >= 0),
+    shirt_19 INT CHECK (shirt_19 >= 0),
+    shirt_20 INT CHECK (shirt_20 >= 0),
+    shirt_21 INT CHECK (shirt_21 >= 0),
+    shirt_22 INT CHECK (shirt_22 >= 0),
+    shirt_23 INT CHECK (shirt_23 >= 0),
+    shirt_24 INT CHECK (shirt_24 >= 0),
+
+    PRIMARY KEY(timestamp, team_id)
+);
