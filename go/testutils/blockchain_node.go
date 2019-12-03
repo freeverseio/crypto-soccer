@@ -168,6 +168,8 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	// setup
 	tx0, err = leaguesContract.SetEngineAdress(bind.NewKeyedTransactor(owner), engineAddress)
 	AssertNoErr(err, "Error setting engine contract in league contract")
+	tx31, err = leaguesContract.SetAssetsAdress(bind.NewKeyedTransactor(owner), assetsAddress)
+	AssertNoErr(err, "Error setting assets contract in league contract")
 	tx2, err = marketContract.SetAssetsAddress(bind.NewKeyedTransactor(owner), assetsAddress)
 	AssertNoErr(err, "Error setting Assets address to market")
 	tx1, err = updatesContract.InitUpdates(bind.NewKeyedTransactor(owner), assetsAddress)
@@ -196,6 +198,10 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 	_, err = helper.WaitReceipt(b.Client, tx30, 10)
+	if err != nil {
+		return err
+	}
+	_, err = helper.WaitReceipt(b.Client, tx31, 10)
 	if err != nil {
 		return err
 	}

@@ -26,6 +26,7 @@ type EventProcessor struct {
 	assetsInitProcessor       *AssetsInitProcessor
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
+	teamTransferProcessor     *TeamTransferProcessor
 }
 
 // *****************************************************************************
@@ -65,6 +66,10 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
+	teamTransferProcessor, err := NewTeamTransferProcessor(universedb)
+	if err != nil {
+		return nil, err
+	}
 	return &EventProcessor{
 		contracts,
 		universedb,
@@ -72,6 +77,7 @@ func NewEventProcessor(
 		assetsInitProcessor,
 		divisionCreationProcessor,
 		leagueProcessor,
+		teamTransferProcessor,
 	}, nil
 }
 
@@ -127,15 +133,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		return p.divisionCreationProcessor.Process(v)
 	case assets.AssetsTeamTransfer:
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
-		teamID := v.TeamId
-		newOwner := v.To.String()
-		team, err := p.universedb.GetTeam(teamID)
-		if err != nil {
-			return err
-		}
-		// team.State.BlockNumber = blockNumber
-		team.State.Owner = newOwner
-		return p.universedb.TeamUpdate(teamID, team.State)
+		return p.teamTransferProcessor.Process(v)
 	case assets.AssetsPlayerStateChange:
 		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
 		playerID := v.PlayerId
