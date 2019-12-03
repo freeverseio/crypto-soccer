@@ -45,7 +45,7 @@ CREATE TABLE training (
     goalkeepers_shoot INT CHECK (goalkeepers_shoot >= 0),
     goalkeepers_endurance INT CHECK (goalkeepers_endurance >= 0),
 
-    defencers_defencer INT CHECK (defencers_defencer >= 0),
+    defencers_defence INT CHECK (defencers_defence >= 0),
     defencers_speed INT CHECK (defencers_speed >= 0),
     defencers_pass INT CHECK (defencers_pass >= 0),
     defencers_shoot INT CHECK (defencers_shoot >= 0),
