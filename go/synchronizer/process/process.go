@@ -112,6 +112,18 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	return deltaBlock, p.universedb.SetBlockNumber(*opts.End)
 }
 
+func (p *EventProcessor) ProcessTeamTransfer(v assets.AssetsTeamTransfer) error {
+	teamID := v.TeamId
+	newOwner := v.To.String()
+	team, err := p.universedb.GetTeam(teamID)
+	if err != nil {
+		return err
+	}
+	// team.State.BlockNumber = blockNumber
+	team.State.Owner = newOwner
+	return p.universedb.TeamUpdate(teamID, team.State)
+}
+
 // *****************************************************************************
 // private
 // *****************************************************************************
@@ -127,15 +139,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		return p.divisionCreationProcessor.Process(v)
 	case assets.AssetsTeamTransfer:
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
-		teamID := v.TeamId
-		newOwner := v.To.String()
-		team, err := p.universedb.GetTeam(teamID)
-		if err != nil {
-			return err
-		}
-		// team.State.BlockNumber = blockNumber
-		team.State.Owner = newOwner
-		return p.universedb.TeamUpdate(teamID, team.State)
+		return p.ProcessTeamTransfer(v)
 	case assets.AssetsPlayerStateChange:
 		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
 		playerID := v.PlayerId
