@@ -135,6 +135,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 				return err
 			}
 			if !storage.IsBotTeam(team) {
+				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				rankingPoints, prevPerfPoints, err := b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
@@ -148,7 +149,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 				team.State.RankingPoints = uint32(rankingPoints.Uint64())
 				team.State.PrevPerfPoints = uint32(prevPerfPoints.Uint64())
 			}
-			// log.Infof("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, newPrevPerfPoints)
+			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, team.State.RankingPoints)
 			orgMap = append(orgMap, team)
 		}
 	}
