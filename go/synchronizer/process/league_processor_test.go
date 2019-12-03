@@ -15,6 +15,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+	log "github.com/sirupsen/logrus"
 )
 
 func TestProcessInvalidTimezone(t *testing.T) {
@@ -170,6 +171,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 }
 
 func TestLeagueShuffling(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
