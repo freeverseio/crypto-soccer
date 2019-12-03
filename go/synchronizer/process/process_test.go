@@ -94,7 +94,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 	var txs []*types.Transaction
-	for i := 0; i < 24*40; i++ {
+	for i := 0; i < 24*4; i++ {
 		var root [32]byte
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
