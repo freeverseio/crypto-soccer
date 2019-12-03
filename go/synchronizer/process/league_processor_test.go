@@ -229,7 +229,10 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, team := range teams {
+	if teams[0].State.RankingPoints != 268435455 {
+		t.Fatalf("Wrong ranking points %v", teams[0].State.RankingPoints)
+	}
+	for _, team := range teams[1:] {
 		if team.State.RankingPoints != 0 {
 			t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
 		}
