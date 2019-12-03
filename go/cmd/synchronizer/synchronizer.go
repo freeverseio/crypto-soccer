@@ -56,6 +56,9 @@ func main() {
 	if *engineContractAddress == "" {
 		log.Fatal("no engine contract address")
 	}
+	if *enginePreCompContractAddress == "" {
+		log.Fatal("no enginePreComp contract address")
+	}
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)
@@ -85,8 +88,14 @@ func main() {
 	var relaydb *relay.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		universedb, err = storage.NewSqlite3("./../../universe.db/00_schema.sql")
-		relaydb, err = relay.NewSqlite3("./../../relay.db/00_schema.sql")
+		universedb, err = storage.NewSqlite3("./../../../universe.db/00_schema.sql")
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		relaydb, err = relay.NewSqlite3("./../../../relay.db/00_schema.sql")
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
 	} else {
 		log.Info("Connecting to universe DBMS: ", *postgresURL, " and relay DBMS: ", *relayPostgresURL)
 		universedb, err = storage.NewPostgres(*postgresURL)
