@@ -35,7 +35,7 @@ CREATE TABLE tactics (
 );
 
 CREATE TABLE training (
-    timestamp BIGINT NOT NULL,
+    timestamp INT NOT NULL,
     team_id TEXT NOT NULL,
     special_player_shirt INT CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
 
@@ -45,11 +45,11 @@ CREATE TABLE training (
     goalkeepers_shoot INT CHECK (goalkeepers_shoot >= 0),
     goalkeepers_endurance INT CHECK (goalkeepers_endurance >= 0),
 
-    defencers_defence INT CHECK (defencers_defence >= 0),
-    defencers_speed INT CHECK (defencers_speed >= 0),
-    defencers_pass INT CHECK (defencers_pass >= 0),
-    defencers_shoot INT CHECK (defencers_shoot >= 0),
-    defencers_endurance INT CHECK (defencers_endurance >= 0),
+    defenders_defence INT CHECK (defenders_defence >= 0),
+    defenders_speed INT CHECK (defenders_speed >= 0),
+    defenders_pass INT CHECK (defenders_pass >= 0),
+    defenders_shoot INT CHECK (defenders_shoot >= 0),
+    defenders_endurance INT CHECK (defenders_endurance >= 0),
 
     midfielders_defence INT CHECK (midfielders_defence >= 0),
     midfielders_speed INT CHECK (midfielders_speed >= 0),
