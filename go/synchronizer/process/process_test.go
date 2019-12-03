@@ -114,7 +114,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	playerIdx := big.NewInt(0)
+	playerIdx := big.NewInt(30)
 	playerID, err := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
 	if err != nil {
 		t.Fatal(err)
