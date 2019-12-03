@@ -14,7 +14,7 @@ import (
 )
 
 func TestSubmitActionRoot(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../relay.db/00_schema.sql")
+	db, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	// db, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)

@@ -19,7 +19,7 @@ import (
 func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
-	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
+	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@universe.db:5432/relay?sslmode=disable", "postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
@@ -86,7 +86,7 @@ func main() {
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
 		universedb, err = storage.NewSqlite3("./../../universe.db/00_schema.sql")
-		relaydb, err = relay.NewSqlite3("./../../relay.db/00_schema.sql")
+		relaydb, err = relay.NewSqlite3("./../../universe.db/00_schema.sql")
 	} else {
 		log.Info("Connecting to universe DBMS: ", *postgresURL, " and relay DBMS: ", *relayPostgresURL)
 		universedb, err = storage.NewPostgres(*postgresURL)

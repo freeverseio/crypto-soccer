@@ -22,7 +22,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func TestPlayHalfMatch(t *testing.T) {
 
 func TestLeagueProcessMatch(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,7 +170,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 
 func TestLeagueShuffling(t *testing.T) {
 	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -19,7 +19,7 @@ import (
 
 func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
-	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
+	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@universe.db:5432/relay?sslmode=disable", "postgres url")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
@@ -51,7 +51,7 @@ func main() {
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		sto, err = storage.NewSqlite3("../../../relay.db/00_schema.sql")
+		sto, err = storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	} else {
 		log.Info("Connecting to DBMS: ", *postgresURL)
 		sto, err = storage.NewPostgres(*postgresURL)

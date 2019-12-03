@@ -9,7 +9,7 @@ import (
 )
 
 func TestGetbids(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestGetbids(t *testing.T) {
 }
 
 func TestUpdateBidState(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +109,7 @@ func TestUpdateBidState(t *testing.T) {
 }
 
 func TestUpdatePaymentId(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +158,7 @@ func TestUpdatePaymentId(t *testing.T) {
 }
 
 func TestUpdatePaymentDeadline(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../market.db/00_schema.sql")
+	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}

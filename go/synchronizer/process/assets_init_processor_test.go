@@ -17,7 +17,7 @@ func TestAssetsInitProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	relaydb, err := relay.NewSqlite3("../../../universe.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
