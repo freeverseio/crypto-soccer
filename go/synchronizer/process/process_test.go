@@ -76,8 +76,25 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Expected 128*18=2304 actual %v", count)
 	}
 
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(bc.Owner.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = helper.WaitReceipt(bc.Client, tx, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var txs []*types.Transaction
-	for i := 0; i < 24*4; i++ {
+	for i := 0; i < 24*40; i++ {
 		var root [32]byte
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
@@ -97,8 +114,6 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timezoneIdx := uint8(1)
-	countryIdx := big.NewInt(0)
 	playerIdx := big.NewInt(0)
 	playerID, err := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
 	if err != nil {
@@ -112,7 +127,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
