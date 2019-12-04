@@ -203,6 +203,24 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
+    it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
+        TP = 200;
+        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
+        specialPlayer = 21;
+        // make sure they sum to TP:
+        for (bucket = 0; bucket < 5; bucket++){
+            sum4 = 0;
+            for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
+                sum4 += TPperSkill[sk];
+            }
+            TPperSkill[5 * bucket + 4] = TP - sum4;
+        }        
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        matchStartTime = now;
+        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment = 0, matchStartTime);
+        debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
+    });
+    
     it('evolution leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 

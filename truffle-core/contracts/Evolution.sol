@@ -155,6 +155,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
+        if (userAssignment == 0) return states;
         (uint16[25] memory TPperSkill, uint8 specialPlayer, ) = decodeTP(userAssignment);
         uint16[5] memory singleTPperSkill;
         
