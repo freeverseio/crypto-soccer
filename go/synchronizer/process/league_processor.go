@@ -135,7 +135,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 				return err
 			}
 			if !storage.IsBotTeam(team) {
-				log.Infof("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
+				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
 				rankingPoints, prevPerfPoints, err := b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,

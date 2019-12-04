@@ -34,7 +34,7 @@ CREATE TABLE tactics (
     PRIMARY KEY(team_id, verse)
 );
 
-CREATE TABLE training (
+CREATE TABLE trainings (
     team_id TEXT NOT NULL,
     special_player_shirt INT CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
 

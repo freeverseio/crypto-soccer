@@ -154,7 +154,10 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 					return err
 				} else if err := b.createInitialTactics(teamId); err != nil {
 					return err
+				} else if err := b.createInitialTraining(teamId); err != nil {
+					return err
 				}
+
 			}
 		}
 
@@ -235,4 +238,10 @@ func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error 
 	tactics := b.relaydb.DefaultTactic(teamID)
 	initVerse := uint64(0) // init verse
 	return b.relaydb.TacticCreate(*tactics, initVerse)
+}
+
+func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
+	training := relay.Training{}
+	training.TeamID = teamID
+	return b.relaydb.CreateTraining(training)
 }
