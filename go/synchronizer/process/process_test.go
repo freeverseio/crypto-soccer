@@ -50,21 +50,24 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal("processed 0 blocks")
 	}
 
+	// the null timezone (0) is only used by the Academy Team
 	if count, err := universedb.TimezoneCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 1 {
-		t.Fatalf("Expected 1 time zones at time of creation,  actual %v", count)
+	} else if count != 2 {
+		t.Fatalf("Expected 2 time zones at time of creation,  actual %v", count)
 	}
 
+	// one country belongs to timezone = 0
 	if count, err := universedb.CountryCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 1 {
-		t.Fatalf("Expected 1 countries at time of creation,  actual %v", count)
+	} else if count != 2 {
+		t.Fatalf("Expected 2 countries at time of creation,  actual %v", count)
 	}
 
+	// one team (the Academy) belongs to timezone = 0
 	if count, err := universedb.TeamCount(); err != nil {
 		t.Fatal(err)
-	} else if count != 128 {
+	} else if count != (128 + 1) {
 		t.Fatalf("Expected 128 actual %v", count)
 	}
 	if count, err := universedb.PlayerCount(); err != nil {
@@ -73,6 +76,23 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Expected 128*18=2304 actual %v", count)
 	}
 
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(bc.Owner.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = helper.WaitReceipt(bc.Client, tx, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var txs []*types.Transaction
 	for i := 0; i < 24*4; i++ {
 		var root [32]byte
@@ -94,9 +114,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timezoneIdx := uint8(1)
-	countryIdx := big.NewInt(0)
-	playerIdx := big.NewInt(0)
+	playerIdx := big.NewInt(30)
 	playerID, err := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +127,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,

@@ -4,6 +4,7 @@ setup:
 contracts:
 	cd truffle-core && ./node_modules/.bin/truffle compile
 	cp -r truffle-core/build/contracts ./relay.api
+	cp -r truffle-core/build/contracts ./control-panel/src
 	cd scripts && ./deploy_go_contracts_bind_python2.py
 
 clean:

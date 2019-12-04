@@ -9,6 +9,7 @@ import "./EncodingState.sol";
  */
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
+    event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
@@ -47,7 +48,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     uint256 constant public DAYS_PER_ROUND = 16;
-    uint256 constant public ROSTER_TEAM = 1;
+    uint256 constant public ACADEMY_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
@@ -73,6 +74,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -82,6 +84,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
@@ -148,7 +151,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
-        if (teamId == ROSTER_TEAM) return false;
+        if (teamId == ACADEMY_TEAM) return false;
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
@@ -213,7 +216,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
         require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
@@ -288,7 +291,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
-        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
+        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
@@ -442,7 +445,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
-        if (teamIdOrigin != ROSTER_TEAM) {
+        if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
             _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;

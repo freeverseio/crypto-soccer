@@ -22,7 +22,7 @@ contract Market {
     uint256 constant private VALID_UNTIL_MASK   = 0x3FFFFFFFF; // 2^34-1 (34 bit)
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
-    uint256 constant public ROSTER_TEAM = 1;
+    uint256 constant public ACADEMY_TEAM = 1;
     uint8 constant public MAX_ACQUISITON_CONSTAINTS  = 7;
 
     Assets private _assets;
@@ -31,14 +31,19 @@ contract Market {
     mapping (uint256 => uint256) private _teamIdToAuctionData;
     mapping (uint256 => uint256) private _teamIdToRemainingAcqs;
 
-    address public rosterAddr;
+    event TeamTransfer(uint256 teamId, address to);
+
+    address public academyAddr;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
     }
-    function setRosterAddr(address addr) public {rosterAddr = addr;}
+    function setAcademyAddr(address addr) public {
+        academyAddr = addr;
+        emit TeamTransfer(ACADEMY_TEAM, addr);        
+    }
     
-    function isRosterPlayer(uint256 playerId) public view returns(bool) {
+    function isAcademyPlayer(uint256 playerId) public view returns(bool) {
         return (_assets.getIsSpecial(playerId) && !_assets.isPlayerWritten(playerId));
     }
 
@@ -143,8 +148,8 @@ contract Market {
         require(_assets.getOwnerTeam(targetTeamId) == 
                     recoverAddr(sigBuy[IDX_MSG], sigVBuy, sigBuy[IDX_r], sigBuy[IDX_s]), "Buyer does not own targetTeamId");
          
-        require(rosterAddr == 
-                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own roster");
+        require(academyAddr == 
+                    recoverAddr(sigSel[IDX_MSG], sigVSel, sigSel[IDX_r], sigSel[IDX_s]), "Seller does not own academy");
          
         bytes32 signedMsg = prefixed(buildPromoPlayerTxMsg(playerId, validUntil));
         require(sigBuy[IDX_MSG] == signedMsg, "buyer msg does not match");
@@ -243,7 +248,7 @@ contract Market {
                 // check that auction time is less that the required 34 bit (17179869183 = 2^34 - 1)
                 (validUntil < now + MAX_VALID_UNTIL);
         if (!ok) return false;
-        if (teamId == _assets.ROSTER_TEAM()) return true;
+        if (teamId == _assets.ACADEMY_TEAM()) return true;
         
         // check that the team itself does not have players already for sale:   
         uint256[PLAYERS_PER_TEAM_MAX] memory playerIds = _assets.getPlayerIdsInTeam(teamId);
@@ -296,7 +301,7 @@ contract Market {
         view 
         returns (bool)
     {
-        address prevOwner = isRosterPlayer(playerId) ? rosterAddr : _assets.getOwnerPlayer(playerId);
+        address prevOwner = isAcademyPlayer(playerId) ? academyAddr : _assets.getOwnerPlayer(playerId);
         return (
             // check validUntil has not expired
             (now < validUntil) &&
@@ -413,7 +418,7 @@ contract Market {
     }
 
     function isTeamFrozen(uint256 teamId) public view returns (bool) {
-        if (teamId == _assets.ROSTER_TEAM()) return false;
+        if (teamId == _assets.ACADEMY_TEAM()) return false;
         require(_assets.teamExists(teamId), "unexistent team");
         return (_teamIdToAuctionData[teamId] & VALID_UNTIL_MASK) + POST_AUCTION_TIME > now;
     }

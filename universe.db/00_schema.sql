@@ -41,6 +41,7 @@ CREATE TABLE teams (
     goals_against INT NOT NULL DEFAULT 0,
     prev_perf_points TEXT NOT NULL DEFAULT '0',
     ranking_points TEXT NOT NULL DEFAULT '0',
+    training_points INT NOT NULL DEFAULT 0,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)

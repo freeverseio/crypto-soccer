@@ -1,13 +1,16 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+import "./Assets.sol";
 import "./Engine.sol";
 import "./SortIdxs.sol";
 import "./EncodingSkills.sol";
+import "./EncodingIDs.sol";
+
 /**
  * @title Scheduling of leagues, and calls to Engine to resolve games.
  */
 
-contract Championships is SortIdxs, EncodingSkills {
+contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 constant public TEAMS_PER_LEAGUE = 8;
@@ -17,15 +20,17 @@ contract Championships is SortIdxs, EncodingSkills {
     uint256 constant private INERTIA = 4;
     uint256 constant private WEIGHT_SKILLS = 100;
     uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+    uint256 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
 
     Engine private _engine;
+    Assets private _assets;
 
     function setEngineAdress(address addr) public {
         _engine = Engine(addr);
     }
 
-    function getEngineAddress() public view returns (address) {
-        return address(_engine);
+    function setAssetsAdress(address addr) public {
+        _assets = Assets(addr);
     }
 
     // groupIdx = 0,...,15
@@ -129,12 +134,32 @@ contract Championships is SortIdxs, EncodingSkills {
     function computeTeamRankingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8 leagueRanking,
+        uint256 prevPerfPoints,
+        uint256 teamId
+    ) 
+        public
+        view
+        returns (uint256 rankingPoints, uint256)
+    {
+        (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
+        (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
+        if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
+            return (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry, 0); 
+        }
+        return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry), prevPerfPoints);
+    }
+
+
+    function computeTeamRankingPointsPure(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint8 leagueRanking,
         uint256 prevPerfPoints
     ) 
         public
         pure
-        returns (uint256 teamSkills, uint256)
+        returns (uint256, uint256)
     {
+        uint256 teamSkills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (states[p] != 0)
                 teamSkills += getSumOfSkills(states[p]);

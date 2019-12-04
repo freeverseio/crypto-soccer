@@ -53,10 +53,10 @@ func TestTeamCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if teamResult.State.PrevPerfPoints.String() != "0" {
+	if teamResult.State.PrevPerfPoints != 0 {
 		t.Fatalf("Wrong ranking points %v", teamResult.State.PrevPerfPoints)
 	}
-	if teamResult.State.RankingPoints.String() != "0" {
+	if teamResult.State.RankingPoints != 0 {
 		t.Fatalf("Wrong ranking points %v", teamResult.State.RankingPoints)
 	}
 }
@@ -122,6 +122,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 		t.Fatal(err)
 	}
 	team.State.Owner = "pippo"
+	team.State.TrainingPoints = 4
 	err = sto.TeamUpdate(team.TeamID, team.State)
 	if err != nil {
 		t.Fatal(err)
@@ -130,8 +131,8 @@ func TestUpdateTeamOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if team.State.Owner != result.State.Owner {
-		t.Fatalf("expected owner pippo but got %v", result.State.Owner)
+	if !team.Equal(result) {
+		t.Fatalf("expected %v but got %v", team, result)
 	}
 }
 

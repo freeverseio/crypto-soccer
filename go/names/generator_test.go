@@ -115,7 +115,7 @@ func TestGenerateChildName(t *testing.T) {
 	}
 }
 
-func TestGenerateRosterName(t *testing.T) {
+func TestGenerateAcademyName(t *testing.T) {
 	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)

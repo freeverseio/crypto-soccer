@@ -86,8 +86,8 @@ func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint
 
 func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
 	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
-	isRosterPlayer := generation > 31
-	if isRosterPlayer {
+	isAcademyPlayer := generation > 31
+	if isAcademyPlayer {
 		generation = generation - 32
 	}
 	nLayers1 := 1
@@ -106,7 +106,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 		colName = "surname"
 		codes = b.countryCodes4Surnames
 		seedTemp = b.GenerateRnd(playerId, 0, 2) + uint64(generation)
-		isActualSon := generation > 0 && !isRosterPlayer
+		isActualSon := generation > 0 && !isAcademyPlayer
 		if isActualSon {
 			seedTemp -= 1
 		}

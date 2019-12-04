@@ -169,31 +169,3 @@ func TestBidHiddenPrice(t *testing.T) {
 		t.Fatalf("Hash error %v", result)
 	}
 }
-
-// func TestHashAgreeToBuyMessage(t *testing.T) {
-// 	ganache := testutils.NewGanache()
-// 	signer := processor.NewSigner(ganache.Market)
-// 	validUntil := big.NewInt(2000000000)
-// 	playerId := big.NewInt(10)
-// 	typeOfTx := uint8(1)
-// 	currencyId := uint8(1)
-// 	price := big.NewInt(41234)
-// 	rnd := big.NewInt(42321)
-
-// 	hash, err := signer.HashBuyMessage(
-// 		currencyId,
-// 		price,
-// 		rnd,
-// 		validUntil,
-// 		playerId,
-// 		typeOfTx,
-// 		big.NewInt(2),
-// 	)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	result := hex.EncodeToString(hash[:])
-// 	if result != "0d84fd72fb639204abba9869b3fcb7855df4b83c121c1d6fd679f90c828d5528" {
-// 		t.Fatalf("Hash error %v", result)
-// 	}
-// }

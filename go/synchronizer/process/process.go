@@ -23,8 +23,10 @@ type EventProcessor struct {
 	contracts                 *contracts.Contracts
 	universedb                *storage.Storage
 	relaydb                   *relay.Storage
+	assetsInitProcessor       *AssetsInitProcessor
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
+	teamTransferProcessor     *TeamTransferProcessor
 }
 
 // *****************************************************************************
@@ -38,6 +40,14 @@ func NewEventProcessor(
 	relaydb *relay.Storage,
 	namesdb *names.Generator,
 ) (*EventProcessor, error) {
+	assetsInitProcessor, err := NewAssetsInitProcessor(
+		contracts,
+		universedb,
+		relaydb,
+	)
+	if err != nil {
+		return nil, err
+	}
 	divisionCreationProcessor, err := NewDivisionCreationProcessor(
 		contracts,
 		universedb,
@@ -56,12 +66,18 @@ func NewEventProcessor(
 	if err != nil {
 		return nil, err
 	}
+	teamTransferProcessor, err := NewTeamTransferProcessor(universedb)
+	if err != nil {
+		return nil, err
+	}
 	return &EventProcessor{
 		contracts,
 		universedb,
 		relaydb,
+		assetsInitProcessor,
 		divisionCreationProcessor,
 		leagueProcessor,
+		teamTransferProcessor,
 	}, nil
 }
 
@@ -109,20 +125,15 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
+	case assets.AssetsAssetsInit:
+		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr)
+		return p.assetsInitProcessor.Process(v)
 	case assets.AssetsDivisionCreation:
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
 		return p.divisionCreationProcessor.Process(v)
 	case assets.AssetsTeamTransfer:
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
-		teamID := v.TeamId
-		newOwner := v.To.String()
-		team, err := p.universedb.GetTeam(teamID)
-		if err != nil {
-			return err
-		}
-		// team.State.BlockNumber = blockNumber
-		team.State.Owner = newOwner
-		return p.universedb.TeamUpdate(teamID, team.State)
+		return p.teamTransferProcessor.Process(v)
 	case assets.AssetsPlayerStateChange:
 		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
 		playerID := v.PlayerId
