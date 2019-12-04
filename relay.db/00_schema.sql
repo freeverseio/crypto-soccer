@@ -35,7 +35,6 @@ CREATE TABLE tactics (
 );
 
 CREATE TABLE training (
-    timestamp INT NOT NULL,
     team_id TEXT NOT NULL,
     special_player_shirt INT CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
 
@@ -69,5 +68,5 @@ CREATE TABLE training (
     special_player_shoot INT CHECK (special_player_shoot >= 0),
     special_player_endurance INT CHECK (special_player_endurance >= 0),
 
-    PRIMARY KEY(timestamp, team_id)
+    PRIMARY KEY(team_id)
 );
