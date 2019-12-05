@@ -16,7 +16,7 @@ func int_hash(s string) uint64 {
 }
 
 func TestGeneratePlayerName(t *testing.T) {
-	generator, err := names.New("./sql/names.db", "./sql/teamnames.db")
+	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
@@ -47,7 +47,7 @@ func TestGeneratePlayerName(t *testing.T) {
 }
 
 func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
-	generator, err := names.New("./sql/names.db", "./sql/teamnames.db")
+	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
@@ -77,7 +77,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 }
 
 func TestGenerateChildName(t *testing.T) {
-	generator, err := names.New("./sql/names.db", "./sql/teamnames.db")
+	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
@@ -116,7 +116,7 @@ func TestGenerateChildName(t *testing.T) {
 }
 
 func TestGenerateAcademyName(t *testing.T) {
-	generator, err := names.New("./sql/names.db", "./sql/teamnames.db")
+	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
@@ -145,7 +145,7 @@ func TestGenerateAcademyName(t *testing.T) {
 }
 
 func TestGenerateTeamName(t *testing.T) {
-	generator, err := names.New("./sql/names.db", "./sql/teamnames.db")
+	generator, err := names.New("./sql/names.db")
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
@@ -168,7 +168,7 @@ func TestGenerateTeamName(t *testing.T) {
 		}
 		concatname += " " + name
 	}
-	if concatname != " Ginza Mary A. Z. Serpent Awesome Chimera A. Z. Titans C. F. Dragonfly Indigo Ox Kremlin Colonel Perseus Plus A. Z. Dog Tequila Sunrise" {
+	if concatname != " Angry Morfeo Elegant Sibyls F. Z. Clio Lime Helice Z. F. Shrew A. Z. Turkey Desert Mastodon Pony Plus Blue Locust Hookworm Island" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(concatname))
 		fmt.Println(concatname)
