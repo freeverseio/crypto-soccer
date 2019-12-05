@@ -133,7 +133,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
-							names.GenerateTeamName(teamId),
+							names.GenerateTeamName(teamId, timezone, countryIdx.Uint64()),
 							storage.BotOwner,
 							uint32(leagueIdx),
 							teamIdxInLeague,

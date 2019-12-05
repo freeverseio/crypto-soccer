@@ -276,20 +276,19 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, nil
 }
 
-func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (string, error) {
-	countryId := uint64(timezone)*1000000 + countryIdxInTZ
-	countryIdBigInt := big.NewInt(int64(countryId))
+func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+	// For the time being, we don't use the country information. At some point, we may.
 	nLayers := 1
 	// MAIN NAME
 	tableName := "team_mainnames"
-	nameIdx := b.GenerateRnd(countryIdBigInt, uint64(b.nTeamnamesMain), nLayers)
+	nameIdx := b.GenerateRnd(teamId, uint64(b.nTeamnamesMain), nLayers)
 	rows, err := b.db_teams.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, countryId = " + strconv.FormatInt(int64(countryId), 10) +
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
 			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
 			", tableName = " + tableName
 		return "", errors.New(str)
@@ -302,8 +301,9 @@ func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (str
 		return name, nil
 	}
 
-	// PREFFIX OR SUFFIX
-	dice := b.GenerateRnd(countryIdBigInt, uint64(100), nLayers+1)
+	// ADD PREFFIX OR SUFFIX
+	nLayers++
+	dice := b.GenerateRnd(teamId, uint64(100), nLayers)
 	var nNames uint
 	addPrefix := dice < 80
 	if addPrefix {
@@ -314,14 +314,14 @@ func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (str
 		nNames = b.nTeamnamesSuffix
 	}
 	nLayers++
-	nameIdx = b.GenerateRnd(countryIdBigInt, uint64(nNames), nLayers)
+	nameIdx = b.GenerateRnd(teamId, uint64(nNames), nLayers)
 	rows, err = b.db_teams.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, countryId = " + strconv.FormatInt(int64(countryId), 10) +
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
 			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
 			", tableName = " + tableName
 		return "", errors.New(str)

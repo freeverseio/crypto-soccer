@@ -153,19 +153,25 @@ func TestGenerateTeamName(t *testing.T) {
 	var countryIdxInTZ uint64
 	timezone = 19
 	countryIdxInTZ = 0
-	teamId := big.NewInt(int64(1))
-	name, err := generator.GenerateTeamName(timezone, countryIdxInTZ)
-	if err != nil {
-		t.Fatalf("error generating name for team %s: %s", teamId.String(), err)
-	}
-	fmt.Println(name)
-	if len(name) == 0 {
-		t.Fatalf("Expecting non empty team name, but got \"%v\"", name)
-	}
-	if name != "Blue Cepheus" {
-		fmt.Println("the just-obtained hash is: ")
-		fmt.Println(int_hash(name))
+	teamId := big.NewInt(int64(0))
+	var name string
+	var concatname string
+	for i := 0; i < 10; i++ {
+		teamId = big.NewInt(int64(41234332 + i))
+		name, err = generator.GenerateTeamName(teamId, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for team %s: %s", teamId.String(), err)
+		}
 		fmt.Println(name)
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty team name, but got \"%v\"", name)
+		}
+		concatname += " " + name
+	}
+	if concatname != " Scarlet Butterfly A. Z. Tortoise Blue Cyclopes Snow Hurricane F. Z. Paradise C. Z. Firefly Sea Jackal Kallisto Plus Tequila Sunset Pegasos Island" {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(concatname))
+		fmt.Println(concatname)
 		t.Fatal("result of generating names not as expected")
 	}
 }
