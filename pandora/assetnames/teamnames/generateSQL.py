@@ -64,8 +64,6 @@ con = sqlite3.connect(':memory:') # connect to the database
 con = sqlite3.connect(db_name) # connect to the database
 cur = con.cursor() # instantiate a cursor obj
 
-cur.execute("PRAGMA foreign_keys = ON;")
-
 writeTable(mainNames, "team_mainnames", cur)
 writeTable(prefixNames, "team_prefixnames", cur)
 writeTable(suffixNames, "team_suffixnames", cur)
