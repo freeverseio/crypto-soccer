@@ -329,6 +329,8 @@ func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (str
 	var extraname string
 	rows.Scan(&extraname)
 
+	name = strings.Title(strings.ToLower(name))
+	extraname = strings.Title(strings.ToLower(extraname))
 	if addPrefix {
 		return extraname + " " + name, nil
 	} else {
