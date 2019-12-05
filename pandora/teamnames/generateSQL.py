@@ -12,13 +12,20 @@ def deleteIfExists(filename):
     if os.path.isfile(filename):
         os.remove(filename)
 
+def purgeRepeated(names):
+    purged = []
+    for n in names:
+        if (n not in purged) and (n != ""):
+            purged.append(n)
+    return purged
+
 def readNames(filename):
     names = []
     with open(filename, 'r', newline='\n') as file:
         for line in file:
             splitted = line.rstrip('\n')
             names.append(splitted)
-    return names
+    return purgeRepeated(names)
 
 def db_connect():
     """ create a database connection to a database that resides
@@ -43,13 +50,13 @@ def writeTable(filename, tableName, cur):
     sql = """
     CREATE TABLE %s (
         idx integer PRIMARY KEY,
-        name text NOT NULL)""" % (tableName)
+        name text NOT NULL UNIQUE)""" % (tableName)
     cur.execute(sql)
 
     data = readNames(filename)
     for (n, name) in enumerate(data):
-        cur.execute("INSERT INTO %s VALUES ('%i', '%s');" % (tableName, n, name))
         print(n, name)
+        cur.execute("INSERT INTO %s VALUES ('%i', '%s');" % (tableName, n, name))
 
 
 deleteIfExists(db_name)
