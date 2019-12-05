@@ -3,7 +3,7 @@ import sqlite3
 from db_utils import db_connect
 import os
 
-db_name = "goalRevTeamNames.db"
+db_name = "goalRevFull.db"
 mainNames= 'dbs/main.txt'
 prefixNames = 'dbs/firsts.txt'
 suffixNames = 'dbs/lasts.txt'
@@ -59,7 +59,7 @@ def writeTable(filename, tableName, cur):
         cur.execute("INSERT INTO %s VALUES ('%i', '%s');" % (tableName, n, name))
 
 
-deleteIfExists(db_name)
+# deleteIfExists(db_name)
 con = sqlite3.connect(':memory:') # connect to the database
 con = sqlite3.connect(db_name) # connect to the database
 cur = con.cursor() # instantiate a cursor obj

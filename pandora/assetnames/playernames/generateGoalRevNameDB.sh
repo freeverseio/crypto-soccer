@@ -1,6 +1,6 @@
 rm -rf tmp
 mkdir -p tmp
-python3 parseMatthias.py
+ipython parseMatthias.py
 echo "...purging Spanish names..."
 patch tmp/goalRevNames purgeSpanishNames.patch
 python3 parseSpanishNames.py

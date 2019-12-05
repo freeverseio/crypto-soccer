@@ -32,7 +32,8 @@ F. C.
 F. Z.
 Z. A.
 Z. C.
-Z. F.magenta
+Z. F.
+magenta
 silver
 scarlet
 blue

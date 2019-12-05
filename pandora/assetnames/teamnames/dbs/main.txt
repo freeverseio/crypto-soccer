@@ -75,7 +75,8 @@ Scale
 Peacock
 Sextans
 Sail
-BullCat
+Bull
+Cat
 Dog
 Donkey
 Horse
@@ -340,7 +341,8 @@ Worm
 Xerinae
 X-ray Fish
 Yak
-ZebraAchilles
+Zebra
+Achilles
 Apollo
 Atalanta
 Atlas
@@ -459,7 +461,8 @@ Zelos
 Zelus
 Zephyrs
 Zapphire
-ZeusAgent Orange
+Zeus
+Agent Orange
 Alabama Slammer
 Amaretto Sour
 Amaretto
@@ -638,7 +641,8 @@ Whiskey Smash
 Whiskey Sour
 Whisky Mac
 Wolfram
-ZombieLinux
+Zombie
+Linux
 Python
 Java
 Ethereum
