@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 	"math/big"
 	"strconv"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -278,13 +279,10 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (string, error) {
 	countryId := uint64(timezone)*1000000 + countryIdxInTZ
 	countryIdBigInt := big.NewInt(int64(countryId))
-
-	nLayers1 := 1
-	// nLayers2 := 2
-	// nLayers3 := 1
+	nLayers := 1
+	// MAIN NAME
 	tableName := "team_mainnames"
-	// ensure that names are always different for all generations
-	nameIdx := b.GenerateRnd(countryIdBigInt, uint64(b.nTeamnamesMain), nLayers1)
+	nameIdx := b.GenerateRnd(countryIdBigInt, uint64(b.nTeamnamesMain), nLayers)
 	rows, err := b.db_teams.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
@@ -298,5 +296,42 @@ func (b *Generator) GenerateTeamName(timezone uint8, countryIdxInTZ uint64) (str
 	}
 	var name string
 	rows.Scan(&name)
-	return name, nil
+
+	// return if has space in name
+	if strings.Contains(name, " ") {
+		return name, nil
+	}
+
+	// PREFFIX OR SUFFIX
+	dice := b.GenerateRnd(countryIdBigInt, uint64(100), nLayers+1)
+	var nNames uint
+	addPrefix := dice < 80
+	if addPrefix {
+		tableName = "team_prefixnames"
+		nNames = b.nTeamnamesPreffix
+	} else {
+		tableName = "team_suffixnames"
+		nNames = b.nTeamnamesSuffix
+	}
+	nLayers++
+	nameIdx = b.GenerateRnd(countryIdBigInt, uint64(nNames), nLayers)
+	rows, err = b.db_teams.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		var str string = "Rnd choice failed, countryId = " + strconv.FormatInt(int64(countryId), 10) +
+			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
+	}
+	var extraname string
+	rows.Scan(&extraname)
+
+	if addPrefix {
+		return extraname + " " + name, nil
+	} else {
+		return name + " " + extraname, nil
+	}
 }

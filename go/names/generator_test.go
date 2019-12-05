@@ -162,7 +162,7 @@ func TestGenerateTeamName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty team name, but got \"%v\"", name)
 	}
-	if name != "Cepheus" {
+	if name != "blue Cepheus" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
