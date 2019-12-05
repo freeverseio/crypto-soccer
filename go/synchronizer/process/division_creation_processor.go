@@ -127,17 +127,13 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 			if teamId, err := b.contracts.Assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
 			} else {
-				teamName, errname := b.namesGenerator.GenerateTeamName(teamId, timezone, countryIdx.Uint64())
-				if errname != nil {
-					return errname
-				}
 				if err := b.universedb.TeamCreate(
 					storage.Team{
 						teamId,
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
-							teamName,
+							names.GenerateTeamName(teamId, timezone, countryIdx.Uint64()),
 							storage.BotOwner,
 							uint32(leagueIdx),
 							teamIdxInLeague,

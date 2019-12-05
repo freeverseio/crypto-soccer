@@ -21,7 +21,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	namesdb, err := names.New("../../names/sql/names.db", "../../names/sql/teamnames.db")
+	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
