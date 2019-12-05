@@ -212,7 +212,9 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, nil
 }
 
-func GenerateTeamName(teamId *big.Int) string {
+func (b *Generator) GenerateTeamName(teamId *big.Int) (string, error) {
 	_ = teamId
-	return sillyname.GenerateStupidName()
+	name := sillyname.GenerateStupidName()
+	var err error
+	return name, err
 }

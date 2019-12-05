@@ -149,23 +149,20 @@ func TestGenerateTeamName(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error creating database for player names: %s", err)
 	}
-	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
-	var timezone uint8
-	var countryIdxInTZ uint64
-	// if generation < 32, it means that it is an actual son
-	generation := uint8(33)
-	playerId := big.NewInt(int64(1))
-	timezone = 19
-	countryIdxInTZ = 0
-	name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	// var timezone uint8
+	// var countryIdxInTZ uint64
+	// timezone = 19
+	// countryIdxInTZ = 0
+	teamId := big.NewInt(int64(1))
+	name, err := generator.GenerateTeamName(teamId)
 	if err != nil {
-		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
+		t.Fatalf("error generating name for team %s: %s", teamId.String(), err)
 	}
 	fmt.Println(name)
 	if len(name) == 0 {
-		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
+		t.Fatalf("Expecting non empty team name, but got \"%v\"", name)
 	}
-	if name != "Edvin Blasco" {
+	if name != "Bellysteel Pegasus" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
