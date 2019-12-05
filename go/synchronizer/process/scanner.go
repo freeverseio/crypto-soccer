@@ -1,6 +1,7 @@
 package process
 
 import (
+	"context"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,13 +13,14 @@ import (
 
 type AbstractEvent struct {
 	BlockNumber    uint64
+	Timestamp      uint64
 	TxIndexInBlock uint
 	Name           string // for ease of debugging
 	Value          interface{}
 }
 
 func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface{}) *AbstractEvent {
-	return &AbstractEvent{blockNumber, txIndex, name, x}
+	return &AbstractEvent{blockNumber, 0, txIndex, name, x}
 }
 
 type EventScanner struct {
@@ -101,7 +103,17 @@ func (s *EventScanner) Process(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface{}) {
-	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
+	header, err := s.contracts.Client.HeaderByHash(context.Background(), rawEvent.BlockHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+	abstractEvent := AbstractEvent{}
+	abstractEvent.BlockNumber = rawEvent.BlockNumber
+	abstractEvent.Name = name
+	abstractEvent.Timestamp = header.Time
+	abstractEvent.TxIndexInBlock = rawEvent.Index
+	abstractEvent.Value = event
+	s.Events = append(s.Events, &abstractEvent)
 }
 
 func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
