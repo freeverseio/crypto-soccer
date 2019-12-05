@@ -70,3 +70,16 @@ CREATE TABLE trainings (
 
     PRIMARY KEY(team_id)
 );
+
+CREATE TABLE create_special_players (
+    uuid UUID NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    player_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    PRIMARY KEY (uuid)
+);
+
+CREATE TABLE destroy_special_players (
+    uuid UUID NOT NULL REFERENCES create_special_players(uuid),
+    timestamp TIMESTAMP NOT NULL
+);
