@@ -156,7 +156,7 @@ func TestGenerateTeamName(t *testing.T) {
 	teamId := big.NewInt(int64(0))
 	var name string
 	var concatname string
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		teamId = big.NewInt(int64(41234332 + i))
 		name, err = generator.GenerateTeamName(teamId, timezone, countryIdxInTZ)
 		if err != nil {
@@ -168,7 +168,7 @@ func TestGenerateTeamName(t *testing.T) {
 		}
 		concatname += " " + name
 	}
-	if concatname != " Scarlet Butterfly A. Z. Tortoise Blue Cyclopes Snow Hurricane F. Z. Paradise C. Z. Firefly Sea Jackal Kallisto Plus Tequila Sunset Pegasos Island" {
+	if concatname != " Ginza Mary A. Z. Serpent Awesome Chimera A. Z. Titans C. F. Dragonfly Indigo Ox Kremlin Colonel Perseus Plus A. Z. Dog Tequila Sunrise" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(concatname))
 		fmt.Println(concatname)
