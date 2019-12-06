@@ -156,7 +156,7 @@ func TestGenerateTeamName(t *testing.T) {
 	teamId := big.NewInt(int64(0))
 	var name string
 	var concatname string
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		teamId = big.NewInt(int64(41234332 + i))
 		name, err = generator.GenerateTeamName(teamId, timezone, countryIdxInTZ)
 		if err != nil {
