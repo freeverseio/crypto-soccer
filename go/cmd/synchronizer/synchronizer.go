@@ -98,11 +98,12 @@ func main() {
 			log.Fatalf(err.Error())
 		}
 	} else {
-		log.Info("Connecting to universe DBMS: ", *postgresURL, " and relay DBMS: ", *relayPostgresURL)
+		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err = storage.NewPostgres(*postgresURL)
 		if err != nil {
 			log.Fatalf("Failed to connect to universe DBMS: %v", err)
 		}
+		log.Info("Connecting to relay DBMS: ", *relayPostgresURL)
 		relaydb, err = relay.NewPostgres(*relayPostgresURL)
 		if err != nil {
 			log.Fatalf("Failed to connect to relay DBMS: %v", err)
