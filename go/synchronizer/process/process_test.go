@@ -1,6 +1,7 @@
 package process_test
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"math/big"
@@ -24,6 +25,8 @@ import (
 var universedb *storage.Storage
 var relaydb *relay.Storage
 var namesdb *names.Generator
+var bc *testutils.BlockchainNode
+var processor *process.EventProcessor
 
 func TestMain(m *testing.M) {
 	var err error
@@ -36,41 +39,75 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
-
-	universeResource, err := pool.Run("postgres", "12.1-alpine", []string{})
+	// Build and run the given Dockerfile
+	err = pool.RemoveContainerByName("universe-test-image")
+	if err != nil {
+		log.Fatal(err)
+	}
+	universeResource, err := pool.BuildAndRun("universe-test-image", "../../../universe.db/Dockerfile", []string{})
+	if err != nil {
+		log.Fatalf("Could not start resource: %s", err)
+	}
+	err = pool.RemoveContainerByName("relay-test-image")
+	if err != nil {
+		log.Fatal(err)
+	}
+	relayResource, err := pool.BuildAndRun("relay-test-image", "../../../relay.db/Dockerfile", []string{})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
 
-	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
-	if err := pool.Retry(func() error {
+	var db *sql.DB
+	if err = pool.Retry(func() error {
 		var err error
-		universedb, err = storage.NewPostgres(fmt.Sprintf("postgres://postgres@localhost:%s/postgres?sslmode=disable", universeResource.GetPort("5432/tcp")))
-		return err
+		db, err = sql.Open("postgres", fmt.Sprintf("postgres://freeverse:freeverse@localhost:%s/cryptosoccer?sslmode=disable", universeResource.GetPort("5432/tcp")))
+		if err != nil {
+			return err
+		}
+		return db.Ping()
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
-	err = universedb.Setup("../../../universe.db/00_schema.sql")
+	universedb, err = storage.New(db)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	relayResource, err := pool.Run("postgres", "12.1-alpine", []string{})
-	if err != nil {
-		log.Fatalf("Could not start resource: %s", err)
-	}
-
-	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
-	if err := pool.Retry(func() error {
+	if err = pool.Retry(func() error {
 		var err error
-		relaydb, err = relay.NewPostgres(fmt.Sprintf("postgres://postgres@localhost:%s/postgres?sslmode=disable", relayResource.GetPort("5432/tcp")))
-		return err
+		db, err = sql.Open("postgres", fmt.Sprintf("postgres://freeverse:freeverse@localhost:%s/relay?sslmode=disable", relayResource.GetPort("5432/tcp")))
+		if err != nil {
+			return err
+		}
+		return db.Ping()
 	}); err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
-	err = relaydb.Setup("../../../relay.db/00_schema.sql")
+	relaydb, err = relay.New(db)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	bc, err = testutils.NewBlockchainNodeDeployAndInit()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	processor, err = process.NewEventProcessor(
+		bc.Contracts,
+		universedb,
+		relaydb,
+		namesdb,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	count, err := processor.Process(0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if count == 0 {
+		log.Fatal("processed 0 blocks")
 	}
 
 	code := m.Run()
@@ -87,10 +124,6 @@ func TestMain(m *testing.M) {
 }
 
 func TestSyncTeams(t *testing.T) {
-	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
 		universedb,
@@ -99,14 +132,6 @@ func TestSyncTeams(t *testing.T) {
 	)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	count, err := p.Process(0)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count == 0 {
-		t.Fatal("processed 0 blocks")
 	}
 
 	// the null timezone (0) is only used by the Academy Team

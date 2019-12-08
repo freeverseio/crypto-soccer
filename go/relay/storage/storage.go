@@ -15,6 +15,12 @@ type Storage struct {
 	db *sql.DB
 }
 
+func New(db *sql.DB) (*Storage, error) {
+	storage := &Storage{}
+	storage.db = db
+	return storage, nil
+}
+
 func NewPostgres(url string) (*Storage, error) {
 	var err error
 	storage := &Storage{}
@@ -56,19 +62,4 @@ func NewSqlite3(schemaFile string) (*Storage, error) {
 		return nil, err
 	}
 	return &storage, nil
-}
-
-func (b *Storage) Setup(schemaFile string) error {
-	file, err := os.Open(schemaFile)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	script, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-	_, err = b.db.Exec(string(script))
-	return err
 }

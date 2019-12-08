@@ -5,15 +5,9 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestCreateMatchSeed(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
 		universedb,
@@ -36,12 +30,6 @@ func TestCreateMatchSeed(t *testing.T) {
 }
 
 func TestGetPlayerState(t *testing.T) {
-
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
 		universedb,
