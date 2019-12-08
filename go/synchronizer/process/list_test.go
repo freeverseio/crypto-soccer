@@ -28,10 +28,10 @@ func cast(x interface{}, test *testing.T) (*AbstractEvent, bool) {
 	switch v := x.(type) {
 	case *testEvent1:
 		ev, _ := x.(*testEvent1)
-		return &AbstractEvent{ev.Minutes, ev.Seconds, ev.Name, ev}, true
+		return &AbstractEvent{ev.Minutes, 0, ev.Seconds, ev.Name, ev}, true
 	case *testEvent2:
 		ev, _ := x.(*testEvent2)
-		return &AbstractEvent{ev.Minutes, ev.Seconds, ev.Name, ev}, true
+		return &AbstractEvent{ev.Minutes, 0, ev.Seconds, ev.Name, ev}, true
 	default:
 		test.Logf("Could not cast type %v:", v)
 		return nil, false
