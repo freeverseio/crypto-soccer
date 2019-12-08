@@ -23,8 +23,15 @@ import (
 
 var universedb *storage.Storage
 var relaydb *relay.Storage
+var namesdb *names.Generator
 
 func TestMain(m *testing.M) {
+	var err error
+	namesdb, err = names.New("../../names/sql/names.db")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -81,10 +88,6 @@ func TestMain(m *testing.M) {
 
 func TestSyncTeams(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
-	if err != nil {
-		t.Fatal(err)
-	}
-	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}

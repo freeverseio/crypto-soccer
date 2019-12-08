@@ -4,16 +4,11 @@ import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestCreateMatchSeed(t *testing.T) {
-	namesdb, err := names.New("../../names/sql/names.db")
-	if err != nil {
-		t.Fatal(err)
-	}
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
@@ -41,10 +36,7 @@ func TestCreateMatchSeed(t *testing.T) {
 }
 
 func TestGetPlayerState(t *testing.T) {
-	namesdb, err := names.New("../../names/sql/names.db")
-	if err != nil {
-		t.Fatal(err)
-	}
+
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
