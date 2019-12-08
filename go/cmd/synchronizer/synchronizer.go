@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -112,6 +113,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to names DBMS: %v", err)
 	}
+
+	log.Info("All is ready ... 5 seconds to start ...")
+	time.Sleep(5 * time.Second)
 
 	process, err := process.BackgroundProcessNew(
 		contracts,
