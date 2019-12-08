@@ -9,17 +9,13 @@ import (
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
 
-	calendar, err := process.NewCalendar(bc.Contracts, storage)
+	calendar, err := process.NewCalendar(bc.Contracts, universedb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,27 +30,23 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 }
 
 func TestResetCalendar(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
 
-	calendarProcessor, err := process.NewCalendar(bc.Contracts, sto)
+	calendarProcessor, err := process.NewCalendar(bc.Contracts, universedb)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	timezoneIdx := uint8(1)
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	universedb.TimezoneCreate(storage.Timezone{timezoneIdx})
 	countryIdx := uint32(0)
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	universedb.CountryCreate(storage.Country{timezoneIdx, countryIdx})
 	leagueIdx := uint32(0)
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
 	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
@@ -66,33 +58,29 @@ func TestResetCalendar(t *testing.T) {
 }
 
 func TestGenerateCalendarOfExistingLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
 	bc.DeployContracts(bc.Owner)
 
-	calendarProcessor, err := process.NewCalendar(bc.Contracts, sto)
+	calendarProcessor, err := process.NewCalendar(bc.Contracts, universedb)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	timezoneIdx := uint8(1)
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	universedb.TimezoneCreate(storage.Timezone{timezoneIdx})
 	countryIdx := uint32(0)
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	universedb.CountryCreate(storage.Country{timezoneIdx, countryIdx})
 	leagueIdx := uint32(0)
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	universedb.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
 	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
+	matches, err := universedb.GetMatches(timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,40 +88,3 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 		t.Fatalf("Wrong matches %v", len(matches))
 	}
 }
-
-// func TestPopulateCalendarOfExistingLeague(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	bc := testutils.NewGanache()
-// 	bc.DeployContracts(bc.Owner)
-
-// 	calendarProcessor, err := process.NewCalendar(bc.Leagues, sto)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	timezoneIdx := uint8(1)
-// 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-// 	countryIdx := uint32(0)
-// 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-// 	leagueIdx := uint32(0)
-// 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-// 	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	match := (*matches)[0]
-// 	if match.HomeTeamID == nil {
-// 		t.Fatal("Home team is nil")
-// 	}
-// }

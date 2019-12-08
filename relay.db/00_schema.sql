@@ -1,3 +1,10 @@
+SET TIMEZONE TO 'UTC';
+
+-- CREATE TABLE verses (
+--     verse BIGINT NOT NULL,
+--     timestamp TIME
+-- )
+
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
     verse BIGINT NOT NULL,

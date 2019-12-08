@@ -73,3 +73,18 @@ func NewSqlite3(schemaFile string) (*Storage, error) {
 	}
 	return &storage, nil
 }
+
+func (b *Storage) Setup(schemaFile string) error {
+	file, err := os.Open(schemaFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	script, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+	_, err = b.db.Exec(string(script))
+	return err
+}

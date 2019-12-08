@@ -1,7 +1,10 @@
 package process_test
 
 import (
+	"fmt"
+	"log"
 	"math/big"
+	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -15,15 +18,68 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/testutils"
+	"github.com/ory/dockertest"
 )
 
-func TestSyncTeams(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
-	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+var universedb *storage.Storage
+var relaydb *relay.Storage
+
+func TestMain(m *testing.M) {
+	pool, err := dockertest.NewPool("")
 	if err != nil {
-		t.Fatal(err)
+		log.Fatalf("Could not connect to docker: %s", err)
 	}
+
+	universeResource, err := pool.Run("postgres", "12.1-alpine", []string{})
+	if err != nil {
+		log.Fatalf("Could not start resource: %s", err)
+	}
+
+	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
+	if err := pool.Retry(func() error {
+		var err error
+		universedb, err = storage.NewPostgres(fmt.Sprintf("postgres://postgres@localhost:%s/postgres?sslmode=disable", universeResource.GetPort("5432/tcp")))
+		return err
+	}); err != nil {
+		log.Fatalf("Could not connect to docker: %s", err)
+	}
+	err = universedb.Setup("../../../universe.db/00_schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	relayResource, err := pool.Run("postgres", "12.1-alpine", []string{})
+	if err != nil {
+		log.Fatalf("Could not start resource: %s", err)
+	}
+
+	// exponential backoff-retry, because the application in the container might not be ready to accept connections yet
+	if err := pool.Retry(func() error {
+		var err error
+		relaydb, err = relay.NewPostgres(fmt.Sprintf("postgres://postgres@localhost:%s/postgres?sslmode=disable", relayResource.GetPort("5432/tcp")))
+		return err
+	}); err != nil {
+		log.Fatalf("Could not connect to docker: %s", err)
+	}
+	err = relaydb.Setup("../../../relay.db/00_schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	code := m.Run()
+
+	// You can't defer this because os.Exit doesn't care for defer
+	if err := pool.Purge(universeResource); err != nil {
+		log.Fatalf("Could not purge resource: %s", err)
+	}
+	if err := pool.Purge(relayResource); err != nil {
+		log.Fatalf("Could not purge resource: %s", err)
+	}
+
+	os.Exit(code)
+}
+
+func TestSyncTeams(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
