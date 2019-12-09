@@ -35,7 +35,7 @@ type Bid struct {
 
 func (b *Storage) CreateBid(bid Bid) error {
 	log.Infof("[DBMS] + create Bid %v", bid)
-	_, err := b.tx.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES ($1, $2, $3, $4, $5, $6);",
+	_, err := b.db.Exec("INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES ($1, $2, $3, $4, $5, $6);",
 		bid.Auction,
 		bid.ExtraPrice,
 		bid.Rnd,
@@ -47,17 +47,17 @@ func (b *Storage) CreateBid(bid Bid) error {
 }
 
 func (b *Storage) UpdateBidState(auction uuid.UUID, extra_price int64, state BidState, stateExtra string) error {
-	_, err := b.tx.Exec("UPDATE bids SET state=$1, state_extra=$2 WHERE auction=$3 AND extra_price=$4;", state, stateExtra, auction, extra_price)
+	_, err := b.db.Exec("UPDATE bids SET state=$1, state_extra=$2 WHERE auction=$3 AND extra_price=$4;", state, stateExtra, auction, extra_price)
 	return err
 }
 
 func (b *Storage) UpdateBidPaymentID(auction uuid.UUID, extra_price int64, ID string) error {
-	_, err := b.tx.Exec("UPDATE bids SET payment_id=$1 WHERE auction=$2 AND extra_price=$3;", ID, auction, extra_price)
+	_, err := b.db.Exec("UPDATE bids SET payment_id=$1 WHERE auction=$2 AND extra_price=$3;", ID, auction, extra_price)
 	return err
 }
 
 func (b *Storage) UpdateBidPaymentUrl(auction uuid.UUID, extra_price int64, url string) error {
-	_, err := b.tx.Exec("UPDATE bids SET payment_url=$1 WHERE auction=$2 AND extra_price=$3;", url, auction, extra_price)
+	_, err := b.db.Exec("UPDATE bids SET payment_url=$1 WHERE auction=$2 AND extra_price=$3;", url, auction, extra_price)
 	return err
 }
 
@@ -65,13 +65,13 @@ func (b *Storage) UpdateBidPaymentDeadline(auction uuid.UUID, extra_price int64,
 	if deadline == nil {
 		return errors.New("nil deadline")
 	}
-	_, err := b.tx.Exec("UPDATE bids SET payment_deadline=$1 WHERE auction=$2 AND extra_price=$3;", deadline.String(), auction, extra_price)
+	_, err := b.db.Exec("UPDATE bids SET payment_deadline=$1 WHERE auction=$2 AND extra_price=$3;", deadline.String(), auction, extra_price)
 	return err
 }
 
 func (b *Storage) GetBidsOfAuction(auctionUUID uuid.UUID) ([]*Bid, error) {
 	var bids []*Bid
-	rows, err := b.tx.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction=$1;", auctionUUID)
+	rows, err := b.db.Query("SELECT extra_price, rnd, team_id, signature, state, state_extra, payment_id, payment_url, payment_deadline FROM bids WHERE auction=$1;", auctionUUID)
 	if err != nil {
 		return bids, err
 	}
