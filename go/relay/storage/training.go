@@ -38,7 +38,7 @@ type Training struct {
 
 func (b *Storage) CreateTraining(training Training) error {
 	log.Debugf("[DBMS] Create training %v", training)
-	_, err := b.db.Exec(
+	_, err := b.tx.Exec(
 		`INSERT INTO trainings (
 			team_id,
     		special_player_shirt,

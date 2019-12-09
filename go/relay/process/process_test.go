@@ -9,13 +9,15 @@ import (
 	//"github.com/ethereum/go-ethereum/crypto"
 
 	relay "github.com/freeverseio/crypto-soccer/go/relay/process"
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestSubmitActionRoot(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../relay.db/00_schema.sql")
-	// db, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Rollback()
 	if err != nil {
 		t.Fatal(err)
 	}
