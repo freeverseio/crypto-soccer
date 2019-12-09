@@ -97,7 +97,10 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	relaydb, err := relay.NewPostgres("postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable")
+	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if err != nil {
 		t.Fatal(err)
