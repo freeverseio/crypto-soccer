@@ -63,17 +63,6 @@ func (p *Processor) Process() error {
 // private
 // *****************************************************************************
 func (p *Processor) computeActionsRoot() error {
-	err := p.db.Begin()
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err != nil {
-			p.db.Rollback()
-			return
-		}
-		p.db.Commit()
-	}()
 
 	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
 	if err != nil {

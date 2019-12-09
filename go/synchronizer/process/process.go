@@ -83,28 +83,6 @@ func NewEventProcessor(
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process(delta uint64) (uint64, error) {
-	err := p.universedb.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		if err != nil {
-			p.universedb.Rollback()
-			return
-		}
-		p.universedb.Commit()
-	}()
-	err = p.relaydb.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer func() {
-		if err != nil {
-			p.relaydb.Rollback()
-			return
-		}
-		p.relaydb.Commit()
-	}()
 
 	opts, err := p.nextRange(delta)
 	if err != nil {
