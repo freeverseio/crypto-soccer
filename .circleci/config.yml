@@ -28,6 +28,8 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
+      - setup_remote_docker:   # (2)
+          docker_layer_caching: true # (3)
       - run: make setup contracts
       - run: cd go/testutils && docker-compose up -d 
       - run: sleep 5
