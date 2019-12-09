@@ -34,7 +34,7 @@ jobs:
       - run: cd go/testutils && docker-compose up -d 
       - run: sleep 5
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: cd go/synchronizer && go test ./... -v
+      - run: cd go/synchronizer && go test ./process/... -v
   market-notary:
     executor: freeverse_ethereum
     steps:
