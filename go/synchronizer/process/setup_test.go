@@ -20,5 +20,10 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
+	relaydb, err = relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	os.Exit(m.Run())
 }

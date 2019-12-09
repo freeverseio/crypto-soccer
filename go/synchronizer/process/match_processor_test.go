@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
@@ -16,7 +15,12 @@ func TestCreateMatchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	err = relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer relaydb.Rollback()
+
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
@@ -53,7 +57,12 @@ func TestGetPlayerState(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	err = relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer relaydb.Rollback()
+
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
