@@ -50,7 +50,7 @@ func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
 }
 func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	log.Debugf("[DBMS] Create tactic %v", t)
-	_, err := b.tx.Exec(
+	_, err := b.db.Exec(
 		`INSERT INTO tactics (
 			team_id,
 			verse,
@@ -140,7 +140,7 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 }
 func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
-	rows, err := b.tx.Query(
+	rows, err := b.db.Query(
 		`SELECT
 		tactic_id,
                 shirt_0,
@@ -214,9 +214,9 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	var err error
 
 	if verse == nil {
-		rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics;")
+		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics;")
 	} else {
-		rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", *verse)
+		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", *verse)
 	}
 
 	if err != nil {

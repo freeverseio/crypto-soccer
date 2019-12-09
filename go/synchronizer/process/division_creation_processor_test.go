@@ -8,15 +8,15 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestDivisionCreationProcess(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer universedb.Rollback()
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
@@ -29,7 +29,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	process, err := process.NewDivisionCreationProcessor(bc.Contracts, db, relaydb, namesdb)
+	process, err := process.NewDivisionCreationProcessor(bc.Contracts, universedb, relaydb, namesdb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +43,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err := db.GetPlayer(big.NewInt(274877906944))
+	player, err := universedb.GetPlayer(big.NewInt(274877906944))
 	if err != nil {
 		t.Fatal(err)
 	}

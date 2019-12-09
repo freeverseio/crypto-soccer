@@ -18,7 +18,11 @@ import (
 )
 
 func TestSyncTeams(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {

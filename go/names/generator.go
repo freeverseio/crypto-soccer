@@ -55,7 +55,7 @@ func New(db_filename string) (*Generator, error) {
 
 func (b *Generator) countPlayersDB() error {
 	var err error
-	rows, err := b.tx.Query(`SELECT country_code, num_names FROM countries`)
+	rows, err := b.db.Query(`SELECT country_code, num_names FROM countries`)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (b *Generator) countPlayersDB() error {
 func (b *Generator) countTeamsDB() error {
 	var err error
 	// Count main names
-	rows, err := b.tx.Query(`SELECT COUNT(*) FROM team_mainnames;`)
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM team_mainnames;`)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (b *Generator) countTeamsDB() error {
 	}
 	b.nTeamnamesMain = count
 	// Count prefixes
-	rows, err = b.tx.Query(`SELECT COUNT(*) FROM team_prefixnames;`)
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_prefixnames;`)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (b *Generator) countTeamsDB() error {
 	}
 	b.nTeamnamesPreffix = count
 	// Count suffixes
-	rows, err = b.tx.Query(`SELECT COUNT(*) FROM team_suffixnames;`)
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_suffixnames;`)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 	}
 	var namesInCountry uint = b.namesInCountry[country_code]
 	var idxInCountry uint64 = b.GenerateRnd(seed, uint64(namesInCountry), nLayers2)
-	rows, err := b.tx.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
+	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
 	if err != nil {
 		return "", err
 	}
@@ -195,7 +195,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 // comparer is either "=" or "!="
 func (b *Generator) isCountrySpecified(country_id uint64) (bool, error) {
 	var err error
-	rows, err := b.tx.Query(`SELECT COUNT(*) FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM country_specs WHERE tz_idx = $1;`, strconv.FormatInt(int64(country_id), 10))
 	if err != nil {
 		return false, err
 	}
@@ -223,7 +223,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	if !isSpecified {
 		country_id = uint64(19)*1000000 + 0
 	}
-	rows, err := b.tx.Query(`SELECT 
+	rows, err := b.db.Query(`SELECT 
 		code_name,
 		code_surname,
 		pure_pure,
@@ -269,7 +269,7 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	// MAIN NAME
 	tableName := "team_mainnames"
 	nameIdx := b.GenerateRnd(teamId, uint64(b.nTeamnamesMain), nLayers)
-	rows, err := b.tx.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	rows, err := b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
 	}
@@ -302,7 +302,7 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 	nLayers++
 	nameIdx = b.GenerateRnd(teamId, uint64(nNames), nLayers)
-	rows, err = b.tx.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	rows, err = b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
 	}

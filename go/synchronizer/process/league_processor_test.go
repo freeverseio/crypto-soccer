@@ -13,12 +13,15 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestProcessInvalidTimezone(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +92,11 @@ func TestPlayHalfMatch(t *testing.T) {
 }
 
 func TestLeagueProcessMatch(t *testing.T) {
-	universedb, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
 	relaydb, err := relay.NewPostgres("postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable")
 
 	if err != nil {
@@ -171,7 +178,11 @@ func TestLeagueProcessMatch(t *testing.T) {
 }
 
 func TestLeagueShuffling(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
 	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
 	if err != nil {
 		t.Fatal(err)
