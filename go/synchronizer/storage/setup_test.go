@@ -12,8 +12,7 @@ var s *storage.Storage
 
 func TestMain(m *testing.M) {
 	var err error
-	s, err = storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	// s, err = storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	s, err = storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}
