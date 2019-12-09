@@ -1,4 +1,4 @@
-FROM ethereum/client-go:alltools-v1.9.6
+FROM ethereum/client-go:alltools-v1.9.9
 
 # Set the working directory to /app
 WORKDIR /test
