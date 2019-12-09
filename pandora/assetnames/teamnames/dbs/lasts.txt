@@ -21,3 +21,4 @@ Blues
 Rock
 Bandits
 Secrets
+Magic
