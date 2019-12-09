@@ -22,7 +22,7 @@ contract('Shop', (accounts) => {
     it('offer item', async () => {
         skillsBoost = await shop.encodeSkillsBoost([5,7,8,11,23]).should.be.fulfilled;
         leagueIds = Array.from(new Array(32), (x,i) => 312312321+i);
-        tx = await shop.offerItem(skillsBoost, stock = 32, matchesDuration = 8, uri =  "https://www.freeverse.io", leagueIds).should.be.fulfilled;
+        tx = await shop.offerItem(skillsBoost, initStock = 32, matchesDuration = 8, uri =  "https://www.freeverse.io", leagueIds).should.be.fulfilled;
         truffleAssert.eventEmitted(tx, "ItemOffered", async (event) => {
             var ok = event.itemId.toNumber() === 0;
             for (l = 0; l < leagueIds.length; l++) ok = ok && (leagueIds[l] === event.leagueIds[l].toNumber());
@@ -33,8 +33,8 @@ contract('Shop', (accounts) => {
         result.should.be.bignumber.equal(skillsBoost);
         result = await shop.getMatchesDuration(id).should.be.fulfilled;
         result.toNumber().should.be.equal(matchesDuration);
-        result = await shop.getStock(id).should.be.fulfilled;
-        result.toNumber().should.be.equal(stock);
+        result = await shop.getInitStock(id).should.be.fulfilled;
+        result.toNumber().should.be.equal(initStock);
         result = await shop.getUri(id).should.be.fulfilled;
         result.should.be.equal(uri);
         result = await shop.getChampionshipsHash(id).should.be.fulfilled;
