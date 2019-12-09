@@ -11,7 +11,7 @@ type League struct {
 }
 
 func (b *Storage) LeagueCount() (uint32, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM leagues;")
+	rows, err := b.tx.Query("SELECT COUNT(*) FROM leagues;")
 	if err != nil {
 		return 0, err
 	}
@@ -26,7 +26,7 @@ func (b *Storage) LeagueCount() (uint32, error) {
 }
 
 func (b *Storage) LeagueInCountryCount(timezoneIdx uint8, countryIdx uint32) (uint32, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
+	rows, err := b.tx.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
 	if err != nil {
 		return 0, err
 	}
@@ -42,7 +42,7 @@ func (b *Storage) LeagueInCountryCount(timezoneIdx uint8, countryIdx uint32) (ui
 
 func (b *Storage) LeagueCreate(league League) error {
 	log.Debugf("[DBMS] Create league %v", league)
-	_, err := b.db.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
+	_, err := b.tx.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
 		league.TimezoneIdx,
 		league.CountryIdx,
 		league.LeagueIdx,
@@ -54,7 +54,7 @@ func (b *Storage) LeagueCreate(league League) error {
 }
 
 func (b *Storage) GetLeague(id uint32) (*League, error) {
-	rows, err := b.db.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
+	rows, err := b.tx.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
 	if err != nil {
 		return nil, err
 	}

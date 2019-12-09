@@ -46,6 +46,29 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
+				err := b.eventProcessor.universedb.Begin()
+				if err != nil {
+					panic(err)
+				}
+				defer func() {
+					if err != nil {
+						b.eventProcessor.universedb.Rollback()
+						return
+					}
+					b.eventProcessor.universedb.Commit()
+				}()
+				err = b.eventProcessor.relaydb.Begin()
+				if err != nil {
+					panic(err)
+				}
+				defer func() {
+					if err != nil {
+						b.eventProcessor.relaydb.Rollback()
+						return
+					}
+					b.eventProcessor.relaydb.Commit()
+				}()
+
 				delta := uint64(1000)
 				processedBlocks, err := b.eventProcessor.Process(delta)
 				if err != nil {

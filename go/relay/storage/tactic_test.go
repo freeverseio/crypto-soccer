@@ -8,10 +8,11 @@ import (
 )
 
 func TestTacticCreate(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../relay.db/00_schema.sql")
+	err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Rollback()
 	tacticID := uint8(16)
 	teamId := big.NewInt(1)
 	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}

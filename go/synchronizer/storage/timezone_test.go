@@ -7,11 +7,12 @@ import (
 )
 
 func TestTimezoneCount(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.TimezoneCount()
+	defer s.Rollback()
+	count, err := s.TimezoneCount()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,11 +20,11 @@ func TestTimezoneCount(t *testing.T) {
 		t.Fatalf("Expected 0 result %v", count)
 	}
 	timezone := storage.Timezone{1}
-	err = sto.TimezoneCreate(timezone)
+	err = s.TimezoneCreate(timezone)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err = sto.TimezoneCount()
+	count, err = s.TimezoneCount()
 	if err != nil {
 		t.Fatal(err)
 	}

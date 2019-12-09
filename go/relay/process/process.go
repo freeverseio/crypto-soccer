@@ -63,6 +63,7 @@ func (p *Processor) Process() error {
 // private
 // *****************************************************************************
 func (p *Processor) computeActionsRoot() error {
+
 	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
 	if err != nil {
 		return err

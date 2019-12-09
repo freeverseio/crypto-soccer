@@ -7,7 +7,7 @@ type Timezone struct {
 }
 
 func (b *Storage) TimezoneCount() (uint64, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM timezones;")
+	rows, err := b.tx.Query("SELECT COUNT(*) FROM timezones;")
 	if err != nil {
 		return 0, err
 	}
@@ -20,7 +20,7 @@ func (b *Storage) TimezoneCount() (uint64, error) {
 
 func (b *Storage) TimezoneCreate(timezone Timezone) error {
 	log.Debugf("[DBMS] Create timezone %v", timezone)
-	_, err := b.db.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
+	_, err := b.tx.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
 		timezone.TimezoneIdx,
 	)
 	return err

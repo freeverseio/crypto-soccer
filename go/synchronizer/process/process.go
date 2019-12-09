@@ -83,6 +83,7 @@ func NewEventProcessor(
 
 // Process processes all scanned events and stores them into the database db
 func (p *EventProcessor) Process(delta uint64) (uint64, error) {
+
 	opts, err := p.nextRange(delta)
 	if err != nil {
 		return 0, err
@@ -102,20 +103,21 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	if scanner == nil {
 		return opts.Start, errors.New("Unable to create scanner")
 	}
+
 	if err := scanner.Process(opts); err != nil {
 		return 0, err
-	} else {
-		for _, v := range scanner.Events {
-			if err := p.dispatch(v); err != nil {
-				return 0, err
-			}
+	}
+
+	for _, v := range scanner.Events {
+		if err := p.dispatch(v); err != nil {
+			return 0, err
 		}
 	}
 
+	err = p.universedb.SetBlockNumber(*opts.End)
 	deltaBlock := *opts.End - opts.Start
 
-	// store the last block that was scanned
-	return deltaBlock, p.universedb.SetBlockNumber(*opts.End)
+	return deltaBlock, err
 }
 
 // *****************************************************************************

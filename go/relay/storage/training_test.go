@@ -8,10 +8,11 @@ import (
 )
 
 func TestTrainingCreate(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../relay.db/00_schema.sql")
+	err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer db.Rollback()
 	training := storage.Training{}
 	training.TeamID = big.NewInt(4)
 	err = db.CreateTraining(training)
