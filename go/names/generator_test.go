@@ -168,7 +168,7 @@ func TestGenerateTeamName(t *testing.T) {
 		}
 		concatname += " " + name
 	}
-	if concatname != " Angry Morfeo Elegant Sibyls F. Z. Clio Lime Helice Z. F. Shrew A. Z. Turkey Desert Mastodon Pony Plus Blue Locust Hookworm Island" {
+	if concatname != " Awesome Morfeo Purple Sibyls East Clio A. F. Helice World Shrew Turkey Secrets Fast Mastodon Lime Pony Fast Locust Hookworm Secrets" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(concatname))
 		fmt.Println(concatname)

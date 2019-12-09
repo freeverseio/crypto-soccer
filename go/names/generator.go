@@ -290,9 +290,9 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 
 	// ADD PREFFIX OR SUFFIX
 	nLayers++
-	dice := b.GenerateRnd(teamId, uint64(100), nLayers)
+	dice := b.GenerateRnd(teamId, uint64(b.nTeamnamesPreffix+b.nTeamnamesSuffix), nLayers)
 	var nNames uint
-	addPrefix := dice < 80
+	addPrefix := uint(dice) < b.nTeamnamesPreffix
 	if addPrefix {
 		tableName = "team_prefixnames"
 		nNames = b.nTeamnamesPreffix
