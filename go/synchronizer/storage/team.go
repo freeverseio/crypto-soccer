@@ -62,7 +62,7 @@ func IsBotTeam(team Team) bool {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.db.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league, name) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := b.tx.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league, name) VALUES ($1, $2, $3, $4, $5, $6, $7);",
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
@@ -84,7 +84,7 @@ func (b *Storage) TeamCreate(team Team) error {
 }
 
 func (b *Storage) TeamCount() (uint64, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM teams;")
+	rows, err := b.tx.Query("SELECT COUNT(*) FROM teams;")
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +100,7 @@ func (b *Storage) TeamCount() (uint64, error) {
 
 func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
-	_, err := b.db.Exec(`UPDATE teams SET 
+	_, err := b.tx.Exec(`UPDATE teams SET 
 						owner=$1, 
 						league_idx=$2, 
 						team_idx_in_league=$3,
@@ -135,7 +135,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 
 // func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
 // 	log.Infof("[DBMS] + add team history %v", teamState)
-// 	_, err := b.db.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
+// 	_, err := b.tx.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
 // 		id,
 // 		teamState.BlockNumber,
 // 		teamState.CurrentLeagueId,
@@ -152,7 +152,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 // 	return nil
 // }
 func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
-	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
+	rows, err := b.tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueI
 }
 
 func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
-	rows, err := b.db.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
+	rows, err := b.tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (b *Storage) GetTeamID(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 func (b *Storage) GetTeam(teamID *big.Int) (Team, error) {
 	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
 	var team Team
-	rows, err := b.db.Query(`SELECT 
+	rows, err := b.tx.Query(`SELECT 
 	timezone_idx,
 	country_idx, 
 	owner, 

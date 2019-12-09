@@ -24,14 +24,14 @@ func NewProcessor(db *storage.Storage, contracts *contracts.Contracts, freeverse
 func (b *Processor) Process() error {
 	log.Info("Processing")
 
-	openedAuctions, err := b.db.GetOpenAuctions()
+	openedAuctions, err := b.tx.GetOpenAuctions()
 	if err != nil {
 		return err
 	}
 
 	for _, auction := range openedAuctions {
 		log.Infof("[processor] process auction %v, state: %v", auction.UUID, string(auction.State))
-		bids, err := b.db.GetBidsOfAuction(auction.UUID)
+		bids, err := b.tx.GetBidsOfAuction(auction.UUID)
 		if err != nil {
 			return err
 		}
@@ -65,28 +65,28 @@ func (b *Processor) Process() error {
 }
 
 func (b *Processor) updateAuction(auction *storage.Auction) error {
-	err := b.db.UpdateAuctionState(auction.UUID, auction.State, auction.StateExtra)
+	err := b.tx.UpdateAuctionState(auction.UUID, auction.State, auction.StateExtra)
 	if err != nil {
 		return err
 	}
-	return b.db.UpdateAuctionPaymentUrl(auction.UUID, auction.PaymentURL)
+	return b.tx.UpdateAuctionPaymentUrl(auction.UUID, auction.PaymentURL)
 }
 
 func (b *Processor) updateBids(bids []*storage.Bid) error {
 	for _, bid := range bids {
-		err := b.db.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, bid.PaymentID)
+		err := b.tx.UpdateBidPaymentID(bid.Auction, bid.ExtraPrice, bid.PaymentID)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, bid.PaymentURL)
+		err = b.tx.UpdateBidPaymentUrl(bid.Auction, bid.ExtraPrice, bid.PaymentURL)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidState(bid.Auction, bid.ExtraPrice, bid.State, bid.StateExtra)
+		err = b.tx.UpdateBidState(bid.Auction, bid.ExtraPrice, bid.State, bid.StateExtra)
 		if err != nil {
 			return err
 		}
-		err = b.db.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, bid.PaymentDeadline)
+		err = b.tx.UpdateBidPaymentDeadline(bid.Auction, bid.ExtraPrice, bid.PaymentDeadline)
 		if err != nil {
 			return err
 		}

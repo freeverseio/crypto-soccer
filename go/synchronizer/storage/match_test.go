@@ -8,11 +8,11 @@ import (
 )
 
 func TestSetMatchLogs(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	defer s.Rollback()
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
@@ -22,13 +22,13 @@ func TestSetMatchLogs(t *testing.T) {
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	sto.TeamCreate(team)
+	s.TimezoneCreate(storage.Timezone{timezoneIdx})
+	s.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	s.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	s.TeamCreate(team)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
-	err = sto.MatchCreate(storage.Match{
+	err = s.MatchCreate(storage.Match{
 		TimezoneIdx:   timezoneIdx,
 		CountryIdx:    countryIdx,
 		LeagueIdx:     leagueIdx,
@@ -41,7 +41,7 @@ func TestSetMatchLogs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	homeLog, visitorLog, err := sto.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	homeLog, visitorLog, err := s.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,11 +52,11 @@ func TestSetMatchLogs(t *testing.T) {
 		t.Fatalf("Visitor match log error %v", visitorLog)
 	}
 
-	err = sto.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, 10, 3, big.NewInt(4), big.NewInt(5))
+	err = s.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, 10, 3, big.NewInt(4), big.NewInt(5))
 	if err != nil {
 		t.Fatal(err)
 	}
-	homeLog, visitorLog, err = sto.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	homeLog, visitorLog, err = s.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,11 +69,11 @@ func TestSetMatchLogs(t *testing.T) {
 }
 
 func TestMatchReset(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	defer s.Rollback()
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
@@ -83,13 +83,13 @@ func TestMatchReset(t *testing.T) {
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	sto.TeamCreate(team)
+	s.TimezoneCreate(storage.Timezone{timezoneIdx})
+	s.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	s.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
+	s.TeamCreate(team)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
-	err = sto.MatchCreate(storage.Match{
+	err = s.MatchCreate(storage.Match{
 		TimezoneIdx:   timezoneIdx,
 		CountryIdx:    countryIdx,
 		LeagueIdx:     leagueIdx,
@@ -101,15 +101,15 @@ func TestMatchReset(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = sto.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, 10, 3, big.NewInt(4), big.NewInt(5))
+	err = s.MatchSetResult(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx, 10, 3, big.NewInt(4), big.NewInt(5))
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = sto.MatchReset(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	err = s.MatchReset(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	homeLog, visitorLog, err := sto.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
+	homeLog, visitorLog, err := s.GetMatchLogs(timezoneIdx, countryIdx, leagueIdx, matchDayIdx, matchIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
