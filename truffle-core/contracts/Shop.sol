@@ -20,6 +20,8 @@ contract Shop is EncodingSkillsSetters{
     struct ShopItem {
         uint256 skillsBoost;
         bytes32 championshipsHash;
+        bytes32 ownerTeamsHash;
+        bytes32 signedTeamsHash;
         uint16 initStock;
         uint8 matchesDuration;
         string uri;
@@ -31,13 +33,15 @@ contract Shop is EncodingSkillsSetters{
     function getMatchesDuration(uint256 itemId) public view returns (uint8) { return _shopItems[itemId].matchesDuration; }
     function getInitStock(uint256 itemId) public view returns (uint16) { return _shopItems[itemId].initStock; }
     function getChampionshipsHash(uint256 itemId) public view returns (bytes32) { return _shopItems[itemId].championshipsHash; }
+    function getOwnerTeamsHash(uint256 itemId) public view returns (bytes32) { return _shopItems[itemId].ownerTeamsHash; }
+    function getSignedTeamsHash(uint256 itemId) public view returns (bytes32) { return _shopItems[itemId].signedTeamsHash; }
     function getUri(uint256 itemId) public view returns (string memory) { return _shopItems[itemId].uri; }
 
     // 1 round = 2 weeks, 1 year = 25 rounds, 100 years = 2500 rounds => 12bit
     // leagueId: tz (5), country (10), leagueIdxInCountry (28), round(12) = 55 bit => 64 
     function offerItem(uint256 skillsBoost, uint16 initStock, uint8 matchesDuration, string memory uri, uint64[] memory leagueIds) public {
         require(leagueIds.length < MAX_LEAGUES_PER_OFFER, "too many leafs in tree");
-        _shopItems.push(ShopItem(skillsBoost, merkleRootTemp(leagueIds), initStock, matchesDuration, uri));
+        _shopItems.push(ShopItem(skillsBoost, merkleRootTemp(leagueIds), 0, 0, initStock, matchesDuration, uri));
         emit ItemOffered(_shopItems.length - 1, leagueIds);
     }
     
