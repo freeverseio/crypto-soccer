@@ -38,6 +38,34 @@ func BackgroundProcessNew(
 	}, nil
 }
 
+func (b *BackgroundProcess) Process() (uint64, error) {
+	err := b.eventProcessor.universedb.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		if err != nil {
+			b.eventProcessor.universedb.Rollback()
+			return
+		}
+		b.eventProcessor.universedb.Commit()
+	}()
+	err = b.eventProcessor.relaydb.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer func() {
+		if err != nil {
+			b.eventProcessor.relaydb.Rollback()
+			return
+		}
+		b.eventProcessor.relaydb.Commit()
+	}()
+
+	delta := uint64(1000)
+	return b.eventProcessor.Process(delta)
+}
+
 func (b *BackgroundProcess) Start() {
 	go func() {
 	L:
@@ -46,31 +74,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				err := b.eventProcessor.universedb.Begin()
-				if err != nil {
-					panic(err)
-				}
-				defer func() {
-					if err != nil {
-						b.eventProcessor.universedb.Rollback()
-						return
-					}
-					b.eventProcessor.universedb.Commit()
-				}()
-				err = b.eventProcessor.relaydb.Begin()
-				if err != nil {
-					panic(err)
-				}
-				defer func() {
-					if err != nil {
-						b.eventProcessor.relaydb.Rollback()
-						return
-					}
-					b.eventProcessor.relaydb.Commit()
-				}()
-
-				delta := uint64(1000)
-				processedBlocks, err := b.eventProcessor.Process(delta)
+				processedBlocks, err := b.Process()
 				if err != nil {
 					panic(err)
 				}

@@ -36,6 +36,25 @@ func BackgroundProcessNew(
 	}, nil
 }
 
+func (b *BackgroundProcess) Process() error {
+	err := b.relay.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			b.relay.db.Rollback()
+			return
+		}
+		b.relay.db.Commit()
+	}()
+	err = b.relay.Process()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *BackgroundProcess) Start() {
 	go func() {
 	L:
@@ -44,18 +63,7 @@ func (b *BackgroundProcess) Start() {
 			case <-b.queryStop:
 				break L
 			default:
-				err := b.relay.db.Begin()
-				if err != nil {
-					panic(err)
-				}
-				defer func() {
-					if err != nil {
-						b.relay.db.Rollback()
-						return
-					}
-					b.relay.db.Commit()
-				}()
-				err = b.relay.Process()
+				err := b.Process()
 				if err != nil {
 					panic(err)
 				}
