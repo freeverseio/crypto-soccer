@@ -89,8 +89,9 @@ func TestPlayHalfMatch(t *testing.T) {
 }
 
 func TestLeagueProcessMatch(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	universedb, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	relaydb, err := relay.NewPostgres("postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable")
+
 	if err != nil {
 		t.Fatal(err)
 	}

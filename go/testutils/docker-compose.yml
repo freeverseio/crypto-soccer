@@ -1,0 +1,14 @@
+version: '3'
+services:
+  ethereum: 
+    image: freeverseio/ethereum:test
+    ports: 
+      - "8545:8545"
+  universe.db:
+    build: ../../universe.db/
+    ports:
+      - "5432:5432"
+  relay.db:
+    build: ../../relay.db/
+    ports:
+      - "5433:5432"
