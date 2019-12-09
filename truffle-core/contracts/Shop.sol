@@ -27,11 +27,11 @@ contract Shop is EncodingSkillsSetters{
 
     ShopItem[] private _shopItems;
 
-    function getSkillsBoost(uint256 itemId) private view returns (uint256) { return _shopItems[itemId].skillsBoost; }
-    function getMatchesDuration(uint256 itemId) private view returns (uint8) { return _shopItems[itemId].matchesDuration; }
-    function getStock(uint256 itemId) private view returns (uint16) { return _shopItems[itemId].stock; }
-    function getChampionshipsHash(uint256 itemId) private view returns (bytes32) { return _shopItems[itemId].championshipsHash; }
-    function getUri(uint256 itemId) private view returns (string memory) { return _shopItems[itemId].uri; }
+    function getSkillsBoost(uint256 itemId) public view returns (uint256) { return _shopItems[itemId].skillsBoost; }
+    function getMatchesDuration(uint256 itemId) public view returns (uint8) { return _shopItems[itemId].matchesDuration; }
+    function getStock(uint256 itemId) public view returns (uint16) { return _shopItems[itemId].stock; }
+    function getChampionshipsHash(uint256 itemId) public view returns (bytes32) { return _shopItems[itemId].championshipsHash; }
+    function getUri(uint256 itemId) public view returns (string memory) { return _shopItems[itemId].uri; }
 
     // 1 round = 2 weeks, 1 year = 25 rounds, 100 years = 2500 rounds => 12bit
     // leagueId: tz (5), country (10), leagueIdxInCountry (28), round(12) = 55 bit => 64 
