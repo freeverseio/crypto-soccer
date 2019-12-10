@@ -29,6 +29,11 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: |
+          export NVM_DIR="/opt/circleci/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          nvm install v10.15.1
+          nvm alias default v10.15.1
       - run: npm install -g truffle
       - run: cd go/testutils && docker-compose up -d 
       # - run: |
@@ -51,7 +56,7 @@ jobs:
       - run: cd go/synchronizer && go test ./process/... -v
   market-notary:
     executor: freeverse_ethereum
-    steps:
+    stepscurl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:8545:
       - checkout
       - run: make setup contracts
       - run: cd go/cmd/notary && go build ./notary.go
