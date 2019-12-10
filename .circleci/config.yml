@@ -48,7 +48,7 @@ jobs:
       - run: cd go/testutils && docker-compose up -d 
       - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: cd go/synchronizer && go test ./process/... -v
+      - run: cd go/synchronizer && go test ./... -v
   market-notary:
     executor: freeverse_ethereum
     steps:
