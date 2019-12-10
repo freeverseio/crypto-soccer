@@ -10,7 +10,7 @@ type MarketPayFactory struct{}
 
 func (factory MarketPayFactory) Create(endPoint string, publicKey string) (IMarketPay, error) {
 	if len(endPoint) == 0 || len(publicKey) == 0 {
-		return &mockMarketPay{}, nil
+		return NewMockMarketPay()
 	}
 	return NewMarketPay(endPoint, publicKey)
 }
