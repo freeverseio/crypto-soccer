@@ -8,9 +8,9 @@ type IMarketPay interface {
 
 type MarketPayFactory struct{}
 
-func (factory MarketPayFactory) Create(endpoint string, publicKey string) (IMarketPay, error) {
-	if len(endpoint) == 0 || len(publicKey) == 0 {
+func (factory MarketPayFactory) Create(endPoint string, publicKey string) (IMarketPay, error) {
+	if len(endPoint) == 0 || len(publicKey) == 0 {
 		return &mockMarketPay{}, nil
 	}
-	return New() // TODO: maybe rename to NewMarketPay
+	return NewMarketPay(endPoint, publicKey)
 }
