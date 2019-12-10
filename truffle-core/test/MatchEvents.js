@@ -415,9 +415,6 @@ contract('MatchEvents', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });    
 
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
-    });
         
     it('play a match with a special playerId that made it fail before fixing a bug', async () => {
         playerId = 274877907169;
@@ -450,10 +447,6 @@ contract('MatchEvents', (accounts) => {
             result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
             result.toNumber().should.be.equal(expectedPenalty[i]);
         }
-    });
-
-    it('play a match with penalties to estimate cost', async () => {
-        const result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
     });
 
     it('check that penalties are played in playoff games and excluding redcarded players', async () => {
