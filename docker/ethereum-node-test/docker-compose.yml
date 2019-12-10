@@ -1,0 +1,13 @@
+version: '3'
+services:
+  ethereum: 
+    image: freeverseio/ethereum:dev
+    command: --bootnodes enode://d851675a89ee5e08fbd0466d348172c0a65e0b560541d4f281fc10ea0731b100d1782bbf497b9d4bed6c18f3ade9bcac74aa47ee728d3dd1e21fd081eab89da6@165.22.66.118:30303
+    ports: 
+      - "8545:8545"
+      - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - ethereum-data:/test
+volumes:
+  ethereum-data:
