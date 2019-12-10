@@ -6,8 +6,15 @@ import (
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 )
 
+func newTestMarket() (v1.IMarketPay, error) {
+	test_sandboxURL := "https://api-sandbox.truust.io/1.0"
+	test_sandboxPublicKey := "pk_stage_ZkNpNElWeEg="
+	factory := v1.MarketPayFactory{}
+	return factory.Create(test_sandboxURL, test_sandboxPublicKey)
+}
+
 func TestCreation(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := newTestMarket()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +24,7 @@ func TestCreation(t *testing.T) {
 }
 
 func TestCreateOrder(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := newTestMarket()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +43,7 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := newTestMarket()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +63,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := newTestMarket()
 	if err != nil {
 		t.Fatal(err)
 	}
