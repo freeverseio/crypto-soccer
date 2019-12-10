@@ -53,7 +53,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     {
         uint256 block0;
         uint256 block1;
-        uint256[2+ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
+        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
         (matchLog, block0, block1) = playMatchWithoutPenalties(
@@ -80,7 +80,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
      * @return the score of the match
      */
     function playMatchWithoutPenalties(
-        uint256[2+ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
+        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -113,7 +113,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     
     function computeRounds(
         uint256[2] memory matchLog,
-        uint256[2+ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
+        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
