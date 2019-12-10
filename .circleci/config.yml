@@ -30,7 +30,6 @@ jobs:
       - checkout
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
-      - run: make setup contracts
       # - run: cd go/testutils && docker-compose up -d 
       - run: |
           set -x
@@ -39,13 +38,14 @@ jobs:
           # docker-compose will start 2 containers, the one with service will be named `contacts`
           # we start another container with curl in the same network as `contacts`, this way we have
           # all exposed ports from `contacts` available on `localhost` in this new container
-          docker run --network container:ethereum \
+          docker run --network container:ethereum_1 \
             appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:8545
-          docker run --network container:universe.db \
+          docker run --network container:universe.db_1 \
             appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:5432
-          docker run --network container:relay.db \
+          docker run --network container:relay.db_1 \
             appropriate/curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:5433
       - run: sleep 5
+      - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
       - run: cd go/synchronizer && go test ./process/... -v
   market-notary:
