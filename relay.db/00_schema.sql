@@ -1,8 +1,10 @@
 CREATE TABLE verses (
-    verse SERIAL,
-    timestamp TIMESTAMP DEFAULT NOW(),
-    PRIMARY KEY(verse)
+    id INT NOT NULL,
+    start_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY(id)
 );
+CREATE RULE nodel_verses AS ON DELETE TO verses DO NOTHING;
+INSERT INTO verses VALUES (0);
 
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
