@@ -33,10 +33,13 @@ jobs:
           echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
           echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
       - run: |
+          add-apt-repository -y ppa:ethereum/ethereum
+          apt-get update
+          apt-get install abigen
+      - run: |
           nvm install v10.15.1
           nvm alias default v10.15.1
           npm update -g
-      - run: npm install -g truffle
       - run: cd go/testutils && docker-compose up -d 
       # - run: |
       #     set -x
