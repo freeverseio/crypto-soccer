@@ -9,7 +9,7 @@ import (
 
 type Verse struct {
 	ID      int
-	StartAt *time.Time
+	StartAt time.Time
 }
 
 func (b *Storage) GetLastVerse() (*Verse, error) {

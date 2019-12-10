@@ -1,6 +1,8 @@
 package storage_test
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGetCurrentVerse(t *testing.T) {
 	err := db.Begin()
@@ -27,22 +29,25 @@ func TestIncreamentVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse, err := db.GetLastVerse()
+	verse1, err := db.GetLastVerse()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if verse.ID != 1 {
-		t.Fatalf("Expected verse 1 received %v", verse.ID)
+	if verse1.ID != 1 {
+		t.Fatalf("Expected verse 1 received %v", verse1.ID)
 	}
 	err = db.CloseVerse()
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse, err = db.GetLastVerse()
+	verse2, err := db.GetLastVerse()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if verse.ID != 2 {
-		t.Fatalf("Expected verse 2 received %v", verse.ID)
+	if verse2.ID != 2 {
+		t.Fatalf("Expected verse 2 received %v", verse2.ID)
+	}
+	if verse1.StartAt.After(verse2.StartAt) {
+		t.Fatal("Verse 1 is after Verse 2")
 	}
 }

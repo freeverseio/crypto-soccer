@@ -9,8 +9,6 @@ INSERT INTO verses VALUES (0);
 CREATE TABLE tactics (
     created_at TIMESTAMP DEFAULT NOW(),
     team_id TEXT NOT NULL,
-    verse BIGINT NOT NULL,
-
     tactic_id INT NOT NULL,
 
     shirt_0 INT CHECK (shirt_0 >= 0),
@@ -40,7 +38,7 @@ CREATE TABLE tactics (
     extra_attack_9  BOOLEAN DEFAULT FALSE,
     extra_attack_10 BOOLEAN DEFAULT FALSE,
 
-    PRIMARY KEY(team_id, verse)
+    PRIMARY KEY(team_id, created_at)
 );
 
 CREATE TABLE trainings (

@@ -53,7 +53,6 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	_, err := b.tx.Exec(
 		`INSERT INTO tactics (
 			team_id,
-			verse,
                         tactic_id,
                         shirt_0,
                         shirt_1,
@@ -105,11 +104,9 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
                         $23,
                         $24,
                         $25,
-                        $26,
-                        $27
+                        $26
 		);`,
 		t.TeamID.String(),
-		verse,
 		t.TacticID,
 		t.Shirts[0],
 		t.Shirts[1],
