@@ -5,18 +5,41 @@ import (
 )
 
 type mockMarketPay struct {
-	orders map[string]*Order
+	orders  map[string]*Order
+	context mockMarketPayContext
+}
+type mockMarketPayContext struct {
+	states []OrderStatus
+	idx    int
 }
 
-func NewMockMarketPay() (*mockMarketPay, error) {
+func NewMockMarketPayContext(states []OrderStatus) mockMarketPayContext {
+	return mockMarketPayContext{states, 0}
+}
+
+func (c mockMarketPayContext) GetEndPoint() string {
+	return ""
+}
+
+func (c mockMarketPayContext) GetPublicKey() string {
+	return ""
+}
+
+func (c mockMarketPayContext) NextOrderStatus() *OrderStatus {
+	c.idx = c.idx + 1
+	return &c.states[c.idx%len(c.states)]
+}
+
+func NewMockMarketPay(context mockMarketPayContext) (*mockMarketPay, error) {
 	return &mockMarketPay{
-		orders: make(map[string]*Order),
+		orders:  make(map[string]*Order),
+		context: context,
 	}, nil
 }
 
 func (b *mockMarketPay) CreateOrder(name string, value string) (*Order, error) {
 	order := &Order{}
-	order.Status = "DRAFT"
+	order.Status = DRAFT.String()
 	order.Name = name
 	order.Amount = value
 	order.TrusteeShortlink.Hash = name
@@ -29,9 +52,10 @@ func (b *mockMarketPay) GetOrder(hash string) (*Order, error) {
 	if !ok {
 		return nil, errors.New("Could not find order")
 	}
+	order.Status = b.context.NextOrderStatus().String()
 	return order, nil
 }
 
 func (b *mockMarketPay) IsPaid(order Order) bool {
-	return false
+	return order.Status == PUBLISHED.String()
 }

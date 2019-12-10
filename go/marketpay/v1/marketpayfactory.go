@@ -6,11 +6,18 @@ type IMarketPay interface {
 	IsPaid(order Order) bool
 }
 
+type IMarketPayContext interface {
+	GetEndPoint() string
+	GetPublicKey() string
+	NextOrderStatus() *OrderStatus
+}
+
 type MarketPayFactory struct{}
 
-func (factory MarketPayFactory) Create(endPoint string, publicKey string) (IMarketPay, error) {
-	if len(endPoint) == 0 || len(publicKey) == 0 {
-		return NewMockMarketPay()
+func (factory MarketPayFactory) Create(context IMarketPayContext) (IMarketPay, error) {
+	switch v := context.(type) {
+	case mockMarketPayContext:
+		return NewMockMarketPay(v)
 	}
-	return NewMarketPay(endPoint, publicKey)
+	return NewMarketPay(context.(MarketPayContext))
 }

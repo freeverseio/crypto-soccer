@@ -8,14 +8,14 @@ import (
 
 func newTestMarket() (v1.IMarketPay, error) {
 	useMock := false
-	test_sandboxURL := ""
-	test_sandboxPublicKey := ""
-	if !useMock {
-		test_sandboxURL = "https://api-sandbox.truust.io/1.0"
-		test_sandboxPublicKey = "pk_stage_ZkNpNElWeEg="
-	}
 	factory := v1.MarketPayFactory{}
-	return factory.Create(test_sandboxURL, test_sandboxPublicKey)
+	if !useMock {
+		return factory.Create(v1.MarketPayContext{})
+	}
+	return factory.Create(
+		v1.NewMockMarketPayContext([]v1.OrderStatus{
+			v1.DRAFT,
+		}))
 }
 
 func TestCreation(t *testing.T) {
