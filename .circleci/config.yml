@@ -35,9 +35,8 @@ jobs:
           nvm install v10.15.1
           nvm alias default v10.15.1
           npm update -g
-          node --version
-      - run: node --version && npm install -g truffle && truffle version
-      - run: node --version && cd go/testutils && docker-compose up -d 
+          npm install -g truffle
+      - run: cd go/testutils && docker-compose up -d 
       # - run: |
       #     set -x
       #     cd go/testutils
