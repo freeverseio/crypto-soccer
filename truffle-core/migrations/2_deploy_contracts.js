@@ -8,6 +8,7 @@ const Updates = artifacts.require('Updates');
 const Friendlies = artifacts.require('Friendlies');
 const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
+const MatchEvents = artifacts.require('MatchEvents');
 
 
 require('chai')
@@ -17,6 +18,7 @@ require('chai')
 module.exports = function (deployer) {
   deployer.then(async () => {
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
+    const matchEvents = await deployer.deploy(MatchEvents).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const assets = await deployer.deploy(Assets).should.be.fulfilled;
@@ -35,6 +37,7 @@ module.exports = function (deployer) {
     await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
     await evolution.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
+    await matchEvents.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");
@@ -54,6 +57,7 @@ module.exports = function (deployer) {
     console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
     console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
+    console.log("MATCHEVENTS_CONTRACT_ADDRESS=" + matchEvents.address);
   });
 };
 
