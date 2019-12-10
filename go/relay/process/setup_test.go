@@ -12,7 +12,7 @@ var db *storage.Storage
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = storage.NewSqlite3("../../../relay.db/00_schema.sql")
+	db, err = storage.NewPostgres("postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

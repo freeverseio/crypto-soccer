@@ -1,3 +1,9 @@
+CREATE TABLE verses (
+    verse SERIAL,
+    timestamp TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY(verse)
+);
+
 CREATE TABLE tactics (
     team_id TEXT NOT NULL,
     verse BIGINT NOT NULL,
