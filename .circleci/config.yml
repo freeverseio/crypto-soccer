@@ -43,7 +43,7 @@ jobs:
           echo 'export GOROOT="/usr/local/go"' >> $BASH_ENV
           echo 'export PATH=$GOROOT/bin:$PATH' >> $BASH_ENV
           go version
-          - run: |
+      - run: |
           nvm install v10.15.1
           nvm alias default v10.15.1
           npm update -g
