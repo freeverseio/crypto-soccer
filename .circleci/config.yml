@@ -37,7 +37,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install abigen
       - run: |
-          wget http   s://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
+          wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
           sudo tar -xvf go1.13.3.linux-amd64.tar.gz
           sudo mv go /usr/local
           echo 'export GOROOT="/usr/local/go"' >> $BASH_ENV
