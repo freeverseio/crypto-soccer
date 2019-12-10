@@ -27,7 +27,7 @@ jobs:
   synchronizer:
     machine:
       image: ubuntu-1604:201903-01
-    environent:
+    environment:
       NVM_DIR="/opt/circleci/.nvm"
     steps:
       - checkout
