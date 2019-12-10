@@ -27,17 +27,16 @@ jobs:
   synchronizer:
     machine:
       image: ubuntu-1604:201903-01
-    environment:
-      NVM_DIR="/opt/circleci/.nvm"
     steps:
       - checkout
       - run: |
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run: |
           nvm install v10.15.1
           nvm alias default v10.15.1
           npm update -g
-      - run: node --version
-          # npm install -g truffle
+      - run: npm install -g truffle
       - run: cd go/testutils && docker-compose up -d 
       # - run: |
       #     set -x
