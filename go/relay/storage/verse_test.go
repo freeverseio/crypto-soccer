@@ -34,4 +34,15 @@ func TestIncreamentVerse(t *testing.T) {
 	if verse.ID != 1 {
 		t.Fatalf("Expected verse 1 received %v", verse.ID)
 	}
+	err = db.CloseVerse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	verse, err = db.GetLastVerse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verse.ID != 2 {
+		t.Fatalf("Expected verse 2 received %v", verse.ID)
+	}
 }
