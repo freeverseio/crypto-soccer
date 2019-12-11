@@ -362,7 +362,7 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTe
 }
 
 func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
-	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
+	if tactic, err := b.relaydb.GetTactic(teamID, verse); err != nil {
 		return nil, err
 	} else if encodedTactic, err := b.contracts.Engine.EncodeTactics(
 		&bind.CallOpts{},

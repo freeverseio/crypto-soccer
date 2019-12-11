@@ -210,11 +210,7 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	var rows *sql.Rows
 	var err error
 
-	if verse == nil {
-		rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics;")
-	} else {
-		rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", *verse)
-	}
+	rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics;")
 
 	if err != nil {
 		return 0, err
@@ -227,15 +223,4 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 		return 0, err
 	}
 	return count, nil
-}
-func (b *Storage) GetTacticOrDefault(teamID *big.Int, verse uint64) (*Tactic, error) {
-	if count, err := b.TacticCount(&verse); err != nil {
-		return nil, err
-	} else {
-		if count > 0 {
-			return b.GetTactic(teamID, verse)
-		} else {
-			return b.DefaultTactic(teamID), nil
-		}
-	}
 }
