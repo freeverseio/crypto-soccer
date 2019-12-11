@@ -53,7 +53,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     {
         uint256 block0;
         uint256 block1;
-        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
         seedAndStartTimeAndEvents[0] = seed; 
         seedAndStartTimeAndEvents[1] = matchStartTime; 
         (matchLog, block0, block1) = playMatchWithoutPenalties(
@@ -80,7 +80,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
      * @return the score of the match
      */
     function playMatchWithoutPenalties(
-        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -111,9 +111,10 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
         return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
+    // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function computeRounds(
         uint256[2] memory matchLog,
-        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
@@ -130,11 +131,11 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
-            seedAndStartTimeAndEvents[2 + round * 4] = teamThatAttacks;
-            seedAndStartTimeAndEvents[2 + round * 4 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
-            if (seedAndStartTimeAndEvents[2 + round * 4 + 1] == 1) {
-                matchLog[teamThatAttacks] = managesToScore(
-                    seedAndStartTimeAndEvents,
+            seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
+            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
+            if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
+                uint256[4] memory scoreData = managesToScore(
+                    seedAndStartTimeAndEvents[IDX_ST_TIME],
                     matchLog[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
@@ -142,6 +143,10 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
+                matchLog[teamThatAttacks] = scoreData[0];
+                seedAndStartTimeAndEvents[2 + round * 5 + 2] = scoreData[1];
+                seedAndStartTimeAndEvents[2 + round * 5 + 3] = scoreData[2];
+                seedAndStartTimeAndEvents[2 + round * 5 + 4] = scoreData[3];
             }
         }
     }
@@ -286,7 +291,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
-        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
+        uint256 matchStartTime,
         uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8[9] memory playersPerZone,
@@ -296,25 +301,30 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     )
         public
         pure
-        returns (uint256)
+        returns (uint256[4] memory scoreData)
     {
+        scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        if (currentGoals > 13) return matchLog;
-        uint8 shooter = selectShooter(seedAndStartTimeAndEvents[IDX_ST_TIME], states, playersPerZone, extraAttack, rnds[0]);
+        if (currentGoals > 13) return scoreData;
+        uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
+        scoreData[1] = uint256(shooter);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], seedAndStartTimeAndEvents[IDX_ST_TIME]);
+        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
         // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
         bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        scoreData[2] = uint256(isGoal ? 1: 0);
+        uint8 assister;
         if (isGoal) {
-            uint8 assister = selectAssister(seedAndStartTimeAndEvents[IDX_ST_TIME], states, playersPerZone, extraAttack, shooter, rnds[2]);
+            assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
             matchLog++; // adds 1 goal because nGoals is the right-most number serialized
+            scoreData[3] = uint256(assister);
         }
-        return matchLog;
+        return scoreData;
     }
     
     function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint8) {
