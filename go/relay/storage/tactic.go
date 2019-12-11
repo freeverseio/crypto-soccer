@@ -135,6 +135,7 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
 	)
 	return err
 }
+
 func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
 	rows, err := b.tx.Query(
@@ -223,4 +224,13 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 		return 0, err
 	}
 	return count, nil
+}
+
+func (b *Storage) GetRowsTactic(start *Verse, end *Verse) (*sql.Rows, error) {
+	log.Debugf("[DBMS] GetRowsTactics from verse %v to verse  %v", start.ID, end.ID)
+	return b.tx.Query(
+		`SELECT * FROM tactics WHERE (created_at >= $1) AND (created_at < $2);`,
+		start.StartAt,
+		end.StartAt,
+	)
 }

@@ -3,6 +3,8 @@ package storage
 import (
 	"crypto/sha256"
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func (b *Storage) HashVerse(id int) ([]byte, error) {
@@ -34,7 +36,7 @@ func (b *Storage) HashVerse(id int) ([]byte, error) {
 
 func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
 	h := sha256.New()
-	rows, err := b.tx.Query("SELECT * FROM TACTICS WHERE (created_at >= $1) AND (created_at < $2)", start.StartAt, end.StartAt)
+	rows, err := b.GetRowsTactic(start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
 		return nil, err
 	}
 	readCols := make([]interface{}, len(colNames))
-	writeCols := make([]byte, len(colNames))
+	writeCols := make([]string, len(colNames))
 	for i := range writeCols {
 		readCols[i] = &writeCols[i]
 	}
@@ -52,7 +54,10 @@ func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		h.Write(writeCols)
+		for _, s := range writeCols {
+			log.Infof("here %v", s)
+			h.Write([]byte(s))
+		}
 	}
 	if err = rows.Err(); err != nil {
 		panic(err)
