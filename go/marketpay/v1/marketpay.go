@@ -24,10 +24,6 @@ func (c MarketPayContext) GetPublicKey() string {
 	return "pk_stage_ZkNpNElWeEg="
 }
 
-func (c MarketPayContext) NextOrderStatus() *OrderStatus {
-	return nil
-}
-
 type MarketPay struct {
 	endpoint  string
 	publicKey string

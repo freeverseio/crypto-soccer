@@ -25,9 +25,12 @@ func (c mockMarketPayContext) GetPublicKey() string {
 	return ""
 }
 
-func (c mockMarketPayContext) NextOrderStatus() *OrderStatus {
-	c.idx = c.idx + 1
-	return &c.states[c.idx%len(c.states)]
+func (c *mockMarketPayContext) NextOrderStatus() OrderStatus {
+	state := c.states[c.idx]
+	if c.idx < len(c.states) {
+		c.idx++
+	}
+	return state
 }
 
 func NewMockMarketPay(context mockMarketPayContext) (*mockMarketPay, error) {

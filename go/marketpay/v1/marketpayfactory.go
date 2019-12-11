@@ -9,7 +9,6 @@ type IMarketPay interface {
 type IMarketPayContext interface {
 	GetEndPoint() string
 	GetPublicKey() string
-	NextOrderStatus() *OrderStatus
 }
 
 type MarketPayFactory struct{}

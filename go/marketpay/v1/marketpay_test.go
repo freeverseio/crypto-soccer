@@ -18,6 +18,11 @@ func newTestMarket() (v1.IMarketPay, error) {
 		}))
 }
 
+func newMock(states []v1.OrderStatus) (v1.IMarketPay, error) {
+	factory := v1.MarketPayFactory{}
+	return factory.Create(v1.NewMockMarketPayContext(states))
+}
+
 func TestCreation(t *testing.T) {
 	mp, err := newTestMarket()
 	if err != nil {
@@ -81,5 +86,30 @@ func TestIsPaid(t *testing.T) {
 	isPaid := mp.IsPaid(*order)
 	if isPaid {
 		t.Fatal("Should not be paid")
+	}
+}
+func TestDraftAndFailure(t *testing.T) {
+	mp, err := newMock([]v1.OrderStatus{v1.REJECTED, v1.FAILURE})
+	name := "pippo"
+	value := "134.10"
+	// create an order always sets state to DRAFT
+	order, err := mp.CreateOrder(name, value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if order.Status != v1.DRAFT.String() {
+		t.Fatalf("Expecting DRAFT but got %v", order.Status)
+	}
+	// first time we query order we get REJECTED
+	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
+		t.Fatal(err)
+	} else if o1.Status != v1.REJECTED.String() {
+		t.Fatalf("expecting REJECTED, but got %v", o1.Status)
+	}
+	// second time we query order we get FAILURE
+	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
+		t.Fatal(err)
+	} else if o1.Status != v1.FAILURE.String() {
+		t.Fatalf("expecting FAILURE, but got %v", o1.Status)
 	}
 }
