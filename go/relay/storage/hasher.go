@@ -3,8 +3,6 @@ package storage
 import (
 	"crypto/sha256"
 	"fmt"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func (b *Storage) HashVerse(id int) ([]byte, error) {
@@ -36,7 +34,7 @@ func (b *Storage) HashVerse(id int) ([]byte, error) {
 
 func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
 	h := sha256.New()
-	rows, err := b.GetRowsTactic(start, end)
+	rows, err := b.GetRowsTacticsRange(start, end)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +53,6 @@ func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
 			return nil, err
 		}
 		for _, s := range writeCols {
-			log.Infof("here %v", s)
 			h.Write([]byte(s))
 		}
 	}

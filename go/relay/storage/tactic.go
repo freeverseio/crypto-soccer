@@ -7,11 +7,13 @@ import (
 	"errors"
 	"hash"
 	"math/big"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type Tactic struct {
+	CreatedAt     time.Time
 	TeamID        *big.Int
 	TacticID      uint8
 	Shirts        [14]uint8
@@ -46,10 +48,17 @@ func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
 	tacticId := uint8(1)
 	substitutions := [3]uint8{11, 11, 11}
 	subsRounds := [3]uint8{2, 3, 4}
-	return &Tactic{teamID, tacticId, lineup, extraAttack, substitutions, subsRounds}
+	return &Tactic{time.Now(), teamID, tacticId, lineup, extraAttack, substitutions, subsRounds}
 }
-func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
-	log.Debugf("[DBMS] Create tactic %v", t)
+func (b *Storage) TacticCreate(
+	teamID *big.Int,
+	tacticID uint8,
+	shirts [14]uint8,
+	extraAttack [10]bool,
+	substitutions [3]uint8,
+	subsRounds [3]uint8,
+) error {
+	log.Debugf("[DBMS] Create tactic for TeamID %v", teamID)
 	_, err := b.tx.Exec(
 		`INSERT INTO tactics (
 			team_id,
@@ -106,32 +115,32 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
                         $25,
                         $26
 		);`,
-		t.TeamID.String(),
-		t.TacticID,
-		t.Shirts[0],
-		t.Shirts[1],
-		t.Shirts[2],
-		t.Shirts[3],
-		t.Shirts[4],
-		t.Shirts[5],
-		t.Shirts[6],
-		t.Shirts[7],
-		t.Shirts[8],
-		t.Shirts[9],
-		t.Shirts[10],
-		t.Shirts[11],
-		t.Shirts[12],
-		t.Shirts[13],
-		t.ExtraAttack[0],
-		t.ExtraAttack[1],
-		t.ExtraAttack[2],
-		t.ExtraAttack[3],
-		t.ExtraAttack[4],
-		t.ExtraAttack[5],
-		t.ExtraAttack[6],
-		t.ExtraAttack[7],
-		t.ExtraAttack[8],
-		t.ExtraAttack[9],
+		teamID.String(),
+		tacticID,
+		shirts[0],
+		shirts[1],
+		shirts[2],
+		shirts[3],
+		shirts[4],
+		shirts[5],
+		shirts[6],
+		shirts[7],
+		shirts[8],
+		shirts[9],
+		shirts[10],
+		shirts[11],
+		shirts[12],
+		shirts[13],
+		extraAttack[0],
+		extraAttack[1],
+		extraAttack[2],
+		extraAttack[3],
+		extraAttack[4],
+		extraAttack[5],
+		extraAttack[6],
+		extraAttack[7],
+		extraAttack[8],
+		extraAttack[9],
 	)
 	return err
 }
@@ -140,6 +149,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
 	rows, err := b.tx.Query(
 		`SELECT
+		created_at,
 		tactic_id,
                 shirt_0,
                 shirt_1,
@@ -175,6 +185,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	}
 	t := b.DefaultTactic(teamID)
 	err = rows.Scan(
+		&t.CreatedAt,
 		&t.TacticID,
 		&t.Shirts[0],
 		&t.Shirts[1],
@@ -226,10 +237,10 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) GetRowsTactic(start *Verse, end *Verse) (*sql.Rows, error) {
-	log.Debugf("[DBMS] GetRowsTactics from verse %v to verse  %v", start.ID, end.ID)
+func (b *Storage) GetRowsTacticsRange(start *Verse, end *Verse) (*sql.Rows, error) {
+	log.Debugf("[DBMS] GetRowsTacticsRange from verse %v to verse  %v", start, end)
 	return b.tx.Query(
-		`SELECT * FROM tactics WHERE (created_at >= $1) AND (created_at < $2);`,
+		`SELECT * FROM tactics WHERE (created_at > $1) AND (created_at <= $2);`,
 		start.StartAt,
 		end.StartAt,
 	)

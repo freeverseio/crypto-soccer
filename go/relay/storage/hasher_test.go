@@ -4,8 +4,6 @@ import (
 	"encoding/hex"
 	"math/big"
 	"testing"
-
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func TestHashVerseOfEmptyDB(t *testing.T) {
@@ -27,15 +25,49 @@ func TestHashVerseOfEmptyDB(t *testing.T) {
 	}
 }
 
+func TestHashVerseOfEmptyVerse(t *testing.T) {
+	err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Rollback()
+	err = db.CloseVerse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, err := db.HashVerse(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
+	}
+	err = db.CloseVerse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash, err = db.HashVerse(2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
+	}
+}
+
 func TestHashVerse(t *testing.T) {
 	err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Rollback()
-	tactic := storage.Tactic{}
-	tactic.TeamID = big.NewInt(2)
-	err = db.TacticCreate(tactic, 0)
+	tacticID := uint8(16)
+	teamId := big.NewInt(1)
+	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
+	substitutions := [3]uint8{11, 11, 11}
+	subsRounds := [3]uint8{2, 3, 4}
+	err = db.TacticCreate(teamId, tacticID, shirts, extraAttack, substitutions, subsRounds)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +78,7 @@ func TestHashVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
-		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
+	if hex.EncodeToString(hash) == "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+		t.Fatal("Empty verse hash")
 	}
 }

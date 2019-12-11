@@ -3,8 +3,6 @@ package storage_test
 import (
 	"math/big"
 	"testing"
-
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func TestTacticCreate(t *testing.T) {
@@ -20,7 +18,7 @@ func TestTacticCreate(t *testing.T) {
 	substitutions := [3]uint8{11, 11, 11}
 	subsRounds := [3]uint8{2, 3, 4}
 	verse := uint64(10)
-	err = db.TacticCreate(storage.Tactic{teamId, tacticID, shirts, extraAttack, substitutions, subsRounds}, verse)
+	err = db.TacticCreate(teamId, tacticID, shirts, extraAttack, substitutions, subsRounds)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,4 +49,13 @@ func TestTacticCreate(t *testing.T) {
 	if err == nil {
 		t.Fatal("team 2 does not exist and should fail")
 	}
+}
+
+func TestGetRawsTactics(t *testing.T) {
+	err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Rollback()
+
 }
