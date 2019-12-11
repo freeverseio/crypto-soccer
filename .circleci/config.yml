@@ -102,7 +102,6 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
@@ -114,7 +113,6 @@ jobs:
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:dev
       - run: docker push freeverseio/synchronizer:dev
       - run: docker push freeverseio/horizon:dev
       - run: docker push freeverseio/universe.db:dev
@@ -132,7 +130,6 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} .
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
@@ -144,7 +141,6 @@ jobs:
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:${CIRCLE_TAG}
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
       - run: docker push freeverseio/universe.db:${CIRCLE_TAG}
