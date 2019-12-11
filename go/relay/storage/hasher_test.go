@@ -2,7 +2,10 @@ package storage_test
 
 import (
 	"encoding/hex"
+	"math/big"
 	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func TestHashVerseOfEmptyDB(t *testing.T) {
@@ -30,11 +33,20 @@ func TestHashVerse(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Rollback()
+	tactic := storage.Tactic{}
+	tactic.TeamID = big.NewInt(2)
+	err = db.TacticCreate(tactic, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err = db.CloseVerse(); err != nil {
 		t.Fatal(err)
 	}
 	hash, err := db.HashVerse(1)
-	if err == nil {
-		t.Fatal("Expected error on hashing unexistent verse")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
 	}
 }
