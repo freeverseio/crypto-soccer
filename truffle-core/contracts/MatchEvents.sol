@@ -107,14 +107,13 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLog, seedAndStartTimeAndEvents, seedAndStartTimeAndEvents[IDX_ST_TIME], states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        computeRounds(matchLog, seedAndStartTimeAndEvents, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
         return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
     function computeRounds(
         uint256[2] memory matchLog,
         uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
-        uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
@@ -131,11 +130,12 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
-                managesToScore(
-                    matchStartTime,
-                    matchLog,
-                    teamThatAttacks,
+            seedAndStartTimeAndEvents[2 + round * 4] = teamThatAttacks;
+            seedAndStartTimeAndEvents[2 + round * 4 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
+            if (seedAndStartTimeAndEvents[2 + round * 4 + 1] == 1) {
+                matchLog[teamThatAttacks] = managesToScore(
+                    seedAndStartTimeAndEvents,
+                    matchLog[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
@@ -286,9 +286,8 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     /// @dev Decides if a team that creates a shoot manages to score.
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
-        uint256 matchStartTime,
-        uint256[2] memory matchLog,
-        uint8 teamThatAttacks,
+        uint256[2+4*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
+        uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -297,23 +296,23 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     )
         public
         pure
-        returns (uint256[2] memory)
+        returns (uint256)
     {
-        uint8 currentGoals = getNGoals(matchLog[teamThatAttacks]);
+        uint8 currentGoals = getNGoals(matchLog);
         if (currentGoals > 13) return matchLog;
-        uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
+        uint8 shooter = selectShooter(seedAndStartTimeAndEvents[IDX_ST_TIME], states, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
-        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
+        uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], seedAndStartTimeAndEvents[IDX_ST_TIME]);
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
         // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
         bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
         if (isGoal) {
-            uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
-            matchLog[teamThatAttacks] = addAssister(matchLog[teamThatAttacks], assister, currentGoals);
-            matchLog[teamThatAttacks] = addShooter(matchLog[teamThatAttacks], shooter, currentGoals);
-            matchLog[teamThatAttacks] = addForwardPos(matchLog[teamThatAttacks], getForwardPos(shooter, playersPerZone), currentGoals);
-            matchLog[teamThatAttacks]++; // adds 1 goal because nGoals is the right-most number serialized
+            uint8 assister = selectAssister(seedAndStartTimeAndEvents[IDX_ST_TIME], states, playersPerZone, extraAttack, shooter, rnds[2]);
+            matchLog = addAssister(matchLog, assister, currentGoals);
+            matchLog = addShooter(matchLog, shooter, currentGoals);
+            matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
+            matchLog++; // adds 1 goal because nGoals is the right-most number serialized
         }
         return matchLog;
     }
