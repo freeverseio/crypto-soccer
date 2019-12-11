@@ -164,7 +164,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (team_id = $1) and (verse = $2);`, teamID.String(), verse)
+		FROM tactics WHERE (team_id = $1);`, teamID.String())
 	if err != nil {
 		return nil, err
 	}
