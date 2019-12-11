@@ -843,7 +843,8 @@ contract('Engine', (accounts) => {
         ).should.be.fulfilled;            
         teamState[10] = messi;
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         for (team = 0; team < 2; team++) {
@@ -859,7 +860,8 @@ contract('Engine', (accounts) => {
         ).should.be.fulfilled;            
         teamState[10] = oldMessi;
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
@@ -882,7 +884,8 @@ contract('Engine', (accounts) => {
         result = await engine.selectShooter(now, teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
@@ -899,7 +902,9 @@ contract('Engine', (accounts) => {
             fwd.toNumber().should.be.equal(expectedFwd[team]);
         }
         // let's put a radically good GK, and check that it doesn't score
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        teamThatAttacks = 0;
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
         expectedAssisters   = [0, 0];
@@ -915,7 +920,8 @@ contract('Engine', (accounts) => {
             fwd.toNumber().should.be.equal(expectedFwd[team]);
         }
         // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         expectedAssisters   = [10, 0];
