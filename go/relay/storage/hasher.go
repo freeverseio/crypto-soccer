@@ -10,19 +10,7 @@ func (b *Storage) HashVerse(id int) ([]byte, error) {
 	if id <= 0 {
 		return h.Sum(nil), nil
 	}
-	tacticsHash, err := b.hashVerseTactics(id)
-	if err != nil {
-		return nil, err
-	}
-	h.Write(tacticsHash)
-	return h.Sum(nil), nil
-}
-
-func (b *Storage) hashVerseTactics(id int) ([]byte, error) {
-	if id <= 0 {
-		return nil, fmt.Errorf("Can't hash between verse %v and verse %v", id-1, id)
-	}
-	verse, err := b.GetVerse(id)
+verse, err := b.GetVerse(id)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +24,16 @@ func (b *Storage) hashVerseTactics(id int) ([]byte, error) {
 	if prevVerse == nil {
 		return nil, fmt.Errorf("Unexistent previous verse %v", id-1)
 	}
-	_, err = b.tx.Query("SELECT * FROM TACTICS WHERE (created_at > $1) AND (created_at <= $2)", prevVerse.StartAt, verse.StartAt)
+	tacticsHash, err := b.hashVerseTactics(id)
+	if err != nil {
+		return nil, err
+	}
+	h.Write(tacticsHash)
+	return h.Sum(nil), nil
+}
+
+func (b *Storage) hashVerseTactics(id int) ([]byte, error) {
+	_, err := b.tx.Query("SELECT * FROM TACTICS WHERE (created_at > $1) AND (created_at <= $2)", prevVerse.StartAt, verse.StartAt)
 	if err != nil {
 		return nil, err
 	}
