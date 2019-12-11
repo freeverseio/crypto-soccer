@@ -1,4 +1,3 @@
-from web3 import Web3
 import sqlite3
 from db_utils import db_connect
 import os
@@ -52,7 +51,8 @@ def readNames(filename):
     names = []
     with open(filename, 'r', newline='\n') as file:
         for line in file:
-            splitted = line.rstrip('\n').split(",")
+            l = line.replace('\x9a','').replace('\x8a','')
+            splitted = l.rstrip('\n').rstrip('\x9a').split(",")
             names.append([int(splitted[0]), splitted[1]])
     return names
 
@@ -136,9 +136,12 @@ cur.execute(names_sql)
 
 
 for name in allNames:
-    cur.execute("INSERT INTO names VALUES ('%s', '%i', '%i');" %(name[1], name[0], written_per_country[name[0]]))
-    print(name[1], name[0], written_per_country[name[0]])
-    written_per_country[name[0]] += 1
+    exists = cur.execute("SELECT COUNT(*) FROM names WHERE (name='%s' AND country_code='%i');" % (name[1], name[0]))
+    row = cur.fetchone()
+    if row[0] == 0: # avoid repeating
+        cur.execute("INSERT INTO names VALUES ('%s', '%i', '%i');" %(name[1], name[0], written_per_country[name[0]]))
+        print(name[1], name[0], written_per_country[name[0]])
+        written_per_country[name[0]] += 1
 
 # ---------- Surnames ----------
 surnames_sql = """
