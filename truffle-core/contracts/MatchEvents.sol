@@ -322,6 +322,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
             matchLog++; // adds 1 goal because nGoals is the right-most number serialized
+            scoreData[0] = matchLog;
             scoreData[3] = uint256(assister);
         }
         return scoreData;
