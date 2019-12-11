@@ -33,10 +33,29 @@ func (b *Storage) HashVerse(id int) ([]byte, error) {
 }
 
 func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
-	_, err := b.tx.Query("SELECT * FROM TACTICS WHERE (created_at >= $1) AND (created_at < $2)", start.StartAt, end.StartAt)
+	h := sha256.New()
+	rows, err := b.tx.Query("SELECT * FROM TACTICS WHERE (created_at >= $1) AND (created_at < $2)", start.StartAt, end.StartAt)
 	if err != nil {
 		return nil, err
 	}
-	h := sha256.New()
+	colNames, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+	readCols := make([]interface{}, len(colNames))
+	writeCols := make([]byte, len(colNames))
+	for i := range writeCols {
+		readCols[i] = &writeCols[i]
+	}
+	for rows.Next() {
+		err := rows.Scan(readCols...)
+		if err != nil {
+			return nil, err
+		}
+		h.Write(writeCols)
+	}
+	if err = rows.Err(); err != nil {
+		panic(err)
+	}
 	return h.Sum(nil), nil
 }
