@@ -65,7 +65,7 @@ func TestTacticCreate(t *testing.T) {
 	if count != 0 {
 		t.Fatalf("expecting 0 tactic, got %v", count)
 	}
-	tc, err = db.GetTacticOrDefault(big.NewInt(100), nextverse)
+	tc, err = db.GetTactic(big.NewInt(100), nextverse)
 	if err != nil {
 		t.Fatal(err)
 	}
