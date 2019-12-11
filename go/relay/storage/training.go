@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -125,6 +126,15 @@ func (b *Storage) CreateTraining(training Training) error {
 		training.SpecialPlayerEndurance,
 	)
 	return err
+}
+
+func (b *Storage) GetRowsTrainingsRange(start *Verse, end *Verse) (*sql.Rows, error) {
+	log.Debugf("[DBMS] GetRowsTrainingsRange from verse %v to verse  %v", start, end)
+	return b.tx.Query(
+		`SELECT * FROM trainings WHERE (created_at > $1) AND (created_at <= $2);`,
+		start.StartAt,
+		end.StartAt,
+	)
 }
 
 // func (b *Storage) UpdateTraining(training Training) error {

@@ -24,17 +24,52 @@ func (b *Storage) HashVerse(id int) ([]byte, error) {
 	if start == nil {
 		return nil, fmt.Errorf("Unexistent previous verse %v", id-1)
 	}
-	tacticsHash, err := b.hashVerseTactics(start, end)
+	tacticsHash, err := b.hashRangeTactics(start, end)
+	if err != nil {
+		return nil, err
+	}
+	trainingsHash, err := b.hashRangeTrainings(start, end)
 	if err != nil {
 		return nil, err
 	}
 	h.Write(tacticsHash)
+	h.Write(trainingsHash)
 	return h.Sum(nil), nil
 }
 
-func (b *Storage) hashVerseTactics(start *Verse, end *Verse) ([]byte, error) {
+func (b *Storage) hashRangeTactics(start *Verse, end *Verse) ([]byte, error) {
 	h := sha256.New()
 	rows, err := b.GetRowsTacticsRange(start, end)
+	if err != nil {
+		return nil, err
+	}
+	colNames, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+	readCols := make([]interface{}, len(colNames))
+	writeCols := make([]string, len(colNames))
+	for i := range writeCols {
+		readCols[i] = &writeCols[i]
+	}
+	for rows.Next() {
+		err := rows.Scan(readCols...)
+		if err != nil {
+			return nil, err
+		}
+		for _, s := range writeCols {
+			h.Write([]byte(s))
+		}
+	}
+	if err = rows.Err(); err != nil {
+		panic(err)
+	}
+	return h.Sum(nil), nil
+}
+
+func (b *Storage) hashRangeTrainings(start *Verse, end *Verse) ([]byte, error) {
+	h := sha256.New()
+	rows, err := b.GetRowsTrainingsRange(start, end)
 	if err != nil {
 		return nil, err
 	}

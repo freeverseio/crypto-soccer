@@ -39,7 +39,7 @@ func TestHashVerseOfEmptyVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+	if hex.EncodeToString(hash) != "2dba5dbc339e7316aea2683faf839c1b7b1ee2313db792112588118df066aa35" {
 		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
 	}
 	err = db.CloseVerse()
@@ -50,7 +50,7 @@ func TestHashVerseOfEmptyVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if hex.EncodeToString(hash) != "5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456" {
+	if hex.EncodeToString(hash) != "2dba5dbc339e7316aea2683faf839c1b7b1ee2313db792112588118df066aa35" {
 		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
 	}
 }
