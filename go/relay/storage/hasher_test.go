@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestHash(t *testing.T) {
+func TestHashVerseOfEmptyDB(t *testing.T) {
 	err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -19,6 +19,21 @@ func TestHash(t *testing.T) {
 		t.Fatalf("Wrong result %v", hex.EncodeToString(hash))
 	}
 	hash, err = db.HashVerse(1)
+	if err == nil {
+		t.Fatal("Expected error on hashing unexistent verse")
+	}
+}
+
+func TestHashVerse(t *testing.T) {
+	err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Rollback()
+	if err = db.CloseVerse(); err != nil {
+		t.Fatal(err)
+	}
+	hash, err := db.HashVerse(1)
 	if err == nil {
 		t.Fatal("Expected error on hashing unexistent verse")
 	}
