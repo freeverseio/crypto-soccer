@@ -114,7 +114,6 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
         return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
-    // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function computeRounds(
         uint256[2] memory matchLog,
         uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
@@ -137,6 +136,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
             seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
             seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
             if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
+                // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
                 uint256[4] memory scoreData = managesToScore(
                     seedAndStartTimeAndEvents[IDX_ST_TIME],
                     matchLog[teamThatAttacks],
