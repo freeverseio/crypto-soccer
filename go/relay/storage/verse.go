@@ -12,6 +12,24 @@ type Verse struct {
 	StartAt time.Time
 }
 
+func (b *Storage) GetVerse(id int) (*Verse, error) {
+	log.Debugf("[DBMS] get verse %v", id)
+	rows, err := b.tx.Query("SELECT start_at FROM verses WHERE id=$1;", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, nil
+	}
+	verse := Verse{}
+	verse.ID = id
+	err = rows.Scan(
+		&verse.StartAt,
+	)
+	return &verse, err
+}
+
 func (b *Storage) GetLastVerse() (*Verse, error) {
 	log.Debug("[DBMS] get last verse")
 	rows, err := b.tx.Query("SELECT id, start_at FROM verses ORDER BY id DESC LIMIT 1")

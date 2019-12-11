@@ -51,3 +51,35 @@ func TestIncreamentVerse(t *testing.T) {
 		t.Fatal("Verse 1 is after Verse 2")
 	}
 }
+
+func TestGetVerse(t *testing.T) {
+	err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Rollback()
+	verse, err := db.GetVerse(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verse == nil {
+		t.Fatal("Expected verse 0 exists")
+	}
+	verse, err = db.GetVerse(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verse != nil {
+		t.Fatalf("Expected nil received %v", verse)
+	}
+	if err = db.CloseVerse(); err != nil {
+		t.Fatal(err)
+	}
+	verse, err = db.GetVerse(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if verse == nil {
+		t.Fatal("Expected verse 1 exists")
+	}
+}
