@@ -158,7 +158,9 @@ contract('MatchEvents', (accounts) => {
         rounds = [4, 2, 6];
         // as seen in a test below, there is a redCard for player 9 at round 1
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0).should.be.fulfilled;
-        newLog = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        matchEvents = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        newLog[0] = matchEvents[0];
+        newLog[1] = matchEvents[1];
         expected = Array.from(new Array(14), (x,i) => true);
         expected[2] = false; 
         expected[1] = false; 
@@ -181,7 +183,6 @@ contract('MatchEvents', (accounts) => {
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });
-
 
     it('computeExceptionalEvents no clashes with redcards', async () => {
         // there is a red card with this seed, to player 9, but he's not involved in any change
@@ -562,6 +563,7 @@ contract('MatchEvents', (accounts) => {
         tactics442WithNoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]];
         expected = [3250, 2750];
         for (team = 0; team < 2; team++) {
             teamSkills = await encodingLog.getTeamSumSkills(log0[team]).should.be.fulfilled;
@@ -583,6 +585,7 @@ contract('MatchEvents', (accounts) => {
     it('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]];
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // for this seedDraw, they all score one goal in each half
         expected = [1, 1]
@@ -608,6 +611,7 @@ contract('MatchEvents', (accounts) => {
         // choose a seed that gives a red card for player 9.
         seedForRedCard = seed + 83;
         log0 =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]]
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [5, 0]; 

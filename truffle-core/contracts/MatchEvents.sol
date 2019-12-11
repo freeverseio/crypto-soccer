@@ -49,7 +49,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     )
         public
         view
-        returns (uint256[2] memory)
+        returns (uint256[2+5*ROUNDS_PER_MATCH] memory)
     {
         uint256 block0;
         uint256 block1;
@@ -70,7 +70,9 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
             if (getNGoals(matchLog[0]) == getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_DRAW);
             else if (getNGoals(matchLog[0]) < getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_AWAY);
         }
-        return matchLog;
+        seedAndStartTimeAndEvents[0] = matchLog[0];
+        seedAndStartTimeAndEvents[1] = matchLog[1];
+        return seedAndStartTimeAndEvents;
     }
     
     /**
