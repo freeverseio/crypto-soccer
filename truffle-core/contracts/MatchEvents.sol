@@ -39,6 +39,7 @@ contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
+    // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function playHalfMatch(
         uint256 seed,
         uint256 matchStartTime, //actionsSubmissionTime,
