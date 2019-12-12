@@ -30,6 +30,8 @@ func (m *MockMarketPay) CreateOrder(name string, value string) (*Order, error) {
 	order.Name = name
 	order.Amount = value
 	order.TrusteeShortlink.Hash = name
+	order.TrusteeShortlink.ShortURL = "https://trustee.io/" + name
+	order.SettlorShortlink.ShortURL = "https://settlor.io/" + name
 	m.orders[name] = order
 	return order, nil
 }
