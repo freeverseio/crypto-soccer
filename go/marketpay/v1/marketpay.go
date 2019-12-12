@@ -13,15 +13,10 @@ import (
 const sandboxURL = "https://api-sandbox.truust.io/1.0"
 const sandboxPublicKey = "pk_stage_ZkNpNElWeEg="
 
-type MarketPayContext struct {
-}
-
-func (c MarketPayContext) GetEndPoint() string {
-	return "https://api-sandbox.truust.io/1.0"
-}
-
-func (c MarketPayContext) GetPublicKey() string {
-	return "pk_stage_ZkNpNElWeEg="
+type IMarketPay interface {
+	CreateOrder(name string, value string) (*Order, error)
+	GetOrder(hash string) (*Order, error)
+	IsPaid(order Order) bool
 }
 
 type MarketPay struct {
@@ -29,15 +24,15 @@ type MarketPay struct {
 	publicKey string
 }
 
-func NewMarketPay(context MarketPayContext) (*MarketPay, error) {
+func NewMarketPay() (*MarketPay, error) {
 	return &MarketPay{
-		context.GetEndPoint(),
-		context.GetPublicKey(),
+		sandboxURL,
+		sandboxPublicKey,
 	}, nil
 }
 
 func New() (*MarketPay, error) {
-	return NewMarketPay(MarketPayContext{})
+	return NewMarketPay()
 }
 
 func (b *MarketPay) CreateOrder(

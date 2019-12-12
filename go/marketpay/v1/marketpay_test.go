@@ -6,25 +6,8 @@ import (
 	v1 "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 )
 
-func newTestMarket() (v1.IMarketPay, error) {
-	useMock := false
-	factory := v1.MarketPayFactory{}
-	if !useMock {
-		return factory.Create(v1.MarketPayContext{})
-	}
-	return factory.Create(
-		v1.NewMockMarketPayContext([]v1.OrderStatus{
-			v1.DRAFT,
-		}))
-}
-
-func newMock(states []v1.OrderStatus) (v1.IMarketPay, error) {
-	factory := v1.MarketPayFactory{}
-	return factory.Create(v1.NewMockMarketPayContext(states))
-}
-
 func TestCreation(t *testing.T) {
-	mp, err := newTestMarket()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +17,7 @@ func TestCreation(t *testing.T) {
 }
 
 func TestCreateOrder(t *testing.T) {
-	mp, err := newTestMarket()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +36,7 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	mp, err := newTestMarket()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -73,7 +56,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp, err := newTestMarket()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +72,7 @@ func TestIsPaid(t *testing.T) {
 	}
 }
 func TestDraftAndFailure(t *testing.T) {
-	mp, err := newMock([]v1.OrderStatus{v1.REJECTED, v1.FAILURE})
+	mp := v1.NewMockMarketPay()
 	name := "pippo"
 	value := "134.10"
 	// create an order always sets state to DRAFT
@@ -100,13 +83,13 @@ func TestDraftAndFailure(t *testing.T) {
 	if order.Status != v1.DRAFT.String() {
 		t.Fatalf("Expecting DRAFT but got %v", order.Status)
 	}
-	// first time we query order we get REJECTED
+	mp.SetOrderStatus(v1.REJECTED)
 	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
 		t.Fatal(err)
 	} else if o1.Status != v1.REJECTED.String() {
 		t.Fatalf("expecting REJECTED, but got %v", o1.Status)
 	}
-	// second time we query order we get FAILURE
+	mp.SetOrderStatus(v1.FAILURE)
 	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
 		t.Fatal(err)
 	} else if o1.Status != v1.FAILURE.String() {
