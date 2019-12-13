@@ -3,12 +3,14 @@ package auctionmachine
 import (
 	"errors"
 
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+
 	log "github.com/sirupsen/logrus"
 )
 
-func (m *AuctionMachine) processPaying() error {
+func (m *AuctionMachine) processPaying(market marketpay.IMarketPay) error {
 
 	if m.Auction.State != storage.AUCTION_PAYING {
 		return errors.New("Paying: wrong state : " + string(m.Auction.State))
@@ -22,6 +24,7 @@ func (m *AuctionMachine) processPaying() error {
 	}
 
 	bidMachine, err := bidmachine.New(
+		market,
 		m.Auction,
 		bid,
 		m.contracts,
