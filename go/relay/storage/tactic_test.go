@@ -41,7 +41,7 @@ func TestTacticCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tc.TacticID != tacticID {
+	if uint8(tc.TacticID) != tacticID {
 		t.Fatalf("expecting tacticID 1, got %v", tc.TacticID)
 	}
 

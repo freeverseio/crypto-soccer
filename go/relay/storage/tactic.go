@@ -13,13 +13,33 @@ import (
 )
 
 type Tactic struct {
-	CreatedAt     time.Time
-	TeamID        *big.Int
-	TacticID      uint8
-	Shirts        [14]uint8
-	ExtraAttack   [10]bool
-	Substitutions [3]uint8
-	SubsRounds    [3]uint8
+	CreatedAt     time.Time `json:"created_at"`      // created_at
+	TeamID        string    `json:"team_id"`         // team_id
+	TacticID      int       `json:"tactic_id"`       // tactic_id
+	Shirt0        int       `json:"shirt_0"`         // shirt_0
+	Shirt1        int       `json:"shirt_1"`         // shirt_1
+	Shirt2        int       `json:"shirt_2"`         // shirt_2
+	Shirt3        int       `json:"shirt_3"`         // shirt_3
+	Shirt4        int       `json:"shirt_4"`         // shirt_4
+	Shirt5        int       `json:"shirt_5"`         // shirt_5
+	Shirt6        int       `json:"shirt_6"`         // shirt_6
+	Shirt7        int       `json:"shirt_7"`         // shirt_7
+	Shirt8        int       `json:"shirt_8"`         // shirt_8
+	Shirt9        int       `json:"shirt_9"`         // shirt_9
+	Shirt10       int       `json:"shirt_10"`        // shirt_10
+	Shirt11       int       `json:"shirt_11"`        // shirt_11
+	Shirt12       int       `json:"shirt_12"`        // shirt_12
+	Shirt13       int       `json:"shirt_13"`        // shirt_13
+	ExtraAttack1  bool      `json:"extra_attack_1"`  // extra_attack_1
+	ExtraAttack2  bool      `json:"extra_attack_2"`  // extra_attack_2
+	ExtraAttack3  bool      `json:"extra_attack_3"`  // extra_attack_3
+	ExtraAttack4  bool      `json:"extra_attack_4"`  // extra_attack_4
+	ExtraAttack5  bool      `json:"extra_attack_5"`  // extra_attack_5
+	ExtraAttack6  bool      `json:"extra_attack_6"`  // extra_attack_6
+	ExtraAttack7  bool      `json:"extra_attack_7"`  // extra_attack_7
+	ExtraAttack8  bool      `json:"extra_attack_8"`  // extra_attack_8
+	ExtraAttack9  bool      `json:"extra_attack_9"`  // extra_attack_9
+	ExtraAttack10 bool      `json:"extra_attack_10"` // extra_attack_1
 }
 
 // Hash - computes hash for a Tactic
@@ -43,12 +63,8 @@ func computeHash(h hash.Hash, data ...[]byte) []byte {
 }
 
 func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
-	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27}
-	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
 	tacticId := uint8(1)
-	substitutions := [3]uint8{11, 11, 11}
-	subsRounds := [3]uint8{2, 3, 4}
-	return &Tactic{time.Now(), teamID, tacticId, lineup, extraAttack, substitutions, subsRounds}
+	return &Tactic{time.Now(), teamID.String(), int(tacticId), 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27, false, false, true, false, false, true, false, false, false, false}
 }
 func (b *Storage) TacticCreate(
 	teamID *big.Int,
@@ -185,32 +201,32 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	}
 	t := b.DefaultTactic(teamID)
 	err = rows.Scan(
-		&t.CreatedAt,
+		&t.TeamID,
 		&t.TacticID,
-		&t.Shirts[0],
-		&t.Shirts[1],
-		&t.Shirts[2],
-		&t.Shirts[3],
-		&t.Shirts[4],
-		&t.Shirts[5],
-		&t.Shirts[6],
-		&t.Shirts[7],
-		&t.Shirts[8],
-		&t.Shirts[9],
-		&t.Shirts[10],
-		&t.Shirts[11],
-		&t.Shirts[12],
-		&t.Shirts[13],
-		&t.ExtraAttack[0],
-		&t.ExtraAttack[1],
-		&t.ExtraAttack[2],
-		&t.ExtraAttack[3],
-		&t.ExtraAttack[4],
-		&t.ExtraAttack[5],
-		&t.ExtraAttack[6],
-		&t.ExtraAttack[7],
-		&t.ExtraAttack[8],
-		&t.ExtraAttack[9],
+		&t.Shirt0,
+		&t.Shirt1,
+		&t.Shirt2,
+		&t.Shirt3,
+		&t.Shirt4,
+		&t.Shirt5,
+		&t.Shirt6,
+		&t.Shirt7,
+		&t.Shirt8,
+		&t.Shirt9,
+		&t.Shirt10,
+		&t.Shirt11,
+		&t.Shirt12,
+		&t.Shirt13,
+		&t.ExtraAttack1,
+		&t.ExtraAttack2,
+		&t.ExtraAttack3,
+		&t.ExtraAttack4,
+		&t.ExtraAttack5,
+		&t.ExtraAttack6,
+		&t.ExtraAttack7,
+		&t.ExtraAttack8,
+		&t.ExtraAttack9,
+		&t.ExtraAttack10,
 	)
 	if err != nil {
 		return nil, err

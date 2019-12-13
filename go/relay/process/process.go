@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -88,7 +89,7 @@ func (p *Processor) computeActionsRoot() error {
 	//currentVerse, err := updates.currentVerse(nil)
 
 	tactic := &storage.Tactic{}
-	tactic.TeamID = big.NewInt(p.count)
+	tactic.TeamID = fmt.Sprint(p.count)
 	p.count += 1
 	root, err := tactic.Hash()
 	if err != nil {
