@@ -69,8 +69,8 @@ func (b *Storage) TacticCreate(tactic *Tactic) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", tactic.TeamID)
 	_, err := b.tx.Exec(
 		`INSERT INTO tactics (
-			team_id,
-                        tactic_id,
+						tactic_id,
+						team_id,
                         shirt_0,
                         shirt_1,
                         shirt_2,
@@ -121,10 +121,10 @@ func (b *Storage) TacticCreate(tactic *Tactic) error {
                         $23,
                         $24,
                         $25,
-                        $26
+						$26
 		);`,
-		tactic.TeamID,
 		tactic.TacticID,
+		tactic.TeamID,
 		tactic.Shirt0,
 		tactic.Shirt1,
 		tactic.Shirt2,
@@ -151,6 +151,92 @@ func (b *Storage) TacticCreate(tactic *Tactic) error {
 		tactic.ExtraAttack10,
 	)
 	return err
+}
+
+func (b *Storage) TacticsByVerse(verseNumber int) ([]*Tactic, error) {
+	var tactics []*Tactic
+	if verseNumber == 0 {
+		return tactics, nil
+	}
+	verse, err := b.GetVerse(verseNumber)
+	if err != nil {
+		return nil, err
+	}
+	prevVerse, err := b.GetVerse(verseNumber - 1)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := b.tx.Query(
+		`SELECT
+				created_at,
+				team_id,
+				tactic_id,
+                shirt_0,
+                shirt_1,
+                shirt_2,
+                shirt_3,
+                shirt_4,
+                shirt_5,
+                shirt_6,
+                shirt_7,
+                shirt_8,
+                shirt_9,
+                shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
+                extra_attack_1,
+                extra_attack_2,
+                extra_attack_3,
+                extra_attack_4,
+                extra_attack_5,
+                extra_attack_6,
+                extra_attack_7,
+                extra_attack_8,
+                extra_attack_9,
+                extra_attack_10
+		FROM tactics WHERE (created_at > $1) AND (created_at <= $2);`, prevVerse.StartAt, verse.StartAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t Tactic
+		err = rows.Scan(
+			&t.CreatedAt,
+			&t.TeamID,
+			&t.TacticID,
+			&t.Shirt0,
+			&t.Shirt1,
+			&t.Shirt2,
+			&t.Shirt3,
+			&t.Shirt4,
+			&t.Shirt5,
+			&t.Shirt6,
+			&t.Shirt7,
+			&t.Shirt8,
+			&t.Shirt9,
+			&t.Shirt10,
+			&t.Shirt11,
+			&t.Shirt12,
+			&t.Shirt13,
+			&t.ExtraAttack1,
+			&t.ExtraAttack2,
+			&t.ExtraAttack3,
+			&t.ExtraAttack4,
+			&t.ExtraAttack5,
+			&t.ExtraAttack6,
+			&t.ExtraAttack7,
+			&t.ExtraAttack8,
+			&t.ExtraAttack9,
+			&t.ExtraAttack10,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tactics = append(tactics, &t)
+	}
+	return tactics, nil
 }
 
 func (b *Storage) GetTactic(teamID string, verse uint64) (*Tactic, error) {
@@ -191,8 +277,9 @@ func (b *Storage) GetTactic(teamID string, verse uint64) (*Tactic, error) {
 	if !rows.Next() {
 		return nil, errors.New("Unexistent tactic")
 	}
-	t := b.DefaultTactic(teamID)
+	var t Tactic
 	err = rows.Scan(
+		&t.CreatedAt,
 		&t.TeamID,
 		&t.TacticID,
 		&t.Shirt0,
@@ -223,7 +310,7 @@ func (b *Storage) GetTactic(teamID string, verse uint64) (*Tactic, error) {
 	if err != nil {
 		return nil, err
 	}
-	return t, nil
+	return &t, nil
 }
 func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	count := uint64(0)

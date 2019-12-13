@@ -20,7 +20,7 @@ func (b *Storage) GetVerse(id int) (*Verse, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, errors.New("Unexistent verse")
 	}
 	verse := Verse{}
 	verse.ID = id
