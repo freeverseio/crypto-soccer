@@ -239,19 +239,12 @@ func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOp
 }
 
 func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
-	tactics := b.relaydb.DefaultTactic(teamID)
-	return b.relaydb.TacticCreate(
-		tactics.TeamID,
-		tactics.TacticID,
-		tactics.Shirts,
-		tactics.ExtraAttack,
-		tactics.Substitutions,
-		tactics.SubsRounds,
-	)
+	tactics := b.relaydb.DefaultTactic(teamID.String())
+	return b.relaydb.TacticCreate(tactics)
 }
 
 func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
 	training := relay.Training{}
-	training.TeamID = teamID
+	training.TeamID = teamID.String()
 	return b.relaydb.CreateTraining(training)
 }

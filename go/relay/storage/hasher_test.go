@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"encoding/hex"
-	"math/big"
 	"testing"
 )
 
@@ -61,13 +60,8 @@ func TestHashVerse(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Rollback()
-	tacticID := uint8(16)
-	teamId := big.NewInt(1)
-	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
-	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
-	substitutions := [3]uint8{11, 11, 11}
-	subsRounds := [3]uint8{2, 3, 4}
-	err = db.TacticCreate(teamId, tacticID, shirts, extraAttack, substitutions, subsRounds)
+	tactic := db.DefaultTactic("16")
+	err = db.TacticCreate(tactic)
 	if err != nil {
 		t.Fatal(err)
 	}

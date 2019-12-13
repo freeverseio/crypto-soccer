@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"math/big"
 	"testing"
 )
 
@@ -11,14 +10,8 @@ func TestTacticCreate(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Rollback()
-	tacticID := uint8(16)
-	teamId := big.NewInt(1)
-	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
-	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
-	substitutions := [3]uint8{11, 11, 11}
-	subsRounds := [3]uint8{2, 3, 4}
-	verse := uint64(10)
-	err = db.TacticCreate(teamId, tacticID, shirts, extraAttack, substitutions, subsRounds)
+	tactic := db.DefaultTactic("16")
+	err = db.TacticCreate(tactic)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,6 +23,7 @@ func TestTacticCreate(t *testing.T) {
 		t.Fatalf("expecting 1 tactic, got %v", count)
 	}
 
+	verse := uint64(3)
 	count, err = db.TacticCount(&verse)
 	if err != nil {
 		t.Fatal(err)
@@ -37,15 +31,15 @@ func TestTacticCreate(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("expecting 1 tactic, got %v", count)
 	}
-	tc, err := db.GetTactic(teamId, verse)
+	tc, err := db.GetTactic(tactic.TeamID, verse)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if uint8(tc.TacticID) != tacticID {
+	if uint8(tc.TacticID) != uint8(tactic.TacticID) {
 		t.Fatalf("expecting tacticID 1, got %v", tc.TacticID)
 	}
 
-	tc, err = db.GetTactic(big.NewInt(2), verse)
+	tc, err = db.GetTactic("2", verse)
 	if err == nil {
 		t.Fatal("team 2 does not exist and should fail")
 	}
