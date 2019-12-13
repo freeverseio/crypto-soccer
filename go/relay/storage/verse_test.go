@@ -66,8 +66,8 @@ func TestGetVerse(t *testing.T) {
 		t.Fatal("Expected verse 0 exists")
 	}
 	verse, err = db.GetVerse(1)
-	if err != nil {
-		t.Fatal(err)
+	if err == nil {
+		t.Fatal("No error on unexistent verse")
 	}
 	if verse != nil {
 		t.Fatalf("Expected nil received %v", verse)

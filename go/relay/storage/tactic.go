@@ -244,6 +244,7 @@ func (b *Storage) GetTactic(teamID string, verse uint64) (*Tactic, error) {
 	rows, err := b.tx.Query(
 		`SELECT
 		created_at,
+		team_id,
 		tactic_id,
                 shirt_0,
                 shirt_1,
