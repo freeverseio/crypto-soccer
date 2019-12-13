@@ -9,6 +9,7 @@ const Friendlies = artifacts.require('Friendlies');
 const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const MatchEvents = artifacts.require('MatchEvents');
+const UtilsMatchLog = artifacts.require('UtilsMatchLog');
 
 
 require('chai')
@@ -28,6 +29,7 @@ module.exports = function (deployer) {
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
+    const utilsMatchLog = await deployer.deploy(UtilsMatchLog).should.be.fulfilled;
     
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -58,6 +60,7 @@ module.exports = function (deployer) {
     console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
     console.log("MATCHEVENTS_CONTRACT_ADDRESS=" + matchEvents.address);
+    console.log("UTILS_MATCH_LOG_CONTRACT_ADDRESS=" + utilsMatchLog.address);
   });
 };
 

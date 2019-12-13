@@ -504,7 +504,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             outStates[p] = verifyCanPlay(states[lineup[p]], is2ndHalf, false);
             if (outStates[p] != 0) {
                 if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                    matchLog = addHalfTimeSubs(matchLog, p, changes);
+                    matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
                     teamSkills += getSumOfSkills(outStates[p]); 
                 } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 
