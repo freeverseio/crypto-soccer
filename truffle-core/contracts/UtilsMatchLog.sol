@@ -29,9 +29,12 @@ import "./EncodingMatchLog.sol";
 //  winner: 0 = home, 1 = away, 2 = draw
 //  nGoals
 //  trainingPoints
-//  uint8 memory outOfGames
+//  uint8 memory outOfGames (a number from 0 to 13)  (NO OUT OF GAME = 14)
 //  uint8 memory typesOutOfGames, 
-//  uint8 memory outOfGameRounds
+//      injuryHard:  1
+//      injuryLow:   2
+//      redCard:     3
+//  uint8 memory outOfGameRounds 
 //  uint8[2] memory yellowCards
 //  uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen  
 //  uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
@@ -47,7 +50,7 @@ contract UtilsMatchLog is EncodingMatchLog{
         decodedLog[0] = uint32(getTeamSumSkills(log));
         decodedLog[1] = uint32(getWinner(log));
         decodedLog[2] = uint32(getNGoals(log));
-        decodedLog[3] = uint32(getTrainingPoints(log));
+        if (is2ndHalf) decodedLog[3] = uint32(getTrainingPoints(log));
         
         (uint8 player, uint8 round, uint8 typeOfOutOfGame) = getOutOfGame(log, is2ndHalf);
         decodedLog[4] = uint32(player);

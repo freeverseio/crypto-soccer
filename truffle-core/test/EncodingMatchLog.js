@@ -69,7 +69,7 @@ contract('EncodingMatchLog', (accounts) => {
         teamSumSkills,
         winner,
         nGoals,
-        trainingPoints,
+        trainingPoints1stHalf = 0,
         outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
         yellowCards1[0], yellowCards1[1],
         ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
