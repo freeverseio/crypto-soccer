@@ -5,7 +5,9 @@ require('chai')
     .should();;
 
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
+const UtilsMatchLog = artifacts.require('UtilsMatchLog');
 const logUtils = require('../utils/matchLogUtils.js');
+const debug = require('../utils/debugUtils.js');
 
 contract('EncodingMatchLog', (accounts) => {
 
@@ -14,6 +16,7 @@ contract('EncodingMatchLog', (accounts) => {
     
     beforeEach(async () => {
         encoding = await EncodingMatchLog.new().should.be.fulfilled;
+        utilsML = await UtilsMatchLog.new().should.be.fulfilled;
     });
     
     it('encode and decode matchlog', async () =>  {
@@ -48,7 +51,46 @@ contract('EncodingMatchLog', (accounts) => {
             outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
             isHomeStadium, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
             halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkills, trainingPoints);
-    });
+            
+            
+    //  teamSumSkills 
+    //  winner: 0 = home, 1 = away, 2 = draw
+    //  nGoals
+    //  trainingPoints
+    //  uint8 memory outOfGames
+    //  uint8 memory typesOutOfGames, 
+    //  uint8 memory outOfGameRounds
+    //  uint8[2] memory yellowCards
+    //  uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen  
+    //  uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time            
+    // HALF 1
+    result = await utilsML.fullDecodeMatchLog(log, is2ndHalf = false).should.be.fulfilled;
+    expected = [
+        teamSumSkills,
+        winner,
+        nGoals,
+        trainingPoints,
+        outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
+        yellowCards1[0], yellowCards1[1],
+        ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
+        0, 0, 0
+    ]
+    debug.compareArrays(result, expected, toNum = true, verbose = false);
+
+    // HALF 2
+    result = await utilsML.fullDecodeMatchLog(log, is2ndHalf = true).should.be.fulfilled;
+    expected = [
+        teamSumSkills,
+        winner,
+        nGoals,
+        trainingPoints,
+        outOfGames[1], typesOutOfGames[1], outOfGameRounds[1],
+        yellowCards2[0], yellowCards2[1],
+        ingameSubs2[0], ingameSubs2[1], ingameSubs2[2],
+        halfTimeSubstitutions[0], halfTimeSubstitutions[1], halfTimeSubstitutions[2]
+    ]
+    debug.compareArrays(result, expected, toNum = true, verbose = false);
+});
     
 
 });

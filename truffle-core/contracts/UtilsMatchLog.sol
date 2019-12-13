@@ -43,7 +43,7 @@ contract UtilsMatchLog is EncodingMatchLog{
     uint256 private constant CHG_HAPPENED        = uint256(1); 
     uint256 private constant CHG_CANCELLED       = uint256(2); 
 
-    function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[31] memory decodedLog) {
+    function fullDecodeMatchLog(uint256 log, bool is2ndHalf) public pure returns (uint32[15] memory decodedLog) {
         decodedLog[0] = uint32(getTeamSumSkills(log));
         decodedLog[1] = uint32(getWinner(log));
         decodedLog[2] = uint32(getNGoals(log));
@@ -66,6 +66,7 @@ contract UtilsMatchLog is EncodingMatchLog{
             decodedLog[13]  = uint32(getHalfTimeSubs(log, 1));
             decodedLog[14]  = uint32(getHalfTimeSubs(log, 2));
         }
+        return decodedLog;
     }
 
 }
