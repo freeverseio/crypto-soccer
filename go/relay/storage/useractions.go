@@ -19,6 +19,12 @@ func (b *Storage) NewUserActionsByVerse(verse int) (*UserActions, error) {
 }
 
 func (b *UserActions) Marshal() ([]byte, error) {
+	if b.Tactics == nil {
+		b.Tactics = make([]*Tactic, 0)
+	}
+	if b.Training == nil {
+		b.Training = make([]*Training, 0)
+	}
 	return json.Marshal(b)
 }
 

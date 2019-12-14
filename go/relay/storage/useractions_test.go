@@ -12,21 +12,21 @@ func TestMarshal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != `{"tactics":null,"training":null}` {
+	if string(data) != `{"tactics":[],"training":[]}` {
 		t.Fatalf("Wrong %v", string(data))
 	}
 }
 
 func TestUnmarshal(t *testing.T) {
 	var ua storage.UserActions
-	err := ua.Unmarshal([]byte(`{"tactics":null,"training":null}`))
+	err := ua.Unmarshal([]byte(`{"tactics":[],"training":[]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ua.Tactics != nil {
+	if len(ua.Tactics) != 0 {
 		t.Fatal("Tactics not empty")
 	}
-	if ua.Training != nil {
+	if len(ua.Training) != 0 {
 		t.Fatal("Training not empty")
 	}
 }
