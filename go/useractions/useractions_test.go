@@ -1,13 +1,13 @@
-package storage_test
+package useractions_test
 
 import (
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
+	"github.com/freeverseio/crypto-soccer/go/useractions"
 )
 
 func TestMarshal(t *testing.T) {
-	var ua storage.UserActions
+	var ua useractions.UserActions
 	data, err := ua.Marshal()
 	if err != nil {
 		t.Fatal(err)
@@ -18,7 +18,7 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestUnmarshal(t *testing.T) {
-	var ua storage.UserActions
+	var ua useractions.UserActions
 	err := ua.Unmarshal([]byte(`{"tactics":[],"training":[]}`))
 	if err != nil {
 		t.Fatal(err)
@@ -30,3 +30,7 @@ func TestUnmarshal(t *testing.T) {
 		t.Fatal("Training not empty")
 	}
 }
+
+// func TestNewUserActionsByVerse(t *testing.T) {
+// 	ua, err := storage.
+// }
