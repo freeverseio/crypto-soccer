@@ -53,7 +53,7 @@ func (b *UserActions) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, &b)
 }
 
-func (b *UserActions) IpfsPush(url string) (string, error) {
+func (b *UserActions) PushToIpfs(url string) (string, error) {
 	sh := shell.NewShell(url)
 	buf, err := b.Marshal()
 	if err != nil {
@@ -62,7 +62,7 @@ func (b *UserActions) IpfsPush(url string) (string, error) {
 	return sh.Add(bytes.NewReader(buf), shell.Pin(true))
 }
 
-func (b *UserActions) IpfsPull(url string, cid string) error {
+func (b *UserActions) PullFromIpfs(url string, cid string) error {
 	sh := shell.NewShell(url)
 	resp, err := sh.Request("get", cid).Option("create", true).Send(context.Background())
 	if err != nil {

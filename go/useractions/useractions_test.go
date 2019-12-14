@@ -38,7 +38,7 @@ func TestIpfsPushAndPull(t *testing.T) {
 	training := storage.Training{TeamID: "pippo"}
 	ua.Tactics = append(ua.Tactics, &tactic)
 	ua.Trainings = append(ua.Trainings, &training)
-	cif, err := ua.IpfsPush("localhost:5001")
+	cif, err := ua.PushToIpfs("localhost:5001")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func TestIpfsPushAndPull(t *testing.T) {
 		t.Fatalf("Wrong cif %v", cif)
 	}
 	var ua2 useractions.UserActions
-	err = ua2.IpfsPull("localhost:5001", cif)
+	err = ua2.PullFromIpfs("localhost:5001", cif)
 	if err != nil {
 		t.Fatal(err)
 	}
