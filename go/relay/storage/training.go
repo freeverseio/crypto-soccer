@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"database/sql"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -37,6 +36,22 @@ type Training struct {
 	SpecialPlayerPass      int       `json:"special_player_pass"`      // special_player_pass
 	SpecialPlayerShoot     int       `json:"special_player_shoot"`     // special_player_shoot
 	SpecialPlayerEndurance int       `json:"special_player_endurance"` // special_player_endurance
+}
+
+func (b *Storage) TrainingByVerse(verseNumber int) ([]*Training, error) {
+	var trainings []*Training
+	if verseNumber == 0 {
+		return trainings, nil
+	}
+	// verse, err := b.GetVerse(verseNumber)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// prevVerse, err := b.GetVerse(verseNumber - 1)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	return trainings, nil
 }
 
 func (b *Storage) CreateTraining(training Training) error {
@@ -128,15 +143,6 @@ func (b *Storage) CreateTraining(training Training) error {
 		training.SpecialPlayerEndurance,
 	)
 	return err
-}
-
-func (b *Storage) GetRowsTrainingsRange(start *Verse, end *Verse) (*sql.Rows, error) {
-	log.Debugf("[DBMS] GetRowsTrainingsRange from verse %v to verse  %v", start, end)
-	return b.tx.Query(
-		`SELECT * FROM trainings WHERE (created_at > $1) AND (created_at <= $2);`,
-		start.StartAt,
-		end.StartAt,
-	)
 }
 
 // func (b *Storage) UpdateTraining(training Training) error {

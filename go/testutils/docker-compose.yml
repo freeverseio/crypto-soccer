@@ -16,9 +16,6 @@ services:
     image: ipfs/go-ipfs:latest
     environment:
       - IPFS_PROFILE=server
-      - IPFS_PATH=/ipfsdata
-    volumes:
-      - ./data/ipfs:/ipfsdata
     ports:
       - "4001:4001"
       - "127.0.0.1:8080:8080"

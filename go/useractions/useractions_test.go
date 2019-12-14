@@ -57,7 +57,3 @@ func TestIpfsPushAndPull(t *testing.T) {
 		t.Fatal("Differents")
 	}
 }
-
-// func TestNewUserActionsByVerse(t *testing.T) {
-// 	ua, err := storage.
-// }

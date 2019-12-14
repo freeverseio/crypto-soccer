@@ -4,7 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
-	"database/sql"
+	"crypto/sha256"
 	"encoding/json"
 	"io/ioutil"
 
@@ -18,13 +18,25 @@ type UserActions struct {
 	Trainings []*storage.Training `json:"trainings"`
 }
 
-func NewUserActionsByVerse(tx *sql.Tx, verse int) (*UserActions, error) {
-	// var err error
-	var userActions UserActions
-	// if userActions.Tactics, err = storage.TacticsByVerse(verse); err != nil {
-	// 	return nil, err
-	// }
-	return &userActions, nil
+func (b *UserActions) PullFromStorage(storage storage.Storage, verse int) error {
+	var err error
+	if b.Tactics, err = storage.TacticsByVerse(verse); err != nil {
+		return err
+	}
+	if b.Trainings, err = storage.TrainingByVerse(verse); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *UserActions) Hash() ([]byte, error) {
+	h := sha256.New()
+	buf, err := b.Marshal()
+	if err != nil {
+		return nil, err
+	}
+	h.Write(buf)
+	return h.Sum(nil), nil
 }
 
 func (b *UserActions) Marshal() ([]byte, error) {
