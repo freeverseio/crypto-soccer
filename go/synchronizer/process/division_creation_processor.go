@@ -245,6 +245,7 @@ func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error 
 
 func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
 	training := relay.Training{}
-	training.TeamID = teamID.String()
+	training.TeamID = teamID
+	training.SpecialPlayerShirt = -1
 	return b.relaydb.CreateTraining(training)
 }

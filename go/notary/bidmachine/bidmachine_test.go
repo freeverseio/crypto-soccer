@@ -5,11 +5,19 @@ import (
 	"testing"
 	"time"
 
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/bidmachine"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
-
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
+	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
+
+func newTestMarket() *marketpay.MarketPay {
+	market, err := marketpay.New()
+	if err != nil {
+		panic(err)
+	}
+	return market
+}
 
 func TestNotPayingAuction(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
@@ -19,6 +27,7 @@ func TestNotPayingAuction(t *testing.T) {
 	auction := &storage.Auction{State: storage.AUCTION_ASSET_FROZEN}
 	bid := &storage.Bid{}
 	_, err = bidmachine.New(
+		newTestMarket(),
 		auction,
 		bid,
 		bc.Contracts,
@@ -37,6 +46,7 @@ func TestPayingAuction(t *testing.T) {
 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
 	bid := &storage.Bid{}
 	_, err = bidmachine.New(
+		newTestMarket(),
 		auction,
 		bid,
 		bc.Contracts,
@@ -87,6 +97,7 @@ func TestExpiredBidNoTransit(t *testing.T) {
 	auction := &storage.Auction{State: storage.AUCTION_PAYING}
 	bid := &storage.Bid{State: storage.BIDFAILED}
 	machine, err := bidmachine.New(
+		newTestMarket(),
 		auction,
 		bid,
 		bc.Contracts,
@@ -118,6 +129,7 @@ func TestAcceptBidTransitToPaying(t *testing.T) {
 		PaymentDeadline: big.NewInt(3),
 	}
 	machine, err := bidmachine.New(
+		newTestMarket(),
 		auction,
 		bid,
 		bc.Contracts,
@@ -154,6 +166,7 @@ func TestBidPayingExpires(t *testing.T) {
 		PaymentDeadline: big.NewInt(now - 1),
 	}
 	machine, err := bidmachine.New(
+		newTestMarket(),
 		auction,
 		bid,
 		bc.Contracts,
