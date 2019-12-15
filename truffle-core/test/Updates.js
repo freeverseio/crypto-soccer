@@ -98,7 +98,8 @@ contract('Updates', (accounts) => {
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
-        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys")).should.be.fulfilled;
+        const cif = "ciao";
+        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verse = await updates.currentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
@@ -120,7 +121,8 @@ contract('Updates', (accounts) => {
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+        const cif = "ciao2";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
         submissionTime = await assets.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
@@ -150,7 +152,8 @@ contract('Updates', (accounts) => {
             if (diff < 0) diff += 24;
             // you change timezone every 4 verses
             diff.should.be.equal(Math.floor(verse / 4) % 24);
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+            const cif = "ciao3";
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
             await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
             await moveToNextVerse(updates, extraSecs = 10);
         }
