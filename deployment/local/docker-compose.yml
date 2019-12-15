@@ -1,17 +1,21 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:$TAG
-    command: --mine --bootnodes ${ENODE}
+    build: ../../docker/ethereum-node-test
     ports: 
-      - "30303:30303"
-      - "30303:30303/udp"
-    volumes:
-      - ethereum-data:/test
+      - "8545:8545"
   universe.db:
-    image: freeverseio/universe.db:$TAG
+    build: ../../universe.db/
+    ports:
+      - "5432:5432"
+  relay.db:
+    build: ../../relay.db/
+    ports:
+      - "5433:5432"
   synchronizer:
-    image: freeverseio/synchronizer:$TAG
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
       -ethereum http://ethereum:8545
@@ -26,21 +30,23 @@ services:
       - universe.db
       - ethereum
   universe.api:
-    image: freeverseio/universe.api:$TAG
+    build: ../../universe.api
     depends_on:
       - universe.db
     command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
     ports:
       - "4005:4000"
   market.db:
-    image: freeverseio/market.db:$TAG
+    build: ../../market.db
   market.trader:
-    image: freeverseio/market.trader:$TAG
+    build: ../../market.trader
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
     ports:
       - "4002:4000"
   market.notary:
-    image: freeverseio/market.notary:$TAG
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.notary
     depends_on:
       - ethereum
     command: >
@@ -49,7 +55,7 @@ services:
       -ethereum http://ethereum:8545 
       -market_address "${MARKET_CONTRACT_ADDRESS}" 
   relay.api:
-    image: freeverseio/relay.api:$TAG
+    build: ../../relay.api
     depends_on:
       - ethereum
     ports:
@@ -60,9 +66,9 @@ services:
       --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
       --ethereum "http://ethereum:8545"
   relay.db:
-    image: freeverseio/relay.db:$TAG
+    build: ../../relay.db
   horizon:
-    image: freeverseio/horizon:$TAG
+    build: ../../nodejs-horizon
     depends_on:
       - universe.api
       - market.trader
@@ -74,7 +80,9 @@ services:
     ports:
       - "4000:4000"
   relay.actions:
-    image: freeverseio/relay.actions:$TAG
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.relay
     depends_on:
       - ethereum
       - ipfs
@@ -94,5 +102,3 @@ services:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
-volumes:
-  ethereum-data:
