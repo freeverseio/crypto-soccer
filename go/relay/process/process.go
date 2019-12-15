@@ -23,7 +23,6 @@ type Processor struct {
 	publicAddress common.Address
 	db            *storage.Storage
 	updates       *updates.Updates
-	count         int64
 }
 
 // *****************************************************************************
@@ -51,7 +50,6 @@ func NewProcessor(
 		publicAddress,
 		db,
 		updates,
-		0,
 	}, nil
 }
 
