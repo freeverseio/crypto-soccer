@@ -1,11 +1,8 @@
 package storage
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"hash"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -39,26 +36,6 @@ type Tactic struct {
 	ExtraAttack8  bool      `json:"extra_attack_8"`  // extra_attack_8
 	ExtraAttack9  bool      `json:"extra_attack_9"`  // extra_attack_9
 	ExtraAttack10 bool      `json:"extra_attack_10"` // extra_attack_1
-}
-
-// Hash - computes hash for a Tactic
-func (t *Tactic) Hash() ([32]byte, error) {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	b := [32]byte{}
-	h := computeHash(sha256.New(), data)
-	copy(b[:], h[:])
-	return b, nil
-}
-
-func computeHash(h hash.Hash, data ...[]byte) []byte {
-	h.Reset()
-	for _, d := range data {
-		h.Write(d)
-	}
-	return h.Sum(nil)
 }
 
 func (b *Storage) DefaultTactic(teamID string) *Tactic {
@@ -331,13 +308,4 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 		return 0, err
 	}
 	return count, nil
-}
-
-func (b *Storage) GetRowsTacticsRange(start *Verse, end *Verse) (*sql.Rows, error) {
-	log.Debugf("[DBMS] GetRowsTacticsRange from verse %v to verse  %v", start, end)
-	return b.tx.Query(
-		`SELECT * FROM tactics WHERE (created_at > $1) AND (created_at <= $2);`,
-		start.StartAt,
-		end.StartAt,
-	)
 }
