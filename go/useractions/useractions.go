@@ -18,7 +18,7 @@ type UserActions struct {
 	Trainings []*storage.Training `json:"trainings"`
 }
 
-func (b *UserActions) PullFromStorage(storage storage.Storage, verse int) error {
+func (b *UserActions) PullFromStorage(storage *storage.Storage, verse int) error {
 	var err error
 	if b.Tactics, err = storage.TacticsByVerse(verse); err != nil {
 		return err
