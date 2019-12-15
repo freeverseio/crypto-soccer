@@ -3,6 +3,7 @@ package relay
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"errors"
 	"math/big"
 
@@ -23,6 +24,7 @@ type Processor struct {
 	publicAddress common.Address
 	db            *storage.Storage
 	updates       *updates.Updates
+	ipfsURL       string
 }
 
 // *****************************************************************************
@@ -34,6 +36,7 @@ func NewProcessor(
 	privateKey *ecdsa.PrivateKey,
 	db *storage.Storage,
 	updates *updates.Updates,
+	ipfsURL string,
 ) (*Processor, error) {
 
 	publicKey := privateKey.Public()
@@ -50,6 +53,7 @@ func NewProcessor(
 		publicAddress,
 		db,
 		updates,
+		ipfsURL,
 	}, nil
 }
 
@@ -98,14 +102,14 @@ func (p *Processor) computeActionsRoot() error {
 	if err != nil {
 		return err
 	}
-	cid, err := actions.PushToIpfs("localhost:5001")
+	cid, err := actions.PushToIpfs(p.ipfsURL)
 	if err != nil {
 		return err
 	}
 	var root [32]byte
 	copy(root[:], hash)
 
-	log.Infof("[relay] submitActionsRoot root: %v, cid: %v", root, cid)
+	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
 	_, err = session.SubmitActionsRoot(root, cid)
 	return err
 }

@@ -36,7 +36,7 @@ func TestSubmitActionRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Contracts.Updates)
+	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Contracts.Updates, "localhost:5001")
 	if err != nil {
 		t.Fatal(err)
 	}
