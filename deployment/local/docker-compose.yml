@@ -1,9 +1,14 @@
 version: '3'
 services:
   ethereum: 
-    build: ../../docker/ethereum-node-test
+    image: freeverseio/ethereum:dev
+    command: --bootnodes ${ENODE}
     ports: 
       - "8545:8545"
+      - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - ethereum-data:/test
   universe.db:
     build: ../../universe.db/
     ports:
@@ -85,15 +90,15 @@ services:
       dockerfile: Dockerfile.relay
     depends_on:
       - ethereum
-      - ipfs
+      - ipfs.node
     command: >
       -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
       -delay 3600s
-      -ipfs "ipfs"
-  ipfs:
+      -ipfs ipfs.node:5001
+  ipfs.node:
     image: ipfs/go-ipfs:latest
     environment:
       - IPFS_PROFILE=server
@@ -102,3 +107,5 @@ services:
       - "127.0.0.1:8080:8080"
       - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
+volumes:
+  ethereum-data:
