@@ -31,6 +31,7 @@ func main() {
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
+	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
@@ -60,6 +61,8 @@ func main() {
 	if *enginePreCompContractAddress == "" {
 		log.Fatal("no enginePreComp contract address")
 	}
+
+	log.Infof("ipfs URL: %v", *ipfsURL)
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)
