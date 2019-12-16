@@ -41,7 +41,15 @@ const main = async () => {
     }
 
     extend type Team {
-      tacticsByTeamId: TacticsConnection
+      tacticsByTeamId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [TacticsOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: TacticCondition
+      ): TacticsConnection
     }
 
     extend type Auction {
