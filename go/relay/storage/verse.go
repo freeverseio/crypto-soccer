@@ -7,9 +7,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Verse represents a row from 'public.verses'.
 type Verse struct {
-	ID      int
-	StartAt time.Time
+	ID      int       `json:"id"`       // id
+	StartAt time.Time `json:"start_at"` // start_at
 }
 
 func (b *Storage) GetVerse(id int) (*Verse, error) {

@@ -1,6 +1,6 @@
 CREATE TABLE verses (
     id INT NOT NULL,
-    start_at TIMESTAMP DEFAULT NOW(),
+    start_at TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY(id)
 );
 CREATE RULE nodel_verses AS ON DELETE TO verses DO NOTHING;
@@ -77,4 +77,10 @@ CREATE TABLE trainings (
     special_player_endurance INT NOT NULL CHECK (special_player_endurance >= 0),
 
     PRIMARY KEY(team_id)
+);
+
+CREATE TYPE special_player_action AS ENUM ('create', 'destroy');
+CREATE TABLE special_players (
+    special_player_id TEXT NOT NULL,
+    action special_player_action NOT NULL
 );
