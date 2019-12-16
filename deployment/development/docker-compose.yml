@@ -30,15 +30,11 @@ services:
     depends_on:
       - universe.db
     command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
-    ports:
-      - "4005:4000"
   market.db:
     image: freeverseio/market.db:$TAG
   market.trader:
     image: freeverseio/market.trader:$TAG
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
-    ports:
-      - "4002:4000"
   market.notary:
     image: freeverseio/market.notary:$TAG
     depends_on:
@@ -52,8 +48,6 @@ services:
     image: freeverseio/relay.api:$TAG
     depends_on:
       - ethereum
-    ports:
-      - "4003:4000"
     command: >
       -d postgres://freeverse:freeverse@relay.db:5432/relay
       --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
@@ -77,7 +71,7 @@ services:
     image: freeverseio/relay.actions:$TAG
     depends_on:
       - ethereum
-      - ipfs
+      - ipfs.node
     command: >
       -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
@@ -91,9 +85,9 @@ services:
       - IPFS_PROFILE=server
       - IPFS_PATH=/data
     ports:
-      # - "4001:4001"
-      # - "127.0.0.1:8080:8080"
-      # - "127.0.0.1:8081:8081"
+      - "4001:4001"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
     volumes:
       - ipfs.node-data:/data
