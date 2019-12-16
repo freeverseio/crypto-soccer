@@ -79,8 +79,3 @@ CREATE TABLE trainings (
     PRIMARY KEY(team_id)
 );
 
-CREATE TYPE special_player_action AS ENUM ('create', 'destroy');
-CREATE TABLE special_players (
-    special_player_id TEXT NOT NULL,
-    action special_player_action NOT NULL
-);
