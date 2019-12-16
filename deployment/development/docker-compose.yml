@@ -80,7 +80,7 @@ services:
       -delay 60s
       -ipfs ipfs.node:5001
   ipfs.node:
-    image: ipfs/go-ipfs:v0.4.22
+    image: ipfs/go-ipfs:v0.4.18
     environment:
       - IPFS_PROFILE=server
       - IPFS_PATH=/data
