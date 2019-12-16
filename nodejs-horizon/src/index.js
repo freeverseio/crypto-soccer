@@ -50,7 +50,17 @@ const main = async () => {
         orderBy: [TacticsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: TacticCondition
       ): TacticsConnection
+      trainingsByTeamId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [TrainingsOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: TrainingCondition
+      ): TrainingsConnection  
     }
+
 
     extend type Auction {
       playerByPlayerId: Player
@@ -89,6 +99,23 @@ const main = async () => {
             schema: relayRemoteSchema,
             operation: 'query',
             fieldName: 'allTactics',
+            args: {
+              condition: {
+                teamId: team.teamId
+              }
+            },
+            context,
+            info,
+          })
+        }
+      },
+      trainingsByTeamId: {
+        fragment: `... on Team { teamId }`,
+        resolve(team, args, context, info) {
+          return info.mergeInfo.delegateToSchema({
+            schema: relayRemoteSchema,
+            operation: 'query',
+            fieldName: 'allTrainings',
             args: {
               condition: {
                 teamId: team.teamId
