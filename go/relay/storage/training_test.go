@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
@@ -14,7 +13,7 @@ func TestTrainingCreate(t *testing.T) {
 	}
 	defer db.Rollback()
 	training := storage.Training{}
-	training.TeamID = big.NewInt(4)
+	training.TeamID = "4"
 	err = db.CreateTraining(training)
 	if err != nil {
 		t.Fatal(err)

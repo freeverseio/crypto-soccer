@@ -23,8 +23,9 @@ func BackgroundProcessNew(
 	storage *storage.Storage,
 	updatesContract *updates.Updates,
 	delay time.Duration,
+	ipfsURL string,
 ) (*BackgroundProcess, error) {
-	processor, err := NewProcessor(client, privateKey, storage, updatesContract)
+	processor, err := NewProcessor(client, privateKey, storage, updatesContract, ipfsURL)
 	if err != nil {
 		return nil, err
 	}

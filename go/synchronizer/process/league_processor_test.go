@@ -162,6 +162,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		turnInDay,
 		seed,
 		big.NewInt(actionsSubmissionTime),
+		"cid",
 		types.Log{},
 	})
 	if err != nil {
@@ -174,6 +175,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		turnInDay,
 		seed,
 		big.NewInt(actionsSubmissionTime),
+		"cid",
 		types.Log{},
 	})
 	if err != nil {

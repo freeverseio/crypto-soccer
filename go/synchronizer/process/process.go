@@ -156,7 +156,7 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return p.universedb.PlayerUpdate(playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Infof("[processor] Dispatching UpdatesActionsSubmission event Timezone: %v, Day: %v, TurnInDay: %v", v.TimeZone, v.Day, v.TurnInDay)
+		log.Infof("[processor] Dispatching UpdatesActionsSubmission event TZ: %v, Day: %v, Turn: %v, cid: %v", v.TimeZone, v.Day, v.TurnInDay, v.Cid)
 		return p.leagueProcessor.Process(v)
 	case market.MarketPlayerFreeze:
 		log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)

@@ -25,6 +25,7 @@ func main() {
 	privateKeyHex := flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	delay := flag.String("delay", "3600s", "3600s, 1h, ...")
+	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
 	if *updatesContractAddress == "" {
@@ -48,6 +49,8 @@ func main() {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
 
+	log.Infof("ipfs URL: %v", *ipfsURL)
+
 	var sto *storage.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
@@ -69,7 +72,7 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Infof("Delay of %v seconds", delayDuration.Seconds())
-	process, err := relay.BackgroundProcessNew(client, privateKey, sto, updatesContract, delayDuration)
+	process, err := relay.BackgroundProcessNew(client, privateKey, sto, updatesContract, delayDuration, *ipfsURL)
 	if err != nil {
 		log.Fatal(err)
 	}
