@@ -86,16 +86,16 @@ mutation CreateAuction(
 `;
 
 export default function SpecialPlayer(props) {
-    const [shoot, setShoot] = useState(2000);
-    const [speed, setSpeed] = useState(2000);
-    const [pass, setPass] = useState(2000);
-    const [defence, setDefence] = useState(2000);
-    const [endurance, setEndurance] = useState(2000);
-    const [potential, setPotential] = useState(2000);
-    const [forwardness, setForwardness] = useState(2000);
-    const [leftishness, setLeftishness] = useState(2000);
-    const [aggressiveness, setAggressiveness] = useState(2000);
-    const [age, setAge] = useState(17);
+    const [shoot, setShoot] = useState(50);
+    const [speed, setSpeed] = useState(50);
+    const [pass, setPass] = useState(50);
+    const [defence, setDefence] = useState(50);
+    const [endurance, setEndurance] = useState(50);
+    const [potential, setPotential] = useState(5);
+    const [forwardness, setForwardness] = useState(3);
+    const [leftishness, setLeftishness] = useState(3);
+    const [aggressiveness, setAggressiveness] = useState(3);
+    const [age, setAge] = useState(19);
     const [name, setName] = useState('Johnnie Freeverse');
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
@@ -110,6 +110,9 @@ export default function SpecialPlayer(props) {
         const traits = [potential, forwardness, leftishness, aggressiveness];
         const secsInYear = 365 * 24 * 3600
         const internalId = Math.floor(Math.random() * 1000000);
+
+        console.log(sk, traits, secsInYear, internalId);
+
         const playerId = await privileged.methods.createSpecialPlayer(
             sk,
             age * secsInYear,
@@ -225,13 +228,13 @@ console.log("here")
             variables: {
                 playerId: playerId,
                 name: name,
-                defence: defence,
-                speed: speed,
-                pass: pass,
-                shoot: shoot,
-                endurance: endurance,
+                defence: Number(defence),
+                speed: Number(speed),
+                pass: Number(pass),
+                shoot: Number(shoot),
+                endurance: Number(endurance),
                 preferredPosition: "TODO",
-                potential: potential,
+                potential: Number(potential),
                 dayOfBirth: 16950,
             }
         });
