@@ -5,6 +5,7 @@ import (
 	"hash/fnv"
 	"math"
 	"math/big"
+	"strconv"
 	"testing"
 )
 
@@ -44,7 +45,7 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 // OUTPUTS:
 //		an array of variable size, where each entry is an array of 6 uint16
 //			0: minute
-// 		eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
+// 			1: eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
 // 				see: getInGameSubsHappened
 // 			2: managesToShoot
 // 			3: isGoal
@@ -79,7 +80,8 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 	var rounds2mins []uint64
 	for e := 0; e < nEvents; e++ {
 		// compute minute
-		minute := uint64(math.Floor(float64(e)*deltaMinutes)) + GenerateRnd(seed, "a", deltaMinutesInt)
+		salt := "a" + strconv.Itoa(int(e))
+		minute := uint64(math.Floor(float64(e)*deltaMinutes)) + GenerateRnd(seed, salt, deltaMinutesInt)
 		if minute <= lastMinute {
 			minute = lastMinute + 1
 		}
@@ -100,7 +102,8 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 			thisEvent[4] = int16(shooter.Int64())
 			thisEvent[5] = int16(assister.Int64())
 		} else {
-			thisEvent[4] = int16(1 + GenerateRnd(seed, "b", 9))
+			salt := "b" + strconv.Itoa(int(e))
+			thisEvent[4] = int16(1 + GenerateRnd(seed, salt, 9))
 			thisEvent[5] = NULL
 		}
 		events = append(events, thisEvent)
@@ -135,7 +138,8 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 		if yellowCardPlayer == outOfGamePlayer {
 			maxMinute = outOfGamePlayer
 		}
-		minute := int16(GenerateRnd(seed, "c", uint64(maxMinute)))
+		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
+		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := int16(2)
 		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
@@ -146,7 +150,8 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 		if yellowCardPlayer == outOfGamePlayer {
 			maxMinute = outOfGamePlayer
 		}
-		minute := int16(GenerateRnd(seed, "d", uint64(maxMinute)))
+		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
+		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := int16(2)
 		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
