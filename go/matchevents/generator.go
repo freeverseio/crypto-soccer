@@ -64,10 +64,11 @@ func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]i
 	return events, rounds2mins
 }
 
-func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) [][6]int16 {
+func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) ([][6]int16, int16, int16) {
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	outOfGamePlayer := int16(matchLog[5])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
+	outOfGameMin := NULL
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
@@ -77,8 +78,8 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 		} else if matchLog[5] == 3 {
 			typeOfEvent = 3
 		}
-		minute := int16(rounds2mins[matchLog[6]])
-		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, outOfGamePlayer, NULL}
+		outOfGameMin := int16(rounds2mins[matchLog[6]])
+		thisEvent := [6]int16{outOfGameMin, typeOfEvent, NULL, NULL, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -105,6 +106,26 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 		typeOfEvent := int16(2)
 		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
+	}
+	return events, outOfGamePlayer, outOfGameMin
+}
+
+func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, outOfGamePlayer int16, outOfGameMin int16, NULL int16) [][6]int16 {
+	// matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
+	for i := 0; i < 3; i++ {
+		subHappened := matchLog[9+i] == 1
+		if subHappened {
+			minute := int16(rounds2mins[subsRounds[i]])
+			leavingPlayer := int16(substitutions[i])
+			enteringPlayer := int16(lineup[11+i])
+			// make sure that if a player that joined in the middle of this half is also the outOfGamePlayer, then he entered before the outOfGame event
+			if (enteringPlayer == outOfGamePlayer) && (minute >= outOfGameMin-1) {
+				minute = outOfGameMin - 1
+			}
+			typeOfEvent := int16(6)
+			thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, leavingPlayer, enteringPlayer}
+			events = append(events, thisEvent)
+		}
 	}
 	return events
 }
@@ -150,7 +171,7 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 // 				(type == 4,5) 						: null
 // 				(type == 6) 						: getting inside field
 
-func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
+func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, is2ndHalf bool) ([][6]int16, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
 	var emptyEvents [][6]int16
@@ -160,7 +181,7 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 		return emptyEvents, errors.New("the length of matchEvents should be 2 + a multiple of")
 	}
 
-// check 2:
+	// check 2:
 	outOfGamePlayer := int16(matchLog[5])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
 	if thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0) {
@@ -169,7 +190,8 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, matchEvents, NULL)
-	events = addCardsAndInjuries(events, seed, matchLog, rounds2mins, NULL, NOONE)
+	events, outOfGamePlayer, outOfGameMin := addCardsAndInjuries(events, seed, matchLog, rounds2mins, NULL, NOONE)
+	events = addSubstitutions(events, seed, matchLog, rounds2mins, lineup, substitutions, subsRounds, outOfGamePlayer, outOfGameMin, NULL)
 
 	return events, nil
 }
