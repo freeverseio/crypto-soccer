@@ -95,7 +95,7 @@ export default function SpecialPlayer(props) {
     const [forwardness, setForwardness] = useState(2000);
     const [leftishness, setLeftishness] = useState(2000);
     const [aggressiveness, setAggressiveness] = useState(2000);
-    const [age, setAge] = useState(2000);
+    const [age, setAge] = useState(17);
     const [name, setName] = useState('Johnnie Freeverse');
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
@@ -110,7 +110,6 @@ export default function SpecialPlayer(props) {
         const traits = [potential, forwardness, leftishness, aggressiveness];
         const secsInYear = 365 * 24 * 3600
         const internalId = Math.floor(Math.random() * 1000000);
-
         const playerId = await privileged.methods.createSpecialPlayer(
             sk,
             age * secsInYear,
@@ -118,6 +117,7 @@ export default function SpecialPlayer(props) {
             internalId
         ).call();
 
+console.log("here")
         return playerId;
     }
 
@@ -149,17 +149,57 @@ export default function SpecialPlayer(props) {
                                     </Card.Description>
                                 </Card.Content>
                                 <Card.Content extra>
+                                    <Form>
+                                        <Form.Field>
+                                            <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
+                                                <Label basic>Price</Label>
+                                                <input />
+                                                <Label>€</Label>
+                                            </Input>
+                                        </Form.Field>
+                                        <Form.Field>
+                                            <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
+                                                <Label basic>Timeout</Label>
+                                                <input />
+                                                <Label>sec</Label>
+                                            </Input>
+                                        </Form.Field>
+                                    </Form>
                                     <div className='ui two buttons'>
-                                        <Button basic color='green'>
+                                        <Button basic color='green' onClick={async () => {
+                                            const { web3, market } = props;
+                                            const rnd = Math.floor(Math.random() * 1000000);
+                                            const now = new Date();
+                                            const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
+                                            const sellerAccount = await web3.eth.accounts.create("iamaseller");
+                                            console.log("Becoming the owner of the Academy...");
+                                            await market.methods.setAcademyAddr(sellerAccount.address);
+                                            console.log("Becoming the owner of the Academy...done");
+                                            const currencyId = 1;
+                                            const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, player.playerId, sellerAccount);
+                                            const seller = sellerAccount.address;
+                                            createAuction({
+                                                variables: {
+                                                    uuid: uuidv1(),
+                                                    playerId: player.playerId,
+                                                    currencyId: currencyId,
+                                                    price: Number(price),
+                                                    rnd: Number(rnd),
+                                                    validUntil: validUntil,
+                                                    signature: signature.signature,
+                                                    seller: seller,
+                                                }
+                                            });
+                                        }}>
                                             Sell
                                         </Button>
                                         <Button basic color='red' onClick={() => {
-                                                deleteAcademyPlayer({
-                                                    variables: {
-                                                        playerId: player.playerId,
-                                                    }
-                                                })
-                                            }
+                                            deleteAcademyPlayer({
+                                                variables: {
+                                                    playerId: player.playerId,
+                                                }
+                                            })
+                                        }
                                         }>
                                             Kill
                                         </Button>
@@ -174,34 +214,28 @@ export default function SpecialPlayer(props) {
     }
 
     async function handleSubmit(e) {
-        const { web3, market } = props;
         e.preventDefault();
 
         const playerId = await generatePlayerId();
-        const rnd = Math.floor(Math.random() * 1000000);
         const now = new Date();
-        const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
-        const sellerAccount = await web3.eth.accounts.create("iamaseller");
-        console.log("Becoming the owner of the Academy...");
-        await market.methods.setAcademyAddr(sellerAccount.address);
-        console.log("Becoming the owner of the Academy...done");
 
-        const currencyId = 1;
-        const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, playerId, sellerAccount);
-        const seller = sellerAccount.address;
-        createAuction({
+        console.log("Creating player ", playerId);
+
+        createAcademyPlayer({ // use the block chain to retrive all the values from the playerId
             variables: {
-                uuid: uuidv1(),
                 playerId: playerId,
-                currencyId: currencyId,
-                price: Number(price),
-                rnd: Number(rnd),
-                validUntil: validUntil,
-                signature: signature.signature,
-                seller: seller,
+                name: name,
+                defence: defence,
+                speed: speed,
+                pass: pass,
+                shoot: shoot,
+                endurance: endurance,
+                preferredPosition: "TODO",
+                potential: potential,
+                dayOfBirth: 16950,
             }
         });
-        console.log("Correctly sent new Academy player creation!");
+        console.log("dewewewew")
     }
 
     return (
@@ -258,20 +292,6 @@ export default function SpecialPlayer(props) {
                             <input placeholder='Age' type='number' value={age} onChange={event => setAge(event.target.value)} />
                         </Form.Field>
                     </Form.Group>
-                    <Form.Field>
-                        <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
-                            <Label basic>Price</Label>
-                            <input />
-                            <Label>€</Label>
-                        </Input>
-                    </Form.Field>
-                    <Form.Field>
-                        <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
-                            <Label basic>Timeout</Label>
-                            <input />
-                            <Label>sec</Label>
-                        </Input>
-                    </Form.Field>
                     <Form.Button type='submit'>Create</Form.Button>
                 </Form>
             </Segment>

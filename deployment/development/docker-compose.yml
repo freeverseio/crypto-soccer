@@ -4,6 +4,7 @@ services:
     image: freeverseio/ethereum:$TAG
     command: --mine --bootnodes ${ENODE}
     ports: 
+      - "8545:8545"
       - "30303:30303"
       - "30303:30303/udp"
     volumes:
@@ -80,14 +81,14 @@ services:
       -delay 60s
       -ipfs ipfs.node:5001
   ipfs.node:
-    image: ipfs/go-ipfs:v0.4.18
+    image: ipfs/go-ipfs:v0.4.22
     environment:
       - IPFS_PROFILE=server
       - IPFS_PATH=/data
     ports:
       - "4001:4001"
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:8081:8081"
+      # - "127.0.0.1:8080:8080"
+      # - "127.0.0.1:8081:8081"
       - "127.0.0.1:5001:5001"
     volumes:
       - ipfs.node-data:/data
