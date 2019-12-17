@@ -43,7 +43,7 @@ func TestMatchEvents(t *testing.T) {
 		events = append(events, big.NewInt(events64[i]))
 	}
 	is2ndHalf := false
-	computedEvents, err := matchevents.GenerateMatchEvents(t, seed, matchLog, events, is2ndHalf)
+	computedEvents, err := matchevents.GenerateMatchEvents(seed, matchLog, events, is2ndHalf)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}

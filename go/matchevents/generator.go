@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/big"
 	"strconv"
-	"testing"
 )
 
 func int_hash(s string) uint64 {
@@ -65,7 +64,7 @@ func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]i
 	return events, rounds2mins
 }
 
-func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) ([][6]int16) {
+func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) [][6]int16 {
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	outOfGamePlayer := int16(matchLog[5])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
@@ -151,7 +150,7 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 // 				(type == 4,5) 						: null
 // 				(type == 6) 						: getting inside field
 
-func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
+func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
 	var emptyEvents [][6]int16
@@ -160,14 +159,13 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 	if (len(matchEvents)-2)%5 != 0 {
 		return emptyEvents, errors.New("the length of matchEvents should be 2 + a multiple of")
 	}
-	
-	// check 2:
+
+// check 2:
 	outOfGamePlayer := int16(matchLog[5])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
 	if thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0) {
 		return emptyEvents, errors.New("received an incorrect matchlog entry for matchLog")
 	}
-
 
 	// Compute main events: per-round, and cards & injuries
 	events, rounds2mins := addEventsInRound(seed, matchEvents, NULL)
