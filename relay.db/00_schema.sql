@@ -76,6 +76,6 @@ CREATE TABLE trainings (
     special_player_shoot INT NOT NULL DEFAULT 0 CHECK (special_player_shoot >= 0),
     special_player_endurance INT NOT NULL DEFAULT 0 CHECK (special_player_endurance >= 0),
 
-    PRIMARY KEY(team_id)
+    PRIMARY KEY(team_id, created_at)
 );
 
