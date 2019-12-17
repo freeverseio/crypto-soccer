@@ -5,6 +5,17 @@ import { useMutation } from '@apollo/react-hooks';
 import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
+const ALL_PLAYER_IN_ACCADEMY = gql`
+query {
+    allPlayers(condition: { teamId: "1" }) {
+        nodes {
+          playerId
+          name
+        }
+      }
+}
+`;
+
 const CREATE_PLAYER = gql`
 mutation CreateSpecialPlayer(
     $playerId: String!
