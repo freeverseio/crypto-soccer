@@ -19,9 +19,8 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 	var result uint64 = int_hash(seed.String() + salt)
 	if max_val == 0 {
 		return result
-	} else {
-		return result % max_val
 	}
+	return result % max_val
 }
 
 // INPUTS:
