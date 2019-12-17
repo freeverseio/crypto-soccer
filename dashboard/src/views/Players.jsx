@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Card, Button, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
@@ -11,6 +11,11 @@ query {
         nodes {
           playerId
           name
+          defence
+          speed
+          pass
+          shoot
+          endurance
         }
       }
 }
@@ -40,6 +45,16 @@ mutation CreateSpecialPlayer(
             preferredPosition: $preferredPosition
             potential: $potential
             dayOfBirth: $dayOfBirth
+        )
+    }
+`;
+
+const DELETE_PLAYER = gql`
+mutation DeleteAcademyPlayer(
+    $playerId: String!
+    ) {
+        deleteSpecialPlayer(
+            playerId: $playerId
         )
     }
 `;
@@ -85,6 +100,8 @@ export default function SpecialPlayer(props) {
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
     const [createAuction] = useMutation(CREATE_AUCTION);
+    const [createAcademyPlayer] = useMutation(CREATE_PLAYER);
+    const [deleteAcademyPlayer] = useMutation(DELETE_PLAYER);
 
     async function generatePlayerId() {
         const { privileged } = props;
@@ -104,6 +121,58 @@ export default function SpecialPlayer(props) {
         return playerId;
     }
 
+    function AccademyPlayers() {
+        const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
+            pollInterval: 2000,
+        });
+
+        if (loading) return null;
+        if (error) return `Error! ${error}`;
+
+        const players = data.allPlayers.nodes;
+        return (
+            <Card.Group>
+                {
+                    players.map((player, key) => {
+                        return (
+                            <Card key={key}>
+                                <Card.Content>
+                                    <Card.Header>{player.name}</Card.Header>
+                                    <Card.Meta>id: {player.playerId}</Card.Meta>
+                                    <Card.Description>
+                                        <List>
+                                            <List.Item>
+                                                <List.Icon name='users' />
+                                                <List.Content>{player.shoot}</List.Content>
+                                            </List.Item>
+                                        </List>
+                                    </Card.Description>
+                                </Card.Content>
+                                <Card.Content extra>
+                                    <div className='ui two buttons'>
+                                        <Button basic color='green'>
+                                            Sell
+                                        </Button>
+                                        <Button basic color='red' onClick={() => {
+                                                deleteAcademyPlayer({
+                                                    variables: {
+                                                        playerId: player.playerId,
+                                                    }
+                                                })
+                                            }
+                                        }>
+                                            Kill
+                                        </Button>
+                                    </div>
+                                </Card.Content>
+                            </Card>
+                        );
+                    })
+                }
+            </Card.Group>
+        )
+    }
+
     async function handleSubmit(e) {
         const { web3, market } = props;
         e.preventDefault();
@@ -116,20 +185,22 @@ export default function SpecialPlayer(props) {
         console.log("Becoming the owner of the Academy...");
         await market.methods.setAcademyAddr(sellerAccount.address);
         console.log("Becoming the owner of the Academy...done");
-      
+
         const currencyId = 1;
         const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, playerId, sellerAccount);
         const seller = sellerAccount.address;
-        createAuction({variables: {
-            uuid: uuidv1(),
-            playerId: playerId,
-            currencyId: currencyId,
-            price: Number(price),
-            rnd: Number(rnd),
-            validUntil: validUntil,
-            signature: signature.signature,
-            seller: seller,
-        }});
+        createAuction({
+            variables: {
+                uuid: uuidv1(),
+                playerId: playerId,
+                currencyId: currencyId,
+                price: Number(price),
+                rnd: Number(rnd),
+                validUntil: validUntil,
+                signature: signature.signature,
+                seller: seller,
+            }
+        });
         console.log("Correctly sent new Academy player creation!");
     }
 
@@ -204,6 +275,7 @@ export default function SpecialPlayer(props) {
                     <Form.Button type='submit'>Create</Form.Button>
                 </Form>
             </Segment>
+            <AccademyPlayers />
         </Container>
     );
 };
