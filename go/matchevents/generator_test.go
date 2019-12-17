@@ -25,7 +25,7 @@ func TestMatchEvents(t *testing.T) {
 		0,        //trainingPoints1stHalf = 0,
 		12, 3, 5, //outOfGames[0], typesOutOfGames[0], outOfGameRounds[0],
 		4, 14, //yellowCards1[0], yellowCards1[1],
-		0, 0, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
+		1, 1, 0, //ingameSubs1[0], ingameSubs1[1], ingameSubs1[2],
 		0, 0, 0} // halftimesubs
 	var events []*big.Int
 	events64 := []int64{
@@ -42,12 +42,13 @@ func TestMatchEvents(t *testing.T) {
 	for i := 0; i < len(events64); i++ {
 		events = append(events, big.NewInt(events64[i]))
 	}
+
+	NO_SUBS := uint8(11)
+	lineup := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 19, 12, 21}
+	substitutions := [3]uint8{5, 1, NO_SUBS}
+	subsRounds := [3]uint8{4, 6, 7}
+
 	is2ndHalf := false
-
-	var lineup [14]uint8
-	var substitutions [3]uint8
-	var subsRounds [3]uint8
-
 	computedEvents, err := matchevents.GenerateMatchEvents(seed, matchLog, events, lineup, substitutions, subsRounds, is2ndHalf)
 	if err != nil {
 		t.Fatalf("error: %s", err)
@@ -64,7 +65,7 @@ func TestMatchEvents(t *testing.T) {
 		}
 		concat += "]"
 	}
-	expected := "[1, 0, 1, 1, 10, 2][4, 1, 0, 0, 7, -1][8, 1, 1, 0, 8, 0][9, 0, 0, 0, 9, -1][14, 0, 0, 0, 4, -1][15, 0, 0, 0, 3, -1][19, 0, 0, 0, 6, -1][23, 0, 0, 0, 5, -1][26, 0, 0, 0, 9, -1][27, 0, 0, 0, 8, -1][30, 0, 0, 0, 7, -1][35, 0, 0, 0, 8, -1][15, 3, -1, -1, 3, -1][9, 2, -1, -1, 4, -1]"
+	expected := "[1, 0, 1, 1, 10, 2][4, 1, 0, 0, 7, -1][8, 1, 1, 0, 8, 0][9, 0, 0, 0, 9, -1][14, 0, 0, 0, 4, -1][15, 0, 0, 0, 3, -1][19, 0, 0, 0, 6, -1][23, 0, 0, 0, 5, -1][26, 0, 0, 0, 9, -1][27, 0, 0, 0, 8, -1][30, 0, 0, 0, 7, -1][35, 0, 0, 0, 8, -1][15, 3, -1, -1, 12, -1][9, 2, -1, -1, 4, -1][14, 6, -1, -1, 5, 19][14, 6, -1, -1, 1, 12]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)

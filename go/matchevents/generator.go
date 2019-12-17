@@ -65,8 +65,9 @@ func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]i
 }
 
 func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) [][6]int16 {
+	// matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
-	outOfGamePlayer := int16(matchLog[5])
+	outOfGamePlayer := int16(matchLog[4])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
 	if thereWasAnOutOfGame {
 		var typeOfEvent int16
@@ -122,25 +123,26 @@ func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rou
 			events = append(events, thisEvent)
 		}
 	}
-	return events
-	// return adjustSubstitutions(events)
+	return adjustSubstitutions(events)
 }
 
 // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
 // then the substitution time must take place at least before that minute.
-// func adjustSubstitutions(events [][6]int16) [][6]int16 {
-// 	for e := 0; e < len(events); e++ {
-// 		if events[e][1] == 6 {
-// 			enteringPlayer := events[e][5]
-// 			enteringMin := events[e][0]
-// 			for e2 := 0; e2 < len(events); e++ {
-// 				if enteringPlayer == events[e2][4] && (enteringMin >= events[e2][0]-1)  {
-// 					events[e][0] = events[e2][0]-1
-// 				}
-// 		}
-// 	}
-// 	return events
-// }
+func adjustSubstitutions(events [][6]int16) [][6]int16 {
+	adjustedEvents := events
+	for e := 0; e < len(events); e++ {
+		if events[e][1] == 6 {
+			enteringPlayer := events[e][5]
+			enteringMin := events[e][0]
+			for e2 := 0; e2 < len(events); e2++ {
+				if (e != e2) && (enteringPlayer == events[e2][4]) && (enteringMin >= events[e2][0]-1)  {
+					adjustedEvents[e][0] = events[e2][0]-1
+				}
+			}
+		}
+	}
+	return adjustedEvents
+}
 
 // INPUTS:
 //	 	seed(the same one used to compute the match)
@@ -152,7 +154,7 @@ func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rou
 //  	1 winner: 0 = home, 1 = away, 2 = draw
 //  	2 nGoals
 //  	3 trainingPoints
-//  	4 uint8 memory outOfGames
+//  	4 uint8 memory outOfGamePlayer
 //  	5 uint8 memory typesOutOfGames,
 //     		 injuryHard:  1
 //     		 injuryLow:   2
@@ -194,7 +196,7 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 	}
 
 	// check 2:
-	outOfGamePlayer := int16(matchLog[5])
+	outOfGamePlayer := int16(matchLog[4])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
 	if thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0) {
 		return emptyEvents, errors.New("received an incorrect matchlog entry for matchLog")
