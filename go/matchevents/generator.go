@@ -187,7 +187,7 @@ func adjustSubstitutions(team int16, events []Matchevent) []Matchevent {
 //  	9,10,11 uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
 //  	12,13,14 uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
 // OUTPUTS:
-//		an array of variable size, where each entry is an array of 6 uint16
+//		an array of variable size, where each entry is a Matchevent struct
 //			0: minute
 // 			1: eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
 // 				see: getInGameSubsHappened
