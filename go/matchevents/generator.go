@@ -32,9 +32,9 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 }
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
-func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
+func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
 	var events []Matchevent
-	nEvents := (len(matchEvents) - 2) / 5
+	nEvents := (len(blockchainEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / (nEvents * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
 
@@ -50,11 +50,11 @@ func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([]Matc
 		lastMinute = minute
 		rounds2mins = append(rounds2mins, minute)
 		// parse type of event and data
-		teamThatAttacks := matchEvents[2+5*e]
-		managesToShoot := matchEvents[2+5*e+1]
-		shooter := matchEvents[2+5*e+2]
-		isGoal := matchEvents[2+5*e+3]
-		assister := matchEvents[2+5*e+4]
+		teamThatAttacks := blockchainEvents[2+5*e]
+		managesToShoot := blockchainEvents[2+5*e+1]
+		shooter := blockchainEvents[2+5*e+2]
+		isGoal := blockchainEvents[2+5*e+3]
+		assister := blockchainEvents[2+5*e+4]
 		var thisEvent Matchevent
 		thisEvent.Minute = int16(minute)
 		thisEvent.Type = int16(teamThatAttacks.Int64())
@@ -156,7 +156,7 @@ func adjustSubstitutions(events []Matchevent) []Matchevent {
 // INPUTS:
 //	 	seed(the same one used to compute the match)
 // 		matchLog decoded: uint32[15] with entries as specified below
-// 		matchEvents: uint256[2+5*ROUNDS_PER_MATCH], where ROUNDS = 12 => 62 numbers
+// 		blockchainEvents: uint256[2+5*ROUNDS_PER_MATCH], where ROUNDS = 12 => 62 numbers
 // 		bool is2ndHalf
 // INPUTS.MATCHLOG:
 //  	0 teamSumSkills
@@ -194,14 +194,14 @@ func adjustSubstitutions(events []Matchevent) []Matchevent {
 // 				(type == 4,5) 						: null
 // 				(type == 6) 						: getting inside field
 
-func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, is2ndHalf bool) ([]Matchevent, error) {
+func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, blockchainEvents []*big.Int, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, is2ndHalf bool) ([]Matchevent, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
 	var emptyEvents []Matchevent
 
 	// check 1:
-	if (len(matchEvents)-2)%5 != 0 {
-		return emptyEvents, errors.New("the length of matchEvents should be 2 + a multiple of")
+	if (len(blockchainEvents)-2)%5 != 0 {
+		return emptyEvents, errors.New("the length of blockchainEvents should be 2 + a multiple of")
 	}
 
 	// check 2:
@@ -212,7 +212,7 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 	}
 
 	// Compute main events: per-round, and cards & injuries
-	events, rounds2mins := addEventsInRound(seed, matchEvents, NULL)
+	events, rounds2mins := addEventsInRound(seed, blockchainEvents, NULL)
 	events = addCardsAndInjuries(events, seed, matchLog, rounds2mins, NULL, NOONE)
 	events = addSubstitutions(events, seed, matchLog, rounds2mins, lineup, substitutions, subsRounds, NULL)
 
