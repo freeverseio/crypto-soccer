@@ -174,10 +174,7 @@ console.log("here")
                                             const rnd = Math.floor(Math.random() * 1000000);
                                             const now = new Date();
                                             const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
-                                            const sellerAccount = await web3.eth.accounts.create("iamaseller");
-                                            console.log("Becoming the owner of the Academy...");
-                                            await market.methods.setAcademyAddr(sellerAccount.address);
-                                            console.log("Becoming the owner of the Academy...done");
+                                            const sellerAccount = await web3.eth.accounts.privateKeyToAccount("0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709");
                                             const currencyId = 1;
                                             const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, player.playerId, sellerAccount);
                                             const seller = sellerAccount.address;
