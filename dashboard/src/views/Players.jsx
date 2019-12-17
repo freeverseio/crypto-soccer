@@ -5,6 +5,34 @@ import { useMutation } from '@apollo/react-hooks';
 import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
 const uuidv1 = require('uuid/v1');
 
+const CREATE_PLAYER = gql`
+mutation CreateSpecialPlayer(
+    $playerId: String!
+    $name: String!
+    $defence: Int!
+    $speed: Int!
+    $pass: Int!
+    $shoot: Int!
+    $endurance: Int!
+    $preferredPosition: String!
+    $potential: Int!
+    $dayOfBirth: Int!
+    ) {
+        createSpecialPlayer(
+            playerId: $playerId
+            name: $name
+            defence: $defence
+            speed: $speed
+            pass: $pass
+            shoot: $shoot
+            endurance: $endurance
+            preferredPosition: $preferredPosition
+            potential: $potential
+            dayOfBirth: $dayOfBirth
+        )
+    }
+`;
+
 const CREATE_AUCTION = gql`
 mutation CreateAuction(
   $uuid: UUID!
