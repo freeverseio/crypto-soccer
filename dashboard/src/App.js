@@ -14,8 +14,8 @@ const marketJSON = require("./contracts/Market.json");
 
 // const web3 = new Web3(Web3.givenProvider || 'http://165.22.66.118:8545');
 const web3 = new Web3('http://165.22.66.118:8545');
-const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x7058c864D752bC8c12C001611fc417b92B370A2C");
-const market = new web3.eth.Contract(marketJSON.abi, "0x7Ff2f2A42191226FF7C1Aa7f5ca4Fb70dF8DE469");
+const privileged = new web3.eth.Contract(privilegedJSON.abi, "0x169dCd95cCD6384D58D51549a33904EDD28A9e7D");
+const market = new web3.eth.Contract(marketJSON.abi, "0xF51a67e33A5534DaA8bbBaEb4334d849Dc574C05");
 
 const url = 'http://165.22.66.118:4000/graphiql';
 const client = new ApolloClient({
