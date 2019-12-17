@@ -1,12 +1,11 @@
-package names
+package matchevents
 
 import (
 	"errors"
 	"hash/fnv"
 	"math"
 	"math/big"
-
-	_ "github.com/mattn/go-sqlite3"
+	"testing"
 )
 
 func int_hash(s string) uint64 {
@@ -64,7 +63,7 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 // 				(type == 4,5) 						: null
 // 				(type == 6) 						: getting inside field
 
-func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
+func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
 	NULL := int16(-1)
 	var events [][6]int16
 	// matchLog0 := matchEvents[0]
@@ -78,7 +77,7 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 
 	lastMinute := uint64(0)
 	var rounds2mins []uint64
-	for e := 2; e < nEvents; e++ {
+	for e := 0; e < nEvents; e++ {
 		// compute minute
 		minute := uint64(math.Floor(float64(e)*deltaMinutes)) + GenerateRnd(seed, "a", deltaMinutesInt)
 		if minute <= lastMinute {
@@ -106,7 +105,6 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 		}
 		events = append(events, thisEvent)
 	}
-
 	// event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
 	// eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
 	// recards and injuries
@@ -130,6 +128,7 @@ func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.
 		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
+
 	yellowCardPlayer := int16(matchLog[7])
 	if yellowCardPlayer < 14 {
 		maxMinute := int16(45)
