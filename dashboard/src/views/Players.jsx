@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Container, Form, Segment, Label, Input, Card, Button, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
+import signPutAssetForSaleMTx from './marketUtils';
 const uuidv1 = require('uuid/v1');
 
 const ALL_PLAYER_IN_ACCADEMY = gql`

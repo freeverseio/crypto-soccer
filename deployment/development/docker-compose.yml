@@ -56,6 +56,10 @@ services:
       --ethereum "http://ethereum:8545"
   relay.db:
     image: freeverseio/relay.db:$TAG
+  dashboard: 
+    image: freeverseio/dashboard:$TAG
+    ports:
+      - "8080:80"
   horizon:
     image: freeverseio/horizon:$TAG
     depends_on:
