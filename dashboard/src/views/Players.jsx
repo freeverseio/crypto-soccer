@@ -1,9 +1,63 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Card, Button, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
-import { useMutation } from '@apollo/react-hooks';
-import { concatHash, getMessageHash, signPutAssetForSaleMTx, signAgreeToBuyPlayerMTx, signAgreeToBuyTeamMTx } from './marketUtils'
+import { useMutation, useQuery } from '@apollo/react-hooks';
+import signPutAssetForSaleMTx from './marketUtils';
 const uuidv1 = require('uuid/v1');
+
+const ALL_PLAYER_IN_ACCADEMY = gql`
+query {
+    allPlayers(condition: { teamId: "1" }) {
+        nodes {
+          playerId
+          name
+          defence
+          speed
+          pass
+          shoot
+          endurance
+        }
+      }
+}
+`;
+
+const CREATE_PLAYER = gql`
+mutation CreateSpecialPlayer(
+    $playerId: String!
+    $name: String!
+    $defence: Int!
+    $speed: Int!
+    $pass: Int!
+    $shoot: Int!
+    $endurance: Int!
+    $preferredPosition: String!
+    $potential: Int!
+    $dayOfBirth: Int!
+    ) {
+        createSpecialPlayer(
+            playerId: $playerId
+            name: $name
+            defence: $defence
+            speed: $speed
+            pass: $pass
+            shoot: $shoot
+            endurance: $endurance
+            preferredPosition: $preferredPosition
+            potential: $potential
+            dayOfBirth: $dayOfBirth
+        )
+    }
+`;
+
+const DELETE_PLAYER = gql`
+mutation DeleteAcademyPlayer(
+    $playerId: String!
+    ) {
+        deleteSpecialPlayer(
+            playerId: $playerId
+        )
+    }
+`;
 
 const CREATE_AUCTION = gql`
 mutation CreateAuction(
@@ -41,11 +95,13 @@ export default function SpecialPlayer(props) {
     const [forwardness, setForwardness] = useState(2000);
     const [leftishness, setLeftishness] = useState(2000);
     const [aggressiveness, setAggressiveness] = useState(2000);
-    const [age, setAge] = useState(2000);
+    const [age, setAge] = useState(17);
     const [name, setName] = useState('Johnnie Freeverse');
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
     const [createAuction] = useMutation(CREATE_AUCTION);
+    const [createAcademyPlayer] = useMutation(CREATE_PLAYER);
+    const [deleteAcademyPlayer] = useMutation(DELETE_PLAYER);
 
     async function generatePlayerId() {
         const { privileged } = props;
@@ -54,7 +110,6 @@ export default function SpecialPlayer(props) {
         const traits = [potential, forwardness, leftishness, aggressiveness];
         const secsInYear = 365 * 24 * 3600
         const internalId = Math.floor(Math.random() * 1000000);
-
         const playerId = await privileged.methods.createSpecialPlayer(
             sk,
             age * secsInYear,
@@ -62,36 +117,125 @@ export default function SpecialPlayer(props) {
             internalId
         ).call();
 
+console.log("here")
         return playerId;
     }
 
+    function AccademyPlayers() {
+        const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
+            pollInterval: 2000,
+        });
+
+        if (loading) return null;
+        if (error) return `Error! ${error}`;
+
+        const players = data.allPlayers.nodes;
+        return (
+            <Card.Group>
+                {
+                    players.map((player, key) => {
+                        return (
+                            <Card key={key}>
+                                <Card.Content>
+                                    <Card.Header>{player.name}</Card.Header>
+                                    <Card.Meta>id: {player.playerId}</Card.Meta>
+                                    <Card.Description>
+                                        <List>
+                                            <List.Item>
+                                                <List.Icon name='users' />
+                                                <List.Content>{player.shoot}</List.Content>
+                                            </List.Item>
+                                        </List>
+                                    </Card.Description>
+                                </Card.Content>
+                                <Card.Content extra>
+                                    <Form>
+                                        <Form.Field>
+                                            <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
+                                                <Label basic>Price</Label>
+                                                <input />
+                                                <Label>€</Label>
+                                            </Input>
+                                        </Form.Field>
+                                        <Form.Field>
+                                            <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
+                                                <Label basic>Timeout</Label>
+                                                <input />
+                                                <Label>sec</Label>
+                                            </Input>
+                                        </Form.Field>
+                                    </Form>
+                                    <div className='ui two buttons'>
+                                        <Button basic color='green' onClick={async () => {
+                                            const { web3, market } = props;
+                                            const rnd = Math.floor(Math.random() * 1000000);
+                                            const now = new Date();
+                                            const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
+                                            const sellerAccount = await web3.eth.accounts.create("iamaseller");
+                                            console.log("Becoming the owner of the Academy...");
+                                            await market.methods.setAcademyAddr(sellerAccount.address);
+                                            console.log("Becoming the owner of the Academy...done");
+                                            const currencyId = 1;
+                                            const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, player.playerId, sellerAccount);
+                                            const seller = sellerAccount.address;
+                                            createAuction({
+                                                variables: {
+                                                    uuid: uuidv1(),
+                                                    playerId: player.playerId,
+                                                    currencyId: currencyId,
+                                                    price: Number(price),
+                                                    rnd: Number(rnd),
+                                                    validUntil: validUntil,
+                                                    signature: signature.signature,
+                                                    seller: seller,
+                                                }
+                                            });
+                                        }}>
+                                            Sell
+                                        </Button>
+                                        <Button basic color='red' onClick={() => {
+                                            deleteAcademyPlayer({
+                                                variables: {
+                                                    playerId: player.playerId,
+                                                }
+                                            })
+                                        }
+                                        }>
+                                            Kill
+                                        </Button>
+                                    </div>
+                                </Card.Content>
+                            </Card>
+                        );
+                    })
+                }
+            </Card.Group>
+        )
+    }
+
     async function handleSubmit(e) {
-        const { web3, market } = props;
         e.preventDefault();
 
         const playerId = await generatePlayerId();
-        const rnd = Math.floor(Math.random() * 1000000);
         const now = new Date();
-        const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
-        const sellerAccount = await web3.eth.accounts.create("iamaseller");
-        console.log("Becoming the owner of the Academy...");
-        await market.methods.setAcademyAddr(sellerAccount.address);
-        console.log("Becoming the owner of the Academy...done");
-      
-        const currencyId = 1;
-        const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, playerId, sellerAccount);
-        const seller = sellerAccount.address;
-        createAuction({variables: {
-            uuid: uuidv1(),
-            playerId: playerId,
-            currencyId: currencyId,
-            price: Number(price),
-            rnd: Number(rnd),
-            validUntil: validUntil,
-            signature: signature.signature,
-            seller: seller,
-        }});
-        console.log("Correctly sent new Academy player creation!");
+
+        console.log("Creating player ", playerId);
+
+        createAcademyPlayer({ // use the block chain to retrive all the values from the playerId
+            variables: {
+                playerId: playerId,
+                name: name,
+                defence: defence,
+                speed: speed,
+                pass: pass,
+                shoot: shoot,
+                endurance: endurance,
+                preferredPosition: "TODO",
+                potential: potential,
+                dayOfBirth: 16950,
+            }
+        });
+        console.log("dewewewew")
     }
 
     return (
@@ -148,23 +292,10 @@ export default function SpecialPlayer(props) {
                             <input placeholder='Age' type='number' value={age} onChange={event => setAge(event.target.value)} />
                         </Form.Field>
                     </Form.Group>
-                    <Form.Field>
-                        <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
-                            <Label basic>Price</Label>
-                            <input />
-                            <Label>€</Label>
-                        </Input>
-                    </Form.Field>
-                    <Form.Field>
-                        <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
-                            <Label basic>Timeout</Label>
-                            <input />
-                            <Label>sec</Label>
-                        </Input>
-                    </Form.Field>
                     <Form.Button type='submit'>Create</Form.Button>
                 </Form>
             </Segment>
+            <AccademyPlayers />
         </Container>
     );
 };

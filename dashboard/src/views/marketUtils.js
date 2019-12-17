@@ -94,10 +94,4 @@ function concatHash(web3, types, vals) {
     return sigBuyer;
   }
   
-  module.exports = {
-    concatHash,
-    getMessageHash,
-    signPutAssetForSaleMTx,
-    signAgreeToBuyPlayerMTx,
-    signAgreeToBuyTeamMTx
-  }
+  export default signPutAssetForSaleMTx;
