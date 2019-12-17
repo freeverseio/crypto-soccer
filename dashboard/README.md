@@ -1,7 +1,3 @@
-## First, run the node locally of the BC where we have the contracts deployed:
-docker run -p 8545:8545 -t freeverseio/ethereum:dev --bootnodes enode://d851675a89ee5e08fbd0466d348172c0a65e0b560541d4f281fc10ea0731b100d1782bbf497b9d4bed6c18f3ade9bcac74aa47ee728d3dd1e21fd081eab89da6@165.22.66.118:30303
-
-
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

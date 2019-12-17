@@ -11,7 +11,6 @@ const MyPlugin = () => {
         createSpecialPlayer(
           playerId: String!,
           name: String!,
-          teamId: String!,
           defence: Int!,
           speed: Int!,
           pass: Int!,
@@ -49,7 +48,7 @@ const MyPlugin = () => {
               injury_matches_left) VALUES (
                 ${sql.value(name)},
                 ${sql.value(playerId)},
-                ${sql.value('1')},
+                ${sql.value('1')}, 
                 ${sql.value(defence)}, 
                 ${sql.value(speed)},
                 ${sql.value(pass)},
