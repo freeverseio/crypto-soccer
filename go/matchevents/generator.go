@@ -23,55 +23,9 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 	return result % max_val
 }
 
-// INPUTS:
-//	 	seed(the same one used to compute the match)
-// 		matchLog decoded: uint32[15] with entries as specified below
-// 		matchEvents: uint256[2+5*ROUNDS_PER_MATCH], where ROUNDS = 12 => 62 numbers
-// 		bool is2ndHalf
-// INPUTS.MATCHLOG:
-//  	teamSumSkills
-//  	winner: 0 = home, 1 = away, 2 = draw
-//  	nGoals
-//  	trainingPoints
-//  	uint8 memory outOfGames
-//  	uint8 memory typesOutOfGames,
-//     		 injuryHard:  1
-//     		 injuryLow:   2
-//     		 redCard:     3
-//  	uint8 memory outOfGameRounds
-//  	uint8[2] memory yellowCards
-//  	uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
-//  	uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
-// OUTPUTS:
-//		an array of variable size, where each entry is an array of 6 uint16
-//			0: minute
-// 			1: eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
-// 				see: getInGameSubsHappened
-// 			2: managesToShoot
-// 			3: isGoal
-// 			4: primary player (0...11):
-// 				(type == 0, 1) && managesToShoot 	: shooter
-// 				(type == 0, 1) && !managesToShoot 	: tackler
-// 				(type == 2) 						: yellowCarded
-// 				(type == 3) 						: redCarded
-// 				(type == 4,5) 						: injured
-// 				(type == 6) 						: getting out of field
-// 			5: secondary player (0...11):
-// 				(type == 0, 1) && managesToShoot 	: assister
-// 				(type == 0, 1) && !managesToShoot 	: null
-// 				(type == 2) 						: null
-// 				(type == 3) 						: null
-// 				(type == 4,5) 						: null
-// 				(type == 6) 						: getting inside field
-
-func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
-	NULL := int16(-1)
+// output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
+func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]int16, []uint64) {
 	var events [][6]int16
-	// matchLog0 := matchEvents[0]
-	// matchLog1 := matchEvents[1]
-	if (len(matchEvents)-2)%5 != 0 {
-		return events, errors.New("the length of matchEvents should be 2 + a multiple of")
-	}
 	nEvents := (len(matchEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / (nEvents * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
@@ -108,17 +62,14 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 		}
 		events = append(events, thisEvent)
 	}
-	// event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
-	// eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
-	// recards and injuries
+	return events, rounds2mins
+}
+
+func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) ([][6]int16) {
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
-	NOONE := int16(14)
 	outOfGamePlayer := int16(matchLog[5])
 	thereWasAnOutOfGame := outOfGamePlayer < NOONE
 	if thereWasAnOutOfGame {
-		if matchLog[5] > 3 || matchLog[5] == 0 {
-			return events, errors.New("received an incorrect matchlog entry for matchLog")
-		}
 		var typeOfEvent int16
 		if matchLog[5] == 1 {
 			typeOfEvent = 5
@@ -156,21 +107,71 @@ func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, match
 		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
+	return events
+}
 
-	// rounds2mins
-	//  	0 teamSumSkills
-	//  	1 winner: 0 = home, 1 = away, 2 = draw
-	//  	2 nGoals
-	//  	3 trainingPoints
-	//  	4 uint8 memory outOfGames
-	//  	5 uint8 memory typesOutOfGames,
-	//     		 injuryHard:  1
-	//     		 injuryLow:   2
-	//     		 redCard:     3
-	//  	6 uint8 memory outOfGameRounds
-	//  	7,8 uint8[2] memory yellowCards
-	//  	9,10,11 uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
-	//  	12,13,14 uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
+// INPUTS:
+//	 	seed(the same one used to compute the match)
+// 		matchLog decoded: uint32[15] with entries as specified below
+// 		matchEvents: uint256[2+5*ROUNDS_PER_MATCH], where ROUNDS = 12 => 62 numbers
+// 		bool is2ndHalf
+// INPUTS.MATCHLOG:
+//  	0 teamSumSkills
+//  	1 winner: 0 = home, 1 = away, 2 = draw
+//  	2 nGoals
+//  	3 trainingPoints
+//  	4 uint8 memory outOfGames
+//  	5 uint8 memory typesOutOfGames,
+//     		 injuryHard:  1
+//     		 injuryLow:   2
+//     		 redCard:     3
+//  	6 uint8 memory outOfGameRounds
+//  	7,8 uint8[2] memory yellowCards
+//  	9,10,11 uint8[3] memory ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
+//  	12,13,14 uint8[3] memory halfTimeSubstitutions: 0...10 the player in the starting 11 that was changed during half time
+// OUTPUTS:
+//		an array of variable size, where each entry is an array of 6 uint16
+//			0: minute
+// 			1: eventType (0 = team 0 attacks, 1 = team 1 attacks, 2 = yellowCard, 3 = redCard, 4 = injurySoft, 5 = injuryHard, 6 = substitutions)
+// 				see: getInGameSubsHappened
+// 			2: managesToShoot
+// 			3: isGoal
+// 			4: primary player (0...11):
+// 				(type == 0, 1) && managesToShoot 	: shooter
+// 				(type == 0, 1) && !managesToShoot 	: tackler
+// 				(type == 2) 						: yellowCarded
+// 				(type == 3) 						: redCarded
+// 				(type == 4,5) 						: injured
+// 				(type == 6) 						: getting out of field
+// 			5: secondary player (0...11):
+// 				(type == 0, 1) && managesToShoot 	: assister
+// 				(type == 0, 1) && !managesToShoot 	: null
+// 				(type == 2) 						: null
+// 				(type == 3) 						: null
+// 				(type == 4,5) 						: null
+// 				(type == 6) 						: getting inside field
+
+func GenerateMatchEvents(t *testing.T, seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, is2ndHalf bool) ([][6]int16, error) {
+	NULL := int16(-1)
+	NOONE := int16(14)
+	var emptyEvents [][6]int16
+
+	// check 1:
+	if (len(matchEvents)-2)%5 != 0 {
+		return emptyEvents, errors.New("the length of matchEvents should be 2 + a multiple of")
+	}
+	
+	// check 2:
+	outOfGamePlayer := int16(matchLog[5])
+	thereWasAnOutOfGame := outOfGamePlayer < NOONE
+	if thereWasAnOutOfGame && (matchLog[5] > 3 || matchLog[5] == 0) {
+		return emptyEvents, errors.New("received an incorrect matchlog entry for matchLog")
+	}
+
+
+	// Compute main events: per-round, and cards & injuries
+	events, rounds2mins := addEventsInRound(seed, matchEvents, NULL)
+	events = addCardsAndInjuries(events, seed, matchLog, rounds2mins, NULL, NOONE)
 
 	return events, nil
 }
