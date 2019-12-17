@@ -8,6 +8,15 @@ import (
 	"strconv"
 )
 
+type Matchevent struct {
+	Minute          int16 `json:"minute"`
+	Type            int16 `json:"type"`
+	ManagesToShoot  int16 `json:"managestoshoot"`
+	IsGoal          int16 `json:"isgoal"`
+	PrimaryPlayer   int16 `json:"primaryplayer"`
+	SecondaryPlayer int16 `json:"secondaryplayer"`
+}
+
 func int_hash(s string) uint64 {
 	h := fnv.New64a()
 	h.Write([]byte(s))
@@ -23,8 +32,8 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 }
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
-func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]int16, []uint64) {
-	var events [][6]int16
+func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
+	var events []Matchevent
 	nEvents := (len(matchEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / (nEvents * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
@@ -46,25 +55,25 @@ func addEventsInRound(seed *big.Int, matchEvents []*big.Int, NULL int16) ([][6]i
 		shooter := matchEvents[2+5*e+2]
 		isGoal := matchEvents[2+5*e+3]
 		assister := matchEvents[2+5*e+4]
-		var thisEvent [6]int16
-		thisEvent[0] = int16(minute)
-		thisEvent[1] = int16(teamThatAttacks.Int64())
-		thisEvent[2] = int16(managesToShoot.Int64())
-		thisEvent[3] = int16(isGoal.Int64())
+		var thisEvent Matchevent
+		thisEvent.Minute = int16(minute)
+		thisEvent.Type = int16(teamThatAttacks.Int64())
+		thisEvent.ManagesToShoot = int16(managesToShoot.Int64())
+		thisEvent.IsGoal = int16(isGoal.Int64())
 		if managesToShoot.Int64() == 1 {
-			thisEvent[4] = int16(shooter.Int64())
-			thisEvent[5] = int16(assister.Int64())
+			thisEvent.PrimaryPlayer = int16(shooter.Int64())
+			thisEvent.SecondaryPlayer = int16(assister.Int64())
 		} else {
 			salt := "b" + strconv.Itoa(int(e))
-			thisEvent[4] = int16(1 + GenerateRnd(seed, salt, 9))
-			thisEvent[5] = NULL
+			thisEvent.PrimaryPlayer = int16(1 + GenerateRnd(seed, salt, 9))
+			thisEvent.SecondaryPlayer = NULL
 		}
 		events = append(events, thisEvent)
 	}
 	return events, rounds2mins
 }
 
-func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) [][6]int16 {
+func addCardsAndInjuries(events []Matchevent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) []Matchevent {
 	// matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	outOfGamePlayer := int16(matchLog[4])
@@ -79,7 +88,7 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 			typeOfEvent = 3
 		}
 		minute := int16(rounds2mins[matchLog[6]])
-		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, outOfGamePlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, NULL, NULL, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -92,7 +101,7 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := int16(2)
-		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	yellowCardPlayer = int16(matchLog[8])
@@ -104,13 +113,13 @@ func addCardsAndInjuries(events [][6]int16, seed *big.Int, matchLog [15]uint32, 
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := int16(2)
-		thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, NULL, NULL, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	return events
 }
 
-func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16) [][6]int16 {
+func addSubstitutions(events []Matchevent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16) []Matchevent {
 	// matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
 	for i := 0; i < 3; i++ {
 		subHappened := matchLog[9+i] == 1
@@ -119,7 +128,7 @@ func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rou
 			leavingPlayer := int16(substitutions[i])
 			enteringPlayer := int16(lineup[11+i])
 			typeOfEvent := int16(6)
-			thisEvent := [6]int16{minute, typeOfEvent, NULL, NULL, leavingPlayer, enteringPlayer}
+			thisEvent := Matchevent{minute, typeOfEvent, NULL, NULL, leavingPlayer, enteringPlayer}
 			events = append(events, thisEvent)
 		}
 	}
@@ -128,15 +137,15 @@ func addSubstitutions(events [][6]int16, seed *big.Int, matchLog [15]uint32, rou
 
 // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
 // then the substitution time must take place at least before that minute.
-func adjustSubstitutions(events [][6]int16) [][6]int16 {
+func adjustSubstitutions(events []Matchevent) []Matchevent {
 	adjustedEvents := events
 	for e := 0; e < len(events); e++ {
-		if events[e][1] == 6 {
-			enteringPlayer := events[e][5]
-			enteringMin := events[e][0]
+		if events[e].Type == 6 {
+			enteringPlayer := events[e].SecondaryPlayer
+			enteringMin := events[e].Minute
 			for e2 := 0; e2 < len(events); e2++ {
-				if (e != e2) && (enteringPlayer == events[e2][4]) && (enteringMin >= events[e2][0]-1)  {
-					adjustedEvents[e][0] = events[e2][0]-1
+				if (e != e2) && (enteringPlayer == events[e2].PrimaryPlayer) && (enteringMin >= events[e2].Minute-1) {
+					adjustedEvents[e].Minute = events[e2].Minute - 1
 				}
 			}
 		}
@@ -185,10 +194,10 @@ func adjustSubstitutions(events [][6]int16) [][6]int16 {
 // 				(type == 4,5) 						: null
 // 				(type == 6) 						: getting inside field
 
-func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, is2ndHalf bool) ([][6]int16, error) {
+func GenerateMatchEvents(seed *big.Int, matchLog [15]uint32, matchEvents []*big.Int, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, is2ndHalf bool) ([]Matchevent, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
-	var emptyEvents [][6]int16
+	var emptyEvents []Matchevent
 
 	// check 1:
 	if (len(matchEvents)-2)%5 != 0 {

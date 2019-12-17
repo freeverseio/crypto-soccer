@@ -54,15 +54,19 @@ func TestMatchEvents(t *testing.T) {
 		t.Fatalf("error: %s", err)
 	}
 	concat := ""
-	nRows := len(computedEvents[0])
 	for i := 0; i < len(computedEvents); i++ {
 		concat += "["
-		for j := 0; j < nRows; j++ {
-			concat += strconv.Itoa(int(computedEvents[i][j]))
-			if j < nRows-1 {
-				concat += ", "
-			}
-		}
+		concat += strconv.Itoa(int(computedEvents[i].Minute))
+		concat += ", "
+		concat += strconv.Itoa(int(computedEvents[i].Type))
+		concat += ", "
+		concat += strconv.Itoa(int(computedEvents[i].ManagesToShoot))
+		concat += ", "
+		concat += strconv.Itoa(int(computedEvents[i].IsGoal))
+		concat += ", "
+		concat += strconv.Itoa(int(computedEvents[i].PrimaryPlayer))
+		concat += ", "
+		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
 	expected := "[1, 0, 1, 1, 10, 2][4, 1, 0, 0, 7, -1][8, 1, 1, 0, 8, 0][9, 0, 0, 0, 9, -1][14, 0, 0, 0, 4, -1][15, 0, 0, 0, 3, -1][19, 0, 0, 0, 6, -1][23, 0, 0, 0, 5, -1][26, 0, 0, 0, 9, -1][27, 0, 0, 0, 8, -1][30, 0, 0, 0, 7, -1][35, 0, 0, 0, 8, -1][15, 3, -1, -1, 12, -1][9, 2, -1, -1, 4, -1][14, 6, -1, -1, 5, 19][14, 6, -1, -1, 1, 12]"
