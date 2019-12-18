@@ -151,7 +151,9 @@ export default function SpecialPlayer(props) {
                                         </List>
                                     </Item.Description>
                                     <Item.Extra>
+
                                         <Form>
+                                            <Input label='Price' type='number' value={price} onChange={event => setPrice(event.target.value)} />
                                             <Form.Field>
                                                 <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
                                                     <Label basic>Price</Label>
@@ -167,12 +169,8 @@ export default function SpecialPlayer(props) {
                                                 </Input>
                                             </Form.Field>
                                         </Form>
-                                    </Item.Extra>
-                                </Item.Content>
-                                <Item.Content extra>
-
-                                    <div className='ui two buttons'>
-                                        <Button basic color='green' onClick={async () => {
+<div className='ui two buttons'>
+                                        <Button floated='right' basic color='green' onClick={async () => {
                                             const { web3 } = props;
                                             const rnd = Math.floor(Math.random() * 1000000);
                                             const now = new Date();
@@ -207,6 +205,11 @@ export default function SpecialPlayer(props) {
                                             Kill
                                         </Button>
                                     </div>
+                                    </Item.Extra>
+                                </Item.Content>
+                                <Item.Content extra>
+
+                                    
                                 </Item.Content>
                             </Item>
                         );
