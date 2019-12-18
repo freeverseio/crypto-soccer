@@ -3,15 +3,15 @@ services:
   ethereum: 
     build: ../../docker/ethereum-node-test
     ports: 
-      - "8545:8545"
+      - "18545:8545"
   universe.db:
     build: ../../universe.db/
     ports:
-      - "5432:5432"
+      - "15432:5432"
   relay.db:
     build: ../../relay.db/
     ports:
-      - "5433:5432"
+      - "15433:5432"
   ipfs:
     image: ipfs/go-ipfs:v0.4.18
     environment:

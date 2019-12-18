@@ -50,7 +50,7 @@ func NewBlockchainNodeDeployAndInit() (*BlockchainNode, error) {
 }
 
 func NewBlockchainNode() (*BlockchainNode, error) {
-	client, err := ethclient.Dial("http://localhost:8545")
+	client, err := ethclient.Dial("http://localhost:18545")
 	if err != nil {
 		return nil, err
 	}
