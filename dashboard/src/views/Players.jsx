@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Card, Button, List } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Item, Button, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import signPutAssetForSaleMTx from './marketUtils';
@@ -120,7 +120,7 @@ export default function SpecialPlayer(props) {
             internalId
         ).call();
 
-console.log("here")
+        console.log("here")
         return playerId;
     }
 
@@ -134,43 +134,46 @@ console.log("here")
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group>
+            <Item.Group>
                 {
                     players.map((player, key) => {
                         return (
-                            <Card key={key}>
-                                <Card.Content>
-                                    <Card.Header>{player.name}</Card.Header>
-                                    <Card.Meta>id: {player.playerId}</Card.Meta>
-                                    <Card.Description>
+                            <Item key={key}>
+                                <Item.Content>
+                                    <Item.Header>{player.name}</Item.Header>
+                                    <Item.Meta>id: {player.playerId}</Item.Meta>
+                                    <Item.Description>
                                         <List>
                                             <List.Item>
                                                 <List.Icon name='users' />
                                                 <List.Content>{player.shoot}</List.Content>
                                             </List.Item>
                                         </List>
-                                    </Card.Description>
-                                </Card.Content>
-                                <Card.Content extra>
-                                    <Form>
-                                        <Form.Field>
-                                            <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
-                                                <Label basic>Price</Label>
-                                                <input />
-                                                <Label>€</Label>
-                                            </Input>
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
-                                                <Label basic>Timeout</Label>
-                                                <input />
-                                                <Label>sec</Label>
-                                            </Input>
-                                        </Form.Field>
-                                    </Form>
+                                    </Item.Description>
+                                    <Item.Extra>
+                                        <Form>
+                                            <Form.Field>
+                                                <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
+                                                    <Label basic>Price</Label>
+                                                    <input />
+                                                    <Label>€</Label>
+                                                </Input>
+                                            </Form.Field>
+                                            <Form.Field>
+                                                <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
+                                                    <Label basic>Timeout</Label>
+                                                    <input />
+                                                    <Label>sec</Label>
+                                                </Input>
+                                            </Form.Field>
+                                        </Form>
+                                    </Item.Extra>
+                                </Item.Content>
+                                <Item.Content extra>
+
                                     <div className='ui two buttons'>
                                         <Button basic color='green' onClick={async () => {
-                                            const { web3, market } = props;
+                                            const { web3 } = props;
                                             const rnd = Math.floor(Math.random() * 1000000);
                                             const now = new Date();
                                             const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
@@ -204,12 +207,12 @@ console.log("here")
                                             Kill
                                         </Button>
                                     </div>
-                                </Card.Content>
-                            </Card>
+                                </Item.Content>
+                            </Item>
                         );
                     })
                 }
-            </Card.Group>
+            </Item.Group>
         )
     }
 
@@ -217,7 +220,6 @@ console.log("here")
         e.preventDefault();
 
         const playerId = await generatePlayerId();
-        const now = new Date();
 
         console.log("Creating player ", playerId);
 
