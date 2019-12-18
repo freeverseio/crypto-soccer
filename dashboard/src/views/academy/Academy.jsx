@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Card, Button, List } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Item } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import signPutAssetForSaleMTx from './marketUtils';
-const uuidv1 = require('uuid/v1');
+import AcademyPlayer from './AcademyPlayer';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -49,41 +48,7 @@ mutation CreateSpecialPlayer(
     }
 `;
 
-const DELETE_PLAYER = gql`
-mutation DeleteAcademyPlayer(
-    $playerId: String!
-    ) {
-        deleteSpecialPlayer(
-            playerId: $playerId
-        )
-    }
-`;
 
-const CREATE_AUCTION = gql`
-mutation CreateAuction(
-  $uuid: UUID!
-  $playerId: String!
-  $currencyId: Int!
-  $price: Int!
-  $rnd: Int!
-  $validUntil: String!
-  $signature: String!
-  $seller: String!
-) {
-  createAuction(
-    input: {
-      uuid: $uuid
-      playerId: $playerId
-      currencyId: $currencyId
-      price: $price
-      rnd: $rnd
-      validUntil: $validUntil
-      signature: $signature
-      seller: $seller
-    }
-  )
-}
-`;
 
 export default function SpecialPlayer(props) {
     const [shoot, setShoot] = useState(50);
@@ -97,11 +62,8 @@ export default function SpecialPlayer(props) {
     const [aggressiveness, setAggressiveness] = useState(3);
     const [age, setAge] = useState(19);
     const [name, setName] = useState('Johnnie Freeverse');
-    const [price, setPrice] = useState(50);
-    const [timeout, setTimeout] = useState(3600);
-    const [createAuction] = useMutation(CREATE_AUCTION);
+
     const [createAcademyPlayer] = useMutation(CREATE_PLAYER);
-    const [deleteAcademyPlayer] = useMutation(DELETE_PLAYER);
 
     async function generatePlayerId() {
         const { privileged } = props;
@@ -120,7 +82,7 @@ export default function SpecialPlayer(props) {
             internalId
         ).call();
 
-console.log("here")
+        console.log("here")
         return playerId;
     }
 
@@ -134,82 +96,15 @@ console.log("here")
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group>
+            <Item.Group>
                 {
                     players.map((player, key) => {
                         return (
-                            <Card key={key}>
-                                <Card.Content>
-                                    <Card.Header>{player.name}</Card.Header>
-                                    <Card.Meta>id: {player.playerId}</Card.Meta>
-                                    <Card.Description>
-                                        <List>
-                                            <List.Item>
-                                                <List.Icon name='users' />
-                                                <List.Content>{player.shoot}</List.Content>
-                                            </List.Item>
-                                        </List>
-                                    </Card.Description>
-                                </Card.Content>
-                                <Card.Content extra>
-                                    <Form>
-                                        <Form.Field>
-                                            <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
-                                                <Label basic>Price</Label>
-                                                <input />
-                                                <Label>€</Label>
-                                            </Input>
-                                        </Form.Field>
-                                        <Form.Field>
-                                            <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
-                                                <Label basic>Timeout</Label>
-                                                <input />
-                                                <Label>sec</Label>
-                                            </Input>
-                                        </Form.Field>
-                                    </Form>
-                                    <div className='ui two buttons'>
-                                        <Button basic color='green' onClick={async () => {
-                                            const { web3, market } = props;
-                                            const rnd = Math.floor(Math.random() * 1000000);
-                                            const now = new Date();
-                                            const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
-                                            const sellerAccount = await web3.eth.accounts.privateKeyToAccount("0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709");
-                                            const currencyId = 1;
-                                            const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, player.playerId, sellerAccount);
-                                            const seller = sellerAccount.address;
-                                            createAuction({
-                                                variables: {
-                                                    uuid: uuidv1(),
-                                                    playerId: player.playerId,
-                                                    currencyId: currencyId,
-                                                    price: Number(price),
-                                                    rnd: Number(rnd),
-                                                    validUntil: validUntil,
-                                                    signature: signature.signature,
-                                                    seller: seller,
-                                                }
-                                            });
-                                        }}>
-                                            Sell
-                                        </Button>
-                                        <Button basic color='red' onClick={() => {
-                                            deleteAcademyPlayer({
-                                                variables: {
-                                                    playerId: player.playerId,
-                                                }
-                                            })
-                                        }
-                                        }>
-                                            Kill
-                                        </Button>
-                                    </div>
-                                </Card.Content>
-                            </Card>
+                           <AcademyPlayer key={key} player={player}/> 
                         );
                     })
                 }
-            </Card.Group>
+            </Item.Group>
         )
     }
 
@@ -217,7 +112,6 @@ console.log("here")
         e.preventDefault();
 
         const playerId = await generatePlayerId();
-        const now = new Date();
 
         console.log("Creating player ", playerId);
 
