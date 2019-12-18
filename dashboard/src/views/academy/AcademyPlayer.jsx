@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  Form, Label, Input, Item, Button, List } from 'semantic-ui-react';
+import { Input, Item, Button, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import signPutAssetForSaleMTx from './marketUtils';
@@ -63,25 +63,9 @@ export default function AcademyPlayer(props) {
                     </List>
                 </Item.Description>
                 <Item.Extra>
-
-                    <Form>
                         <Input label='Price' type='number' value={price} onChange={event => setPrice(event.target.value)} />
-                        <Form.Field>
-                            <Input labelPosition='right' type='number' placeholder='Amount' value={price} onChange={event => setPrice(event.target.value)}>
-                                <Label basic>Price</Label>
-                                <input />
-                                <Label>€</Label>
-                            </Input>
-                        </Form.Field>
-                        <Form.Field>
-                            <Input labelPosition='right' type='number' value={timeout} onChange={event => setTimeout(event.target.value)}>
-                                <Label basic>Timeout</Label>
-                                <input />
-                                <Label>sec</Label>
-                            </Input>
-                        </Form.Field>
-                    </Form>
-                    <div className='ui two buttons'>
+                        <Input label='Timeout' type='number' value={timeout} onChange={event => setTimeout(event.target.value)} />
+
                         <Button floated='right' basic color='green' onClick={async () => {
                             const { web3 } = props;
                             const rnd = Math.floor(Math.random() * 1000000);
@@ -106,17 +90,14 @@ export default function AcademyPlayer(props) {
                         }}>
                             Sell
                                         </Button>
-                        <Button basic color='red' onClick={() => {
+                        <Button floated='right' value='Delete' basic color='red' onClick={() => {
                             deleteAcademyPlayer({
                                 variables: {
                                     playerId: player.playerId,
                                 }
                             })
                         }
-                        }>
-                            Kill
-                                        </Button>
-                    </div>
+                        }>Delete</Button>
                 </Item.Extra>
             </Item.Content>
         </Item>

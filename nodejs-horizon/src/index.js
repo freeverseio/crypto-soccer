@@ -37,7 +37,15 @@ const main = async () => {
 
   const linkTypeDefs = `
     extend type Player {
-      auctionsByPlayerId: AuctionsConnection
+      auctionsByPlayerId(
+        first: Int
+        last: Int
+        offset: Int
+        before: Cursor
+        after: Cursor
+        orderBy: [AuctionsOrderBy!] = [PRIMARY_KEY_ASC]
+        condition: AuctionCondition
+      ): AuctionsConnection!
     }
 
     extend type Team {
@@ -49,7 +57,7 @@ const main = async () => {
         after: Cursor
         orderBy: [TacticsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: TacticCondition
-      ): TacticsConnection
+      ): TacticsConnection!
       trainingsByTeamId(
         first: Int
         last: Int
@@ -58,9 +66,8 @@ const main = async () => {
         after: Cursor
         orderBy: [TrainingsOrderBy!] = [PRIMARY_KEY_ASC]
         condition: TrainingCondition
-      ): TrainingsConnection  
+      ): TrainingsConnection!
     }
-
 
     extend type Auction {
       playerByPlayerId: Player
