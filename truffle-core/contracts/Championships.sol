@@ -17,10 +17,10 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     uint8 constant public MATCHDAYS = 14;
     uint8 constant public MATCHES_PER_DAY = 4;
     uint8 constant public MATCHES_PER_LEAGUE = 56; // = 4 * 14 = 7*8
-    uint256 constant private INERTIA = 4;
-    uint256 constant private WEIGHT_SKILLS = 100;
-    uint256 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
-    uint256 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
+    uint64 constant private INERTIA = 4;
+    uint64 constant private WEIGHT_SKILLS = 100;
+    uint64 constant private SKILLS_AT_START = 900; // 18 players per team at start with 50 avg
+    uint64 constant private MAX_TEAMIDX_IN_COUNTRY = 268435455; // 268435455 = 2**28 - 1 
 
     Engine private _engine;
     Assets private _assets;
@@ -134,35 +134,35 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
     function computeTeamRankingPoints(
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8 leagueRanking,
-        uint256 prevPerfPoints,
+        uint64 prevPerfPoints,
         uint256 teamId
     ) 
         public
         view
-        returns (uint256 rankingPoints, uint256)
+        returns (uint64 rankingPoints, uint64)
     {
         (rankingPoints, prevPerfPoints) = computeTeamRankingPointsPure(states, leagueRanking, prevPerfPoints);
         (uint8 tz, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         if (_assets.isBotTeamInCountry(tz, countryIdxInTZ, teamIdxInCountry)) {
-            return (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry, 0); 
+            return (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry), uint64(0));
         }
-        return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - teamIdxInCountry), prevPerfPoints);
+        return ((rankingPoints << 28) + (MAX_TEAMIDX_IN_COUNTRY - uint64(teamIdxInCountry)), prevPerfPoints);
     }
 
 
     function computeTeamRankingPointsPure(
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8 leagueRanking,
-        uint256 prevPerfPoints
+        uint64 prevPerfPoints
     ) 
         public
         pure
-        returns (uint256, uint256)
+        returns (uint64, uint64)
     {
-        uint256 teamSkills;
+        uint64 teamSkills;
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             if (states[p] != 0)
-                teamSkills += getSumOfSkills(states[p]);
+                teamSkills += uint64(getSumOfSkills(states[p]));
         }
         
         // Nomenclature:    R = rankingPoints, W = Weight_Skills, SK = TeamSkills, SK0 = TeamSkillsAtStart, I = 
@@ -181,15 +181,15 @@ contract Championships is SortIdxs, EncodingSkills, EncodingIDs {
 
         // Formula in terms of pos and neg terms:
         //   pos = 10 W SK + SK0 (I P0 + 10 P1),   neg = SK0 (I P1 + 100)
-        uint256 perfPointsThisLeague = getPerfPoints(leagueRanking);
-        uint256 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
-        uint256 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
+        uint64 perfPointsThisLeague = getPerfPoints(leagueRanking);
+        uint64 pos = 10 * WEIGHT_SKILLS * teamSkills + SKILLS_AT_START * (INERTIA * prevPerfPoints + 10 * perfPointsThisLeague);
+        uint64 neg = SKILLS_AT_START * (INERTIA * perfPointsThisLeague + 100);
         prevPerfPoints = (INERTIA * prevPerfPoints + (10 - INERTIA) * perfPointsThisLeague)/10;
         if (pos > neg) return (pos-neg, prevPerfPoints);
         else return (0, prevPerfPoints);
     }
 
-    function getPerfPoints(uint8 leagueRanking) public pure returns (uint256) {
+    function getPerfPoints(uint8 leagueRanking) public pure returns (uint64) {
         if (leagueRanking == 0) return 20;
         else if (leagueRanking == 1) return 18;
         else if (leagueRanking == 2) return 15;
