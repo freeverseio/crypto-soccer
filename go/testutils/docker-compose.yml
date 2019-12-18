@@ -3,7 +3,7 @@ services:
   ethereum: 
     build: ../../docker/ethereum-node-test
     ports: 
-      - "18545:8545"
+      - "8545:8545"
   universe.db:
     build: ../../universe.db/
     ports:
