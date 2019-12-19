@@ -146,7 +146,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 				if err != nil {
 					return err
 				}
-				team.State.RankingPoints = uint32(rankingPoints.Uint64())
+				team.State.RankingPoints = rankingPoints.Uint64()
 				team.State.PrevPerfPoints = uint32(prevPerfPoints.Uint64())
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, team.State.RankingPoints)
