@@ -539,7 +539,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] < lineup[p-1], "player appears twice in lineup!");  
+        for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
         return (matchLog, outStates, tacticsId);      
     }

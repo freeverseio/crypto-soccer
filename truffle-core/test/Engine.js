@@ -59,8 +59,9 @@ contract('Engine', (accounts) => {
     function setNoSubstInLineUp(lineup, substitutions) {
         modifiedLineup = [...lineup];
         NO_SUBST = 11;
+        NO_LINEUP = 25;
         for (s = 0; s < 3; s++) {
-            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = 25 + s;
+            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = NO_LINEUP;
         }
         return modifiedLineup;
     }
@@ -706,6 +707,13 @@ contract('Engine', (accounts) => {
         result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
+        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+
+        NO_LINEUP = await precomp.NO_LINEUP().should.be.fulfilled;
+        result = await precomp.verifyCanPlay(liUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
+        result.should.be.bignumber.equal('0');
+        
         // injured fails
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
