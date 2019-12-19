@@ -136,6 +136,7 @@ jobs:
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
       - run: cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} .
       - run: cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
       - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
@@ -152,6 +153,7 @@ jobs:
       - run: docker push freeverseio/relay.db:${CIRCLE_TAG}
       - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
+      - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deploy:
     executor: freeverse
     steps:
