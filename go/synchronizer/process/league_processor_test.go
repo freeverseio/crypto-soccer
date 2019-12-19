@@ -246,6 +246,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Logf("teams in League : %v", teams)
 	if teams[0].State.RankingPoints != 24124777882976255 {
 		t.Fatalf("Wrong ranking points %v", teams[0].State.RankingPoints)
 	}
