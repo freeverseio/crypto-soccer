@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"math"
 	"math/big"
 	"testing"
 
@@ -19,6 +20,37 @@ func TestTeamCount(t *testing.T) {
 	}
 	if count != 0 {
 		t.Fatalf("Expected 0 result %v", count)
+	}
+}
+
+func TestGetTeam(t *testing.T) {
+	err := s.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Rollback()
+	timezone := uint8(1)
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	s.TimezoneCreate(storage.Timezone{timezone})
+	s.CountryCreate(storage.Country{timezone, countryIdx})
+	s.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})
+	team := storage.Team{}
+	team.TeamID = big.NewInt(3)
+	team.TimezoneIdx = timezone
+	team.CountryIdx = countryIdx
+	team.State.Owner = "ciao"
+	team.State.LeagueIdx = leagueIdx
+	team.State.RankingPoints = math.MaxUint64
+	if err = s.TeamCreate(team); err != nil {
+		t.Fatal(err)
+	}
+	result, err := s.GetTeam(team.TeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Equal(team) {
+		t.Fatalf("Expected %v but %v", team, result)
 	}
 }
 
@@ -122,6 +154,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
+	team.State.RankingPoints = math.MaxUint64
 	err = s.TeamCreate(team)
 	if err != nil {
 		t.Fatal(err)

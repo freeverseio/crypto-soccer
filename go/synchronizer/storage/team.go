@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"math/big"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -22,7 +23,7 @@ type TeamState struct {
 	GoalsForward    uint32
 	GoalsAgainst    uint32
 	PrevPerfPoints  uint32
-	RankingPoints   uint32
+	RankingPoints   uint64
 	TrainingPoints  uint32
 }
 
@@ -62,7 +63,17 @@ func IsBotTeam(team Team) bool {
 
 func (b *Storage) TeamCreate(team Team) error {
 	log.Debugf("[DBMS] Create team %v", team)
-	_, err := b.tx.Exec("INSERT INTO teams (team_id, timezone_idx, country_idx, owner, league_idx, team_idx_in_league, name) VALUES ($1, $2, $3, $4, $5, $6, $7);",
+	_, err := b.tx.Exec(`
+		INSERT INTO teams (
+			team_id, 
+			timezone_idx, 
+			country_idx, 
+			owner, 
+			league_idx, 
+			team_idx_in_league, 
+			name,
+			ranking_points
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);`,
 		team.TeamID.String(),
 		team.TimezoneIdx,
 		team.CountryIdx,
@@ -70,15 +81,11 @@ func (b *Storage) TeamCreate(team Team) error {
 		team.State.LeagueIdx,
 		team.State.TeamIdxInLeague,
 		team.State.Name,
+		strconv.FormatUint(team.State.RankingPoints, 10),
 	)
 	if err != nil {
 		return err
 	}
-
-	// err = b.teamHistoryAdd(team.Id, team.State)
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
@@ -125,7 +132,7 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 		teamState.GoalsForward,
 		teamState.GoalsAgainst,
 		teamState.PrevPerfPoints,
-		teamState.RankingPoints,
+		strconv.FormatUint(teamState.RankingPoints, 10),
 		teamState.TrainingPoints,
 		teamState.Name,
 		teamID.String(),
@@ -133,24 +140,6 @@ func (b *Storage) TeamUpdate(teamID *big.Int, teamState TeamState) error {
 	return err
 }
 
-// func (b *Storage) teamHistoryAdd(id uint64, teamState TeamState) error {
-// 	log.Infof("[DBMS] + add team history %v", teamState)
-// 	_, err := b.tx.Exec("INSERT INTO teams_history (teamId, blockNumber, currentLeagueId, owner, posInCurrentLeagueId, posInPrevLeagueId, prevLeagueId, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8);",
-// 		id,
-// 		teamState.BlockNumber,
-// 		teamState.CurrentLeagueId,
-// 		teamState.Owner,
-// 		teamState.PosInCurrentLeagueId,
-// 		teamState.PosInPrevLeagueId,
-// 		teamState.PrevLeagueId,
-// 		teamState.InBlockIndex,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
 func (b *Storage) GetTeamsInLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
 	rows, err := b.tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
