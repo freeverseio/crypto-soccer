@@ -420,7 +420,6 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
 		&bind.CallOpts{},
 		states,
-		trainingPoints,
 		userAssignment,
 		matchStartTime,
 	)

@@ -1,22 +1,19 @@
 pragma solidity ^0.5.0;
 
 import "./Assets.sol";
-import "./EncodingSkills.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLog.sol";
 import "./Engine.sol";
 import "./EncodingTPAssignment.sol";
 import "./EncodingSkillsSetters.sol";
 
-contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
+contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
-    uint256 constant public MAX_DIFF  = 10; // beyond this diff among team qualities, it's basically infinite
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
-    uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
     uint8 constant public N_SKILLS = 5;
     uint8 constant public SK_SHO = 0;
     uint8 constant public SK_SPE = 1;
@@ -26,8 +23,6 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
 
     Assets private _assets;
     Engine private _engine;
-
-    bool dummyBoolToEstimateCost;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
@@ -52,12 +47,6 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         return computeTrainingPoints(
             _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools)
         );
-    }
-
-    function computeTrainingPointsWithCost(uint256[2] memory matchLog) public returns (uint256[2] memory)
-    {
-        dummyBoolToEstimateCost = !dummyBoolToEstimateCost;
-        return computeTrainingPoints(matchLog);
     }
 
     function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
@@ -159,7 +148,6 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
     
     function getTeamEvolvedSkills(
         uint256[PLAYERS_PER_TEAM_MAX] memory states, 
-        uint256 TPs, 
         uint256 userAssignment,
         uint256 matchStartTime
     ) 
@@ -167,8 +155,9 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
         view
         returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
-        (uint8[25] memory weights, uint8 specialPlayer) = decodeTP(userAssignment);
-        uint8[5] memory singleWeights;
+        if (userAssignment == 0) return states;
+        (uint16[25] memory TPperSkill, uint8 specialPlayer, ) = decodeTP(userAssignment);
+        uint16[5] memory singleTPperSkill;
         
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 skills = states[p];
@@ -179,67 +168,45 @@ contract Evolution is EncodingMatchLog, EncodingSkills, EngineLib, EncodingTPAss
             else if(getForwardness(skills) == IDX_D) offset = 5;
             else if(getForwardness(skills) == IDX_F) offset = 15;
             else offset = 10;
-            for (uint8 w = 0; w < 5; w++) singleWeights[w] = weights[offset + w];
-            states[p] = evolvePlayer(skills, TPs, singleWeights, matchStartTime);
+            for (uint8 s = 0; s < 5; s++) singleTPperSkill[s] = TPperSkill[offset + s];
+            states[p] = evolvePlayer(skills, singleTPperSkill, matchStartTime);
         }    
         return states;
     }
     
-    // formula: TP(i) = w(i)/100 * TP, where TP are the TPs, S(i) is the weight for skill(i)
-    // deltaS(i)    = w(i)/100 * max[ TP,  TP* (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 4/3 - (age-16)/2) ] - max(0,(age-31)*8)
     // If age is in days, define Yd = year2days
-    // deltaS(i)    = w(i)/100 * max[ TP,  TP * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*8/Yd)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Yd - 3 * ageDays + 48 Yd)/ (6 Yd)] - max(0,(ageDays-31)*8/Yd)
     // If age is in secs, define Ys = year2secs
-    // deltaS(i)    = w(i)/100 * max[ TP,  TP * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*8/Ys)
+    // deltaS(i)    = max[ TP(i), TP(i) * (pot * 8 * Ys - 3 * ageInSecs + 48 Ys)/ (6 Ys)] - max(0,(ageInSecs-31)*8/Ys)
     // skill(i)     = max(0, skill(i) + deltaS(i))
-    // 
+    // deltaS(i)    = max[ TP(i), TP(i) * numerator / denominator] - max(0,(ageInSecs-31)*8/Ys)
+    // skill(i)     = max(0, skill(i) + deltaS(i))
     // shoot, speed, pass, defence, endurance
-    function evolvePlayer(uint256 skills, uint256 TPs, uint8[5] memory weights, uint256 matchStartTime) public view returns(uint256) {
+    function evolvePlayer(uint256 skills, uint16[5] memory TPperSkill, uint256 matchStartTime) public view returns(uint256) {
         uint256 ageInSecs = 7 * (matchStartTime - getBirthDay(skills) * 86400);  // 86400 = day2secs
-
-        uint256 potential = getPotential(skills);
         uint256 deltaNeg = (ageInSecs > 977616000) ? ((ageInSecs-977616000)*8)/31536000 : 0;  // 977616000 = 31 * Ys, 31536000 = Ys
-        uint256 multiplier;
-        // if (potential * 2920 + 17520 > 3 * ageDays + 2190) {
-        if (potential * 252288000 + 1513728000 > 3 * ageInSecs + 189216000) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
-            multiplier = (TPs*(potential * 252288000 + 1513728000 - 3 * ageInSecs))/189216000;
+        uint256 numerator;
+        if (getPotential(skills) * 252288000 + 1513728000 > 3 * ageInSecs) {  // 252288000 = 8 Ys,  1513728000 = 48 Ys, 189216000 = 6 Ys
+            numerator = (getPotential(skills) * 252288000 + 1513728000 - 3 * ageInSecs);
         } else {
-            multiplier = TPs;
+            numerator = 0;
         }
-        // 0: shoot
-        if (getShoot(skills) + (multiplier * weights[SK_SHO])/100 > deltaNeg) {
-            skills = setShoot(skills, getShoot(skills) + (multiplier * weights[SK_SHO])/100 - deltaNeg);
-        } else {
-            skills = setShoot(skills, 1);
-        }
-        // 1: speed
-        if (getSpeed(skills) + (multiplier * weights[SK_SPE])/100 > deltaNeg) {
-            skills = setSpeed(skills, getSpeed(skills) + (multiplier * weights[SK_SPE])/100 - deltaNeg);
-        } else {
-            skills = setSpeed(skills, 1);
-        }
-        // 2: pass
-        if (getPass(skills) + (multiplier * weights[SK_PAS])/100 > deltaNeg) {
-            skills = setPass(skills, getPass(skills) + (multiplier * weights[SK_PAS])/100 - deltaNeg);
-        } else {
-            skills = setPass(skills, 1);
-        }
-        // 3: defence
-        if (getDefence(skills) + (multiplier * weights[SK_DEF])/100 > deltaNeg) {
-            skills = setDefence(skills, getDefence(skills) + (multiplier * weights[SK_DEF])/100 - deltaNeg);
-        } else {
-            skills = setDefence(skills, 1);
-        }
-        // 4: endurance
-        if (getEndurance(skills) + (multiplier * weights[SK_END])/100 > deltaNeg) {
-            skills = setEndurance(skills, getEndurance(skills) + (multiplier * weights[SK_END])/100 - deltaNeg);
-        } else {
-            skills = setEndurance(skills, 1);
-        }
-        // 5: sumSkills
+        skills = setShoot(skills, getNewSkill(getShoot(skills), TPperSkill[SK_SHO], numerator, 189216000, deltaNeg));
+        skills = setSpeed(skills, getNewSkill(getSpeed(skills), TPperSkill[SK_SPE], numerator, 189216000, deltaNeg));
+        skills = setPass(skills, getNewSkill(getPass(skills), TPperSkill[SK_PAS], numerator, 189216000, deltaNeg));
+        skills = setDefence(skills, getNewSkill(getDefence(skills), TPperSkill[SK_DEF], numerator, 189216000, deltaNeg));
+        skills = setEndurance(skills, getNewSkill(getEndurance(skills), TPperSkill[SK_END], numerator, 189216000, deltaNeg));
         skills = setSumOfSkills(skills, uint32(getShoot(skills) + getSpeed(skills) + getPass(skills) + getDefence(skills) + getEndurance(skills)));
         return generateChildIfNeeded(skills, ageInSecs, matchStartTime);
     } 
+
+    function getNewSkill(uint256 oldSkill, uint16 TPthisSkill, uint256 numerator, uint256 denominator, uint256 deltaNeg) private pure returns (uint256) {
+        uint256 term1 = (TPthisSkill*numerator) / denominator;
+        term1 = (term1 > TPthisSkill) ? term1 : TPthisSkill;
+        if ((oldSkill + term1) > deltaNeg) return oldSkill + term1 - deltaNeg;
+        return 1;
+    }
 
     function generateChildIfNeeded(uint256 skills, uint256 ageInSecs, uint256 matchStartTime) public view returns (uint256) {
         if ((getSumOfSkills(skills) > 200) && (ageInSecs < 1166832000)) {   // 1166832000 = 37 * Ys
