@@ -40,7 +40,7 @@ type Tactic struct {
 
 func (b *Storage) DefaultTactic(teamID string) *Tactic {
 	tacticId := uint8(1)
-	return &Tactic{time.Now(), teamID, int(tacticId), 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27, false, false, true, false, false, true, false, false, false, false}
+	return &Tactic{time.Now(), teamID, int(tacticId), 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
 func (b *Storage) TacticCreate(tactic *Tactic) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", tactic.TeamID)
