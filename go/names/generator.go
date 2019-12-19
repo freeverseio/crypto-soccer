@@ -122,17 +122,12 @@ func (b *Generator) countTeamsDB() error {
 	return nil
 }
 
-func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint64 {
-	var iterated_seed uint64
-	iterated_seed = int_hash(seed.String())
-	for i := 1; i < nLayers; i++ {
-		iterated_seed = int_hash(big.NewInt(int64(iterated_seed)).String())
-	}
+func (b *Generator) GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
+	var result uint64 = int_hash(seed.String() + salt)
 	if max_val == 0 {
-		return iterated_seed
-	} else {
-		return iterated_seed % max_val
+		return result
 	}
+	return result % max_val
 }
 
 func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
@@ -141,33 +136,29 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 	if isAcademyPlayer {
 		generation = generation - 32
 	}
-	nLayers1 := 1
-	nLayers2 := 2
-	nLayers3 := 1
+	salt := "a"
 	tableName := "names"
 	colName := "name"
 	codes := b.countryCodes4Names
 	// ensure that names are always different for all generations
-	seedTemp := b.GenerateRnd(playerId, 0, 1) + uint64(generation)
+	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
 	if isSurname {
-		nLayers1 = 3
-		nLayers2 = 4
-		nLayers3 = 2
+		salt = "b"
 		tableName = "surnames"
 		colName = "surname"
 		codes = b.countryCodes4Surnames
-		seedTemp = b.GenerateRnd(playerId, 0, 2) + uint64(generation)
+		seedTemp = b.GenerateRnd(playerId, "bb", 0) + uint64(generation)
 		isActualSon := generation > 0 && !isAcademyPlayer
 		if isActualSon {
 			seedTemp -= 1
 		}
 	}
 	seed := big.NewInt(int64(seedTemp))
-	dice := b.GenerateRnd(seed, 100, nLayers1)
+	dice := b.GenerateRnd(seed, salt+"cc", 100)
 	if int(dice) > purity {
 		// pick a different country
 		var nCountryCodes = len(codes)
-		var rnd_idx int = int(b.GenerateRnd(seed, uint64(nCountryCodes), nLayers3))
+		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
 		if country_code == codes[rnd_idx] {
 			country_code = codes[(rnd_idx+1)%nCountryCodes]
 		} else {
@@ -175,7 +166,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 		}
 	}
 	var namesInCountry uint = b.namesInCountry[country_code]
-	var idxInCountry uint64 = b.GenerateRnd(seed, uint64(namesInCountry), nLayers2)
+	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry))
 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
 	if err != nil {
 		return "", err
@@ -265,10 +256,10 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 
 func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	// For the time being, we don't use the country information. At some point, we may.
-	nLayers := 1
+	salt := teamId.String() + "ff"
 	// MAIN NAME
 	tableName := "team_mainnames"
-	nameIdx := b.GenerateRnd(teamId, uint64(b.nTeamnamesMain), nLayers)
+	nameIdx := b.GenerateRnd(teamId, salt, uint64(b.nTeamnamesMain))
 	rows, err := b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
@@ -289,8 +280,8 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 	}
 
 	// ADD PREFFIX OR SUFFIX
-	nLayers++
-	dice := b.GenerateRnd(teamId, uint64(b.nTeamnamesPreffix+b.nTeamnamesSuffix), nLayers)
+	salt += "gg"
+	dice := b.GenerateRnd(teamId, salt, uint64(b.nTeamnamesPreffix+b.nTeamnamesSuffix))
 	var nNames uint
 	addPrefix := uint(dice) < b.nTeamnamesPreffix
 	if addPrefix {
@@ -300,8 +291,8 @@ func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdx
 		tableName = "team_suffixnames"
 		nNames = b.nTeamnamesSuffix
 	}
-	nLayers++
-	nameIdx = b.GenerateRnd(teamId, uint64(nNames), nLayers)
+	salt += "hh"
+	nameIdx = b.GenerateRnd(teamId, salt, uint64(nNames))
 	rows, err = b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
 	if err != nil {
 		return "", err
