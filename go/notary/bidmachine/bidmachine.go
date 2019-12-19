@@ -18,6 +18,7 @@ import (
 )
 
 type BidMachine struct {
+	market          marketpay.IMarketPay
 	auction         *storage.Auction
 	bid             *storage.Bid
 	contracts       *contracts.Contracts
@@ -27,11 +28,15 @@ type BidMachine struct {
 }
 
 func New(
+	market marketpay.IMarketPay,
 	auction *storage.Auction,
 	bid *storage.Bid,
 	contracts *contracts.Contracts,
 	freeverse *ecdsa.PrivateKey,
 ) (*BidMachine, error) {
+	if market == nil {
+		return nil, errors.New("No market instance given")
+	}
 	if auction.State != storage.AUCTION_PAYING {
 		return nil, errors.New("Auction is not in PAYING state")
 	}
@@ -43,6 +48,7 @@ func New(
 		return nil, err
 	}
 	return &BidMachine{
+		market,
 		auction,
 		bid,
 		contracts,
@@ -103,13 +109,9 @@ func (b *BidMachine) processPaying() error {
 	}
 	if b.bid.PaymentID == "" { // create order
 		log.Infof("[bid] Auction %v, extra_price %v | create MarketPay order", b.bid.Auction, b.bid.ExtraPrice)
-		market, err := marketpay.New()
-		if err != nil {
-			return err
-		}
 		price := fmt.Sprintf("%.2f", float64(b.auction.Price.Int64()+b.bid.ExtraPrice)/100.0)
 		name := "Freeverse Player transaction"
-		order, err := market.CreateOrder(name, price)
+		order, err := b.market.CreateOrder(name, price)
 		if err != nil {
 			return err
 		}
@@ -117,15 +119,11 @@ func (b *BidMachine) processPaying() error {
 		b.bid.PaymentURL = order.TrusteeShortlink.ShortURL
 	} else { // check if order is paid
 		log.Warningf("[bid] Auction %v, extra_price %v | waiting for order %v to be processed", b.bid.Auction, b.bid.ExtraPrice, b.bid.PaymentID)
-		market, err := marketpay.New()
+		order, err := b.market.GetOrder(b.bid.PaymentID)
 		if err != nil {
 			return err
 		}
-		order, err := market.GetOrder(b.bid.PaymentID)
-		if err != nil {
-			return err
-		}
-		paid := market.IsPaid(*order)
+		paid := b.market.IsPaid(*order)
 		if paid {
 			isOffer2StartAuction := false
 			bidHiddenPrice, err := b.signer.BidHiddenPrice(big.NewInt(b.bid.ExtraPrice), big.NewInt(b.bid.Rnd))

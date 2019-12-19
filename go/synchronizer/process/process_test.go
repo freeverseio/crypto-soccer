@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
@@ -18,8 +17,16 @@ import (
 )
 
 func TestSyncTeams(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
+	err = relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer relaydb.Rollback()
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -76,12 +83,30 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Expected 128*18=2304 actual %v", count)
 	}
 
+	timezoneIdx := uint8(1)
+	countryIdx := big.NewInt(0)
+
+	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+		bind.NewKeyedTransactor(bc.Owner),
+		timezoneIdx,
+		countryIdx,
+		crypto.PubkeyToAddress(bc.Owner.PublicKey),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = helper.WaitReceipt(bc.Client, tx, 3)
+	if err != nil {
+		t.Fatal(err)
+	}
 	var txs []*types.Transaction
 	for i := 0; i < 24*4; i++ {
 		var root [32]byte
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
 			root,
+			"cid",
 		)
 		if err != nil {
 			t.Fatal(err)
@@ -97,9 +122,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	timezoneIdx := uint8(1)
-	countryIdx := big.NewInt(0)
-	playerIdx := big.NewInt(0)
+	playerIdx := big.NewInt(30)
 	playerID, err := bc.Contracts.Assets.EncodeTZCountryAndVal(&bind.CallOpts{}, timezoneIdx, countryIdx, playerIdx)
 	if err != nil {
 		t.Fatal(err)
@@ -112,7 +135,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,

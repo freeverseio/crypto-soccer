@@ -53,7 +53,7 @@ func (b *Player) Equal(player Player) bool {
 }
 
 func (b *Storage) PlayerCount() (uint64, error) {
-	rows, err := b.db.Query("SELECT COUNT(*) FROM players;")
+	rows, err := b.tx.Query("SELECT COUNT(*) FROM players;")
 	if err != nil {
 		return 0, err
 	}
@@ -66,7 +66,7 @@ func (b *Storage) PlayerCount() (uint64, error) {
 
 func (b *Storage) PlayerCreate(player Player) error {
 	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.db.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+	_, err := b.tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
 		player.PlayerId.String(),
 		player.State.TeamId.String(),
 		player.State.Defence,
@@ -97,7 +97,7 @@ func (b *Storage) PlayerCreate(player Player) error {
 
 func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error {
 	log.Debugf("[DBMS] + update player state %v", playerState)
-	_, err := b.db.Exec(`UPDATE players SET 
+	_, err := b.tx.Exec(`UPDATE players SET 
 	team_id=$1, 
 	defence=$2, 
 	speed=$3, 
@@ -130,7 +130,7 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 
 func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player := Player{}
-	rows, err := b.db.Query(`SELECT team_id, 
+	rows, err := b.tx.Query(`SELECT team_id, 
 	defence,
 	speed,
 	pass, 
@@ -184,7 +184,7 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 
 func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 	var players []Player
-	rows, err := b.db.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
+	rows, err := b.tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return players, err
 	}
@@ -213,7 +213,7 @@ func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 // func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
 // 	log.Infof("[DBMS] + update player state %v", playerState)
 
-// 	_, err := b.db.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8, inBlockIndex=$9 WHERE id=$10;",
+// 	_, err := b.tx.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8, inBlockIndex=$9 WHERE id=$10;",
 // 		playerState.BlockNumber,
 // 		playerState.TeamId,
 // 		playerState.State,
@@ -230,7 +230,7 @@ func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 
 // func (b *Storage) playerHistoryAdd(id uint64, playerState PlayerState) error {
 // 	log.Infof("[DBMS] + add player history %v", playerState)
-// 	_, err := b.db.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
+// 	_, err := b.tx.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
 // 		id,
 // 		playerState.BlockNumber,
 // 		playerState.TeamId,

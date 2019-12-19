@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -30,6 +31,7 @@ func main() {
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
+	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
@@ -56,6 +58,11 @@ func main() {
 	if *engineContractAddress == "" {
 		log.Fatal("no engine contract address")
 	}
+	if *enginePreCompContractAddress == "" {
+		log.Fatal("no enginePreComp contract address")
+	}
+
+	log.Infof("ipfs URL: %v", *ipfsURL)
 
 	if *debug {
 		log.SetLevel(log.DebugLevel)
@@ -85,14 +92,21 @@ func main() {
 	var relaydb *relay.Storage
 	if *inMemoryDatabase {
 		log.Warning("Using in memory DBMS (no persistence)")
-		universedb, err = storage.NewSqlite3("./../../universe.db/00_schema.sql")
-		relaydb, err = relay.NewSqlite3("./../../relay.db/00_schema.sql")
+		universedb, err = storage.NewSqlite3("./../../../universe.db/00_schema.sql")
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
+		relaydb, err = relay.NewSqlite3("./../../../relay.db/00_schema.sql")
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
 	} else {
-		log.Info("Connecting to universe DBMS: ", *postgresURL, " and relay DBMS: ", *relayPostgresURL)
+		log.Info("Connecting to universe DBMS: ", *postgresURL)
 		universedb, err = storage.NewPostgres(*postgresURL)
 		if err != nil {
 			log.Fatalf("Failed to connect to universe DBMS: %v", err)
 		}
+		log.Info("Connecting to relay DBMS: ", *relayPostgresURL)
 		relaydb, err = relay.NewPostgres(*relayPostgresURL)
 		if err != nil {
 			log.Fatalf("Failed to connect to relay DBMS: %v", err)
@@ -103,6 +117,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to names DBMS: %v", err)
 	}
+
+	log.Info("All is ready ... 5 seconds to start ...")
+	time.Sleep(5 * time.Second)
 
 	process, err := process.BackgroundProcessNew(
 		contracts,

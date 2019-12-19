@@ -26,7 +26,7 @@ CREATE TABLE leagues (
 );
 
 CREATE TABLE teams (
-    team_id NUMERIC(78,0) NOT NULL,
+    team_id TEXT NOT NULL,
     name TEXT NOT NULL,
     timezone_idx INT NOT NULL,
     country_idx INT NOT NULL,
@@ -41,15 +41,16 @@ CREATE TABLE teams (
     goals_against INT NOT NULL DEFAULT 0,
     prev_perf_points TEXT NOT NULL DEFAULT '0',
     ranking_points TEXT NOT NULL DEFAULT '0',
+    training_points INT NOT NULL DEFAULT 0,
     PRIMARY KEY(team_id),
     FOREIGN KEY (timezone_idx, country_idx) REFERENCES countries(timezone_idx, country_idx),
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 
 CREATE TABLE players (
-    player_id NUMERIC(78,0) NOT NULL,
+    player_id TEXT NOT NULL,
     name TEXT NOT NULL,
-    team_id NUMERIC(78,0) NOT NULL REFERENCES teams(team_id),
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
     defence INT NOT NULL,
     speed INT NOT NULL,
     pass INT NOT NULL,
@@ -73,8 +74,8 @@ CREATE TABLE matches (
     league_idx INT NOT NULL,
     match_day_idx INT NOT NULL,
     match_idx INT NOT NULL,
-    home_team_id NUMERIC(78,0) REFERENCES teams(team_id),
-    visitor_team_id NUMERIC(78,0) REFERENCES teams(team_id),
+    home_team_id TEXT REFERENCES teams(team_id),
+    visitor_team_id TEXT REFERENCES teams(team_id),
     home_goals INT,
     visitor_goals INT,
     home_match_log TEXT DEFAULT '0',

@@ -6,8 +6,8 @@ import (
 	"hash/fnv"
 	"math/big"
 	"strconv"
+	"strings"
 
-	"github.com/Pallinder/sillyname-go"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,6 +17,9 @@ type Generator struct {
 	countryCodes4Names    []uint
 	countryCodes4Surnames []uint
 	namesInCountry        map[uint]uint
+	nTeamnamesMain        uint
+	nTeamnamesPreffix     uint
+	nTeamnamesSuffix      uint
 }
 
 func int_hash(s string) uint64 {
@@ -28,6 +31,7 @@ func int_hash(s string) uint64 {
 func New(db_filename string) (*Generator, error) {
 	var err error
 	generator := Generator{}
+	// PLAYER NAMES DB INIT
 	generator.db, err = sql.Open("sqlite3", db_filename)
 	if err != nil {
 		return nil, err
@@ -39,13 +43,17 @@ func New(db_filename string) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := generator.countDB(); err != nil {
+	if err := generator.countPlayersDB(); err != nil {
 		return nil, err
 	}
+	if err := generator.countTeamsDB(); err != nil {
+		return nil, err
+	}
+
 	return &generator, nil
 }
 
-func (b *Generator) countDB() error {
+func (b *Generator) countPlayersDB() error {
 	var err error
 	rows, err := b.db.Query(`SELECT country_code, num_names FROM countries`)
 	if err != nil {
@@ -68,6 +76,49 @@ func (b *Generator) countDB() error {
 		}
 		b.namesInCountry[country_code] = num_names
 	}
+	return nil
+}
+
+func (b *Generator) countTeamsDB() error {
+	var err error
+	// Count main names
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM team_mainnames;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	count := uint(0)
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesMain = count
+	// Count prefixes
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_prefixnames;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesPreffix = count
+	// Count suffixes
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_suffixnames;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesSuffix = count
+
 	return nil
 }
 
@@ -212,7 +263,64 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, nil
 }
 
-func GenerateTeamName(teamId *big.Int) string {
-	_ = teamId
-	return sillyname.GenerateStupidName()
+func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+	// For the time being, we don't use the country information. At some point, we may.
+	nLayers := 1
+	// MAIN NAME
+	tableName := "team_mainnames"
+	nameIdx := b.GenerateRnd(teamId, uint64(b.nTeamnamesMain), nLayers)
+	rows, err := b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
+			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
+	}
+	var name string
+	rows.Scan(&name)
+
+	// return if has space in name
+	if strings.Contains(name, " ") {
+		return name, nil
+	}
+
+	// ADD PREFFIX OR SUFFIX
+	nLayers++
+	dice := b.GenerateRnd(teamId, uint64(b.nTeamnamesPreffix+b.nTeamnamesSuffix), nLayers)
+	var nNames uint
+	addPrefix := uint(dice) < b.nTeamnamesPreffix
+	if addPrefix {
+		tableName = "team_prefixnames"
+		nNames = b.nTeamnamesPreffix
+	} else {
+		tableName = "team_suffixnames"
+		nNames = b.nTeamnamesSuffix
+	}
+	nLayers++
+	nameIdx = b.GenerateRnd(teamId, uint64(nNames), nLayers)
+	rows, err = b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
+			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
+	}
+	var extraname string
+	rows.Scan(&extraname)
+
+	name = strings.Title(strings.ToLower(name))
+	extraname = strings.Title(strings.ToLower(extraname))
+	if addPrefix {
+		return extraname + " " + name, nil
+	} else {
+		return name + " " + extraname, nil
+	}
 }

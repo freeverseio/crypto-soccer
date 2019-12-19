@@ -121,15 +121,31 @@ func (b *MatchProcessor) Process(
 		return err
 	}
 	if is2ndHalf {
-		err = b.UpdateTeamSkills(states[0], startTime, logs[0])
+		homeTeam, err := b.universedb.GetTeam(match.HomeTeamID)
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(states[1], startTime, logs[1])
+		visitorTeam, err := b.universedb.GetTeam(match.VisitorTeamID)
 		if err != nil {
 			return err
 		}
-		err = b.updateTeamLeaderBoard(match.HomeTeamID, match.VisitorTeamID, goalsHome, goalsVisitor)
+		err = b.UpdateTeamSkills(&homeTeam, states[0], startTime, logs[0])
+		if err != nil {
+			return err
+		}
+		err = b.UpdateTeamSkills(&visitorTeam, states[1], startTime, logs[1])
+		if err != nil {
+			return err
+		}
+		err = b.updateTeamLeaderBoard(&homeTeam, &visitorTeam, goalsHome, goalsVisitor)
+		if err != nil {
+			return err
+		}
+		err = b.universedb.TeamUpdate(homeTeam.TeamID, homeTeam.State)
+		if err != nil {
+			return err
+		}
+		err = b.universedb.TeamUpdate(visitorTeam.TeamID, visitorTeam.State)
 		if err != nil {
 			return err
 		}
@@ -320,16 +336,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 	return nil
 }
 
-func (b *MatchProcessor) updateTeamLeaderBoard(homeTeamID *big.Int, visitorTeamID *big.Int, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam, err := b.universedb.GetTeam(homeTeamID)
-	if err != nil {
-		return err
-	}
-	visitorTeam, err := b.universedb.GetTeam(visitorTeamID)
-	if err != nil {
-		return err
-	}
-
+func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
 	homeTeam.State.GoalsForward += uint32(homeGoals)
 	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
 	visitorTeam.State.GoalsForward += uint32(visitorGoals)
@@ -351,27 +358,45 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeamID *big.Int, visitorTeamI
 		visitorTeam.State.Points++
 	}
 
-	err = b.universedb.TeamUpdate(homeTeamID, homeTeam.State)
-	if err != nil {
-		return err
-	}
-	err = b.universedb.TeamUpdate(visitorTeamID, visitorTeam.State)
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
 func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
-	if tactic, err := b.relaydb.GetTacticOrDefault(teamID, verse); err != nil {
+	if tactic, err := b.relaydb.GetTactic(teamID.String(), verse); err != nil {
 		return nil, err
 	} else if encodedTactic, err := b.contracts.Engine.EncodeTactics(
 		&bind.CallOpts{},
-		tactic.Substitutions,
-		tactic.SubsRounds,
-		tactic.Shirts,
-		tactic.ExtraAttack,
-		tactic.TacticID,
+		[3]uint8{11, 11, 11}, // TODO
+		[3]uint8{2, 3, 4},    // TODO
+		[14]uint8{
+			uint8(tactic.Shirt0),
+			uint8(tactic.Shirt1),
+			uint8(tactic.Shirt2),
+			uint8(tactic.Shirt3),
+			uint8(tactic.Shirt4),
+			uint8(tactic.Shirt5),
+			uint8(tactic.Shirt6),
+			uint8(tactic.Shirt7),
+			uint8(tactic.Shirt8),
+			uint8(tactic.Shirt9),
+			uint8(tactic.Shirt10),
+			uint8(tactic.Shirt11),
+			uint8(tactic.Shirt12),
+			uint8(tactic.Shirt13),
+		},
+		[10]bool{
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+		},
+		uint8(tactic.TacticID),
 	); err != nil {
 		return nil, err
 	} else {
@@ -380,6 +405,7 @@ func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) 
 }
 
 func (b *MatchProcessor) UpdateTeamSkills(
+	team *storage.Team,
 	states [25]*big.Int,
 	matchStartTime *big.Int,
 	logs *big.Int,
@@ -388,6 +414,8 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
+	team.State.TrainingPoints = uint32(trainingPoints.Uint64())
+
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
 		&bind.CallOpts{},

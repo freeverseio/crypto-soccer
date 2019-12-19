@@ -1,0 +1,23 @@
+version: '3'
+services:
+  ethereum: 
+    build: ../../docker/ethereum-node-test
+    ports: 
+      - "8545:8545"
+  universe.db:
+    build: ../../universe.db/
+    ports:
+      - "5432:5432"
+  relay.db:
+    build: ../../relay.db/
+    ports:
+      - "5433:5432"
+  ipfs:
+    image: ipfs/go-ipfs:v0.4.18
+    environment:
+      - IPFS_PROFILE=server
+    ports:
+      - "4001:4001"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:5001:5001"

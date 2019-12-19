@@ -7,7 +7,7 @@ import (
 )
 
 func TestCreation(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +17,7 @@ func TestCreation(t *testing.T) {
 }
 
 func TestCreateOrder(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +36,7 @@ func TestCreateOrder(t *testing.T) {
 }
 
 func TestGetOrder(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +56,7 @@ func TestGetOrder(t *testing.T) {
 }
 
 func TestIsPaid(t *testing.T) {
-	mp, err := v1.New()
+	mp, err := v1.NewMarketPay()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,5 +69,30 @@ func TestIsPaid(t *testing.T) {
 	isPaid := mp.IsPaid(*order)
 	if isPaid {
 		t.Fatal("Should not be paid")
+	}
+}
+func TestDraftAndFailure(t *testing.T) {
+	mp := v1.NewMockMarketPay()
+	name := "pippo"
+	value := "134.10"
+	// create an order always sets state to DRAFT
+	order, err := mp.CreateOrder(name, value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if order.Status != v1.DRAFT.String() {
+		t.Fatalf("Expecting DRAFT but got %v", order.Status)
+	}
+	mp.SetOrderStatus(v1.REJECTED)
+	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
+		t.Fatal(err)
+	} else if o1.Status != v1.REJECTED.String() {
+		t.Fatalf("expecting REJECTED, but got %v", o1.Status)
+	}
+	mp.SetOrderStatus(v1.FAILURE)
+	if o1, err := mp.GetOrder(order.TrusteeShortlink.Hash); err != nil {
+		t.Fatal(err)
+	} else if o1.Status != v1.FAILURE.String() {
+		t.Fatalf("expecting FAILURE, but got %v", o1.Status)
 	}
 }

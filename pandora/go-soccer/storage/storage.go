@@ -15,7 +15,7 @@ const (
 // Storage manages the application state
 type Storage struct {
 	mutex *sync.Mutex
-	db    *leveldb.DB
+	db    *leveldb.tx
 }
 
 // New creates a new storage path.

@@ -1,60 +1,53 @@
 package storage
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/json"
 	"errors"
-	"hash"
-	"math/big"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type Tactic struct {
-	TeamID        *big.Int
-	TacticID      uint8
-	Shirts        [14]uint8
-	ExtraAttack   [10]bool
-	Substitutions [3]uint8
-	SubsRounds    [3]uint8
+	CreatedAt     time.Time `json:"created_at"`      // created_at
+	TeamID        string    `json:"team_id"`         // team_id
+	TacticID      int       `json:"tactic_id"`       // tactic_id
+	Shirt0        int       `json:"shirt_0"`         // shirt_0
+	Shirt1        int       `json:"shirt_1"`         // shirt_1
+	Shirt2        int       `json:"shirt_2"`         // shirt_2
+	Shirt3        int       `json:"shirt_3"`         // shirt_3
+	Shirt4        int       `json:"shirt_4"`         // shirt_4
+	Shirt5        int       `json:"shirt_5"`         // shirt_5
+	Shirt6        int       `json:"shirt_6"`         // shirt_6
+	Shirt7        int       `json:"shirt_7"`         // shirt_7
+	Shirt8        int       `json:"shirt_8"`         // shirt_8
+	Shirt9        int       `json:"shirt_9"`         // shirt_9
+	Shirt10       int       `json:"shirt_10"`        // shirt_10
+	Shirt11       int       `json:"shirt_11"`        // shirt_11
+	Shirt12       int       `json:"shirt_12"`        // shirt_12
+	Shirt13       int       `json:"shirt_13"`        // shirt_13
+	ExtraAttack1  bool      `json:"extra_attack_1"`  // extra_attack_1
+	ExtraAttack2  bool      `json:"extra_attack_2"`  // extra_attack_2
+	ExtraAttack3  bool      `json:"extra_attack_3"`  // extra_attack_3
+	ExtraAttack4  bool      `json:"extra_attack_4"`  // extra_attack_4
+	ExtraAttack5  bool      `json:"extra_attack_5"`  // extra_attack_5
+	ExtraAttack6  bool      `json:"extra_attack_6"`  // extra_attack_6
+	ExtraAttack7  bool      `json:"extra_attack_7"`  // extra_attack_7
+	ExtraAttack8  bool      `json:"extra_attack_8"`  // extra_attack_8
+	ExtraAttack9  bool      `json:"extra_attack_9"`  // extra_attack_9
+	ExtraAttack10 bool      `json:"extra_attack_10"` // extra_attack_1
 }
 
-// Hash - computes hash for a Tactic
-func (t *Tactic) Hash() ([32]byte, error) {
-	data, err := json.Marshal(t)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	b := [32]byte{}
-	h := computeHash(sha256.New(), data)
-	copy(b[:], h[:])
-	return b, nil
-}
-
-func computeHash(h hash.Hash, data ...[]byte) []byte {
-	h.Reset()
-	for _, d := range data {
-		h.Write(d)
-	}
-	return h.Sum(nil)
-}
-
-func (b *Storage) DefaultTactic(teamID *big.Int) *Tactic {
-	lineup := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27}
-	extraAttack := [10]bool{false, false, true, false, false, true, false, false, false, false}
+func (b *Storage) DefaultTactic(teamID string) *Tactic {
 	tacticId := uint8(1)
-	substitutions := [3]uint8{11, 11, 11}
-	subsRounds := [3]uint8{2, 3, 4}
-	return &Tactic{teamID, tacticId, lineup, extraAttack, substitutions, subsRounds}
+	return &Tactic{time.Now(), teamID, int(tacticId), 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 26, 27, false, false, true, false, false, true, false, false, false, false}
 }
-func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
-	log.Debugf("[DBMS] Create tactic %v", t)
-	_, err := b.db.Exec(
+func (b *Storage) TacticCreate(tactic *Tactic) error {
+	log.Debugf("[DBMS] Create tactic for TeamID %v", tactic.TeamID)
+	_, err := b.tx.Exec(
 		`INSERT INTO tactics (
-			team_id,
-			verse,
-                        tactic_id,
+						tactic_id,
+						team_id,
                         shirt_0,
                         shirt_1,
                         shirt_2,
@@ -105,43 +98,130 @@ func (b *Storage) TacticCreate(t Tactic, verse uint64) error {
                         $23,
                         $24,
                         $25,
-                        $26,
-                        $27
+						$26
 		);`,
-		t.TeamID.String(),
-		verse,
-		t.TacticID,
-		t.Shirts[0],
-		t.Shirts[1],
-		t.Shirts[2],
-		t.Shirts[3],
-		t.Shirts[4],
-		t.Shirts[5],
-		t.Shirts[6],
-		t.Shirts[7],
-		t.Shirts[8],
-		t.Shirts[9],
-		t.Shirts[10],
-		t.Shirts[11],
-		t.Shirts[12],
-		t.Shirts[13],
-		t.ExtraAttack[0],
-		t.ExtraAttack[1],
-		t.ExtraAttack[2],
-		t.ExtraAttack[3],
-		t.ExtraAttack[4],
-		t.ExtraAttack[5],
-		t.ExtraAttack[6],
-		t.ExtraAttack[7],
-		t.ExtraAttack[8],
-		t.ExtraAttack[9],
+		tactic.TacticID,
+		tactic.TeamID,
+		tactic.Shirt0,
+		tactic.Shirt1,
+		tactic.Shirt2,
+		tactic.Shirt3,
+		tactic.Shirt4,
+		tactic.Shirt5,
+		tactic.Shirt6,
+		tactic.Shirt7,
+		tactic.Shirt8,
+		tactic.Shirt9,
+		tactic.Shirt10,
+		tactic.Shirt11,
+		tactic.Shirt12,
+		tactic.Shirt13,
+		tactic.ExtraAttack1,
+		tactic.ExtraAttack2,
+		tactic.ExtraAttack3,
+		tactic.ExtraAttack4,
+		tactic.ExtraAttack5,
+		tactic.ExtraAttack6,
+		tactic.ExtraAttack7,
+		tactic.ExtraAttack8,
+		tactic.ExtraAttack9,
+		tactic.ExtraAttack10,
 	)
 	return err
 }
-func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
-	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
-	rows, err := b.db.Query(
+
+func (b *Storage) TacticsByVerse(verseNumber int) ([]*Tactic, error) {
+	var tactics []*Tactic
+	if verseNumber == 0 {
+		return tactics, nil
+	}
+	verse, err := b.GetVerse(verseNumber)
+	if err != nil {
+		return nil, err
+	}
+	prevVerse, err := b.GetVerse(verseNumber - 1)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := b.tx.Query(
 		`SELECT
+				created_at,
+				team_id,
+				tactic_id,
+                shirt_0,
+                shirt_1,
+                shirt_2,
+                shirt_3,
+                shirt_4,
+                shirt_5,
+                shirt_6,
+                shirt_7,
+                shirt_8,
+                shirt_9,
+                shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
+                extra_attack_1,
+                extra_attack_2,
+                extra_attack_3,
+                extra_attack_4,
+                extra_attack_5,
+                extra_attack_6,
+                extra_attack_7,
+                extra_attack_8,
+                extra_attack_9,
+                extra_attack_10
+		FROM tactics WHERE (created_at > $1) AND (created_at <= $2);`, prevVerse.StartAt, verse.StartAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t Tactic
+		err = rows.Scan(
+			&t.CreatedAt,
+			&t.TeamID,
+			&t.TacticID,
+			&t.Shirt0,
+			&t.Shirt1,
+			&t.Shirt2,
+			&t.Shirt3,
+			&t.Shirt4,
+			&t.Shirt5,
+			&t.Shirt6,
+			&t.Shirt7,
+			&t.Shirt8,
+			&t.Shirt9,
+			&t.Shirt10,
+			&t.Shirt11,
+			&t.Shirt12,
+			&t.Shirt13,
+			&t.ExtraAttack1,
+			&t.ExtraAttack2,
+			&t.ExtraAttack3,
+			&t.ExtraAttack4,
+			&t.ExtraAttack5,
+			&t.ExtraAttack6,
+			&t.ExtraAttack7,
+			&t.ExtraAttack8,
+			&t.ExtraAttack9,
+			&t.ExtraAttack10,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tactics = append(tactics, &t)
+	}
+	return tactics, nil
+}
+
+func (b *Storage) GetTactic(teamID string, verse uint64) (*Tactic, error) {
+	log.Debugf("[DBMS] GetTactic of teamID %v", teamID)
+	rows, err := b.tx.Query(
+		`SELECT
+		created_at,
+		team_id,
 		tactic_id,
                 shirt_0,
                 shirt_1,
@@ -167,7 +247,7 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (team_id = $1) and (verse = $2);`, teamID.String(), verse)
+		FROM tactics WHERE (team_id = $1);`, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -175,49 +255,47 @@ func (b *Storage) GetTactic(teamID *big.Int, verse uint64) (*Tactic, error) {
 	if !rows.Next() {
 		return nil, errors.New("Unexistent tactic")
 	}
-	t := b.DefaultTactic(teamID)
+	var t Tactic
 	err = rows.Scan(
+		&t.CreatedAt,
+		&t.TeamID,
 		&t.TacticID,
-		&t.Shirts[0],
-		&t.Shirts[1],
-		&t.Shirts[2],
-		&t.Shirts[3],
-		&t.Shirts[4],
-		&t.Shirts[5],
-		&t.Shirts[6],
-		&t.Shirts[7],
-		&t.Shirts[8],
-		&t.Shirts[9],
-		&t.Shirts[10],
-		&t.Shirts[11],
-		&t.Shirts[12],
-		&t.Shirts[13],
-		&t.ExtraAttack[0],
-		&t.ExtraAttack[1],
-		&t.ExtraAttack[2],
-		&t.ExtraAttack[3],
-		&t.ExtraAttack[4],
-		&t.ExtraAttack[5],
-		&t.ExtraAttack[6],
-		&t.ExtraAttack[7],
-		&t.ExtraAttack[8],
-		&t.ExtraAttack[9],
+		&t.Shirt0,
+		&t.Shirt1,
+		&t.Shirt2,
+		&t.Shirt3,
+		&t.Shirt4,
+		&t.Shirt5,
+		&t.Shirt6,
+		&t.Shirt7,
+		&t.Shirt8,
+		&t.Shirt9,
+		&t.Shirt10,
+		&t.Shirt11,
+		&t.Shirt12,
+		&t.Shirt13,
+		&t.ExtraAttack1,
+		&t.ExtraAttack2,
+		&t.ExtraAttack3,
+		&t.ExtraAttack4,
+		&t.ExtraAttack5,
+		&t.ExtraAttack6,
+		&t.ExtraAttack7,
+		&t.ExtraAttack8,
+		&t.ExtraAttack9,
+		&t.ExtraAttack10,
 	)
 	if err != nil {
 		return nil, err
 	}
-	return t, nil
+	return &t, nil
 }
 func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 	count := uint64(0)
 	var rows *sql.Rows
 	var err error
 
-	if verse == nil {
-		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics;")
-	} else {
-		rows, err = b.db.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", *verse)
-	}
+	rows, err = b.tx.Query("SELECT COUNT(*) FROM tactics;")
 
 	if err != nil {
 		return 0, err
@@ -230,15 +308,4 @@ func (b *Storage) TacticCount(verse *uint64) (uint64, error) {
 		return 0, err
 	}
 	return count, nil
-}
-func (b *Storage) GetTacticOrDefault(teamID *big.Int, verse uint64) (*Tactic, error) {
-	if count, err := b.TacticCount(&verse); err != nil {
-		return nil, err
-	} else {
-		if count > 0 {
-			return b.GetTactic(teamID, verse)
-		} else {
-			return b.DefaultTactic(teamID), nil
-		}
-	}
 }

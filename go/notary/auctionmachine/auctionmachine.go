@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
@@ -40,14 +41,14 @@ func New(
 	}, nil
 }
 
-func (b *AuctionMachine) Process() error {
+func (b *AuctionMachine) Process(market marketpay.IMarketPay) error {
 	switch b.Auction.State {
 	case storage.AUCTION_STARTED:
 		return b.processStarted()
 	case storage.AUCTION_ASSET_FROZEN:
 		return b.processAssetFrozen()
 	case storage.AUCTION_PAYING:
-		return b.processPaying()
+		return b.processPaying(market)
 	default:
 		return b.processUnknownState()
 	}

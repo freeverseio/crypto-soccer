@@ -55,10 +55,10 @@ func (b *AssetsInitProcessor) Process(event assets.AssetsAssetsInit) error {
 	if err := b.universedb.TeamCreate(
 		storage.Team{
 			b.ACADEMYTEAM,
-			"Academy",
 			timezone,
 			countryIdx,
 			storage.TeamState{
+				"Academy",
 				event.CreatorAddr.String(),
 				leagueIdx,
 				teamIdxInLeague,
@@ -68,8 +68,9 @@ func (b *AssetsInitProcessor) Process(event assets.AssetsAssetsInit) error {
 				0,
 				0,
 				0,
-				big.NewInt(0),
-				big.NewInt(0),
+				0,
+				0,
+				0,
 			},
 		},
 	); err != nil {
