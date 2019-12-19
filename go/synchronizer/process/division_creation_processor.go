@@ -127,13 +127,17 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 			if teamId, err := b.contracts.Assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(teamIdx)); err != nil {
 				return err
 			} else {
+				teamName, errname := b.namesGenerator.GenerateTeamName(teamId, timezone, countryIdx.Uint64())
+				if errname != nil {
+					return errname
+				}
 				if err := b.universedb.TeamCreate(
 					storage.Team{
 						teamId,
 						timezone,
 						uint32(countryIdx.Uint64()),
 						storage.TeamState{
-							names.GenerateTeamName(teamId),
+							teamName,
 							storage.BotOwner,
 							uint32(leagueIdx),
 							teamIdxInLeague,
@@ -235,13 +239,13 @@ func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOp
 }
 
 func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
-	tactics := b.relaydb.DefaultTactic(teamID)
-	initVerse := uint64(0) // init verse
-	return b.relaydb.TacticCreate(*tactics, initVerse)
+	tactics := b.relaydb.DefaultTactic(teamID.String())
+	return b.relaydb.TacticCreate(tactics)
 }
 
 func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
 	training := relay.Training{}
-	training.TeamID = teamID
+	training.TeamID = teamID.String()
+	training.SpecialPlayerShirt = -1
 	return b.relaydb.CreateTraining(training)
 }

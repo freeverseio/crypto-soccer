@@ -1,6 +1,7 @@
 const express = require("express");
 const { postgraphile } = require("postgraphile");;
 const program = require("commander");
+const MutationsPlugin = require("./mutations_plugin");
 const version = require("../package.json").version;
 
 // Parsing command line arguments
@@ -16,6 +17,7 @@ console.log("databaseUrl       : ", databaseUrl);
 console.log("--------------------------------------------------------");
 
 const app = express();
+const mutationsPlugin = MutationsPlugin();
 
 app.use(
   postgraphile(
@@ -27,6 +29,7 @@ app.use(
       enhanceGraphiql: true,
       retryOnInitFail: true,
       disableDefaultMutations: true,
+      appendPlugins: [mutationsPlugin],
     }
   )
 );

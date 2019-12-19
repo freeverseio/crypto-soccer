@@ -25,12 +25,30 @@ jobs:
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
   synchronizer:
-    executor: freeverse_ethereum
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: |
+          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run: |
+          sudo add-apt-repository -y ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install abigen
+      - run: |
+          wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
+          tar -xvf go1.13.3.linux-amd64.tar.gz -C /tmp
+          echo 'export GOROOT="/tmp/go"' >> $BASH_ENV
+          echo 'export PATH=$GOROOT/bin:$PATH' >> $BASH_ENV
+      - run: |
+          nvm install v10.15.1
+          nvm alias default v10.15.1
+          npm update -g
+      - run: cd go/testutils && docker-compose up -d 
       - run: make setup contracts
       - run: cd go/cmd/synchronizer && go build ./synchronizer.go
-      - run: cd go/synchronizer && go test ./...
+      - run: cd go/synchronizer && go test ./... -v
   market-notary:
     executor: freeverse_ethereum
     steps:
@@ -46,9 +64,27 @@ jobs:
       - run: cd relay.api && npm install
       - run: cd relay.api && npm test
   relay-actions:
-    executor: freeverse_ethereum
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run: |
+          echo 'export NVM_DIR="/opt/circleci/.nvm"' >> $BASH_ENV
+          echo ' [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $BASH_ENV
+      - run: |
+          sudo add-apt-repository -y ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install abigen
+      - run: |
+          wget https://dl.google.com/go/go1.13.3.linux-amd64.tar.gz
+          tar -xvf go1.13.3.linux-amd64.tar.gz -C /tmp
+          echo 'export GOROOT="/tmp/go"' >> $BASH_ENV
+          echo 'export PATH=$GOROOT/bin:$PATH' >> $BASH_ENV
+      - run: |
+          nvm install v10.15.1
+          nvm alias default v10.15.1
+          npm update -g
+      - run: cd go/testutils && docker-compose up -d 
       - run: make setup contracts
       - run: cd go/cmd/relay && go build ./relay.go
       - run: cd go/relay && go test ./...
@@ -65,19 +101,18 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:dev .
       - run: cd market.trader && docker build -t freeverseio/market.trader:dev .
       - run: cd universe.db && docker build -t freeverseio/universe.db:dev .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:dev .
       - run: cd relay.api && docker build -t freeverseio/relay.api:dev .
       - run: cd relay.db && docker build -t freeverseio/relay.db:dev .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:dev .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:dev .
       - run: cd market.db && docker build -t freeverseio/market.db:dev .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:dev .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:dev .
       - run: cd universe.api && docker build -t freeverseio/universe.api:dev .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:dev
       - run: docker push freeverseio/synchronizer:dev
       - run: docker push freeverseio/horizon:dev
       - run: docker push freeverseio/universe.db:dev
@@ -88,6 +123,7 @@ jobs:
       - run: docker push freeverseio/relay.db:dev
       - run: docker push freeverseio/universe.api:dev
       - run: docker push freeverseio/relay.actions:dev
+      - run: docker push freeverseio/dashboard:dev
   dockerization-production:
     executor: freeverse
     steps:
@@ -95,19 +131,18 @@ jobs:
       - setup_remote_docker:   # (2)
           docker_layer_caching: true # (3)
       - run: make setup contracts
-      - run: cd django-centauri && docker build -t freeverseio/centauri:${CIRCLE_TAG} .
       - run: cd market.trader && docker build -t freeverseio/market.trader:${CIRCLE_TAG} .
       - run: cd universe.db && docker build -t freeverseio/universe.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.relay -t freeverseio/relay.actions:${CIRCLE_TAG} .
       - run: cd relay.api && docker build -t freeverseio/relay.api:${CIRCLE_TAG} .
       - run: cd relay.db && docker build -t freeverseio/relay.db:${CIRCLE_TAG} .
+      - run: cd dashboard && docker build -t freeverseio/dashboard:${CIRCLE_TAG} .
       - run: cd nodejs-horizon && docker build -t freeverseio/horizon:${CIRCLE_TAG} .
       - run: cd market.db && docker build -t freeverseio/market.db:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.synchronizer -t freeverseio/synchronizer:${CIRCLE_TAG} .
       - run: cd go && docker build -f Dockerfile.notary -t freeverseio/market.notary:${CIRCLE_TAG} .
       - run: cd universe.api && docker build -t freeverseio/universe.api:${CIRCLE_TAG} .
       - run: echo $DOCKER_PASSWD | docker login -u $DOCKER_ID --password-stdin
-      - run: docker push freeverseio/centauri:${CIRCLE_TAG}
       - run: docker push freeverseio/synchronizer:${CIRCLE_TAG}
       - run: docker push freeverseio/horizon:${CIRCLE_TAG}
       - run: docker push freeverseio/universe.db:${CIRCLE_TAG}
@@ -118,6 +153,7 @@ jobs:
       - run: docker push freeverseio/relay.db:${CIRCLE_TAG}
       - run: docker push freeverseio/universe.api:${CIRCLE_TAG}
       - run: docker push freeverseio/relay.actions:${CIRCLE_TAG}
+      - run: docker push freeverseio/dashboard:${CIRCLE_TAG}
   deploy:
     executor: freeverse
     steps:

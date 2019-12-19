@@ -75,8 +75,9 @@ contract('Evolution', (accounts) => {
     function setNoSubstInLineUp(lineup, substitutions) {
         modifiedLineup = [...lineup];
         NO_SUBST = 11;
+        NO_LINEUP = 25;
         for (s = 0; s < 3; s++) {
-            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = 25 + s;
+            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = NO_LINEUP;
         }
         return modifiedLineup;
     }
@@ -201,13 +202,27 @@ contract('Evolution', (accounts) => {
         events1Half = [events1Half,events1Half];
         POINTS_FOR_HAVING_PLAYED = await evolution.POINTS_FOR_HAVING_PLAYED().should.be.fulfilled;
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
-        MAX_WEIGHT = await evolution.MAX_WEIGHT().should.be.fulfilled;
-        MAX_WEIGHT = MAX_WEIGHT.toNumber();
-        MIN_WEIGHT = await evolution.MIN_WEIGHT().should.be.fulfilled;
-        MIN_WEIGHT = MIN_WEIGHT.toNumber();
     });
 
-    it('evolution leading to a academy player', async () => {
+    it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
+        TP = 200;
+        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
+        specialPlayer = 21;
+        // make sure they sum to TP:
+        for (bucket = 0; bucket < 5; bucket++){
+            sum4 = 0;
+            for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
+                sum4 += TPperSkill[sk];
+            }
+            TPperSkill[5 * bucket + 4] = TP - sum4;
+        }        
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        matchStartTime = now;
+        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment = 0, matchStartTime);
+        debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
+    });
+    
+    it('evolution leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
             skills = [100, 100, 100, 100, 100], 
             dayOfBirth = 30*365, // 30 years after unix time 
@@ -225,16 +240,16 @@ contract('Evolution', (accounts) => {
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
         TPs = 20;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
 
         // checks that the generation increases by 1. 
         // It sets a "32" at the beginning if it is a Academy player, otherwise it is a child
         // In this case, the randomness leads to a Academy player
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(32 + gen + 1)
+        result.toNumber().should.be.equal(gen + 1)
 
-        expected = [ 809, 1199, 947, 799, 1244 ];
+        expected = [ 748, 1031, 983, 742, 1496 ];
         results = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         results.push(result)
@@ -253,8 +268,8 @@ contract('Evolution', (accounts) => {
         result.toNumber().should.be.equal(expectedSumSkills);
         
     });
-
-    it('evolution leading to an actual son', async () => {
+    
+    it('evolution leading to an academy', async () => {
         // all inputs are identical to the previous test, except for a +2 in matchStatTime,
         // which changes the entire randomness
         playerSkills = await engine.encodePlayerSkills(
@@ -274,15 +289,15 @@ contract('Evolution', (accounts) => {
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
         TPs = 20;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime + 2);
+        TPperSkill = Array.from(new Array(5), (x,i) => TPs/5 - 3*i % 5);
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime + 2).should.be.fulfilled;
 
         // checks that the generation increases by 1. It sets a "32" at the beginning if it is a Academy player, otherwise it is a child.
-        // In this case, randomness leads to a son.
+        // In this case, randomness leads to an academy.
         result = await assets.getGeneration(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(0 * 32 + gen + 1)
+        result.toNumber().should.be.equal(32 + gen + 1)
 
-        expected = [ 743, 1459, 1070, 757, 970 ];
+        expected = [ 755, 920, 1455, 762, 1107 ];
         results = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         results.push(result)
@@ -304,40 +319,42 @@ contract('Evolution', (accounts) => {
     
     
     it('getTeamEvolvedSkills', async () => {
-        weights = Array.from(new Array(25), (x,i) => 3*i % 14);
+        TP = 200;
+        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
         specialPlayer = 21;
-        // make sure they sum to MAX_WEIGHT:
+        // make sure they sum to TP:
         for (bucket = 0; bucket < 5; bucket++){
             sum4 = 0;
             for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
-                sum4 += weights[sk];
+                sum4 += TPperSkill[sk];
             }
-            weights[5 * bucket + 4] = MAX_WEIGHT - sum4;
+            TPperSkill[5 * bucket + 4] = TP - sum4;
         }        
-        assignment = await evolution.encodeTP(weights, specialPlayer).should.be.fulfilled;
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, 200, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment, matchStartTime);
         for (p = 0; p < 25; p++) {
-            result = await evolution.getShoot(newSkills[p]);
-            if (p == specialPlayer) result.toNumber().should.be.equal(77);
-            else result.toNumber().should.be.equal(74);
+            result = await evolution.getShoot(newSkills[p]).should.be.fulfilled;
+            if (p == specialPlayer) result.toNumber().should.be.equal(110);
+            else result.toNumber().should.be.equal(105);
         }
     });
     
     it('getTeamEvolvedSkills with realistic team and zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
-        weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
-        assignment = await evolution.encodeTP(weights, specialPlayer = 12).should.be.fulfilled;
+        TPperSkill = Array.from(new Array(25), (x,i) => 0);
+        TP = TPperSkill.reduce((a, b) => a + b, 0);
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 0, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamState, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
         expectedNewShoot  = [ 623, 440, 829, 811, 723, 702, 554, 735, 815, 1466, 680, 930, 1181, 1095, 697, 622, 566, 931 ];
         expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
         for (p = 0; p < 18; p++) {
-            result0 = await evolution.getShoot(teamState[p]);
-            result1 = await evolution.getShoot(newSkills[p]);
+            result0 = await evolution.getShoot(teamState[p]).should.be.fulfilled;
+            result1 = await evolution.getShoot(newSkills[p]).should.be.fulfilled;
             initShoot.push(result0)
             newShoot.push(result1)
         }
@@ -348,14 +365,15 @@ contract('Evolution', (accounts) => {
     it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
         for (p = 18; p < 25; p++) teamState.push(0);
-        weights = [ 0, 3, 6, 9, 57, 1, 4, 7, 10, 53, 2, 5, 8, 11, 49, 3, 6, 9, 12, 45, 4, 7, 10, 13, 41 ];
-        assignment = await evolution.encodeTP(weights, specialPlayer = 12).should.be.fulfilled;
+        TPperSkill = [ 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46, 37, 40, 37, 40, 46, 40, 37, 40, 37, 46 ];
+        TP = 200;
+        assignment = await evolution.encodeTP(TP, TPperSkill, specialPlayer = 12).should.be.fulfilled;
         matchStartTime = now;
-        newSkills = await evolution.getTeamEvolvedSkills(teamState, TPs = 30, assignment, matchStartTime);
+        newSkills = await evolution.getTeamEvolvedSkills(teamState, assignment, matchStartTime);
         initShoot = [];
         newShoot = [];
-        expectedNewShoot  = [ 624, 441, 830, 819, 737, 703, 555, 736, 825, 1468, 691, 943, 1199, 1097, 710, 634, 568, 943 ];
-        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554, 751, 815, 1474, 680, 930, 1181, 1103, 697, 622, 566, 931 ];
+        expectedNewShoot  = [ 673, 480, 869, 987, 1015, 739, 591, 772, 1009, 1506, 906, 1178, 1452, 1147, 905, 816, 603, 1120 ];
+        expectedInitShoot = [ 623, 440, 829, 811, 723, 729, 554,  751,  815, 1474, 680,  930, 1181, 1103, 697, 622, 566,  931 ];
         for (p = 0; p < 18; p++) {
             result0 = await evolution.getShoot(teamState[p]);
             result1 = await evolution.getShoot(newSkills[p]);
@@ -384,19 +402,21 @@ contract('Evolution', (accounts) => {
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
         TPs = 20;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        TPperSkill = [10, 20, 30, 40, 50];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
+        expected = [110,120,130,140,150]; // at zero potential, it's easy
+        res = []
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [102,104,106,108,110];
-        result.toNumber().should.be.equal(expected[0]);
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
     });
     
     it('test evolvePlayer with TPs= 0', async () => {
@@ -416,20 +436,22 @@ contract('Evolution', (accounts) => {
         age = 16;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 0;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        TPperSkill = [0, 0, 0, 0, 00];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         result = await engine.getShoot(newSkills).should.be.fulfilled;
         expected = skills;
-        result.toNumber().should.be.equal(expected[0]);
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
     });
     
     
@@ -450,20 +472,22 @@ contract('Evolution', (accounts) => {
         age = 16;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 20;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        TPperSkill = [10, 20, 30, 40, 50];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [102,105,107,110,113];
-        result.toNumber().should.be.equal(expected[0]);
+        expected = [ 113, 126, 140, 153, 166 ];
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
 
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
@@ -487,20 +511,22 @@ contract('Evolution', (accounts) => {
         age = 17;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 20;
-        weights = [10, 20, 30, 40, 50];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
+        TPperSkill = [10, 20, 30, 40, 50];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         result = await engine.getShoot(newSkills).should.be.fulfilled;
-        expected = [104, 108, 112, 117, 121];
-        result.toNumber().should.be.equal(expected[0]);
+        expected = [121, 143, 165, 186, 208];
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
         
         expectedSumSkills = expected.reduce((a, b) => a + b, 0);
         result = await engine.getSumOfSkills(newSkills).should.be.fulfilled;
@@ -524,20 +550,22 @@ contract('Evolution', (accounts) => {
         age = 35;
         matchStartTime = dayOfBirth*24*3600 + Math.floor(age*365*24*3600/7);
         
-        TPs = 20;
-        weights = [0, 0, 0, 0, 0];
-        newSkills = await evolution.evolvePlayer(playerSkills, TPs, weights, matchStartTime);
-        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        TPperSkill = [0, 0, 0, 0, 0];
+        newSkills = await evolution.evolvePlayer(playerSkills, TPperSkill, matchStartTime).should.be.fulfilled;
         expected = [968, 1968, 2968, 3968, 4968]; // -32 per game
-        result.toNumber().should.be.equal(expected[0]);
+        res = []
+        result = await engine.getShoot(newSkills).should.be.fulfilled;
+        res.push(result)
         result = await engine.getSpeed(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[1]);
+        res.push(result)
         result = await engine.getPass(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[2]);
+        res.push(result)
         result = await engine.getDefence(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[3]);
+        res.push(result)
         result = await engine.getEndurance(newSkills).should.be.fulfilled;
-        result.toNumber().should.be.equal(expected[4]);
+        res.push(result)
+        debug.compareArrays(res, expected, toNum = true, verbose = false);
+        
     });
 
     it('test that we can a 2nd half and include the evolution points too', async () => {
@@ -555,14 +583,6 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    it('training points: estimate cost', async () => {
-        log0 = await logUtils.encodeLog(encodeLog, nGoals = 0, assistersIdx, shootersIdx, shooterForwardPos, penalties,
-            outOfGames, outOfGameRounds, typesOutOfGames, yellowCardedDidNotFinish1stHalf,
-            isHomeSt, ingameSubs1, ingameSubs2, yellowCards1, yellowCards2, 
-            halfTimeSubstitutions, nDefs1, nDefs2, nTot, winner, teamSumSkillsDefault, trainingPointsInit);
-        logFinal = await evolution.computeTrainingPointsWithCost([log0, log0]);
-    });    
-        
     it('training points with random inputs', async () => {
         typeOut = [3, 0];
         outRounds = [7, 0];

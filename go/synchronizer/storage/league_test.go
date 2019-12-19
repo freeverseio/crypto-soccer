@@ -7,11 +7,12 @@ import (
 )
 
 func TestLeagueCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := storage.LeagueCount()
+	defer s.Rollback()
+	count, err := s.LeagueCount()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,24 +22,25 @@ func TestLeagueCount(t *testing.T) {
 }
 
 func TestLeagueCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer s.Rollback()
 	timezone := uint8(1)
 	countryIdx := uint32(4)
-	sto.TimezoneCreate(storage.Timezone{timezone})
-	sto.CountryCreate(storage.Country{timezone, countryIdx})
+	s.TimezoneCreate(storage.Timezone{timezone})
+	s.CountryCreate(storage.Country{timezone, countryIdx})
 	league := storage.League{
 		TimezoneIdx: timezone,
 		CountryIdx:  countryIdx,
 		LeagueIdx:   2,
 	}
-	err = sto.LeagueCreate(league)
+	err = s.LeagueCreate(league)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.LeagueInCountryCount(timezone, countryIdx)
+	count, err := s.LeagueInCountryCount(timezone, countryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

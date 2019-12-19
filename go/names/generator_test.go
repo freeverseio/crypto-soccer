@@ -39,7 +39,7 @@ func TestGeneratePlayerName(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(11127233765381183977) {
+	if int_hash(result) != uint64(1608800955005269445) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -69,7 +69,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		}
 		result += name
 	}
-	if int_hash(result) != uint64(11127233765381183977) {
+	if int_hash(result) != uint64(1608800955005269445) {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(result))
 		t.Fatal("result of generating names not as expected")
@@ -107,7 +107,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	name = name + " " + name2
-	if name != "Vicent Jessmer Edvin Jessmer Jr." {
+	if name != "Volratas Billberry Carles Billberry Jr." {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
@@ -136,10 +136,42 @@ func TestGenerateAcademyName(t *testing.T) {
 	if len(name) == 0 {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
-	if name != "Edvin Blasco" {
+	if name != "Carles Sarju" {
 		fmt.Println("the just-obtained hash is: ")
 		fmt.Println(int_hash(name))
 		fmt.Println(name)
+		t.Fatal("result of generating names not as expected")
+	}
+}
+
+func TestGenerateTeamName(t *testing.T) {
+	generator, err := names.New("./sql/names.db")
+	if err != nil {
+		t.Fatalf("error creating database for player names: %s", err)
+	}
+	var timezone uint8
+	var countryIdxInTZ uint64
+	timezone = 19
+	countryIdxInTZ = 0
+	teamId := big.NewInt(int64(0))
+	var name string
+	var concatname string
+	for i := 0; i < 10; i++ {
+		teamId = big.NewInt(int64(41234332 + i))
+		name, err = generator.GenerateTeamName(teamId, timezone, countryIdxInTZ)
+		if err != nil {
+			t.Fatalf("error generating name for team %s: %s", teamId.String(), err)
+		}
+		fmt.Println(name)
+		if len(name) == 0 {
+			t.Fatalf("Expecting non empty team name, but got \"%v\"", name)
+		}
+		concatname += " " + name
+	}
+	if concatname != " Violet Jellyfish Water Ox Tequila Sunrise Magenta Indian Astronaut Sunrise Hope Mouse Toucan Magic Twins Blues A. Z. Gaia C. A. Harmony" {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(concatname))
+		fmt.Println(concatname)
 		t.Fatal("result of generating names not as expected")
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
@@ -18,8 +17,16 @@ import (
 )
 
 func TestSyncTeams(t *testing.T) {
-	universedb, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-	relaydb, err := relay.NewSqlite3("../../../relay.db/00_schema.sql")
+	err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer universedb.Rollback()
+	err = relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer relaydb.Rollback()
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -99,6 +106,7 @@ func TestSyncTeams(t *testing.T) {
 		tx, err := bc.Contracts.Updates.SubmitActionsRoot(
 			bind.NewKeyedTransactor(bc.Owner),
 			root,
+			"cid",
 		)
 		if err != nil {
 			t.Fatal(err)

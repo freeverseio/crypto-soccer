@@ -6,8 +6,8 @@ import (
 	"hash/fnv"
 	"math/big"
 	"strconv"
+	"strings"
 
-	"github.com/Pallinder/sillyname-go"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,6 +17,9 @@ type Generator struct {
 	countryCodes4Names    []uint
 	countryCodes4Surnames []uint
 	namesInCountry        map[uint]uint
+	nTeamnamesMain        uint
+	nTeamnamesPreffix     uint
+	nTeamnamesSuffix      uint
 }
 
 func int_hash(s string) uint64 {
@@ -28,6 +31,7 @@ func int_hash(s string) uint64 {
 func New(db_filename string) (*Generator, error) {
 	var err error
 	generator := Generator{}
+	// PLAYER NAMES DB INIT
 	generator.db, err = sql.Open("sqlite3", db_filename)
 	if err != nil {
 		return nil, err
@@ -39,13 +43,17 @@ func New(db_filename string) (*Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := generator.countDB(); err != nil {
+	if err := generator.countPlayersDB(); err != nil {
 		return nil, err
 	}
+	if err := generator.countTeamsDB(); err != nil {
+		return nil, err
+	}
+
 	return &generator, nil
 }
 
-func (b *Generator) countDB() error {
+func (b *Generator) countPlayersDB() error {
 	var err error
 	rows, err := b.db.Query(`SELECT country_code, num_names FROM countries`)
 	if err != nil {
@@ -71,17 +79,55 @@ func (b *Generator) countDB() error {
 	return nil
 }
 
-func (b *Generator) GenerateRnd(seed *big.Int, max_val uint64, nLayers int) uint64 {
-	var iterated_seed uint64
-	iterated_seed = int_hash(seed.String())
-	for i := 1; i < nLayers; i++ {
-		iterated_seed = int_hash(big.NewInt(int64(iterated_seed)).String())
+func (b *Generator) countTeamsDB() error {
+	var err error
+	// Count main names
+	rows, err := b.db.Query(`SELECT COUNT(*) FROM team_mainnames;`)
+	if err != nil {
+		return err
 	}
+	defer rows.Close()
+	rows.Next()
+	count := uint(0)
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesMain = count
+	// Count prefixes
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_prefixnames;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesPreffix = count
+	// Count suffixes
+	rows, err = b.db.Query(`SELECT COUNT(*) FROM team_suffixnames;`)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return err
+	}
+	b.nTeamnamesSuffix = count
+
+	return nil
+}
+
+func (b *Generator) GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
+	var result uint64 = int_hash(seed.String() + salt)
 	if max_val == 0 {
-		return iterated_seed
-	} else {
-		return iterated_seed % max_val
+		return result
 	}
+	return result % max_val
 }
 
 func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
@@ -90,33 +136,29 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 	if isAcademyPlayer {
 		generation = generation - 32
 	}
-	nLayers1 := 1
-	nLayers2 := 2
-	nLayers3 := 1
+	salt := "a"
 	tableName := "names"
 	colName := "name"
 	codes := b.countryCodes4Names
 	// ensure that names are always different for all generations
-	seedTemp := b.GenerateRnd(playerId, 0, 1) + uint64(generation)
+	seedTemp := b.GenerateRnd(playerId, "aa", 0) + uint64(generation)
 	if isSurname {
-		nLayers1 = 3
-		nLayers2 = 4
-		nLayers3 = 2
+		salt = "b"
 		tableName = "surnames"
 		colName = "surname"
 		codes = b.countryCodes4Surnames
-		seedTemp = b.GenerateRnd(playerId, 0, 2) + uint64(generation)
+		seedTemp = b.GenerateRnd(playerId, "bb", 0) + uint64(generation)
 		isActualSon := generation > 0 && !isAcademyPlayer
 		if isActualSon {
 			seedTemp -= 1
 		}
 	}
 	seed := big.NewInt(int64(seedTemp))
-	dice := b.GenerateRnd(seed, 100, nLayers1)
+	dice := b.GenerateRnd(seed, salt+"cc", 100)
 	if int(dice) > purity {
 		// pick a different country
 		var nCountryCodes = len(codes)
-		var rnd_idx int = int(b.GenerateRnd(seed, uint64(nCountryCodes), nLayers3))
+		var rnd_idx int = int(b.GenerateRnd(seed, salt+"dd", uint64(nCountryCodes)))
 		if country_code == codes[rnd_idx] {
 			country_code = codes[(rnd_idx+1)%nCountryCodes]
 		} else {
@@ -124,7 +166,7 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 		}
 	}
 	var namesInCountry uint = b.namesInCountry[country_code]
-	var idxInCountry uint64 = b.GenerateRnd(seed, uint64(namesInCountry), nLayers2)
+	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry))
 	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
 	if err != nil {
 		return "", err
@@ -212,7 +254,64 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, nil
 }
 
-func GenerateTeamName(teamId *big.Int) string {
-	_ = teamId
-	return sillyname.GenerateStupidName()
+func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
+	// For the time being, we don't use the country information. At some point, we may.
+	salt := teamId.String() + "ff"
+	// MAIN NAME
+	tableName := "team_mainnames"
+	nameIdx := b.GenerateRnd(teamId, salt, uint64(b.nTeamnamesMain))
+	rows, err := b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
+			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
+	}
+	var name string
+	rows.Scan(&name)
+
+	// return if has space in name
+	if strings.Contains(name, " ") {
+		return name, nil
+	}
+
+	// ADD PREFFIX OR SUFFIX
+	salt += "gg"
+	dice := b.GenerateRnd(teamId, salt, uint64(b.nTeamnamesPreffix+b.nTeamnamesSuffix))
+	var nNames uint
+	addPrefix := uint(dice) < b.nTeamnamesPreffix
+	if addPrefix {
+		tableName = "team_prefixnames"
+		nNames = b.nTeamnamesPreffix
+	} else {
+		tableName = "team_suffixnames"
+		nNames = b.nTeamnamesSuffix
+	}
+	salt += "hh"
+	nameIdx = b.GenerateRnd(teamId, salt, uint64(nNames))
+	rows, err = b.db.Query(`SELECT name FROM `+tableName+` WHERE (idx = $1)`, nameIdx)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		var str string = "Rnd choice failed, teamId = " + teamId.String() +
+			", nameIdx = " + strconv.FormatInt(int64(nameIdx), 10) +
+			", tableName = " + tableName
+		return "", errors.New(str)
+	}
+	var extraname string
+	rows.Scan(&extraname)
+
+	name = strings.Title(strings.ToLower(name))
+	extraname = strings.Title(strings.ToLower(extraname))
+	if addPrefix {
+		return extraname + " " + name, nil
+	} else {
+		return name + " " + extraname, nil
+	}
 }

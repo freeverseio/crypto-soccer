@@ -6,6 +6,7 @@ const Leagues = artifacts.require('Leagues');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Friendlies = artifacts.require('Friendlies');
+const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 
 
@@ -23,6 +24,7 @@ module.exports = function (deployer) {
     const market = await deployer.deploy(Market).should.be.fulfilled;
     const updates = await deployer.deploy(Updates).should.be.fulfilled;
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
+    const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     
     console.log("Setting up ...");
@@ -33,6 +35,7 @@ module.exports = function (deployer) {
     await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
     await evolution.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
+    await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");
@@ -49,6 +52,8 @@ module.exports = function (deployer) {
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
     console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
+    console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
+    console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
     console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
   });
 };
