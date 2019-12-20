@@ -55,7 +55,7 @@ func TrainingByVerse(verseNumber int) ([]*Training, error) {
 	return trainings, nil
 }
 
-func (b *Training) Create(tx *sql.Tx) error {
+func (b *Training) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create training %v", b)
 	_, err := tx.Exec(
 		`INSERT INTO trainings (

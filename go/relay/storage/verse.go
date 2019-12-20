@@ -14,7 +14,7 @@ type Verse struct {
 	StartAt time.Time `json:"start_at"` // start_at
 }
 
-func GetVerse(tx *sql.Tx, id int) (*Verse, error) {
+func VerseById(tx *sql.Tx, id int) (*Verse, error) {
 	log.Debugf("[DBMS] get verse %v", id)
 	rows, err := tx.Query("SELECT start_at FROM verses WHERE id=$1;", id)
 	if err != nil {
@@ -32,7 +32,7 @@ func GetVerse(tx *sql.Tx, id int) (*Verse, error) {
 	return &verse, err
 }
 
-func GetLastVerse(tx *sql.Tx) (*Verse, error) {
+func LastVerse(tx *sql.Tx) (*Verse, error) {
 	log.Debug("[DBMS] get last verse")
 	rows, err := tx.Query("SELECT id, start_at FROM verses ORDER BY id DESC LIMIT 1")
 	if err != nil {
@@ -52,7 +52,7 @@ func GetLastVerse(tx *sql.Tx) (*Verse, error) {
 
 func CloseVerse(tx *sql.Tx) error {
 	log.Debug("[DBMS] close verse")
-	currentVerse, err := GetLastVerse(tx)
+	currentVerse, err := LastVerse(tx)
 	if err != nil {
 		return err
 	}

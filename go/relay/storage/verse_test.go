@@ -12,7 +12,7 @@ func TestGetCurrentVerse(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	verse, err := storage.GetLastVerse(tx)
+	verse, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestIncreamentVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse1, err := storage.GetLastVerse(tx)
+	verse1, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func TestIncreamentVerse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse2, err := storage.GetLastVerse(tx)
+	verse2, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,20 +54,20 @@ func TestIncreamentVerse(t *testing.T) {
 	}
 }
 
-func TestGetVerse(t *testing.T) {
+func TestVerseByTeamId(t *testing.T) {
 	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	verse, err := storage.GetVerse(tx, 0)
+	verse, err := storage.VerseById(tx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if verse == nil {
 		t.Fatal("Expected verse 0 exists")
 	}
-	verse, err = storage.GetVerse(tx, 1)
+	verse, err = storage.VerseById(tx, 1)
 	if err == nil {
 		t.Fatal("No error on unexistent verse")
 	}
@@ -77,7 +77,7 @@ func TestGetVerse(t *testing.T) {
 	if err = storage.CloseVerse(tx); err != nil {
 		t.Fatal(err)
 	}
-	verse, err = storage.GetVerse(tx, 1)
+	verse, err = storage.VerseById(tx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}

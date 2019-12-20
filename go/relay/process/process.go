@@ -90,7 +90,7 @@ func (p *Processor) computeActionsRoot(tx *sql.Tx) error {
 	if err = storage.CloseVerse(tx); err != nil {
 		return err
 	}
-	verse, err := storage.GetLastVerse(tx)
+	verse, err := storage.LastVerse(tx)
 	if err != nil {
 		return err
 	}

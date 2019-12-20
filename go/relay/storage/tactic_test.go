@@ -13,7 +13,7 @@ func TestTacticCreate(t *testing.T) {
 	}
 	defer tx.Rollback()
 	tactic := storage.DefaultTactic("16")
-	err = tactic.Create(tx)
+	err = tactic.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,13 +63,13 @@ func TestTacticsByVerse(t *testing.T) {
 	tactic0 := storage.Tactic{}
 	tactic0.TeamID = "1"
 	tactic0.ExtraAttack1 = true
-	if err = tactic0.Create(tx); err != nil {
+	if err = tactic0.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 	tactic1 := storage.Tactic{}
 	tactic1.TeamID = "2"
 	tactic1.ExtraAttack2 = true
-	if err = tactic1.Create(tx); err != nil {
+	if err = tactic1.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
 	tactics, err = storage.TacticsByVerse(tx, 0)

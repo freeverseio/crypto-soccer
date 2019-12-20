@@ -15,7 +15,7 @@ func TestTrainingCreate(t *testing.T) {
 
 	training := storage.Training{}
 	training.TeamID = "4"
-	err = training.Create(tx)
+	err = training.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

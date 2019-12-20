@@ -42,7 +42,7 @@ func DefaultTactic(teamID string) *Tactic {
 	tacticId := uint8(1)
 	return &Tactic{time.Now(), teamID, int(tacticId), 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
-func (b *Tactic) Create(tx *sql.Tx) error {
+func (b *Tactic) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", b.TeamID)
 	_, err := tx.Exec(
 		`INSERT INTO tactics (
@@ -135,11 +135,11 @@ func TacticsByVerse(tx *sql.Tx, verseNumber int) ([]*Tactic, error) {
 	if verseNumber == 0 {
 		return tactics, nil
 	}
-	verse, err := GetVerse(tx, verseNumber)
+	verse, err := VerseById(tx, verseNumber)
 	if err != nil {
 		return nil, err
 	}
-	prevVerse, err := GetVerse(tx, verseNumber-1)
+	prevVerse, err := VerseById(tx, verseNumber-1)
 	if err != nil {
 		return nil, err
 	}
