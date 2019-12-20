@@ -1,6 +1,7 @@
 package process
 
 import (
+	"database/sql"
 	"errors"
 	"math/big"
 
@@ -18,7 +19,6 @@ import (
 type DivisionCreationProcessor struct {
 	contracts             *contracts.Contracts
 	universedb            *storage.Storage
-	relaydb               *relay.Storage
 	SK_SHO                uint8
 	SK_SPE                uint8
 	SK_PAS                uint8
@@ -34,7 +34,6 @@ type DivisionCreationProcessor struct {
 func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
 	universedb *storage.Storage,
-	relaydb *relay.Storage,
 	namesdb *names.Generator,
 ) (*DivisionCreationProcessor, error) {
 	SK_SHO, err := contracts.Assets.SKSHO(&bind.CallOpts{})
@@ -76,7 +75,6 @@ func NewDivisionCreationProcessor(
 	return &DivisionCreationProcessor{
 		contracts,
 		universedb,
-		relaydb,
 		SK_SHO,
 		SK_SPE,
 		SK_PAS,
@@ -90,7 +88,7 @@ func NewDivisionCreationProcessor(
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		if err := b.universedb.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
@@ -156,9 +154,9 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(teamId); err != nil {
+				} else if err := b.createInitialTactics(tx, teamId); err != nil {
 					return err
-				} else if err := b.createInitialTraining(teamId); err != nil {
+				} else if err := b.createInitialTraining(tx, teamId); err != nil {
 					return err
 				}
 
@@ -238,14 +236,14 @@ func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOp
 	}
 }
 
-func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
-	tactics := b.relaydb.DefaultTactic(teamID.String())
-	return b.relaydb.TacticCreate(tactics)
+func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, teamID *big.Int) error {
+	tactics := relay.DefaultTactic(teamID.String())
+	return tactics.Insert(tx)
 }
 
-func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
+func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
 	training := relay.Training{}
 	training.TeamID = teamID.String()
 	training.SpecialPlayerShirt = -1
-	return b.relaydb.CreateTraining(training)
+	return training.Insert(tx)
 }

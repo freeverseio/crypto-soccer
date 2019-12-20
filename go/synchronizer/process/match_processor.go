@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 )
@@ -14,7 +13,6 @@ import (
 type MatchProcessor struct {
 	contracts         *contracts.Contracts
 	universedb        *storage.Storage
-	relaydb           *relay.Storage
 	namesdb           *names.Generator
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
@@ -25,7 +23,6 @@ type MatchProcessor struct {
 func NewMatchProcessor(
 	contracts *contracts.Contracts,
 	universedb *storage.Storage,
-	relaydb *relay.Storage,
 	namesdb *names.Generator,
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
@@ -49,7 +46,6 @@ func NewMatchProcessor(
 
 	processor.contracts = contracts
 	processor.universedb = universedb
-	processor.relaydb = relaydb
 	processor.namesdb = namesdb
 
 	return &processor, nil
