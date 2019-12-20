@@ -35,6 +35,6 @@ spec:
       containers:
       - name: universeapi
         image: universeapi:0.0.1
-        args: ["-d", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer"] #change localhost for the ip the db is running on
+        args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
         ports:
         - containerPort: 4000
