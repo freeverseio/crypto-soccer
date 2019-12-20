@@ -5,28 +5,8 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 )
-
-type Storage struct {
-	db *sql.DB
-	tx *sql.Tx
-}
-
-func (b *Storage) Begin() error {
-	var err error
-	b.tx, err = b.db.Begin()
-	return err
-}
-
-func (b *Storage) Commit() error {
-	return b.tx.Commit()
-}
-
-func (b *Storage) Rollback() error {
-	return b.tx.Rollback()
-}
 
 func NewPostgres(url string) (*sql.DB, error) {
 	var err error
