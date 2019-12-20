@@ -87,6 +87,7 @@ export default function SpecialPlayer(props) {
     }
 
     function AccademyPlayers() {
+        const { web3 } = props;
         const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
             pollInterval: 2000,
         });
@@ -100,7 +101,7 @@ export default function SpecialPlayer(props) {
                 {
                     players.map((player, key) => {
                         return (
-                           <AcademyPlayer key={key} player={player}/> 
+                           <AcademyPlayer key={key} player={player} web3={web3}/> 
                         );
                     })
                 }
