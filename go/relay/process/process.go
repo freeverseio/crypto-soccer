@@ -9,7 +9,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
@@ -20,12 +19,8 @@ import (
 )
 
 type Processor struct {
-	client        *ethclient.Client
-	privateKey    *ecdsa.PrivateKey
-	publicAddress common.Address
-	db            *sql.DB
-	updates       *updates.Updates
-	ipfsURL       string
+	updatesSession updates.UpdatesSession
+	ipfsURL        string
 }
 
 // *****************************************************************************
@@ -36,7 +31,7 @@ func NewProcessor(
 	client *ethclient.Client,
 	privateKey *ecdsa.PrivateKey,
 	db *sql.DB,
-	updates *updates.Updates,
+	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
 
@@ -48,12 +43,29 @@ func NewProcessor(
 
 	publicAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 
+	nonce, err := client.PendingNonceAt(context.Background(), publicAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)
+	auth.GasPrice = gasPrice
+
+	updatesSession := updates.UpdatesSession{
+		updatesContract,
+		bind.CallOpts{},
+		*auth,
+	}
+
 	return &Processor{
-		client,
-		privateKey,
-		publicAddress,
-		db,
-		updates,
+		updatesSession,
 		ipfsURL,
 	}, nil
 }
@@ -66,28 +78,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 // private
 // *****************************************************************************
 func (p *Processor) computeActionsRoot(tx *sql.Tx) error {
-	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
-	if err != nil {
-		return err
-	}
-
-	gasPrice, err := p.client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return err
-	}
-
-	auth := bind.NewKeyedTransactor(p.privateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)
-	auth.GasPrice = gasPrice
-
-	session := updates.UpdatesSession{
-		p.updates,
-		bind.CallOpts{},
-		*auth,
-	}
-
-	if err = storage.CloseVerse(tx); err != nil {
+	if err := storage.CloseVerse(tx); err != nil {
 		return err
 	}
 	verse, err := storage.LastVerse(tx)
@@ -110,6 +101,6 @@ func (p *Processor) computeActionsRoot(tx *sql.Tx) error {
 	copy(root[:], hash)
 
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	_, err = session.SubmitActionsRoot(root, cid)
+	_, err = p.updatesSession.SubmitActionsRoot(root, cid)
 	return err
 }
