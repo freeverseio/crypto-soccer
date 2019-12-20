@@ -24,7 +24,7 @@ def readNames(filename):
     with open(filename, 'r', newline='\n') as file:
         for line in file:
             splitted = line.rstrip('\n')
-            names.append(splitted)
+            names.append(splitted.title())
     return purgeRepeated(names)
 
 def db_connect():
