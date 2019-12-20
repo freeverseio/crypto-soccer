@@ -20,7 +20,7 @@ type Matchevent struct {
 
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
 const (
-	EVNT_NORMAL int16 = 0
+	EVNT_ATTACK int16 = 0
 	EVNT_YELLOW int16 = 1
 	EVNT_RED    int16 = 2
 	EVNT_SOFT   int16 = 3
@@ -69,7 +69,7 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([
 		assister := blockchainEvents[2+5*e+4]
 		var thisEvent Matchevent
 		thisEvent.Minute = int16(minute)
-		thisEvent.Type = int16(0)
+		thisEvent.Type = int16(EVNT_ATTACK)
 		thisEvent.Team = int16(teamThatAttacks.Int64())
 		thisEvent.ManagesToShoot = int16(managesToShoot.Int64())
 		thisEvent.IsGoal = int16(isGoal.Int64())
