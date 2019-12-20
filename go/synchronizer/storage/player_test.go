@@ -47,7 +47,7 @@ func TestPlayerCreate(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
@@ -87,7 +87,7 @@ func TestPlayerUpdate(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
@@ -154,10 +154,10 @@ func TestGetPlayer(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 
 	team.TeamID = big.NewInt(11)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 	var player storage.Player
 	player.PlayerId = big.NewInt(1)
 	player.State.Defence = 4
@@ -224,7 +224,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 	var player storage.Player
 	player.PlayerId = big.NewInt(1)
 	player.State.Defence = 4

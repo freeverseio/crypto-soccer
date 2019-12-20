@@ -118,11 +118,11 @@ func (b *MatchProcessor) Process(
 		return err
 	}
 	if is2ndHalf {
-		homeTeam, err := storage.GetTeam(tx, match.HomeTeamID)
+		homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
 		if err != nil {
 			return err
 		}
-		visitorTeam, err := storage.GetTeam(tx, match.VisitorTeamID)
+		visitorTeam, err := storage.TeamByTeamId(tx, match.VisitorTeamID)
 		if err != nil {
 			return err
 		}
@@ -138,11 +138,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = homeTeam.TeamUpdate(tx, homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.Update(tx, homeTeam.TeamID, homeTeam.State)
 		if err != nil {
 			return err
 		}
-		err = visitorTeam.TeamUpdate(tx, visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.Update(tx, visitorTeam.TeamID, visitorTeam.State)
 		if err != nil {
 			return err
 		}

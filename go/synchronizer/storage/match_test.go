@@ -29,7 +29,7 @@ func TestSetMatchLogs(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
 	match := storage.Match{
@@ -95,7 +95,7 @@ func TestMatchReset(t *testing.T) {
 	country.CountryCreate(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
 	league.LeagueCreate(tx)
-	team.TeamCreate(tx)
+	team.Insert(tx)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
 	match := storage.Match{

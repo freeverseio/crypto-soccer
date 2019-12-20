@@ -65,7 +65,7 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 		},
 	}
 
-	if err := team.TeamCreate(tx); err != nil {
+	if err := team.Insert(tx); err != nil {
 		return err
 	}
 	return nil

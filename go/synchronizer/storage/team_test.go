@@ -46,10 +46,10 @@ func TestGetTeam(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	team.State.RankingPoints = math.MaxUint64
-	if err = team.TeamCreate(tx); err != nil {
+	if err = team.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
-	result, err := storage.GetTeam(tx, team.TeamID)
+	result, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func TestTeamCreate(t *testing.T) {
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
-	err = team.TeamCreate(tx)
+	err = team.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +91,7 @@ func TestTeamCreate(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("Expected 1 result %v", count)
 	}
-	teamResult, err := storage.GetTeam(tx, team.TeamID)
+	teamResult, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +111,7 @@ func TestGetTeamOfUnexistenTeamID(t *testing.T) {
 	defer tx.Rollback()
 
 	teamID := big.NewInt(434)
-	_, err = storage.GetTeam(tx, teamID)
+	_, err = storage.TeamByTeamId(tx, teamID)
 	if err == nil {
 		t.Fatal("Not error on unsexistent team")
 	}
@@ -139,8 +139,8 @@ func TestGetTeamInLeague(t *testing.T) {
 	team.CountryIdx = countryIdx
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
-	team.TeamCreate(tx)
-	teams, err := storage.GetTeamsInLeague(tx, timezone.TimezoneIdx, countryIdx, leagueIdx)
+	team.Insert(tx)
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezone.TimezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,17 +172,17 @@ func TestUpdateTeamOwner(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	team.State.RankingPoints = math.MaxUint64
-	err = team.TeamCreate(tx)
+	err = team.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	team.State.Owner = "pippo"
 	team.State.TrainingPoints = 4
-	err = team.TeamUpdate(tx, team.TeamID, team.State)
+	err = team.Update(tx, team.TeamID, team.State)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := storage.GetTeam(tx, team.TeamID)
+	result, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -214,7 +214,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	_, err = sto.GetTeam(1)
+// 	_, err = sto.TeamByTeamId(1)
 // 	if err == nil {
 // 		t.Fatal("Expecting error on unexistent team")
 // 	}
@@ -244,7 +244,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	result, err := sto.GetTeam(team.Id)
+// 	result, err := sto.TeamByTeamId(team.Id)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

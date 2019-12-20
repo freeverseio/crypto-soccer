@@ -114,7 +114,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		return err
 	}
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		teams, err := storage.GetTeamsInLeague(tx, timezoneIdx, countryIdx, leagueIdx)
+		teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 	for i, team := range orgMap {
 		team.State.LeagueIdx = uint32(i / 8)
 		team.State.TeamIdxInLeague = uint32(i % 8)
-		err = team.TeamUpdate(tx, team.TeamID, team.State)
+		err = team.Update(tx, team.TeamID, team.State)
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 }
 
 func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	teams, err := storage.GetTeamsInLeague(tx, timezoneIdx, countryIdx, leagueIdx)
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -175,7 +175,7 @@ func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 		team.State.GoalsAgainst = 0
 		team.State.GoalsForward = 0
 		team.State.Points = 0
-		err = team.TeamUpdate(tx, team.TeamID, team.State)
+		err = team.Update(tx, team.TeamID, team.State)
 		if err != nil {
 			return err
 		}

@@ -70,11 +70,11 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 			if err != nil {
 				return nil
 			}
-			homeTeamID, err := storage.GetTeamID(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
+			homeTeamID, err := storage.TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
 			if err != nil {
 				return err
 			}
-			visitorTeamID, err := storage.GetTeamID(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.VisitorIdx))
+			visitorTeamID, err := storage.TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.VisitorIdx))
 			if err != nil {
 				return err
 			}

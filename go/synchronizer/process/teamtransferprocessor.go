@@ -18,11 +18,11 @@ func NewTeamTransferProcessor() (*TeamTransferProcessor, error) {
 func (b *TeamTransferProcessor) Process(tx *sql.Tx, v assets.AssetsTeamTransfer) error {
 	teamID := v.TeamId
 	newOwner := v.To.String()
-	team, err := storage.GetTeam(tx, teamID)
+	team, err := storage.TeamByTeamId(tx, teamID)
 	if err != nil {
 		return err
 	}
 	// team.State.BlockNumber = blockNumber
 	team.State.Owner = newOwner
-	return team.TeamUpdate(tx, teamID, team.State)
+	return team.Update(tx, teamID, team.State)
 }

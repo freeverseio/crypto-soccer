@@ -149,7 +149,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 						0,
 					},
 				}
-				if err := team.TeamCreate(tx); err != nil {
+				if err := team.Insert(tx); err != nil {
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err

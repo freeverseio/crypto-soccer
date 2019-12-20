@@ -35,7 +35,7 @@ func TestAssetsInitProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	team, err := storage.GetTeam(tx, big.NewInt(1))
+	team, err := storage.TeamByTeamId(tx, big.NewInt(1))
 	if err != nil {
 		t.Fatal(err)
 	}

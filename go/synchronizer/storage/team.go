@@ -61,7 +61,7 @@ func IsBotTeam(team Team) bool {
 	return team.State.Owner == BotOwner
 }
 
-func (b *Team) TeamCreate(tx *sql.Tx) error {
+func (b *Team) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create team %v", b)
 	_, err := tx.Exec(`
 		INSERT INTO teams (
@@ -105,7 +105,7 @@ func TeamCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Team) TeamUpdate(tx *sql.Tx, teamID *big.Int, teamState TeamState) error {
+func (b *Team) Update(tx *sql.Tx, teamID *big.Int, teamState TeamState) error {
 	log.Debugf("[DBMS] + update team state %v", teamState)
 	_, err := tx.Exec(`UPDATE teams SET 
 						owner=$1, 
@@ -140,7 +140,7 @@ func (b *Team) TeamUpdate(tx *sql.Tx, teamID *big.Int, teamState TeamState) erro
 	return err
 }
 
-func GetTeamsInLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
+func TeamsByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Team, error) {
 	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func GetTeamsInLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueId
 	for i := 0; i < len(teamsIds); i++ {
 		teamID := teamsIds[i]
 		var team Team
-		team, err = GetTeam(tx, teamID)
+		team, err = TeamByTeamId(tx, teamID)
 
 		if err != nil {
 			return teams, err
@@ -173,7 +173,7 @@ func GetTeamsInLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueId
 	return teams, nil
 }
 
-func GetTeamID(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
+func TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, teamIdxInLeague uint32) (*big.Int, error) {
 	rows, err := tx.Query("SELECT team_id FROM teams WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3 AND team_idx_in_league = $4);", timezoneIdx, countryIdx, leagueIdx, teamIdxInLeague)
 	if err != nil {
 		return nil, err
@@ -193,8 +193,8 @@ func GetTeamID(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint3
 	return result, nil
 }
 
-func GetTeam(tx *sql.Tx, teamID *big.Int) (Team, error) {
-	log.Debugf("[DBMS] GetTeam of teamID %v", teamID)
+func TeamByTeamId(tx *sql.Tx, teamID *big.Int) (Team, error) {
+	log.Debugf("[DBMS] TeamByTeamId of teamID %v", teamID)
 	var team Team
 	rows, err := tx.Query(`SELECT 
 	timezone_idx,

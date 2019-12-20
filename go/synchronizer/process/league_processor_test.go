@@ -222,7 +222,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	teams, err := storage.GetTeamsInLeague(tx, timezoneIdx, uint32(countryIdx.Uint64()), leagueIdx)
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, uint32(countryIdx.Uint64()), leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
