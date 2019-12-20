@@ -10,12 +10,6 @@ import (
 )
 
 func TestCreateMatchSeed(t *testing.T) {
-	err := universedb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer universedb.Rollback()
-
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
@@ -27,7 +21,6 @@ func TestCreateMatchSeed(t *testing.T) {
 	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
-		universedb,
 		namesdb,
 	)
 	if err != nil {
@@ -46,11 +39,11 @@ func TestCreateMatchSeed(t *testing.T) {
 }
 
 func TestGetPlayerState(t *testing.T) {
-	err := universedb.Begin()
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer universedb.Rollback()
+	defer tx.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
@@ -63,13 +56,12 @@ func TestGetPlayerState(t *testing.T) {
 	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
-		universedb,
 		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
-	teamState, err := processor.GetTeamState(big.NewInt(3))
+	teamState, err := processor.GetTeamState(tx, big.NewInt(3))
 	if err != nil {
 		t.Fatal(err)
 	}

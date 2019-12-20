@@ -1,6 +1,7 @@
 package process
 
 import (
+	"database/sql"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -13,7 +14,6 @@ import (
 
 type MatchProcessor struct {
 	contracts         *contracts.Contracts
-	universedb        *storage.Storage
 	namesdb           *names.Generator
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
@@ -23,7 +23,6 @@ type MatchProcessor struct {
 
 func NewMatchProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
 	namesdb *names.Generator,
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
@@ -46,7 +45,6 @@ func NewMatchProcessor(
 	}
 
 	processor.contracts = contracts
-	processor.universedb = universedb
 	processor.namesdb = namesdb
 
 	return &processor, nil
@@ -68,6 +66,7 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 }
 
 func (b *MatchProcessor) Process(
+	tx *sql.Tx,
 	match storage.Match,
 	seed [32]byte,
 	startTime *big.Int,
@@ -77,7 +76,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+	states, err := b.GetMatchTeamsState(tx, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return err
 	}
@@ -95,7 +94,8 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	err = b.universedb.MatchSetResult(
+	err = storage.MatchSetResult(
+		tx,
 		match.TimezoneIdx,
 		match.CountryIdx,
 		match.LeagueIdx,
@@ -109,28 +109,28 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
+	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
+	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
 	if err != nil {
 		return err
 	}
 	if is2ndHalf {
-		homeTeam, err := b.universedb.GetTeam(match.HomeTeamID)
+		homeTeam, err := storage.GetTeam(tx, match.HomeTeamID)
 		if err != nil {
 			return err
 		}
-		visitorTeam, err := b.universedb.GetTeam(match.VisitorTeamID)
+		visitorTeam, err := storage.GetTeam(tx, match.VisitorTeamID)
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(&homeTeam, states[0], startTime, logs[0])
+		err = b.UpdateTeamSkills(tx, &homeTeam, states[0], startTime, logs[0])
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(&visitorTeam, states[1], startTime, logs[1])
+		err = b.UpdateTeamSkills(tx, &visitorTeam, states[1], startTime, logs[1])
 		if err != nil {
 			return err
 		}
@@ -138,11 +138,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = b.universedb.TeamUpdate(homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.TeamUpdate(tx, homeTeam.TeamID, homeTeam.State)
 		if err != nil {
 			return err
 		}
-		err = b.universedb.TeamUpdate(visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.TeamUpdate(tx, visitorTeam.TeamID, visitorTeam.State)
 		if err != nil {
 			return err
 		}
@@ -150,12 +150,12 @@ func (b *MatchProcessor) Process(
 	return nil
 }
 
-func (b *MatchProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
+func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
 	}
-	players, err := b.universedb.GetPlayersOfTeam(teamID)
+	players, err := storage.GetPlayersOfTeam(tx, teamID)
 	if err != nil {
 		return state, err
 	}
@@ -177,13 +177,13 @@ func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, v
 	z.SetBytes(matchSeed[:])
 	return z, nil
 }
-func (b *MatchProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
+func (b *MatchProcessor) GetMatchTeamsState(tx *sql.Tx, homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
 	var states [2][25]*big.Int
-	homeTeamState, err := b.GetTeamState(homeTeamID)
+	homeTeamState, err := b.GetTeamState(tx, homeTeamID)
 	if err != nil {
 		return states, err
 	}
-	visitorTeamState, err := b.GetTeamState(visitorTeamID)
+	visitorTeamState, err := b.GetTeamState(tx, visitorTeamID)
 	if err != nil {
 		return states, err
 	}
@@ -264,8 +264,8 @@ func (b *MatchProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big
 	return tactics, nil
 }
 
-func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
-	players, err := b.universedb.GetPlayersOfTeam(teamID)
+func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+	players, err := storage.GetPlayersOfTeam(tx, teamID)
 	if err != nil {
 		return err
 	}
@@ -326,7 +326,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {
+		if err = player.PlayerUpdate(tx, player.PlayerId, player.State); err != nil {
 			return nil
 		}
 	}
@@ -404,6 +404,7 @@ func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) 
 }
 
 func (b *MatchProcessor) UpdateTeamSkills(
+	tx *sql.Tx,
 	team *storage.Team,
 	states [25]*big.Int,
 	matchStartTime *big.Int,
@@ -435,7 +436,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		if err != nil {
 			return err
 		}
-		player, err := b.universedb.GetPlayer(playerID)
+		player, err := storage.GetPlayer(tx, playerID)
 		if err != nil {
 			return err
 		}
@@ -465,7 +466,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		player.State.Shoot = shoot.Uint64()
 		player.State.Defence = endurance.Uint64()
 		player.State.EncodedSkills = state
-		err = b.universedb.PlayerUpdate(playerID, player.State)
+		err = player.PlayerUpdate(tx, playerID, player.State)
 		if err != nil {
 			return err
 		}

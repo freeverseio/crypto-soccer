@@ -1,6 +1,7 @@
 package process
 
 import (
+	"database/sql"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -12,13 +13,11 @@ import (
 
 type AssetsInitProcessor struct {
 	contracts   *contracts.Contracts
-	universedb  *storage.Storage
 	ACADEMYTEAM *big.Int
 }
 
 func NewAssetsInitProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
 ) (*AssetsInitProcessor, error) {
 	ACADEMYTEAM, err := contracts.Assets.ACADEMYTEAM(&bind.CallOpts{})
 	if err != nil {
@@ -26,49 +25,47 @@ func NewAssetsInitProcessor(
 	}
 	return &AssetsInitProcessor{
 		contracts,
-		universedb,
 		ACADEMYTEAM,
 	}, nil
 }
 
-func (b *AssetsInitProcessor) Process(event assets.AssetsAssetsInit) error {
+func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit) error {
 	log.Infof("AssetsInit: creatorAddr: %v", event.CreatorAddr)
-	timezone := uint8(0)
-	countryIdx := uint32(0)
-	leagueIdx := uint32(0)
+	timezone := storage.Timezone{uint8(0)}
+	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
+	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
+	if err := timezone.TimezoneCreate(tx); err != nil {
+		return err
+	}
+	if err := country.CountryCreate(tx); err != nil {
+		return err
+	}
+	if err := league.LeagueCreate(tx); err != nil {
+		return err
+	}
 	teamIdxInLeague := uint32(0)
-	if err := b.universedb.TimezoneCreate(storage.Timezone{timezone}); err != nil {
-		return err
-	}
-	if err := b.universedb.CountryCreate(storage.Country{timezone, countryIdx}); err != nil {
-		return err
-	}
-	if err := b.universedb.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx}); err != nil {
-		return err
+	team := storage.Team{
+		b.ACADEMYTEAM,
+		timezone.TimezoneIdx,
+		country.CountryIdx,
+		storage.TeamState{
+			"Academy",
+			event.CreatorAddr.String(),
+			league.LeagueIdx,
+			teamIdxInLeague,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+		},
 	}
 
-	if err := b.universedb.TeamCreate(
-		storage.Team{
-			b.ACADEMYTEAM,
-			timezone,
-			countryIdx,
-			storage.TeamState{
-				"Academy",
-				event.CreatorAddr.String(),
-				leagueIdx,
-				teamIdxInLeague,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-			},
-		},
-	); err != nil {
+	if err := team.TeamCreate(tx); err != nil {
 		return err
 	}
 	return nil

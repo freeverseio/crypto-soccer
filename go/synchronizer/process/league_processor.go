@@ -1,6 +1,7 @@
 package process
 
 import (
+	"database/sql"
 	"errors"
 	"math/big"
 	"sort"
@@ -16,23 +17,20 @@ import (
 
 type LeagueProcessor struct {
 	contracts         *contracts.Contracts
-	universedb        *storage.Storage
 	calendarProcessor *Calendar
 	matchProcessor    *MatchProcessor
 }
 
 func NewLeagueProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
 	namesdb *names.Generator,
 ) (*LeagueProcessor, error) {
-	calendarProcessor, err := NewCalendar(contracts, universedb)
+	calendarProcessor, err := NewCalendar(contracts)
 	if err != nil {
 		return nil, err
 	}
 	matchProcessor, err := NewMatchProcessor(
 		contracts,
-		universedb,
 		namesdb,
 	)
 	if err != nil {
@@ -40,13 +38,12 @@ func NewLeagueProcessor(
 	}
 	return &LeagueProcessor{
 		contracts,
-		universedb,
 		calendarProcessor,
 		matchProcessor,
 	}, nil
 }
 
-func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error {
+func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmission) error {
 	day := event.Day
 	turnInDay := event.TurnInDay
 	timezoneIdx := event.TimeZone
@@ -60,36 +57,37 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	// case 0: // first half league match
 	// case 1:
 	if turnInDay < 2 {
-		countryCount, err := b.universedb.CountryInTimezoneCount(timezoneIdx)
+		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
 		if err != nil {
 			return err
 		}
 		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
 			// if a new league is starting shuffle the teams
 			if (day == 0) && (turnInDay == 0) {
-				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, countryIdx)
+				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
 				if err != nil {
 					return err
 				}
 			}
-			leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
+			leagueCount, err := storage.LeagueInCountryCount(tx, timezoneIdx, countryIdx)
 			if err != nil {
 				return err
 			}
 			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
 				if day == 0 {
-					err = b.resetLeague(timezoneIdx, countryIdx, leagueIdx)
+					err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx)
 					if err != nil {
 						return err
 					}
 				}
-				matches, err := b.universedb.GetMatchesInDay(timezoneIdx, countryIdx, leagueIdx, day)
+				matches, err := storage.GetMatchesInDay(tx, timezoneIdx, countryIdx, leagueIdx, day)
 				if err != nil {
 					return err
 				}
 				for _, match := range matches {
 					is2ndHalf := turnInDay == 1
 					err = b.matchProcessor.Process(
+						tx,
 						match,
 						event.Seed,
 						event.SubmissionTime,
@@ -108,15 +106,15 @@ func (b *LeagueProcessor) Process(event updates.UpdatesActionsSubmission) error 
 	return nil
 }
 
-func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx uint8, countryIdx uint32) error {
+func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
-	leagueCount, err := b.universedb.LeagueInCountryCount(timezoneIdx, countryIdx)
+	leagueCount, err := storage.LeagueInCountryCount(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}
 	for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
-		teams, err := b.universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+		teams, err := storage.GetTeamsInLeague(tx, timezoneIdx, countryIdx, leagueIdx)
 		if err != nil {
 			return err
 		}
@@ -125,7 +123,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 			return teams[i].State.Points > teams[j].State.Points
 		})
 		for position, team := range teams {
-			teamState, err := b.matchProcessor.GetTeamState(team.TeamID)
+			teamState, err := b.matchProcessor.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
 			}
@@ -156,7 +154,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 	for i, team := range orgMap {
 		team.State.LeagueIdx = uint32(i / 8)
 		team.State.TeamIdxInLeague = uint32(i % 8)
-		err = b.universedb.TeamUpdate(team.TeamID, team.State)
+		err = team.TeamUpdate(tx, team.TeamID, team.State)
 		if err != nil {
 			return err
 		}
@@ -164,8 +162,8 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneI
 	return nil
 }
 
-func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	teams, err := b.universedb.GetTeamsInLeague(timezoneIdx, countryIdx, leagueIdx)
+func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	teams, err := storage.GetTeamsInLeague(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -177,16 +175,16 @@ func (b *LeagueProcessor) resetLeague(timezoneIdx uint8, countryIdx uint32, leag
 		team.State.GoalsAgainst = 0
 		team.State.GoalsForward = 0
 		team.State.Points = 0
-		err = b.universedb.TeamUpdate(team.TeamID, team.State)
+		err = team.TeamUpdate(tx, team.TeamID, team.State)
 		if err != nil {
 			return err
 		}
 	}
-	err = b.calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
+	err = b.calendarProcessor.Reset(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}
-	err = b.calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
+	err = b.calendarProcessor.Populate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return err
 	}

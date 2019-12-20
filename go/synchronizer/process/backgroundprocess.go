@@ -1,27 +1,27 @@
 package process
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 type BackgroundProcess struct {
 	eventProcessor *EventProcessor
 	queryStop      chan (bool)
 	stopped        chan (bool)
+	db             *sql.DB
 }
 
 func BackgroundProcessNew(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
 	namesdb *names.Generator,
+	db *sql.DB,
 ) (*BackgroundProcess, error) {
 	eventProcessor, err := NewEventProcessor(
 		contracts,
-		universedb,
 		namesdb,
 	)
 
@@ -32,24 +32,25 @@ func BackgroundProcessNew(
 		eventProcessor: eventProcessor,
 		queryStop:      make(chan (bool)),
 		stopped:        make(chan (bool)),
+		db:             db,
 	}, nil
 }
 
 func (b *BackgroundProcess) Process() (uint64, error) {
-	err := b.eventProcessor.universedb.Begin()
+	tx, err := b.db.Begin()
 	if err != nil {
 		return 0, err
 	}
 	defer func() {
 		if err != nil {
-			b.eventProcessor.universedb.Rollback()
+			tx.Rollback()
 			return
 		}
-		b.eventProcessor.universedb.Commit()
+		tx.Commit()
 	}()
 
 	delta := uint64(1000)
-	return b.eventProcessor.Process(delta)
+	return b.eventProcessor.Process(tx, delta)
 }
 
 func (b *BackgroundProcess) Start() {

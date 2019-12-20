@@ -2,6 +2,7 @@ package process
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"math"
@@ -20,7 +21,6 @@ import (
 
 type EventProcessor struct {
 	contracts                 *contracts.Contracts
-	universedb                *storage.Storage
 	assetsInitProcessor       *AssetsInitProcessor
 	divisionCreationProcessor *DivisionCreationProcessor
 	leagueProcessor           *LeagueProcessor
@@ -34,19 +34,16 @@ type EventProcessor struct {
 // NewEventProcessor creates a new struct for scanning and storing crypto soccer events
 func NewEventProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
 	namesdb *names.Generator,
 ) (*EventProcessor, error) {
 	assetsInitProcessor, err := NewAssetsInitProcessor(
 		contracts,
-		universedb,
 	)
 	if err != nil {
 		return nil, err
 	}
 	divisionCreationProcessor, err := NewDivisionCreationProcessor(
 		contracts,
-		universedb,
 		namesdb,
 	)
 	if err != nil {
@@ -54,19 +51,17 @@ func NewEventProcessor(
 	}
 	leagueProcessor, err := NewLeagueProcessor(
 		contracts,
-		universedb,
 		namesdb,
 	)
 	if err != nil {
 		return nil, err
 	}
-	teamTransferProcessor, err := NewTeamTransferProcessor(universedb)
+	teamTransferProcessor, err := NewTeamTransferProcessor()
 	if err != nil {
 		return nil, err
 	}
 	return &EventProcessor{
 		contracts,
-		universedb,
 		assetsInitProcessor,
 		divisionCreationProcessor,
 		leagueProcessor,
@@ -75,9 +70,9 @@ func NewEventProcessor(
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process(delta uint64) (uint64, error) {
+func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 
-	opts, err := p.nextRange(delta)
+	opts, err := p.nextRange(tx, delta)
 	if err != nil {
 		return 0, err
 	}
@@ -102,12 +97,12 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 	}
 
 	for _, v := range scanner.Events {
-		if err := p.dispatch(v); err != nil {
+		if err := p.dispatch(tx, v); err != nil {
 			return 0, err
 		}
 	}
 
-	err = p.universedb.SetBlockNumber(*opts.End)
+	err = storage.SetBlockNumber(tx, *opts.End)
 	deltaBlock := *opts.End - opts.Start
 
 	return deltaBlock, err
@@ -116,19 +111,19 @@ func (p *EventProcessor) Process(delta uint64) (uint64, error) {
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) dispatch(e *AbstractEvent) error {
+func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
 	case assets.AssetsAssetsInit:
 		log.Infof("[processor] Dispatching AssetsInit event from account %v", v.CreatorAddr)
-		return p.assetsInitProcessor.Process(v)
+		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
-		return p.divisionCreationProcessor.Process(v)
+		return p.divisionCreationProcessor.Process(tx, v)
 	case assets.AssetsTeamTransfer:
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
-		return p.teamTransferProcessor.Process(v)
+		return p.teamTransferProcessor.Process(tx, v)
 	case assets.AssetsPlayerStateChange:
 		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
 		playerID := v.PlayerId
@@ -141,30 +136,30 @@ func (p *EventProcessor) dispatch(e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
-		player, err := p.universedb.GetPlayer(playerID)
+		player, err := storage.GetPlayer(tx, playerID)
 		if err != nil {
 			return err
 		}
 		player.State.TeamId = teamID
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-		return p.universedb.PlayerUpdate(playerID, player.State)
+		return player.PlayerUpdate(tx, playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Infof("[processor] Dispatching UpdatesActionsSubmission event TZ: %v, Day: %v, Turn: %v, cid: %v", v.TimeZone, v.Day, v.TurnInDay, v.Cid)
-		return p.leagueProcessor.Process(v)
+		return p.leagueProcessor.Process(tx, v)
 	case market.MarketPlayerFreeze:
 		log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
 		playerID := v.PlayerId
-		player, err := p.universedb.GetPlayer(playerID)
+		player, err := storage.GetPlayer(tx, playerID)
 		if err != nil {
 			return err
 		}
 		player.State.Frozen = v.Frozen
-		return p.universedb.PlayerUpdate(playerID, player.State)
+		return player.PlayerUpdate(tx, playerID, player.State)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }
-func (p *EventProcessor) nextRange(delta uint64) (*bind.FilterOpts, error) {
-	start, err := p.dbLastBlockNumber()
+func (p *EventProcessor) nextRange(tx *sql.Tx, delta uint64) (*bind.FilterOpts, error) {
+	start, err := p.dbLastBlockNumber(tx)
 	if err != nil {
 		return nil, err
 	}
@@ -205,8 +200,8 @@ func (p *EventProcessor) clientLastBlockNumber() uint64 {
 	}
 	return header.Number.Uint64()
 }
-func (p *EventProcessor) dbLastBlockNumber() (uint64, error) {
-	storedLastBlockNumber, err := p.universedb.GetBlockNumber()
+func (p *EventProcessor) dbLastBlockNumber(tx *sql.Tx) (uint64, error) {
+	storedLastBlockNumber, err := storage.GetBlockNumber(tx)
 	if err != nil {
 		return 0, err
 	}
