@@ -13,24 +13,21 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestProcessInvalidTimezone(t *testing.T) {
-	err := universedb.Begin()
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer universedb.Rollback()
+	defer tx.Rollback()
+
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
@@ -38,8 +35,6 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	bc.DeployContracts(bc.Owner)
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
-		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -47,7 +42,7 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	}
 	var event updates.UpdatesActionsSubmission
 	event.TimeZone = 25
-	err = processor.Process(event)
+	err = processor.Process(tx, event)
 	if err == nil {
 		t.Fatal(err)
 	}
@@ -93,16 +88,11 @@ func TestPlayHalfMatch(t *testing.T) {
 }
 
 func TestLeagueProcessMatch(t *testing.T) {
-	err := universedb.Begin()
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
+	defer tx.Rollback()
 
 	if err != nil {
 		t.Fatal(err)
@@ -126,8 +116,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
 		bc.Contracts,
-		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -135,15 +123,13 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-	err = divisionCreationProcessor.Process(assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
+	err = divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
-		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -157,7 +143,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
-	err = processor.Process(updates.UpdatesActionsSubmission{
+	err = processor.Process(tx, updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,
 		turnInDay,
@@ -170,7 +156,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	turnInDay = 1
-	err = processor.Process(updates.UpdatesActionsSubmission{
+	err = processor.Process(tx, updates.UpdatesActionsSubmission{
 		timezoneIdx,
 		day,
 		turnInDay,
@@ -185,16 +171,12 @@ func TestLeagueProcessMatch(t *testing.T) {
 }
 
 func TestLeagueShuffling(t *testing.T) {
-	err := universedb.Begin()
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
+	defer tx.Rollback()
+
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
@@ -206,43 +188,41 @@ func TestLeagueShuffling(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	leagueIdx := uint32(0)
-	proc, err := process.NewEventProcessor(bc.Contracts, universedb, relaydb, namesdb)
+	proc, err := process.NewEventProcessor(bc.Contracts, namesdb)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = proc.Process(0); err != nil {
+	if _, err = proc.Process(tx, 0); err != nil {
 		t.Fatal(err)
 	}
 	// teamId := big.NewInt(274877906944)
 
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx0, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
 		common.HexToAddress("0x8724aC60ac290837a1fe2d441279413d5B058E5F"),
 	)
-	_, err = helper.WaitReceipt(bc.Client, tx, 10)
+	_, err = helper.WaitReceipt(bc.Client, tx0, 10)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = proc.Process(0); err != nil {
+	if _, err = proc.Process(tx, 0); err != nil {
 		t.Fatal(err)
 	}
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
-		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(timezoneIdx, uint32(countryIdx.Uint64()))
+	err = processor.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, uint32(countryIdx.Uint64()))
 	if err != nil {
 		t.Fatal(err)
 	}
-	teams, err := universedb.GetTeamsInLeague(timezoneIdx, uint32(countryIdx.Uint64()), leagueIdx)
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, uint32(countryIdx.Uint64()), leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

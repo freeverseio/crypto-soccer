@@ -7,14 +7,15 @@ import (
 )
 
 func TestTrainingCreate(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
+	defer tx.Rollback()
+
 	training := storage.Training{}
 	training.TeamID = "4"
-	err = db.CreateTraining(training)
+	err = training.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

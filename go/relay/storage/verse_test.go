@@ -2,15 +2,17 @@ package storage_test
 
 import (
 	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
 func TestGetCurrentVerse(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	verse, err := db.GetLastVerse()
+	defer tx.Rollback()
+	verse, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,27 +22,27 @@ func TestGetCurrentVerse(t *testing.T) {
 }
 
 func TestIncreamentVerse(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	err = db.CloseVerse()
+	defer tx.Rollback()
+	err = storage.CloseVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse1, err := db.GetLastVerse()
+	verse1, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if verse1.ID != 1 {
 		t.Fatalf("Expected verse 1 received %v", verse1.ID)
 	}
-	err = db.CloseVerse()
+	err = storage.CloseVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	verse2, err := db.GetLastVerse()
+	verse2, err := storage.LastVerse(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,30 +54,30 @@ func TestIncreamentVerse(t *testing.T) {
 	}
 }
 
-func TestGetVerse(t *testing.T) {
-	err := db.Begin()
+func TestVerseByTeamId(t *testing.T) {
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	verse, err := db.GetVerse(0)
+	defer tx.Rollback()
+	verse, err := storage.VerseById(tx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if verse == nil {
 		t.Fatal("Expected verse 0 exists")
 	}
-	verse, err = db.GetVerse(1)
+	verse, err = storage.VerseById(tx, 1)
 	if err == nil {
 		t.Fatal("No error on unexistent verse")
 	}
 	if verse != nil {
 		t.Fatalf("Expected nil received %v", verse)
 	}
-	if err = db.CloseVerse(); err != nil {
+	if err = storage.CloseVerse(tx); err != nil {
 		t.Fatal(err)
 	}
-	verse, err = db.GetVerse(1)
+	verse, err = storage.VerseById(tx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}

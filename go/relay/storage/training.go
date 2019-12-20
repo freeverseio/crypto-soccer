@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -38,7 +39,7 @@ type Training struct {
 	SpecialPlayerEndurance int       `json:"special_player_endurance"` // special_player_endurance
 }
 
-func (b *Storage) TrainingByVerse(verseNumber int) ([]*Training, error) {
+func TrainingByVerse(verseNumber int) ([]*Training, error) {
 	var trainings []*Training
 	if verseNumber == 0 {
 		return trainings, nil
@@ -54,9 +55,9 @@ func (b *Storage) TrainingByVerse(verseNumber int) ([]*Training, error) {
 	return trainings, nil
 }
 
-func (b *Storage) CreateTraining(training Training) error {
-	log.Debugf("[DBMS] Create training %v", training)
-	_, err := b.tx.Exec(
+func (b *Training) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Create training %v", b)
+	_, err := tx.Exec(
 		`INSERT INTO trainings (
 			team_id,
     		special_player_shirt,
@@ -114,33 +115,33 @@ func (b *Storage) CreateTraining(training Training) error {
 			$26,
 			$27
         );`,
-		training.TeamID,
-		training.SpecialPlayerShirt,
-		training.GoalkeepersDefence,
-		training.GoalkeepersSpeed,
-		training.GoalkeepersPass,
-		training.GoalkeepersShoot,
-		training.GoalkeepersEndurance,
-		training.DefendersDefence,
-		training.DefendersSpeed,
-		training.DefendersPass,
-		training.DefendersShoot,
-		training.DefendersEndurance,
-		training.MidfieldersDefence,
-		training.MidfieldersSpeed,
-		training.MidfieldersPass,
-		training.MidfieldersShoot,
-		training.MidfieldersEndurance,
-		training.AttackersDefence,
-		training.AttackersSpeed,
-		training.AttackersPass,
-		training.AttackersShoot,
-		training.AttackersEndurance,
-		training.SpecialPlayerDefence,
-		training.SpecialPlayerSpeed,
-		training.SpecialPlayerPass,
-		training.SpecialPlayerShoot,
-		training.SpecialPlayerEndurance,
+		b.TeamID,
+		b.SpecialPlayerShirt,
+		b.GoalkeepersDefence,
+		b.GoalkeepersSpeed,
+		b.GoalkeepersPass,
+		b.GoalkeepersShoot,
+		b.GoalkeepersEndurance,
+		b.DefendersDefence,
+		b.DefendersSpeed,
+		b.DefendersPass,
+		b.DefendersShoot,
+		b.DefendersEndurance,
+		b.MidfieldersDefence,
+		b.MidfieldersSpeed,
+		b.MidfieldersPass,
+		b.MidfieldersShoot,
+		b.MidfieldersEndurance,
+		b.AttackersDefence,
+		b.AttackersSpeed,
+		b.AttackersPass,
+		b.AttackersShoot,
+		b.AttackersEndurance,
+		b.SpecialPlayerDefence,
+		b.SpecialPlayerSpeed,
+		b.SpecialPlayerPass,
+		b.SpecialPlayerShoot,
+		b.SpecialPlayerEndurance,
 	)
 	return err
 }

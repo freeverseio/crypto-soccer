@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 
@@ -18,9 +19,9 @@ type UserActions struct {
 	Trainings []*storage.Training `json:"trainings"`
 }
 
-func (b *UserActions) PullFromStorage(storage *storage.Storage, verse int) error {
+func (b *UserActions) PullFromStorage(tx *sql.Tx, verse int) error {
 	var err error
-	if b.Tactics, err = storage.TacticsByVerse(verse); err != nil {
+	if b.Tactics, err = storage.TacticsByVerse(tx, verse); err != nil {
 		return err
 	}
 	if b.Trainings, err = storage.TrainingByVerse(verse); err != nil {
