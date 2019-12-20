@@ -4,6 +4,7 @@ metadata:
   name: universedb
   labels:
     app: universedb
+    component: database
 spec:
   type: NodePort
   ports:
@@ -17,6 +18,7 @@ metadata:
   name: universedb
   labels:
     app: universedb
+    component: database
 spec:
   replicas: 1
   selector:
@@ -26,6 +28,7 @@ spec:
     metadata:
       labels:
         app: universedb
+        component: database
     spec:
       containers:
       - name: universedb

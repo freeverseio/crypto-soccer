@@ -4,6 +4,7 @@ metadata:
   name: universeapi
   labels:
     app: universedb
+    component: graphql
 spec:
   selector:
     app: universeapi
@@ -20,6 +21,7 @@ metadata:
   name: universeapi
   labels:
     app: universeapi
+    component: graphql
 spec:
   replicas: 1
   selector:

@@ -35,4 +35,3 @@ kubectl apply -f universeapi.yaml -n universe
 minikube service universeapi -n universe
 ```
 this will return an address similar to http://192.168.64.2:30770 . Append graphiql to it, so it looks like http://192.168.64.2:30770/graphiql
-
