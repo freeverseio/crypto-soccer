@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: universeapi
+  namespace: universe
+  labels:
+    app: universedb
+spec:
+  selector:
+    app: universeapi
+  type: NodePort
+  ports:
+  - name: http
+    protocol: TCP
+    port: 4000
+    targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universeapi
+  namespace: universe
+  labels:
+    app: universeapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: universeapi
+  template:
+    metadata:
+      labels:
+        app: universeapi
+    spec:
+      containers:
+      - name: universeapi
+        image: universeapi:0.0.1
+        args: ["-d", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer"] #change localhost for the ip the db is running on
+        ports:
+        - containerPort: 4000
