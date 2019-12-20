@@ -1,13 +1,17 @@
 package storage
 
-import log "github.com/sirupsen/logrus"
+import (
+	"database/sql"
+
+	log "github.com/sirupsen/logrus"
+)
 
 type Timezone struct {
 	TimezoneIdx uint8
 }
 
-func (b *Storage) TimezoneCount() (uint64, error) {
-	rows, err := b.tx.Query("SELECT COUNT(*) FROM timezones;")
+func TimezoneCount(tx *sql.Tx) (uint64, error) {
+	rows, err := tx.Query("SELECT COUNT(*) FROM timezones;")
 	if err != nil {
 		return 0, err
 	}
@@ -18,10 +22,10 @@ func (b *Storage) TimezoneCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) TimezoneCreate(timezone Timezone) error {
-	log.Debugf("[DBMS] Create timezone %v", timezone)
-	_, err := b.tx.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
-		timezone.TimezoneIdx,
+func (b *Timezone) TimezoneCreate(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Create timezone %v", b)
+	_, err := tx.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
+		b.TimezoneIdx,
 	)
 	return err
 }
