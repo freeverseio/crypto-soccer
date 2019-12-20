@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 )
@@ -358,9 +359,11 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTe
 }
 
 func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
-	if tactic, err := b.relaydb.GetTactic(teamID.String(), verse); err != nil {
-		return nil, err
-	} else if encodedTactic, err := b.contracts.Engine.EncodeTactics(
+	tactic := relay.DefaultTactic(teamID.String())
+	// if tactic, err := relay.TacticByTeamIDAndVerse(teamID.String(), verse); err != nil {
+	// 	return nil, err
+	// } else
+	if encodedTactic, err := b.contracts.Engine.EncodeTactics(
 		&bind.CallOpts{},
 		[3]uint8{11, 11, 11}, // TODO
 		[3]uint8{2, 3, 4},    // TODO

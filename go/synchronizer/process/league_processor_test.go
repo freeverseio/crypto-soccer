@@ -26,11 +26,6 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
@@ -39,7 +34,6 @@ func TestProcessInvalidTimezone(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -98,11 +92,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 
 	if err != nil {
 		t.Fatal(err)
@@ -127,7 +116,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 	divisionCreationProcessor, err := process.NewDivisionCreationProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -143,7 +131,6 @@ func TestLeagueProcessMatch(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -190,11 +177,6 @@ func TestLeagueShuffling(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
@@ -206,7 +188,7 @@ func TestLeagueShuffling(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 	leagueIdx := uint32(0)
-	proc, err := process.NewEventProcessor(bc.Contracts, universedb, relaydb, namesdb)
+	proc, err := process.NewEventProcessor(bc.Contracts, universedb, namesdb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -231,7 +213,6 @@ func TestLeagueShuffling(t *testing.T) {
 	processor, err := process.NewLeagueProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {

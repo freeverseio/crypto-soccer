@@ -15,11 +15,6 @@ func TestCreateMatchSeed(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
@@ -33,7 +28,6 @@ func TestCreateMatchSeed(t *testing.T) {
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
@@ -57,11 +51,6 @@ func TestGetPlayerState(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
@@ -75,7 +64,6 @@ func TestGetPlayerState(t *testing.T) {
 	processor, err := process.NewMatchProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {

@@ -88,7 +88,7 @@ func NewDivisionCreationProcessor(
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		if err := b.universedb.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
@@ -154,10 +154,10 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(tx, teamId); err != nil {
-					return err
-				} else if err := b.createInitialTraining(tx, teamId); err != nil {
-					return err
+					// } else if err := b.createInitialTactics(tx, teamId); err != nil {
+					// 	return err
+					// } else if err := b.createInitialTraining(tx, teamId); err != nil {
+					// 	return err
 				}
 
 			}

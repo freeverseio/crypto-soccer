@@ -33,7 +33,6 @@ func NewLeagueProcessor(
 	matchProcessor, err := NewMatchProcessor(
 		contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {

@@ -22,11 +22,6 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +37,6 @@ func TestSyncTeams(t *testing.T) {
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {

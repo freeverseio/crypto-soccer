@@ -16,16 +16,11 @@ func TestAssetsInitProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer universedb.Rollback()
-	err = relaydb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer relaydb.Rollback()
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
-	process, err := process.NewAssetsInitProcessor(bc.Contracts, universedb, relaydb)
+	process, err := process.NewAssetsInitProcessor(bc.Contracts, universedb)
 	if err != nil {
 		t.Fatal(err)
 	}

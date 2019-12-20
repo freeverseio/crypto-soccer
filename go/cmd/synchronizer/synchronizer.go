@@ -12,7 +12,6 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
@@ -20,7 +19,6 @@ import (
 func main() {
 	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
-	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
@@ -88,29 +86,10 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	var universedb *storage.Storage
-	var relaydb *relay.Storage
-	if *inMemoryDatabase {
-		log.Warning("Using in memory DBMS (no persistence)")
-		universedb, err = storage.NewSqlite3("./../../../universe.db/00_schema.sql")
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-		relaydb, err = relay.NewSqlite3("./../../../relay.db/00_schema.sql")
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-	} else {
-		log.Info("Connecting to universe DBMS: ", *postgresURL)
-		universedb, err = storage.NewPostgres(*postgresURL)
-		if err != nil {
-			log.Fatalf("Failed to connect to universe DBMS: %v", err)
-		}
-		log.Info("Connecting to relay DBMS: ", *relayPostgresURL)
-		relaydb, err = relay.NewPostgres(*relayPostgresURL)
-		if err != nil {
-			log.Fatalf("Failed to connect to relay DBMS: %v", err)
-		}
+	log.Info("Connecting to universe DBMS: ", *postgresURL)
+	universedb, err := storage.NewPostgres(*postgresURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to universe DBMS: %v", err)
 	}
 
 	namesdb, err := names.New(*namesDatabase)
@@ -124,7 +103,6 @@ func main() {
 	process, err := process.BackgroundProcessNew(
 		contracts,
 		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
