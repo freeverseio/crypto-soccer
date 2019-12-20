@@ -24,15 +24,11 @@ cd ../../universe.api && docker build -t universeapi:0.0.1 .
 ```
 docker ps
 ```
-- create a namespace called universe for this
-```
-kubectl create ns universe
-```
-
 - start deployment and (1) pod. For more pods increase replicas number. Note that order matters, so that the universedb service is created before. The reason is that UNIVERSEDB_SERVICE_HOST and UNIVERSEDB_SERVICE_PORT will be automatically available for universeapi.yaml
 ```
-kubectl apply -f universedb.yaml
-kubectl apply -f universeapi.yaml
+kubectl create ns universe
+kubectl apply -f universedb.yaml -n universe
+kubectl apply -f universeapi.yaml -n universe
 ```
 - open service on your browser:
 ```
