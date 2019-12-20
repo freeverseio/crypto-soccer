@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universe
+  labels:
+    app: universe
+    purpose: universe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: universe
+  template:
+    metadata:
+      labels:
+        app: universe
+    spec:
+      containers:
+      - name: universedb
+        image: universedb:0.0.1
+        ports:
+        - containerPort: 5432
+      - name: universeapi
+        image: universeapi:0.0.1
+        args: ["-d", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer"]
+        ports:
+        - containerPort: 4000
