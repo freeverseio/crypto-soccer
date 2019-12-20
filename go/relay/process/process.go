@@ -71,13 +71,6 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
-	return p.computeActionsRoot(tx)
-}
-
-// *****************************************************************************
-// private
-// *****************************************************************************
-func (p *Processor) computeActionsRoot(tx *sql.Tx) error {
 	if err := storage.CloseVerse(tx); err != nil {
 		return err
 	}
