@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewPostgres(url string) (*sql.DB, error) {
+func New(url string) (*sql.DB, error) {
 	var err error
 	db, err := sql.Open("postgres", url)
 	if err != nil {
