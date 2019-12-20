@@ -155,7 +155,7 @@ func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
 	}
-	players, err := storage.GetPlayersOfTeam(tx, teamID)
+	players, err := storage.PlayersByTeamId(tx, teamID)
 	if err != nil {
 		return state, err
 	}
@@ -265,7 +265,7 @@ func (b *MatchProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big
 }
 
 func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
-	players, err := storage.GetPlayersOfTeam(tx, teamID)
+	players, err := storage.PlayersByTeamId(tx, teamID)
 	if err != nil {
 		return err
 	}
@@ -326,7 +326,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = player.PlayerUpdate(tx, player.PlayerId, player.State); err != nil {
+		if err = player.Update(tx, player.PlayerId, player.State); err != nil {
 			return nil
 		}
 	}
@@ -436,7 +436,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		if err != nil {
 			return err
 		}
-		player, err := storage.GetPlayer(tx, playerID)
+		player, err := storage.PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return err
 		}
@@ -466,7 +466,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		player.State.Shoot = shoot.Uint64()
 		player.State.Defence = endurance.Uint64()
 		player.State.EncodedSkills = state
-		err = player.PlayerUpdate(tx, playerID, player.State)
+		err = player.Update(tx, playerID, player.State)
 		if err != nil {
 			return err
 		}

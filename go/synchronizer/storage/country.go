@@ -42,7 +42,7 @@ func CountryInTimezoneCount(tx *sql.Tx, timezoneIdx uint8) (uint32, error) {
 	return count, nil
 }
 
-func (b *Country) CountryCreate(tx *sql.Tx) error {
+func (b *Country) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create country %v", b)
 	_, err := tx.Exec("INSERT INTO countries (timezone_idx, country_idx) VALUES ($1, $2);",
 		b.TimezoneIdx,
@@ -54,7 +54,7 @@ func (b *Country) CountryCreate(tx *sql.Tx) error {
 	return nil
 }
 
-func GetCountry(tx *sql.Tx, timezone_id uint8, idx uint32) (Country, error) {
+func CountryByTimezoneIdxCountryIdx(tx *sql.Tx, timezone_id uint8, idx uint32) (Country, error) {
 	country := Country{}
 	rows, err := tx.Query("SELECT timezone_idx, country_idx FROM countries WHERE (timezone_idx = $1 AND country_idx = $2);", timezone_id, idx)
 	if err != nil {

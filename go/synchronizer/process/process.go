@@ -136,25 +136,25 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		if err != nil {
 			return err
 		}
-		player, err := storage.GetPlayer(tx, playerID)
+		player, err := storage.PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return err
 		}
 		player.State.TeamId = teamID
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-		return player.PlayerUpdate(tx, playerID, player.State)
+		return player.Update(tx, playerID, player.State)
 	case updates.UpdatesActionsSubmission:
 		log.Infof("[processor] Dispatching UpdatesActionsSubmission event TZ: %v, Day: %v, Turn: %v, cid: %v", v.TimeZone, v.Day, v.TurnInDay, v.Cid)
 		return p.leagueProcessor.Process(tx, v)
 	case market.MarketPlayerFreeze:
 		log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
 		playerID := v.PlayerId
-		player, err := storage.GetPlayer(tx, playerID)
+		player, err := storage.PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return err
 		}
 		player.State.Frozen = v.Frozen
-		return player.PlayerUpdate(tx, playerID, player.State)
+		return player.Update(tx, playerID, player.State)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }

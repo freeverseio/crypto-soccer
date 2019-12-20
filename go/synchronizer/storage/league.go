@@ -27,7 +27,7 @@ func LeagueCount(tx *sql.Tx) (uint32, error) {
 	return count, nil
 }
 
-func LeagueInCountryCount(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uint32, error) {
+func LeagueByTeimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uint32, error) {
 	rows, err := tx.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
 	if err != nil {
 		return 0, err
@@ -42,7 +42,7 @@ func LeagueInCountryCount(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uin
 	return count, nil
 }
 
-func (b *League) LeagueCreate(tx *sql.Tx) error {
+func (b *League) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create league %v", b)
 	_, err := tx.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
 		b.TimezoneIdx,
@@ -55,7 +55,7 @@ func (b *League) LeagueCreate(tx *sql.Tx) error {
 	return nil
 }
 
-func GetLeague(tx *sql.Tx, id uint32) (*League, error) {
+func LeagueByLeagueIdx(tx *sql.Tx, id uint32) (*League, error) {
 	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
 	if err != nil {
 		return nil, err

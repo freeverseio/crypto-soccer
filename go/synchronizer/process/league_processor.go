@@ -69,7 +69,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 					return err
 				}
 			}
-			leagueCount, err := storage.LeagueInCountryCount(tx, timezoneIdx, countryIdx)
+			leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 			if err != nil {
 				return err
 			}
@@ -80,7 +80,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 						return err
 					}
 				}
-				matches, err := storage.GetMatchesInDay(tx, timezoneIdx, countryIdx, leagueIdx, day)
+				matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
 				if err != nil {
 					return err
 				}
@@ -109,7 +109,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
 	log.Infof("[LeagueProcessor] Shuffling timezone %v, country %v", timezoneIdx, countryIdx)
 	var orgMap []storage.Team
-	leagueCount, err := storage.LeagueInCountryCount(tx, timezoneIdx, countryIdx)
+	leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
 	if err != nil {
 		return err
 	}

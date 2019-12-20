@@ -36,9 +36,9 @@ func TestGetTeam(t *testing.T) {
 	timezone := storage.Timezone{uint8(1)}
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
 	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
-	timezone.TimezoneCreate(tx)
-	country.CountryCreate(tx)
-	league.LeagueCreate(tx)
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
 	team := storage.Team{}
 	team.TeamID = big.NewInt(3)
 	team.TimezoneIdx = timezone.TimezoneIdx
@@ -70,9 +70,9 @@ func TestTeamCreate(t *testing.T) {
 	timezone := storage.Timezone{uint8(1)}
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
 	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
-	timezone.TimezoneCreate(tx)
-	country.CountryCreate(tx)
-	league.LeagueCreate(tx)
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
 
 	var team storage.Team
 	team.TeamID = big.NewInt(4)
@@ -129,9 +129,9 @@ func TestGetTeamInLeague(t *testing.T) {
 	timezone := storage.Timezone{uint8(1)}
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
 	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
-	timezone.TimezoneCreate(tx)
-	country.CountryCreate(tx)
-	league.LeagueCreate(tx)
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
 
 	var team storage.Team
 	team.TeamID = big.NewInt(11)
@@ -161,9 +161,9 @@ func TestUpdateTeamOwner(t *testing.T) {
 	timezone := storage.Timezone{uint8(1)}
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
 	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
-	timezone.TimezoneCreate(tx)
-	country.CountryCreate(tx)
-	league.LeagueCreate(tx)
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
 
 	var team storage.Team
 	team.TeamID = big.NewInt(4)

@@ -21,7 +21,7 @@ func TestTimezoneCount(t *testing.T) {
 		t.Fatalf("Expected 0 result %v", count)
 	}
 	timezone := storage.Timezone{1}
-	err = timezone.TimezoneCreate(tx)
+	err = timezone.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

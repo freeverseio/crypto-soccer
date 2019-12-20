@@ -40,7 +40,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	player, err := storage.GetPlayer(tx, big.NewInt(274877906944))
+	player, err := storage.PlayerByPlayerId(tx, big.NewInt(274877906944))
 	if err != nil {
 		t.Fatal(err)
 	}

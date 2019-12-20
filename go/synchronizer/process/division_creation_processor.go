@@ -89,7 +89,7 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivis
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}
-		if err := timezone.TimezoneCreate(tx); err != nil {
+		if err := timezone.Insert(tx); err != nil {
 			return err
 		}
 	}
@@ -99,7 +99,7 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivis
 			return errors.New("Cannot cast country idx to uint16: value too large")
 		}
 		country := storage.Country{event.Timezone, uint32(countryIdx)}
-		if err := country.CountryCreate(tx); err != nil {
+		if err := country.Insert(tx); err != nil {
 			return err
 		}
 		if err := b.storeTeamsForNewDivision(tx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
@@ -116,7 +116,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
 		league := storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}
-		if err := league.LeagueCreate(tx); err != nil {
+		if err := league.Insert(tx); err != nil {
 			return err
 		}
 		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
@@ -214,7 +214,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 					Frozen:        false,
 				},
 			}
-			if err := player.PlayerCreate(tx); err != nil {
+			if err := player.Insert(tx); err != nil {
 				return err
 			}
 		}

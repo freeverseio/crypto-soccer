@@ -29,7 +29,7 @@ func NewCalendar(contracts *contracts.Contracts) (*Calendar, error) {
 }
 
 func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := storage.GetLeague(tx, leagueIdx)
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 				MatchDayIdx: matchDay,
 				MatchIdx:    match,
 			}
-			err = match.MatchCreate(tx)
+			err = match.Insert(tx)
 			if err != nil {
 				return err
 			}
@@ -56,7 +56,7 @@ func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 }
 
 func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := storage.GetLeague(tx, leagueIdx)
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, le
 }
 
 func (b *Calendar) Reset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := storage.GetLeague(tx, leagueIdx)
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}

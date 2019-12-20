@@ -34,13 +34,13 @@ func (b *AssetsInitProcessor) Process(tx *sql.Tx, event assets.AssetsAssetsInit)
 	timezone := storage.Timezone{uint8(0)}
 	country := storage.Country{timezone.TimezoneIdx, uint32(0)}
 	league := storage.League{timezone.TimezoneIdx, country.CountryIdx, uint32(0)}
-	if err := timezone.TimezoneCreate(tx); err != nil {
+	if err := timezone.Insert(tx); err != nil {
 		return err
 	}
-	if err := country.CountryCreate(tx); err != nil {
+	if err := country.Insert(tx); err != nil {
 		return err
 	}
-	if err := league.LeagueCreate(tx); err != nil {
+	if err := league.Insert(tx); err != nil {
 		return err
 	}
 	teamIdxInLeague := uint32(0)

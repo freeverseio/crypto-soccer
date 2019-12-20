@@ -42,17 +42,17 @@ func TestPlayerCreate(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 	team.Insert(tx)
 
 	var player storage.Player
 	player.PlayerId = big.NewInt(33)
 	player.State.TeamId = big.NewInt(10)
-	err = player.PlayerCreate(tx)
+	err = player.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,11 +82,11 @@ func TestPlayerUpdate(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 	team.Insert(tx)
 
 	var player storage.Player
@@ -94,11 +94,11 @@ func TestPlayerUpdate(t *testing.T) {
 	player.State.TeamId = big.NewInt(10)
 	player.State.Name = "Iam Awesome"
 	player.State.EncodedSkills = big.NewInt(4)
-	err = player.PlayerCreate(tx)
+	err = player.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	player2, err := storage.GetPlayer(tx, player.PlayerId)
+	player2, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,11 +109,11 @@ func TestPlayerUpdate(t *testing.T) {
 	player2.State.RedCardMatchesLeft = 1
 	player2.State.InjuryMatchesLeft = 3
 	player2.State.Name = "Iam Sad"
-	err = player2.PlayerUpdate(tx, player2.PlayerId, player2.State)
+	err = player2.Update(tx, player2.PlayerId, player2.State)
 	if err != nil {
 		t.Fatal(err)
 	}
-	player3, err := storage.GetPlayer(tx, player.PlayerId)
+	player3, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,11 +149,11 @@ func TestGetPlayer(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 	team.Insert(tx)
 
 	team.TeamID = big.NewInt(11)
@@ -169,11 +169,11 @@ func TestGetPlayer(t *testing.T) {
 	player.State.EncodedSkills, _ = new(big.Int).SetString("3618502788692870556043062973242620158809030731543066377891708431006382948352", 10)
 	player.State.EncodedState, _ = new(big.Int).SetString("614878739568587161270510773682668741239185861458610514677961004951428661248", 10)
 
-	err = player.PlayerCreate(tx)
+	err = player.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := storage.GetPlayer(tx, player.PlayerId)
+	result, err := storage.PlayerByPlayerId(tx, player.PlayerId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,11 +182,11 @@ func TestGetPlayer(t *testing.T) {
 	}
 	player.State.Defence = 6
 	player.State.TeamId = big.NewInt(11)
-	err = player.PlayerUpdate(tx, player.PlayerId, player.State)
+	err = player.Update(tx, player.PlayerId, player.State)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err = storage.GetPlayer(tx, player.PlayerId)
+	result, err = storage.PlayerByPlayerId(tx, player.PlayerId)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +202,7 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	}
 	defer tx.Rollback()
 
-	players, err := storage.GetPlayersOfTeam(tx, big.NewInt(343))
+	players, err := storage.PlayersByTeamId(tx, big.NewInt(343))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,11 +219,11 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	team.State.Owner = "ciao"
 	team.State.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 	team.Insert(tx)
 	var player storage.Player
 	player.PlayerId = big.NewInt(1)
@@ -235,18 +235,18 @@ func TestGetPlayersOfTeam(t *testing.T) {
 	player.State.TeamId = team.TeamID
 	player.State.EncodedSkills = big.NewInt(43535453)
 	player.State.EncodedState = big.NewInt(43453)
-	err = player.PlayerCreate(tx)
+	err = player.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	player2 := player
 	player2.PlayerId = big.NewInt(2)
 	player2.State.EncodedSkills = big.NewInt(767)
-	err = player2.PlayerCreate(tx)
+	err = player2.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	players, err = storage.GetPlayersOfTeam(tx, team.TeamID)
+	players, err = storage.PlayersByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -22,7 +22,7 @@ func TimezoneCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Timezone) TimezoneCreate(tx *sql.Tx) error {
+func (b *Timezone) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create timezone %v", b)
 	_, err := tx.Exec("INSERT INTO timezones (timezone_idx) VALUES ($1);",
 		b.TimezoneIdx,

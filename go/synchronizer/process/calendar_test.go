@@ -55,13 +55,13 @@ func TestResetCalendar(t *testing.T) {
 
 	timezoneIdx := uint8(1)
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	countryIdx := uint32(0)
 	country := storage.Country{timezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	leagueIdx := uint32(0)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 	err = calendarProcessor.Generate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
@@ -91,20 +91,20 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 	}
 	timezoneIdx := uint8(1)
 	timezone := storage.Timezone{timezoneIdx}
-	timezone.TimezoneCreate(tx)
+	timezone.Insert(tx)
 	countryIdx := uint32(0)
 	country := storage.Country{timezoneIdx, countryIdx}
-	country.CountryCreate(tx)
+	country.Insert(tx)
 	leagueIdx := uint32(0)
 	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	league.LeagueCreate(tx)
+	league.Insert(tx)
 
 	err = calendarProcessor.Generate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	matches, err := storage.GetMatches(tx, timezoneIdx, countryIdx, leagueIdx)
+	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

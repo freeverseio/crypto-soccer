@@ -22,7 +22,7 @@ type Match struct {
 	VisitorMatchLog *big.Int
 }
 
-func (b *Match) MatchCreate(tx *sql.Tx) error {
+func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
 	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx) VALUES ($1, $2, $3, $4, $5);",
 		b.TimezoneIdx,
@@ -125,10 +125,10 @@ func GetMatchLogs(
 	return homeMatchLog, visitorMatchLog, nil
 }
 
-func GetMatchesInDay(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
+func MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32, matchDayIdx uint8) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
 	var matchesInDay []Match
-	matches, err := GetMatches(tx, timezoneIdx, countryIdx, leagueIdx)
+	matches, err := MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		return matchesInDay, err
 	}
@@ -140,7 +140,7 @@ func GetMatchesInDay(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx
 	return matchesInDay, nil
 }
 
-func GetMatches(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Match, error) {
+func MatchesByTimezoneIdxCountryIdxLeagueIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) ([]Match, error) {
 	log.Debugf("[DBMS] Get Calendar Matches timezoneIdx %v, countryIdx %v, leagueIdx %v", timezoneIdx, countryIdx, leagueIdx)
 	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_goals, visitor_goals, home_match_log, visitor_match_log FROM matches WHERE (timezone_idx = $1 AND country_idx = $2 AND league_idx = $3);", timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {

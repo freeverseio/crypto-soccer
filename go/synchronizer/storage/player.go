@@ -64,7 +64,7 @@ func PlayerCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Player) PlayerCreate(tx *sql.Tx) error {
+func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
 	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
 		b.PlayerId.String(),
@@ -90,7 +90,7 @@ func (b *Player) PlayerCreate(tx *sql.Tx) error {
 	return nil
 }
 
-func (b *Player) PlayerUpdate(tx *sql.Tx, playerID *big.Int, playerState PlayerState) error {
+func (b *Player) Update(tx *sql.Tx, playerID *big.Int, playerState PlayerState) error {
 	log.Debugf("[DBMS] + update player state %v", playerState)
 	_, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
@@ -123,7 +123,7 @@ func (b *Player) PlayerUpdate(tx *sql.Tx, playerID *big.Int, playerState PlayerS
 	return err
 }
 
-func GetPlayer(tx *sql.Tx, playerID *big.Int) (Player, error) {
+func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (Player, error) {
 	player := Player{}
 	rows, err := tx.Query(`SELECT team_id, 
 	defence,
@@ -177,7 +177,7 @@ func GetPlayer(tx *sql.Tx, playerID *big.Int) (Player, error) {
 	return player, err
 }
 
-func GetPlayersOfTeam(tx *sql.Tx, teamID *big.Int) ([]Player, error) {
+func PlayersByTeamId(tx *sql.Tx, teamID *big.Int) ([]Player, error) {
 	var players []Player
 	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
 	if err != nil {
@@ -196,7 +196,7 @@ func GetPlayersOfTeam(tx *sql.Tx, teamID *big.Int) ([]Player, error) {
 	rows.Close()
 	for i := 0; i < len(playerIDs); i++ {
 		playerID := playerIDs[i]
-		player, err := GetPlayer(tx, playerID)
+		player, err := PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return players, err
 		}
