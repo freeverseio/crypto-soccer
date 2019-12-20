@@ -24,18 +24,18 @@ cd ../../universe.api && docker build -t universeapi:0.0.1 .
 ```
 docker ps
 ```
+- create a namespace called universe for this
+```
+kubectl create ns universe
+```
+
 - start deployment and (1) pod. For more pods increase replicas number.
 ```
 kubectl apply -f universe.yaml
 ```
-
-- expose universe deployment so it's accessible from outside the kubernetes virtual network (i.e. from your browser). This step may also be set in the configuration file... just don't know how to do it yet
-```
-kubectl expose deployment universe  --type=LoadBalancer --port=4000
-```
-
 - open service on your browser:
 ```
-minikube service universe
+minikube service universe -n universe
 ```
 this will return an address similar to http://192.168.64.2:30770 . Append graphiql to it, so it looks like http://192.168.64.2:30770/graphiql
+
