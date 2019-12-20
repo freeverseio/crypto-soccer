@@ -7,17 +7,17 @@ import (
 )
 
 func TestTacticCreate(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	tactic := db.DefaultTactic("16")
-	err = db.TacticCreate(tactic)
+	defer tx.Rollback()
+	tactic := storage.DefaultTactic("16")
+	err = tactic.Create(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := db.TacticCount(nil)
+	count, err := storage.TacticCount(tx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,14 +26,14 @@ func TestTacticCreate(t *testing.T) {
 	}
 
 	verse := uint64(3)
-	count, err = db.TacticCount(&verse)
+	count, err = storage.TacticCount(tx, &verse)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if count != 1 {
 		t.Fatalf("expecting 1 tactic, got %v", count)
 	}
-	tc, err := db.GetTactic(tactic.TeamID, verse)
+	tc, err := storage.TacticByTeamIDAndVerse(tx, tactic.TeamID, verse)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,18 +41,19 @@ func TestTacticCreate(t *testing.T) {
 		t.Fatalf("expecting tacticID 1, got %v", tc.TacticID)
 	}
 
-	tc, err = db.GetTactic("2", verse)
+	tc, err = storage.TacticByTeamIDAndVerse(tx, "2", verse)
 	if err == nil {
 		t.Fatal("team 2 does not exist and should fail")
 	}
 }
 
 func TestTacticsByVerse(t *testing.T) {
-	if err := db.Begin(); err != nil {
+	tx, err := db.Begin()
+	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	tactics, err := db.TacticsByVerse(0)
+	defer tx.Rollback()
+	tactics, err := storage.TacticsByVerse(tx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,39 +63,30 @@ func TestTacticsByVerse(t *testing.T) {
 	tactic0 := storage.Tactic{}
 	tactic0.TeamID = "1"
 	tactic0.ExtraAttack1 = true
-	if err = db.TacticCreate(&tactic0); err != nil {
+	if err = tactic0.Create(tx); err != nil {
 		t.Fatal(err)
 	}
 	tactic1 := storage.Tactic{}
 	tactic1.TeamID = "2"
 	tactic1.ExtraAttack2 = true
-	if err = db.TacticCreate(&tactic1); err != nil {
+	if err = tactic1.Create(tx); err != nil {
 		t.Fatal(err)
 	}
-	tactics, err = db.TacticsByVerse(0)
+	tactics, err = storage.TacticsByVerse(tx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(tactics) != 0 {
 		t.Fatalf("Tactics of verse 0 are %v", len(tactics))
 	}
-	if err = db.CloseVerse(); err != nil {
+	if err = storage.CloseVerse(tx); err != nil {
 		t.Fatal(err)
 	}
-	tactics, err = db.TacticsByVerse(1)
+	tactics, err = storage.TacticsByVerse(tx, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(tactics) != 2 {
 		t.Fatalf("Tactics of verse are %v", len(tactics))
 	}
-}
-
-func TestGetRawsTactics(t *testing.T) {
-	err := db.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer db.Rollback()
-
 }

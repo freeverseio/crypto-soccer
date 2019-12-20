@@ -57,5 +57,3 @@ require (
 	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20190709231704-1e4459ed25ff // indirect
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 )
-
-exclude github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
