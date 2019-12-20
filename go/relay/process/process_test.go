@@ -13,11 +13,11 @@ import (
 )
 
 func TestSubmitActionRoot(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
+	defer tx.Rollback()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestSubmitActionRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = p.Process()
+	err = p.Process(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

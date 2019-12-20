@@ -3,6 +3,7 @@ package relay
 import (
 	"context"
 	"crypto/ecdsa"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"math/big"
@@ -22,7 +23,7 @@ type Processor struct {
 	client        *ethclient.Client
 	privateKey    *ecdsa.PrivateKey
 	publicAddress common.Address
-	db            *storage.Storage
+	db            *sql.DB
 	updates       *updates.Updates
 	ipfsURL       string
 }
@@ -34,7 +35,7 @@ type Processor struct {
 func NewProcessor(
 	client *ethclient.Client,
 	privateKey *ecdsa.PrivateKey,
-	db *storage.Storage,
+	db *sql.DB,
 	updates *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
@@ -57,15 +58,14 @@ func NewProcessor(
 	}, nil
 }
 
-func (p *Processor) Process() error {
-	return p.computeActionsRoot()
+func (p *Processor) Process(tx *sql.Tx) error {
+	return p.computeActionsRoot(tx)
 }
 
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *Processor) computeActionsRoot() error {
-
+func (p *Processor) computeActionsRoot(tx *sql.Tx) error {
 	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
 	if err != nil {
 		return err
@@ -87,15 +87,15 @@ func (p *Processor) computeActionsRoot() error {
 		*auth,
 	}
 
-	if err = p.db.CloseVerse(); err != nil {
+	if err = storage.CloseVerse(tx); err != nil {
 		return err
 	}
-	verse, err := p.db.GetLastVerse()
+	verse, err := storage.GetLastVerse(tx)
 	if err != nil {
 		return err
 	}
 	actions := useractions.UserActions{}
-	if err = actions.PullFromStorage(p.db, verse.ID); err != nil {
+	if err = actions.PullFromStorage(tx, verse.ID); err != nil {
 		return err
 	}
 	hash, err := actions.Hash()

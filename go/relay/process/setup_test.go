@@ -1,6 +1,7 @@
 package relay_test
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"testing"
@@ -8,7 +9,7 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
-var db *storage.Storage
+var db *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
