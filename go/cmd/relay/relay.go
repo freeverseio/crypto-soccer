@@ -48,7 +48,7 @@ func main() {
 	log.Infof("ipfs URL: %v", *ipfsURL)
 
 	log.Info("Connecting to DBMS: ", *postgresURL)
-	db, err := storage.NewPostgres(*postgresURL)
+	db, err := storage.New(*postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to DBMS: %v", err)
 	}
