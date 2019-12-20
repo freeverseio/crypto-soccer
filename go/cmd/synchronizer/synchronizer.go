@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -86,7 +84,7 @@ func main() {
 	}
 
 	log.Info("Connecting to universe DBMS: ", *postgresURL)
-	universedb, err := storage.NewPostgres(*postgresURL)
+	universedb, err := storage.New(*postgresURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to universe DBMS: %v", err)
 	}
@@ -99,37 +97,25 @@ func main() {
 	log.Info("All is ready ... 5 seconds to start ...")
 	time.Sleep(5 * time.Second)
 
-	process, err := process.BackgroundProcessNew(
-		contracts,
-		universedb,
-		namesdb,
-	)
+	processor, err := process.NewEventProcessor(contracts, namesdb)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("Start processing events ...")
-	process.Start()
-
-	log.Info("Press 'ctrl + c' to interrupt")
-	waitForInterrupt()
-
-	log.Info("Stop processing events ...")
-	process.StopAndJoin()
-
-	log.Info("... exiting")
-}
-
-func waitForInterrupt() {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		done <- true
-	}()
-
-	<-done
+	delta := uint64(1000)
+	for {
+		tx, err := universedb.Begin()
+		if err != nil {
+			log.Fatal(err)
+		}
+		processedBlocks, err := processor.Process(tx, delta)
+		if err != nil {
+			tx.Rollback()
+			log.Fatal(err)
+		}
+		tx.Commit()
+		if processedBlocks == 0 {
+			time.Sleep(2 * time.Second)
+		}
+	}
 }
