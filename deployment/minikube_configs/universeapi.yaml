@@ -5,6 +5,8 @@ metadata:
   labels:
     app: universedb
     component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
 spec:
   selector:
     app: universeapi
@@ -22,6 +24,8 @@ metadata:
   labels:
     app: universeapi
     component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
 spec:
   replicas: 1
   selector:
@@ -31,6 +35,9 @@ spec:
     metadata:
       labels:
         app: universeapi
+        component: graphql
+        part-of: cryptosoccer
+        version: "0.0.1"
     spec:
       containers:
       - name: universeapi
