@@ -24,7 +24,7 @@ cd ../../universe.api && docker build -t universeapi:0.0.1 .
 ```
 docker ps
 ```
-- start deployment and (1) pod. For more pods increase replicas number. Note that order matters, so that the universedb service is created before. The reason is that UNIVERSEDB_SERVICE_HOST and UNIVERSEDB_SERVICE_PORT will be automatically available for universeapi.yaml
+- start deployment and (1) pod. For more pods increase replicas number. Note that when using environment variables for cluster ip and port, order matters, so that the universedb service is created before. The reason is that UNIVERSEDB_SERVICE_HOST and UNIVERSEDB_SERVICE_PORT will be automatically available for universeapi.yaml. On the other hand when using dns resolution it doesn't, but the cluster needs core dns addon installed.
 ```
 kubectl create ns universe
 kubectl apply -f universedb.yaml -n universe

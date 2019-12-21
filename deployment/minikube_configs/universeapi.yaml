@@ -42,6 +42,10 @@ spec:
       containers:
       - name: universeapi
         image: universeapi:0.0.1
-        args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
+        # we can reference the universedb service by environment vars if it was created first
+        #args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
+        # or we can use dns record universedb[.namespace]. Since they will both be in the same
+        # namespace the name of the service is sufficient
+        args: [-d, postgres://freeverse:freeverse@universedb:5432/cryptosoccer]
         ports:
         - containerPort: 4000
