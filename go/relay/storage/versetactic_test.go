@@ -23,8 +23,8 @@ func TestVerseTacticCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 1 {
-		t.Fatalf("expecting 1 tactic, got %v", count)
+	if count != 0 {
+		t.Fatalf("expecting 0 tactic, got %v", count)
 	}
 
 	count, err = storage.VerseTacticCount(tx, 1)
@@ -38,8 +38,8 @@ func TestVerseTacticCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if uint8(tc.Tactic.TacticID) != uint8(tactic.Tactic.TacticID) {
-		t.Fatalf("expecting tacticID 1, got %v", tc.Tactic.TacticID)
+	if *tc != tactic {
+		t.Fatalf("expecting tacticID %v, got %v", tactic, tc)
 	}
 
 	tc, err = storage.VerseTacticByTeamIDAndVerse(tx, "2", tactic.Verse)
@@ -61,15 +61,17 @@ func TestVerseTacticsByVerse(t *testing.T) {
 	if len(tactics) != 0 {
 		t.Fatalf("Tactics of verse 0 are %v", len(tactics))
 	}
-	tactic0 := storage.Tactic{}
-	tactic0.TeamID = "1"
-	tactic0.ExtraAttack1 = true
+	tactic0 := storage.VerseTactic{}
+	tactic0.Verse = 1
+	tactic0.Tactic.TeamID = "1"
+	tactic0.Tactic.ExtraAttack1 = true
 	if err = tactic0.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
-	tactic1 := storage.Tactic{}
-	tactic1.TeamID = "2"
-	tactic1.ExtraAttack2 = true
+	tactic1 := storage.VerseTactic{}
+	tactic1.Verse = 1
+	tactic1.Tactic.TeamID = "2"
+	tactic1.Tactic.ExtraAttack2 = true
 	if err = tactic1.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
@@ -88,6 +90,6 @@ func TestVerseTacticsByVerse(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(tactics) != 2 {
-		t.Fatalf("Tactics of verse are %v", len(tactics))
+		t.Fatalf("Tactics of verse 1 are %v", len(tactics))
 	}
 }

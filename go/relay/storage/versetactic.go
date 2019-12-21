@@ -35,7 +35,7 @@ func VerseTacticCount(tx *sql.Tx, verse uint64) (uint64, error) {
 func (b *VerseTactic) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", b.Tactic.TeamID)
 	_, err := tx.Exec(
-		`INSERT INTO tactics (
+		`INSERT INTO verse_tactics (
 						verse,
 						tactic_id,
 						team_id,
@@ -90,8 +90,7 @@ func (b *VerseTactic) Insert(tx *sql.Tx) error {
                         $24,
                         $25,
 						$26,
-						$27,
-						$28
+						$27
 		);`,
 		b.Verse,
 		b.Tactic.TacticID,
@@ -155,7 +154,7 @@ func VerseTacticsByVerse(tx *sql.Tx, verse int) ([]*VerseTactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM tactics WHERE (verse = $1);`, verse)
+		FROM verse_tactics WHERE (verse = $1);`, verse)
 	if err != nil {
 		return nil, err
 	}
