@@ -123,8 +123,8 @@ func (b *VerseTactic) Insert(tx *sql.Tx) error {
 	return err
 }
 
-func VerseTacticsByVerse(tx *sql.Tx, verse int) ([]*VerseTactic, error) {
-	var tactics []*VerseTactic
+func VerseTacticsByVerse(tx *sql.Tx, verse uint64) ([]VerseTactic, error) {
+	var tactics []VerseTactic
 	rows, err := tx.Query(
 		`SELECT
 				verse,
@@ -193,7 +193,7 @@ func VerseTacticsByVerse(tx *sql.Tx, verse int) ([]*VerseTactic, error) {
 		if err != nil {
 			return nil, err
 		}
-		tactics = append(tactics, &t)
+		tactics = append(tactics, t)
 	}
 	return tactics, nil
 }

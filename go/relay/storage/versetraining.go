@@ -106,8 +106,8 @@ func (b *VerseTraining) Insert(tx *sql.Tx) error {
 	return err
 }
 
-func VerseTrainingByVerse(tx *sql.Tx, verse uint64) ([]*VerseTraining, error) {
-	var trainings []*VerseTraining
+func VerseTrainingByVerse(tx *sql.Tx, verse uint64) ([]VerseTraining, error) {
+	var trainings []VerseTraining
 	rows, err := tx.Query(
 		`SELECT
 			verse,
@@ -178,7 +178,7 @@ func VerseTrainingByVerse(tx *sql.Tx, verse uint64) ([]*VerseTraining, error) {
 		if err != nil {
 			return nil, err
 		}
-		trainings = append(trainings, &t)
+		trainings = append(trainings, t)
 	}
 	return trainings, nil
 }

@@ -34,8 +34,10 @@ func TestUnmarshal(t *testing.T) {
 
 func TestIpfsPushAndPull(t *testing.T) {
 	var ua useractions.UserActions
-	tactic := storage.Tactic{TeamID: "ciao"}
-	training := storage.Training{TeamID: "pippo"}
+	tactic := storage.VerseTactic{}
+	tactic.Tactic.TeamID = "ciao"
+	training := storage.VerseTraining{}
+	training.Training.TeamID = "pippo"
 	ua.Tactics = append(ua.Tactics, &tactic)
 	ua.Trainings = append(ua.Trainings, &training)
 	cif, err := ua.PushToIpfs("localhost:5001")
@@ -50,10 +52,10 @@ func TestIpfsPushAndPull(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ua2.Trainings[0].TeamID != training.TeamID {
+	if *ua2.Trainings[0] != training {
 		t.Fatal("Differents")
 	}
-	if ua2.Tactics[0].TeamID != tactic.TeamID {
+	if *ua2.Tactics[0] != tactic {
 		t.Fatal("Differents")
 	}
 }

@@ -79,7 +79,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 		return err
 	}
 	actions := useractions.UserActions{}
-	if err = actions.PullFromStorage(tx, verse.ID); err != nil {
+	if err = actions.PullFromStorage(tx, uint64(verse.ID)); err != nil {
 		return err
 	}
 	hash, err := actions.Hash()
