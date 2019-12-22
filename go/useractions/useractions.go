@@ -15,8 +15,8 @@ import (
 )
 
 type UserActions struct {
-	Tactics   []storage.VerseTactic   `json:"tactics"`
-	Trainings []storage.VerseTraining `json:"trainings"`
+	Tactics   []storage.Tactic   `json:"tactics"`
+	Trainings []storage.Training `json:"trainings"`
 }
 
 func (b *UserActions) Equal(actions *UserActions) bool {
@@ -41,10 +41,10 @@ func (b *UserActions) Equal(actions *UserActions) bool {
 
 func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64) error {
 	var err error
-	if b.Tactics, err = storage.VerseTacticsByVerse(tx, verse); err != nil {
+	if b.Tactics, err = storage.TacticsByVerse(tx, verse); err != nil {
 		return err
 	}
-	if b.Trainings, err = storage.VerseTrainingByVerse(tx, verse); err != nil {
+	if b.Trainings, err = storage.TrainingByVerse(tx, verse); err != nil {
 		return err
 	}
 	return nil
@@ -62,10 +62,10 @@ func (b *UserActions) Hash() ([]byte, error) {
 
 func (b *UserActions) Marshal() ([]byte, error) {
 	if b.Tactics == nil {
-		b.Tactics = make([]storage.VerseTactic, 0)
+		b.Tactics = make([]storage.Tactic, 0)
 	}
 	if b.Trainings == nil {
-		b.Trainings = make([]storage.VerseTraining, 0)
+		b.Trainings = make([]storage.Training, 0)
 	}
 	return json.Marshal(b)
 }
