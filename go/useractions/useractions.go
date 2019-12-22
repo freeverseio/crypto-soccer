@@ -15,8 +15,28 @@ import (
 )
 
 type UserActions struct {
-	Tactics   []*storage.VerseTactic   `json:"tactics"`
-	Trainings []*storage.VerseTraining `json:"trainings"`
+	Tactics   []storage.VerseTactic   `json:"tactics"`
+	Trainings []storage.VerseTraining `json:"trainings"`
+}
+
+func (b *UserActions) Equal(actions *UserActions) bool {
+	if len(b.Tactics) != len(actions.Tactics) {
+		return false
+	}
+	if len(b.Trainings) != len(actions.Trainings) {
+		return false
+	}
+	for i := range b.Tactics {
+		if b.Tactics[i] != actions.Tactics[i] {
+			return false
+		}
+	}
+	for i := range b.Trainings {
+		if b.Trainings[i] != actions.Trainings[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64) error {
@@ -42,10 +62,10 @@ func (b *UserActions) Hash() ([]byte, error) {
 
 func (b *UserActions) Marshal() ([]byte, error) {
 	if b.Tactics == nil {
-		b.Tactics = make([]*storage.VerseTactic, 0)
+		b.Tactics = make([]storage.VerseTactic, 0)
 	}
 	if b.Trainings == nil {
-		b.Trainings = make([]*storage.VerseTraining, 0)
+		b.Trainings = make([]storage.VerseTraining, 0)
 	}
 	return json.Marshal(b)
 }

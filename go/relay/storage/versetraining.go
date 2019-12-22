@@ -8,8 +8,8 @@ import (
 
 // Training represents a row from 'public.trainings'.
 type VerseTraining struct {
-	Verse    uint64
-	Training Training
+	Verse    uint64   `json:"verse"`
+	Training Training `json:"training"`
 }
 
 func (b *VerseTraining) Insert(tx *sql.Tx) error {

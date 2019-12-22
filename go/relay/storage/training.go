@@ -2,41 +2,39 @@ package storage
 
 import (
 	"database/sql"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // Training represents a row from 'public.trainings'.
 type Training struct {
-	CreatedAt              time.Time `json:"created_at"`               // created_at
-	TeamID                 string    `json:"team_id"`                  // team_id
-	SpecialPlayerShirt     int       `json:"special_player_shirt"`     // special_player_shirt
-	GoalkeepersDefence     int       `json:"goalkeepers_defence"`      // goalkeepers_defence
-	GoalkeepersSpeed       int       `json:"goalkeepers_speed"`        // goalkeepers_speed
-	GoalkeepersPass        int       `json:"goalkeepers_pass"`         // goalkeepers_pass
-	GoalkeepersShoot       int       `json:"goalkeepers_shoot"`        // goalkeepers_shoot
-	GoalkeepersEndurance   int       `json:"goalkeepers_endurance"`    // goalkeepers_endurance
-	DefendersDefence       int       `json:"defenders_defence"`        // defenders_defence
-	DefendersSpeed         int       `json:"defenders_speed"`          // defenders_speed
-	DefendersPass          int       `json:"defenders_pass"`           // defenders_pass
-	DefendersShoot         int       `json:"defenders_shoot"`          // defenders_shoot
-	DefendersEndurance     int       `json:"defenders_endurance"`      // defenders_endurance
-	MidfieldersDefence     int       `json:"midfielders_defence"`      // midfielders_defence
-	MidfieldersSpeed       int       `json:"midfielders_speed"`        // midfielders_speed
-	MidfieldersPass        int       `json:"midfielders_pass"`         // midfielders_pass
-	MidfieldersShoot       int       `json:"midfielders_shoot"`        // midfielders_shoot
-	MidfieldersEndurance   int       `json:"midfielders_endurance"`    // midfielders_endurance
-	AttackersDefence       int       `json:"attackers_defence"`        // attackers_defence
-	AttackersSpeed         int       `json:"attackers_speed"`          // attackers_speed
-	AttackersPass          int       `json:"attackers_pass"`           // attackers_pass
-	AttackersShoot         int       `json:"attackers_shoot"`          // attackers_shoot
-	AttackersEndurance     int       `json:"attackers_endurance"`      // attackers_endurance
-	SpecialPlayerDefence   int       `json:"special_player_defence"`   // special_player_defence
-	SpecialPlayerSpeed     int       `json:"special_player_speed"`     // special_player_speed
-	SpecialPlayerPass      int       `json:"special_player_pass"`      // special_player_pass
-	SpecialPlayerShoot     int       `json:"special_player_shoot"`     // special_player_shoot
-	SpecialPlayerEndurance int       `json:"special_player_endurance"` // special_player_endurance
+	TeamID                 string `json:"team_id"`                  // team_id
+	SpecialPlayerShirt     int    `json:"special_player_shirt"`     // special_player_shirt
+	GoalkeepersDefence     int    `json:"goalkeepers_defence"`      // goalkeepers_defence
+	GoalkeepersSpeed       int    `json:"goalkeepers_speed"`        // goalkeepers_speed
+	GoalkeepersPass        int    `json:"goalkeepers_pass"`         // goalkeepers_pass
+	GoalkeepersShoot       int    `json:"goalkeepers_shoot"`        // goalkeepers_shoot
+	GoalkeepersEndurance   int    `json:"goalkeepers_endurance"`    // goalkeepers_endurance
+	DefendersDefence       int    `json:"defenders_defence"`        // defenders_defence
+	DefendersSpeed         int    `json:"defenders_speed"`          // defenders_speed
+	DefendersPass          int    `json:"defenders_pass"`           // defenders_pass
+	DefendersShoot         int    `json:"defenders_shoot"`          // defenders_shoot
+	DefendersEndurance     int    `json:"defenders_endurance"`      // defenders_endurance
+	MidfieldersDefence     int    `json:"midfielders_defence"`      // midfielders_defence
+	MidfieldersSpeed       int    `json:"midfielders_speed"`        // midfielders_speed
+	MidfieldersPass        int    `json:"midfielders_pass"`         // midfielders_pass
+	MidfieldersShoot       int    `json:"midfielders_shoot"`        // midfielders_shoot
+	MidfieldersEndurance   int    `json:"midfielders_endurance"`    // midfielders_endurance
+	AttackersDefence       int    `json:"attackers_defence"`        // attackers_defence
+	AttackersSpeed         int    `json:"attackers_speed"`          // attackers_speed
+	AttackersPass          int    `json:"attackers_pass"`           // attackers_pass
+	AttackersShoot         int    `json:"attackers_shoot"`          // attackers_shoot
+	AttackersEndurance     int    `json:"attackers_endurance"`      // attackers_endurance
+	SpecialPlayerDefence   int    `json:"special_player_defence"`   // special_player_defence
+	SpecialPlayerSpeed     int    `json:"special_player_speed"`     // special_player_speed
+	SpecialPlayerPass      int    `json:"special_player_pass"`      // special_player_pass
+	SpecialPlayerShoot     int    `json:"special_player_shoot"`     // special_player_shoot
+	SpecialPlayerEndurance int    `json:"special_player_endurance"` // special_player_endurance
 }
 
 func (b *Training) Insert(tx *sql.Tx) error {

@@ -9,7 +9,7 @@ import (
 
 type VerseTactic struct {
 	Verse  uint64 `json:"verse"`
-	Tactic Tactic `json:"verse"`
+	Tactic Tactic `json:"tactic"`
 }
 
 func VerseTacticCount(tx *sql.Tx, verse uint64) (uint64, error) {
