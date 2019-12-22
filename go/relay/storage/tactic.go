@@ -2,11 +2,13 @@ package storage
 
 import (
 	"database/sql"
+	"errors"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type Tactic struct {
+	Verse         int64  `json:"verse"`
 	TeamID        string `json:"team_id"`         // team_id
 	TacticID      int    `json:"tactic_id"`       // tactic_id
 	Shirt0        int    `json:"shirt_0"`         // shirt_0
@@ -37,7 +39,177 @@ type Tactic struct {
 
 func DefaultTactic(teamID string) *Tactic {
 	tacticId := 1
-	return &Tactic{teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+	return &Tactic{-1, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+}
+
+func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
+	var tactics []Tactic
+	rows, err := tx.Query(
+		`SELECT
+				verse,
+				team_id,
+				tactic_id,
+                shirt_0,
+                shirt_1,
+                shirt_2,
+                shirt_3,
+                shirt_4,
+                shirt_5,
+                shirt_6,
+                shirt_7,
+                shirt_8,
+                shirt_9,
+                shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
+                extra_attack_1,
+                extra_attack_2,
+                extra_attack_3,
+                extra_attack_4,
+                extra_attack_5,
+                extra_attack_6,
+                extra_attack_7,
+                extra_attack_8,
+                extra_attack_9,
+                extra_attack_10
+		FROM tactics WHERE (verse = $1);`, verse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var t Tactic
+		err = rows.Scan(
+			&t.Verse,
+			&t.TeamID,
+			&t.TacticID,
+			&t.Shirt0,
+			&t.Shirt1,
+			&t.Shirt2,
+			&t.Shirt3,
+			&t.Shirt4,
+			&t.Shirt5,
+			&t.Shirt6,
+			&t.Shirt7,
+			&t.Shirt8,
+			&t.Shirt9,
+			&t.Shirt10,
+			&t.Shirt11,
+			&t.Shirt12,
+			&t.Shirt13,
+			&t.ExtraAttack1,
+			&t.ExtraAttack2,
+			&t.ExtraAttack3,
+			&t.ExtraAttack4,
+			&t.ExtraAttack5,
+			&t.ExtraAttack6,
+			&t.ExtraAttack7,
+			&t.ExtraAttack8,
+			&t.ExtraAttack9,
+			&t.ExtraAttack10,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tactics = append(tactics, t)
+	}
+	return tactics, nil
+}
+
+func TacticByTeamIDAndVerse(tx *sql.Tx, teamID string, verse uint64) (*Tactic, error) {
+	log.Debugf("[DBMS] GetTactic by teamID %v an verse %v", teamID, verse)
+	rows, err := tx.Query(
+		`SELECT
+		team_id,
+		verse,
+		tactic_id,
+                shirt_0,
+                shirt_1,
+                shirt_2,
+                shirt_3,
+                shirt_4,
+                shirt_5,
+                shirt_6,
+                shirt_7,
+                shirt_8,
+                shirt_9,
+                shirt_10,
+                shirt_11,
+                shirt_12,
+                shirt_13,
+                extra_attack_1,
+                extra_attack_2,
+                extra_attack_3,
+                extra_attack_4,
+                extra_attack_5,
+                extra_attack_6,
+                extra_attack_7,
+                extra_attack_8,
+                extra_attack_9,
+                extra_attack_10
+		FROM tactics WHERE (team_id = $1) AND (verse = $2);`, teamID, verse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, errors.New("Unexistent tactic")
+	}
+	var t Tactic
+	err = rows.Scan(
+		&t.TeamID,
+		&t.Verse,
+		&t.TacticID,
+		&t.Shirt0,
+		&t.Shirt1,
+		&t.Shirt2,
+		&t.Shirt3,
+		&t.Shirt4,
+		&t.Shirt5,
+		&t.Shirt6,
+		&t.Shirt7,
+		&t.Shirt8,
+		&t.Shirt9,
+		&t.Shirt10,
+		&t.Shirt11,
+		&t.Shirt12,
+		&t.Shirt13,
+		&t.ExtraAttack1,
+		&t.ExtraAttack2,
+		&t.ExtraAttack3,
+		&t.ExtraAttack4,
+		&t.ExtraAttack5,
+		&t.ExtraAttack6,
+		&t.ExtraAttack7,
+		&t.ExtraAttack8,
+		&t.ExtraAttack9,
+		&t.ExtraAttack10,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+func TacticCountByVerse(tx *sql.Tx, verse uint64) (uint64, error) {
+	count := uint64(0)
+	var rows *sql.Rows
+	var err error
+
+	rows, err = tx.Query("SELECT COUNT(*) FROM tactics WHERE (verse = $1);", verse)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer rows.Close()
+	rows.Next()
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func TacticCount(tx *sql.Tx) (uint64, error) {
@@ -64,6 +236,7 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create tactic for TeamID %v", b.TeamID)
 	_, err := tx.Exec(
 		`INSERT INTO tactics (
+						verse,
 						team_id,
 						tactic_id,
                         shirt_0,
@@ -91,7 +264,7 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
                         extra_attack_9,
                         extra_attack_10
 		) VALUES (
-			$1,
+						$1,
                         $2,
                         $3,
                         $4,
@@ -116,8 +289,10 @@ func (b *Tactic) Insert(tx *sql.Tx) error {
                         $23,
                         $24,
                         $25,
-						$26
+						$26,
+						$27
 		);`,
+		b.Verse,
 		b.TeamID,
 		b.TacticID,
 		b.Shirt0,

@@ -86,42 +86,42 @@ func TestVerseByTeamId(t *testing.T) {
 	}
 }
 
-func TestInsertTacticAndMoveToVerseTactic(t *testing.T) {
-	tx, err := db.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tx.Rollback()
+// func TestInsertTacticAndMoveToVerseTactic(t *testing.T) {
+// 	tx, err := db.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
 
-	tactic := storage.Tactic{}
-	tactic.TeamID = "1"
-	err = tactic.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	tactic := storage.Tactic{}
+// 	tactic.TeamID = "1"
+// 	err = tactic.Insert(tx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	verseTactic := storage.VerseTactic{}
-	verseTactic.Tactic = tactic
-	verseTactic.Verse = 1
-	err = verseTactic.Insert(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
+// 	verseTactic := storage.VerseTactic{}
+// 	verseTactic.Tactic = tactic
+// 	verseTactic.Verse = 1
+// 	err = verseTactic.Insert(tx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
 
-	count, err := storage.TacticCount(tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Fatalf("Expected 1 got %v", count)
-	}
+// 	count, err := storage.TacticCount(tx)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if count != 1 {
+// 		t.Fatalf("Expected 1 got %v", count)
+// 	}
 
-	count, err = storage.VerseTacticCount(tx, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Fatalf("Expected 1 got %v", count)
-	}
+// 	count, err = storage.VerseTacticCount(tx, 1)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if count != 1 {
+// 		t.Fatalf("Expected 1 got %v", count)
+// 	}
 
-}
+// }
