@@ -327,6 +327,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	log.Debugf("[DBMS] GetTactic by teamID %v", teamID)
 	rows, err := tx.Query(
 		`SELECT
+				verse,
 				team_id,
 				tactic_id,
                 shirt_0,
@@ -364,6 +365,7 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
 	}
 	var t Tactic
 	err = rows.Scan(
+		&t.Verse,
 		&t.TeamID,
 		&t.TacticID,
 		&t.Shirt0,
