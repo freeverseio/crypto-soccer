@@ -39,22 +39,6 @@ type Training struct {
 	SpecialPlayerEndurance int       `json:"special_player_endurance"` // special_player_endurance
 }
 
-func TrainingByVerse(verseNumber int) ([]*Training, error) {
-	var trainings []*Training
-	if verseNumber == 0 {
-		return trainings, nil
-	}
-	// verse, err := b.GetVerse(verseNumber)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// prevVerse, err := b.GetVerse(verseNumber - 1)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return trainings, nil
-}
-
 func (b *Training) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create training %v", b)
 	_, err := tx.Exec(
