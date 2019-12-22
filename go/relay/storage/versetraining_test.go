@@ -28,4 +28,18 @@ func TestVerseTrainingInsert(t *testing.T) {
 	if len(result) != 1 {
 		t.Fatalf("Expected 1 received %v", len(result))
 	}
+
+	training.Verse = 2
+	err = training.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err = storage.VerseTrainingByVerse(tx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result) != 1 {
+		t.Fatalf("Expected 1 received %v", len(result))
+	}
 }
