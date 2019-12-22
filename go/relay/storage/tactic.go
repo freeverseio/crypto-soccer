@@ -178,45 +178,46 @@ func TacticByTeamID(tx *sql.Tx, teamID string) (*Tactic, error) {
                 extra_attack_8,
                 extra_attack_9,
                 extra_attack_10
-		FROM verse_tactics WHERE (team_id = $1);`, teamID)
+		FROM tactics WHERE team_id=$1;`, teamID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	if rows.Next() {
-		var t Tactic
-		err = rows.Scan(
-			&t.TeamID,
-			&t.TacticID,
-			&t.Shirt0,
-			&t.Shirt1,
-			&t.Shirt2,
-			&t.Shirt3,
-			&t.Shirt4,
-			&t.Shirt5,
-			&t.Shirt6,
-			&t.Shirt7,
-			&t.Shirt8,
-			&t.Shirt9,
-			&t.Shirt10,
-			&t.Shirt11,
-			&t.Shirt12,
-			&t.Shirt13,
-			&t.ExtraAttack1,
-			&t.ExtraAttack2,
-			&t.ExtraAttack3,
-			&t.ExtraAttack4,
-			&t.ExtraAttack5,
-			&t.ExtraAttack6,
-			&t.ExtraAttack7,
-			&t.ExtraAttack8,
-			&t.ExtraAttack9,
-			&t.ExtraAttack10,
-		)
-		if err != nil {
-			return &t, err
-		}
+	if !rows.Next() {
+		return nil, nil
 	}
-	return nil, nil
+	var t Tactic
+	err = rows.Scan(
+		&t.TeamID,
+		&t.TacticID,
+		&t.Shirt0,
+		&t.Shirt1,
+		&t.Shirt2,
+		&t.Shirt3,
+		&t.Shirt4,
+		&t.Shirt5,
+		&t.Shirt6,
+		&t.Shirt7,
+		&t.Shirt8,
+		&t.Shirt9,
+		&t.Shirt10,
+		&t.Shirt11,
+		&t.Shirt12,
+		&t.Shirt13,
+		&t.ExtraAttack1,
+		&t.ExtraAttack2,
+		&t.ExtraAttack3,
+		&t.ExtraAttack4,
+		&t.ExtraAttack5,
+		&t.ExtraAttack6,
+		&t.ExtraAttack7,
+		&t.ExtraAttack8,
+		&t.ExtraAttack9,
+		&t.ExtraAttack10,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
 }

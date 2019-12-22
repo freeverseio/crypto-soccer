@@ -49,16 +49,12 @@ func TestTacticCreate(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("expecting 1 tactic, got %v", count)
 	}
+	t.Logf("TacticId: %v", tactic.TeamID)
 	tc, err := storage.TacticByTeamID(tx, tactic.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tc != tactic {
+	if *tc != *tactic {
 		t.Fatalf("expecting tacticID %v, got %v", tactic, tc)
-	}
-
-	tc, err = storage.TacticByTeamID(tx, "2")
-	if err == nil {
-		t.Fatal("team 2 does not exist and should fail")
 	}
 }
