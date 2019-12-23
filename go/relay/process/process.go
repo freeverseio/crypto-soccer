@@ -71,17 +71,35 @@ func NewProcessor(
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
-	if err := storage.CloseVerse(tx); err != nil {
-		return err
-	}
-	verse, err := storage.LastVerse(tx)
+	currentVerse, err := p.updatesSession.CurrentVerse()
 	if err != nil {
 		return err
 	}
-	actions := useractions.UserActions{}
-	if err = actions.PullFromStorage(tx, verse.ID); err != nil {
+	nextVerse := currentVerse.Uint64() + 1
+	currentTrainings, err := storage.CurrentTrainings(tx)
+	if err != nil {
 		return err
 	}
+	currentTactics, err := storage.CurrentTactics(tx)
+	if err != nil {
+		return err
+	}
+	for _, training := range currentTrainings {
+		training.Verse = nextVerse
+		if err = training.Insert(tx); err != nil {
+			return err
+		}
+	}
+	for _, tactic := range currentTactics {
+		tactic.Verse = nextVerse
+		if err = tactic.Insert(tx); err != nil {
+			return err
+		}
+	}
+
+	actions := useractions.UserActions{}
+	actions.Trainings = currentTrainings
+	actions.Tactics = currentTactics
 	hash, err := actions.Hash()
 	if err != nil {
 		return err
