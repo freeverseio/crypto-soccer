@@ -110,6 +110,7 @@ func TestCurrentTactic(t *testing.T) {
 	defer tx.Rollback()
 
 	tactic := storage.Tactic{}
+	tactic.Verse = storage.UpcomingVerse
 	tactic.TeamID = "4"
 	err = tactic.Insert(tx)
 	if err != nil {
