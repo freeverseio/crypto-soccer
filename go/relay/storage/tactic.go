@@ -39,7 +39,7 @@ type Tactic struct {
 
 func DefaultTactic(teamID string) *Tactic {
 	tacticId := 1
-	return &Tactic{CurrentVerse, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+	return &Tactic{UpcomingVerse, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
 
 func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
@@ -118,7 +118,7 @@ func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
 }
 
 func CurrentTactics(tx *sql.Tx) ([]Tactic, error) {
-	return TacticsByVerse(tx, CurrentVerse)
+	return TacticsByVerse(tx, UpcomingVerse)
 }
 
 func TacticByTeamIDAndVerse(tx *sql.Tx, teamID string, verse uint64) (*Tactic, error) {

@@ -70,7 +70,7 @@ func NewEventProcessor(
 }
 
 // Process processes all scanned events and stores them into the database db
-func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
+func (p *EventProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, delta uint64) (uint64, error) {
 
 	opts, err := p.nextRange(tx, delta)
 	if err != nil {
@@ -97,7 +97,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 	}
 
 	for _, v := range scanner.Events {
-		if err := p.dispatch(tx, v); err != nil {
+		if err := p.dispatch(tx, relaytx, v); err != nil {
 			return 0, err
 		}
 	}
@@ -111,7 +111,7 @@ func (p *EventProcessor) Process(tx *sql.Tx, delta uint64) (uint64, error) {
 // *****************************************************************************
 // private
 // *****************************************************************************
-func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
+func (p *EventProcessor) dispatch(tx *sql.Tx, relaytx *sql.Tx, e *AbstractEvent) error {
 	log.Debugf("[process] dispach event block %v inBlockIndex %v", e.BlockNumber, e.TxIndexInBlock)
 
 	switch v := e.Value.(type) {
@@ -120,7 +120,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, e *AbstractEvent) error {
 		return p.assetsInitProcessor.Process(tx, v)
 	case assets.AssetsDivisionCreation:
 		log.Infof("[processor] Dispatching LeaguesDivisionCreation event Timezone %v, CountryIdxInTZ: %v, DivisionIdxInCountry %v", v.Timezone, v.CountryIdxInTZ, v.DivisionIdxInCountry)
-		return p.divisionCreationProcessor.Process(tx, v)
+		return p.divisionCreationProcessor.Process(tx, relaytx, v)
 	case assets.AssetsTeamTransfer:
 		log.Infof("[processor] dispatching LeaguesTeamTransfer event TeamID: %v, To: %v", v.TeamId, v.To)
 		return p.teamTransferProcessor.Process(tx, v)

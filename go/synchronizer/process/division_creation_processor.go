@@ -85,7 +85,7 @@ func NewDivisionCreationProcessor(
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}
@@ -102,13 +102,13 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, event assets.AssetsDivis
 		if err := country.Insert(tx); err != nil {
 			return err
 		}
-		if err := b.storeTeamsForNewDivision(tx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+		if err := b.storeTeamsForNewDivision(tx, relaytx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
+func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 
 	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
@@ -153,10 +153,10 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, timezon
 					return err
 				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-					// } else if err := b.createInitialTactics(tx, teamId); err != nil {
-					// 	return err
-					// } else if err := b.createInitialTraining(tx, teamId); err != nil {
-					// 	return err
+				} else if err := b.createInitialTactics(relaytx, teamId); err != nil {
+					return err
+				} else if err := b.createInitialTraining(relaytx, teamId); err != nil {
+					return err
 				}
 
 			}

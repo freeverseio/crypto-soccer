@@ -29,6 +29,7 @@ func TestCurrentTraining(t *testing.T) {
 	defer tx.Rollback()
 
 	training := storage.Training{}
+	training.Verse = storage.UpcomingVerse
 	training.TeamID = "4"
 	err = training.Insert(tx)
 	if err != nil {

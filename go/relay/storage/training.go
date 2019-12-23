@@ -39,7 +39,7 @@ type Training struct {
 }
 
 func CurrentTrainings(tx *sql.Tx) ([]Training, error) {
-	return TrainingByVerse(tx, CurrentVerse)
+	return TrainingByVerse(tx, UpcomingVerse)
 }
 
 func (b *Training) Insert(tx *sql.Tx) error {

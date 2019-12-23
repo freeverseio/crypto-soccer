@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"os"
 	"time"
@@ -14,8 +15,40 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
+func run(
+	universedb *sql.DB,
+	relaydb *sql.DB,
+	processor *process.EventProcessor,
+	delta uint64,
+) (uint64, error) {
+	tx, err := universedb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err != nil {
+			relaytx.Rollback()
+			return
+		}
+		err = relaytx.Commit()
+	}()
+	return processor.Process(tx, relaytx, delta)
+}
+
 func main() {
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
+	relayURL := flag.String("relaydb", "postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable", "relay postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
@@ -89,6 +122,12 @@ func main() {
 		log.Fatalf("Failed to connect to universe DBMS: %v", err)
 	}
 
+	log.Info("Connecting to relay DBMS: ", *relayURL)
+	relaydb, err := storage.New(*relayURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to universe DBMS: %v", err)
+	}
+
 	namesdb, err := names.New(*namesDatabase)
 	if err != nil {
 		log.Fatalf("Failed to connect to names DBMS: %v", err)
@@ -104,16 +143,10 @@ func main() {
 
 	delta := uint64(1000)
 	for {
-		tx, err := universedb.Begin()
+		processedBlocks, err := run(universedb, relaydb, processor, delta)
 		if err != nil {
 			log.Fatal(err)
 		}
-		processedBlocks, err := processor.Process(tx, delta)
-		if err != nil {
-			tx.Rollback()
-			log.Fatal(err)
-		}
-		tx.Commit()
 		if processedBlocks == 0 {
 			time.Sleep(2 * time.Second)
 		}
