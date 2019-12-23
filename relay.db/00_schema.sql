@@ -1,11 +1,3 @@
-CREATE TABLE verses (
-    id INT NOT NULL,
-    start_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY(id)
-);
-CREATE RULE nodel_verses AS ON DELETE TO verses DO NOTHING;
-INSERT INTO verses VALUES (0);
-
 CREATE TABLE tactics (
     verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,

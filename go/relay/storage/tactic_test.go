@@ -93,9 +93,6 @@ func TestTacticsByVerse(t *testing.T) {
 	if len(tactics) != 0 {
 		t.Fatalf("Tactics of verse 0 are %v", len(tactics))
 	}
-	if err = storage.CloseVerse(tx); err != nil {
-		t.Fatal(err)
-	}
 	tactics, err = storage.TacticsByVerse(tx, 1)
 	if err != nil {
 		t.Fatal(err)
