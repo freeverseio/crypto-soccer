@@ -32,6 +32,17 @@ func run(
 		}
 		err = tx.Commit()
 	}()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err != nil {
+			relaytx.Rollback()
+			return
+		}
+		err = relaytx.Commit()
+	}()
 	return processor.Process(tx, relaytx, delta)
 }
 
