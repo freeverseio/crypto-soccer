@@ -144,6 +144,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	actionsSubmissionTime := gameDeployDay.Int64() * 24 * 3600
 	err = processor.Process(tx, updates.UpdatesActionsSubmission{
+		big.NewInt(0),
 		timezoneIdx,
 		day,
 		turnInDay,
@@ -157,6 +158,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	turnInDay = 1
 	err = processor.Process(tx, updates.UpdatesActionsSubmission{
+		big.NewInt(1),
 		timezoneIdx,
 		day,
 		turnInDay,

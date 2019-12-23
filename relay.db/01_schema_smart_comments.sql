@@ -7,3 +7,5 @@ comment on column trainings.verse is E'@omit create';
 comment on column trainings.verse is E'@omit update';
 
 
+
+
