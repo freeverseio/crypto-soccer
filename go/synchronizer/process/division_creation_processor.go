@@ -244,6 +244,7 @@ func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, teamID *big
 
 func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
 	training := relay.Training{}
+	training.Verse = relay.UpcomingVerse
 	training.TeamID = teamID.String()
 	training.SpecialPlayerShirt = -1
 	return training.Insert(tx)
