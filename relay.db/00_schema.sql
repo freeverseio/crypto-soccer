@@ -34,7 +34,7 @@ CREATE TABLE tactics (
     PRIMARY KEY (verse, team_id)
 );
 
-CREATE VIEW current_tactic AS SELECT * FROM tactics WHERE verse=0;
+CREATE VIEW upcoming_tactic AS SELECT * FROM tactics WHERE verse=0;
 
 CREATE TABLE trainings (
     verse BIGINT NOT NULL DEFAULT 0,
@@ -76,4 +76,4 @@ CREATE TABLE trainings (
  );
 
 
-CREATE VIEW current_trainings AS SELECT * FROM trainings WHERE verse=0;
+CREATE VIEW upcoming_trainings AS SELECT * FROM trainings WHERE verse=0;
