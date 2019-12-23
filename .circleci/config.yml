@@ -56,13 +56,13 @@ jobs:
       - run: make setup contracts
       - run: cd go/cmd/notary && go build ./notary.go
       - run: cd go/notary && go test ./... -p 1
-  relay-api:
-    executor: freeverse
-    steps:
-      - checkout
-      - run: make setup contracts
-      - run: cd relay.api && npm install
-      - run: cd relay.api && npm test
+  # relay-api:
+  #   executor: freeverse
+  #   steps:
+  #     - checkout
+  #     - run: make setup contracts
+  #     - run: cd relay.api && npm install
+  #     - run: cd relay.api && npm test
   relay-actions:
     machine:
       image: ubuntu-1604:201903-01
@@ -186,10 +186,10 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - relay-api:
-          filters:
-            tags:
-              only: /.*/
+      # - relay-api:
+      #     filters:
+      #       tags:
+      #         only: /.*/
       - market-notary:
           filters:
             tags:
@@ -202,7 +202,7 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            - relay-api
+            # - relay-api
             - relay-actions
             - market-notary
       - dockerization-production:
@@ -214,7 +214,7 @@ workflows:
           requires:
             - synchronizer
             - market-trader
-            - relay-api
+            # - relay-api
             - relay-actions
             - market-notary
       - deploy:
