@@ -7,7 +7,7 @@ CREATE RULE nodel_verses AS ON DELETE TO verses DO NOTHING;
 INSERT INTO verses VALUES (0);
 
 CREATE TABLE tactics (
-    verse BIGINT NOT NULL DEFAULT -1,
+    verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,
 
     tactic_id INT NOT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE tactics (
 );
 
 CREATE TABLE trainings (
-    verse BIGINT NOT NULL DEFAULT -1,
+    verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,
 
     special_player_shirt INT NOT NULL CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
