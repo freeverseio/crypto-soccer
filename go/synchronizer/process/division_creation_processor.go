@@ -155,8 +155,8 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx
 					return err
 				} else if err := b.createInitialTactics(relaytx, teamId); err != nil {
 					return err
-					// } else if err := b.createInitialTraining(tx, teamId); err != nil {
-					// 	return err
+				} else if err := b.createInitialTraining(relaytx, teamId); err != nil {
+					return err
 				}
 
 			}
