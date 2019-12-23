@@ -15,6 +15,7 @@ services:
     image: freeverseio/synchronizer:$TAG
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -relaydb postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"

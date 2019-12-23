@@ -1,3 +1,3 @@
 package storage
 
-const CurrentVerse = 0
+const UpcomingVerse = 9223372036854775807

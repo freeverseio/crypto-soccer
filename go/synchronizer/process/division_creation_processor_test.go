@@ -17,6 +17,11 @@ func TestDivisionCreationProcess(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
@@ -36,7 +41,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 		CountryIdxInTZ:       big.NewInt(0),
 		DivisionIdxInCountry: big.NewInt(0),
 	}
-	err = process.Process(tx, event)
+	err = process.Process(tx, relaytx, event)
 	if err != nil {
 		t.Fatal(err)
 	}

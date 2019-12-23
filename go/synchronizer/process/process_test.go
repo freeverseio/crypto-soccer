@@ -22,6 +22,11 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -42,7 +47,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	count, err := p.Process(tx, 0)
+	count, err := p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +115,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = p.Process(tx, 0)
+	_, err = p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +147,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = p.Process(tx, 0)
+	_, err = p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

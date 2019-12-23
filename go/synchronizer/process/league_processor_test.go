@@ -93,6 +93,11 @@ func TestLeagueProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
 
 	if err != nil {
 		t.Fatal(err)
@@ -123,7 +128,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	}
 	countryIdx := big.NewInt(0)
 	divisionIdx := big.NewInt(0)
-	err = divisionCreationProcessor.Process(tx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
+	err = divisionCreationProcessor.Process(tx, relaytx, assets.AssetsDivisionCreation{timezoneIdx, countryIdx, divisionIdx, types.Log{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -178,6 +183,11 @@ func TestLeagueShuffling(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
 
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
@@ -194,7 +204,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = proc.Process(tx, 0); err != nil {
+	if _, err = proc.Process(tx, relaytx, 0); err != nil {
 		t.Fatal(err)
 	}
 	// teamId := big.NewInt(274877906944)
@@ -209,7 +219,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = proc.Process(tx, 0); err != nil {
+	if _, err = proc.Process(tx, relaytx, 0); err != nil {
 		t.Fatal(err)
 	}
 	processor, err := process.NewLeagueProcessor(
