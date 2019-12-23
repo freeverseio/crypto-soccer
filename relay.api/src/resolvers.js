@@ -39,7 +39,7 @@ const resolvers = (sql, assets, from) => {
                         extra_attack_8,
                         extra_attack_9,
                         extra_attack_10
-		) VALUES (
+		            ) VALUES (
                 ${sql.value('9223372036854775807')},
                 ${sql.value(params.teamId)},
                 ${sql.value(params.tacticId)},
@@ -94,6 +94,97 @@ const resolvers = (sql, assets, from) => {
                 extra_attack_9=${sql.value(params.extraAttack9)},
                 extra_attack_10=${sql.value(params.extraAttack10)}
               `;
+        const { text, values } = sql.compile(query);
+        await context.pgClient.query(text, values);
+        return true;// TODO return something with sense
+      },
+      setTraining: async (_, params, context) => {
+        const query = sql.query`INSERT INTO trainings (
+			verse,
+			team_id,
+    		special_player_shirt,
+			goalkeepers_defence,
+    		goalkeepers_speed,
+    		goalkeepers_pass,
+    		goalkeepers_shoot,
+    		goalkeepers_endurance,
+    		defenders_defence,
+    		defenders_speed,
+    		defenders_pass,
+    		defenders_shoot,
+    		defenders_endurance,
+    		midfielders_defence,
+    		midfielders_speed,
+    		midfielders_pass,
+    		midfielders_shoot,
+    		midfielders_endurance,
+    		attackers_defence,
+    		attackers_speed,
+    		attackers_pass,
+    		attackers_shoot,
+    		attackers_endurance,
+    		special_player_defence,
+    		special_player_speed,
+    		special_player_pass,
+    		special_player_shoot,
+			special_player_endurance
+		) VALUES (
+                ${sql.value('9223372036854775807')},
+                ${sql.value(params.teamId)},
+                ${sql.value(params.specialPlayerShirt)},
+                ${sql.value(params.goalkeepersDefence)},
+                ${sql.value(params.goalkeepersSpeed)},
+                ${sql.value(params.goalkeepersPass)},
+                ${sql.value(params.goalkeepersShoot)},
+                ${sql.value(params.goalkeepersEndurance)},
+                ${sql.value(params.defendersDefence)},
+                ${sql.value(params.defendersSpeed)},
+                ${sql.value(params.defendersPass)},
+                ${sql.value(params.defendersShoot)},
+                ${sql.value(params.defendersEndurance)},
+                ${sql.value(params.midfieldersDefence)},
+                ${sql.value(params.midfieldersSpeed)},
+                ${sql.value(params.midfieldersPass)},
+                ${sql.value(params.midfieldersShoot)},
+                ${sql.value(params.midfieldersEndurance)},
+                ${sql.value(params.attackersDefence)},
+                ${sql.value(params.attackersSpeed)},
+                ${sql.value(params.attackersPass)},
+                ${sql.value(params.attackersShoot)},
+                ${sql.value(params.attackersEndurance)},
+                ${sql.value(params.specialPlayerDefence)},
+                ${sql.value(params.specialPlayerSpeed)},
+                ${sql.value(params.specialPlayerPass)},
+                ${sql.value(params.specialPlayerShoot)},
+                ${sql.value(params.specialPlayerEndurance)}
+            ) ON CONFLICT (verse, team_id) DO UPDATE SET
+        special_player_shirt=${sql.value(params.specialPlayerShirt)},
+			  goalkeepers_defence=${sql.value(params.goalkeepersDefence)},
+    		goalkeepers_speed=${sql.value(params.goalkeepersSpeed)},
+    		goalkeepers_pass=${sql.value(params.goalkeepersPass)},
+    		goalkeepers_shoot=${sql.value(params.goalkeepersShoot)},
+        goalkeepers_endurance=${sql.value(params.goalkeepersEndurance)},
+        defenders_defence=${sql.value(params.defendersDefence)},
+    		defenders_speed=${sql.value(params.defendersSpeed)},
+    		defenders_pass=${sql.value(params.defendersPass)},
+    		defenders_shoot=${sql.value(params.defendersShoot)},
+    		defenders_endurance=${sql.value(params.defendersEndurance)},
+        midfielders_defence=${sql.value(params.midfieldersDefence)},
+    		midfielders_speed=${sql.value(params.midfieldersSpeed)},
+    		midfielders_pass=${sql.value(params.midfieldersPass)},
+    		midfielders_shoot=${sql.value(params.midfieldersShoot)},
+    		midfielders_endurance=${sql.value(params.midfieldersEndurance)},
+        attackers_defence=${sql.value(params.attackersDefence)},
+    		attackers_speed=${sql.value(params.attackersSpeed)},
+    		attackers_pass=${sql.value(params.attackersPass)},
+    		attackers_shoot=${sql.value(params.attackersShoot)},
+    		attackers_endurance=${sql.value(params.attackersEndurance)},
+        special_player_defence=${sql.value(params.specialPlayerDefence)},
+    		special_player_speed=${sql.value(params.specialPlayerSpeed)},
+    		special_player_pass=${sql.value(params.specialPlayerPass)},
+    		special_player_shoot=${sql.value(params.specialPlayerShoot)},
+    		special_player_endurance=${sql.value(params.specialPlayerEndurance)}
+        `;
         const { text, values } = sql.compile(query);
         await context.pgClient.query(text, values);
         return true;// TODO return something with sense

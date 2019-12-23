@@ -42,6 +42,35 @@ const MyPlugin = (assets, from) => {
           extraAttack9: Boolean!
           extraAttack10: Boolean!
         ): Boolean
+        setTraining(
+          teamId: String!
+          specialPlayerShirt: Int!
+          goalkeepersDefence: Int!
+          goalkeepersSpeed: Int!
+          goalkeepersPass: Int!
+          goalkeepersShoot: Int!
+          goalkeepersEndurance: Int!
+          defendersDefence: Int!
+          defendersSpeed: Int!
+          defendersPass: Int!
+          defendersShoot: Int!
+          defendersEndurance: Int!
+          midfieldersDefence: Int!
+          midfieldersSpeed: Int!
+          midfieldersPass: Int!
+          midfieldersShoot: Int!
+          midfieldersEndurance: Int!
+          attackersDefence: Int!
+          attackersSpeed: Int!
+          attackersPass: Int!
+          attackersShoot: Int!
+          attackersEndurance: Int!
+          specialPlayerDefence: Int!
+          specialPlayerSpeed: Int!
+          specialPlayerPass: Int!
+          specialPlayerShoot: Int!
+          specialPlayerEndurance: Int!
+        ): Boolean
       }`,
       resolvers: Resolvers(sql, assets, from),
     }
