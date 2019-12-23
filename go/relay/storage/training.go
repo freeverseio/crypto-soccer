@@ -8,7 +8,7 @@ import (
 
 // Training represents a row from 'public.trainings'.
 type Training struct {
-	Verse                  int64  `json:"verse"`
+	Verse                  uint64 `json:"verse"`
 	TeamID                 string `json:"team_id"`                  // team_id
 	SpecialPlayerShirt     int    `json:"special_player_shirt"`     // special_player_shirt
 	GoalkeepersDefence     int    `json:"goalkeepers_defence"`      // goalkeepers_defence
@@ -36,6 +36,10 @@ type Training struct {
 	SpecialPlayerPass      int    `json:"special_player_pass"`      // special_player_pass
 	SpecialPlayerShoot     int    `json:"special_player_shoot"`     // special_player_shoot
 	SpecialPlayerEndurance int    `json:"special_player_endurance"` // special_player_endurance
+}
+
+func CurrentTrainings(tx *sql.Tx) ([]Training, error) {
+	return TrainingByVerse(tx, CurrentVerse)
 }
 
 func (b *Training) Insert(tx *sql.Tx) error {

@@ -8,6 +8,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const CurrentVerse = 0
+
 // Verse represents a row from 'public.verses'.
 type Verse struct {
 	ID      int       `json:"id"`       // id

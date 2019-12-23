@@ -8,7 +8,7 @@ import (
 )
 
 type Tactic struct {
-	Verse         int64  `json:"verse"`
+	Verse         uint64 `json:"verse"`
 	TeamID        string `json:"team_id"`         // team_id
 	TacticID      int    `json:"tactic_id"`       // tactic_id
 	Shirt0        int    `json:"shirt_0"`         // shirt_0
@@ -39,7 +39,7 @@ type Tactic struct {
 
 func DefaultTactic(teamID string) *Tactic {
 	tacticId := 1
-	return &Tactic{-1, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
+	return &Tactic{CurrentVerse, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
 
 func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
@@ -115,6 +115,10 @@ func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
 		tactics = append(tactics, t)
 	}
 	return tactics, nil
+}
+
+func CurrentTactics(tx *sql.Tx) ([]Tactic, error) {
+	return TacticsByVerse(tx, CurrentVerse)
 }
 
 func TacticByTeamIDAndVerse(tx *sql.Tx, teamID string, verse uint64) (*Tactic, error) {

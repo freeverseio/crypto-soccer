@@ -104,3 +104,40 @@ func TestTacticsByVerse(t *testing.T) {
 		t.Fatalf("Tactics of verse 1 are %v", len(tactics))
 	}
 }
+
+func TestCurrentTactic(t *testing.T) {
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	tactic := storage.Tactic{}
+	tactic.TeamID = "4"
+	err = tactic.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tactics, err := storage.CurrentTactics(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 1 {
+		t.Fatalf("Expected 1 got %v", len(tactics))
+	}
+
+	tactic.Verse = 1
+	err = tactic.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tactics, err = storage.CurrentTactics(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 1 {
+		t.Fatalf("Expected 1 got %v", len(tactics))
+	}
+}
