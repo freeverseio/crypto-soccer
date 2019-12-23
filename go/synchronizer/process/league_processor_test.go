@@ -97,7 +97,7 @@ func TestLeagueProcessMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tx.Rollback()
+	defer relaytx.Rollback()
 
 	if err != nil {
 		t.Fatal(err)
@@ -187,7 +187,7 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tx.Rollback()
+	defer relaytx.Rollback()
 
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {

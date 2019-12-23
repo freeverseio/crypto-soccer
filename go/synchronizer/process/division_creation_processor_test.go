@@ -21,7 +21,7 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tx.Rollback()
+	defer relaytx.Rollback()
 
 	namesdb, err := names.New("../../names/sql/names.db")
 	if err != nil {
