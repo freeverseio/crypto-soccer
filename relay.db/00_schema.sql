@@ -20,21 +20,19 @@ CREATE TABLE tactics (
     shirt_12 INT NOT NULL CHECK (shirt_12 >= 0),
     shirt_13 INT NOT NULL CHECK (shirt_13 >= 0),
 
-    extra_attack_1  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_2  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_3  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_4  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_5  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_6  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_7  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_8  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_9  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_10 BOOLEAN NOT NULL DEFAULT FALSE,
+    extra_attack_1  BOOLEAN NOT NULL,
+    extra_attack_2  BOOLEAN NOT NULL,
+    extra_attack_3  BOOLEAN NOT NULL,
+    extra_attack_4  BOOLEAN NOT NULL,
+    extra_attack_5  BOOLEAN NOT NULL,
+    extra_attack_6  BOOLEAN NOT NULL,
+    extra_attack_7  BOOLEAN NOT NULL,
+    extra_attack_8  BOOLEAN NOT NULL,
+    extra_attack_9  BOOLEAN NOT NULL,
+    extra_attack_10 BOOLEAN NOT NULL,
 
     PRIMARY KEY (verse, team_id)
 );
-
-CREATE VIEW upcoming_tactic AS SELECT * FROM tactics WHERE verse=0;
 
 CREATE TABLE trainings (
     verse BIGINT NOT NULL DEFAULT 0,
@@ -74,6 +72,3 @@ CREATE TABLE trainings (
 
     PRIMARY KEY (verse, team_id)
  );
-
-
-CREATE VIEW upcoming_trainings AS SELECT * FROM trainings WHERE verse=0;
