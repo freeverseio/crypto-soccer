@@ -51,12 +51,19 @@ contract('Updates', (accounts) => {
         await timeTravel.revertToSnapShot(snapshotId);
     });
             
+    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
+        blockChainTimeSec = await updates.getNow().should.be.fulfilled;
+        localTimeMs = Date.now();
+        // the substraction is in miliseconds:
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 15000).should.be.equal(true)
+    });
 
-    it('check BC has the correct time', async () =>  {
+    it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;
+        localTimeMs = Date.now();
+        now = new Date(localTimeMs)
         nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
-        now = new Date()
         if (now.getUTCMinutes() < 57) {
             expectedHour = now.getUTCHours() + 1;
         } else {
