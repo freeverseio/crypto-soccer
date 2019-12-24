@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: synchronizer
+  labels:
+    app: synchronizer
+    component: synchronizer
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: synchronizer
+  template:
+    metadata:
+      labels:
+        app: synchronizer
+        component: synchronizer
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: synchronizer
+        image: freeverseio/synchronizer:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
+               -ethereum, http://ethereum:8545,
+               -leaguesContractAddress, "$(leagues_contract_address)",
+               -engineContractAddress, "$(engine_contract_address)",
+               -enginePreCompContractAddress, "$(engineprecomp_contract_address)",
+               -marketContractAddress, "$(market_contract_address)",
+               -updatesContractAddress, "$(updates_contract_address)",
+               -assetsContractAddress, "$(assets_contract_address)",
+               -evolutionContractAddress, "$(evolution_contract_address)"]
+      imagePullSecrets:
+      - name: docker-secret
