@@ -3,7 +3,6 @@ package process
 import (
 	"database/sql"
 	"errors"
-	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -129,18 +128,16 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 			if !storage.IsBotTeam(team) {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
-				rankingPoints, prevPerfPoints, err := b.contracts.Leagues.ComputeTeamRankingPoints(
+				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
-					big.NewInt(int64(team.State.PrevPerfPoints)),
+					team.State.PrevPerfPoints,
 					team.TeamID,
 				)
 				if err != nil {
 					return err
 				}
-				team.State.RankingPoints = rankingPoints.Uint64()
-				team.State.PrevPerfPoints = uint32(prevPerfPoints.Uint64())
 			}
 			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, team.State.RankingPoints)
 			orgMap = append(orgMap, team)
