@@ -45,18 +45,6 @@ spec:
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-              #env:
-              #  - name: DB_USERNAME
-              #    valueFrom:
-              #      configMapKeyRef:
-              #        name: freeverse-configmap
-              #        key: username
-        #  - name: DB_PASS
-        #    valueFrom:
-        #      configMapKeyRef:
-        #        name: freeverse-configmap
-        #        key: password
-        # we can reference the universedb service by environment vars if it was created first
         #args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
         # or we can use dns record universedb[.namespace]. Since they will both be in the same
         # namespace the name of the service is sufficient
