@@ -68,6 +68,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	log.Info("All is ready ... 5 seconds to start ...")
+	time.Sleep(5 * time.Second)
+
 	for {
 		tx, err := db.Begin()
 		if err != nil {
