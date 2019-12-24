@@ -28,7 +28,8 @@ spec:
           - configMapRef:
               name: freeverse-configmap
         args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer?sslmode=disable",
-               -ethereum, http://ethereum:8545,
+               -relaydb, "postgres://$(freeverse_username):$(freeverse_password)@$(RELAYDB_SERVICE_HOST):$(RELAYDB_SERVICE_PORT)/relay?sslmode=disable",
+               -ethereum, http://$(ETHEREUM_SERVICE_HOST):$(ETHEREUM_SERVICE_PORT),
                -leaguesContractAddress, "$(leagues_contract_address)",
                -engineContractAddress, "$(engine_contract_address)",
                -enginePreCompContractAddress, "$(engineprecomp_contract_address)",
