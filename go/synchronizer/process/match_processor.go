@@ -236,7 +236,7 @@ func (b *MatchProcessor) process2ndHalf(
 	is2ndHalf := true
 	matchLog := [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	logs, err = b.contracts.Evolution.Play2ndHalfAndEvolve(
+	logs, err = b.contracts.Evolution.play2ndHalfAndComputeTPs(
 		&bind.CallOpts{},
 		matchSeed,
 		startTime,

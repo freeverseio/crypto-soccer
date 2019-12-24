@@ -33,7 +33,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     }
 
     // function to call on 2nd half when we want to the matchlog to include the evolution points too.
-    function play2ndHalfAndEvolve(
+    function play2ndHalfAndComputeTPs(
         uint256 seed,
         uint256 matchStartTime,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
