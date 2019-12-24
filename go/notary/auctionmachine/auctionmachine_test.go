@@ -6,17 +6,26 @@ import (
 	"testing"
 	"time"
 
-	"github.com/freeverseio/crypto-soccer/go/notary/signer"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
+
 	"github.com/freeverseio/crypto-soccer/go/helper"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/signer"
 	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
-	"github.com/google/uuid"
 )
+
+func newTestMarket() *marketpay.MarketPay {
+	market, err := marketpay.New()
+	if err != nil {
+		panic(err)
+	}
+	return market
+}
 
 func TestAuctionWithNoBids(t *testing.T) {
 	bc, err := testutils.NewBlockchainNodeDeployAndInit()
@@ -33,14 +42,15 @@ func TestAuctionWithNoBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if machine.Auction.State != storage.AUCTION_STARTED {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_STARTED, machine.Auction.State)
 	}
-	err = machine.Process()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,14 +71,15 @@ func TestAuctionOutdatedWithNoBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if machine.Auction.State != storage.AUCTION_NO_BIDS {
 		t.Fatalf("Expected %v but %v", storage.AUCTION_NO_BIDS, machine.Auction.State)
 	}
-	err = machine.Process()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +119,8 @@ func TestStartedAuctionWithBids(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +152,8 @@ func TestFrozenAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,7 +185,8 @@ func TestOutdatedFrozenAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -205,7 +219,8 @@ func TestPayingAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +333,8 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = machine.Process()
+	market := newTestMarket()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -326,7 +342,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 		t.Fatalf("Expected not %v", machine.Auction.State)
 	}
 	time.Sleep(10 * time.Second)
-	err = machine.Process()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -336,7 +352,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	if machine.Bids[0].State != storage.BIDACCEPTED {
 		t.Fatalf("Expected not %v", machine.Bids[0].State)
 	}
-	err = machine.Process()
+	err = machine.Process(market)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -351,7 +367,7 @@ func TestPayingPaymentDoneAuction(t *testing.T) {
 	}
 	// following is commented because we need an action from the user to make marketpay set it as PAID
 	// time.Sleep(10 * time.Second)
-	// err = machine.Process()
+	// err = machine.Process(market)
 	// if err != nil {
 	// 	t.Fatal(err)
 	// }

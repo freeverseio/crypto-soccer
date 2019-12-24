@@ -26,6 +26,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     uint8 public constant SOFT_INJURY  = 1;   // type of event = redCard
     uint8 public constant HARD_INJURY  = 2;   // type of event = redCard
     uint8 public constant RED_CARD  = 3;   // type of event = redCard
+    uint8 public constant NO_LINEUP = 25; // No player chosen in that position
 
 
     // Over a game, we would like:
@@ -501,7 +502,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         // Count changes during half-time, as well as not-aligned players
         // ...note: substitutions = 11 means NO_SUBS
         for (uint8 p = 0; p < 11; p++) {
-            outStates[p] = verifyCanPlay(states[lineup[p]], is2ndHalf, false);
+            outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
             if (outStates[p] != 0) {
                 if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
                     matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
@@ -521,30 +522,31 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
 
         if (substitutions[0] < 11) {
             changes++;
-            outStates[11] = verifyCanPlay(states[lineup[11]], is2ndHalf, true);
+            outStates[11] = verifyCanPlay(lineup[11], states[lineup[11]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[11]); 
         }
         if (substitutions[1] < 11) { 
             changes++;
             require(substitutions[0] != substitutions[1], "changelist incorrect");
-            outStates[12] = verifyCanPlay(states[lineup[12]], is2ndHalf, true);
+            outStates[12] = verifyCanPlay(lineup[12], states[lineup[12]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[12]); 
         }
         if (substitutions[2] < 11) {
             changes++;
             require((substitutions[0] != substitutions[2]) && (substitutions[1] != substitutions[2]), "changelist incorrect");
-            outStates[13] = verifyCanPlay(states[lineup[13]], is2ndHalf, true);
+            outStates[13] = verifyCanPlay(lineup[13], states[lineup[13]], is2ndHalf, true);
             teamSkills += getSumOfSkills(outStates[13]); 
         }
         require(changes < 4, "max allowed changes in a game is 3");
         lineup = sort14(lineup);
-        for (uint8 p = 1; p < 11; p++) require(lineup[p] < lineup[p-1], "player appears twice in lineup!");  
+        for (uint8 p = 1; p < 11; p++) require((lineup[p] >= NO_LINEUP) || lineup[p] < lineup[p-1], "player appears twice in lineup!");  
         matchLog = addTeamSumSkills(matchLog, teamSkills); 
         return (matchLog, outStates, tacticsId);      
     }
 
-    function verifyCanPlay(uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
-        bool isWrong =  (playerSkills == 0) ||
+    function verifyCanPlay(uint8 lineup, uint256 playerSkills, bool is2ndHalf, bool isSubst) public pure returns(uint256) {
+        bool isWrong =  (lineup == NO_LINEUP) ||
+                        (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
         if (is2ndHalf) isWrong = isWrong || getSubstitutedLastHalf(playerSkills);

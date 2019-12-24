@@ -1,0 +1,115 @@
+version: '3'
+services:
+  ethereum: 
+    image: freeverseio/ethereum:dev
+    command: --bootnodes ${ENODE}
+    ports: 
+      - "8545:8545"
+      - "30303:30303"
+      - "30303:30303/udp"
+    volumes:
+      - ethereum-data:/test
+  universe.db:
+    build: ../../universe.db/
+    ports:
+      - "5432:5432"
+  relay.db:
+    build: ../../relay.db/
+    ports:
+      - "5433:5432"
+  synchronizer:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.synchronizer
+    command: > 
+      -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -ethereum http://ethereum:8545
+      -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
+      -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
+      -enginePreCompContractAddress "${ENGINEPRECOMP_CONTRACT_ADDRESS}"
+      -marketContractAddress "${MARKET_CONTRACT_ADDRESS}"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
+      -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
+      -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
+    depends_on:
+      - universe.db
+      - ethereum
+  universe.api:
+    build: ../../universe.api
+    depends_on:
+      - universe.db
+    command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
+    ports:
+      - "4005:4000"
+  market.db:
+    build: ../../market.db
+  market.trader:
+    build: ../../market.trader
+    command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
+    ports:
+      - "4002:4000"
+  market.notary:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.notary
+    depends_on:
+      - ethereum
+    command: >
+      -postgres postgres://freeverse:freeverse@market.db:5432/market?sslmode=disable  
+      -private_key "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54" 
+      -ethereum http://ethereum:8545 
+      -market_address "${MARKET_CONTRACT_ADDRESS}" 
+  relay.api:
+    build: ../../relay.api
+    depends_on:
+      - ethereum
+    ports:
+      - "4003:4000"
+    command: >
+      -d postgres://freeverse:freeverse@relay.db:5432/relay
+      --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
+      --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480" 
+      --ethereum "http://ethereum:8545"
+  relay.db:
+    build: ../../relay.db
+  horizon:
+    build: ../../nodejs-horizon
+    depends_on:
+      - universe.api
+      - market.trader
+      - relay.api
+    command: >
+      -u http://universe.api:4000/graphql 
+      -m http://market.trader:4000/graphql 
+      -r http://relay.api:4000/graphql
+    ports:
+      - "4000:4000"
+  relay.actions:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.relay
+    depends_on:
+      - ethereum
+      - ipfs.node
+    command: >
+      -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
+      -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
+      -ethereum "http://ethereum:8545"
+      -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
+      -delay 10s
+      -ipfs ipfs.node:5001
+  ipfs.node:
+    image: ipfs/go-ipfs:v0.4.18
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data
+    ports:
+      - "4001:4001"
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - ipfs.node-data:/data
+volumes:
+  ethereum-data:
+  ipfs.node-data:

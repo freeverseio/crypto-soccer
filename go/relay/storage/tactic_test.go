@@ -1,75 +1,141 @@
 package storage_test
 
 import (
-	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
+func TestTacticByTeamID(t *testing.T) {
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	tc, err := storage.TacticByTeamID(tx, "5")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tc != nil {
+		t.Fatalf("Received %v", tc)
+	}
+}
+
 func TestTacticCreate(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
-	tacticID := uint8(16)
-	teamId := big.NewInt(1)
-	shirts := [14]uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
-	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
-	substitutions := [3]uint8{11, 11, 11}
-	subsRounds := [3]uint8{2, 3, 4}
-	verse := uint64(10)
-	err = db.TacticCreate(storage.Tactic{teamId, tacticID, shirts, extraAttack, substitutions, subsRounds}, verse)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := db.TacticCount(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Fatalf("expecting 1 tactic, got %v", count)
-	}
-
-	count, err = db.TacticCount(&verse)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 1 {
-		t.Fatalf("expecting 1 tactic, got %v", count)
-	}
-	tc, err := db.GetTactic(teamId, verse)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if tc.TacticID != tacticID {
-		t.Fatalf("expecting tacticID 1, got %v", tc.TacticID)
-	}
-
-	tc, err = db.GetTactic(big.NewInt(2), verse)
-	if err == nil {
-		t.Fatal("team 2 does not exist and should fail")
-	}
-
-	nextverse := verse + 1
-	tc, err = db.GetTactic(big.NewInt(1), nextverse)
-	if err == nil {
-		t.Fatal("verse does not exist and should fail")
-	}
-	count, err = db.TacticCount(&nextverse)
+	defer tx.Rollback()
+	count, err := storage.TacticCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if count != 0 {
 		t.Fatalf("expecting 0 tactic, got %v", count)
 	}
-	tc, err = db.GetTacticOrDefault(big.NewInt(100), nextverse)
+	tactic := storage.DefaultTactic("16")
+	if tactic.TeamID != "16" {
+		t.Fatalf("Expected 16 but %v", tactic.TeamID)
+	}
+	err = tactic.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tc.TacticID != 1 {
-		t.Fatalf("expecting tacticID 0, got %v", tc.TacticID)
+	count, err = storage.TacticCount(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("expecting 1 tactic, got %v", count)
+	}
+	t.Logf("TacticId: %v", tactic.TeamID)
+	tc, err := storage.TacticByTeamID(tx, tactic.TeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if *tc != *tactic {
+		t.Fatalf("expecting tacticID %v, got %v", tactic, tc)
+	}
+}
+
+func TestTacticsByVerse(t *testing.T) {
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	tactics, err := storage.TacticsByVerse(tx, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 0 {
+		t.Fatalf("Tactics of verse 0 are %v", len(tactics))
+	}
+	tactic0 := storage.Tactic{}
+	tactic0.Verse = 1
+	tactic0.TeamID = "1"
+	tactic0.ExtraAttack1 = true
+	if err = tactic0.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	tactic1 := storage.Tactic{}
+	tactic1.Verse = 1
+	tactic1.TeamID = "2"
+	tactic1.ExtraAttack2 = true
+	if err = tactic1.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	tactics, err = storage.TacticsByVerse(tx, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 0 {
+		t.Fatalf("Tactics of verse 0 are %v", len(tactics))
+	}
+	tactics, err = storage.TacticsByVerse(tx, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 2 {
+		t.Fatalf("Tactics of verse 1 are %v", len(tactics))
+	}
+}
+
+func TestCurrentTactic(t *testing.T) {
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	tactic := storage.Tactic{}
+	tactic.Verse = storage.UpcomingVerse
+	tactic.TeamID = "4"
+	err = tactic.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tactics, err := storage.CurrentTactics(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 1 {
+		t.Fatalf("Expected 1 got %v", len(tactics))
+	}
+
+	tactic.Verse = 1
+	err = tactic.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tactics, err = storage.CurrentTactics(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tactics) != 1 {
+		t.Fatalf("Expected 1 got %v", len(tactics))
 	}
 }

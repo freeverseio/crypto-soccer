@@ -3,22 +3,27 @@ package processor
 import (
 	"crypto/ecdsa"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
+	marketpay "github.com/freeverseio/crypto-soccer/go/marketpay/v1"
 	"github.com/freeverseio/crypto-soccer/go/notary/auctionmachine"
+	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/notary/storage"
 )
 
 type Processor struct {
 	db        *storage.Storage
 	contracts *contracts.Contracts
 	freeverse *ecdsa.PrivateKey
+	market    *marketpay.MarketPay
 }
 
 func NewProcessor(db *storage.Storage, contracts *contracts.Contracts, freeverse *ecdsa.PrivateKey) (*Processor, error) {
-	return &Processor{db, contracts, freeverse}, nil
+	market, err := marketpay.New()
+	if err != nil {
+		return nil, err
+	}
+	return &Processor{db, contracts, freeverse, market}, nil
 }
 
 func (b *Processor) Process() error {
@@ -45,7 +50,7 @@ func (b *Processor) Process() error {
 		if err != nil {
 			return err
 		}
-		err = machine.Process()
+		err = machine.Process(b.market)
 		if err != nil {
 			return err
 		}

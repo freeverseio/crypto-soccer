@@ -2,18 +2,13 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/ethereum:prod
-    command: --mine --bootnodes ${ENODE}
+    command: --mine --nodiscover 
     ports: 
-      - "30303:30303"
-      - "30303:30303/udp"
+      - "8545:8545"
+      # - "30303:30303"
+      # - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
-  centauri:
-    image: freeverseio/centauri:$TAG
-    ports: 
-      - "8000:8000"
-    volumes:
-      - centauri-data:/app/db
   universe.db:
     image: freeverseio/universe.db:$TAG
   synchronizer:
@@ -36,15 +31,11 @@ services:
     depends_on:
       - universe.db
     command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
-    ports:
-      - "4001:4000"
   market.db:
     image: freeverseio/market.db:$TAG
   market.trader:
     image: freeverseio/market.trader:$TAG
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
-    ports:
-      - "4002:4000"
   market.notary:
     image: freeverseio/market.notary:$TAG
     depends_on:
@@ -58,8 +49,6 @@ services:
     image: freeverseio/relay.api:$TAG
     depends_on:
       - ethereum
-    ports:
-      - "4003:4000"
     command: >
       -d postgres://freeverse:freeverse@relay.db:5432/relay
       --assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}" 
@@ -67,6 +56,10 @@ services:
       --ethereum "http://ethereum:8545"
   relay.db:
     image: freeverseio/relay.db:$TAG
+  dashboard: 
+    image: freeverseio/dashboard:$TAG
+    ports:
+      - "8080:80"
   horizon:
     image: freeverseio/horizon:$TAG
     depends_on:
@@ -83,12 +76,25 @@ services:
     image: freeverseio/relay.actions:$TAG
     depends_on:
       - ethereum
+      - ipfs.node
     command: >
       -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
       -delay 900s
+      -ipfs ipfs.node:5001
+  ipfs.node:
+    image: ipfs/go-ipfs:master
+    environment:
+      - IPFS_PROFILE=server
+      - IPFS_PATH=/data
+    ports:
+      - "4001:4001"
+      # - "127.0.0.1:8080:8080"
+      # - "127.0.0.1:8081:8081"
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - ipfs.node-data:/data
 volumes:
-  centauri-data:
   ethereum-data:

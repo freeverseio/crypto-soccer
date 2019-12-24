@@ -1,6 +1,7 @@
 package relay_test
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"testing"
@@ -8,11 +9,11 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 )
 
-var db *storage.Storage
+var db *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	db, err = storage.NewSqlite3("../../../relay.db/00_schema.sql")
+	db, err = storage.New("postgres://freeverse:freeverse@localhost:15433/relay?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

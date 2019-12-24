@@ -1,12 +1,12 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 
-import Players from './Players';
+import Academy from './academy/Academy';
 
 const Main = (props) => (
     <main>
         <Switch>
-            <Route exact path='/' render={() => <Players {...props}/>} />
+            <Route exact path='/' render={() => <Academy {...props}/>} />
             {/* <Route exact path='/specialplayers' render={() => <SpecialPlayer {...props} />} /> */}
         </Switch>
     </main>

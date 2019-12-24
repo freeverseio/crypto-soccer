@@ -1,10 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -12,15 +11,44 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/names"
-	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
+func run(
+	universedb *sql.DB,
+	relaydb *sql.DB,
+	processor *process.EventProcessor,
+	delta uint64,
+) (uint64, error) {
+	tx, err := universedb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+	relaytx, err := relaydb.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err != nil {
+			relaytx.Rollback()
+			return
+		}
+		err = relaytx.Commit()
+	}()
+	return processor.Process(tx, relaytx, delta)
+}
+
 func main() {
-	inMemoryDatabase := flag.Bool("memory", false, "use in memory database")
 	postgresURL := flag.String("postgres", "postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable", "postgres url")
-	relayPostgresURL := flag.String("relayPostgres", "postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable", "postgres url")
+	relayURL := flag.String("relaydb", "postgres://freeverse:freeverse@localhost:5433/relay?sslmode=disable", "relay postgres url")
 	namesDatabase := flag.String("namesDatabase", "./names.db", "name database path")
 	debug := flag.Bool("debug", false, "print debug logs")
 	ethereumClient := flag.String("ethereum", "http://localhost:8545", "ethereum node")
@@ -31,6 +59,7 @@ func main() {
 	updatesContractAddress := flag.String("updatesContractAddress", "", "")
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
+	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
 	if _, err := os.Stat(*namesDatabase); err != nil {
@@ -61,6 +90,8 @@ func main() {
 		log.Fatal("no enginePreComp contract address")
 	}
 
+	log.Infof("ipfs URL: %v", *ipfsURL)
+
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -85,29 +116,16 @@ func main() {
 		log.Fatalf(err.Error())
 	}
 
-	var universedb *storage.Storage
-	var relaydb *relay.Storage
-	if *inMemoryDatabase {
-		log.Warning("Using in memory DBMS (no persistence)")
-		universedb, err = storage.NewSqlite3("./../../../universe.db/00_schema.sql")
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-		relaydb, err = relay.NewSqlite3("./../../../relay.db/00_schema.sql")
-		if err != nil {
-			log.Fatalf(err.Error())
-		}
-	} else {
-		log.Info("Connecting to universe DBMS: ", *postgresURL)
-		universedb, err = storage.NewPostgres(*postgresURL)
-		if err != nil {
-			log.Fatalf("Failed to connect to universe DBMS: %v", err)
-		}
-		log.Info("Connecting to relay DBMS: ", *relayPostgresURL)
-		relaydb, err = relay.NewPostgres(*relayPostgresURL)
-		if err != nil {
-			log.Fatalf("Failed to connect to relay DBMS: %v", err)
-		}
+	log.Info("Connecting to universe DBMS: ", *postgresURL)
+	universedb, err := storage.New(*postgresURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to universe DBMS: %v", err)
+	}
+
+	log.Info("Connecting to relay DBMS: ", *relayURL)
+	relaydb, err := storage.New(*relayURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to universe DBMS: %v", err)
 	}
 
 	namesdb, err := names.New(*namesDatabase)
@@ -118,38 +136,19 @@ func main() {
 	log.Info("All is ready ... 5 seconds to start ...")
 	time.Sleep(5 * time.Second)
 
-	process, err := process.BackgroundProcessNew(
-		contracts,
-		universedb,
-		relaydb,
-		namesdb,
-	)
+	processor, err := process.NewEventProcessor(contracts, namesdb)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("Start processing events ...")
-	process.Start()
-
-	log.Info("Press 'ctrl + c' to interrupt")
-	waitForInterrupt()
-
-	log.Info("Stop processing events ...")
-	process.StopAndJoin()
-
-	log.Info("... exiting")
-}
-
-func waitForInterrupt() {
-	sigs := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigs
-		done <- true
-	}()
-
-	<-done
+	delta := uint64(1000)
+	for {
+		processedBlocks, err := run(universedb, relaydb, processor, delta)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if processedBlocks == 0 {
+			time.Sleep(2 * time.Second)
+		}
+	}
 }

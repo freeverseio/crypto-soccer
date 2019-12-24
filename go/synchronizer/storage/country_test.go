@@ -7,12 +7,12 @@ import (
 )
 
 func TestCountryCount(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	count, err := s.CountryCount()
+	defer tx.Rollback()
+	count, err := storage.CountryCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,22 +22,23 @@ func TestCountryCount(t *testing.T) {
 }
 
 func TestCountryCreate(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	timezone := uint8(4)
-	s.TimezoneCreate(storage.Timezone{timezone})
+	defer tx.Rollback()
+
+	timezone := storage.Timezone{uint8(4)}
+	timezone.Insert(tx)
 	country := storage.Country{
-		TimezoneIdx: timezone,
+		TimezoneIdx: timezone.TimezoneIdx,
 		CountryIdx:  4,
 	}
-	err = s.CountryCreate(country)
+	err = country.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := s.CountryInTimezoneCount(timezone)
+	count, err := storage.CountryInTimezoneCount(tx, timezone.TimezoneIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,22 +48,23 @@ func TestCountryCreate(t *testing.T) {
 }
 
 func TestGetCountry(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	timezone := uint8(4)
-	s.TimezoneCreate(storage.Timezone{timezone})
+	defer tx.Rollback()
+
+	timezone := storage.Timezone{uint8(4)}
+	timezone.Insert(tx)
 	country := storage.Country{
-		TimezoneIdx: timezone,
+		TimezoneIdx: timezone.TimezoneIdx,
 		CountryIdx:  5,
 	}
-	err = s.CountryCreate(country)
+	err = country.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := s.GetCountry(country.TimezoneIdx, country.CountryIdx)
+	result, err := storage.CountryByTimezoneIdxCountryIdx(tx, country.TimezoneIdx, country.CountryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -11,6 +11,7 @@ contract EncodingSkills {
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
     uint8 constant public N_SKILLS = 5;
     uint8 constant public NO_SUBST = 11;
+    uint8 public constant NO_LINEUP = PLAYERS_PER_TEAM_MAX; // No player chosen in that position
 
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant private IDX_POT = 0;
@@ -58,7 +59,7 @@ contract EncodingSkills {
             encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + p;
         }          
         for (uint8 p = 0; p < 11; p++) {
-            require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
+            require(lineup[p] <= PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
         for (uint8 p = 0; p < 3; p++) {
@@ -66,7 +67,7 @@ contract EncodingSkills {
             require(subsRounds[p] < 12, "incorrect round");
             // requirement: if there is no subst at "i", lineup[i + 11] = 25 + p (so that all lineups are different, and sortable)
             if (substitutions[p] == NO_SUBST) {
-                require(lineup[p + 11] == 25 + p, "incorrect lineup entry for no substituted player");
+                require(lineup[p + 11] == NO_LINEUP, "incorrect lineup entry for no substituted player");
             }
             encoded |= uint256(lineup[p + 11]) << 16 + 5 * (p + 11);
             encoded |= uint256(substitutions[p]) << 86 + 4 * p;

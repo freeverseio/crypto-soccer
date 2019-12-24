@@ -15,6 +15,18 @@ contract('Encoding', (accounts) => {
         encoding = await Encoding.new().should.be.fulfilled;
         encodingSet = await EncodingSet.new().should.be.fulfilled;
     });
+
+    it('encodeTactics incorrect lineup', async () =>  {
+        PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
+        PLAYERS_PER_TEAM_MAX = PLAYERS_PER_TEAM_MAX.toNumber();
+        lineup = Array.from(new Array(14), (x,i) => i);
+        substitutions = [4,10,2];
+        subsRounds = [3,7,1];
+        extraAttack = Array.from(new Array(10), (x,i) => (i%2 == 1 ? true: false));
+        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+        lineup[0] = PLAYERS_PER_TEAM_MAX;
+        encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 2).should.be.fulfilled;
+    })
     
     it('encodeTactics', async () =>  {
         PLAYERS_PER_TEAM_MAX = await encoding.PLAYERS_PER_TEAM_MAX().should.be.fulfilled;
@@ -42,7 +54,7 @@ contract('Encoding', (accounts) => {
         encoded = await encoding.encodeTactics(substitutions, subsRounds, lineup, extraAttack, tacticsId = 64).should.be.rejected;
         // try to provide a lineup beyond range
         lineupWrong = lineup;
-        lineupWrong[4] = PLAYERS_PER_TEAM_MAX;
+        lineupWrong[4] = PLAYERS_PER_TEAM_MAX + 1;
         encoded = await encoding.encodeTactics(substitutions, subsRounds, lineupWrong, extraAttack, tacticsId = 2).should.be.rejected;
     });
 
