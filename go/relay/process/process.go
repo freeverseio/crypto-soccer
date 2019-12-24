@@ -1,15 +1,11 @@
 package relay
 
 import (
-	"context"
 	"crypto/ecdsa"
 	"database/sql"
 	"encoding/hex"
-	"errors"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -19,8 +15,9 @@ import (
 )
 
 type Processor struct {
-	updatesSession updates.UpdatesSession
-	ipfsURL        string
+	updatesContract *updates.Updates
+	auth            *bind.TransactOpts
+	ipfsURL         string
 }
 
 // *****************************************************************************
@@ -34,48 +31,20 @@ func NewProcessor(
 	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("error obtaining publicKey")
-	}
-
-	publicAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-
-	nonce, err := client.PendingNonceAt(context.Background(), publicAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
 	auth := bind.NewKeyedTransactor(privateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)
-	auth.GasPrice = gasPrice
-
-	updatesSession := updates.UpdatesSession{
-		updatesContract,
-		bind.CallOpts{},
-		*auth,
-	}
 
 	return &Processor{
-		updatesSession,
+		updatesContract,
+		auth,
 		ipfsURL,
 	}, nil
 }
 
 func (p *Processor) Process(tx *sql.Tx) error {
-	currentVerse, err := p.updatesSession.CurrentVerse()
+	currentVerse, err := p.updatesContract.CurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
-	nextVerse := currentVerse.Uint64() + 1
 	currentTrainings, err := storage.CurrentTrainings(tx)
 	if err != nil {
 		return err
@@ -85,13 +54,15 @@ func (p *Processor) Process(tx *sql.Tx) error {
 		return err
 	}
 	for _, training := range currentTrainings {
-		training.Verse = nextVerse
+		training.Delete(tx)
+		training.Verse = currentVerse.Uint64()
 		if err = training.Insert(tx); err != nil {
 			return err
 		}
 	}
 	for _, tactic := range currentTactics {
-		tactic.Verse = nextVerse
+		tactic.Delete(tx)
+		tactic.Verse = currentVerse.Uint64()
 		if err = tactic.Insert(tx); err != nil {
 			return err
 		}
@@ -112,6 +83,6 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	copy(root[:], hash)
 
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	_, err = p.updatesSession.SubmitActionsRoot(root, cid)
+	_, err = p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
 	return err
 }
