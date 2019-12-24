@@ -144,7 +144,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, relaytx *sql.Tx, e *AbstractEvent)
 		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
 		return player.Update(tx, playerID, player.State)
 	case updates.UpdatesActionsSubmission:
-		log.Infof("[processor] Dispatching UpdatesActionsSubmission event TZ: %v, Day: %v, Turn: %v, cid: %v", v.TimeZone, v.Day, v.TurnInDay, v.Cid)
+		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.Cid)
 		return p.leagueProcessor.Process(tx, v)
 	case market.MarketPlayerFreeze:
 		log.Infof("[processor] Dispatching MarketPlayerFreeze event PlayerID: %v Frozen: %v", v.PlayerId, v.Frozen)
