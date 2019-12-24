@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: freeverse-configmap
 data:
+  freeverse_username: freeverse
+  freeverse_password: freeverse
   engine_contract_address: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
   engineprecomp_contract_address: 0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B
   leagues_contract_address: 0x359a3f5d2353F5907B319c419150D1DDE0f581Bd
