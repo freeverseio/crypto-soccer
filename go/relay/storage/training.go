@@ -38,7 +38,7 @@ type Training struct {
 	SpecialPlayerEndurance int    `json:"special_player_endurance"` // special_player_endurance
 }
 
-func CurrentTrainings(tx *sql.Tx) ([]Training, error) {
+func UpcomingTrainings(tx *sql.Tx) ([]Training, error) {
 	return TrainingByVerse(tx, UpcomingVerse)
 }
 
@@ -46,7 +46,6 @@ func (b *Training) Delete(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Delete training %v", b)
 	_, err := tx.Exec(`DELETE FROM trainings WHERE (verse=$1) AND (team_id=$2);`, b.Verse, b.TeamID)
 	return err
-
 }
 
 func (b *Training) Insert(tx *sql.Tx) error {

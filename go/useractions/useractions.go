@@ -15,6 +15,7 @@ import (
 )
 
 type UserActions struct {
+	Verse     uint64             `json:"verse"`
 	Tactics   []storage.Tactic   `json:"tactics"`
 	Trainings []storage.Training `json:"trainings"`
 }

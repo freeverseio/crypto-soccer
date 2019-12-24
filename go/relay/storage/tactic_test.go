@@ -117,7 +117,7 @@ func TestCurrentTactic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tactics, err := storage.CurrentTactics(tx)
+	tactics, err := storage.UpcomingTactics(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -131,7 +131,7 @@ func TestCurrentTactic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tactics, err = storage.CurrentTactics(tx)
+	tactics, err = storage.UpcomingTactics(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
