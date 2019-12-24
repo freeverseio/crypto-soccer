@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: relayapi
   labels:
-    app: universedb
+    app: relayapi
     component: graphql
     part-of: cryptosoccer
     version: "0.0.1"
