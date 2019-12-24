@@ -10,7 +10,7 @@ metadata:
 spec:
   selector:
     app: universeapi
-  type: NodePort
+  type: LoadBalancer
   ports:
   - name: http
     protocol: TCP
@@ -41,7 +41,8 @@ spec:
     spec:
       containers:
       - name: universeapi
-        image: universeapi:0.0.1
+        image: freeverseio/universe.api:dev
+        imagePullPolicy: Always
         envFrom:
           - configMapRef:
               name: freeverse-configmap
@@ -52,3 +53,5 @@ spec:
         #args: [-d, postgres://$(DB_USERNAME):$(DB_PASS)@universedb:5432/cryptosoccer]
         ports:
         - containerPort: 4000
+      imagePullSecrets:
+      - name: docker-secret
