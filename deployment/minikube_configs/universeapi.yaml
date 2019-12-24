@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: universeapi
   labels:
-    app: universedb
+    app: universeapi
     component: graphql
     part-of: cryptosoccer
     version: "0.0.1"

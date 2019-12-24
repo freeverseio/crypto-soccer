@@ -27,7 +27,7 @@ spec:
         envFrom:
           - configMapRef:
               name: freeverse-configmap
-        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer?sslmode=disable",
+        args: [-postgres, "postgres://$(freeverse_username):$(freeverse_password)@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer?sslmode=disable",
                -ethereum, http://ethereum:8545,
                -leaguesContractAddress, "$(leagues_contract_address)",
                -engineContractAddress, "$(engine_contract_address)",
