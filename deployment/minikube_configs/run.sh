@@ -9,3 +9,8 @@ kubectl apply -f configmap.yaml -n ${NAMESPACE}
 kubectl apply -f universedb.yaml -n ${NAMESPACE}
 kubectl apply -f universeapi.yaml -n ${NAMESPACE}
 kubectl apply -f ethereum.yaml -n ${NAMESPACE}
+kubectl apply -f synchronizer.yaml -n ${NAMESPACE}
+
+
+# to enter into a POD with a sh-terminal run:
+# kubectl exec -it <pod-name> -n freeverse sh
