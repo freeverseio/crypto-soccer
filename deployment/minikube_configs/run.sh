@@ -10,6 +10,7 @@ kubectl apply -f universedb.yaml -n ${NAMESPACE}
 kubectl apply -f universeapi.yaml -n ${NAMESPACE}
 kubectl apply -f ethereum.yaml -n ${NAMESPACE}
 kubectl apply -f synchronizer.yaml -n ${NAMESPACE}
+kubectl apply -f ipfsnode.yaml -n ${NAMESPACE}
 
 
 # to enter into a POD with a sh-terminal run:
