@@ -42,6 +42,12 @@ func DefaultTactic(teamID string) *Tactic {
 	return &Tactic{UpcomingVerse, teamID, tacticId, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25, false, false, true, false, false, true, false, false, false, false}
 }
 
+func (b *Tactic) Delete(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Delete tactic %v", b)
+	_, err := tx.Exec(`DELETE FROM tactics WHERE (verse=$1) AND (team_id=$2);`, b.Verse, b.TeamID)
+	return err
+}
+
 func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
 	var tactics []Tactic
 	rows, err := tx.Query(
