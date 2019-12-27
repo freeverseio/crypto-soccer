@@ -34,6 +34,8 @@ CREATE TABLE tactics (
     PRIMARY KEY (verse, team_id)
 );
 
+CREATE VIEW upcoming_tactics AS SELECT * FROM tactics WHERE verse=9223372036854775807;
+
 CREATE TABLE trainings (
     verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,
@@ -72,3 +74,5 @@ CREATE TABLE trainings (
 
     PRIMARY KEY (verse, team_id)
  );
+
+ CREATE VIEW upcoming_trainings AS SELECT * FROM trainings WHERE verse=9223372036854775807;

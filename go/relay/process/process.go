@@ -45,32 +45,33 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	currentTrainings, err := storage.CurrentTrainings(tx)
+	upcomingTrainings, err := storage.UpcomingTrainings(tx)
 	if err != nil {
 		return err
 	}
-	currentTactics, err := storage.CurrentTactics(tx)
+	upcomingTactics, err := storage.UpcomingTactics(tx)
 	if err != nil {
 		return err
 	}
-	for _, training := range currentTrainings {
-		training.Delete(tx)
-		training.Verse = currentVerse.Uint64()
-		if err = training.Insert(tx); err != nil {
+	for i := range upcomingTrainings {
+		upcomingTrainings[i].Delete(tx)
+		upcomingTrainings[i].Verse = currentVerse.Uint64()
+		if err = upcomingTrainings[i].Insert(tx); err != nil {
 			return err
 		}
 	}
-	for _, tactic := range currentTactics {
-		tactic.Delete(tx)
-		tactic.Verse = currentVerse.Uint64()
-		if err = tactic.Insert(tx); err != nil {
+	for i := range upcomingTactics {
+		upcomingTactics[i].Delete(tx)
+		upcomingTactics[i].Verse = currentVerse.Uint64()
+		if err = upcomingTactics[i].Insert(tx); err != nil {
 			return err
 		}
 	}
 
 	actions := useractions.UserActions{}
-	actions.Trainings = currentTrainings
-	actions.Tactics = currentTactics
+	actions.Verse = currentVerse.Uint64()
+	actions.Trainings = upcomingTrainings
+	actions.Tactics = upcomingTactics
 	hash, err := actions.Hash()
 	if err != nil {
 		return err

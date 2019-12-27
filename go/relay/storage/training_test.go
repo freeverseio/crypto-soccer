@@ -36,7 +36,7 @@ func TestCurrentTraining(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trainings, err := storage.CurrentTrainings(tx)
+	trainings, err := storage.UpcomingTrainings(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestCurrentTraining(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	trainings, err = storage.CurrentTrainings(tx)
+	trainings, err = storage.UpcomingTrainings(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

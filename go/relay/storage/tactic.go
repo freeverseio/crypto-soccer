@@ -123,7 +123,7 @@ func TacticsByVerse(tx *sql.Tx, verse uint64) ([]Tactic, error) {
 	return tactics, nil
 }
 
-func CurrentTactics(tx *sql.Tx) ([]Tactic, error) {
+func UpcomingTactics(tx *sql.Tx) ([]Tactic, error) {
 	return TacticsByVerse(tx, UpcomingVerse)
 }
 
