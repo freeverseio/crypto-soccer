@@ -60,8 +60,9 @@ contract('MatchEvents', (accounts) => {
     function setNoSubstInLineUp(lineup, substitutions) {
         modifiedLineup = [...lineup];
         NO_SUBST = 11;
+        NO_LINEUP = 25;
         for (s = 0; s < 3; s++) {
-            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = 25 + s;
+            if (substitutions[s] == NO_SUBST) modifiedLineup[s + 11] = NO_LINEUP;
         }
         return modifiedLineup;
     }
