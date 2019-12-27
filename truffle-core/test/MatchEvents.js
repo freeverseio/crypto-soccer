@@ -5,14 +5,15 @@ require('chai')
     .should();
 const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
+const debug = require('../utils/debugUtils.js');
 
-const Engine = artifacts.require('Engine');
+const MatchEvents = artifacts.require('MatchEvents');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 
-contract('Engine', (accounts) => {
+contract('MatchEvents', (accounts) => {
     const UNDEF = undefined;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const substitutions = [6, 10, 0];
@@ -126,7 +127,7 @@ contract('Engine', (accounts) => {
 
     beforeEach(async () => {
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
+        engine = await MatchEvents.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;
@@ -159,7 +160,10 @@ contract('Engine', (accounts) => {
         rounds = [4, 2, 6];
         // as seen in a test below, there is a redCard for player 9 at round 1
         tactics = await engine.encodeTactics(substis, rounds, lineupConsecutive, extraAttackNull, tacticsId = 0).should.be.fulfilled;
-        newLog = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        matchEvents = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics, tactics], [0, 0], [is2nd = false, isHomeStadium,  playoff = false]).should.be.fulfilled;
+        newLog = [];
+        newLog[0] = matchEvents[0];
+        newLog[1] = matchEvents[1];
         expected = Array.from(new Array(14), (x,i) => true);
         expected[2] = false; 
         expected[1] = false; 
@@ -181,27 +185,25 @@ contract('Engine', (accounts) => {
             expectedOut, expectedOutRounds, expectedType, yellowedCouldNotFinish,
             isHomeSt = UNDEF, expectedInGameSubs1, expectedInGameSubs2, expectedYellows1, expectedYellows2, 
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
+            
+        // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+        expected = [
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            0, 1, 1, 1, 6, 
+            0, 0, 0, 0, 0, 
+            1, 1, 9, 1, 8, 
+            1, 0, 0, 0, 0, 
+            1, 1, 9, 1, 9, 
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0
+        ];
+        debug.compareArrays(matchEvents.slice(2), expected, toNum = true, verbose = false);
     });
 
-    it('play a match to estimate cost', async () => {
-        // console.log("------")
-        // console.log("seed: ", seed.toString(10))
-        // console.log("now: ", now)
-        // console.log("tactics: ", tactics0.toString(10))
-        // console.log("log: ", firstHalfLog)
-        // console.log("matchBools: ", matchBools)
-        // for (i = 0; i< PLAYERS_PER_TEAM_MAX; i++) console.log(teamStateAll50Half1[i].toString(10))
-        let teamState0 = teamStateAll50Half1;
-        teamState1 = [...teamStateAll50Half1];
-        let now = 1570147200; // this number has the property that 7*nowFake % (SECS_IN_DAY) = 0 and it is basically Oct 3, 2019
-        await engine.playHalfMatchWithCost(seed, now, [teamState0, teamState1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
-        // playerID: 274877907169
-        teamState1[9] = new BN('705060996546037971347706483447630939389980377122');
-        await engine.playHalfMatchWithCost(seed, now, [teamState0, teamState1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
-        now = 10;
-        await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
-    });
-    
     it('computeExceptionalEvents no clashes with redcards', async () => {
         // there is a red card with this seed, to player 9, but he's not involved in any change
         seedForRedCard = seed + 83;
@@ -435,15 +437,11 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
     });    
 
-    it('play a match to estimate cost', async () => {
-        const result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll1Half1], [tactics0, tactics1], firstHalfLog, matchBools).should.be.fulfilled;
-    });
-        
     it('play a match with a special playerId that made it fail before fixing a bug', async () => {
         playerId = 274877907169;
         skills = await assets.getPlayerSkillsAtBirth(playerId).should.be.fulfilled;
         for (i = 0; i< PLAYERS_PER_TEAM_MAX; i++) teamStateAll50Half1[i] = skills;
-        result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
+        result = await engine.playHalfMatch(seed, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics0], firstHalfLog, matchBools).should.be.fulfilled;
     });
 
     it('penaltyPerAge', async () => {
@@ -470,10 +468,6 @@ contract('Engine', (accounts) => {
             result = await engine.penaltyPerAge(playerSkills, now).should.be.fulfilled;
             result.toNumber().should.be.equal(expectedPenalty[i]);
         }
-    });
-
-    it('play a match with penalties to estimate cost', async () => {
-        const result = await engine.playHalfMatchWithCost(seed, now, [teamStateAll50Half2, teamStateAll1Half2], [tactics0, tactics1], firstHalfLog, [is2nd = true, isHomeStadium,  playoff = true]).should.be.fulfilled;
     });
 
     it('check that penalties are played in playoff games and excluding redcarded players', async () => {
@@ -589,6 +583,7 @@ contract('Engine', (accounts) => {
         tactics442WithNoChanges = await engine.encodeTactics(subs, subsRounds, setNoSubstInLineUp(lineupConsecutive, subs), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442TwoChanges, tactics442WithNoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]];
         expected = [3250, 2750];
         for (team = 0; team < 2; team++) {
             teamSkills = await encodingLog.getTeamSumSkills(log0[team]).should.be.fulfilled;
@@ -610,6 +605,7 @@ contract('Engine', (accounts) => {
     it('goals from 1st half are added in the 2nd half', async () => {
         seedDraw = 12;
         log0 =  await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]];
         log12 = await engine.playHalfMatch(seedDraw,  now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         // for this seedDraw, they all score one goal in each half
         expected = [1, 1]
@@ -635,6 +631,7 @@ contract('Engine', (accounts) => {
         // choose a seed that gives a red card for player 9.
         seedForRedCard = seed + 83;
         log0 =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
+        log0 = [log0[0], log0[1]]
         isHomeSt = false;
         expectedOut = [9, 0];
         expectedOutRounds = [5, 0]; 
@@ -707,13 +704,6 @@ contract('Engine', (accounts) => {
         result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
-        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
-        result.should.be.bignumber.equal('0');
-
-        NO_LINEUP = await precomp.NO_LINEUP().should.be.fulfilled;
-        result = await precomp.verifyCanPlay(linedUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
-        result.should.be.bignumber.equal('0');
-        
         // injured fails
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
@@ -852,7 +842,8 @@ contract('Engine', (accounts) => {
         teamState[10] = messi;
         teamThatAttacks = 0;
         log = [0, 0]
-        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log[teamThatAttacks] = scoreData[0]
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         for (team = 0; team < 2; team++) {
@@ -869,7 +860,8 @@ contract('Engine', (accounts) => {
         teamState[10] = oldMessi;
         teamThatAttacks = 0;
         log = [0, 0]
-        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log[teamThatAttacks] = scoreData[0]
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
@@ -893,12 +885,13 @@ contract('Engine', (accounts) => {
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
         log = [0, 0]
-        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
-        // for this case, there should be a goal, so: 1-0    
+        scoreData = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log[teamThatAttacks] = scoreData[0]         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         expectedAssisters   = [10, 0];
         expectedFwd         = [3, 0];
+        // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(log[team]);
             nGoals.toNumber().should.be.equal(expectedGoals[team]);
@@ -908,11 +901,17 @@ contract('Engine', (accounts) => {
             ass.toNumber().should.be.equal(expectedAssisters[team]);
             sho.toNumber().should.be.equal(expectedShooters[team]);
             fwd.toNumber().should.be.equal(expectedFwd[team]);
+            if (team == teamThatAttacks) {
+                scoreData[1].toNumber().should.be.equal(expectedShooters[team])
+                scoreData[2].toNumber().should.be.equal(1)
+                scoreData[3].toNumber().should.be.equal(expectedAssisters[team])
+            }
         }
         // let's put a radically good GK, and check that it doesn't score
         log = [0, 0]
         teamThatAttacks = 0;
-        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log[teamThatAttacks] = scoreData[0]
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
         expectedAssisters   = [0, 0];
@@ -929,7 +928,8 @@ contract('Engine', (accounts) => {
         }
         // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
         log = [0, 0]
-        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        scoreData = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        log[teamThatAttacks] = scoreData[0]
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         expectedAssisters   = [10, 0];
@@ -1176,15 +1176,38 @@ contract('Engine', (accounts) => {
     it('different seeds => different result', async () => {
         matchLog = await engine.playHalfMatch(123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [2, 2];
+        result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            result.push(nGoals);
         }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
         matchLog = await engine.playHalfMatch(654322, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], firstHalfLog, [is2ndHalf, isHomeStadium, isPlayoff]).should.be.fulfilled;
         expectedResult = [1, 1];
+        result = []
         for (team = 0; team < 2; team++) {
             nGoals = await encodingLog.getNGoals(matchLog[team]);
-            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            result.push(nGoals);
         }
+        debug.compareArrays(result, expectedResult, toNum = true, verbose = false);
+        // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
+        expected = [ 
+            1, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 1, 7, 1, 9, 
+            0, 0, 0, 0, 0, 
+            0, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            0, 1, 10, 1, 10, 
+            1, 0, 0, 0, 0, 
+            1, 0, 0, 0, 0, 
+            1, 1, 8, 0, 0, 
+            1, 1, 10, 0, 0, 
+            1, 0, 0, 0, 0 
+        ];
+        goals = [0,0];
+        for (i=0;i< expected.length/5;i++) goals[expected[5*i]] += expected[5*i+3] + 0*result[0] ;
+        debug.compareArrays(goals, expectedResult, toNum = false, verbose = false);
+        debug.compareArrays(matchLog.slice(2), expected, toNum = true, verbose = false);
     });
 });

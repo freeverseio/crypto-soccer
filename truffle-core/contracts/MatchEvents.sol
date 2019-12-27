@@ -4,7 +4,7 @@ import "./EnginePreComp.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLogPart3.sol";
 
-contract Engine is EngineLib, EncodingMatchLogPart3 {
+contract MatchEvents is EngineLib, EncodingMatchLogPart3 {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        
@@ -25,28 +25,10 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     uint8 private constant WINNER_AWAY = 1;
     uint8 private constant WINNER_DRAW = 2;
 
-    bool dummyBoolToEstimateCost;
-
     EnginePreComp private _precomp;
 
     function setPreCompAddr(address addr) public {
         _precomp = EnginePreComp(addr);
-    }
-
-    // mock up to estimate cost of a match.
-    // to be removed before deployment
-    function playHalfMatchWithCost(
-        uint256 seed,
-        uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
-        uint256[2] memory tactics,
-        uint256[2] memory matchLog,
-        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
-    )
-        public
-    {
-        playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
-        dummyBoolToEstimateCost = !dummyBoolToEstimateCost; 
     }
 
 
@@ -57,6 +39,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
      * @param tactics a 2-vector with the tacticId (ex. 0 for [4,4,2]) for each team
      * @return the score of the match
      */
+    // for each event: 0: teamThatAttacks, 1: managesToShoot, 2: shooter, 3: isGoal, 4: assister
     function playHalfMatch(
         uint256 seed,
         uint256 matchStartTime, //actionsSubmissionTime,
@@ -67,12 +50,15 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     )
         public
         view
-        returns (uint256[2] memory)
+        returns (uint256[2+5*ROUNDS_PER_MATCH] memory)
     {
         uint256 block0;
         uint256 block1;
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents;
+        seedAndStartTimeAndEvents[0] = seed; 
+        seedAndStartTimeAndEvents[1] = matchStartTime; 
         (matchLog, block0, block1) = playMatchWithoutPenalties(
-            [seed, matchStartTime], 
+            seedAndStartTimeAndEvents, 
             states,
             tactics,
             matchLog,
@@ -85,7 +71,9 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             if (getNGoals(matchLog[0]) == getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_DRAW);
             else if (getNGoals(matchLog[0]) < getNGoals(matchLog[1])) addWinnerToBothLogs(matchLog, WINNER_AWAY);
         }
-        return matchLog;
+        seedAndStartTimeAndEvents[0] = matchLog[0];
+        seedAndStartTimeAndEvents[1] = matchLog[1];
+        return seedAndStartTimeAndEvents;
     }
     
     /**
@@ -95,7 +83,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
      * @return the score of the match
      */
     function playMatchWithoutPenalties(
-        uint256[2] memory seedAndStartTime,
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents,
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
         uint256[2] memory tactics,
         uint256[2] memory matchLog,
@@ -108,27 +96,27 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         uint256[5][2] memory globSkills;
         uint8[9][2] memory playersPerZone;
         bool[10][2] memory extraAttack;
+        // uint16[ROUNDS_PER_MATCH] memory events;
 
-        (matchLog[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTime[IDX_SEED]);
-        (matchLog[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTime[IDX_SEED]);
+        (matchLog[0], states[0], playersPerZone[0]) = getLineUpAndPlayerPerZone(states[0], tactics[0], matchBools[IDX_IS_2ND_HALF], matchLog[0], seedAndStartTimeAndEvents[IDX_SEED]);
+        (matchLog[1], states[1], playersPerZone[1]) = getLineUpAndPlayerPerZone(states[1], tactics[1], matchBools[IDX_IS_2ND_HALF], matchLog[1], seedAndStartTimeAndEvents[IDX_SEED]);
 
         matchLog[0] = writeNDefs(matchLog[0], states[0], getNDefenders(playersPerZone[0]), matchBools[IDX_IS_2ND_HALF]);
         matchLog[1] = writeNDefs(matchLog[1], states[1], getNDefenders(playersPerZone[1]), matchBools[IDX_IS_2ND_HALF]);
 
-        globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTime[IDX_ST_TIME]);
-        globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTime[IDX_ST_TIME]);
+        globSkills[0] = _precomp.getTeamGlobSkills(states[0], playersPerZone[0], extraAttack[0], seedAndStartTimeAndEvents[IDX_ST_TIME]);
+        globSkills[1] = _precomp.getTeamGlobSkills(states[1], playersPerZone[1], extraAttack[1], seedAndStartTimeAndEvents[IDX_ST_TIME]);
 
         if (matchBools[IDX_IS_HOME_STADIUM]) {
             globSkills[0][IDX_ENDURANCE] = (globSkills[0][IDX_ENDURANCE] * 11500)/10000;
         }
-        computeRounds(matchLog, seedAndStartTime[IDX_SEED], seedAndStartTime[IDX_ST_TIME], states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
+        computeRounds(matchLog, seedAndStartTimeAndEvents, states, playersPerZone, extraAttack, globSkills, matchBools[IDX_IS_2ND_HALF]);
         return (matchLog, globSkills[0][IDX_BLOCK_SHOOT], globSkills[1][IDX_BLOCK_SHOOT]);
     }
     
     function computeRounds(
         uint256[2] memory matchLog,
-        uint256 seed, 
-        uint256 matchStartTime,
+        uint256[2+5*ROUNDS_PER_MATCH] memory seedAndStartTimeAndEvents, 
         uint256[PLAYERS_PER_TEAM_MAX][2] memory states, 
         uint8[9][2] memory playersPerZone, 
         bool[10][2] memory extraAttack, 
@@ -138,16 +126,19 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         private
         pure
     {
-        uint64[] memory rnds = getNRandsFromSeed(seed, ROUNDS_PER_MATCH*5);
+        uint64[] memory rnds = getNRandsFromSeed(seedAndStartTimeAndEvents[IDX_SEED], ROUNDS_PER_MATCH*5);
         uint8 teamThatAttacks;
         for (uint8 round = 0; round < ROUNDS_PER_MATCH; round++){
             if (is2ndHalf && ((round == 0) || (round == 5))) {
                 teamsGetTired(globSkills[0], globSkills[1]);
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
-            if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
-                matchLog[teamThatAttacks] = managesToScore(
-                    matchStartTime,
+            seedAndStartTimeAndEvents[2 + round * 5] = teamThatAttacks;
+            seedAndStartTimeAndEvents[2 + round * 5 + 1] = managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1]) ? 1 : 0;
+            if (seedAndStartTimeAndEvents[2 + round * 5 + 1] == 1) {
+                // scoreData: 0: matchLog, 1: shooter, 2: isGoal, 3: assister
+                uint256[4] memory scoreData = managesToScore(
+                    seedAndStartTimeAndEvents[IDX_ST_TIME],
                     matchLog[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
@@ -155,6 +146,10 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
                     globSkills[1-teamThatAttacks][IDX_BLOCK_SHOOT],
                     [rnds[5*round+2], rnds[5*round+3], rnds[5*round+4]]
                 );
+                matchLog[teamThatAttacks] = scoreData[0];
+                seedAndStartTimeAndEvents[2 + round * 5 + 2] = scoreData[1];
+                seedAndStartTimeAndEvents[2 + round * 5 + 3] = scoreData[2];
+                seedAndStartTimeAndEvents[2 + round * 5 + 4] = scoreData[3];
             }
         }
     }
@@ -309,25 +304,31 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     )
         public
         pure
-        returns (uint256)
+        returns (uint256[4] memory scoreData)
     {
+        scoreData[0] = matchLog;
         uint8 currentGoals = getNGoals(matchLog);
-        if (currentGoals > 13) return matchLog;
+        if (currentGoals > 13) return scoreData;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
+        scoreData[1] = uint256(shooter);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
         uint256 shootPenalty = ( getForwardness(states[shooter]) == IDX_GK ? 1 : 10) * penaltyPerAge(states[shooter], matchStartTime);
         // penaltyPerAge is in [0, 1M] where 0 is really bad penalty, and 1M is no penalty
         // since we multiply by 10 for the standard case (not-a-GK shooting), we need to divide by extra 10
         // shooter weight =  shoot * shootPenalty/(10*1M) * (7/10) = shoort * shootPenalty * 7 / 1e8 
         bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
+        scoreData[2] = uint256(isGoal ? 1: 0);
+        uint8 assister;
         if (isGoal) {
-            uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
+            assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
             matchLog = addAssister(matchLog, assister, currentGoals);
             matchLog = addShooter(matchLog, shooter, currentGoals);
             matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
             matchLog++; // adds 1 goal because nGoals is the right-most number serialized
+            scoreData[0] = matchLog;
+            scoreData[3] = uint256(assister);
         }
-        return matchLog;
+        return scoreData;
     }
     
     function getForwardPos(uint8 posInLineUp, uint8[9] memory playersPerZone) private pure returns (uint8) {

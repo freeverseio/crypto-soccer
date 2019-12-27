@@ -9,8 +9,7 @@ pragma solidity >=0.4.21 <0.6.0;
         // uint8 shooterFwdPos[14], 2b each, offset 116
         // bool[7] memory penalties, // 1b each, offset 144
         // uint8[2] memory outOfGames 4b each
-        // uint8[6] memory yellowCards1, 4b each,
-        // uint8[6] memory yellowCards2, 4b each
+        // uint8[4] memory yellowCards, 4b each, // first 2 for first half, other for half 2
         // uint8[2] memory outOfGameRounds,  
         // uint8[2] memory typesOutOfGames, 
         // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,
@@ -105,7 +104,7 @@ contract EncodingMatchLogPart2 {
         return ((log >> 211) & 1) == 1;
     }
     
-    
+    // recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     function getHalfTimeSubs(uint256 log, uint8 pos)  public pure returns (uint8) {
         return uint8((log >> (185 + 4 * pos)) & 15);
     }

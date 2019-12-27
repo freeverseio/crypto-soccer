@@ -84,6 +84,23 @@ CREATE TABLE matches (
     FOREIGN KEY (timezone_idx, country_idx, league_idx) REFERENCES leagues(timezone_idx, country_idx, league_idx)
 );
 
+CREATE TYPE match_event_type AS ENUM ('attack', 'yellow_card', 'red_card', 'injury_soft', 'injury_hard', 'substitution');
+CREATE TABLE match_events (
+    timezone_idx INT NOT NULL,
+    country_idx INT NOT NULL,
+    league_idx INT NOT NULL,
+    match_day_idx INT NOT NULL,
+    match_idx INT NOT NULL,
+    minute INT NOT NULL,
+    type match_event_type NOT NULL,
+    team_id TEXT NOT NULL REFERENCES teams(team_id),
+    manage_to_shoot BOOLEAN,
+    is_goal BOOLEAN,
+    primary_player_id TEXT NOT NULL REFERENCES players(player_id),
+    secondary_player_id TEXT REFERENCES players(player_id),
+    FOREIGN KEY (timezone_idx, country_idx, league_idx, match_day_idx, match_idx) REFERENCES matches(timezone_idx, country_idx, league_idx, match_day_idx, match_idx)
+);
+
 -- CREATE TABLE teams_history (
 --     teamId BIGINT NOT NULL REFERENCES teams(id),
 --     blockNumber BIGINT NOT NULL,

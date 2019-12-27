@@ -22,7 +22,7 @@ type TeamState struct {
 	L               uint32
 	GoalsForward    uint32
 	GoalsAgainst    uint32
-	PrevPerfPoints  uint32
+	PrevPerfPoints  uint64
 	RankingPoints   uint64
 	TrainingPoints  uint32
 }
