@@ -45,6 +45,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("Staring process of verse %v", currentVerse)
 	upcomingTrainings, err := storage.UpcomingTrainings(tx)
 	if err != nil {
 		return err
@@ -53,6 +54,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("Processing %v upcoming trainings", len(upcomingTrainings))
 	for i := range upcomingTrainings {
 		upcomingTrainings[i].Delete(tx)
 		upcomingTrainings[i].Verse = currentVerse.Uint64()
@@ -60,6 +62,7 @@ func (p *Processor) Process(tx *sql.Tx) error {
 			return err
 		}
 	}
+	log.Infof("Processing %v upcoming tactics", len(upcomingTactics))
 	for i := range upcomingTactics {
 		upcomingTactics[i].Delete(tx)
 		upcomingTactics[i].Verse = currentVerse.Uint64()
