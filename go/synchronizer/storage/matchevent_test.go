@@ -61,7 +61,7 @@ func TestMatchEventTest(t *testing.T) {
 	matchEvent.MatchIdx = int(matchIdx)
 	matchEvent.TeamID = team.TeamID.String()
 	matchEvent.PrimaryPlayerID = player.PlayerId.String()
-	matchEvent.Type = "attack"
+	matchEvent.Type = storage.Attack
 	if err = matchEvent.Insert(tx); err != nil {
 		t.Fatal(err)
 	}

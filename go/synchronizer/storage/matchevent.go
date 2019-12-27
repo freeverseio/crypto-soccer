@@ -6,6 +6,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type MatchEventType string
+
+const (
+	Attack       MatchEventType = "attack"
+	YellowCard   MatchEventType = "yellow_card"
+	RadCard      MatchEventType = "red_card"
+	InjurySoft   MatchEventType = "injury_soft"
+	InjuryHard   MatchEventType = "injury_hard"
+	Substitution MatchEventType = "substytution"
+)
+
 // MatchEvent represents a row from 'public.match_events'.
 type MatchEvent struct {
 	TimezoneIdx       int            `json:"timezone_idx"`        // timezone_idx
@@ -14,7 +25,7 @@ type MatchEvent struct {
 	MatchDayIdx       int            `json:"match_day_idx"`       // match_day_idx
 	MatchIdx          int            `json:"match_idx"`           // match_idx
 	Minute            int            `json:"minute"`              // minute
-	Type              string         `json:"type"`                // type
+	Type              MatchEventType `json:"type"`                // type
 	TeamID            string         `json:"team_id"`             // team_id
 	ManageToShoot     sql.NullBool   `json:"manage_to_shoot"`     // manage_to_shoot
 	IsGoal            sql.NullBool   `json:"is_goal"`             // is_goal
