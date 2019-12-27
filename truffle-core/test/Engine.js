@@ -650,7 +650,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
         
         teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
-        result = await precomp.verifyCanPlay(liUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
@@ -702,23 +702,23 @@ contract('Engine', (accounts) => {
             alignedEndOfLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;    
 
-        result = await precomp.verifyCanPlay(liUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.not.be.bignumber.equal('0');
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
         NO_LINEUP = await precomp.NO_LINEUP().should.be.fulfilled;
-        result = await precomp.verifyCanPlay(liUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         
         // injured fails
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 2, subLastHalf, sumSkills = 250).should.be.fulfilled;            
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         });
 
