@@ -10,6 +10,7 @@ import (
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type MatchProcessor struct {
@@ -72,6 +73,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	tactics [2]*big.Int,
 	seed [32]byte,
 	startTime *big.Int,
+	is2ndHalf bool,
 ) error {
 	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
@@ -79,21 +81,39 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	}
 	isHomeStadium := true
 	isPlayoff := false
-	is2ndHalf := false
-	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	matchLogs := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	_, err = b.contracts.Matchevents.PlayHalfMatch(
+	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
 		&bind.CallOpts{},
 		matchSeed,
 		startTime,
 		states,
 		tactics,
-		matchLog,
+		matchLogs,
 		matchBools,
 	)
 	if err != nil {
 		return err
 	}
+
+	log.Info(seedAndStartTimeAndEvents)
+
+	// computedEvents, err := matchevents.GenerateMatchEvents(
+	// 	seedAndStartTimeAndEvents[0],
+	// 	matchLog,
+	// 	matchLog,
+	// 	events,
+	// 	lineup,
+	// 	lineup,
+	// 	substitutions,
+	// 	substitutions,
+	// 	subsRounds,
+	// 	subsRounds,
+	// 	is2ndHalf,
+	// )
+	// 	if err != nil {
+	// 		t.Fatalf("error: %s", err)
+	// 	}
 	return nil
 }
 
@@ -122,7 +142,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime); err != nil {
+	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime, is2ndHalf); err != nil {
 		return err
 	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
