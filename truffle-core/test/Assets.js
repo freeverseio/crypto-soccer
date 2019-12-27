@@ -53,12 +53,16 @@ contract('Assets', (accounts) => {
             substitutedLastHalf = true,
             sumSkills
         ).should.be.fulfilled;
-        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.rejected;
+        result = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
+        console.log(result); // print 0x8c379a000000000000000000000000000000000000000000000000000000000
+        result.toString().should.be.equal('3963877391197344453575983046348115674221700746820753546331534351508065746944');
+        result.should.be.bignumber.equal('3963877391197344453575983046348115674221700746820753546331534351508065746944');
         specialPlayerId = await assets.addIsSpecial(specialPlayerId).should.be.fulfilled;
         skills = await assets.getPlayerSkillsAtBirth(specialPlayerId).should.be.fulfilled;
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
+    return;
         
     it('check division event on init', async () => {
         let timezone = 0;
