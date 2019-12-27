@@ -65,6 +65,38 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 	return homeGoals, visitorGoals, err
 }
 
+func (b *MatchProcessor) ProcessMatchEvents(
+	tx *sql.Tx,
+	match storage.Match,
+	states [2][25]*big.Int,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+) error {
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
+	isHomeStadium := true
+	isPlayoff := false
+	is2ndHalf := false
+	matchLog := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
+	_, err = b.contracts.Matchevents.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		startTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (b *MatchProcessor) Process(
 	tx *sql.Tx,
 	match storage.Match,
@@ -88,6 +120,9 @@ func (b *MatchProcessor) Process(
 		logs, err = b.process1stHalf(match, states, tactics, seed, startTime)
 	}
 	if err != nil {
+		return err
+	}
+	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime); err != nil {
 		return err
 	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
