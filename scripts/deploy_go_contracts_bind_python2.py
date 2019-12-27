@@ -73,8 +73,8 @@ if __name__ == "__main__":
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Engine.json'), 'engine', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'EnginePreComp.json'), 'engineprecomp', dests)
     deploy_go_contract(os.path.join(truffle_contracts_dir, 'Evolution.json'), 'evolution', dests)
-    deploy_go_contract(os.path.join(truffle_contracts_dir, 'MatchEvents.json'), 'matchEvents', dests)
-    deploy_go_contract(os.path.join(truffle_contracts_dir, 'UtilsMatchLog.json'), 'utilsMatchLog', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'MatchEvents.json'), 'matchevents', dests)
+    deploy_go_contract(os.path.join(truffle_contracts_dir, 'UtilsMatchLog.json'), 'utilsmatchlog', dests)
 
 
 # with open('../truffle-core/build/contracts/TeamState.json', 'r') as fp:
