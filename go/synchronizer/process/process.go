@@ -126,23 +126,7 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, relaytx *sql.Tx, e *AbstractEvent)
 		return p.teamTransferProcessor.Process(tx, v)
 	case assets.AssetsPlayerStateChange:
 		log.Infof("[processor] dispatching LeaguesPlayerStateChange event PlayerID %v", v.PlayerId)
-		playerID := v.PlayerId
-		state := v.State
-		shirtNumber, err := p.contracts.Assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
-		if err != nil {
-			return err
-		}
-		teamID, err := p.contracts.Assets.GetCurrentTeamId(&bind.CallOpts{}, state)
-		if err != nil {
-			return err
-		}
-		player, err := storage.PlayerByPlayerId(tx, playerID)
-		if err != nil {
-			return err
-		}
-		player.State.TeamId = teamID
-		player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-		return player.Update(tx, playerID, player.State)
+		return PlayerStateChangeProcess(tx, p.contracts, v)
 	case updates.UpdatesActionsSubmission:
 		log.Infof("[processor] Dispatching UpdatesActionsSubmission event verse: %v, TZ: %v, Day: %v, Turn: %v, cid: %v", v.Verse, v.TimeZone, v.Day, v.TurnInDay, v.Cid)
 		return p.leagueProcessor.Process(tx, v)
