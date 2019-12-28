@@ -257,5 +257,11 @@ func GenerateMatchEvents(
 	events = addSubstitutions(0, events, seed, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL)
 	events = addSubstitutions(1, events, seed, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL)
 
+	if is2ndHalf {
+		for e := range events {
+			events[e].Minute += 45
+		}
+	}
+
 	return events, nil
 }
