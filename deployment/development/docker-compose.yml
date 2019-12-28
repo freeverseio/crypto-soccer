@@ -25,6 +25,7 @@ services:
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
       -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
+      -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum

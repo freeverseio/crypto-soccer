@@ -120,6 +120,7 @@ func main() {
 		*updatesContractAddress,
 		*marketContractAddress,
 		*matcheventsContractAddress,
+		*utilsmatchlogContractAddress,
 	)
 	if err != nil {
 		log.Fatalf(err.Error())
