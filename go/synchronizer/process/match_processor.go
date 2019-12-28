@@ -2,6 +2,7 @@ package process
 
 import (
 	"database/sql"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -128,6 +129,27 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	)
 	if err != nil {
 		return err
+	}
+	for _, computedEvent := range computedEvents {
+		var teamID string
+		if computedEvent.Team == 0 {
+			teamID = match.HomeTeamID.String()
+		} else if computedEvent.Team == 1 {
+			teamID = match.VisitorTeamID.String()
+		} else {
+			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+		}
+		event := storage.MatchEvent{}
+		event.TimezoneIdx = int(match.TimezoneIdx)
+		event.CountryIdx = int(match.CountryIdx)
+		event.LeagueIdx = int(match.LeagueIdx)
+		event.MatchDayIdx = int(match.MatchDayIdx)
+		event.MatchIdx = int(match.MatchIdx)
+		event.TeamID = teamID
+		event.Minute = int(computedEvent.Minute)
+		if err = event.Insert(tx); err != nil {
+			return err
+		}
 	}
 	return nil
 }
