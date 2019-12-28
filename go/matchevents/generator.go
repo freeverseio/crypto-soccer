@@ -47,7 +47,7 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
 	var events []Matchevent
 	nEvents := (len(blockchainEvents) - 2) / 5
-	deltaMinutes := float64(45.0 / (nEvents * 1.0))
+	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
 
 	lastMinute := uint64(0)
@@ -256,6 +256,12 @@ func GenerateMatchEvents(
 	events = addCardsAndInjuries(1, events, seed, matchLog0, rounds2mins, NULL, NOONE)
 	events = addSubstitutions(0, events, seed, matchLog0, rounds2mins, lineup0, substitutions0, subsRounds0, NULL)
 	events = addSubstitutions(1, events, seed, matchLog1, rounds2mins, lineup1, substitutions1, subsRounds1, NULL)
+
+	if is2ndHalf {
+		for e := range events {
+			events[e].Minute += 45
+		}
+	}
 
 	return events, nil
 }
