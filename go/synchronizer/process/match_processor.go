@@ -83,7 +83,12 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	}
 	isHomeStadium := true
 	isPlayoff := false
-	matchLogs := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	matchLog := [2]*big.Int{}
+	if is2ndHalf { // TODO make match.HomeMatchLog and Visitor to be 0 if first half
+		matchLog = [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	} else {
+		matchLog = [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
+	}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
 	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
 		&bind.CallOpts{},
@@ -91,7 +96,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		startTime,
 		states,
 		tactics,
-		matchLogs,
+		matchLog,
 		matchBools,
 	)
 	if err != nil {
@@ -107,6 +112,8 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	if err != nil {
 		return err
 	}
+	log.Infof("Full decoded match log 0: %v", log0)
+	log.Infof("Full decoded match log 1: %v", log1)
 	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
 	if err != nil {
 		return err
@@ -142,6 +149,11 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		} else {
 			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
 		}
+		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
+		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+		if err != nil {
+			return err
+		}
 		event := storage.MatchEvent{}
 		event.TimezoneIdx = int(match.TimezoneIdx)
 		event.CountryIdx = int(match.CountryIdx)
@@ -150,6 +162,8 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		event.MatchIdx = int(match.MatchIdx)
 		event.TeamID = teamID
 		event.Minute = int(computedEvent.Minute)
+		event.Type = storage.Attack // TODO set the rifht one
+		event.PrimaryPlayerID = primaryPlayerID.String()
 		if err = event.Insert(tx); err != nil {
 			return err
 		}
