@@ -60,6 +60,7 @@ func main() {
 	engineContractAddress := flag.String("engineContractAddress", "", "")
 	matcheventsContractAddress := flag.String("matcheventsContractAddress", "", "")
 	enginePreCompContractAddress := flag.String("enginePreCompContractAddress", "", "")
+	utilsmatchlogContractAddress := flag.String("utilsmatchlogContractAddress", "", "")
 	ipfsURL := flag.String("ipfs", "localhost:5001", "ipfs node url")
 	flag.Parse()
 
@@ -92,6 +93,9 @@ func main() {
 	}
 	if *matcheventsContractAddress == "" {
 		log.Fatal("no matchevents contract address")
+	}
+	if *utilsmatchlogContractAddress == "" {
+		log.Fatal("no utilsmatchlog contract address")
 	}
 
 	log.Infof("ipfs URL: %v", *ipfsURL)

@@ -6,11 +6,11 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/matchevents"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
-	log "github.com/sirupsen/logrus"
 )
 
 type MatchProcessor struct {
@@ -96,24 +96,39 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		return err
 	}
 
-	log.Info(seedAndStartTimeAndEvents)
-
-	// computedEvents, err := matchevents.GenerateMatchEvents(
-	// 	seedAndStartTimeAndEvents[0],
-	// 	matchLog,
-	// 	matchLog,
-	// 	events,
-	// 	lineup,
-	// 	lineup,
-	// 	substitutions,
-	// 	substitutions,
-	// 	subsRounds,
-	// 	subsRounds,
-	// 	is2ndHalf,
-	// )
-	// 	if err != nil {
-	// 		t.Fatalf("error: %s", err)
-	// 	}
+	events := seedAndStartTimeAndEvents[2:]
+	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
+	if err != nil {
+		return err
+	}
+	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
+	if err != nil {
+		return err
+	}
+	computedEvents, err := matchevents.GenerateMatchEvents(
+		matchSeed,
+		log0,
+		log1,
+		events,
+		decodedTactics0.Lineup,
+		decodedTactics1.Lineup,
+		decodedTactics0.Substitutions,
+		decodedTactics1.Substitutions,
+		decodedTactics0.SubsRounds,
+		decodedTactics1.SubsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
