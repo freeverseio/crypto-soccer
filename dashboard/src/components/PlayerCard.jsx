@@ -45,7 +45,7 @@ mutation CreateAuction(
 
 export default function PlayerCard(props) {
     const [price, setPrice] = useState(50);
-    const [timeout, setTimeout] = useState(3600);
+    const [timeout, setTimeout] = useState(120);
     const [createAuction] = useMutation(CREATE_AUCTION);
     const [deleteAcademyPlayer] = useMutation(DELETE_PLAYER);
 
@@ -62,12 +62,12 @@ export default function PlayerCard(props) {
                 <Card.Meta>
                     <Grid columns='equal'>
                         <Grid.Row>
-                            <Grid.Column><FontAwesomeIcon icon={faBolt} />{player.potential}</Grid.Column>
-                            <Grid.Column><FontAwesomeIcon icon={faBurn} />{player.shoot}</Grid.Column>
-                            <Grid.Column><FontAwesomeIcon icon={faHeart} />{player.endurance}</Grid.Column>
-                            <Grid.Column><FontAwesomeIcon icon={faRunning} />{player.speed}</Grid.Column>
-                            <Grid.Column><FontAwesomeIcon icon={faShoePrints} />{player.pass}</Grid.Column>
-                            <Grid.Column><FontAwesomeIcon icon={faShieldAlt} />{player.defence}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBolt} />{player.potential}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBurn} />{player.shoot}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faHeart} />{player.endurance}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faRunning} />{player.speed}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShoePrints} />{player.pass}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShieldAlt} />{player.defence}</Grid.Column>
                         </Grid.Row>
                     </Grid>
                 </Card.Meta>
@@ -75,7 +75,7 @@ export default function PlayerCard(props) {
                 </Card.Description>
             </Card.Content>
             <Card.Content extra>
-                    <Button floated='right' basic color='green' onClick={async () => {
+                    <Button basic color='green' onClick={async () => {
                         const rnd = Math.floor(Math.random() * 1000000);
                         const now = new Date();
                         const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
@@ -106,10 +106,10 @@ export default function PlayerCard(props) {
                         })
                     }
                     }>Delete</Button>
-                <a>
+                {/* <a>
                     <Icon name='user' />
                     10 Friends
-                </a>
+                </a> */}
             </Card.Content>
         </Card>
     )
