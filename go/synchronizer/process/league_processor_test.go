@@ -82,7 +82,7 @@ func TestPlayHalfMatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if logs[0].String() != "1645504557572631091828279073381766814124583466071029250581856256" {
+	if logs[0].String() != "1645504557572631091828888859383289135851109833367546979216785408" {
 		t.Fatalf("Received %v", logs[0].String())
 	}
 }

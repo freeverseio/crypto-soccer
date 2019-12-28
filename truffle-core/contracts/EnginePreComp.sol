@@ -168,10 +168,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint64[2] memory rnds
     ) private pure returns(uint256) 
     {
-        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return matchLog;
-        
+        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+
         uint8 minRound = 0;
-        uint8 maxRound = ROUNDS_PER_MATCH;
+        uint8 maxRound = ROUNDS_PER_MATCH-1;
 
         // first compute the type of event        
         uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);

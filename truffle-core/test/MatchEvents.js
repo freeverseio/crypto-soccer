@@ -213,7 +213,7 @@ contract('MatchEvents', (accounts) => {
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 9];
-        expectedOutRounds = [0, 5];
+        expectedOutRounds = [0, 1];
         expectedYellows1 = [0, 0];
         expectedYellows2 = [1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
@@ -382,7 +382,7 @@ contract('MatchEvents', (accounts) => {
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 12]; 
-        expectedOutRounds = [1, 5]; // note that this 1 would be 9 otherwise
+        expectedOutRounds = [1, 1]; // note that this 1 would be 9 otherwise
         expectedYellows1 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
         expectedYellows2 = [1, 14]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
@@ -407,7 +407,7 @@ contract('MatchEvents', (accounts) => {
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
-        expectedOutRounds = [5, 0]; 
+        expectedOutRounds = [1, 0]; 
         expectedYellows1 = [1, 12];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
@@ -424,7 +424,7 @@ contract('MatchEvents', (accounts) => {
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 1]; // note that the red card comes from two yellows.
-        expectedOutRounds = [5, 5]; 
+        expectedOutRounds = [1, 1]; 
         expectedYellows1 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedYellows2 = [14, 14]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
@@ -634,7 +634,7 @@ contract('MatchEvents', (accounts) => {
         log0 = [log0[0], log0[1]]
         isHomeSt = false;
         expectedOut = [9, 0];
-        expectedOutRounds = [5, 0]; 
+        expectedOutRounds = [1, 0]; 
         expectedYellows1 = [1, 10];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard

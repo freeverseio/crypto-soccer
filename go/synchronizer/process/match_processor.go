@@ -2,14 +2,17 @@ package process
 
 import (
 	"database/sql"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/matchevents"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type MatchProcessor struct {
@@ -65,6 +68,109 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 	return homeGoals, visitorGoals, err
 }
 
+func (b *MatchProcessor) ProcessMatchEvents(
+	tx *sql.Tx,
+	match storage.Match,
+	states [2][25]*big.Int,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+	is2ndHalf bool,
+) error {
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
+	isHomeStadium := true
+	isPlayoff := false
+	matchLog := [2]*big.Int{}
+	if is2ndHalf { // TODO make match.HomeMatchLog and Visitor to be 0 if first half
+		matchLog = [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	} else {
+		matchLog = [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
+	}
+	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
+	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		startTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+	if err != nil {
+		return err
+	}
+
+	events := seedAndStartTimeAndEvents[:]
+	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Full decoded match log 0: %v", log0)
+	log.Debugf("Full decoded match log 1: %v", log1)
+	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
+	if err != nil {
+		return err
+	}
+	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
+	if err != nil {
+		return err
+	}
+	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
+	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
+	computedEvents, err := matchevents.GenerateMatchEvents(
+		matchSeed,
+		log0,
+		log1,
+		events,
+		decodedTactics0.Lineup,
+		decodedTactics1.Lineup,
+		decodedTactics0.Substitutions,
+		decodedTactics1.Substitutions,
+		decodedTactics0.SubsRounds,
+		decodedTactics1.SubsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		return err
+	}
+	for _, computedEvent := range computedEvents {
+		var teamID string
+		if computedEvent.Team == 0 {
+			teamID = match.HomeTeamID.String()
+		} else if computedEvent.Team == 1 {
+			teamID = match.VisitorTeamID.String()
+		} else {
+			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+		}
+		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
+		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+		if err != nil {
+			return err
+		}
+		event := storage.MatchEvent{}
+		event.TimezoneIdx = int(match.TimezoneIdx)
+		event.CountryIdx = int(match.CountryIdx)
+		event.LeagueIdx = int(match.LeagueIdx)
+		event.MatchDayIdx = int(match.MatchDayIdx)
+		event.MatchIdx = int(match.MatchIdx)
+		event.TeamID = teamID
+		event.Minute = int(computedEvent.Minute)
+		event.Type = storage.Attack // TODO set the rifht one
+		event.PrimaryPlayerID = primaryPlayerID.String()
+		if err = event.Insert(tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *MatchProcessor) Process(
 	tx *sql.Tx,
 	match storage.Match,
@@ -88,6 +194,9 @@ func (b *MatchProcessor) Process(
 		logs, err = b.process1stHalf(match, states, tactics, seed, startTime)
 	}
 	if err != nil {
+		return err
+	}
+	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime, is2ndHalf); err != nil {
 		return err
 	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)

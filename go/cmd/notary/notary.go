@@ -56,6 +56,7 @@ func main() {
 		client,
 		"", "", "", "", "", "",
 		*marketContractAddress,
+		"", "",
 	)
 	if err != nil {
 		log.Fatal(err)
