@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Item } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Item, Card } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import AcademyPlayer from './AcademyPlayer';
+import PlayerCard from '../../components/PlayerCard';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -15,6 +15,7 @@ query {
           pass
           shoot
           endurance
+          potential
         }
       }
 }
@@ -97,15 +98,16 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Item.Group>
+            <Card.Group>
                 {
                     players.map((player, key) => {
                         return (
-                           <AcademyPlayer key={key} player={player} web3={web3}/> 
+                           <PlayerCard key={key} player={player} web3={web3}/> 
                         );
                     })
+
                 }
-            </Item.Group>
+            </Card.Group>
         )
     }
 

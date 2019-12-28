@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Input, Item, Button, List } from 'semantic-ui-react';
+import { Card, Image, Icon, Grid, Divider, Button } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRunning, faBolt, faBurn, faHeart, faShoePrints, faShieldAlt } from '@fortawesome/free-solid-svg-icons'
 import signPutAssetForSaleMTx from './marketUtils';
-const uuidv1 = require('uuid/v1');
+const uuidv1 = require('uuid/v1')
 
 const DELETE_PLAYER = gql`
 mutation DeleteAcademyPlayer(
@@ -41,7 +43,7 @@ mutation CreateAuction(
 }
 `;
 
-export default function AcademyPlayer(props) {
+export default function PlayerCard(props) {
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(3600);
     const [createAuction] = useMutation(CREATE_AUCTION);
@@ -49,24 +51,30 @@ export default function AcademyPlayer(props) {
 
     const { player, web3 } = props;
     console.log(web3)
+    console.log(player)
 
     return (
-        <Item>
-            <Item.Content>
-                <Item.Header>{player.name}</Item.Header>
-                <Item.Meta>id: {player.playerId}</Item.Meta>
-                <Item.Description>
-                    <List>
-                        <List.Item>
-                            <List.Icon name='users' />
-                            <List.Content>{player.shoot}</List.Content>
-                        </List.Item>
-                    </List>
-                </Item.Description>
-                <Item.Extra>
-                    <Input label='Price' type='number' value={price} onChange={event => setPrice(event.target.value)} />
-                    <Input label='Timeout' type='number' value={timeout} onChange={event => setTimeout(event.target.value)} />
-
+        <Card>
+            <Image src='player.jpg' wrapped ui={false} />
+            <Card.Content>
+                <Card.Header>{player.name}</Card.Header>
+                <Divider/>
+                <Card.Meta>
+                    <Grid columns='equal'>
+                        <Grid.Row>
+                            <Grid.Column><FontAwesomeIcon icon={faBolt} />{player.potential}</Grid.Column>
+                            <Grid.Column><FontAwesomeIcon icon={faBurn} />{player.shoot}</Grid.Column>
+                            <Grid.Column><FontAwesomeIcon icon={faHeart} />{player.endurance}</Grid.Column>
+                            <Grid.Column><FontAwesomeIcon icon={faRunning} />{player.speed}</Grid.Column>
+                            <Grid.Column><FontAwesomeIcon icon={faShoePrints} />{player.pass}</Grid.Column>
+                            <Grid.Column><FontAwesomeIcon icon={faShieldAlt} />{player.defence}</Grid.Column>
+                        </Grid.Row>
+                    </Grid>
+                </Card.Meta>
+                <Card.Description>
+                </Card.Description>
+            </Card.Content>
+            <Card.Content extra>
                     <Button floated='right' basic color='green' onClick={async () => {
                         const rnd = Math.floor(Math.random() * 1000000);
                         const now = new Date();
@@ -98,8 +106,11 @@ export default function AcademyPlayer(props) {
                         })
                     }
                     }>Delete</Button>
-                </Item.Extra>
-            </Item.Content>
-        </Item>
+                <a>
+                    <Icon name='user' />
+                    10 Friends
+                </a>
+            </Card.Content>
+        </Card>
     )
 };
