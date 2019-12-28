@@ -47,7 +47,7 @@ func GenerateRnd(seed *big.Int, salt string, max_val uint64) uint64 {
 func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
 	var events []Matchevent
 	nEvents := (len(blockchainEvents) - 2) / 5
-	deltaMinutes := float64(45.0 / (nEvents * 1.0))
+	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
 
 	lastMinute := uint64(0)
