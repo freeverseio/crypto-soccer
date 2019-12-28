@@ -97,7 +97,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		return err
 	}
 
-	events := seedAndStartTimeAndEvents[2:]
+	events := seedAndStartTimeAndEvents[:]
 	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
 	if err != nil {
 		return err
