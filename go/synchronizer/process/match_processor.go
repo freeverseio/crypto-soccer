@@ -112,8 +112,8 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	if err != nil {
 		return err
 	}
-	log.Infof("Full decoded match log 0: %v", log0)
-	log.Infof("Full decoded match log 1: %v", log1)
+	log.Debugf("Full decoded match log 0: %v", log0)
+	log.Debugf("Full decoded match log 1: %v", log1)
 	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
 	if err != nil {
 		return err
@@ -122,8 +122,8 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	if err != nil {
 		return err
 	}
-	log.Infof("Decoded tactics 0: %v", decodedTactics0)
-	log.Infof("Decoded tactics 1: %v", decodedTactics1)
+	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
+	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
 	computedEvents, err := matchevents.GenerateMatchEvents(
 		matchSeed,
 		log0,
