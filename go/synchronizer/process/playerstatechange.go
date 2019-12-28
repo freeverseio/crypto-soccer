@@ -16,7 +16,11 @@ func PlayerStateChangeProcess(
 ) error {
 	playerID := event.PlayerId
 	state := event.State
-	shirtNumber, err := contracts.Assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
+	isSpecial, err := contracts.Assets.GetIsSpecial(&bind.CallOpts{}, playerID)
+	if err != nil {
+		return err
+	}
+	shirtNumber, err = contracts.Assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
 	if err != nil {
 		return err
 	}
