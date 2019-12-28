@@ -12,6 +12,7 @@ import (
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type MatchProcessor struct {
@@ -114,6 +115,8 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	if err != nil {
 		return err
 	}
+	log.Infof("Decoded tactics 0: %v", decodedTactics0)
+	log.Infof("Decoded tactics 1: %v", decodedTactics1)
 	computedEvents, err := matchevents.GenerateMatchEvents(
 		matchSeed,
 		log0,
