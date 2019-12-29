@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Item, Card } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Card } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import PlayerCard from '../../components/PlayerCard';
@@ -17,15 +17,9 @@ query {
       endurance
       potential
       dayOfBirth
-      openAuctions: auctionsByPlayerId(condition: { state: "STARTED" }) {
+      auctionsByPlayerId(orderBy: VALID_UNTIL_DESC, first: 1) {
         nodes {
-          bidsByAuction {
-            totalCount
-          }
-        }
-      }
-      filledAuctions: auctionsByPlayerId(condition: { state: "ASSET_FROZEN" }) {
-        nodes {
+          validUntil
           bidsByAuction {
             totalCount
           }

@@ -2,10 +2,20 @@ import React, { useState } from 'react';
 import { Card, Image, Grid, Divider, Button } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRunning, faBolt, faBurn, faHeart, faShoePrints, faShieldAlt } from '@fortawesome/free-solid-svg-icons'
 import signPutAssetForSaleMTx from './marketUtils';
-const uuidv1 = require('uuid/v1')
+import uuidv1 from 'uuid/v1';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faRunning,
+    faBolt,
+    faBurn,
+    faHeart,
+    faShoePrints,
+    faShieldAlt,
+    faMoneyBillWave,
+    faClock,
+    faGavel,
+} from '@fortawesome/free-solid-svg-icons'
 
 const DELETE_PLAYER = gql`
 mutation DeleteAcademyPlayer(
@@ -43,13 +53,10 @@ mutation CreateAuction(
     }
 `;
 
-
-
-
-
 export default function PlayerCard(props) {
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(120);
+    const [countdown, setCountdown] = useState(0);
     const [createAuctionMutation] = useMutation(CREATE_AUCTION);
     const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
 
@@ -85,6 +92,20 @@ export default function PlayerCard(props) {
         });
     };
 
+    const date = new Date();
+    const nowSeconds = Math.round(date.getTime() / 1000);
+    const lastAuction = player.auctionsByPlayerId.nodes[0];
+    const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
+    const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
+   
+    if (currentAuction) {
+        setInterval(() => {
+            const date = new Date();
+            const nowSeconds = Math.round(date.getTime() / 1000);
+            setCountdown(lastAuction.validUntil - nowSeconds);
+        }, 1000);
+    }
+
     return (
         <Card>
             <Image src='player.jpg' wrapped ui={false} />
@@ -107,8 +128,17 @@ export default function PlayerCard(props) {
                 </Card.Description>
             </Card.Content>
             <Card.Content extra>
-                <Button basic color='green' onClick={createAuction}>Sell</Button>
-                <Button floated='right' value='Delete' basic color='red' onClick={deletePlayer}>Delete</Button>
+                {currentAuction &&
+                    <Grid columns='equal'>
+                        <Grid.Row>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {countdown} sec</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faGavel} /> {bidsCount}</Grid.Column>
+                            {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneyBillWave} /> TODO</Grid.Column> */}
+                        </Grid.Row>
+                    </Grid>
+                }
+                {!currentAuction && <Button floated='right' basic color='green' onClick={createAuction}>Sell</Button>}
+                {!currentAuction && <Button floated='right' value='Delete' basic color='red' onClick={deletePlayer}>Delete</Button>}
             </Card.Content>
         </Card>
     )
