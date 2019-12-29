@@ -141,7 +141,6 @@ export default function SpecialPlayer(props) {
                 dayOfBirth: 16950,
             }
         });
-        console.log("dewewewew")
     }
 
     return (
