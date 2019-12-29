@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Image, Grid, Divider, Button } from 'semantic-ui-react';
+import { Card, Image, Grid, Divider, Button, Input, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import signPutAssetForSaleMTx from './marketUtils';
@@ -54,18 +54,33 @@ mutation CreateAuction(
 `;
 
 export default function PlayerCard(props) {
+    const { player, web3 } = props;
+
+    const date = new Date();
+    const nowSeconds = Math.round(date.getTime() / 1000);
+    const lastAuction = player.auctionsByPlayerId.nodes[0];
+    const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
+    const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
+    const [countdown, setCountdown] = useState(lastAuction - nowSeconds);
+
+    if (currentAuction) {
+        setInterval(() => {
+            const date = new Date();
+            const nowSeconds = Math.round(date.getTime() / 1000);
+            setCountdown(lastAuction.validUntil - nowSeconds);
+        }, 1000);
+    }
+
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(120);
-    const [countdown, setCountdown] = useState(0);
     const [createAuctionMutation] = useMutation(CREATE_AUCTION);
     const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
 
-    const { player, web3 } = props;
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
         const now = new Date();
-        const validUntil = (Math.round(now.getTime() / 1000) + timeout).toString();
+        const validUntil = (Math.round(now.getTime() / 1000) + Number(timeout)).toString();
         const sellerAccount = await web3.eth.accounts.privateKeyToAccount("0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709");
         const currencyId = 1;
         const signature = await signPutAssetForSaleMTx(web3, currencyId, price, rnd, validUntil, player.playerId, sellerAccount);
@@ -92,19 +107,7 @@ export default function PlayerCard(props) {
         });
     };
 
-    const date = new Date();
-    const nowSeconds = Math.round(date.getTime() / 1000);
-    const lastAuction = player.auctionsByPlayerId.nodes[0];
-    const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
-    const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
-   
-    if (currentAuction) {
-        setInterval(() => {
-            const date = new Date();
-            const nowSeconds = Math.round(date.getTime() / 1000);
-            setCountdown(lastAuction.validUntil - nowSeconds);
-        }, 1000);
-    }
+
 
     return (
         <Card>
@@ -133,9 +136,37 @@ export default function PlayerCard(props) {
                         <Grid.Row>
                             <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {countdown} sec</Grid.Column>
                             <Grid.Column textAlign="center"><FontAwesomeIcon icon={faGavel} /> {bidsCount}</Grid.Column>
-                            {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneyBillWave} /> TODO</Grid.Column> */}
+                            {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneye} /> TODO</Grid.Column> */}
                         </Grid.Row>
                     </Grid>
+                }
+                {!currentAuction &&
+                    <List>
+                        <List.Item>
+                            <Input
+                                label={{ basic: true, content: 'sec' }}
+                                type="number"
+                                labelPosition='right'
+                                fluid
+                                icon='clock'
+                                iconPosition='left'
+                                value={timeout}
+                                onChange={event => setTimeout(event.target.value)}
+                            />
+                        </List.Item>
+                        <List.Item>
+                            <Input
+                                label={{ basic: true, content: '$' }}
+                                type="number"
+                                labelPosition='right'
+                                fluid
+                                icon='money'
+                                iconPosition='left'
+                                value={price}
+                                onChange={event => setPrice(event.target.value)}
+                            />
+                        </List.Item>
+                    </List>
                 }
                 {!currentAuction && <Button floated='right' basic color='green' onClick={createAuction}>Sell</Button>}
                 {!currentAuction && <Button floated='right' value='Delete' basic color='red' onClick={deletePlayer}>Delete</Button>}
