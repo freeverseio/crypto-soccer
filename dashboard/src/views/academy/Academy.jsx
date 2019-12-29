@@ -7,17 +7,32 @@ import PlayerCard from '../../components/PlayerCard';
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
     allPlayers(condition: { teamId: "1" }) {
+    nodes {
+      playerId
+      name
+      defence
+      speed
+      pass
+      shoot
+      endurance
+      potential
+      dayOfBirth
+      openAuctions: auctionsByPlayerId(condition: { state: "STARTED" }) {
         nodes {
-          playerId
-          name
-          defence
-          speed
-          pass
-          shoot
-          endurance
-          potential
+          bidsByAuction {
+            totalCount
+          }
         }
       }
+      filledAuctions: auctionsByPlayerId(condition: { state: "ASSET_FROZEN" }) {
+        nodes {
+          bidsByAuction {
+            totalCount
+          }
+        }
+      }
+    }
+  }
 }
 `;
 
