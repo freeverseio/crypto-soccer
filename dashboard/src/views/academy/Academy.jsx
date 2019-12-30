@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Item } from 'semantic-ui-react';
+import { Container, Form, Segment, Label, Input, Card } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import AcademyPlayer from './AcademyPlayer';
+import PlayerCard from '../../components/PlayerCard';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
     allPlayers(condition: { teamId: "1" }) {
+    nodes {
+      playerId
+      name
+      defence
+      speed
+      pass
+      shoot
+      endurance
+      potential
+      dayOfBirth
+      auctionsByPlayerId(orderBy: VALID_UNTIL_DESC, first: 1) {
         nodes {
-          playerId
-          name
-          defence
-          speed
-          pass
-          shoot
-          endurance
+          validUntil
+          bidsByAuction {
+            totalCount
+          }
         }
       }
+    }
+  }
 }
 `;
 
@@ -97,15 +107,16 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Item.Group>
+            <Card.Group>
                 {
                     players.map((player, key) => {
                         return (
-                           <AcademyPlayer key={key} player={player} web3={web3}/> 
+                           <PlayerCard key={key} player={player} web3={web3}/> 
                         );
                     })
+
                 }
-            </Item.Group>
+            </Card.Group>
         )
     }
 
@@ -130,7 +141,6 @@ export default function SpecialPlayer(props) {
                 dayOfBirth: 16950,
             }
         });
-        console.log("dewewewew")
     }
 
     return (

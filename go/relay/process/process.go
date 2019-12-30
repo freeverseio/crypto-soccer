@@ -1,15 +1,11 @@
 package relay
 
 import (
-	"context"
 	"crypto/ecdsa"
+	"database/sql"
 	"encoding/hex"
-	"errors"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 
@@ -19,12 +15,9 @@ import (
 )
 
 type Processor struct {
-	client        *ethclient.Client
-	privateKey    *ecdsa.PrivateKey
-	publicAddress common.Address
-	db            *storage.Storage
-	updates       *updates.Updates
-	ipfsURL       string
+	updatesContract *updates.Updates
+	auth            *bind.TransactOpts
+	ipfsURL         string
 }
 
 // *****************************************************************************
@@ -34,70 +27,54 @@ type Processor struct {
 func NewProcessor(
 	client *ethclient.Client,
 	privateKey *ecdsa.PrivateKey,
-	db *storage.Storage,
-	updates *updates.Updates,
+	db *sql.DB,
+	updatesContract *updates.Updates,
 	ipfsURL string,
 ) (*Processor, error) {
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		return nil, errors.New("error obtaining publicKey")
-	}
-
-	publicAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	auth := bind.NewKeyedTransactor(privateKey)
 
 	return &Processor{
-		client,
-		privateKey,
-		publicAddress,
-		db,
-		updates,
+		updatesContract,
+		auth,
 		ipfsURL,
 	}, nil
 }
 
-func (p *Processor) Process() error {
-	return p.computeActionsRoot()
-}
-
-// *****************************************************************************
-// private
-// *****************************************************************************
-func (p *Processor) computeActionsRoot() error {
-
-	nonce, err := p.client.PendingNonceAt(context.Background(), p.publicAddress)
+func (p *Processor) Process(tx *sql.Tx) error {
+	currentVerse, err := p.updatesContract.CurrentVerse(&bind.CallOpts{})
 	if err != nil {
 		return err
 	}
-
-	gasPrice, err := p.client.SuggestGasPrice(context.Background())
+	log.Infof("Staring process of verse %v", currentVerse)
+	upcomingTrainings, err := storage.UpcomingTrainings(tx)
 	if err != nil {
 		return err
 	}
-
-	auth := bind.NewKeyedTransactor(p.privateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)
-	auth.GasPrice = gasPrice
-
-	session := updates.UpdatesSession{
-		p.updates,
-		bind.CallOpts{},
-		*auth,
-	}
-
-	if err = p.db.CloseVerse(); err != nil {
-		return err
-	}
-	verse, err := p.db.GetLastVerse()
+	upcomingTactics, err := storage.UpcomingTactics(tx)
 	if err != nil {
 		return err
 	}
+	log.Infof("Processing %v upcoming trainings", len(upcomingTrainings))
+	for i := range upcomingTrainings {
+		upcomingTrainings[i].Delete(tx)
+		upcomingTrainings[i].Verse = currentVerse.Uint64()
+		if err = upcomingTrainings[i].Insert(tx); err != nil {
+			return err
+		}
+	}
+	log.Infof("Processing %v upcoming tactics", len(upcomingTactics))
+	for i := range upcomingTactics {
+		upcomingTactics[i].Delete(tx)
+		upcomingTactics[i].Verse = currentVerse.Uint64()
+		if err = upcomingTactics[i].Insert(tx); err != nil {
+			return err
+		}
+	}
+
 	actions := useractions.UserActions{}
-	if err = actions.PullFromStorage(p.db, verse.ID); err != nil {
-		return err
-	}
+	actions.Verse = currentVerse.Uint64()
+	actions.Trainings = upcomingTrainings
+	actions.Tactics = upcomingTactics
 	hash, err := actions.Hash()
 	if err != nil {
 		return err
@@ -110,6 +87,6 @@ func (p *Processor) computeActionsRoot() error {
 	copy(root[:], hash)
 
 	log.Infof("[relay] submitActionsRoot root: 0x%v, cid: %v", hex.EncodeToString(root[:]), cid)
-	_, err = session.SubmitActionsRoot(root, cid)
+	_, err = p.updatesContract.SubmitActionsRoot(p.auth, root, cid)
 	return err
 }

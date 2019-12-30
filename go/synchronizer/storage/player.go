@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -52,8 +51,8 @@ func (b *Player) Equal(player Player) bool {
 		b.DayOfBirth == player.DayOfBirth
 }
 
-func (b *Storage) PlayerCount() (uint64, error) {
-	rows, err := b.tx.Query("SELECT COUNT(*) FROM players;")
+func PlayerCount(tx *sql.Tx) (uint64, error) {
+	rows, err := tx.Query("SELECT COUNT(*) FROM players;")
 	if err != nil {
 		return 0, err
 	}
@@ -64,40 +63,35 @@ func (b *Storage) PlayerCount() (uint64, error) {
 	return count, nil
 }
 
-func (b *Storage) PlayerCreate(player Player) error {
-	log.Debugf("[DBMS] Create player %v", player)
-	_, err := b.tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
-		player.PlayerId.String(),
-		player.State.TeamId.String(),
-		player.State.Defence,
-		player.State.Speed,
-		player.State.Pass,
-		player.State.Shoot,
-		player.State.Endurance,
-		player.State.ShirtNumber,
-		player.PreferredPosition,
-		player.State.EncodedSkills.String(),
-		player.State.EncodedState.String(),
-		player.Potential,
-		player.State.Frozen,
-		player.State.Name,
-		player.DayOfBirth,
+func (b *Player) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Create player %v", b)
+	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
+		b.PlayerId.String(),
+		b.State.TeamId.String(),
+		b.State.Defence,
+		b.State.Speed,
+		b.State.Pass,
+		b.State.Shoot,
+		b.State.Endurance,
+		b.State.ShirtNumber,
+		b.PreferredPosition,
+		b.State.EncodedSkills.String(),
+		b.State.EncodedState.String(),
+		b.Potential,
+		b.State.Frozen,
+		b.State.Name,
+		b.DayOfBirth,
 	)
 	if err != nil {
 		return err
 	}
 
-	// err = b.playerHistoryAdd(player.Id, player.State)
-	// if err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
 
-func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error {
+func (b *Player) Update(tx *sql.Tx, playerID *big.Int, playerState PlayerState) error {
 	log.Debugf("[DBMS] + update player state %v", playerState)
-	_, err := b.tx.Exec(`UPDATE players SET 
+	_, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
 	defence=$2, 
 	speed=$3, 
@@ -128,9 +122,8 @@ func (b *Storage) PlayerUpdate(playerID *big.Int, playerState PlayerState) error
 	return err
 }
 
-func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
-	player := Player{}
-	rows, err := b.tx.Query(`SELECT team_id, 
+func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
+	rows, err := tx.Query(`SELECT team_id, 
 	defence,
 	speed,
 	pass, 
@@ -148,12 +141,15 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	injury_matches_left
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
-		return player, err
+		return nil, err
 	}
 	defer rows.Close()
+
 	if !rows.Next() {
-		return player, errors.New("Unexistent player " + playerID.String())
+		return nil, nil
 	}
+
+	player := Player{}
 	var teamID sql.NullString
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
@@ -179,12 +175,12 @@ func (b *Storage) GetPlayer(playerID *big.Int) (Player, error) {
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
 	player.State.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
 	player.State.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
-	return player, err
+	return &player, nil
 }
 
-func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
-	var players []Player
-	rows, err := b.tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
+func PlayersByTeamId(tx *sql.Tx, teamID *big.Int) ([]*Player, error) {
+	var players []*Player
+	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return players, err
 	}
@@ -201,7 +197,7 @@ func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 	rows.Close()
 	for i := 0; i < len(playerIDs); i++ {
 		playerID := playerIDs[i]
-		player, err := b.GetPlayer(playerID)
+		player, err := PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return players, err
 		}
@@ -209,42 +205,3 @@ func (b *Storage) GetPlayersOfTeam(teamID *big.Int) ([]Player, error) {
 	}
 	return players, err
 }
-
-// func (b *Storage) playerUpdate(id uint64, playerState PlayerState) error {
-// 	log.Infof("[DBMS] + update player state %v", playerState)
-
-// 	_, err := b.tx.Exec("UPDATE players SET blockNumber=$1, teamId=$2, state=$3, defence=$4, speed=$5, pass=$6, shoot=$7, endurance=$8, inBlockIndex=$9 WHERE id=$10;",
-// 		playerState.BlockNumber,
-// 		playerState.TeamId,
-// 		playerState.State,
-// 		playerState.Defence,
-// 		playerState.Speed,
-// 		playerState.Pass,
-// 		playerState.Shoot,
-// 		playerState.Endurance,
-// 		playerState.InBlockIndex,
-// 		id,
-// 	)
-// 	return err
-// }
-
-// func (b *Storage) playerHistoryAdd(id uint64, playerState PlayerState) error {
-// 	log.Infof("[DBMS] + add player history %v", playerState)
-// 	_, err := b.tx.Exec("INSERT INTO players_history (playerId, blockNumber, teamId, state, defence, speed, pass, shoot, endurance, inBlockIndex) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);",
-// 		id,
-// 		playerState.BlockNumber,
-// 		playerState.TeamId,
-// 		playerState.State,
-// 		playerState.Defence,
-// 		playerState.Speed,
-// 		playerState.Pass,
-// 		playerState.Shoot,
-// 		playerState.Endurance,
-// 		playerState.InBlockIndex,
-// 	)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }

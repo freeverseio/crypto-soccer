@@ -7,15 +7,55 @@ import (
 )
 
 func TestTrainingCreate(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
+	defer tx.Rollback()
+
 	training := storage.Training{}
 	training.TeamID = "4"
-	err = db.CreateTraining(training)
+	err = training.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestCurrentTraining(t *testing.T) {
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	training := storage.Training{}
+	training.Verse = storage.UpcomingVerse
+	training.TeamID = "4"
+	err = training.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	trainings, err := storage.UpcomingTrainings(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(trainings) != 1 {
+		t.Fatalf("Expected 1 got %v", len(trainings))
+	}
+
+	training.Verse = 1
+	err = training.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	trainings, err = storage.UpcomingTrainings(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(trainings) != 1 {
+		t.Fatalf("Expected 1 got %v", len(trainings))
+	}
+
 }

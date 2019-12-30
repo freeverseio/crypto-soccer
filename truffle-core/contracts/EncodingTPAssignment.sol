@@ -5,6 +5,7 @@ contract EncodingTPAssignment {
     uint16 public constant MAX_PERCENT = 80; 
     uint16 public constant MIN_PERCENT = 5; 
     uint8  public constant PLAYERS_PER_TEAM_MAX  = 25;
+    uint8 public constant NO_PLAYER = PLAYERS_PER_TEAM_MAX; // No player chosen
     // We have 5 buckets: GK, D, M, A, Special
     // We need 5 TPperSkill per bucket
     //      that sum(TPperSkill) < TP
@@ -14,9 +15,11 @@ contract EncodingTPAssignment {
     
     
     function encodeTP(uint16 TP, uint16[25] memory TPperSkill, uint8 specialPlayer) public pure returns (uint256 encoded) {
+        require(specialPlayer <= PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
         uint16 minRHS = MIN_PERCENT * TP;
         uint16 maxRHS = MAX_PERCENT * TP;
-        for (uint8 bucket = 0; bucket < 5; bucket++) {
+        uint8 lastBucket = (specialPlayer == NO_PLAYER ? 4 : 5);
+        for (uint8 bucket = 0; bucket < lastBucket; bucket++) {
             uint256 sum = 0;
             for (uint8 sk = 5 * bucket; sk < 5 * (bucket+1); sk++) {
                 uint16 skill = TPperSkill[sk];
@@ -26,7 +29,6 @@ contract EncodingTPAssignment {
             }
             require(sum <= TP, "sum of Traning Points is too large");
         }
-        require(specialPlayer < PLAYERS_PER_TEAM_MAX, "specialPlayer value too large");
         encoded |= uint256(TP) << 225;
         encoded |= uint256(specialPlayer) << 234;
     } 

@@ -1,20 +1,22 @@
 package process
 
 import (
+	"database/sql"
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/matchevents"
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type MatchProcessor struct {
 	contracts         *contracts.Contracts
-	universedb        *storage.Storage
-	relaydb           *relay.Storage
 	namesdb           *names.Generator
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
@@ -24,8 +26,6 @@ type MatchProcessor struct {
 
 func NewMatchProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
-	relaydb *relay.Storage,
 	namesdb *names.Generator,
 ) (*MatchProcessor, error) {
 	processor := MatchProcessor{}
@@ -48,8 +48,6 @@ func NewMatchProcessor(
 	}
 
 	processor.contracts = contracts
-	processor.universedb = universedb
-	processor.relaydb = relaydb
 	processor.namesdb = namesdb
 
 	return &processor, nil
@@ -70,7 +68,111 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 	return homeGoals, visitorGoals, err
 }
 
+func (b *MatchProcessor) ProcessMatchEvents(
+	tx *sql.Tx,
+	match storage.Match,
+	states [2][25]*big.Int,
+	tactics [2]*big.Int,
+	seed [32]byte,
+	startTime *big.Int,
+	is2ndHalf bool,
+) error {
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
+	isHomeStadium := true
+	isPlayoff := false
+	matchLog := [2]*big.Int{}
+	if is2ndHalf { // TODO make match.HomeMatchLog and Visitor to be 0 if first half
+		matchLog = [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	} else {
+		matchLog = [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
+	}
+	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
+	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		startTime,
+		states,
+		tactics,
+		matchLog,
+		matchBools,
+	)
+	if err != nil {
+		return err
+	}
+
+	events := seedAndStartTimeAndEvents[:]
+	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Full decoded match log 0: %v", log0)
+	log.Debugf("Full decoded match log 1: %v", log1)
+	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
+	if err != nil {
+		return err
+	}
+	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
+	if err != nil {
+		return err
+	}
+	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
+	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
+	computedEvents, err := matchevents.GenerateMatchEvents(
+		matchSeed,
+		log0,
+		log1,
+		events,
+		decodedTactics0.Lineup,
+		decodedTactics1.Lineup,
+		decodedTactics0.Substitutions,
+		decodedTactics1.Substitutions,
+		decodedTactics0.SubsRounds,
+		decodedTactics1.SubsRounds,
+		is2ndHalf,
+	)
+	if err != nil {
+		return err
+	}
+	for _, computedEvent := range computedEvents {
+		var teamID string
+		if computedEvent.Team == 0 {
+			teamID = match.HomeTeamID.String()
+		} else if computedEvent.Team == 1 {
+			teamID = match.VisitorTeamID.String()
+		} else {
+			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+		}
+		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
+		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+		if err != nil {
+			return err
+		}
+		event := storage.MatchEvent{}
+		event.TimezoneIdx = int(match.TimezoneIdx)
+		event.CountryIdx = int(match.CountryIdx)
+		event.LeagueIdx = int(match.LeagueIdx)
+		event.MatchDayIdx = int(match.MatchDayIdx)
+		event.MatchIdx = int(match.MatchIdx)
+		event.TeamID = teamID
+		event.Minute = int(computedEvent.Minute)
+		event.Type = storage.Attack // TODO set the rifht one
+		event.PrimaryPlayerID = primaryPlayerID.String()
+		if err = event.Insert(tx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (b *MatchProcessor) Process(
+	tx *sql.Tx,
 	match storage.Match,
 	seed [32]byte,
 	startTime *big.Int,
@@ -80,7 +182,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	states, err := b.GetMatchTeamsState(match.HomeTeamID, match.VisitorTeamID)
+	states, err := b.GetMatchTeamsState(tx, match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return err
 	}
@@ -94,11 +196,15 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
+	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime, is2ndHalf); err != nil {
+		return err
+	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
 	if err != nil {
 		return err
 	}
-	err = b.universedb.MatchSetResult(
+	err = storage.MatchSetResult(
+		tx,
 		match.TimezoneIdx,
 		match.CountryIdx,
 		match.LeagueIdx,
@@ -112,28 +218,28 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
+	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
+	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
 	if err != nil {
 		return err
 	}
 	if is2ndHalf {
-		homeTeam, err := b.universedb.GetTeam(match.HomeTeamID)
+		homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
 		if err != nil {
 			return err
 		}
-		visitorTeam, err := b.universedb.GetTeam(match.VisitorTeamID)
+		visitorTeam, err := storage.TeamByTeamId(tx, match.VisitorTeamID)
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(&homeTeam, states[0], startTime, logs[0])
+		err = b.UpdateTeamSkills(tx, &homeTeam, states[0], startTime, logs[0])
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(&visitorTeam, states[1], startTime, logs[1])
+		err = b.UpdateTeamSkills(tx, &visitorTeam, states[1], startTime, logs[1])
 		if err != nil {
 			return err
 		}
@@ -141,11 +247,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = b.universedb.TeamUpdate(homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.Update(tx, homeTeam.TeamID, homeTeam.State)
 		if err != nil {
 			return err
 		}
-		err = b.universedb.TeamUpdate(visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.Update(tx, visitorTeam.TeamID, visitorTeam.State)
 		if err != nil {
 			return err
 		}
@@ -153,12 +259,12 @@ func (b *MatchProcessor) Process(
 	return nil
 }
 
-func (b *MatchProcessor) GetTeamState(teamID *big.Int) ([25]*big.Int, error) {
+func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
 	}
-	players, err := b.universedb.GetPlayersOfTeam(teamID)
+	players, err := storage.PlayersByTeamId(tx, teamID)
 	if err != nil {
 		return state, err
 	}
@@ -180,13 +286,13 @@ func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, v
 	z.SetBytes(matchSeed[:])
 	return z, nil
 }
-func (b *MatchProcessor) GetMatchTeamsState(homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
+func (b *MatchProcessor) GetMatchTeamsState(tx *sql.Tx, homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
 	var states [2][25]*big.Int
-	homeTeamState, err := b.GetTeamState(homeTeamID)
+	homeTeamState, err := b.GetTeamState(tx, homeTeamID)
 	if err != nil {
 		return states, err
 	}
-	visitorTeamState, err := b.GetTeamState(visitorTeamID)
+	visitorTeamState, err := b.GetTeamState(tx, visitorTeamID)
 	if err != nil {
 		return states, err
 	}
@@ -267,8 +373,8 @@ func (b *MatchProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big
 	return tactics, nil
 }
 
-func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
-	players, err := b.universedb.GetPlayersOfTeam(teamID)
+func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
+	players, err := storage.PlayersByTeamId(tx, teamID)
 	if err != nil {
 		return err
 	}
@@ -329,7 +435,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(is2ndHalf bool, teamID *big.Int, tac
 		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = b.universedb.PlayerUpdate(player.PlayerId, player.State); err != nil {
+		if err = player.Update(tx, player.PlayerId, player.State); err != nil {
 			return nil
 		}
 	}
@@ -362,9 +468,11 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTe
 }
 
 func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) (*big.Int, error) {
-	if tactic, err := b.relaydb.GetTactic(teamID.String(), verse); err != nil {
-		return nil, err
-	} else if encodedTactic, err := b.contracts.Engine.EncodeTactics(
+	tactic := relay.DefaultTactic(teamID.String())
+	// if tactic, err := relay.TacticByTeamIDAndVerse(teamID.String(), verse); err != nil {
+	// 	return nil, err
+	// } else
+	if encodedTactic, err := b.contracts.Engine.EncodeTactics(
 		&bind.CallOpts{},
 		[3]uint8{11, 11, 11}, // TODO
 		[3]uint8{2, 3, 4},    // TODO
@@ -405,6 +513,7 @@ func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) 
 }
 
 func (b *MatchProcessor) UpdateTeamSkills(
+	tx *sql.Tx,
 	team *storage.Team,
 	states [25]*big.Int,
 	matchStartTime *big.Int,
@@ -432,13 +541,17 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			continue
 		}
 
+		/// 57896044618658097711785542341552232326515206756777149242398696258331718847466
 		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
 		}
-		player, err := b.universedb.GetPlayer(playerID)
+		player, err := storage.PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return err
+		}
+		if player == nil {
+			return fmt.Errorf("Unexistent playerId %v", playerID)
 		}
 		oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
 		if err != nil {
@@ -466,7 +579,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		player.State.Shoot = shoot.Uint64()
 		player.State.Defence = endurance.Uint64()
 		player.State.EncodedSkills = state
-		err = b.universedb.PlayerUpdate(playerID, player.State)
+		err = player.Update(tx, playerID, player.State)
 		if err != nil {
 			return err
 		}

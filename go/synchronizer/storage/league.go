@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"database/sql"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -10,8 +12,8 @@ type League struct {
 	LeagueIdx   uint32
 }
 
-func (b *Storage) LeagueCount() (uint32, error) {
-	rows, err := b.tx.Query("SELECT COUNT(*) FROM leagues;")
+func LeagueCount(tx *sql.Tx) (uint32, error) {
+	rows, err := tx.Query("SELECT COUNT(*) FROM leagues;")
 	if err != nil {
 		return 0, err
 	}
@@ -25,8 +27,8 @@ func (b *Storage) LeagueCount() (uint32, error) {
 	return count, nil
 }
 
-func (b *Storage) LeagueInCountryCount(timezoneIdx uint8, countryIdx uint32) (uint32, error) {
-	rows, err := b.tx.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
+func LeagueByTeimezoneIdxCountryIdx(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) (uint32, error) {
+	rows, err := tx.Query("SELECT COUNT(*) FROM leagues WHERE (timezone_idx = $1 AND country_idx = $2);", timezoneIdx, countryIdx)
 	if err != nil {
 		return 0, err
 	}
@@ -40,12 +42,12 @@ func (b *Storage) LeagueInCountryCount(timezoneIdx uint8, countryIdx uint32) (ui
 	return count, nil
 }
 
-func (b *Storage) LeagueCreate(league League) error {
-	log.Debugf("[DBMS] Create league %v", league)
-	_, err := b.tx.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
-		league.TimezoneIdx,
-		league.CountryIdx,
-		league.LeagueIdx,
+func (b *League) Insert(tx *sql.Tx) error {
+	log.Debugf("[DBMS] Create league %v", b)
+	_, err := tx.Exec("INSERT INTO leagues (timezone_idx, country_idx, league_idx) VALUES ($1, $2, $3);",
+		b.TimezoneIdx,
+		b.CountryIdx,
+		b.LeagueIdx,
 	)
 	if err != nil {
 		return err
@@ -53,8 +55,8 @@ func (b *Storage) LeagueCreate(league League) error {
 	return nil
 }
 
-func (b *Storage) GetLeague(id uint32) (*League, error) {
-	rows, err := b.tx.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
+func LeagueByLeagueIdx(tx *sql.Tx, id uint32) (*League, error) {
+	rows, err := tx.Query("SELECT timezone_idx, country_idx, league_idx FROM leagues WHERE (league_idx = $1);", id)
 	if err != nil {
 		return nil, err
 	}

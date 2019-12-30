@@ -158,12 +158,14 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         if (userAssignment == 0) return states;
         (uint16[25] memory TPperSkill, uint8 specialPlayer, ) = decodeTP(userAssignment);
         uint16[5] memory singleTPperSkill;
-        
+
+        // note that if no special player was selected => specialPlayer = PLAYER_PER_TEAM_MAX 
+        // ==> it will never be processed in this loop
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 skills = states[p];
             if (skills == 0) continue; 
             uint8 offset = 0;
-            if (p == specialPlayer) offset = 20;
+            if (p == specialPlayer) offset = 20; 
             else if(getForwardness(skills) == IDX_GK) offset = 0;
             else if(getForwardness(skills) == IDX_D) offset = 5;
             else if(getForwardness(skills) == IDX_F) offset = 15;

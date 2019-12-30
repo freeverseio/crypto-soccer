@@ -13,25 +13,15 @@ import (
 )
 
 func TestSubmitActionRoot(t *testing.T) {
-	err := db.Begin()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Rollback()
+	defer tx.Rollback()
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	timezoneIdx := uint8(1)
-	err = bc.InitOneTimezone(timezoneIdx)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +31,7 @@ func TestSubmitActionRoot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = p.Process()
+	err = p.Process(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
