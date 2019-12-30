@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Image, Grid, Divider, Button, Input, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
@@ -54,6 +54,23 @@ mutation CreateAuction(
 `;
 
 export default function PlayerCard(props) {
+    const calculateTimeLeft = (deadline) => {
+        const difference = +new Date(deadline * 1000) - +new Date();
+        let timeLeft = {};
+
+        if (difference > 0) {
+            timeLeft = {
+                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                minutes: Math.floor((difference / 1000 / 60) % 60),
+                seconds: Math.floor((difference / 1000) % 60)
+            };
+        }
+
+        return timeLeft;
+    };
+
+
     const { player, web3 } = props;
 
     const date = new Date();
@@ -61,15 +78,13 @@ export default function PlayerCard(props) {
     const lastAuction = player.auctionsByPlayerId.nodes[0];
     const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
     const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
-    const [countdown, setCountdown] = useState(lastAuction - nowSeconds);
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
-    if (currentAuction) {
-        setInterval(() => {
-            const date = new Date();
-            const nowSeconds = Math.round(date.getTime() / 1000);
-            setCountdown(lastAuction.validUntil - nowSeconds);
+    useEffect(() => {
+        setTimeout(() => {
+            setTimeLeft(calculateTimeLeft(currentAuction.validUntil));
         }, 1000);
-    }
+    });
 
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(120);
@@ -134,7 +149,7 @@ export default function PlayerCard(props) {
                 {currentAuction &&
                     <Grid columns='equal'>
                         <Grid.Row>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {countdown} sec</Grid.Column>
+                            {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {timeLeft} sec</Grid.Column> */}
                             <Grid.Column textAlign="center"><FontAwesomeIcon icon={faGavel} /> {bidsCount}</Grid.Column>
                             {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneye} /> TODO</Grid.Column> */}
                         </Grid.Row>
