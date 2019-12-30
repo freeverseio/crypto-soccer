@@ -52,26 +52,6 @@ mutation CreateAuction(
     }
 `;
 
-const calculateTimeLeft = (currentAuction) => {
-    if (!currentAuction) return "";
-
-    const difference = +new Date(currentAuction.validUntil * 1000) - +new Date();
-    let timeLeft = "";
-    if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-        const minutes = Math.floor((difference / 1000 / 60) % 60);
-        const seconds = Math.floor((difference / 1000) % 60);
-
-        if (days > 0) { timeLeft += days + "d"; }
-        if (hours > 0) { timeLeft += " " + hours + "h"; }
-        if (minutes > 0) { timeLeft += " " + minutes + "m"; }
-        if (seconds > 0) { timeLeft += " " + seconds + "s"; }
-
-    }
-    return timeLeft;
-}
-
 export default function PlayerCard(props) {
     const { player, web3 } = props;
     const [price, setPrice] = useState(50);
@@ -84,17 +64,8 @@ export default function PlayerCard(props) {
     const lastAuction = player.auctionsByPlayerId.nodes[0];
     const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
     const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
-
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(currentAuction));
-
-    useEffect(() => {
-        const timerID = setInterval(() => {
-            setTimeLeft(calculateTimeLeft(currentAuction));
-        }, 1000);
-        return () => {
-            clearInterval(timerID);
-        }
-    });
+    const timeLeft = useTimeLeft(currentAuction);
+    
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
@@ -191,3 +162,36 @@ export default function PlayerCard(props) {
         </Card>
     )
 };
+
+function useTimeLeft(currentAuction) {
+    const calculateTimeLeft = (currentAuction) => {
+        if (!currentAuction) return "";
+
+        const difference = +new Date(currentAuction.validUntil * 1000) - +new Date();
+        let timeLeft = "";
+        if (difference > 0) {
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((difference / 1000 / 60) % 60);
+            const seconds = Math.floor((difference / 1000) % 60);
+
+            if (days > 0) { timeLeft += days + "d"; }
+            if (hours > 0) { timeLeft += " " + hours + "h"; }
+            if (minutes > 0) { timeLeft += " " + minutes + "m"; }
+            if (seconds > 0) { timeLeft += " " + seconds + "s"; }
+
+        }
+        return timeLeft;
+    }
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(currentAuction));
+    useEffect(() => {
+        const timerID = setInterval(() => {
+            setTimeLeft(calculateTimeLeft(currentAuction));
+        }, 1000);
+        return () => {
+            clearInterval(timerID);
+        }
+    });
+    return timeLeft;
+}
