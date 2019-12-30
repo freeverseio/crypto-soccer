@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: ipfsnode
   labels:
-    app: universedb
+    app: ipfsnode
     component: ipfs
     part-of: cryptosoccer
     version: "0.0.1"
