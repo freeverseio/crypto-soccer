@@ -12,7 +12,6 @@ import {
     faHeart,
     faShoePrints,
     faShieldAlt,
-    faMoneyBillWave,
     faClock,
     faGavel,
 } from '@fortawesome/free-solid-svg-icons'
@@ -53,44 +52,49 @@ mutation CreateAuction(
     }
 `;
 
+const calculateTimeLeft = (currentAuction) => {
+    if (!currentAuction) return "";
+
+    const difference = +new Date(currentAuction.validUntil * 1000) - +new Date();
+    let timeLeft = "";
+    if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((difference / 1000 / 60) % 60);
+        const seconds = Math.floor((difference / 1000) % 60);
+
+        if (days > 0) { timeLeft += days + "d"; }
+        if (hours > 0) { timeLeft += " " + hours + "h"; }
+        if (minutes > 0) { timeLeft += " " + minutes + "m"; }
+        if (seconds > 0) { timeLeft += " " + seconds + "s"; }
+
+    }
+    return timeLeft;
+}
+
 export default function PlayerCard(props) {
-    const calculateTimeLeft = (deadline) => {
-        const difference = +new Date(deadline * 1000) - +new Date();
-        let timeLeft = {};
-
-        if (difference > 0) {
-            timeLeft = {
-                days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                minutes: Math.floor((difference / 1000 / 60) % 60),
-                seconds: Math.floor((difference / 1000) % 60)
-            };
-        }
-
-        return timeLeft;
-    };
-
-
     const { player, web3 } = props;
+    const [price, setPrice] = useState(50);
+    const [timeout, setTimeout] = useState(120);
+    const [createAuctionMutation] = useMutation(CREATE_AUCTION);
+    const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
 
     const date = new Date();
     const nowSeconds = Math.round(date.getTime() / 1000);
     const lastAuction = player.auctionsByPlayerId.nodes[0];
     const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
     const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(currentAuction));
 
     useEffect(() => {
-        setTimeout(() => {
-            setTimeLeft(calculateTimeLeft(currentAuction.validUntil));
+        const timerID = setInterval(() => {
+            setTimeLeft(calculateTimeLeft(currentAuction));
         }, 1000);
+        return () => {
+            clearInterval(timerID);
+        }
     });
-
-    const [price, setPrice] = useState(50);
-    const [timeout, setTimeout] = useState(120);
-    const [createAuctionMutation] = useMutation(CREATE_AUCTION);
-    const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
-
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
@@ -122,8 +126,6 @@ export default function PlayerCard(props) {
         });
     };
 
-
-
     return (
         <Card>
             <Image src='player.jpg' wrapped ui={false} />
@@ -149,7 +151,7 @@ export default function PlayerCard(props) {
                 {currentAuction &&
                     <Grid columns='equal'>
                         <Grid.Row>
-                            {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {timeLeft} sec</Grid.Column> */}
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {timeLeft}</Grid.Column>
                             <Grid.Column textAlign="center"><FontAwesomeIcon icon={faGavel} /> {bidsCount}</Grid.Column>
                             {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneye} /> TODO</Grid.Column> */}
                         </Grid.Row>
