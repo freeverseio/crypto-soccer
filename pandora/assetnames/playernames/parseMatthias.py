@@ -110,7 +110,7 @@ def writeNames():
             outNamesFile.write(str)
 
         str = "" if len(namesInCountry) > 100 else " - WARNING"
-        print(country, len(namesInCountry), str)
+        print(country, len(namesInCountry), str, ", code = ", countryCode)
         totalEntries += len(namesInCountry)
         findNonValid(namesInCountry)
     outNamesFile.close()

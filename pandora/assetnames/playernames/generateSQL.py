@@ -7,10 +7,10 @@ countryCodesFile = 'tmp/goalRevCountryCodes'
 namesFile = 'tmp/goalRevNames'
 surnamesFile = 'tmp/goalRevSurnames'
 
-PURE_PURE_RATIO = 35
-PURE_FOREIGN_RATIO = 20
-FOREIGN_PURE_RATIO = 20
-FOREIGN_FOREIGN_RATIO = 25
+PURE_PURE_RATIO = 50
+PURE_FOREIGN_RATIO = 15
+FOREIGN_PURE_RATIO = 15
+FOREIGN_FOREIGN_RATIO = 20
 DEFAULT_MIX_RATIOS = [PURE_PURE_RATIO, PURE_FOREIGN_RATIO, FOREIGN_PURE_RATIO, FOREIGN_FOREIGN_RATIO]
 
 class CountryDNA:
@@ -29,7 +29,8 @@ countryIdToCountrySpec = {
     getCountryId(19, 0): CountryDNA("Spain", 100, 1100, DEFAULT_MIX_RATIOS),
     getCountryId(19, 1): CountryDNA("Italy", 5, 1010, DEFAULT_MIX_RATIOS),
     getCountryId(16, 0): CountryDNA("China", 51, 1051,  DEFAULT_MIX_RATIOS),
-    getCountryId(18, 2): CountryDNA("UK", 2, 1005, DEFAULT_MIX_RATIOS)
+    getCountryId(18, 0): CountryDNA("UK", 2, 1005, DEFAULT_MIX_RATIOS),
+    getCountryId(15, 0): CountryDNA("Japan", 53, 1053, DEFAULT_MIX_RATIOS)
 }
 
 

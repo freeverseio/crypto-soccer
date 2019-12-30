@@ -7,6 +7,7 @@ python3 parseSpanishNames.py
 patch tmp/goalRevNames purgeSpanishNames2.patch
 python3 parseEnglishSurnames.py
 python3 parseSpanishSurnames.py
+python3 parseJapaneseSurnames.py
 ipython3 generateSQL.py
 echo "...generated database: goalRev.db...DONE"
 echo "run this command to update the GO code:"
