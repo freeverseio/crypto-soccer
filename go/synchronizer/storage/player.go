@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"errors"
 	"math/big"
 
 	log "github.com/sirupsen/logrus"
@@ -123,8 +122,7 @@ func (b *Player) Update(tx *sql.Tx, playerID *big.Int, playerState PlayerState) 
 	return err
 }
 
-func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (Player, error) {
-	player := Player{}
+func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	rows, err := tx.Query(`SELECT team_id, 
 	defence,
 	speed,
@@ -143,12 +141,15 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (Player, error) {
 	injury_matches_left
 	FROM players WHERE (player_id = $1);`, playerID.String())
 	if err != nil {
-		return player, err
+		return nil, err
 	}
 	defer rows.Close()
+
 	if !rows.Next() {
-		return player, errors.New("Unexistent player " + playerID.String())
+		return nil, nil
 	}
+
+	player := Player{}
 	var teamID sql.NullString
 	var encodedSkills sql.NullString
 	var encodedState sql.NullString
@@ -174,11 +175,11 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (Player, error) {
 	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
 	player.State.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
 	player.State.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
-	return player, err
+	return &player, nil
 }
 
-func PlayersByTeamId(tx *sql.Tx, teamID *big.Int) ([]Player, error) {
-	var players []Player
+func PlayersByTeamId(tx *sql.Tx, teamID *big.Int) ([]*Player, error) {
+	var players []*Player
 	rows, err := tx.Query("SELECT player_id FROM players WHERE (team_id = $1);", teamID.String())
 	if err != nil {
 		return players, err

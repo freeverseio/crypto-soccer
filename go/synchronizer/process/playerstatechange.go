@@ -17,22 +17,23 @@ func PlayerStateChangeProcess(
 ) error {
 	playerID := event.PlayerId
 	state := event.State
-	isSpecial, err := contracts.Assets.GetIsSpecial(&bind.CallOpts{}, playerID)
+	// isSpecial, err := contracts.Assets.GetIsSpecial(&bind.CallOpts{}, playerID)
+	// if err != nil {
+	// 	return err
+	// }
+	player, err := storage.PlayerByPlayerId(tx, playerID)
 	if err != nil {
 		return err
 	}
-	if isSpecial {
-		log.Infof("TODO: this is a state change of a special player ID: %v, state: %v", playerID, state)
+	if player == nil {
+		log.Infof("BIRTH ... player ID %v state %v", playerID, state)
+		return nil
 	}
 	shirtNumber, err := contracts.Assets.GetCurrentShirtNum(&bind.CallOpts{}, state)
 	if err != nil {
 		return err
 	}
 	teamID, err := contracts.Assets.GetCurrentTeamId(&bind.CallOpts{}, state)
-	if err != nil {
-		return err
-	}
-	player, err := storage.PlayerByPlayerId(tx, playerID)
 	if err != nil {
 		return err
 	}
