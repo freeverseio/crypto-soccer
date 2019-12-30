@@ -267,6 +267,41 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	return name + " " + surname, final_country_code, nil
 }
 
+func (b *Generator) GeneratePlayerLook(playerId *big.Int, generation uint8, surname_country_code uint) (string, error) {
+	log.Debugf("[NAMES] GeneratePlayerLook of playerId %v", playerId)
+	// supported race_substrings: "eur, asi, afr"
+	supportedRaceStrings := []string{"eur","asi","afr"}
+	race_substring := ""
+	// supported (tz, countriesIdxInTz):
+	// 		(19, 0): "Spain"
+	// 		(16, 0): "China"
+	// 		(15, 0): "Japan"
+	if surname_country_code == uint(encodeCountry(19, 0)) {
+		race_substring = "eur"
+	} else if surname_country_code == uint(encodeCountry(16, 0)) || surname_country_code == uint(encodeCountry(15, 0))  {
+		race_substring = "asi"
+	} else {
+		idx := b.GenerateRnd(playerId, "race", 3)
+		race_substring = supportedRaceStrings[idx]
+	}
+	attributes := []string{
+		"lips_1", "lips_1_up", "lips_1_down", 
+		"lips_asi", "lips_asi_up", "lips_asi_down",
+		"lips_afr", "lips_afr_up", "lips_afr_down",
+		"lips_eur", "lips_eur_up", "lips_eur_down",
+	}
+	var vals []uint8
+	for idx := range attributes {
+		idx++
+	}
+	vals = append(vals,1)
+	return race_substring, nil
+	
+}
+
+
+
+
 func (b *Generator) GenerateTeamName(teamId *big.Int, timezone uint8, countryIdxInTZ uint64) (string, error) {
 	// For the time being, we don't use the country information. At some point, we may.
 	salt := teamId.String() + "ff"
