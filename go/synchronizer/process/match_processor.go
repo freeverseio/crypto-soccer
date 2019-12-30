@@ -550,7 +550,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		if err != nil {
 			return err
 		}
-		if player != nil {
+		if player == nil {
 			return fmt.Errorf("Unexistent playerId %v", playerID)
 		}
 		oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
