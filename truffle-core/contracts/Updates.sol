@@ -8,6 +8,7 @@ contract Updates {
     event TeamTransfer(uint256 teamId, address to);
     event ActionsSubmission(uint256 verse, uint8 timeZone, uint8 day, uint8 turnInDay, bytes32 seed, uint256 submissionTime, string cid);
     event TimeZoneUpdate(uint8 timeZone, bytes32 root, uint256 submissionTime);
+    event TimeZoneChallenge(uint8 timeZone, bytes32 root, uint256 submissionTime, uint8 level, bytes32[MERKLE_LEAFS] leafs);
 
     uint16 constant public SECS_BETWEEN_VERSES = 900; // 15 mins
     uint8 constant VERSES_PER_DAY = 96; // 24 * 4
@@ -21,10 +22,13 @@ contract Updates {
     bytes32 private _currentVerseSeed;
     bool private _needsInitUpdates = true;
     uint8 constant public MAX_CHALL_LEVELS = 6;
+    uint8 constant public MERKLE_LEVELS = 10;
+    uint16 constant public MERKLE_LEAFS = 1024;
 
     struct UpdateData {
         bytes32[MAX_CHALL_LEVELS][2] roots;
-        uint8 newestSkillsIdx;
+        uint8[2] currentLevel;
+        uint8 newestIdx;
         uint256 lastActionsSubmissionTime;
         uint256 lastUpdateTime;
         bytes32 actionsRoot;
@@ -32,7 +36,47 @@ contract Updates {
     }    
 
     UpdateData[25] tzUpdateData;
+
+  function hash_node(bytes32 left, bytes32 right) internal pure returns (bytes32 hash) {
+        assembly {
+            mstore(0x00, left)
+            mstore(0x20, right)
+            hash := keccak256(0x00, 0x40)
+        }
+        return hash;
+    }
         
+    function MerkleRoot(bytes32[MERKLE_LEAFS] memory array, uint256 nLevels) public returns (bytes32) {
+        uint256 nLeafs = array.length;
+        require(nLeafs == 2**nLevels, "dimensions do not match");
+        for (uint8 level = 1; level <= nLevels; level++) {
+            for (uint32 pos = 0; pos < 2**(nLevels - level); pos++) {
+                array[pos] = hash_node(array[2 * pos], array[2 * pos + 1]);      
+            }
+        }
+        return array[0];
+    }
+        
+    function challengeTZ(bytes32[MERKLE_LEAFS] memory array) public {
+        (uint8 prevTz,,) = prevTimeZoneToUpdate();
+        require(!isTZSettled(prevTz), "the challenge time has passed, cannot update this timezone");
+        // require(tzUpdateData[prevTz].currentLevel < MAX_CHALL_LEVELS,    )
+        uint8 newestIdx = tzUpdateData[prevTz].newestIdx;
+        uint8 currentLevel = tzUpdateData[prevTz].currentLevel[newestIdx];
+        bytes32 root = MerkleRoot(array, MERKLE_LEVELS);
+        require(root != tzUpdateData[prevTz].roots[newestIdx][currentLevel], "provided leafs lead to same root as previously provided root!");
+        tzUpdateData[prevTz].roots[newestIdx][currentLevel+1] = root;
+        tzUpdateData[prevTz].currentLevel[newestIdx] += 1;
+        emit TimeZoneChallenge(prevTz, root, now, currentLevel+1, array);
+    }
+        
+    function isTZSettled(uint8 tz) public returns (bool) {
+        if (tz == NULL_TIMEZONE) return true;
+        return (now > tzUpdateData[tz].lastUpdateTime + CHALLENGE_TIME);
+    }        
+
+
+
     function initUpdates() public {
         require(_needsInitUpdates == true, "cannot initialize twice");
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
@@ -98,8 +142,8 @@ contract Updates {
     }
     
     function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) public returns(uint256) {
-        if (newTZ) tzUpdateData[tz].newestSkillsIdx = 1 - tzUpdateData[tz].newestSkillsIdx;
-        tzUpdateData[tz].roots[tzUpdateData[tz].newestSkillsIdx][0] = root;
+        if (newTZ) tzUpdateData[tz].newestIdx = 1 - tzUpdateData[tz].newestIdx;
+        tzUpdateData[tz].roots[tzUpdateData[tz].newestIdx][0] = root;
         tzUpdateData[tz].lastUpdateTime = now;
     }
 
