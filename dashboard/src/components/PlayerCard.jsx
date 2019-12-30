@@ -106,12 +106,14 @@ export default function PlayerCard(props) {
                 <Card.Meta>
                     <Grid columns='equal'>
                         <Grid.Row>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBolt} />{player.potential}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBurn} />{player.shoot}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faHeart} />{player.endurance}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faRunning} />{player.speed}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShoePrints} />{player.pass}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShieldAlt} />{player.defence}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBolt} /> {player.potential}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBurn} /> {player.shoot}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faHeart} /> {player.endurance}</Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faRunning} /> {player.speed}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShoePrints} /> {player.pass}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShieldAlt} /> {player.defence}</Grid.Column>
                         </Grid.Row>
                     </Grid>
                 </Card.Meta>
@@ -192,6 +194,6 @@ function useTimeLeft(currentAuction) {
         return () => {
             clearInterval(timerID);
         }
-    });
+    }, [currentAuction]);
     return timeLeft;
 }
