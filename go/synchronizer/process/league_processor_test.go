@@ -239,10 +239,10 @@ func TestLeagueShuffling(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("teams in League : %v", teams)
-	if teams[0].State.RankingPoints == 0 {
-		t.Fatal("Owned team has ranking point 0")
-	}
 	for _, team := range teams[1:] {
+		if team.State.TeamIdxInLeague == 0 && team.State.RankingPoints == 0 {
+			t.Fatal("Owned team has ranking point 0")
+		}
 		if team.State.RankingPoints != 0 {
 			t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
 		}
