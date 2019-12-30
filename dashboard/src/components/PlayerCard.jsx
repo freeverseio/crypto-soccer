@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Image, Grid, Divider, Button, Input, List } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
@@ -12,7 +12,6 @@ import {
     faHeart,
     faShoePrints,
     faShieldAlt,
-    faMoneyBillWave,
     faClock,
     faGavel,
 } from '@fortawesome/free-solid-svg-icons'
@@ -55,27 +54,18 @@ mutation CreateAuction(
 
 export default function PlayerCard(props) {
     const { player, web3 } = props;
+    const [price, setPrice] = useState(50);
+    const [timeout, setTimeout] = useState(120);
+    const [createAuctionMutation] = useMutation(CREATE_AUCTION);
+    const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
 
     const date = new Date();
     const nowSeconds = Math.round(date.getTime() / 1000);
     const lastAuction = player.auctionsByPlayerId.nodes[0];
     const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
     const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
-    const [countdown, setCountdown] = useState(lastAuction - nowSeconds);
-
-    if (currentAuction) {
-        setInterval(() => {
-            const date = new Date();
-            const nowSeconds = Math.round(date.getTime() / 1000);
-            setCountdown(lastAuction.validUntil - nowSeconds);
-        }, 1000);
-    }
-
-    const [price, setPrice] = useState(50);
-    const [timeout, setTimeout] = useState(120);
-    const [createAuctionMutation] = useMutation(CREATE_AUCTION);
-    const [deletePlayerMutation] = useMutation(DELETE_PLAYER);
-
+    const timeLeft = useTimeLeft(currentAuction);
+    
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
@@ -107,8 +97,6 @@ export default function PlayerCard(props) {
         });
     };
 
-
-
     return (
         <Card>
             <Image src='player.jpg' wrapped ui={false} />
@@ -118,12 +106,14 @@ export default function PlayerCard(props) {
                 <Card.Meta>
                     <Grid columns='equal'>
                         <Grid.Row>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBolt} />{player.potential}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBurn} />{player.shoot}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faHeart} />{player.endurance}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faRunning} />{player.speed}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShoePrints} />{player.pass}</Grid.Column>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShieldAlt} />{player.defence}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBolt} /> {player.potential}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faBurn} /> {player.shoot}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faHeart} /> {player.endurance}</Grid.Column>
+                        </Grid.Row>
+                        <Grid.Row>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faRunning} /> {player.speed}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShoePrints} /> {player.pass}</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faShieldAlt} /> {player.defence}</Grid.Column>
                         </Grid.Row>
                     </Grid>
                 </Card.Meta>
@@ -134,7 +124,7 @@ export default function PlayerCard(props) {
                 {currentAuction &&
                     <Grid columns='equal'>
                         <Grid.Row>
-                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {countdown} sec</Grid.Column>
+                            <Grid.Column textAlign="center"><FontAwesomeIcon icon={faClock} /> {timeLeft}</Grid.Column>
                             <Grid.Column textAlign="center"><FontAwesomeIcon icon={faGavel} /> {bidsCount}</Grid.Column>
                             {/* <Grid.Column textAlign="center"><FontAwesomeIcon icon={faMoneye} /> TODO</Grid.Column> */}
                         </Grid.Row>
@@ -174,3 +164,36 @@ export default function PlayerCard(props) {
         </Card>
     )
 };
+
+function useTimeLeft(currentAuction) {
+    const calculateTimeLeft = (currentAuction) => {
+        if (!currentAuction) return "";
+
+        const difference = +new Date(currentAuction.validUntil * 1000) - +new Date();
+        let timeLeft = "";
+        if (difference > 0) {
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((difference / 1000 / 60) % 60);
+            const seconds = Math.floor((difference / 1000) % 60);
+
+            if (days > 0) { timeLeft += days + "d"; }
+            if (hours > 0) { timeLeft += " " + hours + "h"; }
+            if (minutes > 0) { timeLeft += " " + minutes + "m"; }
+            if (seconds > 0) { timeLeft += " " + seconds + "s"; }
+
+        }
+        return timeLeft;
+    }
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(currentAuction));
+    useEffect(() => {
+        const timerID = setInterval(() => {
+            setTimeLeft(calculateTimeLeft(currentAuction));
+        }, 1000);
+        return () => {
+            clearInterval(timerID);
+        }
+    }, [currentAuction]);
+    return timeLeft;
+}
