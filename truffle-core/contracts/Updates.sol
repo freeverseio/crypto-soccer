@@ -1,6 +1,5 @@
 pragma solidity >=0.4.21 <0.6.0;
 
-import "./Assets.sol";
  /**
  * @title Entry point to submit user actions, and timeZone root updates, which makes time evolve.
  */
@@ -23,8 +22,6 @@ contract Updates {
     bool private _needsInitUpdates = true;
     uint8 constant public MAX_CHALL_LEVELS = 6;
 
-    Assets private _assets;
-
     struct UpdateData {
         bytes32[MAX_CHALL_LEVELS][2] roots;
         uint8 newestSkillsIdx;
@@ -36,9 +33,8 @@ contract Updates {
 
     UpdateData[25] tzUpdateData;
         
-    function initUpdates(address addr) public {
+    function initUpdates() public {
         require(_needsInitUpdates == true, "cannot initialize twice");
-        _setAssetsAdress(addr);
         // the game starts at verse = 0. The transition to verse = 1 will be at the next exact hour.
         // that will be the begining of Round = 1. So Round 1 starts at some timezone that depends on
         // the call to the contract init() function.
@@ -57,10 +53,6 @@ contract Updates {
         _needsInitUpdates = false;
     }
  
-    function _setAssetsAdress(address addr) private {
-        _assets = Assets(addr);
-    }
-
     function getNow() public view returns(uint256) {
         return now;
     }

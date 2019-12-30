@@ -6,7 +6,6 @@ require('chai')
 const truffleAssert = require('truffle-assertions');
 const timeTravel = require('../utils/TimeTravel.js');
 
-const Assets = artifacts.require('Assets');
 const Updates = artifacts.require('Updates');
 
 contract('Updates', (accounts) => {
@@ -36,11 +35,8 @@ contract('Updates', (accounts) => {
     };
     
     beforeEach(async () => {
-        assets = await Assets.new().should.be.fulfilled;
-        encoding = assets;
-        await assets.init().should.be.fulfilled;
         updates = await Updates.new().should.be.fulfilled;
-        await updates.initUpdates(assets.address).should.be.fulfilled;
+        await updates.initUpdates().should.be.fulfilled;
         NULL_TIMEZONE = await updates.NULL_TIMEZONE().should.be.fulfilled;
         NULL_TIMEZONE = NULL_TIMEZONE.toNumber();
         snapShot = await timeTravel.takeSnapshot();

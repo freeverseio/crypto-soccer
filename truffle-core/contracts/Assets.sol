@@ -30,16 +30,6 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     struct TimeZone {
         Country[] countries;
         uint8 nCountriesToAdd;
-        bytes32[2] orgMapHash;
-        bytes32[2] skillsHash;
-        uint8 newestOrgMapIdx;
-        uint8 newestSkillsIdx;
-        bytes32 scoresRoot;
-        uint8 updateCycleIdx;
-        uint256 lastActionsSubmissionTime;
-        uint256 lastUpdateTime;
-        bytes32 actionsRoot;
-        uint256 lastMarketClosureBlockNum;
     }    
     
     uint256 constant public FREE_PLAYER_ID  = 1; // it never corresponds to a legit playerId due to its TZ = 0
@@ -92,30 +82,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         country.nDivisions = 1;
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1;
-        _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
         emit DivisionCreation(tz, 0, 0);
-    }
-
-    function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastUpdateTime;
-    }
-
-    function getLastActionsSubmissionTime(uint8 timeZone) external view returns(uint256) {
-        _assertTZExists(timeZone);
-        return _timeZones[timeZone].lastActionsSubmissionTime;
-    }
-
-    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) external returns(uint256) {
-        if (newTZ) _timeZones[tz].newestSkillsIdx = 1 - _timeZones[tz].newestSkillsIdx;
-        _timeZones[tz].skillsHash[_timeZones[tz].newestSkillsIdx] = root;
-        _timeZones[tz].lastUpdateTime = now;
-    }
-
-    function setActionsRoot(uint8 timeZone, bytes32 root) external returns(uint256) {
-        _assertTZExists(timeZone);
-        _timeZones[timeZone].actionsRoot = root;
-        _timeZones[timeZone].lastActionsSubmissionTime = now;
     }
 
     function getNCountriesInTZ(uint8 timeZone) public view returns(uint256) {
