@@ -238,17 +238,25 @@ func TestLeagueShuffling(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("teams in League : %v", teams)
-	if teams[0].State.RankingPoints == 0 {
-		t.Fatal("Owned team has ranking point 0")
-	}
-	for _, team := range teams[1:] {
-		if team.State.RankingPoints != 0 {
-			t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
+	for _, team := range teams {
+		t.Logf("Check team %v", team)
+		if team.State.Owner == "0x0000000000000000000000000000000000000000" {
+			// BOT team
+			if team.State.RankingPoints != 0 {
+				t.Fatalf("bot team %v has ranking points %v", team.TeamID, team.State.RankingPoints)
+			}
+			if team.State.PrevPerfPoints != 0 {
+				t.Fatalf("bot team %v has prev perf points points %v", team.TeamID, team.State.PrevPerfPoints)
+			}
+		} else {
+			if team.State.RankingPoints == 0 {
+				t.Fatal("Owned team has ranking point 0")
+			}
+			if team.State.TeamIdxInLeague != 0 {
+				t.Fatalf("Only owned team is not in position in league 0 but %v", team.State.TeamIdxInLeague)
+			}
 		}
-		if team.State.PrevPerfPoints != 0 {
-			t.Fatalf("bot team %v has prev perf points points %v", team.TeamID, team.State.PrevPerfPoints)
-		}
+
 		// log.Infof("team %v, league %v, ranking points %v, idx in league %v, perf points points %v", team.TeamID, team.State.LeagueIdx, team.State.RankingPoints, team.State.TeamIdxInLeague, team.State.PrevPerfPoints)
 	}
 }

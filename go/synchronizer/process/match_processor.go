@@ -541,6 +541,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			continue
 		}
 
+		/// 57896044618658097711785542341552232326515206756777149242398696258331718847466
 		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
@@ -548,6 +549,9 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		player, err := storage.PlayerByPlayerId(tx, playerID)
 		if err != nil {
 			return err
+		}
+		if player == nil {
+			return fmt.Errorf("Unexistent playerId %v", playerID)
 		}
 		oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
 		if err != nil {

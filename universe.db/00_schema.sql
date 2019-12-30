@@ -94,8 +94,8 @@ CREATE TABLE match_events (
     minute INT NOT NULL,
     type match_event_type NOT NULL,
     team_id TEXT NOT NULL REFERENCES teams(team_id),
-    manage_to_shoot BOOLEAN,
-    is_goal BOOLEAN,
+    manage_to_shoot BOOLEAN NOT NULL DEFAULT 'false',
+    is_goal BOOLEAN NOT NULL DEFAULT 'false',
     primary_player_id TEXT NOT NULL REFERENCES players(player_id),
     secondary_player_id TEXT REFERENCES players(player_id),
     FOREIGN KEY (timezone_idx, country_idx, league_idx, match_day_idx, match_idx) REFERENCES matches(timezone_idx, country_idx, league_idx, match_day_idx, match_idx)
