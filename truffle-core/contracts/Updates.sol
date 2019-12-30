@@ -21,9 +21,21 @@ contract Updates {
     uint256 public currentVerse;
     bytes32 private _currentVerseSeed;
     bool private _needsInitUpdates = true;
+    uint8 constant public MAX_CHALL_LEVELS = 6;
 
     Assets private _assets;
 
+    struct UpdateData {
+        bytes32[MAX_CHALL_LEVELS][2] roots;
+        uint8 newestSkillsIdx;
+        uint256 lastActionsSubmissionTime;
+        uint256 lastUpdateTime;
+        bytes32 actionsRoot;
+        bytes32 trainingsRoot;
+    }    
+
+    UpdateData[25] tzUpdateData;
+        
     function initUpdates(address addr) public {
         require(_needsInitUpdates == true, "cannot initialize twice");
         _setAssetsAdress(addr);
@@ -53,6 +65,11 @@ contract Updates {
         return now;
     }
 
+    function getLastActionsSubmissionTime(uint8 tz) public view returns(uint256) {
+        return tzUpdateData[tz].lastActionsSubmissionTime;
+    }
+
+
     function incrementVerse() private {
         currentVerse += 1;
         nextVerseTimestamp += SECS_BETWEEN_VERSES;
@@ -66,7 +83,8 @@ contract Updates {
         // if (prevTz != NULL_TIMEZONE) {
         //     require(now > _assets.getLastUpdateTime(prevTz)+ CHALLENGE_TIME, "last verse is still under challenge period");
         // }
-        _assets.setActionsRoot(newTZ, actionsRoot);
+        tzUpdateData[newTZ].actionsRoot = actionsRoot;
+        tzUpdateData[newTZ].lastActionsSubmissionTime = now;
         incrementVerse();
         setCurrentVerseSeed(blockhash(block.number-1));
         emit ActionsSubmission(currentVerse, newTZ, day, turnInDay, blockhash(block.number-1), now, cid);
@@ -75,17 +93,24 @@ contract Updates {
     function updateTZ(bytes32 root) public {
         (uint8 tz,,) = prevTimeZoneToUpdate();
         require(tz != NULL_TIMEZONE, "nothing to update in the current timeZone");
-        uint256 lastUpdate = _assets.getLastUpdateTime(tz);
-        uint256 lastActionsSubmissionTime = _assets.getLastActionsSubmissionTime(tz);
+        uint256 lastUpdate = tzUpdateData[tz].lastUpdateTime;
+        uint256 lastActionsSubmissionTime = tzUpdateData[tz].lastActionsSubmissionTime;
         if (lastUpdate > lastActionsSubmissionTime) {
             require(now < lastUpdate + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            _assets.setSkillsRoot(tz, root, false); // this is a challenge to a previous update
+            setSkillsRoot(tz, root, false); // this is a challenge to a previous update
         } else {
             require(now < lastActionsSubmissionTime + CHALLENGE_TIME, "challenging period is already over for this timezone");
-            _assets.setSkillsRoot(tz, root, true); // first time that we update this TZ
+            setSkillsRoot(tz, root, true); // first time that we update this TZ
         }
         emit TimeZoneUpdate(tz, root, now);
     }
+    
+    function setSkillsRoot(uint8 tz, bytes32 root, bool newTZ) public returns(uint256) {
+        if (newTZ) tzUpdateData[tz].newestSkillsIdx = 1 - tzUpdateData[tz].newestSkillsIdx;
+        tzUpdateData[tz].roots[tzUpdateData[tz].newestSkillsIdx][0] = root;
+        tzUpdateData[tz].lastUpdateTime = now;
+    }
+
     
     // each day has 24 hours, each with 4 verses => 96 verses per day.
     // day = 0,..13
