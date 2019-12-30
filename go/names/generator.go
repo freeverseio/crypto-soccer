@@ -130,8 +130,9 @@ func (b *Generator) GenerateRnd(seed *big.Int, salt string, max_val uint64) uint
 	return result % max_val
 }
 
-func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
-	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
+
+func (b *Generator) GenerateSeedAndSalt(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (*big.Int, string, uint, string, string, error) {
+	log.Debugf("[NAMES] GenerateSeedAndSalt of playerId %v", playerId)
 	isAcademyPlayer := generation > 31
 	if isAcademyPlayer {
 		generation = generation - 32
@@ -165,15 +166,22 @@ func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation u
 			country_code = codes[rnd_idx]
 		}
 	}
-	var namesInCountry uint = b.namesInCountry[country_code]
+	return seed, salt, country_code, colName, tableName, nil
+}
+
+func (b *Generator) GenerateName(isSurname bool, playerId *big.Int, generation uint8, country_code uint, purity int) (string, error) {
+	log.Debugf("[NAMES] GenerateName of playerId %v", playerId)
+	seed, salt, final_country_code, colName, tableName, err := b.GenerateSeedAndSalt(isSurname, playerId, generation, country_code, purity)
+	
+	var namesInCountry uint = b.namesInCountry[final_country_code]
 	var idxInCountry uint64 = b.GenerateRnd(seed, salt+"ee", uint64(namesInCountry))
-	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, country_code, idxInCountry)
+	rows, err := b.db.Query(`SELECT `+colName+` FROM `+tableName+` WHERE (country_code = $1 AND idx_in_country = $2)`, final_country_code, idxInCountry)
 	if err != nil {
 		return "", err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		var str string = "Rnd choice failed, country_code = " + strconv.FormatInt(int64(country_code), 10) +
+		var str string = "Rnd choice failed, final_country_code = " + strconv.FormatInt(int64(final_country_code), 10) +
 			", idxInCountry = " + strconv.FormatInt(int64(idxInCountry), 10) +
 			", tableName = " + tableName
 		return "", errors.New(str)
@@ -243,6 +251,7 @@ func (b *Generator) GeneratePlayerFullName(playerId *big.Int, generation uint8, 
 	if err != nil {
 		return "", err
 	}
+	
 	surname, err := b.GenerateName(true, playerId, generation, code_surname, pure_pure+foreign_pure)
 	if err != nil {
 		return "", err
