@@ -19,6 +19,7 @@ func TestNewSpecialPlayer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	274877906944
 	playerId, _ := new(big.Int).SetString("57896044618658097711785542341552232326515206756777149242398696258331718847466", 10)
 	state, _ := new(big.Int).SetString("11425256194259610424594012086965331925454148519759026810474292549273807486976", 10)
 	event := assets.AssetsPlayerStateChange{}

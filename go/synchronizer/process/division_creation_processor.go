@@ -188,7 +188,7 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			return err
 		} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(b.contracts.Assets, encodedSkills); err != nil {
 			return err
-		} else if preferredPosition, err := b.getPlayerPreferredPosition(opts, encodedSkills); err != nil {
+		} else if preferredPosition, err := GetPlayerPreferredPosition(b.contracts, encodedSkills); err != nil {
 			return err
 		} else if shirtNumber, err := b.contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
@@ -220,21 +220,6 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 		}
 	}
 	return nil
-}
-
-func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, encodedSkills *big.Int) (string, error) {
-	if forwardness, err := p.contracts.Assets.GetForwardness(opts, encodedSkills); err != nil {
-		return "", err
-	} else if leftishness, err := p.contracts.Assets.GetLeftishness(opts, encodedSkills); err != nil {
-		return "", err
-	} else {
-		if forwardness.Uint64() > 255 {
-			return "", errors.New("Cannot cast forwardness to uint8: value too large")
-		} else if leftishness.Uint64() > 255 {
-			return "", errors.New("Cannot cast leftishness to uint8: value too large")
-		}
-		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
-	}
 }
 
 func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, teamID *big.Int) error {
