@@ -43,7 +43,7 @@ func TestGeneratePlayerName(t *testing.T) {
 			playerId := big.NewInt(int64(place*1000 + i))
 			timezone = supported[place*2]
 			countryIdxInTZ = uint64(supported[place*2+1])
-			name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+			name, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 			if err != nil {
 				t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 			}
@@ -77,7 +77,7 @@ func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
 		playerId := big.NewInt(int64(i))
 		timezone = uint8(1 + i)
 		countryIdxInTZ = uint64(3*i + 2)
-		name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+		name, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 		if err != nil {
 			t.Fatalf("error generating name for player: %s", playerId)
 		}
@@ -107,7 +107,7 @@ func TestGenerateChildName(t *testing.T) {
 	playerId := big.NewInt(int64(1))
 	timezone = 19
 	countryIdxInTZ = 0
-	name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
@@ -116,7 +116,7 @@ func TestGenerateChildName(t *testing.T) {
 		t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 	}
 	generation = uint8(1)
-	name2, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name2, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
@@ -146,7 +146,7 @@ func TestGenerateAcademyName(t *testing.T) {
 	playerId := big.NewInt(int64(1))
 	timezone = 19
 	countryIdxInTZ = 0
-	name, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
+	name, _, err := generator.GeneratePlayerFullName(playerId, generation, timezone, countryIdxInTZ)
 	if err != nil {
 		t.Fatalf("error generating name for player %s: %s", playerId.String(), err)
 	}
