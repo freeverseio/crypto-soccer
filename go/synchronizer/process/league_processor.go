@@ -148,7 +148,8 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
 	})
 	// create the new leagues
-	for i, team := range orgMap {
+	for i := range orgMap {
+		team := orgMap[i]
 		team.State.LeagueIdx = uint32(i / 8)
 		team.State.TeamIdxInLeague = uint32(i % 8)
 		err = team.Update(tx, team.TeamID, team.State)
