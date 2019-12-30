@@ -26,7 +26,7 @@ func PlayerStateChangeProcess(
 	}
 	if player == nil {
 		log.Infof("BIRTH ... player ID %v state %v", playerID, state)
-		if player, err = GeneratePlayer(contracts, playerID, state); err != nil {
+		if player, err = GeneratePlayerByPlayerIdAndState(contracts, playerID, state); err != nil {
 			return err
 		}
 		return player.Insert(tx)
@@ -44,7 +44,7 @@ func PlayerStateChangeProcess(
 	return player.Update(tx, playerID, player.State)
 }
 
-func GeneratePlayer(
+func GeneratePlayerByPlayerIdAndState(
 	contracts *contracts.Contracts,
 	playerId *big.Int,
 	encodedState *big.Int,
