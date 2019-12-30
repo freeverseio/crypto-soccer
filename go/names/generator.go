@@ -284,22 +284,52 @@ func (b *Generator) GeneratePlayerLook(playerId *big.Int, generation uint8, surn
 		idx := b.GenerateRnd(playerId, "race", 3)
 		race_substring = supportedRaceStrings[idx]
 	}
-	attributes := []string{
-		"lips_1", "lips_1_up", "lips_1_down", 
-		"lips_asi", "lips_asi_up", "lips_asi_down",
-		"lips_afr", "lips_afr_up", "lips_afr_down",
-		"lips_eur", "lips_eur_up", "lips_eur_down",
+	attributes := []string{"eyes_cau_2", "nose_cau_2", "nose_cau_2_down", "nose_cau_2_up", "nose_cau_3", "nose_cau_3_down", "nose_cau_3_up", "lips_cau_2", "lips_cau_2_down", "lips_cau_2_up", "jaw_cau_2", "jaw_cau_2_down", "jaw_cau_3", "jaw_cau_3_down", "ears_cau_2", "chin_cau_2", "eyes_afr_1", "eyes_afr_2", "nose_afr_1", "nose_afr_1_down", "nose_afr_1_up", "lips_afr_1", "lips_afr_1_up", "lips_afr_1_down", "forehead_afr_1", "cheeks_afr_1", "cheeks_afr_1_down", "cheeks_afr_2", "cheeks_afr_2_down", "cheeks_afr_3", "cheeks_afr_3_down", "jaw_afr_1", "jaw_afr_1_down", "ears_afr_1", "chin_afr_1", "chin_afr_1_down", "eyes_asi_1", "nose_asi_1", "nose_asi_1_down", "nose_asi_1_up", "lips_asi_1", "lips_asi_1_up", "lips_asi_1_down", "lips_asi_2", "lips_asi_2_up", "lips_asi_2_down", "cheeks_asi_1", "cheeks_asi_1_down", "forehead_asi_1", "ears_asi_1", "jaw_asi_1", "jaw_asi_1_down", "chin_asi_1", "chin_asi_1_down", "eyebrows_afr_1", "eyebrows_afr_1_up", "eyebrows_afr_1_down", "eyebrows_asi_1", "eyebrows_asi_1_up", "eyebrows_asi_1_down"}
+	// var vals []uint16
+	var groups [][]uint16
+	for _, attr1 := range attributes {
+		if !strings.Contains(attr1, "down") && !strings.Contains(attr1, "up") {
+			var thisGroup []uint16
+			for idx2, attr2 := range attributes {
+				if strings.Contains(attr1, attr2) {
+					thisGroup = append(thisGroup, uint16(idx2))
+				}
+			}
+			groups = append(groups, thisGroup)
+		}
 	}
-	var vals []uint8
-	for _, attr := range attributes {
-		if strings.Contains(attr, race_substring) {
-			vals = append(vals,1)
+
+	var values []uint8
+	for i := 0; i < len(attributes); i++ {
+		values = append(values, 0)
+	}
+
+	// first, start at a point with maximal "race" attributes 
+	for _, groupIdxs := range groups {
+		if strings.Contains(attributes[groupIdxs[0]], race_substring) {
+			values[groupIdxs[0]] = 9
+		}
+	}
+	
+	// next choose two main directions
+	
+	for _, groupIdxs := range groups {
+		if strings.Contains(attributes[groupIdxs[0]], race_substring) {
+			salt := attributes[groupIdxs[0]]
+			selected := b.GenerateRnd(playerId, salt, uint64(len(groupIdxs)))
+			for idxInGroup, idx := range groupIdxs {
+				if uint64(idxInGroup) == selected { 
+					values[idx] = 9
+				} else {
+					values[idx] = uint8(b.GenerateRnd(playerId, salt + strconv.Itoa(int(idx)), 3))
+				}
+			}
 		} else {
-			vals = append(vals,0)
+			
 		}
 	}
 	return race_substring, nil
-	
+	// toni
 }
 
 
