@@ -541,7 +541,6 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			continue
 		}
 
-		/// 57896044618658097711785542341552232326515206756777149242398696258331718847466
 		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
