@@ -154,6 +154,15 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		if err != nil {
 			return err
 		}
+		/*
+			type Matchevent struct {
+				Type            int16 `json:"type"`
+				ManagesToShoot  int16 `json:"managestoshoot"`
+				IsGoal          int16 `json:"isgoal"`
+				PrimaryPlayer   int16 `json:"primaryplayer"`
+				SecondaryPlayer int16 `json:"secondaryplayer"`
+			}
+		*/
 		event := storage.MatchEvent{}
 		event.TimezoneIdx = int(match.TimezoneIdx)
 		event.CountryIdx = int(match.CountryIdx)
@@ -163,6 +172,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		event.TeamID = teamID
 		event.Minute = int(computedEvent.Minute)
 		event.Type = storage.Attack // TODO set the rifht one
+		event.ManageToShoot = bool(computedEvent.ManagesToShoot)
 		event.PrimaryPlayerID = primaryPlayerID.String()
 		if err = event.Insert(tx); err != nil {
 			return err
