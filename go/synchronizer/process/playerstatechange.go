@@ -61,7 +61,7 @@ func GeneratePlayerByPlayerIdAndState(
 		// } else if name, err := namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); err != nil {
 		// 	return err
 	} else {
-		name := "Awesome"
+		name := "Mr. Awesome"
 		teamId, err := contracts.Assets.GetCurrentTeamId(&bind.CallOpts{}, encodedState)
 		if err != nil {
 			return nil, err
