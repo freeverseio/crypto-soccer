@@ -23,7 +23,8 @@ func TestGeneratePlayerName(t *testing.T) {
 	// WARNING: both timezone and countryIdxInTZ are derivable from playerId
 	var timezone uint8
 	var countryIdxInTZ uint64
-	var result string = ""
+	var resultNames string = ""
+	var resultLooks string = ""
 	generation := uint8(0)
 	// supported (tz, countriesIdxInTz):
 	// 		(19, 0): "Spain"
@@ -49,18 +50,29 @@ func TestGeneratePlayerName(t *testing.T) {
 			if len(name) == 0 {
 				t.Fatalf("Expecting non empty player name, but got \"%v\"", name)
 			}
-			result += name
+			resultNames += name
 			look, err := generator.GeneratePlayerLook(playerId, generation, final_country_code)
+			if err != nil {
+				t.Fatalf("error generating look for player %s: %s", playerId.String(), err)
+			}
 			fmt.Println(look)
+			resultLooks += look
 		}
 		fmt.Println("")
 	}
 
-	if int_hash(result) != uint64(3654913364252892805) {
+	if int_hash(resultNames) != uint64(13092756557472509842) {
 		fmt.Println("the just-obtained hash is: ")
-		fmt.Println(int_hash(result))
+		fmt.Println(int_hash(resultNames))
 		t.Fatal("result of generating names not as expected")
 	}
+
+	if int_hash(resultLooks) != uint64(13092756557472509842) {
+		fmt.Println("the just-obtained hash is: ")
+		fmt.Println(int_hash(resultLooks))
+		t.Fatal("result of generating looks not as expected")
+	}
+
 }
 
 // func TestGeneratePlayerNameUndefinedCountry(t *testing.T) {
