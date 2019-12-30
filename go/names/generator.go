@@ -291,10 +291,13 @@ func (b *Generator) GeneratePlayerLook(playerId *big.Int, generation uint8, surn
 		"lips_eur", "lips_eur_up", "lips_eur_down",
 	}
 	var vals []uint8
-	for idx := range attributes {
-		idx++
+	for _, attr := range attributes {
+		if strings.Contains(attr, race_substring) {
+			vals = append(vals,1)
+		} else {
+			vals = append(vals,0)
+		}
 	}
-	vals = append(vals,1)
 	return race_substring, nil
 	
 }
