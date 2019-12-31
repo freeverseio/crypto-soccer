@@ -21,6 +21,7 @@ query {
 
 export default function TeamsByRanking(props) {
     const { onTeamIdChange } = props;
+    const [teamId, setTeamId] = useState("");
     const { loading, error, data } = useQuery(GET_TEAMS_BY_RANKING, {
         pollInterval: 5000,
     });
@@ -44,7 +45,13 @@ export default function TeamsByRanking(props) {
             <Table.Body >
                 {
                     teams.map(team => (
-                        <Table.Row key={team.teamId} onClick={() => { onTeamIdChange && onTeamIdChange(team.teamId)}}>
+                        <Table.Row
+                            key={team.teamId}
+                            active={teamId === team.teamId}
+                            onClick={() => {
+                                setTeamId(team.teamId);
+                                onTeamIdChange && onTeamIdChange(team.teamId);
+                            }}>
                             <Table.Cell>{team.name}</Table.Cell>
                             <Table.Cell>{team.rankingPoints}</Table.Cell>
                             <Table.Cell>{team.timezoneIdx}</Table.Cell>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Container } from 'semantic-ui-react'
+import React from 'react';
+import { Table } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -25,7 +25,6 @@ query teamByTeamId($teamId: String!){
 
 export default function TeamTable(props) {
     const { teamId } = props;
-    console.log(teamId)
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
         pollInterval: 5000,
