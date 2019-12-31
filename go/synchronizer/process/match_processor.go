@@ -172,7 +172,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		if err = event.Insert(tx); err != nil {
 			return err
 		}
-		if computedEvent.SecondaryPlayer != 0 {
+		if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 			secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
 			secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
 			if err != nil {
