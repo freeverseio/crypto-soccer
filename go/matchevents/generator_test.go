@@ -62,16 +62,16 @@ func TestMatchEvents(t *testing.T) {
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].Team))
 		concat += ", "
-		concat += strconv.Itoa(int(computedEvents[i].ManagesToShoot))
+		concat += strconv.FormatBool(computedEvents[i].ManagesToShoot)
 		concat += ", "
-		concat += strconv.Itoa(int(computedEvents[i].IsGoal))
+		concat += strconv.FormatBool(computedEvents[i].IsGoal)
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].PrimaryPlayer))
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[1, 0, 0, 1, 1, 10, 2][7, 0, 1, 0, 0, 7, -1][10, 0, 1, 1, 0, 8, 0][13, 0, 0, 0, 0, 9, -1][16, 0, 0, 0, 0, 4, -1][23, 0, 0, 0, 0, 3, -1][26, 0, 0, 0, 0, 6, -1][29, 0, 0, 0, 0, 5, -1][32, 0, 0, 0, 0, 9, -1][39, 0, 0, 0, 0, 8, -1][41, 0, 0, 0, 0, 7, -1][46, 0, 0, 0, 0, 8, -1][23, 2, 0, -1, -1, 12, -1][9, 1, 0, -1, -1, 4, -1][23, 2, 1, -1, -1, 12, -1][9, 1, 1, -1, -1, 4, -1][16, 5, 0, -1, -1, 5, 19][22, 5, 0, -1, -1, 1, 12][16, 5, 1, -1, -1, 5, 19][22, 5, 1, -1, -1, 1, 12]"
+	expected := "[1, 0, 0, true, true, 10, 2][7, 0, 1, false, false, 7, -1][10, 0, 1, true, false, 8, 0][13, 0, 0, false, false, 9, -1][16, 0, 0, false, false, 4, -1][23, 0, 0, false, false, 3, -1][26, 0, 0, false, false, 6, -1][29, 0, 0, false, false, 5, -1][32, 0, 0, false, false, 9, -1][39, 0, 0, false, false, 8, -1][41, 0, 0, false, false, 7, -1][46, 0, 0, false, false, 8, -1][23, 2, 0, false, false, 12, -1][9, 1, 0, false, false, 4, -1][23, 2, 1, false, false, 12, -1][9, 1, 1, false, false, 4, -1][16, 5, 0, false, false, 5, 19][22, 5, 0, false, false, 1, 12][16, 5, 1, false, false, 5, 19][22, 5, 1, false, false, 1, 12]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)
@@ -79,7 +79,6 @@ func TestMatchEvents(t *testing.T) {
 	}
 
 }
-
 
 func TestMatchEvents2ndHalf(t *testing.T) {
 	seed := big.NewInt(12334234543)
@@ -127,16 +126,16 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].Team))
 		concat += ", "
-		concat += strconv.Itoa(int(computedEvents[i].ManagesToShoot))
+		concat += strconv.FormatBool(computedEvents[i].ManagesToShoot)
 		concat += ", "
-		concat += strconv.Itoa(int(computedEvents[i].IsGoal))
+		concat += strconv.FormatBool(computedEvents[i].IsGoal)
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].PrimaryPlayer))
 		concat += ", "
 		concat += strconv.Itoa(int(computedEvents[i].SecondaryPlayer))
 		concat += "]"
 	}
-	expected := "[46, 0, 0, 1, 1, 10, 2][52, 0, 1, 0, 0, 7, -1][55, 0, 1, 1, 0, 8, 0][58, 0, 0, 0, 0, 9, -1][61, 0, 0, 0, 0, 4, -1][68, 0, 0, 0, 0, 3, -1][71, 0, 0, 0, 0, 6, -1][74, 0, 0, 0, 0, 5, -1][77, 0, 0, 0, 0, 9, -1][84, 0, 0, 0, 0, 8, -1][86, 0, 0, 0, 0, 7, -1][91, 0, 0, 0, 0, 8, -1][68, 2, 0, -1, -1, 12, -1][54, 1, 0, -1, -1, 4, -1][68, 2, 1, -1, -1, 12, -1][54, 1, 1, -1, -1, 4, -1][61, 5, 0, -1, -1, 5, 19][67, 5, 0, -1, -1, 1, 12][61, 5, 1, -1, -1, 5, 19][67, 5, 1, -1, -1, 1, 12]"
+	expected := "[46, 0, 0, true, true, 10, 2][52, 0, 1, false, false, 7, -1][55, 0, 1, true, false, 8, 0][58, 0, 0, false, false, 9, -1][61, 0, 0, false, false, 4, -1][68, 0, 0, false, false, 3, -1][71, 0, 0, false, false, 6, -1][74, 0, 0, false, false, 5, -1][77, 0, 0, false, false, 9, -1][84, 0, 0, false, false, 8, -1][86, 0, 0, false, false, 7, -1][91, 0, 0, false, false, 8, -1][68, 2, 0, false, false, 12, -1][54, 1, 0, false, false, 4, -1][68, 2, 1, false, false, 12, -1][54, 1, 1, false, false, 4, -1][61, 5, 0, false, false, 5, 19][67, 5, 0, false, false, 1, 12][61, 5, 1, false, false, 5, 19][67, 5, 1, false, false, 1, 12]"
 	if concat != expected {
 		fmt.Println("the obtained result is: ")
 		fmt.Println(concat)

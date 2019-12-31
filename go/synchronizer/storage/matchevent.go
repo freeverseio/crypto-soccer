@@ -2,8 +2,11 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
+
+	"github.com/freeverseio/crypto-soccer/go/matchevents"
 )
 
 type MatchEventType string
@@ -11,7 +14,7 @@ type MatchEventType string
 const (
 	Attack       MatchEventType = "attack"
 	YellowCard   MatchEventType = "yellow_card"
-	RadCard      MatchEventType = "red_card"
+	RedCard      MatchEventType = "red_card"
 	InjurySoft   MatchEventType = "injury_soft"
 	InjuryHard   MatchEventType = "injury_hard"
 	Substitution MatchEventType = "substytution"
@@ -31,6 +34,25 @@ type MatchEvent struct {
 	IsGoal            bool           `json:"is_goal"`             // is_goal
 	PrimaryPlayerID   string         `json:"primary_player_id"`   // primary_player_id
 	SecondaryPlayerID sql.NullString `json:"secondary_player_id"` // secondary_player_id
+}
+
+func MarchEventTypeByMatchEvent(event int16) (MatchEventType, error) {
+	switch event {
+	case matchevents.EVNT_ATTACK:
+		return Attack, nil
+	case matchevents.EVNT_YELLOW:
+		return YellowCard, nil
+	case matchevents.EVNT_RED:
+		return RedCard, nil
+	case matchevents.EVNT_SOFT:
+		return InjurySoft, nil
+	case matchevents.EVNT_HARD:
+		return InjuryHard, nil
+	case matchevents.EVNT_SUBST:
+		return Substitution, nil
+	default:
+		return "", fmt.Errorf("Unknown match event %v", event)
+	}
 }
 
 func MatchEventCount(tx *sql.Tx) (uint64, error) {

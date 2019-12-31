@@ -149,11 +149,6 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		} else {
 			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
 		}
-		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
-		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
-		if err != nil {
-			return err
-		}
 		event := storage.MatchEvent{}
 		event.TimezoneIdx = int(match.TimezoneIdx)
 		event.CountryIdx = int(match.CountryIdx)
@@ -162,10 +157,29 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		event.MatchIdx = int(match.MatchIdx)
 		event.TeamID = teamID
 		event.Minute = int(computedEvent.Minute)
-		event.Type = storage.Attack // TODO set the rifht one
+		event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type)
+		if err != nil {
+			return err
+		}
+		event.ManageToShoot = computedEvent.ManagesToShoot
+		event.IsGoal = computedEvent.IsGoal
+		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
+		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+		if err != nil {
+			return err
+		}
 		event.PrimaryPlayerID = primaryPlayerID.String()
 		if err = event.Insert(tx); err != nil {
 			return err
+		}
+		if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
+			secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
+			secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
+			if err != nil {
+				return err
+			}
+			event.SecondaryPlayerID.String = secondaryPlayerID.String()
+			event.SecondaryPlayerID.Valid = true
 		}
 	}
 	return nil
@@ -541,7 +555,6 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			continue
 		}
 
-		/// 57896044618658097711785542341552232326515206756777149242398696258331718847466
 		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
 		if err != nil {
 			return err
