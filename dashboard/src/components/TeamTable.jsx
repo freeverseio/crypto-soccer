@@ -25,7 +25,6 @@ query teamByTeamId($teamId: String!){
 
 export default function TeamTable(props) {
     const { teamId } = props;
-    console.log(teamId)
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
         pollInterval: 5000,
