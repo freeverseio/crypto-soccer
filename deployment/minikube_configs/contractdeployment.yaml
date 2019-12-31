@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: contractdeployment
+  labels:
+    app: contractdeployment
+    component: contracts
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: contractdeployment
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: contractdeployment
+  labels:
+    app: contractdeployment
+    component: contracts
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  template:
+    metadata:
+      labels:
+        app: contractdeployment
+        component: contracts
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: contractdeployment
+        image: contractdeployment:0.0.1
+      restartPolicy: Never

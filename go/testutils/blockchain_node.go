@@ -35,8 +35,8 @@ func AssertNoErr(err error, params ...interface{}) {
 	}
 }
 
-func NewBlockchainNodeDeployAndInit() (*BlockchainNode, error) {
-	node, err := NewBlockchainNode()
+func NewBlockchainNodeDeployAndInitAt(address string) (*BlockchainNode, error) {
+	node, err := NewBlockchainNodeAt(address)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +51,8 @@ func NewBlockchainNodeDeployAndInit() (*BlockchainNode, error) {
 	return node, nil
 }
 
-func NewBlockchainNode() (*BlockchainNode, error) {
-	client, err := ethclient.Dial("http://localhost:8545")
+func NewBlockchainNodeAt(address string) (*BlockchainNode, error) {
+	client, err := ethclient.Dial(address)
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +66,14 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 		creatorPrivateKey,
 		nil,
 	}, nil
+}
+
+func NewBlockchainNodeDeployAndInit() (*BlockchainNode, error) {
+	return NewBlockchainNodeDeployAndInitAt("http://localhost:8545")
+}
+
+func NewBlockchainNode() (*BlockchainNode, error) {
+	return NewBlockchainNodeAt("http://localhost:8545")
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {

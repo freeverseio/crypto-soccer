@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ethereum 
+  labels:
+    app: ethereum
+    component: ethereum
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  type: NodePort
+  ports:
+   - port: 8545
+     targetPort: 8545
+  selector:
+   app: ethereum
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ethereum
+  labels:
+    app: ethereum
+    component: ethereum
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ethereum
+  template:
+    metadata:
+      labels:
+        app: ethereum
+        component: ethereum
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: ethereum
+        image: freeverseio/ethereum:dev
+        args: [--mine, --nodiscover]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8545
+      imagePullSecrets:
+      - name: docker-secret

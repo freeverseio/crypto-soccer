@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: universedb
+  labels:
+    app: universedb
+    component: database
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: universedb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universedb
+  labels:
+    app: universedb
+    component: database
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: universedb
+  template:
+    metadata:
+      labels:
+        app: universedb
+        component: database
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: universedb
+        image: freeverseio/universe.db:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+      imagePullSecrets:
+      - name: docker-secret

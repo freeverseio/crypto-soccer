@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipfsnode
+  labels:
+    app: ipfsnode
+    component: ipfs
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  selector:
+    app: ipfsnode
+  type: NodePort
+  ports:
+  - name: http
+    protocol: TCP
+    port: 4001
+    targetPort: 4001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipfsnode
+  labels:
+    app: ipfsnode
+    component: ipfs
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ipfsnode
+  template:
+    metadata:
+      labels:
+        app: ipfsnode
+        component: ipfs
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: ipfsnode
+        image: ipfs/go-ipfs:master
+        env:
+        - name: IPFS_PROFILE
+          value: server
+        - name: IPFS_PATH
+          value: /data 
+        ports:
+        - containerPort: 4001

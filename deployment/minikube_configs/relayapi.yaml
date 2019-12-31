@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: relayapi
+  labels:
+    app: relayapi
+    component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  selector:
+    app: relayapi
+  type: NodePort
+  ports:
+  - name: http
+    protocol: TCP
+    port: 4002
+    targetPort: 4002
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relayapi
+  labels:
+    app: relayapi
+    component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relayapi
+  template:
+    metadata:
+      labels:
+        app: relayapi
+        component: graphql
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: relayapi
+        image: freeverseio/relay.api:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        args: [-d, postgres://$(freeverse_username):$(freeverse_password)@relaydb:5432/relay,
+               --assetsContractAddress, "$(assets_contract_address)",
+               --privateKey "5d0060adb17bd80efd7fff71e718bdd97acf3c6e0c633d8f7fd451044c0d1480",
+               --ethereum, http://ethereum:8545]
+        ports:
+        - containerPort: 4002
+      imagePullSecrets:
+      - name: docker-secret
