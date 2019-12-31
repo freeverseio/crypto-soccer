@@ -9,7 +9,8 @@ class TopBar extends Component {
 
         return (
             <Menu pointing secondary>
-                <Link to='/'><Menu.Item name='academy' active={location === '/'} /></Link>
+                <Link to='/'><Menu.Item name='Home' active={location === '/'} /></Link>
+                <Link to='/academy'><Menu.Item name='academy' active={location === '/academy'} /></Link>
 
                 <Menu.Menu position='right'>
                     <Menu.Item>
