@@ -22,7 +22,7 @@ query {
 export default function TeamsByRanking(props) {
     const { onTeamIdChange } = props;
     const { loading, error, data } = useQuery(GET_TEAMS_BY_RANKING, {
-        pollInterval: 1000,
+        pollInterval: 5000,
     });
 
     if (loading) return 'Loading...';

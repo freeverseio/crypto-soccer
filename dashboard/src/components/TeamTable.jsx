@@ -28,7 +28,7 @@ export default function TeamTable(props) {
     console.log(teamId)
     const { loading, error, data } = useQuery(GET_TEAM, {
         variables: { teamId },
-        pollInterval: 1000,
+        pollInterval: 5000,
     });
 
     if (loading) return 'Loading...';
