@@ -4,8 +4,8 @@ import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
 const GET_TEAM = gql`
-query {
-  teamByTeamId(teamId: "274877906944") {
+query teamByTeamId($teamId: String!){
+  teamByTeamId(teamId: $teamId) {
     name
     playersByTeamId(orderBy: SHIRT_NUMBER_ASC) {
       nodes {
@@ -24,8 +24,10 @@ query {
 `;
 
 export default function TeamTable(props) {
-    const { onTeamIdChange } = props;
+    const { teamId } = props;
+    console.log(teamId)
     const { loading, error, data } = useQuery(GET_TEAM, {
+        variables: { teamId },
         pollInterval: 1000,
     });
 
@@ -33,12 +35,13 @@ export default function TeamTable(props) {
     if (error) return `Error! ${error.message}`;
     
     const team = data.teamByTeamId
+    if (!team) return <div/>;
+
     const players = team.playersByTeamId.nodes;
 
     return (
         <Table color='grey' inverted selectable >
             <Table.Header>
-                {team.name}
                 <Table.Row>
                     <Table.HeaderCell>Shirt</Table.HeaderCell>
                     <Table.HeaderCell>Name</Table.HeaderCell>
@@ -51,7 +54,7 @@ export default function TeamTable(props) {
             <Table.Body >
                 {
                     players.map(player => (
-                        <Table.Row key={player.playerId} onClick={() => { onTeamIdChange && onTeamIdChange(team.teamId)}}>
+                        <Table.Row key={player.playerId}>
                             <Table.Cell>{player.shirtNumber}</Table.Cell>
                             <Table.Cell>{player.name}</Table.Cell>
                             <Table.Cell>{player.defence}</Table.Cell>
