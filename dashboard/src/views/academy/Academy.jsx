@@ -145,7 +145,7 @@ export default function SpecialPlayer(props) {
 
     return (
         <Container style={{ margin: 20 }} >
-            <Segment>
+            <Segment color='teal' inverted>
                 <Form onSubmit={handleSubmit}>
                     <Form.Field>
                         <Input labelPosition='left' type='text' value={name} onChange={event => setName(event.target.value)}>
@@ -197,7 +197,7 @@ export default function SpecialPlayer(props) {
                             <input placeholder='Age' type='number' value={age} onChange={event => setAge(event.target.value)} />
                         </Form.Field>
                     </Form.Group>
-                    <Form.Button type='submit'>Create</Form.Button>
+                    <Form.Button type='submit' fluid>Create</Form.Button>
                 </Form>
             </Segment>
             <AccademyPlayers />
