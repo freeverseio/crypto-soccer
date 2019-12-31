@@ -52,6 +52,9 @@ spec:
                -marketContractAddress, "$(market_contract_address)",
                -updatesContractAddress, "$(updates_contract_address)",
                -assetsContractAddress, "$(assets_contract_address)",
-               -evolutionContractAddress, "$(evolution_contract_address)"]
+               -evolutionContractAddress, "$(evolution_contract_address)",
+               -matcheventsContractAddress, "${matchevents_contract_address}",
+               -utilsmatchlogContractAddress, "${utils_match_log_contract_address}"]
+
       imagePullSecrets:
       - name: docker-secret

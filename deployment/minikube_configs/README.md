@@ -18,6 +18,11 @@
     kubectl apply -f ethereum.yaml -n ${NAMESPACE}
     ```
 
+- build go contracts
+    ```bash
+    cd freeverseio/cryptosoccer && make contracts
+    ```
+
 - build dockder image to deploy contracts (use appropriate values for YOUR_GIT_USR and YOUR_GIT_TOKEN)
     ```bash
     eval $(minikube docker-env)

@@ -14,8 +14,8 @@ spec:
   selector:
    app: contractdeployment
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: contractdeployment
   labels:
@@ -24,10 +24,6 @@ metadata:
     part-of: cryptosoccer
     version: "0.0.1"
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: contractdeployment
   template:
     metadata:
       labels:
@@ -39,4 +35,4 @@ spec:
       containers:
       - name: contractdeployment
         image: contractdeployment:0.0.1
-  restartPolicy: Never
+      restartPolicy: Never
