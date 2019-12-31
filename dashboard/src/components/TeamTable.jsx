@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Container } from 'semantic-ui-react'
+import React from 'react';
+import { Table } from 'semantic-ui-react'
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
 
