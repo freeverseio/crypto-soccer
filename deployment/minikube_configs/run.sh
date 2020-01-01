@@ -1,9 +1,8 @@
 #!/bin/sh
 
 MY_DIR=`dirname "$0"`
-argerr=0
 
-NAMESPACE=foo
+NAMESPACE=freeverse
 DOCKER_REGISTRY_SERVER=docker.io
 DOCKER_USER=freeversedigitalocean
 DOCKER_PASSWORD=fdggreTRGDSBw45ergseth4hDGHD
