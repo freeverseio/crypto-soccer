@@ -45,19 +45,18 @@ namespace_and_secret()
 
 ethereum()
 {
-    echo "Running ethereum"
     kubectl apply -f ${MY_DIR}/ethereum.yaml -n ${NAMESPACE}
-    echo waiting until ethereum POD is running
+    echo -- waiting until ethereum POD is running
     kubectl wait --for=condition=available --timeout=600s deployment/ethereum -n ${NAMESPACE}
     POD=$(kubectl get pod -l app=ethereum -n ${NAMESPACE} -o jsonpath="{.items[0].metadata.name}")
     kubectl wait --for=condition=Ready --timeout=600s pod/${POD} -n ${NAMESPACE}
     # deploy contracts
-    echo "Deploying contracts"
+    echo -- deploying contracts
     kubectl apply -f ${MY_DIR}/contractdeployment.yaml -n ${NAMESPACE}
     # wait for job to complete
     kubectl wait --for=condition=complete --timeout=600s job/contractdeployment -n ${NAMESPACE}
     # print contract addresses
-    echo copy the following addresses into configmap.yaml
+    echo -- copy the following addresses into configmap.yaml
     kubectl logs job/contractdeployment -n ${NAMESPACE}
 }
 
