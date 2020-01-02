@@ -75,7 +75,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	matchSeed *big.Int,
 	startTime *big.Int,
 	is2ndHalf bool,
-) ([]*storage.MatchEvent, error) {
+) ([]storage.MatchEvent, error) {
 	isHomeStadium := true
 	isPlayoff := false
 	matchLog := [2]*big.Int{}
@@ -135,7 +135,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	if err != nil {
 		return nil, err
 	}
-	var me []*storage.MatchEvent
+	var me []storage.MatchEvent
 	for _, computedEvent := range computedEvents {
 		var teamID string
 		if computedEvent.Team == 0 {
@@ -174,7 +174,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 			event.SecondaryPlayerID.String = secondaryPlayerID.String()
 			event.SecondaryPlayerID.Valid = true
 		}
-		me = append(me, &event)
+		me = append(me, event)
 	}
 	return me, nil
 }
