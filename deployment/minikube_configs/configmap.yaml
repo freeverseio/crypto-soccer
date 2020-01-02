@@ -3,15 +3,15 @@ kind: ConfigMap
 metadata:
   name: freeverse-configmap
 data:
-  freeverse_username: freeverse
-  freeverse_password: freeverse
-  engine_contract_address: 0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B
-  engineprecomp_contract_address: 0x359a3f5d2353F5907B319c419150D1DDE0f581Bd
-  leagues_contract_address: 0x45672CEFeaa29a394ee3936D77CF4DA890Dff4D8
-  market_contract_address: 0xE995621Ca05a79504EFA4193A9934Db4A92d38F5
-  updates_contract_address: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
+  freeverse_username: freeverse # usr name for postgres dbs
+  freeverse_password: freeverse # pwd for postgres dbs
   assets_contract_address: 0x4a25439EA40008c9173B4b08012A74DC6cEc1475
+  leagues_contract_address: 0x45672CEFeaa29a394ee3936D77CF4DA890Dff4D8
+  updates_contract_address: 0x694dA4331476cBb5b7b2f69e9B0E08d441c07235
+  engine_contract_address: 0x3f06d1bFE68f9A9aBfc648158F7C93faEAbd491B
+  market_contract_address: 0xE995621Ca05a79504EFA4193A9934Db4A92d38F5
   evolution_contract_address: 0xEFB926e542BB03182343aEe29ff8B36889327Acb
+  engineprecomp_contract_address: 0x359a3f5d2353F5907B319c419150D1DDE0f581Bd
   matchevents_contract_address: 0xF51a67e33A5534DaA8bbBaEb4334d849Dc574C05
   utils_match_log_contract_address: 0xFB1436D488726D64a0441081D508b238fF756802
   enode: "enode://133f77f423d96282613afe4a3bd2c09a0645be853bd8d27d75da3064b1692cfc869ddeca586dc7969cfa4a30b9dbc9856f5cb02bd20fcb5fc0697c2b1fe2ce46@165.22.66.118:30303"
