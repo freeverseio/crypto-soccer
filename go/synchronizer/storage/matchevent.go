@@ -79,6 +79,12 @@ func MatchEventCountByTimezoneCountryLeague(tx *sql.Tx, timezone int, countryIdx
 	return count, nil
 }
 
+func DeleteAllMatchEvents(tx *sql.Tx, timezone int, countryIdx int, leagueIdx int) error {
+	// log.Info("[DBMS] Truncate match events table")
+	_, err := tx.Exec("DELETE FROM TABLE match_events WHERE timezone_idx=$1 AND country_idx=$2 AND league_idx=$3;", timezone, countryIdx, leagueIdx)
+	return err
+}
+
 func (b *MatchEvent) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Insert Match Event %v", b)
 	_, err := tx.Exec(`INSERT INTO match_events (
