@@ -6,6 +6,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/names"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
@@ -72,5 +73,79 @@ func TestGetPlayerState(t *testing.T) {
 		if state.String() != "0" {
 			t.Fatalf("Wrong state %v", state)
 		}
+	}
+}
+
+func TestProcessMatch(t *testing.T) {
+	tx, err := universedb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	namesdb, err := names.New("../../names/sql/names.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
+	processor, err := process.NewMatchProcessor(
+		bc.Contracts,
+		namesdb,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	match := storage.Match{}
+	match.HomeTeamID = big.NewInt(274877906944)
+	match.VisitorTeamID = big.NewInt(274877906945)
+	match.HomeMatchLog = big.NewInt(0)
+	match.VisitorMatchLog = big.NewInt(0)
+	states := [2][25]*big.Int{}
+	states[0], err = processor.GetTeamState(tx, match.HomeTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	states[1], err = processor.GetTeamState(tx, match.VisitorTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tactics, err := processor.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seed := [32]byte{0x0}
+	startTime := big.NewInt(555)
+	is2ndHalf := false
+	events, err := processor.ProcessMatchEvents(
+		match,
+		states,
+		tactics,
+		seed,
+		startTime,
+		is2ndHalf,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 16 {
+		t.Fatalf("Wrong length of events  in 1st half %v", len(events))
+	}
+	is2ndHalf = true
+	events, err = processor.ProcessMatchEvents(
+		match,
+		states,
+		tactics,
+		seed,
+		startTime,
+		is2ndHalf,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 16 {
+		t.Fatalf("Wrong length of events in 2nd half %v", len(events))
 	}
 }
