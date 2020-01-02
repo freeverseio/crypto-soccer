@@ -49,10 +49,32 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.State.Name == "" {
-		t.Fatal("name is empty")
+	if player.State.Name != "Samir Rambert" {
+		t.Fatalf("Wrong name %v", player.State.Name)
 	}
-	if player.DayOfBirth == 0 {
-		t.Fatal("dayOfBirth is 0")
+	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
+		tx,
+		1,
+		0,
+		0,
+		0,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) != 4 {
+		t.Fatalf("Wrong matches number %v", len(matches))
+	}
+	matches, err = storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(
+		tx,
+		1,
+		0,
+		0,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) != 14*4 {
+		t.Fatalf("Wrong matches number %v", len(matches))
 	}
 }
