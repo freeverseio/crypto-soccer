@@ -68,8 +68,7 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 	return homeGoals, visitorGoals, err
 }
 
-func ProcessMatchEvents(
-	contracts *contracts.Contracts,
+func (b *MatchProcessor) ProcessMatchEvents(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
@@ -86,7 +85,7 @@ func ProcessMatchEvents(
 		matchLog = [2]*big.Int{match.HomeMatchLog, match.VisitorMatchLog}
 	}
 	matchBools := [3]bool{is2ndHalf, isHomeStadium, isPlayoff}
-	seedAndStartTimeAndEvents, err := contracts.Matchevents.PlayHalfMatch(
+	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
 		&bind.CallOpts{},
 		matchSeed,
 		startTime,
@@ -100,21 +99,21 @@ func ProcessMatchEvents(
 	}
 
 	events := seedAndStartTimeAndEvents[:]
-	log0, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
 	if err != nil {
 		return nil, err
 	}
-	log1, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
 	if err != nil {
 		return nil, err
 	}
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
+	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
 	if err != nil {
 		return nil, err
 	}
-	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
+	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
 	if err != nil {
 		return nil, err
 	}
@@ -161,14 +160,14 @@ func ProcessMatchEvents(
 		event.ManageToShoot = computedEvent.ManagesToShoot
 		event.IsGoal = computedEvent.IsGoal
 		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
-		primaryPlayerID, err := contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
+		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
 		if err != nil {
 			return nil, err
 		}
 		event.PrimaryPlayerID = primaryPlayerID.String()
 		if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 			secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
-			secondaryPlayerID, err := contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
+			secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
 			if err != nil {
 				return nil, err
 			}
@@ -209,7 +208,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	events, err := ProcessMatchEvents(b.contracts, match, states, tactics, matchSeed, startTime, is2ndHalf)
+	events, err := b.ProcessMatchEvents(match, states, tactics, matchSeed, startTime, is2ndHalf)
 	if err != nil {
 		return err
 	}

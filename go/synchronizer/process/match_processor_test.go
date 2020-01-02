@@ -123,8 +123,7 @@ func TestProcessMatch(t *testing.T) {
 	}
 	startTime := big.NewInt(555)
 	is2ndHalf := false
-	events, err := process.ProcessMatchEvents(
-		bc.Contracts,
+	events, err := processor.ProcessMatchEvents(
 		match,
 		states,
 		tactics,
@@ -139,8 +138,7 @@ func TestProcessMatch(t *testing.T) {
 		t.Fatalf("Wrong length of events  in 1st half %v", len(events))
 	}
 	is2ndHalf = true
-	events, err = process.ProcessMatchEvents(
-		bc.Contracts,
+	events, err = processor.ProcessMatchEvents(
 		match,
 		states,
 		tactics,
