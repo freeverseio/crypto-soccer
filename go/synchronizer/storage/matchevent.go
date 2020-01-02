@@ -80,7 +80,7 @@ func MatchEventCountByTimezoneCountryLeague(tx *sql.Tx, timezone int, countryIdx
 }
 
 func (b *MatchEvent) Insert(tx *sql.Tx) error {
-	log.Infof("[DBMS] Insert Match Event %v", b)
+	log.Debugf("[DBMS] Insert Match Event %v", b)
 	_, err := tx.Exec(`INSERT INTO match_events (
 		timezone_idx,
 		country_idx,

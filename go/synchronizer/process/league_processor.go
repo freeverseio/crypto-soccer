@@ -73,6 +73,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 				return err
 			}
 			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+				is2ndHalf := turnInDay == 1
+				log.Infof("LeagueProcessor::Process timezone: %v, countryIdx %v, leagueIdx %v, 2ndHalf %v", timezoneIdx, countryIdx, leagueIdx, is2ndHalf)
 				if day == 0 {
 					err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx)
 					if err != nil {
@@ -84,7 +86,6 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 					return err
 				}
 				for _, match := range matches {
-					is2ndHalf := turnInDay == 1
 					err = b.matchProcessor.Process(
 						tx,
 						match,

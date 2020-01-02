@@ -186,7 +186,7 @@ func (b *MatchProcessor) Process(
 	startTime *big.Int,
 	is2ndHalf bool,
 ) error {
-	log.Infof("MatchProcessor::Process Tz: %v, Country: %v, league: %v, matchDay: %v, match: %v, 2ndHalf: %v",
+	log.Debugf("MatchProcessor::Process Tz: %v, Country: %v, league: %v, matchDay: %v, match: %v, 2ndHalf: %v",
 		match.TimezoneIdx,
 		match.CountryIdx,
 		match.LeagueIdx,
