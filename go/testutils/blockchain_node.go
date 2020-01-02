@@ -22,10 +22,23 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/helper"
 )
 
+type ContractAddresses struct {
+	Leagues       string
+	Assets        string
+	Evolution     string
+	Engine        string
+	Engineprecomp string
+	Updates       string
+	Market        string
+	Matchevents   string
+	Utilsmatchlog string
+}
+
 type BlockchainNode struct {
 	Client    *ethclient.Client
 	Owner     *ecdsa.PrivateKey
 	Contracts *contracts.Contracts
+	Addresses ContractAddresses
 }
 
 // AssertNoErr - log fatal and panic on error and print params
@@ -65,6 +78,7 @@ func NewBlockchainNodeAt(address string) (*BlockchainNode, error) {
 		client,
 		creatorPrivateKey,
 		nil,
+		ContractAddresses{},
 	}, nil
 }
 
@@ -77,12 +91,14 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
+	b.Addresses = ContractAddresses{}
 	assetsAddress, tx10, assetsContract, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
 		b.Client,
 	)
 	AssertNoErr(err, "DeployAssets failed")
 	fmt.Println("Assets deployed at:", assetsAddress.Hex())
+	b.Addresses.Assets = assetsAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -93,6 +109,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployLeagues failed")
 	fmt.Println("Leagues deployed at:", leaguesAddress.Hex())
+	b.Addresses.Leagues = leaguesAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -103,6 +120,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployUpdates failed")
 	fmt.Println("Updates deployed at:", updatesAddress.Hex())
+	b.Addresses.Updates = updatesAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -113,6 +131,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployEngine failed")
 	fmt.Println("Engine deployed at:", engineAddress.Hex())
+	b.Addresses.Engine = engineAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -123,6 +142,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployMarket failed")
 	fmt.Println("Market deployed at:", marketAddress.Hex())
+	b.Addresses.Market = marketAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -133,6 +153,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployEvolution failed")
 	fmt.Println("Evolution deployed at:", evolutionAddress.Hex())
+	b.Addresses.Evolution = evolutionAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -143,6 +164,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployEngineprecomp failed")
 	fmt.Println("Engineprecomp deployed at:", engineprecompAddress.Hex())
+	b.Addresses.Engineprecomp = engineprecompAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -153,6 +175,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployMatchevents failed")
 	fmt.Println("Matchevents deployed at:", matcheventsAddress.Hex())
+	b.Addresses.Matchevents = matcheventsAddress.Hex()
 	if err != nil {
 		return err
 	}
@@ -163,6 +186,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 	)
 	AssertNoErr(err, "DeployUtilsmatchlog failed")
 	fmt.Println("Utilsmatchlog deployed at:", utilsmatchlogAddress.Hex())
+	b.Addresses.Utilsmatchlog = utilsmatchlogAddress.Hex()
 	if err != nil {
 		return err
 	}
