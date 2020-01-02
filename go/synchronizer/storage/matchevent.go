@@ -67,8 +67,20 @@ func MatchEventCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
+func MatchEventCountByTimezoneCountryLeague(tx *sql.Tx, timezone int, countryIdx int, leagueIdx int) (uint64, error) {
+	rows, err := tx.Query("SELECT COUNT(*) FROM match_events WHERE timezone_idx=$1 AND country_idx=$2 AND league_idx=$3;", timezone, countryIdx, leagueIdx)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var count uint64
+	rows.Scan(&count)
+	return count, nil
+}
+
 func (b *MatchEvent) Insert(tx *sql.Tx) error {
-	log.Debugf("[DBMS] Insert Match Event %v", b)
+	log.Infof("[DBMS] Insert Match Event %v", b)
 	_, err := tx.Exec(`INSERT INTO match_events (
 		timezone_idx,
 		country_idx,
