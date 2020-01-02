@@ -98,7 +98,7 @@ export default function PlayerCard(props) {
     };
 
     return (
-        <Card>
+        <Card color='red'>
             <Image src='player.jpg' wrapped ui={false} />
             <Card.Content>
                 <Card.Header>{player.name}</Card.Header>

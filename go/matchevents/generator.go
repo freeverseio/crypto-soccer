@@ -12,8 +12,8 @@ type Matchevent struct {
 	Minute          int16 `json:"minute"`
 	Type            int16 `json:"type"`
 	Team            int16 `json:"team"`
-	ManagesToShoot  int16 `json:"managestoshoot"`
-	IsGoal          int16 `json:"isgoal"`
+	ManagesToShoot  bool  `json:"managestoshoot"`
+	IsGoal          bool  `json:"isgoal"`
 	PrimaryPlayer   int16 `json:"primaryplayer"`
 	SecondaryPlayer int16 `json:"secondaryplayer"`
 }
@@ -71,8 +71,8 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([
 		thisEvent.Minute = int16(minute)
 		thisEvent.Type = int16(EVNT_ATTACK)
 		thisEvent.Team = int16(teamThatAttacks.Int64())
-		thisEvent.ManagesToShoot = int16(managesToShoot.Int64())
-		thisEvent.IsGoal = int16(isGoal.Int64())
+		thisEvent.ManagesToShoot = managesToShoot.Int64() != 0
+		thisEvent.IsGoal = isGoal.Int64() != 0
 		if managesToShoot.Int64() == 1 {
 			thisEvent.PrimaryPlayer = int16(shooter.Int64())
 			thisEvent.SecondaryPlayer = int16(assister.Int64())
@@ -102,7 +102,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		minute := int16(rounds2mins[matchLog[6]])
-		thisEvent := Matchevent{minute, typeOfEvent, team, NULL, NULL, outOfGamePlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -115,7 +115,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := Matchevent{minute, typeOfEvent, team, NULL, NULL, yellowCardPlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	yellowCardPlayer = int16(matchLog[8])
@@ -127,7 +127,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := Matchevent{minute, typeOfEvent, team, NULL, NULL, yellowCardPlayer, NULL}
+		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	return events
@@ -142,7 +142,7 @@ func addSubstitutions(team int16, events []Matchevent, seed *big.Int, matchLog [
 			leavingPlayer := int16(substitutions[i])
 			enteringPlayer := int16(lineup[11+i])
 			typeOfEvent := EVNT_SUBST
-			thisEvent := Matchevent{minute, typeOfEvent, team, NULL, NULL, leavingPlayer, enteringPlayer}
+			thisEvent := Matchevent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
 			events = append(events, thisEvent)
 		}
 	}
