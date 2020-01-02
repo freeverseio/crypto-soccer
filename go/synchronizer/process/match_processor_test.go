@@ -117,13 +117,18 @@ func TestProcessMatch(t *testing.T) {
 		t.Fatal(err)
 	}
 	seed := [32]byte{0x0}
+	matchSeed, err := processor.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
 	startTime := big.NewInt(555)
 	is2ndHalf := false
-	events, err := processor.ProcessMatchEvents(
+	events, err := process.ProcessMatchEvents(
+		bc.Contracts,
 		match,
 		states,
 		tactics,
-		seed,
+		matchSeed,
 		startTime,
 		is2ndHalf,
 	)
@@ -134,11 +139,12 @@ func TestProcessMatch(t *testing.T) {
 		t.Fatalf("Wrong length of events  in 1st half %v", len(events))
 	}
 	is2ndHalf = true
-	events, err = processor.ProcessMatchEvents(
+	events, err = process.ProcessMatchEvents(
+		bc.Contracts,
 		match,
 		states,
 		tactics,
-		seed,
+		matchSeed,
 		startTime,
 		is2ndHalf,
 	)
