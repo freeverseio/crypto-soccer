@@ -24,8 +24,8 @@ func TestMatchEventTest(t *testing.T) {
 	team.TeamID = big.NewInt(10)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = country.CountryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = league.LeagueIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = league.LeagueIdx
 	team.Insert(tx)
 	matchDayIdx := uint8(3)
 	matchIdx := uint8(4)
@@ -41,7 +41,7 @@ func TestMatchEventTest(t *testing.T) {
 	match.Insert(tx)
 	player := storage.Player{}
 	player.PlayerId = big.NewInt(4)
-	player.State.TeamId = team.TeamID
+	player.TeamId = team.TeamID
 	if err = player.Insert(tx); err != nil {
 		t.Fatal(err)
 	}

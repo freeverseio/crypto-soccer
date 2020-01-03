@@ -39,10 +39,10 @@ func TestAssetsInitProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if team.State.Name != "Academy" {
+	if team.Name != "Academy" {
 		t.Fatalf("Wrong team name. Expected: Academy, result: %v", team)
 	}
-	if team.State.Owner != creator.String() {
-		t.Fatalf("Wrong team owner: %v", team.State.Owner)
+	if team.Owner != creator.String() {
+		t.Fatalf("Wrong team owner: %v", team.Owner)
 	}
 }

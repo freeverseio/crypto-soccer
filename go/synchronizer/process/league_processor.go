@@ -122,7 +122,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		}
 		// ordening by points
 		sort.Slice(teams[:], func(i, j int) bool {
-			return teams[i].State.Points > teams[j].State.Points
+			return teams[i].Points > teams[j].Points
 		})
 		for position, team := range teams {
 			teamState, err := b.matchProcessor.GetTeamState(tx, team.TeamID)
@@ -131,30 +131,30 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			}
 			if !storage.IsBotTeam(team) {
 				log.Debugf("[LeagueProcessor] Compute team ranking points team %v, teamState %v", team, teamState)
-				team.State.RankingPoints, team.State.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
+				team.RankingPoints, team.PrevPerfPoints, err = b.contracts.Leagues.ComputeTeamRankingPoints(
 					&bind.CallOpts{},
 					teamState,
 					uint8(position),
-					team.State.PrevPerfPoints,
+					team.PrevPerfPoints,
 					team.TeamID,
 				)
 				if err != nil {
 					return err
 				}
 			}
-			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.State.Points, team.State.RankingPoints)
+			log.Debugf("New ranking team %v points %v ranking %v", team.TeamID, team.Points, team.RankingPoints)
 			orgMap = append(orgMap, team)
 		}
 	}
 	// ordening all the teams by ranking points
 	sort.Slice(orgMap[:], func(i, j int) bool {
-		return orgMap[i].State.RankingPoints > orgMap[j].State.RankingPoints
+		return orgMap[i].RankingPoints > orgMap[j].RankingPoints
 	})
 	// create the new leagues
 	for i, team := range orgMap {
-		team.State.LeagueIdx = uint32(i / 8)
-		team.State.TeamIdxInLeague = uint32(i % 8)
-		err = team.Update(tx, team.TeamID, team.State)
+		team.LeagueIdx = uint32(i / 8)
+		team.TeamIdxInLeague = uint32(i % 8)
+		err = team.Update(tx)
 		if err != nil {
 			return err
 		}
@@ -169,13 +169,13 @@ func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx 
 	}
 	for i := 0; i < len(teams); i++ {
 		team := teams[i]
-		team.State.D = 0
-		team.State.W = 0
-		team.State.L = 0
-		team.State.GoalsAgainst = 0
-		team.State.GoalsForward = 0
-		team.State.Points = 0
-		err = team.Update(tx, team.TeamID, team.State)
+		team.D = 0
+		team.W = 0
+		team.L = 0
+		team.GoalsAgainst = 0
+		team.GoalsForward = 0
+		team.Points = 0
+		err = team.Update(tx)
 		if err != nil {
 			return err
 		}

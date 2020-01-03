@@ -43,9 +43,9 @@ func TestGetTeam(t *testing.T) {
 	team.TeamID = big.NewInt(3)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	team.State.RankingPoints = math.MaxUint64
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.RankingPoints = math.MaxUint64
 	if err = team.Insert(tx); err != nil {
 		t.Fatal(err)
 	}
@@ -78,8 +78,8 @@ func TestTeamCreate(t *testing.T) {
 	team.TeamID = big.NewInt(4)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
 	err = team.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
@@ -95,11 +95,11 @@ func TestTeamCreate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if teamResult.State.PrevPerfPoints != 0 {
-		t.Fatalf("Wrong ranking points %v", teamResult.State.PrevPerfPoints)
+	if teamResult.PrevPerfPoints != 0 {
+		t.Fatalf("Wrong ranking points %v", teamResult.PrevPerfPoints)
 	}
-	if teamResult.State.RankingPoints != 0 {
-		t.Fatalf("Wrong ranking points %v", teamResult.State.RankingPoints)
+	if teamResult.RankingPoints != 0 {
+		t.Fatalf("Wrong ranking points %v", teamResult.RankingPoints)
 	}
 }
 
@@ -137,8 +137,8 @@ func TestGetTeamInLeague(t *testing.T) {
 	team.TeamID = big.NewInt(11)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
 	team.Insert(tx)
 	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezone.TimezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
@@ -169,16 +169,16 @@ func TestUpdateTeamOwner(t *testing.T) {
 	team.TeamID = big.NewInt(4)
 	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	team.State.RankingPoints = math.MaxUint64
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.RankingPoints = math.MaxUint64
 	err = team.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	team.State.Owner = "pippo"
-	team.State.TrainingPoints = 4
-	err = team.Update(tx, team.TeamID, team.State)
+	team.Owner = "pippo"
+	team.TrainingPoints = 4
+	err = team.Update(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

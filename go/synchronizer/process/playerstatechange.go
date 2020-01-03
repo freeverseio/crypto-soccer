@@ -39,9 +39,9 @@ func PlayerStateChangeProcess(
 	if err != nil {
 		return err
 	}
-	player.State.TeamId = teamID
-	player.State.ShirtNumber = uint8(shirtNumber.Uint64())
-	return player.Update(tx, playerID, player.State)
+	player.TeamId = teamID
+	player.ShirtNumber = uint8(shirtNumber.Uint64())
+	return player.Update(tx)
 }
 
 func GeneratePlayerByPlayerIdAndState(
@@ -71,19 +71,17 @@ func GeneratePlayerByPlayerIdAndState(
 			PreferredPosition: preferredPosition,
 			Potential:         potential.Uint64(),
 			DayOfBirth:        dayOfBirth.Uint64(),
-			State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC
-				TeamId:        teamId,
-				Name:          name,
-				Defence:       defence.Uint64(), // TODO: type should be uint16
-				Speed:         speed.Uint64(),
-				Pass:          pass.Uint64(),
-				Shoot:         shoot.Uint64(),
-				Endurance:     endurance.Uint64(),
-				ShirtNumber:   uint8(shirtNumber.Uint64()),
-				EncodedSkills: encodedSkills,
-				EncodedState:  encodedState,
-				Frozen:        false,
-			},
+			TeamId:            teamId,
+			Name:              name,
+			Defence:           defence.Uint64(), // TODO: type should be uint16
+			Speed:             speed.Uint64(),
+			Pass:              pass.Uint64(),
+			Shoot:             shoot.Uint64(),
+			Endurance:         endurance.Uint64(),
+			ShirtNumber:       uint8(shirtNumber.Uint64()),
+			EncodedSkills:     encodedSkills,
+			EncodedState:      encodedState,
+			Frozen:            false,
 		}
 		return &player, nil
 	}

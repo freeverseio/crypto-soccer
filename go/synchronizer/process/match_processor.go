@@ -273,11 +273,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = homeTeam.Update(tx, homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.Update(tx)
 		if err != nil {
 			return err
 		}
-		err = visitorTeam.Update(tx, visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.Update(tx)
 		if err != nil {
 			return err
 		}
@@ -296,8 +296,8 @@ func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int
 	}
 	for i := 0; i < len(players); i++ {
 		player := players[i]
-		playerSkills := player.State.EncodedSkills
-		shirtNumber := player.State.ShirtNumber
+		playerSkills := player.EncodedSkills
+		shirtNumber := player.ShirtNumber
 		state[shirtNumber] = playerSkills
 	}
 	return state, nil
@@ -410,16 +410,16 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 	for _, player := range players {
 		wasAligned, err := b.contracts.Engine.WasPlayerAlignedEndOfLastHalf(
 			&bind.CallOpts{},
-			player.State.ShirtNumber,
+			player.ShirtNumber,
 			tactic,
 			matchLog,
 		)
 		if err != nil {
 			return err
 		}
-		player.State.EncodedSkills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
+		player.EncodedSkills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
-			player.State.EncodedSkills,
+			player.EncodedSkills,
 			wasAligned,
 		)
 		if err != nil {
@@ -429,35 +429,35 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
 				return fmt.Errorf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), tactic, matchLog)
 			}
-			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
+			if player.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(b.REDCARD):
-					player.State.RedCardMatchesLeft = 2
+					player.RedCardMatchesLeft = 2
 				case int64(b.SOFTINJURY):
-					player.State.InjuryMatchesLeft = 3
+					player.InjuryMatchesLeft = 3
 				case int64(b.HARDINJURY):
-					player.State.InjuryMatchesLeft = 7
+					player.InjuryMatchesLeft = 7
 				default:
 					return fmt.Errorf("out of game type unknown %v", outOfGameType)
 				}
 			}
 		}
 		if is2ndHalf {
-			if player.State.RedCardMatchesLeft > 0 {
-				player.State.RedCardMatchesLeft--
+			if player.RedCardMatchesLeft > 0 {
+				player.RedCardMatchesLeft--
 			}
-			if player.State.InjuryMatchesLeft > 0 {
-				player.State.InjuryMatchesLeft--
+			if player.InjuryMatchesLeft > 0 {
+				player.InjuryMatchesLeft--
 			}
 		}
-		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.State.EncodedSkills, player.State.RedCardMatchesLeft, player.State.InjuryMatchesLeft)
-		if player.State.EncodedSkills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft != 0); err != nil {
+		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.EncodedSkills, player.RedCardMatchesLeft, player.InjuryMatchesLeft)
+		if player.EncodedSkills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.EncodedSkills, player.RedCardMatchesLeft != 0); err != nil {
 			return err
 		}
-		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
+		if player.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.EncodedSkills, player.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = player.Update(tx, player.PlayerId, player.State); err != nil {
+		if err = player.Update(tx); err != nil {
 			return nil
 		}
 	}
@@ -465,25 +465,25 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 }
 
 func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam.State.GoalsForward += uint32(homeGoals)
-	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
-	visitorTeam.State.GoalsForward += uint32(visitorGoals)
-	visitorTeam.State.GoalsAgainst += uint32(homeGoals)
+	homeTeam.GoalsForward += uint32(homeGoals)
+	homeTeam.GoalsAgainst += uint32(visitorGoals)
+	visitorTeam.GoalsForward += uint32(visitorGoals)
+	visitorTeam.GoalsAgainst += uint32(homeGoals)
 
 	deltaGoals := int(homeGoals) - int(visitorGoals)
 	if deltaGoals > 0 {
-		homeTeam.State.W++
-		visitorTeam.State.L++
-		homeTeam.State.Points += 3
+		homeTeam.W++
+		visitorTeam.L++
+		homeTeam.Points += 3
 	} else if deltaGoals < 0 {
-		homeTeam.State.L++
-		visitorTeam.State.W++
-		visitorTeam.State.Points += 3
+		homeTeam.L++
+		visitorTeam.W++
+		visitorTeam.Points += 3
 	} else {
-		homeTeam.State.D++
-		visitorTeam.State.D++
-		homeTeam.State.Points++
-		visitorTeam.State.Points++
+		homeTeam.D++
+		visitorTeam.D++
+		homeTeam.Points++
+		visitorTeam.Points++
 	}
 
 	return nil
@@ -545,7 +545,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
-	team.State.TrainingPoints = uint32(trainingPoints.Uint64())
+	team.TrainingPoints = uint32(trainingPoints.Uint64())
 
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
@@ -591,16 +591,16 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			if err != nil {
 				return err
 			}
-			player.State.Name = newName
+			player.Name = newName
 		}
 		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, state)
-		player.State.Defence = defence.Uint64()
-		player.State.Speed = speed.Uint64()
-		player.State.Pass = pass.Uint64()
-		player.State.Shoot = shoot.Uint64()
-		player.State.Defence = endurance.Uint64()
-		player.State.EncodedSkills = state
-		err = player.Update(tx, playerID, player.State)
+		player.Defence = defence.Uint64()
+		player.Speed = speed.Uint64()
+		player.Pass = pass.Uint64()
+		player.Shoot = shoot.Uint64()
+		player.Defence = endurance.Uint64()
+		player.EncodedSkills = state
+		err = player.Update(tx)
 		if err != nil {
 			return err
 		}
