@@ -8,14 +8,14 @@ import (
 )
 
 type Team struct {
-	players [25]Player
+	Players [25]*Player
 	tactic  *big.Int
 }
 
 func NewTeam(contracts *contracts.Contracts) (*Team, error) {
 	var team Team
-	for i := range team.players {
-		team.players[i] = *NewPlayer()
+	for i := range team.Players {
+		team.Players[i] = NewPlayer("0")
 	}
 	var err error
 	if team.tactic, err = DefaultTactic(contracts); err != nil {
@@ -27,7 +27,7 @@ func NewTeam(contracts *contracts.Contracts) (*Team, error) {
 func (b Team) State() [25]*big.Int {
 	var states [25]*big.Int
 	for i := range states {
-		states[i] = b.players[i].state
+		states[i] = b.Players[i].state
 	}
 	return states
 }
