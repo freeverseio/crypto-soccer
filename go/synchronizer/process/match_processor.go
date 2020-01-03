@@ -273,11 +273,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = homeTeam.Update(tx, homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.Update(tx)
 		if err != nil {
 			return err
 		}
-		err = visitorTeam.Update(tx, visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.Update(tx)
 		if err != nil {
 			return err
 		}
@@ -465,25 +465,25 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 }
 
 func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam.State.GoalsForward += uint32(homeGoals)
-	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
-	visitorTeam.State.GoalsForward += uint32(visitorGoals)
-	visitorTeam.State.GoalsAgainst += uint32(homeGoals)
+	homeTeam.GoalsForward += uint32(homeGoals)
+	homeTeam.GoalsAgainst += uint32(visitorGoals)
+	visitorTeam.GoalsForward += uint32(visitorGoals)
+	visitorTeam.GoalsAgainst += uint32(homeGoals)
 
 	deltaGoals := int(homeGoals) - int(visitorGoals)
 	if deltaGoals > 0 {
-		homeTeam.State.W++
-		visitorTeam.State.L++
-		homeTeam.State.Points += 3
+		homeTeam.W++
+		visitorTeam.L++
+		homeTeam.Points += 3
 	} else if deltaGoals < 0 {
-		homeTeam.State.L++
-		visitorTeam.State.W++
-		visitorTeam.State.Points += 3
+		homeTeam.L++
+		visitorTeam.W++
+		visitorTeam.Points += 3
 	} else {
-		homeTeam.State.D++
-		visitorTeam.State.D++
-		homeTeam.State.Points++
-		visitorTeam.State.Points++
+		homeTeam.D++
+		visitorTeam.D++
+		homeTeam.Points++
+		visitorTeam.Points++
 	}
 
 	return nil
@@ -545,7 +545,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
-	team.State.TrainingPoints = uint32(trainingPoints.Uint64())
+	team.TrainingPoints = uint32(trainingPoints.Uint64())
 
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(

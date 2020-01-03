@@ -22,7 +22,7 @@ func (b *TeamTransferProcessor) Process(tx *sql.Tx, v assets.AssetsTeamTransfer)
 	if err != nil {
 		return err
 	}
-	// team.State.BlockNumber = blockNumber
-	team.State.Owner = newOwner
-	return team.Update(tx, teamID, team.State)
+	// team.BlockNumber = blockNumber
+	team.Owner = newOwner
+	return team.Update(tx)
 }
