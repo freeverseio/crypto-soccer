@@ -426,6 +426,9 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 			return err
 		}
 		if outOfGamePlayer.Int64() != int64(b.NOOUTOFGAMEPLAYER) {
+			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
+				return fmt.Errorf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), tactic, matchLog)
+			}
 			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(b.REDCARD):
@@ -434,6 +437,8 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 					player.State.InjuryMatchesLeft = 3
 				case int64(b.HARDINJURY):
 					player.State.InjuryMatchesLeft = 7
+				default:
+					return fmt.Errorf("out of game type unknown %v", outOfGameType)
 				}
 			}
 		}
