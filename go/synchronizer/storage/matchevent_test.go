@@ -41,7 +41,7 @@ func TestMatchEventTest(t *testing.T) {
 	match.Insert(tx)
 	player := storage.Player{}
 	player.PlayerId = big.NewInt(4)
-	player.State.TeamId = team.TeamID
+	player.TeamId = team.TeamID
 	if err = player.Insert(tx); err != nil {
 		t.Fatal(err)
 	}

@@ -49,8 +49,8 @@ func TestDivisionCreationProcess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if player.State.Name != "Samir Rambert" {
-		t.Fatalf("Wrong name %v", player.State.Name)
+	if player.Name != "Samir Rambert" {
+		t.Fatalf("Wrong name %v", player.Name)
 	}
 	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(
 		tx,

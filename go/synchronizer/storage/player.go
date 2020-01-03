@@ -8,14 +8,10 @@ import (
 )
 
 type Player struct {
-	PlayerId          *big.Int
-	PreferredPosition string
-	Potential         uint64
-	DayOfBirth        uint64
-	State             PlayerState
-}
-
-type PlayerState struct {
+	PlayerId           *big.Int
+	PreferredPosition  string
+	Potential          uint64
+	DayOfBirth         uint64
 	TeamId             *big.Int
 	Name               string
 	Defence            uint64
@@ -35,19 +31,19 @@ func (b *Player) Equal(player Player) bool {
 	return b.PlayerId.String() == player.PlayerId.String() &&
 		b.PreferredPosition == player.PreferredPosition &&
 		b.Potential == player.Potential &&
-		b.State.TeamId.String() == player.State.TeamId.String() &&
-		b.State.Defence == player.State.Defence &&
-		b.State.Speed == player.State.Speed &&
-		b.State.Pass == player.State.Pass &&
-		b.State.Shoot == player.State.Shoot &&
-		b.State.Endurance == player.State.Endurance &&
-		b.State.ShirtNumber == player.State.ShirtNumber &&
-		b.State.EncodedSkills.String() == player.State.EncodedSkills.String() &&
-		b.State.EncodedState.String() == player.State.EncodedState.String() &&
-		b.State.Frozen == player.State.Frozen &&
-		b.State.RedCardMatchesLeft == player.State.RedCardMatchesLeft &&
-		b.State.InjuryMatchesLeft == player.State.InjuryMatchesLeft &&
-		b.State.Name == player.State.Name &&
+		b.TeamId.String() == player.TeamId.String() &&
+		b.Defence == player.Defence &&
+		b.Speed == player.Speed &&
+		b.Pass == player.Pass &&
+		b.Shoot == player.Shoot &&
+		b.Endurance == player.Endurance &&
+		b.ShirtNumber == player.ShirtNumber &&
+		b.EncodedSkills.String() == player.EncodedSkills.String() &&
+		b.EncodedState.String() == player.EncodedState.String() &&
+		b.Frozen == player.Frozen &&
+		b.RedCardMatchesLeft == player.RedCardMatchesLeft &&
+		b.InjuryMatchesLeft == player.InjuryMatchesLeft &&
+		b.Name == player.Name &&
 		b.DayOfBirth == player.DayOfBirth
 }
 
@@ -67,19 +63,19 @@ func (b *Player) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create player %v", b)
 	_, err := tx.Exec("INSERT INTO players (player_id, team_id, defence, speed, pass, shoot, endurance, shirt_number, preferred_position, encoded_skills, encoded_state, potential, frozen, name, day_of_birth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);",
 		b.PlayerId.String(),
-		b.State.TeamId.String(),
-		b.State.Defence,
-		b.State.Speed,
-		b.State.Pass,
-		b.State.Shoot,
-		b.State.Endurance,
-		b.State.ShirtNumber,
+		b.TeamId.String(),
+		b.Defence,
+		b.Speed,
+		b.Pass,
+		b.Shoot,
+		b.Endurance,
+		b.ShirtNumber,
 		b.PreferredPosition,
-		b.State.EncodedSkills.String(),
-		b.State.EncodedState.String(),
+		b.EncodedSkills.String(),
+		b.EncodedState.String(),
 		b.Potential,
-		b.State.Frozen,
-		b.State.Name,
+		b.Frozen,
+		b.Name,
 		b.DayOfBirth,
 	)
 	if err != nil {
@@ -89,8 +85,8 @@ func (b *Player) Insert(tx *sql.Tx) error {
 	return nil
 }
 
-func (b *Player) Update(tx *sql.Tx, playerID *big.Int, playerState PlayerState) error {
-	log.Debugf("[DBMS] + update player state %v", playerState)
+func (b *Player) Update(tx *sql.Tx) error {
+	log.Debugf("[DBMS] + update player id %v", b.PlayerId)
 	_, err := tx.Exec(`UPDATE players SET 
 	team_id=$1, 
 	defence=$2, 
@@ -105,19 +101,19 @@ func (b *Player) Update(tx *sql.Tx, playerID *big.Int, playerState PlayerState) 
 	injury_matches_left=$11,
 	name=$12
 	WHERE player_id=$13;`,
-		playerState.TeamId.String(),
-		playerState.Defence,
-		playerState.Speed,
-		playerState.Pass,
-		playerState.Shoot,
-		playerState.Endurance,
-		playerState.ShirtNumber,
-		playerState.Frozen,
-		playerState.EncodedSkills.String(),
-		playerState.RedCardMatchesLeft,
-		playerState.InjuryMatchesLeft,
-		playerState.Name,
-		playerID.String(),
+		b.TeamId.String(),
+		b.Defence,
+		b.Speed,
+		b.Pass,
+		b.Shoot,
+		b.Endurance,
+		b.ShirtNumber,
+		b.Frozen,
+		b.EncodedSkills.String(),
+		b.RedCardMatchesLeft,
+		b.InjuryMatchesLeft,
+		b.Name,
+		b.PlayerId.String(),
 	)
 	return err
 }
@@ -155,26 +151,26 @@ func PlayerByPlayerId(tx *sql.Tx, playerID *big.Int) (*Player, error) {
 	var encodedState sql.NullString
 	err = rows.Scan(
 		&teamID,
-		&player.State.Defence,
-		&player.State.Speed,
-		&player.State.Pass,
-		&player.State.Shoot,
-		&player.State.Endurance,
-		&player.State.ShirtNumber,
+		&player.Defence,
+		&player.Speed,
+		&player.Pass,
+		&player.Shoot,
+		&player.Endurance,
+		&player.ShirtNumber,
 		&player.PreferredPosition,
 		&encodedSkills,
 		&encodedState,
 		&player.Potential,
-		&player.State.Frozen,
-		&player.State.Name,
+		&player.Frozen,
+		&player.Name,
 		&player.DayOfBirth,
-		&player.State.RedCardMatchesLeft,
-		&player.State.InjuryMatchesLeft,
+		&player.RedCardMatchesLeft,
+		&player.InjuryMatchesLeft,
 	)
 	player.PlayerId = playerID
-	player.State.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
-	player.State.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
-	player.State.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
+	player.TeamId, _ = new(big.Int).SetString(teamID.String, 10)
+	player.EncodedSkills, _ = new(big.Int).SetString(encodedSkills.String, 10)
+	player.EncodedState, _ = new(big.Int).SetString(encodedState.String, 10)
 	return &player, nil
 }
 
