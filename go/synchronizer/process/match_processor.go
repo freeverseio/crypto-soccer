@@ -179,6 +179,73 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	return me, nil
 }
 
+func (b *MatchProcessor) InnerProcess(
+	seed [32]byte,
+	startTime *big.Int,
+	is2ndHalf bool,
+	match *storage.Match,
+	homeTeam *storage.Team,
+	visitorTeam *storage.Team,
+	homeTeamPlayers []*storage.Player,
+	visitorTeamPlayers []*storage.Player,
+) ([]storage.MatchEvent, error) {
+	var err error
+	tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return nil, err
+	}
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return nil, err
+	}
+	states, err := b.GetMatchTeamsState(homeTeamPlayers, visitorTeamPlayers)
+	if err != nil {
+		return nil, err
+	}
+	var logs [2]*big.Int
+	if is2ndHalf {
+		logs, err = b.process2ndHalf(*match, states, tactics, matchSeed, startTime)
+	} else {
+		logs, err = b.process1stHalf(*match, states, tactics, matchSeed, startTime)
+	}
+	if err != nil {
+		return nil, err
+	}
+	matchEvents, err := b.ProcessMatchEvents(*match, states, tactics, matchSeed, startTime, is2ndHalf)
+	if err != nil {
+		return nil, err
+	}
+	goalsHome, goalsVisitor, err := b.GetGoals(logs)
+	if err != nil {
+		return nil, err
+	}
+	match.HomeGoals = &goalsHome
+	match.VisitorGoals = &goalsVisitor
+	match.HomeMatchLog = new(big.Int).Set(logs[0])
+	match.VisitorMatchLog = new(big.Int).Set(logs[1])
+	if err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0]); err != nil {
+		return nil, err
+	}
+	if err = b.UpdatePlayedByHalf(visitorTeamPlayers, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1]); err != nil {
+		return nil, err
+	}
+	if is2ndHalf {
+		err = b.UpdateTeamSkills(homeTeam, homeTeamPlayers, startTime, logs[0])
+		if err != nil {
+			return nil, err
+		}
+		err = b.UpdateTeamSkills(visitorTeam, visitorTeamPlayers, startTime, logs[1])
+		if err != nil {
+			return nil, err
+		}
+		err = b.updateTeamLeaderBoard(homeTeam, visitorTeam, goalsHome, goalsVisitor)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return matchEvents, nil
+}
+
 func (b *MatchProcessor) Process(
 	tx *sql.Tx,
 	match storage.Match,
@@ -194,7 +261,11 @@ func (b *MatchProcessor) Process(
 		match.MatchIdx,
 		is2ndHalf,
 	)
-	tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
+	homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
+	if err != nil {
+		return err
+	}
+	visitorTeam, err := storage.TeamByTeamId(tx, match.VisitorTeamID)
 	if err != nil {
 		return err
 	}
@@ -206,75 +277,29 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	states, err := b.GetMatchTeamsState(homeTeamPlayers, visitorTeamPlayers)
+	events, err := b.InnerProcess(
+		seed,
+		startTime,
+		is2ndHalf,
+		&match,
+		&homeTeam,
+		&visitorTeam,
+		homeTeamPlayers,
+		visitorTeamPlayers,
+	)
 	if err != nil {
 		return err
 	}
-	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	err = homeTeam.Update(tx)
 	if err != nil {
 		return err
 	}
-	// play the match half
-	var logs [2]*big.Int
-	if is2ndHalf {
-		logs, err = b.process2ndHalf(match, states, tactics, matchSeed, startTime)
-	} else {
-		logs, err = b.process1stHalf(match, states, tactics, matchSeed, startTime)
-	}
+	err = visitorTeam.Update(tx)
 	if err != nil {
 		return err
 	}
-	events, err := b.ProcessMatchEvents(match, states, tactics, matchSeed, startTime, is2ndHalf)
-	if err != nil {
-		return err
-	}
-
-	goalsHome, goalsVisitor, err := b.GetGoals(logs)
-	if err != nil {
-		return err
-	}
-	match.HomeGoals = &goalsHome
-	match.VisitorGoals = &goalsVisitor
-	match.HomeMatchLog = new(big.Int).Set(logs[0])
-	match.VisitorMatchLog = new(big.Int).Set(logs[1])
 	if err = match.Update(tx); err != nil {
 		return err
-	}
-	if err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0]); err != nil {
-		return err
-	}
-	if err = b.UpdatePlayedByHalf(visitorTeamPlayers, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1]); err != nil {
-		return err
-	}
-	if is2ndHalf {
-		homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
-		if err != nil {
-			return err
-		}
-		visitorTeam, err := storage.TeamByTeamId(tx, match.VisitorTeamID)
-		if err != nil {
-			return err
-		}
-		err = b.UpdateTeamSkills(&homeTeam, homeTeamPlayers, startTime, logs[0])
-		if err != nil {
-			return err
-		}
-		err = b.UpdateTeamSkills(&visitorTeam, visitorTeamPlayers, startTime, logs[1])
-		if err != nil {
-			return err
-		}
-		err = b.updateTeamLeaderBoard(&homeTeam, &visitorTeam, goalsHome, goalsVisitor)
-		if err != nil {
-			return err
-		}
-		err = homeTeam.Update(tx)
-		if err != nil {
-			return err
-		}
-		err = visitorTeam.Update(tx)
-		if err != nil {
-			return err
-		}
 	}
 	for _, player := range homeTeamPlayers {
 		if err = player.Update(tx); err != nil {
