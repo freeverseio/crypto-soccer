@@ -237,19 +237,11 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	err = storage.MatchSetResult(
-		tx,
-		match.TimezoneIdx,
-		match.CountryIdx,
-		match.LeagueIdx,
-		match.MatchDayIdx,
-		match.MatchIdx,
-		goalsHome,
-		goalsVisitor,
-		logs[0],
-		logs[1],
-	)
-	if err != nil {
+	match.HomeGoals = &goalsHome
+	match.VisitorGoals = &goalsVisitor
+	match.HomeMatchLog = new(big.Int).Set(logs[0])
+	match.VisitorMatchLog = new(big.Int).Set(logs[1])
+	if err = match.Update(tx); err != nil {
 		return err
 	}
 	err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
