@@ -252,13 +252,23 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
+	err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
 	if err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(tx, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
+	for _, player := range homeTeamPlayers {
+		if err = player.Update(tx); err != nil {
+			return err
+		}
+	}
+	err = b.UpdatePlayedByHalf(visitorTeamPlayers, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
 	if err != nil {
 		return err
+	}
+	for _, player := range visitorTeamPlayers {
+		if err = player.Update(tx); err != nil {
+			return err
+		}
 	}
 	if is2ndHalf {
 		homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
@@ -397,11 +407,13 @@ func (b *MatchProcessor) GetMatchTactics(homeTeamID *big.Int, visitorTeamID *big
 	return tactics, nil
 }
 
-func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *big.Int, tactic *big.Int, matchLog *big.Int) error {
-	players, err := storage.PlayersByTeamId(tx, teamID)
-	if err != nil {
-		return err
-	}
+func (b *MatchProcessor) UpdatePlayedByHalf(
+	players []*storage.Player,
+	is2ndHalf bool,
+	teamID *big.Int,
+	tactic *big.Int,
+	matchLog *big.Int,
+) error {
 	decodedTactic, err := b.contracts.Leagues.DecodeTactics(&bind.CallOpts{}, tactic)
 	if err != nil {
 		return err
@@ -464,9 +476,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 		if player.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.EncodedSkills, player.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = player.Update(tx); err != nil {
-			return nil
-		}
+
 	}
 	return nil
 }
