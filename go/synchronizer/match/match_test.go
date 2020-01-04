@@ -5,16 +5,9 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/match"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-func TestMatchPlay1stHalf(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
+func TestMatchPlay1stHalfWithDefault(t *testing.T) {
 	m, err := match.NewMatch(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
@@ -30,13 +23,23 @@ func TestMatchPlay1stHalf(t *testing.T) {
 	}
 }
 
-func TestMatchPlayer1stHalfWithDummyPlayers(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
+func TestMatchPlay2ndHalfDefault(t *testing.T) {
+	m, err := match.NewMatch(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc.DeployContracts(bc.Owner)
 
+	err = m.Play2ndHalf(bc.Contracts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if m.HomeGoals != 0 || m.VisitorGoals != 0 {
+		t.Fatalf("Wrong result %v - %v", m.HomeGoals, m.VisitorGoals)
+	}
+}
+
+func TestMatchPlayer1stHalfWithDummyPlayers(t *testing.T) {
 	m, err := match.NewMatch(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)

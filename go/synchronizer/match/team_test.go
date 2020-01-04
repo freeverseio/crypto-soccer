@@ -5,16 +5,9 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/match"
-	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestTeamStateDefault(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
 	team, err := match.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
@@ -31,12 +24,6 @@ func TestTeamStateDefault(t *testing.T) {
 }
 
 func TestTeamState(t *testing.T) {
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-
 	team, err := match.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
