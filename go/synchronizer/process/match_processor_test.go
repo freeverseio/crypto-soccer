@@ -39,43 +39,6 @@ func TestCreateMatchSeed(t *testing.T) {
 	}
 }
 
-func TestGetPlayerState(t *testing.T) {
-	tx, err := universedb.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tx.Rollback()
-
-	namesdb, err := names.New("../../names/sql/names.db")
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	bc.DeployContracts(bc.Owner)
-	processor, err := process.NewMatchProcessor(
-		bc.Contracts,
-		namesdb,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	teamState, err := processor.GetTeamState(tx, big.NewInt(3))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(teamState) != 25 {
-		t.Fatalf("Wrong team state count %v", len(teamState))
-	}
-	for _, state := range teamState {
-		if state.String() != "0" {
-			t.Fatalf("Wrong state %v", state)
-		}
-	}
-}
-
 func TestProcessMatchEvents(t *testing.T) {
 	tx, err := universedb.Begin()
 	if err != nil {
@@ -103,12 +66,15 @@ func TestProcessMatchEvents(t *testing.T) {
 	match.VisitorTeamID = big.NewInt(274877906945)
 	match.HomeMatchLog = big.NewInt(0)
 	match.VisitorMatchLog = big.NewInt(0)
-	states := [2][25]*big.Int{}
-	states[0], err = processor.GetTeamState(tx, match.HomeTeamID)
+	homeTeamPlayers, err := storage.PlayersByTeamId(tx, match.HomeTeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	states[1], err = processor.GetTeamState(tx, match.VisitorTeamID)
+	visitorTeamPlayers, err := storage.PlayersByTeamId(tx, match.VisitorTeamID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	states, err := processor.GetMatchTeamsState(homeTeamPlayers, visitorTeamPlayers)
 	if err != nil {
 		t.Fatal(err)
 	}
