@@ -67,6 +67,31 @@ func MatchSetTeams(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx u
 	return err
 }
 
+func (b Match) Update(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		UPDATE matches SET 
+		home_team_id = $1, 
+		visitor_team_id = $2 ,
+		home_goals = $3,
+		visitor_goals = $4,
+		home_match_log = $5,
+		visitor_match_log = $6
+		WHERE (timezone_idx = $7 AND country_idx = $8 AND league_idx = $9 AND match_day_idx = $10 AND match_idx = $11);`,
+		b.HomeTeamID.String(),
+		b.VisitorTeamID.String(),
+		b.HomeGoals,
+		b.VisitorGoals,
+		b.HomeMatchLog,
+		b.VisitorMatchLog,
+		b.TimezoneIdx,
+		b.CountryIdx,
+		b.LeagueIdx,
+		b.MatchDayIdx,
+		b.MatchIdx,
+	)
+	return err
+}
+
 func MatchSetResult(
 	tx *sql.Tx,
 	timezoneIdx uint8,
