@@ -228,11 +228,7 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	for _, event := range events {
-		if err = event.Insert(tx); err != nil {
-			return err
-		}
-	}
+
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
 	if err != nil {
 		return err
@@ -244,23 +240,11 @@ func (b *MatchProcessor) Process(
 	if err = match.Update(tx); err != nil {
 		return err
 	}
-	err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0])
-	if err != nil {
+	if err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0]); err != nil {
 		return err
 	}
-	for _, player := range homeTeamPlayers {
-		if err = player.Update(tx); err != nil {
-			return err
-		}
-	}
-	err = b.UpdatePlayedByHalf(visitorTeamPlayers, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1])
-	if err != nil {
+	if err = b.UpdatePlayedByHalf(visitorTeamPlayers, is2ndHalf, match.VisitorTeamID, tactics[1], logs[1]); err != nil {
 		return err
-	}
-	for _, player := range visitorTeamPlayers {
-		if err = player.Update(tx); err != nil {
-			return err
-		}
 	}
 	if is2ndHalf {
 		homeTeam, err := storage.TeamByTeamId(tx, match.HomeTeamID)
@@ -271,11 +255,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(tx, &homeTeam, states[0], startTime, logs[0])
+		err = b.UpdateTeamSkills(&homeTeam, homeTeamPlayers, startTime, logs[0])
 		if err != nil {
 			return err
 		}
-		err = b.UpdateTeamSkills(tx, &visitorTeam, states[1], startTime, logs[1])
+		err = b.UpdateTeamSkills(&visitorTeam, visitorTeamPlayers, startTime, logs[1])
 		if err != nil {
 			return err
 		}
@@ -289,6 +273,21 @@ func (b *MatchProcessor) Process(
 		}
 		err = visitorTeam.Update(tx)
 		if err != nil {
+			return err
+		}
+	}
+	for _, player := range homeTeamPlayers {
+		if err = player.Update(tx); err != nil {
+			return err
+		}
+	}
+	for _, player := range visitorTeamPlayers {
+		if err = player.Update(tx); err != nil {
+			return err
+		}
+	}
+	for _, event := range events {
+		if err = event.Insert(tx); err != nil {
 			return err
 		}
 	}
@@ -544,9 +543,8 @@ func (b *MatchProcessor) getEncodedTacticAtVerse(teamID *big.Int, verse uint64) 
 }
 
 func (b *MatchProcessor) UpdateTeamSkills(
-	tx *sql.Tx,
 	team *storage.Team,
-	states [25]*big.Int,
+	players []*storage.Player,
 	matchStartTime *big.Int,
 	logs *big.Int,
 ) error {
@@ -555,6 +553,11 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		return err
 	}
 	team.TrainingPoints = uint32(trainingPoints.Uint64())
+
+	states, err := b.GetTeamState(players)
+	if err != nil {
+		return err
+	}
 
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
@@ -567,52 +570,67 @@ func (b *MatchProcessor) UpdateTeamSkills(
 		return err
 	}
 
-	for s, state := range newStates {
-		if state.String() == "0" {
-			continue
-		}
-
-		playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
+	for i := range players {
+		shirtNumber := players[i].ShirtNumber
+		newState := newStates[shirtNumber]
+		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, newState)
 		if err != nil {
 			return err
 		}
-		player, err := storage.PlayerByPlayerId(tx, playerID)
-		if err != nil {
-			return err
-		}
-		if player == nil {
-			return fmt.Errorf("Unexistent playerId %v", playerID)
-		}
-		oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
-		if err != nil {
-			return err
-		}
-		newGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, state)
-		if err != nil {
-			return err
-		}
-		if newGen.Cmp(oldGen) != 0 {
-			timezone, countryIdx, _, err := b.contracts.Assets.DecodeTZCountryAndVal(&bind.CallOpts{}, player.PlayerId)
-			if err != nil {
-				return err
-			}
-			newName, err := b.namesdb.GeneratePlayerFullName(player.PlayerId, uint8(newGen.Uint64()), timezone, countryIdx.Uint64())
-			if err != nil {
-				return err
-			}
-			player.Name = newName
-		}
-		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, state)
-		player.Defence = defence.Uint64()
-		player.Speed = speed.Uint64()
-		player.Pass = pass.Uint64()
-		player.Shoot = shoot.Uint64()
-		player.Defence = endurance.Uint64()
-		player.EncodedSkills = state
-		err = player.Update(tx)
-		if err != nil {
-			return err
-		}
+		players[i].Defence = defence.Uint64()
+		players[i].Speed = speed.Uint64()
+		players[i].Pass = pass.Uint64()
+		players[i].Shoot = shoot.Uint64()
+		players[i].Defence = endurance.Uint64()
+		players[i].EncodedSkills = newState
 	}
+	// TODO the followign code is old but it contain the code to evolve the name of a change in the generation of a player. Add it in the future.
+	// for s, state := range newStates {
+	// 	if state.String() == "0" {
+	// 		continue
+	// 	}
+
+	// 	playerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, state)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	player, err := storage.PlayerByPlayerId(tx, playerID)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if player == nil {
+	// 		return fmt.Errorf("Unexistent playerId %v", playerID)
+	// 	}
+	// 	oldGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, states[s])
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	newGen, err := b.contracts.Assets.GetGeneration(&bind.CallOpts{}, state)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	if newGen.Cmp(oldGen) != 0 {
+	// 		timezone, countryIdx, _, err := b.contracts.Assets.DecodeTZCountryAndVal(&bind.CallOpts{}, player.PlayerId)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		newName, err := b.namesdb.GeneratePlayerFullName(player.PlayerId, uint8(newGen.Uint64()), timezone, countryIdx.Uint64())
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		player.Name = newName
+	// 	}
+	// 	defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, state)
+	// 	player.Defence = defence.Uint64()
+	// 	player.Speed = speed.Uint64()
+	// 	player.Pass = pass.Uint64()
+	// 	player.Shoot = shoot.Uint64()
+	// 	player.Defence = endurance.Uint64()
+	// 	player.EncodedSkills = state
+	// 	err = player.Update(tx)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 	return nil
 }
