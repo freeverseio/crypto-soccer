@@ -198,7 +198,15 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
-	states, err := b.GetMatchTeamsState(tx, match.HomeTeamID, match.VisitorTeamID)
+	homeTeamPlayers, err := storage.PlayersByTeamId(tx, match.HomeTeamID)
+	if err != nil {
+		return err
+	}
+	visitorTeamPlayers, err := storage.PlayersByTeamId(tx, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
+	states, err := b.GetMatchTeamsState(homeTeamPlayers, visitorTeamPlayers)
 	if err != nil {
 		return err
 	}
@@ -285,14 +293,10 @@ func (b *MatchProcessor) Process(
 	return nil
 }
 
-func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
+func (b *MatchProcessor) GetTeamState(players []*storage.Player) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
-	}
-	players, err := storage.PlayersByTeamId(tx, teamID)
-	if err != nil {
-		return state, err
 	}
 	for i := 0; i < len(players); i++ {
 		player := players[i]
@@ -312,13 +316,16 @@ func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, v
 	z.SetBytes(matchSeed[:])
 	return z, nil
 }
-func (b *MatchProcessor) GetMatchTeamsState(tx *sql.Tx, homeTeamID *big.Int, visitorTeamID *big.Int) ([2][25]*big.Int, error) {
+func (b *MatchProcessor) GetMatchTeamsState(
+	homeTeamPlayers []*storage.Player,
+	visitorTeamPlayers []*storage.Player,
+) ([2][25]*big.Int, error) {
 	var states [2][25]*big.Int
-	homeTeamState, err := b.GetTeamState(tx, homeTeamID)
+	homeTeamState, err := b.GetTeamState(homeTeamPlayers)
 	if err != nil {
 		return states, err
 	}
-	visitorTeamState, err := b.GetTeamState(tx, visitorTeamID)
+	visitorTeamState, err := b.GetTeamState(visitorTeamPlayers)
 	if err != nil {
 		return states, err
 	}

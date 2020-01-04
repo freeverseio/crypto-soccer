@@ -3,6 +3,7 @@ package process
 import (
 	"database/sql"
 	"errors"
+	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -125,7 +126,7 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 			return teams[i].Points > teams[j].Points
 		})
 		for position, team := range teams {
-			teamState, err := b.matchProcessor.GetTeamState(tx, team.TeamID)
+			teamState, err := b.GetTeamState(tx, team.TeamID)
 			if err != nil {
 				return err
 			}
@@ -160,6 +161,24 @@ func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.T
 		}
 	}
 	return nil
+}
+
+func (b *LeagueProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int, error) {
+	var state [25]*big.Int
+	for i := 0; i < 25; i++ {
+		state[i] = big.NewInt(0)
+	}
+	players, err := storage.PlayersByTeamId(tx, teamID)
+	if err != nil {
+		return state, err
+	}
+	for i := 0; i < len(players); i++ {
+		player := players[i]
+		playerSkills := player.EncodedSkills
+		shirtNumber := player.ShirtNumber
+		state[shirtNumber] = playerSkills
+	}
+	return state, nil
 }
 
 func (b *LeagueProcessor) resetLeague(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
