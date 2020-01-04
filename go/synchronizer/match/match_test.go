@@ -44,7 +44,7 @@ func TestMatchPlayer1stHalfWithDummyPlayers(t *testing.T) {
 	m.MatchSeed = big.NewInt(54534)
 	m.StartTime = big.NewInt(4343)
 	for i := range m.HomeTeam.Players {
-		m.HomeTeam.Players[i] = match.NewPlayer("3618502788929823212297318139890612347941877444833849044016756059003506655232")
+		m.HomeTeam.Players[i] = match.NewPlayer("3618502788719198628960202363453204454907735104658619445583958966799643443200")
 	}
 	for i := range m.VisitorTeam.Players {
 		m.VisitorTeam.Players[i] = match.NewPlayer("3618502788732362665418772058558496602957087291216395979430084234696273690624")
