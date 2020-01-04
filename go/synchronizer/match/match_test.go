@@ -54,8 +54,11 @@ func TestMatchPlayer1stHalfWithDummyPlayers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if m.HomeGoals != 0 || m.VisitorGoals != 0 {
 		t.Fatalf("Wrong result %v - %v", m.HomeGoals, m.VisitorGoals)
+	}
+	err = m.Play2ndHalf(bc.Contracts)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
