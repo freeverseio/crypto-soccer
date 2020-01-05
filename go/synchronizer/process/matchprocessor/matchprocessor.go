@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type MatchProcessor struct {
+type Match struct {
 	contracts         *contracts.Contracts
 	NOOUTOFGAMEPLAYER uint8
 	REDCARD           uint8
@@ -21,13 +21,13 @@ type MatchProcessor struct {
 	HARDINJURY        uint
 }
 
-func NewMatchProcessor(contracts *contracts.Contracts) *MatchProcessor {
-	var mp MatchProcessor
+func NewMatch(contracts *contracts.Contracts) *Match {
+	var mp Match
 	mp.contracts = contracts
 	return &mp
 }
 
-func (b *MatchProcessor) Process(
+func (b *Match) Process(
 	seed [32]byte,
 	startTime *big.Int,
 	is2ndHalf bool,
@@ -93,7 +93,7 @@ func (b *MatchProcessor) Process(
 	return matchEvents, nil
 }
 
-func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) (*big.Int, error) {
+func (b *Match) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, visitorTeamID *big.Int) (*big.Int, error) {
 	matchSeed, err := b.contracts.Engine.GenerateMatchSeed(&bind.CallOpts{}, seed, homeTeamID, visitorTeamID)
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (b *MatchProcessor) GenerateMatchSeed(seed [32]byte, homeTeamID *big.Int, v
 	return z, nil
 }
 
-func (b *MatchProcessor) ProcessMatchEvents(
+func (b *Match) ProcessMatchEvents(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
@@ -214,7 +214,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	return me, nil
 }
 
-func (b *MatchProcessor) process1stHalf(
+func (b *Match) process1stHalf(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
@@ -237,7 +237,7 @@ func (b *MatchProcessor) process1stHalf(
 	)
 }
 
-func (b *MatchProcessor) process2ndHalf(
+func (b *Match) process2ndHalf(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
@@ -260,7 +260,7 @@ func (b *MatchProcessor) process2ndHalf(
 	)
 	return logs, err
 }
-func (b *MatchProcessor) GetTeamState(players []*storage.Player) ([25]*big.Int, error) {
+func (b *Match) GetTeamState(players []*storage.Player) ([25]*big.Int, error) {
 	var state [25]*big.Int
 	for i := 0; i < 25; i++ {
 		state[i] = big.NewInt(0)
@@ -274,7 +274,7 @@ func (b *MatchProcessor) GetTeamState(players []*storage.Player) ([25]*big.Int, 
 	return state, nil
 }
 
-func (b *MatchProcessor) GetMatchTeamsState(
+func (b *Match) GetMatchTeamsState(
 	homeTeamPlayers []*storage.Player,
 	visitorTeamPlayers []*storage.Player,
 ) ([2][25]*big.Int, error) {
@@ -291,7 +291,7 @@ func (b *MatchProcessor) GetMatchTeamsState(
 	states[1] = visitorTeamState
 	return states, nil
 }
-func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoals uint8, err error) {
+func (b *Match) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoals uint8, err error) {
 	homeGoals, err = b.contracts.Evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[0],
@@ -306,7 +306,7 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 	return homeGoals, visitorGoals, err
 }
 
-func (b *MatchProcessor) UpdatePlayedByHalf(
+func (b *Match) UpdatePlayedByHalf(
 	players []*storage.Player,
 	is2ndHalf bool,
 	teamID *big.Int,
@@ -380,7 +380,7 @@ func (b *MatchProcessor) UpdatePlayedByHalf(
 	return nil
 }
 
-func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
+func (b *Match) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
 	homeTeam.GoalsForward += uint32(homeGoals)
 	homeTeam.GoalsAgainst += uint32(visitorGoals)
 	visitorTeam.GoalsForward += uint32(visitorGoals)
@@ -405,7 +405,7 @@ func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTe
 	return nil
 }
 
-func (b *MatchProcessor) UpdateTeamSkills(
+func (b *Match) UpdateTeamSkills(
 	team *storage.Team,
 	players []*storage.Player,
 	matchStartTime *big.Int,
