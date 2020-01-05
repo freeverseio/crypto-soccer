@@ -7,7 +7,7 @@ import (
 )
 
 func TestDefaultValues(t *testing.T) {
-	if mp := matchprocessor.NewMatchProcessor(bc.Contracts); mp == nil {
+	if mp := matchprocessor.NewMatch(bc.Contracts); mp == nil {
 		t.Fatal("New instance is nil")
 	}
 }
