@@ -45,6 +45,7 @@ func TestNewPlayer(t *testing.T) {
 	substitutedLastHalf := false
 	p, err := match.NewPlayer(
 		bc.Contracts,
+		playerID,
 		defence,
 		speed,
 		endurance,
@@ -52,7 +53,6 @@ func TestNewPlayer(t *testing.T) {
 		shoot,
 		dayOfBirth,
 		generation,
-		playerID,
 		potential,
 		forwardness,
 		leftishness,
