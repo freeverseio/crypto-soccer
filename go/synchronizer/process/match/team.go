@@ -8,14 +8,17 @@ import (
 )
 
 type Team struct {
-	Players [25]*Player
-	tactic  *big.Int
+	TeamID         *big.Int
+	Players        [25]*Player
+	tactic         *big.Int
+	TrainingPoints uint64
 }
 
 func NewTeam(
 	contracts *contracts.Contracts,
 ) (*Team, error) {
 	var team Team
+	team.TeamID = big.NewInt(0)
 	for i := range team.Players {
 		team.Players[i] = NewNullPlayer()
 	}
