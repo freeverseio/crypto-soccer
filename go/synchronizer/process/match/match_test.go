@@ -60,7 +60,7 @@ func TestPlayi1stHalf_part2(t *testing.T) {
 	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
 	m.Seed = [32]byte{0x1, 0x1f}
-	m.StartTime = big.NewInt(34525345)
+	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = big.NewInt(1)
 	m.VisitorTeam.TeamID = big.NewInt(2)
 	for i := 0; i < 11; i++ {
