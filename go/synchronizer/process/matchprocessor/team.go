@@ -1,4 +1,4 @@
-package match
+package matchprocessor
 
 import (
 	"math/big"
@@ -24,10 +24,10 @@ func NewTeam(contracts *contracts.Contracts) (*Team, error) {
 	return &team, nil
 }
 
-func (b Team) State() [25]*big.Int {
+func (b Team) Skills() [25]*big.Int {
 	var states [25]*big.Int
 	for i := range states {
-		states[i] = b.Players[i].state
+		states[i] = b.Players[i].skills
 	}
 	return states
 }

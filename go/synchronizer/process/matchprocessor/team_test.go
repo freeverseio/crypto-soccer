@@ -1,18 +1,18 @@
-package match_test
+package matchprocessor_test
 
 import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/match"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/matchprocessor"
 )
 
 func TestTeamStateDefault(t *testing.T) {
-	team, err := match.NewTeam(bc.Contracts)
+	team, err := matchprocessor.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	states := team.State()
+	states := team.Skills()
 	if len(states) != 25 {
 		t.Fatalf("Wrong states size %v", len(states))
 	}
@@ -24,12 +24,12 @@ func TestTeamStateDefault(t *testing.T) {
 }
 
 func TestTeamState(t *testing.T) {
-	team, err := match.NewTeam(bc.Contracts)
+	team, err := matchprocessor.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	team.Players[0] = match.NewPlayer("4544")
-	states := team.State()
+	team.Players[0] = matchprocessor.NewPlayer("4544")
+	states := team.Skills()
 	if len(states) != 25 {
 		t.Fatalf("Wrong states size %v", len(states))
 	}
