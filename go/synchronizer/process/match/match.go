@@ -219,6 +219,18 @@ func (b *Match) ProcessMatchEvents(is2ndHalf bool) ([]storage.MatchEvent, error)
 	// return me, nil
 }
 
+func (b *Match) Play1stHalf() error {
+	matchLogs, err := b.process1stHalf()
+	if err != nil {
+		return err
+	}
+
+	b.HomeMatchLog = matchLogs[0]
+	b.VisitorMatchLog = matchLogs[1]
+
+	return nil
+}
+
 func (b *Match) process1stHalf() ([2]*big.Int, error) {
 	var logs [2]*big.Int
 	isHomeStadium := true
