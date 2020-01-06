@@ -82,10 +82,10 @@ func (b *Match) Process(is2ndHalf bool) ([]storage.MatchEvent, error) {
 	b.VisitorGoals += goalsVisitor
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
-	if err = b.UpdatePlayedByHalf(is2ndHalf, b.HomeTeam, logs[0]); err != nil {
+	if err = b.UpdateTeamState(is2ndHalf, b.HomeTeam, logs[0]); err != nil {
 		return nil, err
 	}
-	if err = b.UpdatePlayedByHalf(is2ndHalf, b.VisitorTeam, logs[1]); err != nil {
+	if err = b.UpdateTeamState(is2ndHalf, b.VisitorTeam, logs[1]); err != nil {
 		return nil, err
 	}
 	if is2ndHalf {
@@ -248,10 +248,10 @@ func (b *Match) Play1stHalf() error {
 	b.HomeGoals += goalsHome
 	b.VisitorGoals += goalsVisitor
 
-	if err = b.UpdatePlayedByHalf(is2ndHalf, b.HomeTeam, b.HomeMatchLog); err != nil {
+	if err = b.UpdateTeamState(is2ndHalf, b.HomeTeam, b.HomeMatchLog); err != nil {
 		return err
 	}
-	if err = b.UpdatePlayedByHalf(is2ndHalf, b.VisitorTeam, b.VisitorMatchLog); err != nil {
+	if err = b.UpdateTeamState(is2ndHalf, b.VisitorTeam, b.VisitorMatchLog); err != nil {
 		return err
 	}
 	return nil
@@ -330,7 +330,7 @@ func (b *Match) GetGoals(logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8,
 	return homeGoals, VisitorGoals, err
 }
 
-func (b *Match) UpdatePlayedByHalf(
+func (b *Match) UpdateTeamState(
 	is2ndHalf bool,
 	team *Team,
 	matchLog *big.Int,
