@@ -23,6 +23,14 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 }
 
+func TestPlay1stHalfTwice(t *testing.T) {
+	m, _ := match.NewMatch(bc.Contracts)
+	err := m.Play1stHalf()
+	assert.NilError(t, err)
+	err = m.Play1stHalf()
+	assert.Error(t, err)
+}
+
 func TestPlayi1stHalf(t *testing.T) {
 	m, _ := match.NewMatch(bc.Contracts)
 	homePlayer := match.NewPlayer("60912465658141224081372268432703414642709456376891023")
