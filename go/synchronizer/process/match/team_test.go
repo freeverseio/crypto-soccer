@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
+	"gotest.tools/assert"
 )
 
 func TestTeamStateDefault(t *testing.T) {
@@ -25,15 +26,12 @@ func TestTeamStateDefault(t *testing.T) {
 
 func TestTeamSkills(t *testing.T) {
 	team, err := match.NewTeam(bc.Contracts)
-	if err != nil {
-		t.Fatal(err)
-	}
-	team.Players[0] = match.NewPlayer("4544")
+	assert.NilError(t, err)
 	skills := team.Skills()
-	if len(skills) != 25 {
-		t.Fatalf("Wrong team skills size %v", len(skills))
+	for _, skill := range skills {
+		assert.Equal(t, skill.String(), "0")
 	}
-	if skills[0].Cmp(big.NewInt(4544)) != 0 {
-		t.Fatalf("Wrong skill %v", skills[0])
-	}
+	team.Players[2] = match.NewPlayer("4544")
+	skills = team.Skills()
+	assert.Equal(t, skills[2].String(), "4544")
 }

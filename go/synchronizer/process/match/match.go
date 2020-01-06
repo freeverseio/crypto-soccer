@@ -30,35 +30,32 @@ type Match struct {
 	HARDINJURY        uint8
 }
 
-func NewMatch(
-	contracts *contracts.Contracts,
-	seed [32]byte,
-	startTime *big.Int,
-	homeTeam *Team,
-	visitorTeam *Team,
-) *Match {
+func NewMatch(contracts *contracts.Contracts) (*Match, error) {
 	var err error
 	var mp Match
 	mp.contracts = contracts
-	mp.Seed = seed
-	mp.StartTime = startTime
-	mp.HomeTeam = homeTeam
-	mp.VisitorTeam = visitorTeam
+	mp.StartTime = big.NewInt(0)
+	if mp.HomeTeam, err = NewTeam(contracts); err != nil {
+		return nil, err
+	}
+	if mp.VisitorTeam, err = NewTeam(contracts); err != nil {
+		return nil, err
+	}
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	if mp.NOOUTOFGAMEPLAYER, err = contracts.Engineprecomp.NOOUTOFGAMEPLAYER(&bind.CallOpts{}); err != nil {
-		panic(err)
+		return nil, err
 	}
 	if mp.REDCARD, err = contracts.Engineprecomp.REDCARD(&bind.CallOpts{}); err != nil {
-		panic(err)
+		return nil, err
 	}
 	if mp.SOFTINJURY, err = contracts.Engineprecomp.SOFTINJURY(&bind.CallOpts{}); err != nil {
-		panic(err)
+		return nil, err
 	}
 	if mp.HARDINJURY, err = contracts.Engineprecomp.HARDINJURY(&bind.CallOpts{}); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &mp
+	return &mp, nil
 }
 
 func (b *Match) Process(is2ndHalf bool) ([]storage.MatchEvent, error) {

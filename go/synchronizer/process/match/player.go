@@ -17,3 +17,7 @@ func NewNullPlayer() *Player {
 	player.skills = big.NewInt(0)
 	return &player
 }
+
+func (b Player) Skills() *big.Int {
+	return new(big.Int).Set(b.skills)
+}
