@@ -220,14 +220,28 @@ func (b *Match) ProcessMatchEvents(is2ndHalf bool) ([]storage.MatchEvent, error)
 }
 
 func (b *Match) Play1stHalf() error {
-	matchLogs, err := b.process1stHalf()
+	isHomeStadium := true
+	isPlayoff := false
+	is2ndHalf := false
+	matchSeed, err := b.GenerateMatchSeed()
+	if err != nil {
+		return err
+	}
+	matchLogs, err := b.contracts.Engine.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		b.StartTime,
+		b.Skills(),
+		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+	)
 	if err != nil {
 		return err
 	}
 	b.HomeMatchLog = matchLogs[0]
 	b.VisitorMatchLog = matchLogs[1]
 
-	is2ndHalf := false
 	if err = b.UpdatePlayedByHalf(is2ndHalf, b.HomeTeam, b.HomeMatchLog); err != nil {
 		return err
 	}
