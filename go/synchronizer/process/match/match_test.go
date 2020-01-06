@@ -25,7 +25,7 @@ func TestDefaultValues(t *testing.T) {
 	}
 }
 
-func TestDefaultValuesPlayGame(t *testing.T) {
+func TestPlayi1stHalf(t *testing.T) {
 	seed := [32]byte{0x0}
 	startTime := big.NewInt(0)
 
@@ -60,23 +60,6 @@ func TestDefaultValuesPlayGame(t *testing.T) {
 		t.Fatalf("Wrong home match log %v", mp.HomeMatchLog.String())
 	}
 	if mp.VisitorMatchLog.String() != "754396374849259078542193939289572664399428455325249558202914101526528" {
-		t.Fatalf("Wrong visitor match log %v", mp.VisitorMatchLog.String())
-	}
-
-	is2ndHalf = true
-	if _, err := mp.Process(is2ndHalf); err != nil {
-		t.Fatal(err)
-	}
-	if mp.HomeGoals != 0 {
-		t.Fatalf("Wrong home goals %v", mp.HomeGoals)
-	}
-	if mp.VisitorGoals != 0 {
-		t.Fatalf("Wrong visitor goals %v", mp.VisitorGoals)
-	}
-	if mp.HomeMatchLog.String() != "1656419124875239866305548088509031409417165694142269319542924505165856768" {
-		t.Fatalf("Wrong home match log %v", mp.HomeMatchLog.String())
-	}
-	if mp.VisitorMatchLog.String() != "1656419124875239866305548088509031409417165694142269319542924505165856768" {
 		t.Fatalf("Wrong visitor match log %v", mp.VisitorMatchLog.String())
 	}
 }
