@@ -61,6 +61,8 @@ func TestPlayi1stHalf_part2(t *testing.T) {
 	m, _ := match.NewMatch(bc.Contracts)
 	m.Seed = [32]byte{0x1, 0x1f}
 	m.StartTime = big.NewInt(34525345)
+	m.HomeTeam.TeamID = big.NewInt(1)
+	m.VisitorTeam.TeamID = big.NewInt(2)
 	for i := 0; i < 11; i++ {
 		m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 10, 10, 10, 10, 10)
 		m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 50, 50, 50, 50, 50)

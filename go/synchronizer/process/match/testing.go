@@ -52,20 +52,3 @@ func CreateDummyPlayer(
 	assert.NilError(t, err)
 	return p
 }
-
-func CreateDummyTeam(
-	t *testing.T,
-	contracts *contracts.Contracts,
-	defence uint16,
-	speed uint16,
-	endurance uint16,
-	pass uint16,
-	shoot uint16,
-) *Team {
-	team, err := NewTeam(contracts)
-	assert.NilError(t, err)
-	for i := range team.Players {
-		team.Players[i] = CreateDummyPlayer(t, contracts, 50, 50, 50, 50, 50)
-	}
-	return team
-}
