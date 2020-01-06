@@ -23,17 +23,17 @@ func TestTeamStateDefault(t *testing.T) {
 	}
 }
 
-func TestTeamState(t *testing.T) {
+func TestTeamSkills(t *testing.T) {
 	team, err := match.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
 	team.Players[0] = match.NewPlayer("4544")
-	states := team.Skills()
-	if len(states) != 25 {
-		t.Fatalf("Wrong states size %v", len(states))
+	skills := team.Skills()
+	if len(skills) != 25 {
+		t.Fatalf("Wrong team skills size %v", len(skills))
 	}
-	if states[0].Cmp(big.NewInt(4544)) != 0 {
-		t.Fatalf("Wrong state %v", states[0])
+	if skills[0].Cmp(big.NewInt(4544)) != 0 {
+		t.Fatalf("Wrong state %v", skills[0])
 	}
 }
