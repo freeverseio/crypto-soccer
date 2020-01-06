@@ -21,8 +21,8 @@ func CreateDummyPlayer(
 	generation := uint8(0)
 	playerID := big.NewInt(2132321)
 	potential := uint8(3)
-	forwardness := uint8(0)
-	leftishness := uint8(0)
+	forwardness := uint8(3)
+	leftishness := uint8(7)
 	aggressiveness := uint8(0)
 	alignedEndOfLastHalf := true
 	redCardLastGame := false

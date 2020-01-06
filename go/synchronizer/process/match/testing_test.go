@@ -18,5 +18,5 @@ func TestCreateDummyPlayer(t *testing.T) {
 	value, err := player.Defence(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, defence)
-	assert.Equal(t, player.Skills().String(), "5711081465855141665519276645366481604778655744")
+	assert.Equal(t, player.Skills().String(), "6368953449211795048194580334409608269205078016")
 }
