@@ -39,8 +39,8 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 func TestPlayi1stHalf(t *testing.T) {
 	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
-	homePlayer := match.NewPlayer("60912465658141224081372268432703414642709456376891023")
-	visitorPlayer := match.NewPlayer("527990852960211435545446683633031307934132992821212439")
+	homePlayer := match.NewPlayerFromSkills("60912465658141224081372268432703414642709456376891023")
+	visitorPlayer := match.NewPlayerFromSkills("527990852960211435545446683633031307934132992821212439")
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
 	err := m.Play1stHalf()
