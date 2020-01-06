@@ -1,0 +1,22 @@
+package match_test
+
+import (
+	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
+	"gotest.tools/assert"
+)
+
+func TestCreateDummyPlayer(t *testing.T) {
+	t.Parallel()
+	defence := uint16(0)
+	speed := uint16(0)
+	endurance := uint16(0)
+	pass := uint16(0)
+	shoot := uint16(0)
+	player := match.CreateDummyPlayer(t, bc.Contracts, defence, speed, endurance, pass, shoot)
+	value, err := player.Defence(bc.Contracts.Assets)
+	assert.NilError(t, err)
+	assert.Equal(t, value, defence)
+	assert.Equal(t, player.Skills().String(), "5711081465855141665519276645366481604778655744")
+}
