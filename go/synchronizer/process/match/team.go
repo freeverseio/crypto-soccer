@@ -12,10 +12,12 @@ type Team struct {
 	tactic  *big.Int
 }
 
-func NewTeam(contracts *contracts.Contracts) (*Team, error) {
+func NewTeam(
+	contracts *contracts.Contracts,
+) (*Team, error) {
 	var team Team
 	for i := range team.Players {
-		team.Players[i] = NewPlayer("0")
+		team.Players[i] = NewNullPlayer()
 	}
 	var err error
 	if team.tactic, err = DefaultTactic(contracts); err != nil {
