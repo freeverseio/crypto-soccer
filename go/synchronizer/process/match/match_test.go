@@ -1,6 +1,7 @@
 package match_test
 
 import (
+	"math/big"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
@@ -53,4 +54,19 @@ func TestPlayi1stHalf(t *testing.T) {
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
 	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "527990858669202206369286207866175185732113538352198935")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
+}
+
+func TestPlayi1stHalf_part2(t *testing.T) {
+	t.Parallel()
+	m, _ := match.NewMatch(bc.Contracts)
+	m.Seed = [32]byte{0x1, 0x1f}
+	m.StartTime = big.NewInt(34525345)
+	for i := 0; i < 11; i++ {
+		m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 10, 10, 10, 10, 10)
+		m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 50, 50, 50, 50, 50)
+	}
+	err := m.Play1stHalf()
+	assert.NilError(t, err)
+	assert.Equal(t, m.HomeGoals, uint8(0))
+	assert.Equal(t, m.VisitorGoals, uint8(0))
 }
