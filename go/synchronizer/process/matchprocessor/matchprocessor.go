@@ -10,6 +10,8 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 
+	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -34,7 +36,6 @@ func NewMatch(
 	contracts *contracts.Contracts,
 	seed [32]byte,
 	startTime *big.Int,
-	is2ndHalf bool,
 	match *storage.Match,
 	homeTeam *storage.Team,
 	visitorTeam *storage.Team,
@@ -502,4 +503,49 @@ func (b *Match) UpdateTeamSkills(
 	// 	}
 	// }
 	return nil
+}
+
+func GetEncodedTacticAtVerse(contracts *contracts.Contracts, teamID *big.Int, verse uint64) (*big.Int, error) {
+	tactic := relay.DefaultTactic(teamID.String())
+	// if tactic, err := relay.TacticByTeamIDAndVerse(teamID.String(), verse); err != nil {
+	// 	return nil, err
+	// } else
+	if encodedTactic, err := contracts.Engine.EncodeTactics(
+		&bind.CallOpts{},
+		[3]uint8{11, 11, 11}, // TODO
+		[3]uint8{2, 3, 4},    // TODO
+		[14]uint8{
+			uint8(tactic.Shirt0),
+			uint8(tactic.Shirt1),
+			uint8(tactic.Shirt2),
+			uint8(tactic.Shirt3),
+			uint8(tactic.Shirt4),
+			uint8(tactic.Shirt5),
+			uint8(tactic.Shirt6),
+			uint8(tactic.Shirt7),
+			uint8(tactic.Shirt8),
+			uint8(tactic.Shirt9),
+			uint8(tactic.Shirt10),
+			uint8(tactic.Shirt11),
+			uint8(tactic.Shirt12),
+			uint8(tactic.Shirt13),
+		},
+		[10]bool{
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+		},
+		uint8(tactic.TacticID),
+	); err != nil {
+		return nil, err
+	} else {
+		return encodedTactic, nil
+	}
 }
