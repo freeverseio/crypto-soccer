@@ -35,9 +35,9 @@ func TestPlayi1stHalf(t *testing.T) {
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
 	assert.Equal(t, m.HomeMatchLog.String(), "68582984444590546630976961169593813219497174670109271642235310440448")
-	assert.Equal(t, m.VisitorMatchLog.String(), "68582984444590546630976961169593813219497174670109271642235310440448")
+	assert.Equal(t, m.VisitorMatchLog.String(), "594466494909760143231211294687139552942416193784081023125303800627200")
 	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "60912471367131994905211792665847292440690001907877519")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "60912471367131994905211792665847292440690001907877519")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "527990858669202206369286207866175185732113538352198935")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
