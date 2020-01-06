@@ -37,7 +37,6 @@ func NewPlayer(
 	gamesNonStopping uint8,
 	injuryWeeksLeft uint8,
 	substitutedLastHalf bool,
-
 ) (*Player, error) {
 	var err error
 	player := Player{}
