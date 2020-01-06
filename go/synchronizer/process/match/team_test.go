@@ -34,6 +34,6 @@ func TestTeamSkills(t *testing.T) {
 		t.Fatalf("Wrong team skills size %v", len(skills))
 	}
 	if skills[0].Cmp(big.NewInt(4544)) != 0 {
-		t.Fatalf("Wrong state %v", skills[0])
+		t.Fatalf("Wrong skill %v", skills[0])
 	}
 }
