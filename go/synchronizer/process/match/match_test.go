@@ -8,12 +8,14 @@ import (
 )
 
 func TestDefaultValues(t *testing.T) {
+	t.Parallel()
 	match, err := match.NewMatch(bc.Contracts)
 	assert.NilError(t, err)
 	assert.Assert(t, match != nil, "match is nil")
 }
 
 func TestPlay1stHalfWithDefaultValues(t *testing.T) {
+	t.Parallel()
 	match, _ := match.NewMatch(bc.Contracts)
 	err := match.Play1stHalf()
 	assert.NilError(t, err)
@@ -35,6 +37,7 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 // }
 
 func TestPlayi1stHalf(t *testing.T) {
+	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
 	homePlayer := match.NewPlayer("60912465658141224081372268432703414642709456376891023")
 	visitorPlayer := match.NewPlayer("527990852960211435545446683633031307934132992821212439")

@@ -9,6 +9,7 @@ import (
 )
 
 func TestTeamStateDefault(t *testing.T) {
+	t.Parallel()
 	team, err := match.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
@@ -25,6 +26,7 @@ func TestTeamStateDefault(t *testing.T) {
 }
 
 func TestTeamSkills(t *testing.T) {
+	t.Parallel()
 	team, err := match.NewTeam(bc.Contracts)
 	assert.NilError(t, err)
 	skills := team.Skills()
