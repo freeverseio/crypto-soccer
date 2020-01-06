@@ -1,10 +1,10 @@
-package matchprocessor_test
+package match_test
 
 import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/matchprocessor"
+	match "github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
@@ -12,7 +12,7 @@ func TestDefaultValues(t *testing.T) {
 	seed := [32]byte{0x0}
 	startTime := big.NewInt(0)
 
-	match := storage.Match{}
+	sMatch := storage.Match{}
 	homeTeam := storage.Team{}
 	visitorTeam := storage.Team{}
 	homeTeamPlayers := []*storage.Player{}
@@ -20,11 +20,11 @@ func TestDefaultValues(t *testing.T) {
 	homeTeamTactic := big.NewInt(0)
 	visitorTeamTactic := big.NewInt(0)
 
-	if mp := matchprocessor.NewMatch(
+	if mp := match.NewMatch(
 		bc.Contracts,
 		seed,
 		startTime,
-		&match,
+		&sMatch,
 		&homeTeam,
 		&visitorTeam,
 		homeTeamPlayers,
@@ -45,30 +45,30 @@ func TestDefaultValuesPlayGame(t *testing.T) {
 	visitorTeam := storage.Team{}
 	visitorTeam.TeamID = big.NewInt(1)
 
-	match := storage.Match{}
-	match.HomeTeamID = homeTeam.TeamID
-	match.VisitorTeamID = visitorTeam.TeamID
-	match.HomeMatchLog = big.NewInt(0)
-	match.VisitorMatchLog = big.NewInt(0)
-	match.HomeGoals = new(uint8)
-	match.VisitorGoals = new(uint8)
+	sMatch := storage.Match{}
+	sMatch.HomeTeamID = homeTeam.TeamID
+	sMatch.VisitorTeamID = visitorTeam.TeamID
+	sMatch.HomeMatchLog = big.NewInt(0)
+	sMatch.VisitorMatchLog = big.NewInt(0)
+	sMatch.HomeGoals = new(uint8)
+	sMatch.VisitorGoals = new(uint8)
 
 	homeTeamPlayers := []*storage.Player{}
 	visitorTeamPlayers := []*storage.Player{}
-	homeTeamTactic, err := matchprocessor.GetEncodedTacticAtVerse(bc.Contracts, homeTeam.TeamID, 1)
+	homeTeamTactic, err := match.GetEncodedTacticAtVerse(bc.Contracts, homeTeam.TeamID, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	visitorTeamTactic, err := matchprocessor.GetEncodedTacticAtVerse(bc.Contracts, visitorTeam.TeamID, 1)
+	visitorTeamTactic, err := match.GetEncodedTacticAtVerse(bc.Contracts, visitorTeam.TeamID, 1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	mp := matchprocessor.NewMatch(
+	mp := match.NewMatch(
 		bc.Contracts,
 		seed,
 		startTime,
-		&match,
+		&sMatch,
 		&homeTeam,
 		&visitorTeam,
 		homeTeamPlayers,
