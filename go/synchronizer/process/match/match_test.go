@@ -23,6 +23,17 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 }
 
+// TODO: reactive this test
+// func TestPlay2ndHalfWithDefaultValues(t *testing.T) {
+// 	match, _ := match.NewMatch(bc.Contracts)
+// 	err := match.Play2ndHalf()
+// 	assert.NilError(t, err)
+// 	assert.Equal(t, match.HomeGoals, uint8(0))
+// 	assert.Equal(t, match.VisitorGoals, uint8(0))
+// 	assert.Equal(t, match.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+// 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+// }
+
 func TestPlayi1stHalf(t *testing.T) {
 	m, _ := match.NewMatch(bc.Contracts)
 	homePlayer := match.NewPlayer("60912465658141224081372268432703414642709456376891023")

@@ -58,51 +58,53 @@ func NewMatch(contracts *contracts.Contracts) (*Match, error) {
 	return &mp, nil
 }
 
-func (b *Match) Process(is2ndHalf bool) ([]storage.MatchEvent, error) {
-	var err error
-
-	var logs [2]*big.Int
-	if is2ndHalf {
-		logs, err = b.process2ndHalf()
-	} else {
-		logs, err = b.process1stHalf()
-	}
+func (b *Match) Play2ndHalf() error {
+	isHomeStadium := true
+	isPlayoff := false
+	is2ndHalf := true
+	matchSeed, err := b.GenerateMatchSeed()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	matchEvents, err := b.ProcessMatchEvents(is2ndHalf)
+	logs, err := b.contracts.Evolution.Play2ndHalfAndEvolve(
+		&bind.CallOpts{},
+		matchSeed,
+		b.StartTime,
+		b.Skills(),
+		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	b.HomeGoals += goalsHome
 	b.VisitorGoals += goalsVisitor
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
 	if err = b.UpdateTeamState(is2ndHalf, b.HomeTeam, logs[0]); err != nil {
-		return nil, err
+		return err
 	}
 	if err = b.UpdateTeamState(is2ndHalf, b.VisitorTeam, logs[1]); err != nil {
-		return nil, err
+		return err
 	}
-	if is2ndHalf {
-		err = b.UpdateTeamSkills(b.HomeTeam, b.StartTime, logs[0])
-		if err != nil {
-			return nil, err
-		}
-		err = b.UpdateTeamSkills(b.VisitorTeam, b.StartTime, logs[1])
-		if err != nil {
-			return nil, err
-		}
-		err = b.updateTeamLeaderBoard()
-		if err != nil {
-			return nil, err
-		}
+	err = b.UpdateTeamSkills(b.HomeTeam, b.StartTime, logs[0])
+	if err != nil {
+		return err
 	}
-	return matchEvents, nil
+	err = b.UpdateTeamSkills(b.VisitorTeam, b.StartTime, logs[1])
+	if err != nil {
+		return err
+	}
+	err = b.updateTeamLeaderBoard()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (b *Match) GenerateMatchSeed() (*big.Int, error) {
