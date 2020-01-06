@@ -1,33 +1,71 @@
 package match
 
-// func CreateDummyPlayer(
-// 	t *testing.T,
-// 	contracts *contracts.Contracts,
-// 	skills [5]uint8,
-// 	forwardness uint8,
-// 	leftishness uint8,
-// ) *Player {
-// 	dayOfBirth := big.NewInt(0)
-// 	gen := uint8(0)
-// 	playerID := big.NewInt(2132321)
-// 	potential := uint8(3)
-// 	aggr := uint8(0)
-// 	birthTraits := [4]uint8{potential, forwardness, leftishness, aggr}
+import (
+	"math/big"
+	"testing"
 
-// 	contracts.Engine.EncodePlayerSkills(
-// 		&bind.CallOpts{},
-// 		skills,
-// 		dayOfBirth,
-// 		gen,
-// 		playerID,
-// 		birthTraits,
-// 		alignedEndOfLastHalf,
-// 		redCardLastGame,
-// 		gameNonStopping,
-// 	)
-// 	// var playerStateTemp = await engine.encodePlayerSkills(
-// 	//         skills, dayOfBirth21, gen = 0, playerId = 2132321, [potential = 3, forwardness, leftishness, aggr = 0],
-// 	//         alignedEndOfLastHalfTwoVec[0], redCardLastGame = false, gamesNonStopping = 0,
-// 	//         injuryWeeksLeft = 0, subLastHalf, sumSkills
-// 	//     ).should.be.fulfilled;
-// }
+	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"gotest.tools/assert"
+)
+
+func CreateDummyPlayer(
+	t *testing.T,
+	contracts *contracts.Contracts,
+	defence uint16,
+	speed uint16,
+	endurance uint16,
+	pass uint16,
+	shoot uint16,
+) *Player {
+	dayOfBirth := uint16(17078)
+	generation := uint8(0)
+	playerID := big.NewInt(2132321)
+	potential := uint8(3)
+	forwardness := uint8(0)
+	leftishness := uint8(0)
+	aggressiveness := uint8(0)
+	alignedEndOfLastHalf := true
+	redCardLastGame := false
+	gamesNonStopping := uint8(0)
+	injuryWeeksLeft := uint8(0)
+	substitutedLastHalf := false
+	p, err := NewPlayer(
+		contracts,
+		playerID,
+		defence,
+		speed,
+		endurance,
+		pass,
+		shoot,
+		dayOfBirth,
+		generation,
+		potential,
+		forwardness,
+		leftishness,
+		aggressiveness,
+		alignedEndOfLastHalf,
+		redCardLastGame,
+		gamesNonStopping,
+		injuryWeeksLeft,
+		substitutedLastHalf,
+	)
+	assert.NilError(t, err)
+	return p
+}
+
+func CreateDummyTeam(
+	t *testing.T,
+	contracts *contracts.Contracts,
+	defence uint16,
+	speed uint16,
+	endurance uint16,
+	pass uint16,
+	shoot uint16,
+) *Team {
+	team, err := NewTeam(contracts)
+	assert.NilError(t, err)
+	for i := range team.Players {
+		team.Players[i] = CreateDummyPlayer(t, contracts, 50, 50, 50, 50, 50)
+	}
+	return team
+}
