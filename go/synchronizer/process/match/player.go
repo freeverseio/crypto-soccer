@@ -29,9 +29,62 @@ func (b Player) Skills() *big.Int {
 
 func (b Player) Defence(assets *assets.Assets) (uint64, error) {
 	opts := &bind.CallOpts{}
-	defence, err := assets.GetDefence(opts, b.skills)
+	value, err := assets.GetDefence(opts, b.skills)
 	if err != nil {
 		return 0, err
 	}
-	return defence.Uint64(), nil
+	return value.Uint64(), nil
+}
+
+func (b Player) Speed(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetSpeed(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
+}
+
+func (b Player) Pass(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetPass(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
+}
+func (b Player) Shoot(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetShoot(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
+}
+
+func (b Player) Endurance(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetEndurance(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
+}
+
+func (b Player) Potential(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetPotential(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
+}
+
+func (b Player) BirthDay(assets *assets.Assets) (uint64, error) {
+	opts := &bind.CallOpts{}
+	value, err := assets.GetBirthDay(opts, b.skills)
+	if err != nil {
+		return 0, err
+	}
+	return value.Uint64(), nil
 }
