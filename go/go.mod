@@ -15,4 +15,5 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.1
 	github.com/urfave/cli v1.22.2
+	gotest.tools v2.2.0+incompatible
 )
