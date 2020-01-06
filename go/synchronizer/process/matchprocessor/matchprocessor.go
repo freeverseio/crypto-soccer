@@ -29,7 +29,7 @@ type Match struct {
 	NOOUTOFGAMEPLAYER  uint8
 	REDCARD            uint8
 	SOFTINJURY         uint8
-	HARDINJURY         uint
+	HARDINJURY         uint8
 }
 
 func NewMatch(
