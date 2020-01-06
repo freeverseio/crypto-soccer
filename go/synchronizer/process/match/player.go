@@ -20,6 +20,7 @@ func NewNullPlayer() *Player {
 
 func NewPlayer(
 	contracts *contracts.Contracts,
+	playerID *big.Int,
 	defence uint16,
 	speed uint16,
 	endurance uint16,
@@ -27,7 +28,6 @@ func NewPlayer(
 	shoot uint16,
 	dayOfBirth uint16,
 	generation uint8,
-	playerID *big.Int,
 	potential uint8,
 	forwardness uint8,
 	leftishness uint8,
