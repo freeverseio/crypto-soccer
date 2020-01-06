@@ -224,10 +224,16 @@ func (b *Match) Play1stHalf() error {
 	if err != nil {
 		return err
 	}
-
 	b.HomeMatchLog = matchLogs[0]
 	b.VisitorMatchLog = matchLogs[1]
 
+	is2ndHalf := false
+	if err = b.UpdatePlayedByHalf(is2ndHalf, b.HomeTeam, b.HomeMatchLog); err != nil {
+		return err
+	}
+	if err = b.UpdatePlayedByHalf(is2ndHalf, b.VisitorTeam, b.VisitorMatchLog); err != nil {
+		return err
+	}
 	return nil
 }
 

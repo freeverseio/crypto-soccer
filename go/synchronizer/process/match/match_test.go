@@ -29,8 +29,8 @@ func TestPlayi1stHalf(t *testing.T) {
 	visitorPlayer := match.NewPlayer("527990852960211435545446683633031307934132992821212439")
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
-	// err := m.Play1stHalf()
-	_, err := m.Process(false)
+	err := m.Play1stHalf()
+	// _, err := m.Process(false)
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
