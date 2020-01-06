@@ -30,11 +30,11 @@ func NewTeam(
 }
 
 func (b Team) Skills() [25]*big.Int {
-	var states [25]*big.Int
-	for i := range states {
-		states[i] = b.Players[i].skills
+	var skills [25]*big.Int
+	for i := range skills {
+		skills[i] = b.Players[i].Skills()
 	}
-	return states
+	return skills
 }
 
 func DefaultTactic(contracts *contracts.Contracts) (*big.Int, error) {
