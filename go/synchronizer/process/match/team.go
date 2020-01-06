@@ -1,4 +1,4 @@
-package matchprocessor
+package match
 
 import (
 	"math/big"

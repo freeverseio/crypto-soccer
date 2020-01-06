@@ -1,4 +1,4 @@
-package matchprocessor_test
+package match_test
 
 import (
 	"os"
