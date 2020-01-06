@@ -15,20 +15,12 @@ func TestDefaultValues(t *testing.T) {
 
 func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 	match, _ := match.NewMatch(bc.Contracts)
-	_, err := match.Process(false)
+	err := match.Play1stHalf()
 	assert.NilError(t, err)
 	assert.Equal(t, match.HomeGoals, uint8(0))
 	assert.Equal(t, match.VisitorGoals, uint8(0))
 	assert.Equal(t, match.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
-}
-
-func TestPlay1stHalfTwice(t *testing.T) {
-	m, _ := match.NewMatch(bc.Contracts)
-	err := m.Play1stHalf()
-	assert.NilError(t, err)
-	err = m.Play1stHalf()
-	assert.Error(t, err)
 }
 
 func TestPlayi1stHalf(t *testing.T) {
@@ -38,7 +30,6 @@ func TestPlayi1stHalf(t *testing.T) {
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
 	err := m.Play1stHalf()
-	// _, err := m.Process(false)
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
