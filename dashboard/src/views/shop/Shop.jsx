@@ -35,19 +35,19 @@ const boostOptions = [
     {
         key: 'Speed Boost',
         text: 'Speed Boost',
-        value: 'Speed Boost',
+        value: 0,
         icon: 'fast forward',
     },
     {
         key: 'Shoot Boost',
         text: 'Shoot Boost',
-        value: 'Shoot Boost',
+        value: 1,
         icon: 'fire',
     },
     {
         key: 'Happy Boost',
         text: 'Happy Boost',
-        value: 'Happy Boost',
+        value: 2,
         icon: 'thumbs up',
     }
 ];
@@ -83,6 +83,7 @@ export default function Shop(props) {
 
     function createItem(e) {
         e.preventDefault();
+        console.log(type)
         createShopItem({
             variables: {
                 uuid: uuidv1(),
