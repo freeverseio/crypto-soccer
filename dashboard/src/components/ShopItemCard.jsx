@@ -52,19 +52,27 @@ mutation CreateAuction(
     }
 `;
 
-const ItemTypeImage = (type) => {
-    if type === 0 {
-        return <Image src='/kick.png' wrapped ui={false} />
+const ItemTypeImage = (props) => {
+    const { type } = props;
 
+    if (type === 0) {
+        return <Image src='/speed.png' wrapped ui={false} />
     }
+    else if (type === 1) {
+        return <Image src='/kick.png' wrapped ui={false} />
+    }
+    else if (type === 2) {
+        return <Image src='/happy.png' wrapped ui={false} />
+    }
+    return <Image src='/logo192.png' wrapped ui={false} />
 }
 
 export default function PlayerCard(props) {
-    const { item} = props;
+    const { item } = props;
     const [price, setPrice] = useState(50);
     const [timeout, setTimeout] = useState(120);
 
-    
+
     // const deletePlayer = async () => {
     //     deletePlayerMutation({
     //         variables: {
@@ -76,7 +84,7 @@ export default function PlayerCard(props) {
 
     return (
         <Card color='red'>
-            <Image src='player.jpg' wrapped ui={false} />
+            <ItemTypeImage type={item.type} />
             <Card.Content>
                 {/* <Card.Header>{player.name}</Card.Header> */}
                 <Divider />
