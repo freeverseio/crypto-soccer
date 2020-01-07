@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
-import { Menu, Icon, Header, Image } from 'semantic-ui-react'
+import { Menu, Icon, Header } from 'semantic-ui-react'
 
 class TopBar extends Component {
     render() {
@@ -10,7 +10,7 @@ class TopBar extends Component {
         return (
             <Menu pointing >
                 <Menu.Item as={Link} to="/" active={location === '/'} >
-                    <img src='/logo62.png' />
+                    <img src='/logo62.png' alt="not found"/>
                 </Menu.Item>
                 <Menu.Item as={Link} to="/academy" name='Academy' active={location === '/academy'} />
                 <Menu.Item as={Link} to="/shop" name='Shop' active={location === '/shop'} />
