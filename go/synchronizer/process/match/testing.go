@@ -17,7 +17,7 @@ func CreateDummyPlayer(
 	pass uint16,
 	shoot uint16,
 ) *Player {
-	dayOfBirth := uint16(17078)
+	dayOfBirthUnix := uint16(17078)
 	generation := uint8(0)
 	playerID := big.NewInt(2132321)
 	potential := uint8(3)
@@ -37,7 +37,7 @@ func CreateDummyPlayer(
 		endurance,
 		pass,
 		shoot,
-		dayOfBirth,
+		dayOfBirthUnix,
 		generation,
 		potential,
 		forwardness,

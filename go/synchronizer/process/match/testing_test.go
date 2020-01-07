@@ -19,4 +19,7 @@ func TestCreateDummyPlayer(t *testing.T) {
 	assert.NilError(t, err)
 	assert.Equal(t, value, defence)
 	assert.Equal(t, player.Skills().String(), "6368953449211795048194580334409608269205078016")
+	birth, err := player.Birth(bc.Contracts.Assets)
+	assert.NilError(t, err)
+	assert.Equal(t, birth.UTC().String(), "2016-10-04 00:00:00 +0000 UTC")
 }

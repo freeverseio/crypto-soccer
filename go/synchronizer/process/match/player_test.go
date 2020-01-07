@@ -31,7 +31,7 @@ func TestNewPlayer(t *testing.T) {
 	endurance := uint16(50)
 	pass := uint16(50)
 	shoot := uint16(50)
-	dayOfBirth := uint16(0)
+	dayOfBirthUnix := uint16(13344)
 	generation := uint8(0)
 	playerID := big.NewInt(2132321)
 	potential := uint8(3)
@@ -51,7 +51,7 @@ func TestNewPlayer(t *testing.T) {
 		endurance,
 		pass,
 		shoot,
-		dayOfBirth,
+		dayOfBirthUnix,
 		generation,
 		potential,
 		forwardness,
@@ -64,11 +64,14 @@ func TestNewPlayer(t *testing.T) {
 		substitutedLastHalf,
 	)
 	assert.NilError(t, err)
-	assert.Equal(t, p.Skills().String(), "730756529746917314243487289600561848950174482825266")
+	assert.Equal(t, p.Skills().String(), "730756529746917314243503421506698786561881762037810")
 	value, err := p.Defence(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, defence)
 	value, err = p.Speed(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, speed)
+	birth, err := p.Birth(bc.Contracts.Assets)
+	assert.NilError(t, err)
+	assert.Equal(t, birth.Unix(), int64(dayOfBirthUnix)*3600*24)
 }

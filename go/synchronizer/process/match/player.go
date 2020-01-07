@@ -2,6 +2,7 @@ package match
 
 import (
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
@@ -26,7 +27,7 @@ func NewPlayer(
 	endurance uint16,
 	pass uint16,
 	shoot uint16,
-	dayOfBirth uint16,
+	dayOfBirthUnix uint16,
 	generation uint8,
 	potential uint8,
 	forwardness uint8,
@@ -44,7 +45,7 @@ func NewPlayer(
 	player.skills, err = contracts.Engine.EncodePlayerSkills(
 		&bind.CallOpts{},
 		[5]uint16{shoot, speed, pass, defence, endurance},
-		big.NewInt(int64(dayOfBirth)),
+		big.NewInt(int64(dayOfBirthUnix)),
 		generation,
 		playerID,
 		[4]uint8{potential, forwardness, leftishness, aggressiveness},
@@ -121,11 +122,11 @@ func (b Player) Potential(assets *assets.Assets) (uint16, error) {
 	return uint16(value.Uint64()), nil
 }
 
-func (b Player) BirthDay(assets *assets.Assets) (uint16, error) {
-	opts := &bind.CallOpts{}
-	value, err := assets.GetBirthDay(opts, b.skills)
+func (b Player) Birth(assets *assets.Assets) (time.Time, error) {
+	birthDayUnix, err := assets.GetBirthDay(&bind.CallOpts{}, b.skills)
 	if err != nil {
-		return 0, err
+		return time.Time{}, err
 	}
-	return uint16(value.Uint64()), nil
+	t := time.Unix(birthDayUnix.Int64()*3600*24, 0)
+	return t, nil
 }
