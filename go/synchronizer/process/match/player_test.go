@@ -71,7 +71,7 @@ func TestNewPlayer(t *testing.T) {
 	value, err = p.Speed(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, value, speed)
-	birth, err := p.Birth(bc.Contracts.Assets)
+	value, err = p.BirthDayUnix(bc.Contracts.Assets)
 	assert.NilError(t, err)
-	assert.Equal(t, birth.Unix(), int64(dayOfBirthUnix)*3600*24)
+	assert.Equal(t, value, dayOfBirthUnix)
 }

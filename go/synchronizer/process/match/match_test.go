@@ -37,7 +37,7 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 // 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 // }
 
-func TestPlayi1stHalf(t *testing.T) {
+func TestPlay1stHalf(t *testing.T) {
 	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
 	homePlayer := match.NewPlayerFromSkills("60912465658141224081372268432703414642709456376891023")
@@ -56,7 +56,7 @@ func TestPlayi1stHalf(t *testing.T) {
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
-func TestPlayi1stHalf_part2(t *testing.T) {
+func TestPlay1stHalf_part2(t *testing.T) {
 	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
 	m.Seed = [32]byte{0x1, 0x1f}
@@ -64,8 +64,8 @@ func TestPlayi1stHalf_part2(t *testing.T) {
 	m.HomeTeam.TeamID = big.NewInt(1)
 	m.VisitorTeam.TeamID = big.NewInt(2)
 	for i := 0; i < 11; i++ {
-		m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 10, 10, 10, 10, 10)
-		m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 50, 50, 50, 50, 50)
+		m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 21, 10, 10, 10, 10, 10)
+		m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 30, 50, 50, 50, 50, 50)
 	}
 	err := m.Play1stHalf()
 	assert.NilError(t, err)
@@ -73,7 +73,7 @@ func TestPlayi1stHalf_part2(t *testing.T) {
 	assert.Equal(t, m.VisitorGoals, uint8(0))
 }
 
-func TestPlayi1stHalf_part3(t *testing.T) {
+func TestPlay1stHalf_part3(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		Name                string
@@ -83,7 +83,7 @@ func TestPlayi1stHalf_part3(t *testing.T) {
 		ExpectedVisitorGoal uint8
 	}{
 		{"Home10Visitor50", 10, 50, 0, 0},
-		{"Home10Visitor5000", 10, 5000, 0, 0},
+		{"Home10Visitor5000", 1233, 2344, 0, 0},
 	}
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -93,8 +93,8 @@ func TestPlayi1stHalf_part3(t *testing.T) {
 			m.HomeTeam.TeamID = big.NewInt(1)
 			m.VisitorTeam.TeamID = big.NewInt(2)
 			for i := 0; i < 11; i++ {
-				m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 10, 10, 10, 10, 10)
-				m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 50, 50, 50, 50, 50)
+				m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 21, 10, 10, 10, 10, 10)
+				m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 30, 50, 50, 50, 50, 50)
 			}
 			err := m.Play1stHalf()
 			assert.NilError(t, err)
