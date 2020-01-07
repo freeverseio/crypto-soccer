@@ -38,7 +38,7 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 // 	assert.Equal(t, match.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 // }
 
-func TestPlay1stHalf(t *testing.T) {
+func TestPlay1stHalf_1(t *testing.T) {
 	t.Parallel()
 	m, _ := match.NewMatch(bc.Contracts)
 	homePlayer := match.NewPlayerFromSkills("60912465658141224081372268432703414642709456376891023")
@@ -57,24 +57,7 @@ func TestPlay1stHalf(t *testing.T) {
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
-func TestPlay1stHalf_part2(t *testing.T) {
-	t.Parallel()
-	m, _ := match.NewMatch(bc.Contracts)
-	m.Seed = [32]byte{0x1, 0x1f}
-	m.StartTime = big.NewInt(1570147200)
-	m.HomeTeam.TeamID = big.NewInt(1)
-	m.VisitorTeam.TeamID = big.NewInt(2)
-	for i := 0; i < 11; i++ {
-		m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 21, 10, 10, 10, 10, 10)
-		m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, 30, 50, 50, 50, 50, 50)
-	}
-	err := m.Play1stHalf()
-	assert.NilError(t, err)
-	assert.Equal(t, m.HomeGoals, uint8(0))
-	assert.Equal(t, m.VisitorGoals, uint8(0))
-}
-
-func TestPlay1stHalf_part3(t *testing.T) {
+func TestPlay1stHalf_2(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		HomeAge             uint16
@@ -86,6 +69,7 @@ func TestPlay1stHalf_part3(t *testing.T) {
 	}{
 		{21, 30, 10, 50, 0, 0},
 		{30, 18, 1233, 2344, 0, 0},
+		{55, 18, 12, 2344, 0, 0},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
@@ -105,3 +89,38 @@ func TestPlay1stHalf_part3(t *testing.T) {
 		})
 	}
 }
+
+// func TestPlay2ndHalf(t *testing.T) {
+// 	t.Parallel()
+// 	cases := []struct {
+// 		HomeAge             uint16
+// 		VisitorAge          uint16
+// 		HomeSkill           uint16
+// 		VisitorSkill        uint16
+// 		ExpectedHomeGoal    uint8
+// 		ExpectedVisitorGoal uint8
+// 	}{
+// 		{21, 30, 10, 50, 0, 0},
+// 		{30, 18, 1233, 2344, 0, 0},
+// 		{55, 18, 12, 2344, 0, 0},
+// 	}
+// 	for _, tc := range cases {
+// 		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
+// 			m, _ := match.NewMatch(bc.Contracts)
+// 			m.Seed = [32]byte{0x1, 0x1f}
+// 			m.StartTime = big.NewInt(1570147200)
+// 			m.HomeTeam.TeamID = big.NewInt(1)
+// 			m.VisitorTeam.TeamID = big.NewInt(2)
+// 			for i := 0; i < 11; i++ {
+// 				m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
+// 				m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
+// 			}
+// 			err := m.Play2ndHalf()
+// 			assert.NilError(t, err)
+// 			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
+// 			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
+// 			err = m.Play2ndHalf()
+// 			assert.NilError(t, err)
+// 		})
+// 	}
+// }

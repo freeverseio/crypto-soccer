@@ -56,3 +56,12 @@ func DefaultTactic(contracts *contracts.Contracts) (*big.Int, error) {
 	}
 	return tactic, nil
 }
+
+func (b *Team) SetTrainingPoints(contracts *contracts.Contracts, matchLog *big.Int) error {
+	points, err := contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog)
+	if err != nil {
+		return err
+	}
+	b.TrainingPoints = points.Uint64()
+	return nil
+}

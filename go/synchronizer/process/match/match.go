@@ -127,18 +127,18 @@ func (b *Match) Play2ndHalf() error {
 	if err = b.updateTeamState(is2ndHalf, b.VisitorTeam, logs[1]); err != nil {
 		return err
 	}
-	err = b.updateTeamSkills(b.HomeTeam, b.StartTime, logs[0])
+	err = b.updateTeamSkills(b.HomeTeam, logs[0])
 	if err != nil {
 		return err
 	}
-	err = b.updateTeamSkills(b.VisitorTeam, b.StartTime, logs[1])
-	if err != nil {
-		return err
-	}
-	err = b.updateTeamLeaderBoard()
-	if err != nil {
-		return err
-	}
+	// err = b.updateTeamSkills(b.VisitorTeam, b.StartTime, logs[1])
+	// if err != nil {
+	// 	return err
+	// }
+	// err = b.updateTeamLeaderBoard()
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
@@ -377,9 +377,20 @@ func (b *Match) updateTeamLeaderBoard() error {
 	// return nil
 }
 
+func (b Match) getTrainingPoints() (homePoints, visitorPoints *big.Int, err error) {
+	homePoints, err = b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog)
+	if err != nil {
+		return nil, nil, err
+	}
+	visitorPoints, err = b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog)
+	if err != nil {
+		return nil, nil, err
+	}
+	return homePoints, visitorPoints, nil
+}
+
 func (b *Match) updateTeamSkills(
 	team *Team,
-	matchStartTime *big.Int,
 	logs *big.Int,
 ) error {
 	trainingPoints, err := b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, logs)
@@ -393,7 +404,7 @@ func (b *Match) updateTeamSkills(
 		&bind.CallOpts{},
 		team.Skills(),
 		userAssignment,
-		matchStartTime,
+		b.StartTime,
 	)
 	if err != nil {
 		return err
