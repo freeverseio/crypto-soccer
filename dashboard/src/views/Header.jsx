@@ -11,6 +11,7 @@ class TopBar extends Component {
             <Menu pointing secondary>
                 <Link to='/'><Menu.Item name='Home' active={location === '/'} /></Link>
                 <Link to='/academy'><Menu.Item name='academy' active={location === '/academy'} /></Link>
+                <Link to='/shop'><Menu.Item name='shop' active={location === '/shop'} /></Link>
                 <Link to='/teams'><Menu.Item name='Teams' active={location === '/teams'} /></Link>
                 <Link to='/players'><Menu.Item name='Players' active={location === '/players'} /></Link>
 
