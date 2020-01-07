@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Button, Form, Grid, Header, Card, Segment, Container, Divider } from 'semantic-ui-react';
 import ShopItem from '../../components/ShopItem';
+import uuidv1 from 'uuid/v1';
 
 const ALL_SHOPS_ITEMS = gql`
 query {
@@ -13,8 +14,22 @@ query {
         price
         }
     }
-}
-`;
+}`;
+
+const CREATE_SHOP_ITEM = gql`
+mutation CreateShopItem(
+    $uuid: UUID!
+    $type: Int!
+    $price: Int!
+    ){
+  createShopItem(
+    input: { 
+        uuid: $uuid
+        type: $type
+        price: $price
+    }
+  )
+}`;
 
 const boostOptions = [
     {
@@ -41,10 +56,7 @@ export default function Shop(props) {
     const [type, setType] = useState(boostOptions[0].value);
     const [name, setName] = useState("");
     const [price, setPrice] = useState(50);
-
-    const createItem = () => {
-        console.log("Submitted");
-    }
+    const [createShopItem] = useMutation(CREATE_SHOP_ITEM);
 
     const Shop = () => {
         const { loading, error, data } = useQuery(ALL_SHOPS_ITEMS, {
@@ -68,6 +80,17 @@ export default function Shop(props) {
             </Card.Group>
         )
     }
+
+    function createItem(e) {
+        e.preventDefault();
+        createShopItem({
+            variables: {
+                uuid: uuidv1(),
+                type: Number(type),
+                price: Number(price),
+            }
+        });
+    };
 
     return (
         <Container>
