@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Button, Form, Grid, Header, Card, Segment, Container, Divider } from 'semantic-ui-react';
-import ShopItem from '../../components/ShopItem';
+import ShopItemCard from '../../components/ShopItemCard';
 import uuidv1 from 'uuid/v1';
 
 const ALL_SHOPS_ITEMS = gql`
@@ -68,11 +68,11 @@ export default function Shop(props) {
 
         const items = data.allShopItems.nodes;
         return (
-            <Card.Group>
+            <Card.Group itemsPerRow={5}>
                 {
                     items.map((item, key) => {
                         return (
-                            <ShopItem key={key} item={item} />
+                            <ShopItemCard key={key} item={item} />
                         );
                     })
 
