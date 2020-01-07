@@ -42,9 +42,9 @@ func TestCreateDummyPlayer(t *testing.T) {
 			value, err = player.Shoot(bc.Contracts.Assets)
 			assert.NilError(t, err)
 			assert.Equal(t, value, ts.Shoot)
-			value, err = player.Age(bc.Contracts.Assets)
+			value, err = player.BirthDayUnix(bc.Contracts.Assets)
 			assert.NilError(t, err)
-			assert.Equal(t, value, ts.Age)
+			assert.Equal(t, match.PlayerAge(value), ts.Age)
 		})
 	}
 }

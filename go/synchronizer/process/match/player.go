@@ -130,12 +130,8 @@ func (b Player) BirthDayUnix(assets *assets.Assets) (uint16, error) {
 	return uint16(birthDayUnix.Uint64()), nil
 }
 
-func (b Player) Age(assets *assets.Assets) (uint16, error) {
-	days, err := b.BirthDayUnix(assets)
-	if err != nil {
-		return 0, err
-	}
+func PlayerAge(birthDayUnix uint16) uint16 {
 	nowInDays := time.Now().Unix() / 3600 / 24
-	age := uint16((nowInDays - int64(days)) * 7 / 365)
-	return age, nil
+	age := uint16((nowInDays - int64(birthDayUnix)) * 7 / 365)
+	return age
 }
