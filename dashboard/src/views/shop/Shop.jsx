@@ -36,19 +36,19 @@ const boostOptions = [
         key: 'Speed Boost',
         text: 'Speed Boost',
         value: 0,
-        icon: 'fast forward',
+        image: '/speed.png',
     },
     {
         key: 'Shoot Boost',
         text: 'Shoot Boost',
         value: 1,
-        icon: 'fire',
+        image: '/kick.png',
     },
     {
         key: 'Happy Boost',
         text: 'Happy Boost',
         value: 2,
-        icon: 'thumbs up',
+        image: '/pony.png',
     }
 ];
 
@@ -57,6 +57,7 @@ export default function Shop(props) {
     const [name, setName] = useState("");
     const [price, setPrice] = useState(50);
     const [createShopItem] = useMutation(CREATE_SHOP_ITEM);
+
 
     const Shop = () => {
         const { loading, error, data } = useQuery(ALL_SHOPS_ITEMS, {
@@ -72,7 +73,7 @@ export default function Shop(props) {
                 {
                     items.map((item, key) => {
                         return (
-                            <ShopItemCard key={key} item={item} />
+                            <ShopItemCard key={key} item={item} options={boostOptions[item.type]}/>
                         );
                     })
 
@@ -102,7 +103,7 @@ export default function Shop(props) {
                         <Segment stacked>
                             <Form.Dropdown fluid selection options={boostOptions} placeholder='Type' value={type} onChange={(_, { value }) => setType(value)} />
                             <Form.Input fluid type='number' icon='dollar' iconPosition='left' placeholder='Price' value={price} onChange={event => setPrice(event.target.value)} />
-                            <Form.Input fluid icon='user' iconPosition='left' placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
+                            {/* <Form.Input fluid icon='user' iconPosition='left' placeholder='Name' value={name} onChange={event => setName(event.target.value)} /> */}
                             <Button type='submit' color='teal' fluid size='large'>Create</Button>
                         </Segment>
                     </Form>
