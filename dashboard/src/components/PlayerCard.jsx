@@ -158,8 +158,8 @@ export default function PlayerCard(props) {
                         </List.Item>
                     </List>
                 }
-                {!currentAuction && <Button floated='right' basic color='green' onClick={createAuction}>Sell</Button>}
-                {!currentAuction && <Button floated='right' value='Delete' basic color='red' onClick={deletePlayer}>Delete</Button>}
+                {!currentAuction && <Button floated='right' color='green' onClick={createAuction}>Sell</Button>}
+                {!currentAuction && <Button floated='right' value='Delete' color='red' onClick={deletePlayer}>Delete</Button>}
             </Card.Content>
         </Card>
     )

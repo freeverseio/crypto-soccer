@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Button, Form, Grid, Header, Card, Segment, Container, Divider } from 'semantic-ui-react';
-import ShopItem from '../../components/ShopItem';
+import ShopItemCard from '../../components/ShopItemCard';
+import uuidv1 from 'uuid/v1';
 
 const ALL_SHOPS_ITEMS = gql`
 query {
@@ -13,27 +14,41 @@ query {
         price
         }
     }
-}
-`;
+}`;
+
+const CREATE_SHOP_ITEM = gql`
+mutation CreateShopItem(
+    $uuid: UUID!
+    $type: Int!
+    $price: Int!
+    ){
+  createShopItem(
+    input: { 
+        uuid: $uuid
+        type: $type
+        price: $price
+    }
+  )
+}`;
 
 const boostOptions = [
     {
         key: 'Speed Boost',
         text: 'Speed Boost',
-        value: 'Speed Boost',
-        icon: 'fast forward',
+        value: 0,
+        image: '/speed.png',
     },
     {
         key: 'Shoot Boost',
         text: 'Shoot Boost',
-        value: 'Shoot Boost',
-        icon: 'fire',
+        value: 1,
+        image: '/kick.png',
     },
     {
         key: 'Happy Boost',
         text: 'Happy Boost',
-        value: 'Happy Boost',
-        icon: 'thumbs up',
+        value: 2,
+        image: '/pony.png',
     }
 ];
 
@@ -41,10 +56,8 @@ export default function Shop(props) {
     const [type, setType] = useState(boostOptions[0].value);
     const [name, setName] = useState("");
     const [price, setPrice] = useState(50);
+    const [createShopItem] = useMutation(CREATE_SHOP_ITEM);
 
-    const createItem = () => {
-        console.log("Submitted");
-    }
 
     const Shop = () => {
         const { loading, error, data } = useQuery(ALL_SHOPS_ITEMS, {
@@ -56,11 +69,11 @@ export default function Shop(props) {
 
         const items = data.allShopItems.nodes;
         return (
-            <Card.Group>
+            <Card.Group itemsPerRow={5}>
                 {
                     items.map((item, key) => {
                         return (
-                            <ShopItem key={key} item={item} />
+                            <ShopItemCard key={key} item={item} options={boostOptions[item.type]}/>
                         );
                     })
 
@@ -68,6 +81,18 @@ export default function Shop(props) {
             </Card.Group>
         )
     }
+
+    function createItem(e) {
+        e.preventDefault();
+        console.log(type)
+        createShopItem({
+            variables: {
+                uuid: uuidv1(),
+                type: Number(type),
+                price: Number(price),
+            }
+        });
+    };
 
     return (
         <Container>
@@ -78,7 +103,7 @@ export default function Shop(props) {
                         <Segment stacked>
                             <Form.Dropdown fluid selection options={boostOptions} placeholder='Type' value={type} onChange={(_, { value }) => setType(value)} />
                             <Form.Input fluid type='number' icon='dollar' iconPosition='left' placeholder='Price' value={price} onChange={event => setPrice(event.target.value)} />
-                            <Form.Input fluid icon='user' iconPosition='left' placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
+                            {/* <Form.Input fluid icon='user' iconPosition='left' placeholder='Name' value={name} onChange={event => setName(event.target.value)} /> */}
                             <Button type='submit' color='teal' fluid size='large'>Create</Button>
                         </Segment>
                     </Form>
