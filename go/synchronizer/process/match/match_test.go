@@ -67,18 +67,18 @@ func TestPlay1stHalf_2(t *testing.T) {
 		ExpectedHomeGoal    uint8
 		ExpectedVisitorGoal uint8
 	}{
-		{21, 30, 10, 50, 0, 0},
+		{21, 30, 10, 50, 0, 3},
 		{30, 18, 1233, 2344, 0, 0},
-		{55, 18, 12, 2344, 0, 0},
+		{55, 18, 12, 2344, 0, 10},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
 			m, _ := match.NewMatch(bc.Contracts)
 			m.Seed = [32]byte{0x1, 0x1f}
 			m.StartTime = big.NewInt(1570147200)
-			m.HomeTeam.TeamID = big.NewInt(1)
-			m.VisitorTeam.TeamID = big.NewInt(2)
-			for i := 0; i < 11; i++ {
+			m.HomeTeam.TeamID = big.NewInt(int64(1))
+			m.VisitorTeam.TeamID = big.NewInt(int64(2))
+			for i := 0; i < 25; i++ {
 				m.HomeTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
 				m.VisitorTeam.Players[i] = match.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
 			}
