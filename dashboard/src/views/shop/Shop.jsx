@@ -54,7 +54,6 @@ const boostOptions = [
 
 export default function Shop(props) {
     const [type, setType] = useState(boostOptions[0].value);
-    const [name, setName] = useState("");
     const [price, setPrice] = useState(50);
     const [createShopItem] = useMutation(CREATE_SHOP_ITEM);
 
