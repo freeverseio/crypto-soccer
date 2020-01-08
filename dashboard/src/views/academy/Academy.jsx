@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Label, Input, Card, Grid, Header, Button, Divider } from 'semantic-ui-react';
+import { Container, Form, Segment, Card, Grid, Header, Button, Divider } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import PlayerCard from '../../components/PlayerCard';
@@ -107,7 +107,7 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group>
+            <Card.Group itemsPerRow={4}>
                 {
                     players.map((player, key) => {
                         return (
