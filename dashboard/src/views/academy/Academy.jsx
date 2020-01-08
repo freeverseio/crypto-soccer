@@ -107,7 +107,7 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group>
+            <Card.Group itemsPerRow={4}>
                 {
                     players.map((player, key) => {
                         return (
