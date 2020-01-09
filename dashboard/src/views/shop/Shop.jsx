@@ -10,8 +10,11 @@ query {
       allShopItems {
         nodes {
         uuid
+        name
+        url
         type
         price
+        quantity
         }
     }
 }`;
@@ -19,14 +22,20 @@ query {
 const CREATE_SHOP_ITEM = gql`
 mutation CreateShopItem(
     $uuid: UUID!
+    $name: String!
+    $url: String!
     $type: Int!
     $price: Int!
+    $quantity: Int!
     ){
   createShopItem(
     input: { 
         uuid: $uuid
+        name: $name
+        url: $url
         type: $type
         price: $price
+        quantity: $quantity
     }
   )
 }`;
@@ -92,27 +101,30 @@ export default function Shop(props) {
 
     function createItem(e) {
         e.preventDefault();
-        console.log(type)
         createShopItem({
             variables: {
                 uuid: uuidv1(),
+                name: name,
+                url: url,
+                quantity: Number(quantity),
                 type: Number(type),
                 price: Number(price),
             }
-        });
+        })
+        .catch(console.error);
     };
 
 
     return (
         <Container>
             <Grid textAlign='center' verticalAlign='middle'>
-                <Grid.Column style={{ maxWidth: 850 }}>
+                <Grid.Column style={{ maxWidth: 650 }}>
                     <Header as='h2' color='teal' textAlign='center'>Sponsorship</Header>
                     <Form size='large' onSubmit={createItem}>
                         <Segment stacked>
                             <Grid columns={2}>
                                 <Grid.Column>
-                                    <Image src={boostOptions[type].image} size='small' />
+                                    <Image src={boostOptions[type].image} size='small' centered />
                                     <Form.Dropdown fluid selection options={boostOptions} placeholder='Type' value={type} onChange={(_, { value }) => setType(value)} />
                                 </Grid.Column>
                                 <Grid.Column>

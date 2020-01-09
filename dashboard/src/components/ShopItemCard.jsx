@@ -22,7 +22,8 @@ export default function PlayerCard(props) {
             variables: {
                 uuid: item.uuid,
             }
-        });
+        })
+        .catch(console.error);
     };
 
     return (

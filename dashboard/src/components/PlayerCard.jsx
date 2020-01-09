@@ -86,7 +86,8 @@ export default function PlayerCard(props) {
                 signature: signature.signature,
                 seller: seller,
             }
-        });
+        })
+        .catch(console.error);
     };
 
     const deletePlayer = async () => {
@@ -94,7 +95,8 @@ export default function PlayerCard(props) {
             variables: {
                 playerId: player.playerId,
             }
-        });
+        })
+        .catch(console.error);
     };
 
     return (
