@@ -54,7 +54,7 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
           return true;
         },
         createShopItem: async (_, { input }, context) => {
-          const { uuid, type, price } = input;
+          const { uuid, name, url, type, price, quantity } = input;
           const query = sql.query`INSERT INTO shop_items (uuid, name, url, type, price, quantity) VALUES (
             ${sql.value(uuid)},
             ${sql.value(name)},
