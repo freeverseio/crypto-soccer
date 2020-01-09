@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Form, Segment, Card, Grid, Header, Button, Divider } from 'semantic-ui-react';
+import { Container, Form, Segment, Grid, Header, Button, Divider } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import PlayerCard from '../../components/PlayerCard';
