@@ -106,13 +106,13 @@ export default function Shop(props) {
     return (
         <Container>
             <Grid textAlign='center' verticalAlign='middle'>
-                <Grid.Column style={{ maxWidth: 850 }}>
+                <Grid.Column style={{ maxWidth: 650 }}>
                     <Header as='h2' color='teal' textAlign='center'>Sponsorship</Header>
                     <Form size='large' onSubmit={createItem}>
                         <Segment stacked>
                             <Grid columns={2}>
                                 <Grid.Column>
-                                    <Image src={boostOptions[type].image} size='small' />
+                                    <Image src={boostOptions[type].image} size='small' centered />
                                     <Form.Dropdown fluid selection options={boostOptions} placeholder='Type' value={type} onChange={(_, { value }) => setType(value)} />
                                 </Grid.Column>
                                 <Grid.Column>
