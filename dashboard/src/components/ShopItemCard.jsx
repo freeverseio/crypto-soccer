@@ -27,8 +27,8 @@ export default function PlayerCard(props) {
     };
 
     return (
-        <Card as='a' href={item.url} color='red'>
-            <Image src={options.image} wrapped ui={false} label={{
+        <Card  color='red'>
+            <Image as={item.url ? "a" : ""} href={item.url} src={options.image} wrapped ui={false} label={{
         //   as: 'a',
           color: 'teal',
           content: "# " + item.quantity,
