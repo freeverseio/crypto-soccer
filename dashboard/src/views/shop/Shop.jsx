@@ -19,14 +19,20 @@ query {
 const CREATE_SHOP_ITEM = gql`
 mutation CreateShopItem(
     $uuid: UUID!
+    $name: String!
+    $url: String!
     $type: Int!
     $price: Int!
+    $quantity: Int!
     ){
   createShopItem(
     input: { 
         uuid: $uuid
+        name: $name
+        url: $url
         type: $type
         price: $price
+        quantity: $quantity
     }
   )
 }`;
@@ -95,6 +101,9 @@ export default function Shop(props) {
         createShopItem({
             variables: {
                 uuid: uuidv1(),
+                name: name,
+                url: url,
+                quantity: Number(quantity),
                 type: Number(type),
                 price: Number(price),
             }
