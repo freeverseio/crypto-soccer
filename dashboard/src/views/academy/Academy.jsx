@@ -107,16 +107,18 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group itemsPerRow={4}>
+            <Grid columns={4}>
                 {
                     players.map((player, key) => {
                         return (
-                            <PlayerCard key={key} player={player} web3={web3} />
+                            <Grid.Column key={key}>
+                                <PlayerCard key={key} player={player} web3={web3} />
+                            </Grid.Column>
                         );
                     })
 
                 }
-            </Card.Group>
+            </Grid>
         )
     }
 
