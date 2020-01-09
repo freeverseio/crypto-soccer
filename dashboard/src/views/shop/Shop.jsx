@@ -10,8 +10,11 @@ query {
       allShopItems {
         nodes {
         uuid
+        name
+        url
         type
         price
+        quantity
         }
     }
 }`;
