@@ -140,7 +140,8 @@ export default function SpecialPlayer(props) {
                 potential: Number(potential),
                 dayOfBirth: 16950,
             }
-        });
+        })
+        .catch(console.error);
     }
 
     return (

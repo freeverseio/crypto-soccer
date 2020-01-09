@@ -92,14 +92,14 @@ export default function Shop(props) {
 
     function createItem(e) {
         e.preventDefault();
-        console.log(type)
         createShopItem({
             variables: {
                 uuid: uuidv1(),
                 type: Number(type),
                 price: Number(price),
             }
-        });
+        })
+        .catch(console.error);
     };
 
 
