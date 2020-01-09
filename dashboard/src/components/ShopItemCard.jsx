@@ -3,11 +3,7 @@ import { Card, Image, Grid, Divider, Button } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-    faShoePrints,
-    faShieldAlt,
-    faDollarSign,
-} from '@fortawesome/free-solid-svg-icons';
+import { faDollarSign } from '@fortawesome/free-solid-svg-icons';
 
 const DELETE_SHOP_ITEM = gql`
 mutation DeleteShopItem(
