@@ -55,10 +55,13 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
         },
         createShopItem: async (_, { input }, context) => {
           const { uuid, type, price } = input;
-          const query = sql.query`INSERT INTO shop_items (uuid, type, price) VALUES (
+          const query = sql.query`INSERT INTO shop_items (uuid, name, url, type, price, quantity) VALUES (
             ${sql.value(uuid)},
+            ${sql.value(name)},
+            ${sql.value(url)},
             ${sql.value(type)}, 
-            ${sql.value(price)}
+            ${sql.value(price)},
+            ${sql.value(quantity)}
             )`;
           const { text, values } = sql.compile(query);
           await context.pgClient.query(text, values);
