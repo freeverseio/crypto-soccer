@@ -136,7 +136,7 @@ export default function SpecialPlayer(props) {
                 pass: Number(pass),
                 shoot: Number(shoot),
                 endurance: Number(endurance),
-                preferredPosition: "TODO",
+                preferredPosition: "F LCR",
                 potential: Number(potential),
                 dayOfBirth: 16950,
             }

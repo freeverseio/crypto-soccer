@@ -55,7 +55,7 @@ const MyPlugin = () => {
                 ${sql.value(shoot)},
                 ${sql.value(endurance)},
                 ${sql.value(0)},
-                ${sql.value('')},
+                ${sql.value(preferred_position)},
                 ${sql.value(potential)},
                 ${sql.value(dayOfBirth)},
                 ${sql.value('')},
