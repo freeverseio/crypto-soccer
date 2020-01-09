@@ -86,16 +86,18 @@ export default function Shop(props) {
 
         const items = data.allShopItems.nodes;
         return (
-            <Card.Group itemsPerRow={5}>
+            <Grid columns={5}>
                 {
                     items.map((item, key) => {
                         return (
-                            <ShopItemCard key={key} item={item} options={boostOptions[item.type]} />
+                            <Grid.Column key={key}>
+                                <ShopItemCard item={item} options={boostOptions[item.type]} />
+                            </Grid.Column>
                         );
                     })
 
                 }
-            </Card.Group>
+            </Grid>
         )
     }
 

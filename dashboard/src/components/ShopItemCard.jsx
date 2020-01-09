@@ -27,10 +27,16 @@ export default function PlayerCard(props) {
     };
 
     return (
-        <Card color='red'>
-            <Image src={options.image} wrapped ui={false} />
+        <Card  color='red'>
+            <Image as={item.url ? "a" : ""} href={item.url} src={options.image} wrapped ui={false} label={{
+        //   as: 'a',
+          color: 'teal',
+          content: "# " + item.quantity,
+        //   icon: 'spoon',
+          ribbon: true,
+        }} />
             <Card.Content>
-                <Card.Header>{options.text}</Card.Header>
+                <Card.Header>{item.name}</Card.Header>
                 <Divider />
                 <Card.Meta>
                     <Grid columns='equal'>

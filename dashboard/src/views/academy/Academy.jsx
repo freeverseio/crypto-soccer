@@ -107,16 +107,18 @@ export default function SpecialPlayer(props) {
 
         const players = data.allPlayers.nodes;
         return (
-            <Card.Group itemsPerRow={4}>
+            <Grid columns={4}>
                 {
                     players.map((player, key) => {
                         return (
-                            <PlayerCard key={key} player={player} web3={web3} />
+                            <Grid.Column key={key}>
+                                <PlayerCard key={key} player={player} web3={web3} />
+                            </Grid.Column>
                         );
                     })
 
                 }
-            </Card.Group>
+            </Grid>
         )
     }
 
@@ -127,7 +129,10 @@ export default function SpecialPlayer(props) {
 
         console.log("Creating player ", playerId);
 
-        createAcademyPlayer({ // use the block chain to retrive all the values from the playerId
+        const nowDays = Math.floor(Date.now() / 1000 / 3600 / 24);
+        const dayOfBirth = Math.floor(nowDays - Number(age) * 365/7);
+
+        createAcademyPlayer({ 
             variables: {
                 playerId: playerId,
                 name: name,
@@ -138,7 +143,7 @@ export default function SpecialPlayer(props) {
                 endurance: Number(endurance),
                 preferredPosition: "F LCR",
                 potential: Number(potential),
-                dayOfBirth: 16950,
+                dayOfBirth: dayOfBirth,
             }
         })
         .catch(console.error);
