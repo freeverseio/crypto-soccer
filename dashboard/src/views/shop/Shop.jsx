@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useQuery, useMutation } from '@apollo/react-hooks';
-import { Button, Form, Grid, Header, Card, Segment, Container, Divider, Image } from 'semantic-ui-react';
+import { Button, Form, Grid, Header, Segment, Container, Divider, Image } from 'semantic-ui-react';
 import ShopItemCard from '../../components/ShopItemCard';
 import uuidv1 from 'uuid/v1';
 
@@ -42,22 +42,22 @@ mutation CreateShopItem(
 
 const boostOptions = [
     {
-        key: 'Speed Boost',
-        text: 'Speed Boost',
+        key: 'Nike GT1000T',
+        text: 'Nike GT1000T',
         value: 0,
-        image: '/speed.png',
+        image: '/nike_shoes.png',
     },
     {
-        key: 'Shoot Boost',
-        text: 'Shoot Boost',
+        key: 'RedBull',
+        text: 'RedBull',
         value: 1,
-        image: '/kick.png',
+        image: '/redbull.png',
     },
     {
-        key: 'Happy Boost',
-        text: 'Happy Boost',
+        key: 'Adidas Shirt',
+        text: 'Adidas Shirt',
         value: 2,
-        image: '/pony.png',
+        image: '/adidas_shirt.png',
     }
 ];
 
@@ -127,10 +127,11 @@ export default function Shop(props) {
                             <Grid columns={2}>
                                 <Grid.Column>
                                     <Image src={boostOptions[type].image} size='small' centered />
+                                    <Divider />
                                     <Form.Dropdown fluid selection options={boostOptions} placeholder='Type' value={type} onChange={(_, { value }) => setType(value)} />
                                 </Grid.Column>
                                 <Grid.Column>
-                                    <Form.Input label='name' fluid placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
+                                    <Form.Input required label='name' fluid placeholder='Name' value={name} onChange={event => setName(event.target.value)} />
                                     <Form.Input type='url' label='url' fluid placeholder='url' value={url} onChange={event => setUrl(event.target.value)} />
                                 </Grid.Column>
                             </Grid>

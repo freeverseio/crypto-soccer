@@ -30,7 +30,7 @@ export default function PlayerCard(props) {
         <Card  color='red'>
             <Image as={item.url ? "a" : ""} href={item.url} src={options.image} wrapped ui={false} label={{
         //   as: 'a',
-          color: 'teal',
+          color: 'yellow',
           content: "# " + item.quantity,
         //   icon: 'spoon',
           ribbon: true,
