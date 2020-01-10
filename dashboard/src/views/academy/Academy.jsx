@@ -156,7 +156,7 @@ export default function SpecialPlayer(props) {
                     <Header as='h2' color='teal' textAlign='center'>Academy</Header>
                     <Form size='large' onSubmit={handleSubmit}>
                         <Segment stacked>
-                        <Form.Input fluid labelPosition='left' type='text' value={name} onChange={event => setName(event.target.value)}/>
+                        <Form.Input required fluid label='Name' type='text' value={name} onChange={event => setName(event.target.value)}/>
                             <Form.Group  widths='equal'>
                                 <Form.Input fluid label='Shoot' placeholder='Shoot' type='number' min='20' max='60000' value={shoot} onChange={event => setShoot(event.target.value)} />
                                 <Form.Input fluid label='Speed' placeholder='Speed' type='number' min='20' max='60000' value={speed} onChange={event => setSpeed(event.target.value)} />
