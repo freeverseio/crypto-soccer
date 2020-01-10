@@ -1,7 +1,9 @@
 package storage
 
-func (b *Storage) GetBlockNumber() (uint64, error) {
-	rows, err := b.tx.Query("SELECT value FROM params WHERE (name = 'block_number');")
+import "database/sql"
+
+func GetBlockNumber(tx *sql.Tx) (uint64, error) {
+	rows, err := tx.Query("SELECT value FROM params WHERE (name = 'block_number');")
 	if err != nil {
 		return 0, err
 	}
@@ -14,8 +16,8 @@ func (b *Storage) GetBlockNumber() (uint64, error) {
 	return number, nil
 }
 
-func (b *Storage) SetBlockNumber(value uint64) error {
-	_, err := b.tx.Exec("UPDATE params SET value = $1 WHERE (name = 'block_number');", value)
+func SetBlockNumber(tx *sql.Tx, value uint64) error {
+	_, err := tx.Exec("UPDATE params SET value = $1 WHERE (name = 'block_number');", value)
 	if err != nil {
 		return err
 	}

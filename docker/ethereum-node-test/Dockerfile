@@ -1,4 +1,4 @@
-FROM ethereum/client-go:alltools-v1.9.9
+FROM ethereum/client-go:alltools-stable
 
 # Set the working directory to /app
 WORKDIR /test
@@ -18,7 +18,7 @@ RUN geth --datadir /test/data init /test/genesis.json
 VOLUME /test 
 
 EXPOSE 8545
-EXPOSE 30303
-EXPOSE 30303/udp
+# EXPOSE 30303
+# EXPOSE 30303/udp
 
 ENTRYPOINT ["geth", "--datadir", "/test/data", "--unlock", "0x83a909262608c650bd9b0ae06e29d90d0f67ac5e", "--password", "/test/passwd", "--keystore", "/test/keystore", "--rpc", "--rpcapi", "personal,db,eth,net,web3,txpool,miner,debug", "--rpcvhosts", "*", "--rpccorsdomain", "*", "--rpcaddr", "0.0.0.0", "--networkid", "63819", "--allow-insecure-unlock", "--mine", "--nodiscover"]

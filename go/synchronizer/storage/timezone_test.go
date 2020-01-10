@@ -7,12 +7,13 @@ import (
 )
 
 func TestTimezoneCount(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	count, err := s.TimezoneCount()
+	defer tx.Rollback()
+
+	count, err := storage.TimezoneCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,11 +21,11 @@ func TestTimezoneCount(t *testing.T) {
 		t.Fatalf("Expected 0 result %v", count)
 	}
 	timezone := storage.Timezone{1}
-	err = s.TimezoneCreate(timezone)
+	err = timezone.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err = s.TimezoneCount()
+	count, err = storage.TimezoneCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -168,10 +168,10 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         uint64[2] memory rnds
     ) private pure returns(uint256) 
     {
-        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return matchLog;
-        
+        if (selectedPlayer == NO_OUT_OF_GAME_PLAYER) return addOutOfGame(matchLog, NO_OUT_OF_GAME_PLAYER, 0, 0, is2ndHalf);
+
         uint8 minRound = 0;
-        uint8 maxRound = ROUNDS_PER_MATCH;
+        uint8 maxRound = ROUNDS_PER_MATCH-1;
 
         // first compute the type of event        
         uint8 typeOfEvent = forceRedCard ? RED_CARD : computeTypeOfEvent(rnds[1]);
@@ -505,7 +505,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
             outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
             if (outStates[p] != 0) {
                 if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
-                    matchLog = addHalfTimeSubs(matchLog, p, changes);
+                    matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
                     teamSkills += getSumOfSkills(outStates[p]); 
                 } else if (!is2ndHalf) teamSkills += getSumOfSkills(outStates[p]); 

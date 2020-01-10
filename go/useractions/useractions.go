@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 
@@ -14,16 +15,37 @@ import (
 )
 
 type UserActions struct {
-	Tactics   []*storage.Tactic   `json:"tactics"`
-	Trainings []*storage.Training `json:"trainings"`
+	Verse     uint64             `json:"verse"`
+	Tactics   []storage.Tactic   `json:"tactics"`
+	Trainings []storage.Training `json:"trainings"`
 }
 
-func (b *UserActions) PullFromStorage(storage *storage.Storage, verse int) error {
+func (b *UserActions) Equal(actions *UserActions) bool {
+	if len(b.Tactics) != len(actions.Tactics) {
+		return false
+	}
+	if len(b.Trainings) != len(actions.Trainings) {
+		return false
+	}
+	for i := range b.Tactics {
+		if b.Tactics[i] != actions.Tactics[i] {
+			return false
+		}
+	}
+	for i := range b.Trainings {
+		if b.Trainings[i] != actions.Trainings[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (b *UserActions) PullFromStorage(tx *sql.Tx, verse uint64) error {
 	var err error
-	if b.Tactics, err = storage.TacticsByVerse(verse); err != nil {
+	if b.Tactics, err = storage.TacticsByVerse(tx, verse); err != nil {
 		return err
 	}
-	if b.Trainings, err = storage.TrainingByVerse(verse); err != nil {
+	if b.Trainings, err = storage.TrainingByVerse(tx, verse); err != nil {
 		return err
 	}
 	return nil
@@ -41,10 +63,10 @@ func (b *UserActions) Hash() ([]byte, error) {
 
 func (b *UserActions) Marshal() ([]byte, error) {
 	if b.Tactics == nil {
-		b.Tactics = make([]*storage.Tactic, 0)
+		b.Tactics = make([]storage.Tactic, 0)
 	}
 	if b.Trainings == nil {
-		b.Trainings = make([]*storage.Training, 0)
+		b.Trainings = make([]storage.Training, 0)
 	}
 	return json.Marshal(b)
 }

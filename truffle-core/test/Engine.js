@@ -211,7 +211,7 @@ contract('Engine', (accounts) => {
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [0, 9];
-        expectedOutRounds = [0, 5];
+        expectedOutRounds = [0, 1];
         expectedYellows1 = [0, 0];
         expectedYellows2 = [1, 12];
         expectedType = [0, 3]; // 0 = no event, 3 = redCard
@@ -380,7 +380,7 @@ contract('Engine', (accounts) => {
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 12]; 
-        expectedOutRounds = [1, 5]; // note that this 1 would be 9 otherwise
+        expectedOutRounds = [1, 1]; // note that this 1 would be 9 otherwise
         expectedYellows1 = [1, 12]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
         expectedYellows2 = [1, 14]; // note that this 1 is OK, he's a different guy, as he was substituted in 1st half
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
@@ -405,7 +405,7 @@ contract('Engine', (accounts) => {
         newLog = await precomp.computeExceptionalEvents(log = 0, teamStateAll50Half1, tactics, is2nd = false, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
-        expectedOutRounds = [5, 0]; 
+        expectedOutRounds = [1, 0]; 
         expectedYellows1 = [1, 12];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
@@ -422,7 +422,7 @@ contract('Engine', (accounts) => {
         finalLog = await precomp.computeExceptionalEvents(newLog, teamStateAll50Half2, tactics, is2nd = true, seedForRedCard).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 1]; // note that the red card comes from two yellows.
-        expectedOutRounds = [5, 5]; 
+        expectedOutRounds = [1, 1]; 
         expectedYellows1 = [1, 12]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedYellows2 = [14, 14]; // note that he'd like to yellow card [1,12] again, but the 1 goes immediately to redCard above.
         expectedType = [3, 3]; // 0 = no event, 3 = redCard
@@ -637,7 +637,7 @@ contract('Engine', (accounts) => {
         log0 =  await engine.playHalfMatch(seedForRedCard,  now, [teamStateAll50Half1, teamStateAll50Half1], [tactics442NoChanges, tactics1NoChanges], log = [0, 0], [is2nd = false, isHomeStadium, isPlayoff]).should.be.fulfilled;
         isHomeSt = false;
         expectedOut = [9, 0];
-        expectedOutRounds = [5, 0]; 
+        expectedOutRounds = [1, 0]; 
         expectedYellows1 = [1, 10];
         expectedYellows2 = [0, 0];
         expectedType = [3, 0]; // 0 = no event, 3 = redCard
@@ -650,7 +650,7 @@ contract('Engine', (accounts) => {
             halfTimeSubstitutions = UNDEF, nDefs1 = UNDEF, nDefs2 = UNDEF, nTot = UNDEF, winner = UNDEF, teamSumSkills = UNDEF, trainPo = UNDEF);
         
         teamStateAll50Half2[9] = await encodingSet.setRedCardLastGame(teamStateAll50Half2[9], true);    
-        result = await precomp.verifyCanPlay(liUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         log2 = await engine.playHalfMatch(seedForRedCard, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics442, tactics1], log0, [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
         for (team = 0; team < 2; team++) {
@@ -702,23 +702,23 @@ contract('Engine', (accounts) => {
             alignedEndOfLastHalf = false, redCardLastGame = true, gamesNonStopping = 0, 
             injuryWeeksLeft = 0, subLastHalf, sumSkills = 250).should.be.fulfilled;    
 
-        result = await precomp.verifyCanPlay(liUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 9, teamStateAll50Half2[9], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.not.be.bignumber.equal('0');
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
 
         NO_LINEUP = await precomp.NO_LINEUP().should.be.fulfilled;
-        result = await precomp.verifyCanPlay(liUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = NO_LINEUP, teamStateAll50Half2[0], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         
         // injured fails
         teamStateAll50Half2[5] = await engine.encodePlayerSkills([50,50,50,50,50], dayOfBirth21, gen = 0, id = 1123, [pot = 3, fwd = 3, left = 7, aggr = 0],
             alignedEndOfLastHalf = false, redCardLastGame = false, gamesNonStopping = 0, 
             injuryWeeksLeft = 2, subLastHalf, sumSkills = 250).should.be.fulfilled;            
-        result = await precomp.verifyCanPlay(liUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
+        result = await precomp.verifyCanPlay(linedUp = 5, teamStateAll50Half2[5], is2nd = true, isSubst = false).should.be.fulfilled;
         result.should.be.bignumber.equal('0');
         });
 
@@ -851,7 +851,8 @@ contract('Engine', (accounts) => {
         ).should.be.fulfilled;            
         teamState[10] = messi;
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         for (team = 0; team < 2; team++) {
@@ -867,7 +868,8 @@ contract('Engine', (accounts) => {
         ).should.be.fulfilled;            
         teamState[10] = oldMessi;
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 20, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
@@ -890,7 +892,8 @@ contract('Engine', (accounts) => {
         result = await engine.selectShooter(now, teamState, playersPerZone442, extraAttackNull, kMaxRndNumHalf).should.be.fulfilled;
         result.toNumber().should.be.equal(10);
         teamThatAttacks = 0;
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         // for this case, there should be a goal, so: 1-0    
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
@@ -907,7 +910,9 @@ contract('Engine', (accounts) => {
             fwd.toNumber().should.be.equal(expectedFwd[team]);
         }
         // let's put a radically good GK, and check that it doesn't score
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        teamThatAttacks = 0;
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, kMaxRndNumHalf, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [0, 0];
         expectedShooters    = [0, 0];
         expectedAssisters   = [0, 0];
@@ -923,7 +928,8 @@ contract('Engine', (accounts) => {
             fwd.toNumber().should.be.equal(expectedFwd[team]);
         }
         // Finally, check that even with a super-goalkeeper, there are chances of scoring (e.g. if the rnd is super small, in this case)
-        log = await engine.managesToScore(now, log = [0,0], teamThatAttacks, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
+        log = [0, 0]
+        log[teamThatAttacks] = await engine.managesToScore(now, 0, teamState, playersPerZone442, extraAttackNull, blockShoot = 1000, [kMaxRndNumHalf, 1, kMaxRndNumHalf]).should.be.fulfilled;
         expectedGoals       = [1, 0];
         expectedShooters    = [10, 0];
         expectedAssisters   = [10, 0];

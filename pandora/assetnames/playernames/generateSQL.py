@@ -53,7 +53,7 @@ def readNames(filename):
         for line in file:
             l = line.replace('\x9a','').replace('\x8a','')
             splitted = l.rstrip('\n').rstrip('\x9a').split(",")
-            names.append([int(splitted[0]), splitted[1]])
+            names.append([int(splitted[0]), splitted[1].title()])
     return names
 
 def db_connect():

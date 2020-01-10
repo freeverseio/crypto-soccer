@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: edu-test-pod-env-mount
+spec:
+  volumes:
+    - name: config-volume
+      configMap:
+        name: freeverse-configmap
+  containers:
+    - name: ubuntu
+      image: ubuntu:latest
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "sleep 90" ]
+      volumeMounts:
+      - name: config-volume
+        mountPath: /etc/config
+  restartPolicy: Never

@@ -146,10 +146,9 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
             }
             teamThatAttacks = throwDice(globSkills[0][IDX_MOVE2ATTACK], globSkills[1][IDX_MOVE2ATTACK], rnds[5*round]);
             if ( managesToShoot(teamThatAttacks, globSkills, rnds[5*round+1])) {
-                managesToScore(
+                matchLog[teamThatAttacks] = managesToScore(
                     matchStartTime,
-                    matchLog,
-                    teamThatAttacks,
+                    matchLog[teamThatAttacks],
                     states[teamThatAttacks],
                     playersPerZone[teamThatAttacks],
                     extraAttack[teamThatAttacks],
@@ -301,8 +300,7 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     /// @dev First: select attacker who manages to shoot. Second: challenge him with keeper
     function managesToScore(
         uint256 matchStartTime,
-        uint256[2] memory matchLog,
-        uint8 teamThatAttacks,
+        uint256 matchLog,
         uint256[PLAYERS_PER_TEAM_MAX] memory states,
         uint8[9] memory playersPerZone,
         bool[10] memory extraAttack,
@@ -311,9 +309,9 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
     )
         public
         pure
-        returns (uint256[2] memory)
+        returns (uint256)
     {
-        uint8 currentGoals = getNGoals(matchLog[teamThatAttacks]);
+        uint8 currentGoals = getNGoals(matchLog);
         if (currentGoals > 13) return matchLog;
         uint8 shooter = selectShooter(matchStartTime, states, playersPerZone, extraAttack, rnds[0]);
         /// a goal is scored by confronting his shoot skill to the goalkeeper block skill
@@ -324,10 +322,10 @@ contract Engine is EngineLib, EncodingMatchLogPart3 {
         bool isGoal = throwDice((getShoot(states[shooter]) * 7 * shootPenalty)/(100000000), blockShoot, rnds[1]) == 0;
         if (isGoal) {
             uint8 assister = selectAssister(matchStartTime, states, playersPerZone, extraAttack, shooter, rnds[2]);
-            matchLog[teamThatAttacks] = addAssister(matchLog[teamThatAttacks], assister, currentGoals);
-            matchLog[teamThatAttacks] = addShooter(matchLog[teamThatAttacks], shooter, currentGoals);
-            matchLog[teamThatAttacks] = addForwardPos(matchLog[teamThatAttacks], getForwardPos(shooter, playersPerZone), currentGoals);
-            matchLog[teamThatAttacks]++; // adds 1 goal because nGoals is the right-most number serialized
+            matchLog = addAssister(matchLog, assister, currentGoals);
+            matchLog = addShooter(matchLog, shooter, currentGoals);
+            matchLog = addForwardPos(matchLog, getForwardPos(shooter, playersPerZone), currentGoals);
+            matchLog++; // adds 1 goal because nGoals is the right-most number serialized
         }
         return matchLog;
     }

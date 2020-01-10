@@ -1,14 +1,7 @@
-CREATE TABLE verses (
-    id INT NOT NULL,
-    start_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY(id)
-);
-CREATE RULE nodel_verses AS ON DELETE TO verses DO NOTHING;
-INSERT INTO verses VALUES (0);
-
 CREATE TABLE tactics (
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,
+
     tactic_id INT NOT NULL,
 
     shirt_0 INT NOT NULL CHECK (shirt_0 >= 0),
@@ -27,23 +20,26 @@ CREATE TABLE tactics (
     shirt_12 INT NOT NULL CHECK (shirt_12 >= 0),
     shirt_13 INT NOT NULL CHECK (shirt_13 >= 0),
 
-    extra_attack_1  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_2  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_3  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_4  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_5  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_6  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_7  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_8  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_9  BOOLEAN NOT NULL DEFAULT FALSE,
-    extra_attack_10 BOOLEAN NOT NULL DEFAULT FALSE,
+    extra_attack_1  BOOLEAN NOT NULL,
+    extra_attack_2  BOOLEAN NOT NULL,
+    extra_attack_3  BOOLEAN NOT NULL,
+    extra_attack_4  BOOLEAN NOT NULL,
+    extra_attack_5  BOOLEAN NOT NULL,
+    extra_attack_6  BOOLEAN NOT NULL,
+    extra_attack_7  BOOLEAN NOT NULL,
+    extra_attack_8  BOOLEAN NOT NULL,
+    extra_attack_9  BOOLEAN NOT NULL,
+    extra_attack_10 BOOLEAN NOT NULL,
 
-    PRIMARY KEY(team_id, created_at)
+    PRIMARY KEY (verse, team_id)
 );
 
+CREATE VIEW upcoming_tactics AS SELECT * FROM tactics WHERE verse=9223372036854775807;
+
 CREATE TABLE trainings (
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    verse BIGINT NOT NULL DEFAULT 0,
     team_id TEXT NOT NULL,
+
     special_player_shirt INT NOT NULL CHECK (special_player_shirt >= -1 AND special_player_shirt <= 24),
 
     goalkeepers_defence INT NOT NULL DEFAULT 0 CHECK (goalkeepers_defence >= 0),
@@ -76,6 +72,7 @@ CREATE TABLE trainings (
     special_player_shoot INT NOT NULL DEFAULT 0 CHECK (special_player_shoot >= 0),
     special_player_endurance INT NOT NULL DEFAULT 0 CHECK (special_player_endurance >= 0),
 
-    PRIMARY KEY(team_id, created_at)
-);
+    PRIMARY KEY (verse, team_id)
+ );
 
+ CREATE VIEW upcoming_trainings AS SELECT * FROM trainings WHERE verse=9223372036854775807;

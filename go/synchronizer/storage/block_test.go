@@ -2,15 +2,17 @@ package storage_test
 
 import (
 	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 func TestGetBlockNumber(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	number, err := s.GetBlockNumber()
+	defer tx.Rollback()
+	number, err := storage.GetBlockNumber(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,16 +22,16 @@ func TestGetBlockNumber(t *testing.T) {
 }
 
 func TestSetBlockNumber(t *testing.T) {
-	err := s.Begin()
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer s.Rollback()
-	err = s.SetBlockNumber(3)
+	defer tx.Rollback()
+	err = storage.SetBlockNumber(tx, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	number, err := s.GetBlockNumber()
+	number, err := storage.GetBlockNumber(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -89,7 +89,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;
-        country.nDivisions = 1;
+        country.nDivisions = 10;
         _timeZones[tz].countries.push(country);
         _timeZones[tz].countries[0].divisonIdxToRound[0] = 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;

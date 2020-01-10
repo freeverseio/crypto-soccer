@@ -17,16 +17,16 @@ import (
 )
 
 func TestSyncTeams(t *testing.T) {
-	err := universedb.Begin()
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer universedb.Rollback()
-	err = relaydb.Begin()
+	defer tx.Rollback()
+	relaytx, err := relaydb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer relaydb.Rollback()
+	defer relaytx.Rollback()
 	// storage, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -41,15 +41,13 @@ func TestSyncTeams(t *testing.T) {
 	}
 	p, err := process.NewEventProcessor(
 		bc.Contracts,
-		universedb,
-		relaydb,
 		namesdb,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := p.Process(0)
+	count, err := p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,35 +56,35 @@ func TestSyncTeams(t *testing.T) {
 	}
 
 	// the null timezone (0) is only used by the Academy Team
-	if count, err := universedb.TimezoneCount(); err != nil {
+	if count, err := storage.TimezoneCount(tx); err != nil {
 		t.Fatal(err)
 	} else if count != 2 {
 		t.Fatalf("Expected 2 time zones at time of creation,  actual %v", count)
 	}
 
 	// one country belongs to timezone = 0
-	if count, err := universedb.CountryCount(); err != nil {
+	if count, err := storage.CountryCount(tx); err != nil {
 		t.Fatal(err)
 	} else if count != 2 {
 		t.Fatalf("Expected 2 countries at time of creation,  actual %v", count)
 	}
 
 	// one team (the Academy) belongs to timezone = 0
-	if count, err := universedb.TeamCount(); err != nil {
+	if count, err := storage.TeamCount(tx); err != nil {
 		t.Fatal(err)
 	} else if count != (128 + 1) {
 		t.Fatalf("Expected 128 actual %v", count)
 	}
-	if count, err := universedb.PlayerCount(); err != nil {
+	if count, err := storage.PlayerCount(tx); err != nil {
 		t.Fatal(err)
-	} else if count != 128*18 {
 		t.Fatalf("Expected 128*18=2304 actual %v", count)
+	} else if count != 128*18 {
 	}
 
 	timezoneIdx := uint8(1)
 	countryIdx := big.NewInt(0)
 
-	tx, err := bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx0, err := bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
@@ -96,7 +94,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = helper.WaitReceipt(bc.Client, tx, 3)
+	_, err = helper.WaitReceipt(bc.Client, tx0, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +115,7 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = p.Process(0)
+	_, err = p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +133,7 @@ func TestSyncTeams(t *testing.T) {
 		t.Fatalf("Owner is wrong %v", owner.String())
 	}
 
-	tx, err = bc.Contracts.Assets.TransferFirstBotToAddr(
+	tx0, err = bc.Contracts.Assets.TransferFirstBotToAddr(
 		bind.NewKeyedTransactor(bc.Owner),
 		timezoneIdx,
 		countryIdx,
@@ -144,12 +142,12 @@ func TestSyncTeams(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = helper.WaitReceipt(bc.Client, tx, 3)
+	_, err = helper.WaitReceipt(bc.Client, tx0, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = p.Process(0)
+	_, err = p.Process(tx, relaytx, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,5 +158,21 @@ func TestSyncTeams(t *testing.T) {
 	}
 	if owner != crypto.PubkeyToAddress(bc.Owner.PublicKey) {
 		t.Fatalf("Owner is wrong %v", owner.String())
+	}
+
+	matchCount, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matchCount) != 56 {
+		t.Fatalf("Wrong number of matches %v", len(matchCount))
+	}
+
+	matchEventsCount, err := storage.MatchEventCountByTimezoneCountryLeague(tx, 1, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if matchEventsCount > 54*34 {
+		t.Fatalf("Wrong numnber of match events > 54*34 %v", matchEventsCount)
 	}
 }

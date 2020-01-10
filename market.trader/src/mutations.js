@@ -10,11 +10,13 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
         createAuction(input: AuctionInput!): Boolean
         deleteAuction(uuid: UUID!): Boolean
         createBid(input: BidInput!): Boolean
+        createShopItem(input: ShopItemInput!): Boolean
+        deleteShopItem(uuid: UUID!): Boolean
       }
     `,
     resolvers: {
       Mutation: {
-        createAuction: async (_, { input }, context) =>  {
+        createAuction: async (_, { input }, context) => {
           const { uuid, playerId, currencyId, price, rnd, validUntil, signature, seller } = input;
           const query = sql.query`INSERT INTO auctions (uuid, player_id, currency_id, price, rnd, valid_until, signature, state, seller) VALUES (
             ${sql.value(uuid)},
@@ -27,17 +29,17 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             ${sql.value('STARTED')},
             ${sql.value(seller)}
             )`;
-          const {text, values} = sql.compile(query);
+          const { text, values } = sql.compile(query);
           await context.pgClient.query(text, values);
           return true;// TODO return something with sense
         },
-        deleteAuction: async (_, {uuid}, context) => {
+        deleteAuction: async (_, { uuid }, context) => {
           const query = sql.query`UPDATE auctions SET state='CANCELLED_BY_SELLER' WHERE uuid=${sql.value(uuid)}`;
-          const {text, values} = sql.compile(query);
+          const { text, values } = sql.compile(query);
           await context.pgClient.query(text, values);
           return true; // TODO return something with sense
         },
-        createBid: async (_, {input}, context) => {
+        createBid: async (_, { input }, context) => {
           const { auction, extraPrice, rnd, teamId, signature } = input;
           const query = sql.query`INSERT INTO bids (auction, extra_price, rnd, team_id, signature, state) VALUES (
             ${sql.value(auction)}, 
@@ -47,16 +49,30 @@ const MyPlugin = makeExtendSchemaPlugin(build => {
             ${sql.value(signature)},
             ${sql.value('ACCEPTED')}
             )`;
-          const {text, values} = sql.compile(query);
+          const { text, values } = sql.compile(query);
           await context.pgClient.query(text, values);
           return true;
         },
-        // deletePlayerBuyOrder: async (_, {playerId}, context) => {
-        //   const query = sql.query`DELETE FROM player_buy_orders WHERE playerId=${sql.value(playerId)}`;
-        //   const {text, values} = sql.compile(query);
-        //   await context.pgClient.query(text, values);
-        //   return playerId;
-        // },
+        createShopItem: async (_, { input }, context) => {
+          const { uuid, name, url, type, price, quantity } = input;
+          const query = sql.query`INSERT INTO shop_items (uuid, name, url, type, price, quantity) VALUES (
+            ${sql.value(uuid)},
+            ${sql.value(name)},
+            ${sql.value(url)},
+            ${sql.value(type)}, 
+            ${sql.value(price)},
+            ${sql.value(quantity)}
+            )`;
+          const { text, values } = sql.compile(query);
+          await context.pgClient.query(text, values);
+          return true;// TODO return something with sense
+        },
+        deleteShopItem: async (_, { uuid }, context) => {
+          const query = sql.query`DELETE FROM shop_items WHERE uuid=${sql.value(uuid)}`;
+          const { text, values } = sql.compile(query);
+          await context.pgClient.query(text, values);
+          return true; // TODO return something with sense
+        },
       }
     }
   };

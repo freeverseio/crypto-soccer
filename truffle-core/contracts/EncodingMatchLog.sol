@@ -14,8 +14,7 @@ import "./EncodingMatchLogPart3.sol";
     // uint8 shooterFwdPos[14], 2b each, offset 116
     // bool[7] memory penalties, // 1b each, offset 144
     // uint8[2] memory outOfGames 4b each
-    // uint8[6] memory yellowCards1, 4b each,
-    // uint8[6] memory yellowCards2, 4b each
+    // uint8[4] memory yellowCards, 4b each, // first 2 for first half, other for half 2
     // uint8[2] memory outOfGameRounds,  
     // uint8[2] memory typesOutOfGames, 
     // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,

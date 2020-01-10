@@ -1,6 +1,7 @@
 package process
 
 import (
+	"database/sql"
 	"errors"
 	"math/big"
 
@@ -17,8 +18,6 @@ import (
 
 type DivisionCreationProcessor struct {
 	contracts             *contracts.Contracts
-	universedb            *storage.Storage
-	relaydb               *relay.Storage
 	SK_SHO                uint8
 	SK_SPE                uint8
 	SK_PAS                uint8
@@ -33,8 +32,6 @@ type DivisionCreationProcessor struct {
 
 func NewDivisionCreationProcessor(
 	contracts *contracts.Contracts,
-	universedb *storage.Storage,
-	relaydb *relay.Storage,
 	namesdb *names.Generator,
 ) (*DivisionCreationProcessor, error) {
 	SK_SHO, err := contracts.Assets.SKSHO(&bind.CallOpts{})
@@ -65,7 +62,7 @@ func NewDivisionCreationProcessor(
 	if err != nil {
 		return nil, err
 	}
-	calendarProcessor, err := NewCalendar(contracts, universedb)
+	calendarProcessor, err := NewCalendar(contracts)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +72,6 @@ func NewDivisionCreationProcessor(
 	}
 	return &DivisionCreationProcessor{
 		contracts,
-		universedb,
-		relaydb,
 		SK_SHO,
 		SK_SPE,
 		SK_PAS,
@@ -90,10 +85,11 @@ func NewDivisionCreationProcessor(
 	}, nil
 }
 
-func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation) error {
+func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
 	if event.CountryIdxInTZ.Uint64() == 0 {
-		if err := b.universedb.TimezoneCreate(storage.Timezone{event.Timezone}); err != nil {
+		timezone := storage.Timezone{event.Timezone}
+		if err := timezone.Insert(tx); err != nil {
 			return err
 		}
 	}
@@ -102,23 +98,25 @@ func (b *DivisionCreationProcessor) Process(event assets.AssetsDivisionCreation)
 		if countryIdx > 65535 {
 			return errors.New("Cannot cast country idx to uint16: value too large")
 		}
-		if err := b.universedb.CountryCreate(storage.Country{event.Timezone, uint32(countryIdx)}); err != nil {
+		country := storage.Country{event.Timezone, uint32(countryIdx)}
+		if err := country.Insert(tx); err != nil {
 			return err
 		}
-		if err := b.storeTeamsForNewDivision(event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+		if err := b.storeTeamsForNewDivision(tx, relaytx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
 			return err
 		}
 	}
 	return nil
 }
-func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
+func (b *DivisionCreationProcessor) storeTeamsForNewDivision(tx *sql.Tx, relaytx *sql.Tx, timezone uint8, countryIdx *big.Int, divisionIdxInCountry *big.Int) error {
 	opts := &bind.CallOpts{}
 
 	leagueIdxBegin := divisionIdxInCountry.Int64() * int64(b.LEAGUES_PER_DIV)
 	leagueIdxEnd := leagueIdxBegin + int64(b.LEAGUES_PER_DIV)
 
 	for leagueIdx := leagueIdxBegin; leagueIdx < leagueIdxEnd; leagueIdx++ {
-		if err := b.universedb.LeagueCreate(storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}); err != nil {
+		league := storage.League{timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx)}
+		if err := league.Insert(tx); err != nil {
 			return err
 		}
 		teamIdxBegin := leagueIdx * int64(b.TEAMS_PER_LEAGUE)
@@ -131,45 +129,42 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 				if errname != nil {
 					return errname
 				}
-				if err := b.universedb.TeamCreate(
-					storage.Team{
-						teamId,
-						timezone,
-						uint32(countryIdx.Uint64()),
-						storage.TeamState{
-							teamName,
-							storage.BotOwner,
-							uint32(leagueIdx),
-							teamIdxInLeague,
-							0,
-							0,
-							0,
-							0,
-							0,
-							0,
-							10,
-							0,
-							0,
-						},
-					},
-				); err != nil {
+				team := storage.Team{
+					teamId,
+					timezone,
+					uint32(countryIdx.Uint64()),
+					teamName,
+					storage.BotOwner,
+					uint32(leagueIdx),
+					teamIdxInLeague,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					10,
+					0,
+					0,
+				}
+				if err := team.Insert(tx); err != nil {
 					return err
-				} else if err := b.storeVirtualPlayersForTeam(opts, teamId, timezone, countryIdx, teamIdx); err != nil {
+				} else if err := b.storeVirtualPlayersForTeam(tx, opts, teamId, timezone, countryIdx, teamIdx); err != nil {
 					return err
-				} else if err := b.createInitialTactics(teamId); err != nil {
+				} else if err := b.createInitialTactics(relaytx, teamId); err != nil {
 					return err
-				} else if err := b.createInitialTraining(teamId); err != nil {
+				} else if err := b.createInitialTraining(relaytx, teamId); err != nil {
 					return err
 				}
 
 			}
 		}
 
-		err := b.calendarProcessor.Generate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
+		err := b.calendarProcessor.Generate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
 		if err != nil {
 			return err
 		}
-		err = b.calendarProcessor.Populate(timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
+		err = b.calendarProcessor.Populate(tx, timezone, uint32(countryIdx.Uint64()), uint32(leagueIdx))
 		if err != nil {
 			return err
 		}
@@ -177,7 +172,7 @@ func (b *DivisionCreationProcessor) storeTeamsForNewDivision(timezone uint8, cou
 	return nil
 }
 
-func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOpts, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
+func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts *bind.CallOpts, teamId *big.Int, timezone uint8, countryIdx *big.Int, teamIdxInCountry int64) error {
 	begin := teamIdxInCountry * int64(b.PLAYERS_PER_TEAM_INIT)
 	end := begin + int64(b.PLAYERS_PER_TEAM_INIT)
 
@@ -191,61 +186,47 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(opts *bind.CallOp
 			return err
 		} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(b.contracts.Assets, encodedSkills); err != nil {
 			return err
-		} else if preferredPosition, err := b.getPlayerPreferredPosition(opts, encodedSkills); err != nil {
+		} else if preferredPosition, err := GetPlayerPreferredPosition(b.contracts, encodedSkills); err != nil {
 			return err
 		} else if shirtNumber, err := b.contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
 		} else if name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); err != nil {
 			return err
-		} else if err := b.universedb.PlayerCreate(
-			storage.Player{
+		} else {
+			player := storage.Player{
 				PlayerId:          playerId,
 				PreferredPosition: preferredPosition,
 				Potential:         potential.Uint64(),
 				DayOfBirth:        dayOfBirth.Uint64(),
-				State: storage.PlayerState{ // TODO: storage should use same skill ordering as BC
-					TeamId:        teamId,
-					Name:          name,
-					Defence:       defence.Uint64(), // TODO: type should be uint16
-					Speed:         speed.Uint64(),
-					Pass:          pass.Uint64(),
-					Shoot:         shoot.Uint64(),
-					Endurance:     endurance.Uint64(),
-					ShirtNumber:   uint8(shirtNumber.Uint64()),
-					EncodedSkills: encodedSkills,
-					EncodedState:  encodedState,
-					Frozen:        false,
-				}},
-		); err != nil {
-			return err
+				TeamId:            teamId,
+				Name:              name,
+				Defence:           defence.Uint64(), // TODO: type should be uint16
+				Speed:             speed.Uint64(),
+				Pass:              pass.Uint64(),
+				Shoot:             shoot.Uint64(),
+				Endurance:         endurance.Uint64(),
+				ShirtNumber:       uint8(shirtNumber.Uint64()),
+				EncodedSkills:     encodedSkills,
+				EncodedState:      encodedState,
+				Frozen:            false,
+			}
+			if err := player.Insert(tx); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func (p *DivisionCreationProcessor) getPlayerPreferredPosition(opts *bind.CallOpts, encodedSkills *big.Int) (string, error) {
-	if forwardness, err := p.contracts.Assets.GetForwardness(opts, encodedSkills); err != nil {
-		return "", err
-	} else if leftishness, err := p.contracts.Assets.GetLeftishness(opts, encodedSkills); err != nil {
-		return "", err
-	} else {
-		if forwardness.Uint64() > 255 {
-			return "", errors.New("Cannot cast forwardness to uint8: value too large")
-		} else if leftishness.Uint64() > 255 {
-			return "", errors.New("Cannot cast leftishness to uint8: value too large")
-		}
-		return utils.PreferredPosition(uint8(forwardness.Uint64()), uint8(leftishness.Uint64()))
-	}
+func (b *DivisionCreationProcessor) createInitialTactics(tx *sql.Tx, teamID *big.Int) error {
+	tactics := relay.DefaultTactic(teamID.String())
+	return tactics.Insert(tx)
 }
 
-func (b *DivisionCreationProcessor) createInitialTactics(teamID *big.Int) error {
-	tactics := b.relaydb.DefaultTactic(teamID.String())
-	return b.relaydb.TacticCreate(tactics)
-}
-
-func (b *DivisionCreationProcessor) createInitialTraining(teamID *big.Int) error {
+func (b *DivisionCreationProcessor) createInitialTraining(tx *sql.Tx, teamID *big.Int) error {
 	training := relay.Training{}
+	training.Verse = relay.UpcomingVerse
 	training.TeamID = teamID.String()
 	training.SpecialPlayerShirt = -1
-	return b.relaydb.CreateTraining(training)
+	return training.Insert(tx)
 }

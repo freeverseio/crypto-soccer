@@ -15,6 +15,7 @@ services:
     image: freeverseio/synchronizer:$TAG
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -relaydb postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
@@ -23,6 +24,8 @@ services:
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
+      -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
+      -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum
@@ -82,7 +85,7 @@ services:
       -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
-      -delay 120s
+      -delay 30s
       -ipfs ipfs.node:5001
   ipfs.node:
     image: ipfs/go-ipfs:master

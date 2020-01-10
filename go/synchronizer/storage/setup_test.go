@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"database/sql"
 	"log"
 	"os"
 	"testing"
@@ -8,11 +9,11 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
-var s *storage.Storage
+var s *sql.DB
 
 func TestMain(m *testing.M) {
 	var err error
-	s, err = storage.NewPostgres("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
+	s, err = storage.New("postgres://freeverse:freeverse@localhost:15432/cryptosoccer?sslmode=disable")
 	if err != nil {
 		log.Fatal(err)
 	}

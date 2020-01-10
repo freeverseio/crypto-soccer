@@ -11,8 +11,7 @@ import "./EncodingMatchLogPart4.sol";
         // uint8 shooterFwdPos[12], 2b each, offset 100
         // bool[7] memory penalties, // 1b each, offset 128
         // uint8[2] memory outOfGames 4b each
-        // uint8[6] memory yellowCards1, 4b each,
-        // uint8[6] memory yellowCards2, 4b each
+        // uint8[4] memory yellowCards, 4b each, // first 2 for first half, other for half 2
         // uint8[2] memory outOfGameRounds,  
         // uint8[2] memory typesOutOfGames, 
         // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,
@@ -52,9 +51,9 @@ contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
 
     function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
         uint8 offset = is2ndHalf ? 155 : 135;
-        log |= (uint256(player) << offset);
-        log |= (uint256(round) << (offset + 4));
-        return log | (uint256(typeOfOutOfGame) << (offset + 8));
+        log |= (log & ~(uint256(15) << offset)) | (uint256(player) << offset);
+        log |= (log & ~(uint256(15) << offset+4)) | (uint256(round) << offset+4);
+        return log | ( (log & ~(uint256(3) << offset+8)) | (uint256(typeOfOutOfGame) << offset+8));
     }
 
     function addYellowCard(uint256 log, uint8 player, uint8 posInHaf, bool is2ndHalf)  public pure returns (uint256) {
@@ -75,6 +74,7 @@ contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
         return ((log >> (153 + posInHaf)) & 1) == 1;
     }
     
+    // recall that 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     function addHalfTimeSubs(uint256 log, uint8 player, uint8 pos)  public pure returns (uint256) {
         return log | (uint256(player) << (185 + 4 * pos));
     }
