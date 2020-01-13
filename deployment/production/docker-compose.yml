@@ -101,3 +101,4 @@ services:
       - ipfs.node-data:/data
 volumes:
   ethereum-data:
+  ipfs.node-data:
