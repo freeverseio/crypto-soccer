@@ -74,12 +74,12 @@ func main() {
 	for {
 		tx, err := db.Begin()
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		err = processor.Process(tx)
 		if err != nil {
 			tx.Rollback()
-			log.Fatal(err)
+			log.Error(err)
 		}
 		tx.Commit()
 		time.Sleep(delayDuration)
