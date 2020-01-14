@@ -14,11 +14,9 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	"github.com/freeverseio/crypto-soccer/go/testutils"
-	log "github.com/sirupsen/logrus"
 )
 
 func TestSyncTeams(t *testing.T) {
-	log.SetLevel(log.DebugLevel)
 	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
