@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -27,33 +27,21 @@ func assert(err error) {
 func main() {
 
 	rpcURL := "https://goerli.infura.io/v3/9c24cba6b7b647d28deb48817cf605ce"
-	rpclient, err := ethclient.Dial(rpcURL)
+	rpcClient, err := ethclient.Dial(rpcURL)
 	assert(err)
 
-	xserver, err := xolo.NewServer()
+	transactOps, err := bind.NewTransactor(strings.NewReader(key), "11111111")
 	assert(err)
 
-	assert(xserver.AddPool("main", time.Second*4))
-	assert(xserver.AddRpcClient("main", rpclient))
-	_, err = xserver.AddSigner("main", key, "11111111")
+	xserver, err := xolo.NewServer(transactOps, rpcClient)
 	assert(err)
 
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.Default()
-	engine.POST("/tx", xserver.ServePostTx)
-	engine.GET("/tx/:txhash", xserver.ServeGetTx)
-
-	go xserver.Start(engine)
+	engine.POST("/tx", xserver.HttpPostTx)
 	go engine.Run("0.0.0.0:8004")
 
-	go func() {
-		for {
-			fmt.Println(xserver.Info())
-			time.Sleep(10 * time.Second)
-		}
-	}()
-
-	xbackend, err := xolo.NewAbiBackend(rpcURL, "http://localhost:8004", "main")
+	xbackend, err := xolo.NewAbiBackend([]string{rpcURL}, []string{"http://localhost:8004"})
 	assert(err)
 
 	counter, err := abigen.NewCounter(common.HexToAddress("0x7cf3ab3954ac41a53294d55262b5bc5c62c2b000"), xbackend)
@@ -68,19 +56,30 @@ func main() {
 	previousI, err := session.I()
 	assert(err)
 
-	tx, err := session.Inc()
-	assert(err)
-	receipt, err := xbackend.WaitReceipt(context.Background(), tx)
-	assert(err)
+	size := 1
 
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		assert(errors.New("!ReceiptStatusSuccessful"))
+	txs := []*types.Transaction{}
+	for n := 0; n < size; n++ {
+		tx, err := session.Inc()
+		assert(err)
+		txs = append(txs, tx)
+		fmt.Println("Tx ", tx.Hash().String(), "=>", xbackend.TxMap.Lookup(tx.Hash()).String())
+	}
+
+	for n := 0; n < size; n++ {
+		fmt.Println("Waiting receipt ", txs[n].Hash().String())
+		receipt, err := xbackend.WaitReceipt(context.Background(), txs[n])
+		assert(err)
+		if receipt.Status != types.ReceiptStatusSuccessful {
+			assert(errors.New("!ReceiptStatusSuccessful"))
+		}
 	}
 
 	nextI, err := session.I()
 	assert(err)
 
-	if nextI.Uint64()-previousI.Uint64() != 1 {
+	diff := nextI.Uint64() - previousI.Uint64()
+	if diff != uint64(size) {
 		panic("failed to increment")
 	}
 
