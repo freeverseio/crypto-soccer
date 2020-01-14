@@ -60,20 +60,20 @@ contract('Assets', (accounts) => {
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
-        
+
     it('check division event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
-            return event.timezone.should.be.bignumber.equal(timezone.toString()) && event.countryIdxInTZ.should.be.bignumber.equal('0') && event.divisionIdxInCountry.should.be.bignumber.equal('0');
+            return event.timezone.toString() === timezone.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });
     });
 
-    it('check cannot initialize contract twice', async () =>  {
+    it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
 
-    it('emit event upon creation', async () =>  {
+    it('emit event upon creation', async () => {
         truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
             return event.creatorAddr.should.be.equal(accounts[0]);
         });

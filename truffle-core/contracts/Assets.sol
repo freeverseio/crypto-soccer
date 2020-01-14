@@ -91,9 +91,11 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         Country memory country;
         country.nDivisions = 10;
         _timeZones[tz].countries.push(country);
-        _timeZones[tz].countries[0].divisonIdxToRound[0] = 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        emit DivisionCreation(tz, 0, 0);
+        for (uint8 division = 0 ; division < country.nDivisions ; division++){
+            _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
+            emit DivisionCreation(tz, 0, division);
+        }
     }
 
     function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {

@@ -87,7 +87,7 @@ func NewDivisionCreationProcessor(
 
 func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event assets.AssetsDivisionCreation) error {
 	log.Infof("Division Creation: timezoneIdx: %v, countryIdx %v, divisionIdx %v", event.Timezone, event.CountryIdxInTZ.Uint64(), event.DivisionIdxInCountry.Uint64())
-	if event.CountryIdxInTZ.Uint64() == 0 {
+	if event.CountryIdxInTZ.Uint64() == 0 && event.DivisionIdxInCountry.Uint64() == 0 {
 		timezone := storage.Timezone{event.Timezone}
 		if err := timezone.Insert(tx); err != nil {
 			return err
