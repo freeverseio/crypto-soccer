@@ -102,9 +102,9 @@ func (b *DivisionCreationProcessor) Process(tx *sql.Tx, relaytx *sql.Tx, event a
 		if err := country.Insert(tx); err != nil {
 			return err
 		}
-		if err := b.storeTeamsForNewDivision(tx, relaytx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
-			return err
-		}
+	}
+	if err := b.storeTeamsForNewDivision(tx, relaytx, event.Timezone, event.CountryIdxInTZ, event.DivisionIdxInCountry); err != nil {
+		return err
 	}
 	return nil
 }
