@@ -3,6 +3,7 @@ import { Container, Form, Segment, Grid, Header, Button, Divider } from 'semanti
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
 import PlayerCard from '../../components/PlayerCard';
+import PlayersTable from '../../components/PlayersTable';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -20,6 +21,7 @@ query {
       auctionsByPlayerId(orderBy: VALID_UNTIL_DESC, first: 1) {
         nodes {
           validUntil
+          state
           bidsByAuction {
             totalCount
           }
@@ -94,6 +96,18 @@ export default function SpecialPlayer(props) {
 
         console.log("here")
         return playerId;
+    }
+
+    function AccademyPlayersTable() {
+        const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
+            pollInterval: 2000,
+        });
+
+        if (loading) return null;
+        if (error) return `Error! ${error}`;
+
+        const players = data.allPlayers.nodes;
+        return (<PlayersTable players={players} />);
     }
 
     function AccademyPlayers() {
@@ -177,6 +191,7 @@ export default function SpecialPlayer(props) {
                 </Grid.Column>
             </Grid>
             <Divider />
+            <AccademyPlayersTable />
             <AccademyPlayers />
         </Container>
     );
