@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Image, Grid, Divider, Button, Input, List } from 'semantic-ui-react';
+import { Card, Image, Grid, Divider, Button, Input, List, Label } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import signPutAssetForSaleMTx from './marketUtils';
@@ -14,7 +14,8 @@ import {
     faShieldAlt,
     faClock,
     faGavel,
-} from '@fortawesome/free-solid-svg-icons'
+} from '@fortawesome/free-solid-svg-icons';
+import auctionAnalizer from './AuctionAnalizer';
 
 const DELETE_PLAYER = gql`
 mutation DeleteAcademyPlayer(
@@ -65,7 +66,10 @@ export default function PlayerCard(props) {
     const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
     const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
     const timeLeft = useTimeLeft(currentAuction);
-    
+
+    const canBePutOnSale = auctionAnalizer.canBePutOnSale(lastAuction);
+    const isWaitingPayment = auctionAnalizer.isWaitingPayment(lastAuction);
+    const isWaitingWithdrawal = auctionAnalizer.isWaitingWithdrawal(lastAuction);
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
@@ -87,7 +91,7 @@ export default function PlayerCard(props) {
                 seller: seller,
             }
         })
-        .catch(console.error);
+            .catch(console.error);
     };
 
     const deletePlayer = async () => {
@@ -96,7 +100,7 @@ export default function PlayerCard(props) {
                 playerId: player.playerId,
             }
         })
-        .catch(console.error);
+            .catch(console.error);
     };
 
     return (
@@ -132,36 +136,40 @@ export default function PlayerCard(props) {
                         </Grid.Row>
                     </Grid>
                 }
-                {!currentAuction &&
-                    <List>
-                        <List.Item>
-                            <Input
-                                label={{ basic: true, content: 'sec' }}
-                                type="number"
-                                labelPosition='right'
-                                fluid
-                                icon='clock'
-                                iconPosition='left'
-                                value={timeout}
-                                onChange={event => setTimeout(event.target.value)}
-                            />
-                        </List.Item>
-                        <List.Item>
-                            <Input
-                                label={{ basic: true, content: '$' }}
-                                type="number"
-                                labelPosition='right'
-                                fluid
-                                icon='money'
-                                iconPosition='left'
-                                value={price}
-                                onChange={event => setPrice(event.target.value)}
-                            />
-                        </List.Item>
-                    </List>
+                {canBePutOnSale &&
+                    <React.Fragment>
+                        <List>
+                            <List.Item>
+                                <Input
+                                    label={{ basic: true, content: 'sec' }}
+                                    type="number"
+                                    labelPosition='right'
+                                    fluid
+                                    icon='clock'
+                                    iconPosition='left'
+                                    value={timeout}
+                                    onChange={event => setTimeout(event.target.value)}
+                                />
+                            </List.Item>
+                            <List.Item>
+                                <Input
+                                    label={{ basic: true, content: '$' }}
+                                    type="number"
+                                    labelPosition='right'
+                                    fluid
+                                    icon='money'
+                                    iconPosition='left'
+                                    value={price}
+                                    onChange={event => setPrice(event.target.value)}
+                                />
+                            </List.Item>
+                        </List>
+                        <Button floated='right' color='green' onClick={createAuction}>Sell</Button>
+                        <Button floated='right' value='Delete' color='red' onClick={deletePlayer}>Delete</Button>
+                    </React.Fragment>
                 }
-                {!currentAuction && <Button floated='right' color='green' onClick={createAuction}>Sell</Button>}
-                {!currentAuction && <Button floated='right' value='Delete' color='red' onClick={deletePlayer}>Delete</Button>}
+                {isWaitingPayment && <Label>Paying</Label>}
+                {isWaitingWithdrawal && <Label>Withdraw</Label>}
             </Card.Content>
         </Card>
     )
