@@ -32,6 +32,8 @@ help()
 start_minikube()
 {
     minikube start --vm-driver=hyperkit
+    mkdir -p /tmp/minikube-storage # create a directory to share with minikube
+    minikube mount /tmp/minikube-storage:/data & # mount into minikube as /data
     eval $(minikube docker-env)
 }
 
