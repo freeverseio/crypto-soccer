@@ -79,7 +79,10 @@ const PlayerTableRow = (props) => {
 
     return (
         <Table.Row key={player.playerId}>
-            <Table.Cell>{player.name}</Table.Cell>
+            <Table.Cell>
+                {currentAuction && <Label icon='time' ribbon color='yellow'/>}
+                {player.name}
+            </Table.Cell>
             <Table.Cell>{player.defence}</Table.Cell>
             <Table.Cell>{player.pass}</Table.Cell>
             <Table.Cell>{player.speed}</Table.Cell>
@@ -102,10 +105,10 @@ const PlayerTableRow = (props) => {
                 }
                 {currentAuction &&
                     <React.Fragment>
-                        <Label>
+                        <Label color='yellow'>
                             <FontAwesomeIcon icon={faGavel} /> {bidsCount}
                         </Label>
-                        <Label>
+                        <Label color='yellow'>
                             <FontAwesomeIcon icon={faClock} /> {timeLeft}
                         </Label>
                     </React.Fragment>

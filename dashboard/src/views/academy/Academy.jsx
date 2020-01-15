@@ -194,7 +194,6 @@ export default function SpecialPlayer(props) {
             </Grid>
             <Divider />
             <AccademyPlayersTable />
-            <AccademyPlayers />
         </Container>
     );
 };
