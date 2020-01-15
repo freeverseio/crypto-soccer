@@ -1,7 +1,12 @@
-import React, {useState} from 'react';
-import { Table, Label, Button, Input } from 'semantic-ui-react';
+import React, {useState, useEffect, Fragment} from 'react';
+import { Table, Label, Button, Input, Container } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import {
+    faClock,
+    faGavel,
+} from '@fortawesome/free-solid-svg-icons';
 import uuidv1 from 'uuid/v1';
 import auctionAnalizer from './AuctionAnalizer';
 import signPutAssetForSaleMTx from './marketUtils';
@@ -38,7 +43,13 @@ const PlayerTableRow = (props) => {
     const [price, setPrice] = useState(50);
     const [createAuctionMutation] = useMutation(CREATE_AUCTION);
 
+    const date = new Date();
+    const nowSeconds = Math.round(date.getTime() / 1000);
     const lastAuction = player.auctionsByPlayerId.nodes[0];
+    const currentAuction = (lastAuction && (lastAuction.validUntil > nowSeconds)) ? lastAuction : null;
+    const bidsCount = currentAuction ? (currentAuction.bidsByAuction.totalCount) : 0;
+    const timeLeft = useTimeLeft(currentAuction);
+
     const canBePutOnSale = auctionAnalizer.canBePutOnSale(lastAuction);
     const isWaitingPayment = auctionAnalizer.isWaitingPayment(lastAuction);
     const isWaitingWithdrawal = auctionAnalizer.isWaitingWithdrawal(lastAuction);
@@ -79,12 +90,24 @@ const PlayerTableRow = (props) => {
                 {canBePutOnSale &&
                     <React.Fragment>
                         <Input size='mini' type="number" icon='clock' value={timeout}
+                            style={{ width: 100 }}
                             onChange={event => setTimeout(event.target.value)}
                         />
                         <Input size='mini' type="number" icon='money' value={price}
+                            style={{ width: 100 }}
                             onChange={event => setPrice(event.target.value)}
                         />
                         <Button size='mini' color='green' onClick={createAuction}>Sell</Button>
+                    </React.Fragment>
+                }
+                {currentAuction &&
+                    <React.Fragment>
+                        <Label>
+                            <FontAwesomeIcon icon={faGavel} /> {bidsCount}
+                        </Label>
+                        <Label>
+                            <FontAwesomeIcon icon={faClock} /> {timeLeft}
+                        </Label>
                     </React.Fragment>
                 }
             </Table.Cell>
@@ -97,7 +120,7 @@ export default function PlayersTable(props) {
     const web3 = props.web3;
 
     return (
-        <Table color='grey' inverted selectable >
+        <Table color='grey' inverted >
             <Table.Header>
                 <Table.Row>
                     <Table.HeaderCell>Name</Table.HeaderCell>
@@ -113,4 +136,37 @@ export default function PlayersTable(props) {
             </Table.Body>
         </Table>
     );
+}
+
+function useTimeLeft(currentAuction) {
+    const calculateTimeLeft = (currentAuction) => {
+        if (!currentAuction) return "";
+
+        const difference = +new Date(currentAuction.validUntil * 1000) - +new Date();
+        let timeLeft = "";
+        if (difference > 0) {
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((difference / 1000 / 60) % 60);
+            const seconds = Math.floor((difference / 1000) % 60);
+
+            if (days > 0) { timeLeft += days + "d"; }
+            if (hours > 0) { timeLeft += " " + hours + "h"; }
+            if (minutes > 0) { timeLeft += " " + minutes + "m"; }
+            if (seconds > 0) { timeLeft += " " + seconds + "s"; }
+
+        }
+        return timeLeft;
+    }
+
+    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(currentAuction));
+    useEffect(() => {
+        const timerID = setInterval(() => {
+            setTimeLeft(calculateTimeLeft(currentAuction));
+        }, 1000);
+        return () => {
+            clearInterval(timerID);
+        }
+    }, [currentAuction]);
+    return timeLeft;
 }
