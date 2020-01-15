@@ -190,29 +190,32 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 			return err
 		} else if shirtNumber, err := b.contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
 			return err
-		} else if name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); err != nil {
+		} 
+		var name string
+		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); 
+		if err != nil {
+			name = "Mister Random"
+			log.Warning(err)
+		}
+		player := storage.Player{
+			PlayerId:          playerId,
+			PreferredPosition: preferredPosition,
+			Potential:         potential.Uint64(),
+			DayOfBirth:        dayOfBirth.Uint64(),
+			TeamId:            teamId,
+			Name:              name,
+			Defence:           defence.Uint64(), // TODO: type should be uint16
+			Speed:             speed.Uint64(),
+			Pass:              pass.Uint64(),
+			Shoot:             shoot.Uint64(),
+			Endurance:         endurance.Uint64(),
+			ShirtNumber:       uint8(shirtNumber.Uint64()),
+			EncodedSkills:     encodedSkills,
+			EncodedState:      encodedState,
+			Frozen:            false,
+		}
+		if err := player.Insert(tx); err != nil {
 			return err
-		} else {
-			player := storage.Player{
-				PlayerId:          playerId,
-				PreferredPosition: preferredPosition,
-				Potential:         potential.Uint64(),
-				DayOfBirth:        dayOfBirth.Uint64(),
-				TeamId:            teamId,
-				Name:              name,
-				Defence:           defence.Uint64(), // TODO: type should be uint16
-				Speed:             speed.Uint64(),
-				Pass:              pass.Uint64(),
-				Shoot:             shoot.Uint64(),
-				Endurance:         endurance.Uint64(),
-				ShirtNumber:       uint8(shirtNumber.Uint64()),
-				EncodedSkills:     encodedSkills,
-				EncodedState:      encodedState,
-				Frozen:            false,
-			}
-			if err := player.Insert(tx); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
