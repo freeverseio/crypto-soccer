@@ -99,6 +99,8 @@ export default function SpecialPlayer(props) {
     }
 
     function AccademyPlayersTable() {
+        const { web3 } = props;
+
         const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
             pollInterval: 2000,
         });
@@ -107,7 +109,7 @@ export default function SpecialPlayer(props) {
         if (error) return `Error! ${error}`;
 
         const players = data.allPlayers.nodes;
-        return (<PlayersTable players={players} />);
+        return (<PlayersTable players={players} web3={web3}/>);
     }
 
     function AccademyPlayers() {
@@ -196,3 +198,6 @@ export default function SpecialPlayer(props) {
         </Container>
     );
 };
+
+
+

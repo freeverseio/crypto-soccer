@@ -71,8 +71,6 @@ export default function PlayerCard(props) {
     const isWaitingPayment = auctionAnalizer.isWaitingPayment(lastAuction);
     const isWaitingWithdrawal = auctionAnalizer.isWaitingWithdrawal(lastAuction);
 
-    console.log(lastAuction);
-
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
         const now = new Date();
