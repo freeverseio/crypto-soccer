@@ -178,20 +178,30 @@ func (b *DivisionCreationProcessor) storeVirtualPlayersForTeam(tx *sql.Tx, opts 
 
 	generation := uint8(0)
 	for i := begin; i < end; i++ {
-		if playerId, err := b.contracts.Assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); err != nil {
-			return err
-		} else if encodedSkills, err := b.contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); err != nil {
-			return err
-		} else if encodedState, err := b.contracts.Assets.GetPlayerStateAtBirth(opts, playerId); err != nil {
-			return err
-		} else if defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(b.contracts.Assets, encodedSkills); err != nil {
-			return err
-		} else if preferredPosition, err := GetPlayerPreferredPosition(b.contracts, encodedSkills); err != nil {
-			return err
-		} else if shirtNumber, err := b.contracts.Assets.GetCurrentShirtNum(opts, encodedState); err != nil {
-			return err
-		} 
-		var name string
+		playerId, err := b.contracts.Assets.EncodeTZCountryAndVal(opts, timezone, countryIdx, big.NewInt(i)); 
+		if err != nil {
+			log.Warning(err)
+		}
+		encodedSkills, err := b.contracts.Assets.GetPlayerSkillsAtBirth(opts, playerId); 
+		if err != nil {
+			log.Warning(err)
+		}
+		encodedState, err := b.contracts.Assets.GetPlayerStateAtBirth(opts, playerId); 
+		if err != nil {
+			log.Warning(err)
+		}
+		defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := utils.DecodeSkills(b.contracts.Assets, encodedSkills);
+		if err != nil {
+			log.Warning(err)
+		}
+		preferredPosition, err := GetPlayerPreferredPosition(b.contracts, encodedSkills);
+		if err != nil {
+			log.Warning(err)
+		}
+		shirtNumber, err := b.contracts.Assets.GetCurrentShirtNum(opts, encodedState); 
+		if err != nil {
+			log.Warning(err)
+		}
 		name, err := b.namesGenerator.GeneratePlayerFullName(playerId, generation, timezone, countryIdx.Uint64()); 
 		if err != nil {
 			name = "Mister Random"
