@@ -28,8 +28,8 @@ func TestNewSpecialPlayer(t *testing.T) {
 	team.TeamID = big.NewInt(274877906944)
 	team.TimezoneIdx = timezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
 	timezone := storage.Timezone{timezoneIdx}
 	timezone.Insert(tx)
 	country := storage.Country{timezone.TimezoneIdx, countryIdx}

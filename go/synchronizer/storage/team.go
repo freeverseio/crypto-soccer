@@ -11,7 +11,10 @@ import (
 
 const BotOwner = "0x0000000000000000000000000000000000000000"
 
-type TeamState struct {
+type Team struct {
+	TeamID          *big.Int
+	TimezoneIdx     uint8
+	CountryIdx      uint32
 	Name            string
 	Owner           string
 	LeagueIdx       uint32
@@ -27,38 +30,27 @@ type TeamState struct {
 	TrainingPoints  uint32
 }
 
-type Team struct {
-	TeamID      *big.Int
-	TimezoneIdx uint8
-	CountryIdx  uint32
-	State       TeamState
-}
-
-func (b *TeamState) Equal(state TeamState) bool {
-	return b.Owner == state.Owner &&
-		b.Name == state.Name &&
-		b.LeagueIdx == state.LeagueIdx &&
-		b.TeamIdxInLeague == state.TeamIdxInLeague &&
-		b.Points == state.Points &&
-		b.W == state.W &&
-		b.D == state.D &&
-		b.L == state.L &&
-		b.GoalsForward == state.GoalsForward &&
-		b.GoalsAgainst == state.GoalsAgainst &&
-		b.PrevPerfPoints == state.PrevPerfPoints &&
-		b.RankingPoints == state.RankingPoints &&
-		b.TrainingPoints == state.TrainingPoints
-}
-
 func (b *Team) Equal(team Team) bool {
 	return b.TeamID.Cmp(team.TeamID) == 0 &&
 		b.CountryIdx == team.CountryIdx &&
 		b.TimezoneIdx == team.TimezoneIdx &&
-		b.State.Equal(team.State)
+		b.Owner == team.Owner &&
+		b.Name == team.Name &&
+		b.LeagueIdx == team.LeagueIdx &&
+		b.TeamIdxInLeague == team.TeamIdxInLeague &&
+		b.Points == team.Points &&
+		b.W == team.W &&
+		b.D == team.D &&
+		b.L == team.L &&
+		b.GoalsForward == team.GoalsForward &&
+		b.GoalsAgainst == team.GoalsAgainst &&
+		b.PrevPerfPoints == team.PrevPerfPoints &&
+		b.RankingPoints == team.RankingPoints &&
+		b.TrainingPoints == team.TrainingPoints
 }
 
 func IsBotTeam(team Team) bool {
-	return team.State.Owner == BotOwner
+	return team.Owner == BotOwner
 }
 
 func (b *Team) Insert(tx *sql.Tx) error {
@@ -77,11 +69,11 @@ func (b *Team) Insert(tx *sql.Tx) error {
 		b.TeamID.String(),
 		b.TimezoneIdx,
 		b.CountryIdx,
-		b.State.Owner,
-		b.State.LeagueIdx,
-		b.State.TeamIdxInLeague,
-		b.State.Name,
-		strconv.FormatUint(b.State.RankingPoints, 10),
+		b.Owner,
+		b.LeagueIdx,
+		b.TeamIdxInLeague,
+		b.Name,
+		strconv.FormatUint(b.RankingPoints, 10),
 	)
 	if err != nil {
 		return err
@@ -105,8 +97,8 @@ func TeamCount(tx *sql.Tx) (uint64, error) {
 	return count, nil
 }
 
-func (b *Team) Update(tx *sql.Tx, teamID *big.Int, teamState TeamState) error {
-	log.Debugf("[DBMS] + update team state %v", teamState)
+func (b *Team) Update(tx *sql.Tx) error {
+	log.Debugf("[DBMS] + update team id %v", b.TeamID)
 	_, err := tx.Exec(`UPDATE teams SET 
 						owner=$1, 
 						league_idx=$2, 
@@ -122,20 +114,20 @@ func (b *Team) Update(tx *sql.Tx, teamID *big.Int, teamState TeamState) error {
 						training_points=$12,
 						name=$13
 						WHERE team_id=$14`,
-		teamState.Owner,
-		teamState.LeagueIdx,
-		teamState.TeamIdxInLeague,
-		teamState.Points,
-		teamState.W,
-		teamState.D,
-		teamState.L,
-		teamState.GoalsForward,
-		teamState.GoalsAgainst,
-		teamState.PrevPerfPoints,
-		strconv.FormatUint(teamState.RankingPoints, 10),
-		teamState.TrainingPoints,
-		teamState.Name,
-		teamID.String(),
+		b.Owner,
+		b.LeagueIdx,
+		b.TeamIdxInLeague,
+		b.Points,
+		b.W,
+		b.D,
+		b.L,
+		b.GoalsForward,
+		b.GoalsAgainst,
+		b.PrevPerfPoints,
+		strconv.FormatUint(b.RankingPoints, 10),
+		b.TrainingPoints,
+		b.Name,
+		b.TeamID.String(),
 	)
 	return err
 }
@@ -222,19 +214,19 @@ func TeamByTeamId(tx *sql.Tx, teamID *big.Int) (Team, error) {
 	err = rows.Scan(
 		&team.TimezoneIdx,
 		&team.CountryIdx,
-		&team.State.Owner,
-		&team.State.LeagueIdx,
-		&team.State.TeamIdxInLeague,
-		&team.State.Points,
-		&team.State.W,
-		&team.State.D,
-		&team.State.L,
-		&team.State.GoalsForward,
-		&team.State.GoalsAgainst,
-		&team.State.PrevPerfPoints,
-		&team.State.RankingPoints,
-		&team.State.Name,
-		&team.State.TrainingPoints,
+		&team.Owner,
+		&team.LeagueIdx,
+		&team.TeamIdxInLeague,
+		&team.Points,
+		&team.W,
+		&team.D,
+		&team.L,
+		&team.GoalsForward,
+		&team.GoalsAgainst,
+		&team.PrevPerfPoints,
+		&team.RankingPoints,
+		&team.Name,
+		&team.TrainingPoints,
 	)
 	if err != nil {
 		return team, err

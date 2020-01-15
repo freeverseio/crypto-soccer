@@ -2,11 +2,11 @@ version: '3'
 services:
   ethereum: 
     image: freeverseio/ethereum:dev
-    command: --bootnodes ${ENODE}
+    command: --nodiscover --mine
     ports: 
       - "8545:8545"
-      - "30303:30303"
-      - "30303:30303/udp"
+      # - "30303:30303"
+      # - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
   universe.db:
@@ -23,6 +23,7 @@ services:
       dockerfile: Dockerfile.synchronizer
     command: > 
       -postgres postgres://freeverse:freeverse@universe.db:5432/cryptosoccer?sslmode=disable 
+      -relaydb postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable
       -ethereum http://ethereum:8545
       -leaguesContractAddress "${LEAGUES_CONTRACT_ADDRESS}"
       -engineContractAddress "${ENGINE_CONTRACT_ADDRESS}"
@@ -31,6 +32,8 @@ services:
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}"
       -assetsContractAddress "${ASSETS_CONTRACT_ADDRESS}"
       -evolutionContractAddress "${EVOLUTION_CONTRACT_ADDRESS}"
+      -matcheventsContractAddress "${MATCHEVENTS_CONTRACT_ADDRESS}"
+      -utilsmatchlogContractAddress "${UTILS_MATCH_LOG_CONTRACT_ADDRESS}"
     depends_on:
       - universe.db
       - ethereum

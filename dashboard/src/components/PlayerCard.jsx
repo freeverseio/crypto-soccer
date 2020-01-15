@@ -86,7 +86,8 @@ export default function PlayerCard(props) {
                 signature: signature.signature,
                 seller: seller,
             }
-        });
+        })
+        .catch(console.error);
     };
 
     const deletePlayer = async () => {
@@ -94,7 +95,8 @@ export default function PlayerCard(props) {
             variables: {
                 playerId: player.playerId,
             }
-        });
+        })
+        .catch(console.error);
     };
 
     return (
@@ -158,8 +160,8 @@ export default function PlayerCard(props) {
                         </List.Item>
                     </List>
                 }
-                {!currentAuction && <Button floated='right' basic color='green' onClick={createAuction}>Sell</Button>}
-                {!currentAuction && <Button floated='right' value='Delete' basic color='red' onClick={deletePlayer}>Delete</Button>}
+                {!currentAuction && <Button floated='right' color='green' onClick={createAuction}>Sell</Button>}
+                {!currentAuction && <Button floated='right' value='Delete' color='red' onClick={deletePlayer}>Delete</Button>}
             </Card.Content>
         </Card>
     )

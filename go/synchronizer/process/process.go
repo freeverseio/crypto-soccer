@@ -137,8 +137,8 @@ func (p *EventProcessor) dispatch(tx *sql.Tx, relaytx *sql.Tx, e *AbstractEvent)
 		if err != nil {
 			return err
 		}
-		player.State.Frozen = v.Frozen
-		return player.Update(tx, playerID, player.State)
+		player.Frozen = v.Frozen
+		return player.Update(tx)
 	}
 	return fmt.Errorf("[processor] Error dispatching unknown event type: %s", e.Name)
 }

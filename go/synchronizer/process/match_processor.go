@@ -69,18 +69,13 @@ func (b *MatchProcessor) GetGoals(logs [2]*big.Int) (homeGoals uint8, visitorGoa
 }
 
 func (b *MatchProcessor) ProcessMatchEvents(
-	tx *sql.Tx,
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
-	seed [32]byte,
+	matchSeed *big.Int,
 	startTime *big.Int,
 	is2ndHalf bool,
-) error {
-	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
-	if err != nil {
-		return err
-	}
+) ([]storage.MatchEvent, error) {
 	isHomeStadium := true
 	isPlayoff := false
 	matchLog := [2]*big.Int{}
@@ -100,27 +95,27 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		matchBools,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	events := seedAndStartTimeAndEvents[:]
 	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
 	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[0])
 	if err != nil {
-		return err
+		return nil, err
 	}
 	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, tactics[1])
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
@@ -138,8 +133,9 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		is2ndHalf,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var me []storage.MatchEvent
 	for _, computedEvent := range computedEvents {
 		var teamID string
 		if computedEvent.Team == 0 {
@@ -147,7 +143,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		} else if computedEvent.Team == 1 {
 			teamID = match.VisitorTeamID.String()
 		} else {
-			return fmt.Errorf("Wrong match event team %v", computedEvent.Team)
+			return nil, fmt.Errorf("Wrong match event team %v", computedEvent.Team)
 		}
 		event := storage.MatchEvent{}
 		event.TimezoneIdx = int(match.TimezoneIdx)
@@ -159,30 +155,28 @@ func (b *MatchProcessor) ProcessMatchEvents(
 		event.Minute = int(computedEvent.Minute)
 		event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		event.ManageToShoot = computedEvent.ManagesToShoot
 		event.IsGoal = computedEvent.IsGoal
 		primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
 		primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		event.PrimaryPlayerID = primaryPlayerID.String()
-		if err = event.Insert(tx); err != nil {
-			return err
-		}
 		if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
 			secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
 			secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			event.SecondaryPlayerID.String = secondaryPlayerID.String()
 			event.SecondaryPlayerID.Valid = true
 		}
+		me = append(me, event)
 	}
-	return nil
+	return me, nil
 }
 
 func (b *MatchProcessor) Process(
@@ -192,6 +186,14 @@ func (b *MatchProcessor) Process(
 	startTime *big.Int,
 	is2ndHalf bool,
 ) error {
+	log.Debugf("MatchProcessor::Process Tz: %v, Country: %v, league: %v, matchDay: %v, match: %v, 2ndHalf: %v",
+		match.TimezoneIdx,
+		match.CountryIdx,
+		match.LeagueIdx,
+		match.MatchDayIdx,
+		match.MatchIdx,
+		is2ndHalf,
+	)
 	tactics, err := b.GetMatchTactics(match.HomeTeamID, match.VisitorTeamID)
 	if err != nil {
 		return err
@@ -200,18 +202,28 @@ func (b *MatchProcessor) Process(
 	if err != nil {
 		return err
 	}
+	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
+	if err != nil {
+		return err
+	}
 	// play the match half
 	var logs [2]*big.Int
 	if is2ndHalf {
-		logs, err = b.process2ndHalf(match, states, tactics, seed, startTime)
+		logs, err = b.process2ndHalf(match, states, tactics, matchSeed, startTime)
 	} else {
-		logs, err = b.process1stHalf(match, states, tactics, seed, startTime)
+		logs, err = b.process1stHalf(match, states, tactics, matchSeed, startTime)
 	}
 	if err != nil {
 		return err
 	}
-	if err = b.ProcessMatchEvents(tx, match, states, tactics, seed, startTime, is2ndHalf); err != nil {
+	events, err := b.ProcessMatchEvents(match, states, tactics, matchSeed, startTime, is2ndHalf)
+	if err != nil {
 		return err
+	}
+	for _, event := range events {
+		if err = event.Insert(tx); err != nil {
+			return err
+		}
 	}
 	goalsHome, goalsVisitor, err := b.GetGoals(logs)
 	if err != nil {
@@ -261,11 +273,11 @@ func (b *MatchProcessor) Process(
 		if err != nil {
 			return err
 		}
-		err = homeTeam.Update(tx, homeTeam.TeamID, homeTeam.State)
+		err = homeTeam.Update(tx)
 		if err != nil {
 			return err
 		}
-		err = visitorTeam.Update(tx, visitorTeam.TeamID, visitorTeam.State)
+		err = visitorTeam.Update(tx)
 		if err != nil {
 			return err
 		}
@@ -284,8 +296,8 @@ func (b *MatchProcessor) GetTeamState(tx *sql.Tx, teamID *big.Int) ([25]*big.Int
 	}
 	for i := 0; i < len(players); i++ {
 		player := players[i]
-		playerSkills := player.State.EncodedSkills
-		shirtNumber := player.State.ShirtNumber
+		playerSkills := player.EncodedSkills
+		shirtNumber := player.ShirtNumber
 		state[shirtNumber] = playerSkills
 	}
 	return state, nil
@@ -319,14 +331,9 @@ func (b *MatchProcessor) process1stHalf(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
-	seed [32]byte,
+	matchSeed *big.Int,
 	startTime *big.Int,
 ) (logs [2]*big.Int, err error) {
-	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
-	if err != nil {
-		return logs, err
-	}
-
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
@@ -347,13 +354,9 @@ func (b *MatchProcessor) process2ndHalf(
 	match storage.Match,
 	states [2][25]*big.Int,
 	tactics [2]*big.Int,
-	seed [32]byte,
+	matchSeed *big.Int,
 	startTime *big.Int,
 ) (logs [2]*big.Int, err error) {
-	matchSeed, err := b.GenerateMatchSeed(seed, match.HomeTeamID, match.VisitorTeamID)
-	if err != nil {
-		return logs, err
-	}
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
@@ -407,49 +410,55 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 	for _, player := range players {
 		wasAligned, err := b.contracts.Engine.WasPlayerAlignedEndOfLastHalf(
 			&bind.CallOpts{},
-			player.State.ShirtNumber,
+			player.ShirtNumber,
 			tactic,
 			matchLog,
 		)
 		if err != nil {
 			return err
 		}
-		player.State.EncodedSkills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
+		player.EncodedSkills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
 			&bind.CallOpts{},
-			player.State.EncodedSkills,
+			player.EncodedSkills,
 			wasAligned,
 		)
 		if err != nil {
 			return err
 		}
 		if outOfGamePlayer.Int64() != int64(b.NOOUTOFGAMEPLAYER) {
-			if player.State.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
+			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
+				log.Warningf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), tactic, matchLog)
+				continue
+			}
+			if player.ShirtNumber == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(b.REDCARD):
-					player.State.RedCardMatchesLeft = 2
+					player.RedCardMatchesLeft = 2
 				case int64(b.SOFTINJURY):
-					player.State.InjuryMatchesLeft = 3
+					player.InjuryMatchesLeft = 3
 				case int64(b.HARDINJURY):
-					player.State.InjuryMatchesLeft = 7
+					player.InjuryMatchesLeft = 7
+				default:
+					return fmt.Errorf("out of game type unknown %v", outOfGameType)
 				}
 			}
 		}
 		if is2ndHalf {
-			if player.State.RedCardMatchesLeft > 0 {
-				player.State.RedCardMatchesLeft--
+			if player.RedCardMatchesLeft > 0 {
+				player.RedCardMatchesLeft--
 			}
-			if player.State.InjuryMatchesLeft > 0 {
-				player.State.InjuryMatchesLeft--
+			if player.InjuryMatchesLeft > 0 {
+				player.InjuryMatchesLeft--
 			}
 		}
-		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.State.EncodedSkills, player.State.RedCardMatchesLeft, player.State.InjuryMatchesLeft)
-		if player.State.EncodedSkills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.State.EncodedSkills, player.State.RedCardMatchesLeft != 0); err != nil {
+		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.EncodedSkills, player.RedCardMatchesLeft, player.InjuryMatchesLeft)
+		if player.EncodedSkills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.EncodedSkills, player.RedCardMatchesLeft != 0); err != nil {
 			return err
 		}
-		if player.State.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.State.EncodedSkills, player.State.InjuryMatchesLeft); err != nil {
+		if player.EncodedSkills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.EncodedSkills, player.InjuryMatchesLeft); err != nil {
 			return err
 		}
-		if err = player.Update(tx, player.PlayerId, player.State); err != nil {
+		if err = player.Update(tx); err != nil {
 			return nil
 		}
 	}
@@ -457,25 +466,25 @@ func (b *MatchProcessor) UpdatePlayedByHalf(tx *sql.Tx, is2ndHalf bool, teamID *
 }
 
 func (b *MatchProcessor) updateTeamLeaderBoard(homeTeam *storage.Team, visitorTeam *storage.Team, homeGoals uint8, visitorGoals uint8) error {
-	homeTeam.State.GoalsForward += uint32(homeGoals)
-	homeTeam.State.GoalsAgainst += uint32(visitorGoals)
-	visitorTeam.State.GoalsForward += uint32(visitorGoals)
-	visitorTeam.State.GoalsAgainst += uint32(homeGoals)
+	homeTeam.GoalsForward += uint32(homeGoals)
+	homeTeam.GoalsAgainst += uint32(visitorGoals)
+	visitorTeam.GoalsForward += uint32(visitorGoals)
+	visitorTeam.GoalsAgainst += uint32(homeGoals)
 
 	deltaGoals := int(homeGoals) - int(visitorGoals)
 	if deltaGoals > 0 {
-		homeTeam.State.W++
-		visitorTeam.State.L++
-		homeTeam.State.Points += 3
+		homeTeam.W++
+		visitorTeam.L++
+		homeTeam.Points += 3
 	} else if deltaGoals < 0 {
-		homeTeam.State.L++
-		visitorTeam.State.W++
-		visitorTeam.State.Points += 3
+		homeTeam.L++
+		visitorTeam.W++
+		visitorTeam.Points += 3
 	} else {
-		homeTeam.State.D++
-		visitorTeam.State.D++
-		homeTeam.State.Points++
-		visitorTeam.State.Points++
+		homeTeam.D++
+		visitorTeam.D++
+		homeTeam.Points++
+		visitorTeam.Points++
 	}
 
 	return nil
@@ -537,7 +546,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
-	team.State.TrainingPoints = uint32(trainingPoints.Uint64())
+	team.TrainingPoints = uint32(trainingPoints.Uint64())
 
 	userAssignment, _ := new(big.Int).SetString("1022963800726800053580157736076735226208686447456863237", 10)
 	newStates, err := b.contracts.Evolution.GetTeamEvolvedSkills(
@@ -583,16 +592,16 @@ func (b *MatchProcessor) UpdateTeamSkills(
 			if err != nil {
 				return err
 			}
-			player.State.Name = newName
+			player.Name = newName
 		}
 		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, state)
-		player.State.Defence = defence.Uint64()
-		player.State.Speed = speed.Uint64()
-		player.State.Pass = pass.Uint64()
-		player.State.Shoot = shoot.Uint64()
-		player.State.Defence = endurance.Uint64()
-		player.State.EncodedSkills = state
-		err = player.Update(tx, playerID, player.State)
+		player.Defence = defence.Uint64()
+		player.Speed = speed.Uint64()
+		player.Pass = pass.Uint64()
+		player.Shoot = shoot.Uint64()
+		player.Defence = endurance.Uint64()
+		player.EncodedSkills = state
+		err = player.Update(tx)
 		if err != nil {
 			return err
 		}

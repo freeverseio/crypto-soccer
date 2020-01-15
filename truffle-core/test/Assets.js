@@ -14,6 +14,7 @@ contract('Assets', (accounts) => {
     const BOB = accounts[2];
     const CAROL = accounts[3];
     const N_SKILLS = 5;
+    const nDivsAtStart = 10;
     let initTx = null;
 
     const it2 = async(text, f) => {};
@@ -59,20 +60,20 @@ contract('Assets', (accounts) => {
         result = await assets.getShoot(skills).should.be.fulfilled;
         result.toNumber().should.be.equal(sk[0]);        
     });
-        
+
     it('check division event on init', async () => {
         let timezone = 0;
         truffleAssert.eventEmitted(initTx, "DivisionCreation", (event) => {
             timezone++;
-            return event.timezone.should.be.bignumber.equal(timezone.toString()) && event.countryIdxInTZ.should.be.bignumber.equal('0') && event.divisionIdxInCountry.should.be.bignumber.equal('0');
+            return event.timezone.toString() === timezone.toString() && event.countryIdxInTZ.toString() === '0' && event.divisionIdxInCountry.toString() === '0';
         });
     });
 
-    it('check cannot initialize contract twice', async () =>  {
+    it('check cannot initialize contract twice', async () => {
         await assets.init().should.be.rejected;
     });
 
-    it('emit event upon creation', async () =>  {
+    it('emit event upon creation', async () => {
         truffleAssert.eventEmitted(initTx, "AssetsInit", (event) => {
             return event.creatorAddr.should.be.equal(accounts[0]);
         });
@@ -92,11 +93,11 @@ contract('Assets', (accounts) => {
             nCountries = await assets.getNCountriesInTZ(tz).should.be.fulfilled;
             nCountries.toNumber().should.be.equal(1);
             nDivs = await assets.getNDivisionsInCountry(tz, countryIdxInTZ = 0).should.be.fulfilled;
-            nDivs.toNumber().should.be.equal(1);
+            nDivs.toNumber().should.be.equal(nDivsAtStart);
             nLeagues = await assets.getNLeaguesInCountry(tz, countryIdxInTZ).should.be.fulfilled;
-            nLeagues.toNumber().should.be.equal(LEAGUES_PER_DIV);
+            nLeagues.toNumber().should.be.equal(nDivsAtStart*LEAGUES_PER_DIV);
             nTeams = await assets.getNTeamsInCountry(tz, countryIdxInTZ).should.be.fulfilled;
-            nTeams.toNumber().should.be.equal(LEAGUES_PER_DIV * TEAMS_PER_LEAGUE);
+            nTeams.toNumber().should.be.equal(nDivsAtStart*LEAGUES_PER_DIV * TEAMS_PER_LEAGUE);
         }
     });
 
@@ -431,10 +432,10 @@ contract('Assets', (accounts) => {
         teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
         result = await assets.teamExists(teamId).should.be.fulfilled;
         result.should.be.equal(true);
-        teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
+        teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = nDivsAtStart * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV - 1).should.be.fulfilled; 
         result = await assets.teamExists(teamId).should.be.fulfilled;
         result.should.be.equal(true);
-        teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
+        teamId     = await assets.encodeTZCountryAndVal(tz = 1, countryIdxInTZ = 0, teamIdxInCountry = nDivsAtStart * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV).should.be.fulfilled; 
         result = await assets.teamExists(teamId).should.be.fulfilled;
         result.should.be.equal(false);
         teamId     = await assets.encodeTZCountryAndVal(tz = 0, countryIdxInTZ = 0, teamIdxInCountry = 0).should.be.fulfilled; 
@@ -448,7 +449,7 @@ contract('Assets', (accounts) => {
 
     it('initial number of teams', async () => {
         const count = await assets.countTeams(tz = 1, countryIdxInTZ = 0).should.be.fulfilled;
-        count.toNumber().should.be.equal(TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
+        count.toNumber().should.be.equal(nDivsAtStart * TEAMS_PER_LEAGUE * LEAGUES_PER_DIV);
     });
 
     it('existence of null player', async () => {

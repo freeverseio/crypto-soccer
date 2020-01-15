@@ -77,8 +77,8 @@ func TestSyncTeams(t *testing.T) {
 	}
 	if count, err := storage.PlayerCount(tx); err != nil {
 		t.Fatal(err)
-	} else if count != 128*18 {
 		t.Fatalf("Expected 128*18=2304 actual %v", count)
+	} else if count != 128*18 {
 	}
 
 	timezoneIdx := uint8(1)
@@ -158,5 +158,21 @@ func TestSyncTeams(t *testing.T) {
 	}
 	if owner != crypto.PubkeyToAddress(bc.Owner.PublicKey) {
 		t.Fatalf("Owner is wrong %v", owner.String())
+	}
+
+	matchCount, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, 1, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matchCount) != 56 {
+		t.Fatalf("Wrong number of matches %v", len(matchCount))
+	}
+
+	matchEventsCount, err := storage.MatchEventCountByTimezoneCountryLeague(tx, 1, 0, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if matchEventsCount > 54*34 {
+		t.Fatalf("Wrong numnber of match events > 54*34 %v", matchEventsCount)
 	}
 }

@@ -48,3 +48,13 @@ CREATE TABLE bids (
     PRIMARY KEY(auction, extra_price)
 );
 
+CREATE TABLE shop_items (
+    uuid UUID NOT NULL,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    type INT NOT NULL,
+    quantity INT NOT NULL,
+    price INT NOT NULL,
+    PRIMARY KEY(uuid)
+);
+
