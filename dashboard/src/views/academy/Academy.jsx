@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Container, Form, Segment, Grid, Header, Button, Divider } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import PlayerCard from '../../components/PlayerCard';
 import PlayersTable from '../../components/PlayersTable';
+import WithdrawalTable from '../../components/WithdrawalTable';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -112,32 +112,6 @@ export default function SpecialPlayer(props) {
         return (<PlayersTable players={players} web3={web3}/>);
     }
 
-    function AccademyPlayers() {
-        const { web3 } = props;
-        const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
-            pollInterval: 2000,
-        });
-
-        if (loading) return null;
-        if (error) return `Error! ${error}`;
-
-        const players = data.allPlayers.nodes;
-        return (
-            <Grid columns={4}>
-                {
-                    players.map((player, key) => {
-                        return (
-                            <Grid.Column key={key}>
-                                <PlayerCard key={key} player={player} web3={web3} />
-                            </Grid.Column>
-                        );
-                    })
-
-                }
-            </Grid>
-        )
-    }
-
     async function handleSubmit(e) {
         e.preventDefault();
 
@@ -194,6 +168,7 @@ export default function SpecialPlayer(props) {
             </Grid>
             <Divider />
             <AccademyPlayersTable />
+            <WithdrawalTable />
         </Container>
     );
 };

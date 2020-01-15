@@ -1,5 +1,5 @@
-import React, {useState, useEffect, Fragment} from 'react';
-import { Table, Label, Button, Input, Container } from 'semantic-ui-react';
+import React, {useState, useEffect} from 'react';
+import { Table, Label, Button, Input } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -52,7 +52,6 @@ const PlayerTableRow = (props) => {
 
     const canBePutOnSale = auctionAnalizer.canBePutOnSale(lastAuction);
     const isWaitingPayment = auctionAnalizer.isWaitingPayment(lastAuction);
-    const isWaitingWithdrawal = auctionAnalizer.isWaitingWithdrawal(lastAuction);
 
     const createAuction = async () => {
         const rnd = Math.floor(Math.random() * 1000000);
