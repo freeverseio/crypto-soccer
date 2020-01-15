@@ -19,3 +19,5 @@ type XoloInfoResult struct {
 	RpcUrl  string `json:"rpcurl"`
 	Address string `json:"address"`
 }
+
+type RandNFunc func(int) int

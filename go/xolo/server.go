@@ -11,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 )
@@ -21,10 +20,10 @@ type Server struct {
 
 	networkId *big.Int
 	signer    *bind.TransactOpts
-	eth       *ethclient.Client
+	eth       EthClient
 }
 
-func NewServer(signer *bind.TransactOpts, eth *ethclient.Client) (*Server, error) {
+func NewServer(signer *bind.TransactOpts, eth EthClient) (*Server, error) {
 
 	networkId, err := eth.NetworkID(context.Background())
 	if err != nil {

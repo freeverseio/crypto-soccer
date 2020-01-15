@@ -3,10 +3,10 @@ package main
 import (
 	"net/http"
 	"os"
-	"time"
-
+	"strings"
 	"io/ioutil"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/fatih/color"
 	"github.com/freeverseio/crypto-soccer/go/xolo"
@@ -18,17 +18,13 @@ import (
 )
 
 type Config struct {
-	Pools map[string]struct {
-		WaitReceipt string
-		Rpcs        []struct {
-			URL string
-		}
-		Signers []struct {
-			Path   string
-			Passwd string
-		}
+	Rpc        struct {
+		URL string
 	}
-	waitOutQueue string
+	Keystore struct {
+		Path   string
+		Passwd string
+	}
 }
 
 var C Config
@@ -62,81 +58,31 @@ func serverStart(c *cli.Context) {
 
 	MustLoadConfig()
 
-	xserver, err := xolo.NewServer()
+	rpclient, err := ethclient.Dial(C.Rpc.URL)
 	if err != nil {
-		log.Fatalf("Failed to start xserver: %v", err)
+		log.Fatalf("Failed to connect to RPC: %v %v", C.Rpc.URL, err)
+	}
+	keystore, err := ioutil.ReadFile(C.Keystore.Path)
+	if err != nil {
+		log.Fatalf("Unable to read key file '%v' %v", C.Keystore.Path, err)
+	}
+	signer, err := bind.NewTransactor(strings.NewReader(string(keystore)), C.Keystore.Passwd)
+	if err != nil {
+		log.Fatalf("Unable use key %v", err)
 	}
 
-	for poolname, pool := range C.Pools {
-		waitReceipt, err := time.ParseDuration(pool.WaitReceipt)
-		if err != nil {
-			log.Fatal("Invalid waitReceipt ", waitReceipt, " ", err)
-		}
-		if err := xserver.AddPool(poolname, waitReceipt); err != nil {
-			log.Fatal("Cannot create pool ", poolname, " ", err)
-		}
-		for _, rpc := range pool.Rpcs {
-			rpclient, err := ethclient.Dial(rpc.URL)
-			if err != nil {
-				log.Fatalf("Failed to connect to RPC: %v %v", rpc.URL, err)
-			}
-			if err := xserver.AddRpcClient(poolname, rpclient); err != nil {
-				log.Fatalf("Failed to add to RPC: %v %v", rpc.URL, err)
-			}
-			log.Info("Added rpc ", rpc.URL, " for pool ", poolname)
-		}
-		for _, signerdef := range pool.Signers {
-			content, err := ioutil.ReadFile(signerdef.Path)
-			if err != nil {
-				log.Fatalf("Unable to read key file '%v' %v", signerdef.Path, err)
-			}
-			signer, err := xserver.AddSigner(poolname, string(content), signerdef.Passwd)
-			if err != nil {
-				log.Fatalf("Unable use key %v %v", signerdef.Path, err)
-			}
-			log.Info("Added signer ", signer.Address().Hex(), " for pool ", poolname)
-		}
-
+	xserver, err := xolo.NewServer(signer, rpclient)
+	if err != nil {
+		log.Fatalf("Cannot create server", err)
 	}
 
 	engine := gin.Default()
-	engine.GET("/info", func(c *gin.Context) {
-		c.String(http.StatusOK, xserver.Info())
-	})
-	engine.POST("/tx", xserver.ServePostTx)
-	engine.GET("/tx/:txhash", xserver.ServeGetTx)
-
-	go xserver.Start(engine)
-	go func() {
-		for {
-			log.Info(xserver.Info())
-			time.Sleep(time.Second * 5)
-		}
-	}()
-	/*
-		// catch ^C to send the stop signal
-		ossig := make(chan os.Signal, 1)
-		signal.Notify(ossig, os.Interrupt)
-
-		go func() {
-			for sig := range ossig {
-				if sig == os.Interrupt {
-					serv.Stop()
-					os.Exit(1) // FIX
-				}
-			}
-		}()
-	*/
-	engine.Run("0.0.0.0:8004")
-
-	/*
-		serv, err := service.NewService(stkrs, storage)
-		must(err)
-
-
-		serv.Start()
-		serv.Join()
-	*/
+	srv := &http.Server{
+		Addr:    ":8004",
+		Handler: engine,
+	}
+	engine.POST("/tx", xserver.HttpPostTx)
+	srv.ListenAndServe()
 }
 
 var ServerCommands = []cli.Command{

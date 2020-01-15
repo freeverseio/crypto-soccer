@@ -41,7 +41,10 @@ func main() {
 	engine.POST("/tx", xserver.HttpPostTx)
 	go engine.Run("0.0.0.0:8004")
 
-	xbackend, err := xolo.NewAbiBackend([]string{rpcURL}, []string{"http://localhost:8004"})
+	xbackend, err := xolo.NewAbiBackend(
+		xolo.NewGethClientFactory(),
+		[]string{rpcURL},
+		[]string{"http://localhost:8004"})
 	assert(err)
 
 	counter, err := abigen.NewCounter(common.HexToAddress("0x7cf3ab3954ac41a53294d55262b5bc5c62c2b000"), xbackend)
@@ -56,7 +59,7 @@ func main() {
 	previousI, err := session.I()
 	assert(err)
 
-	size := 1
+	size := 10
 
 	txs := []*types.Transaction{}
 	for n := 0; n < size; n++ {
