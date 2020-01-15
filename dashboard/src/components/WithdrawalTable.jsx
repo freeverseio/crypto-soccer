@@ -40,7 +40,7 @@ const PlayerTableRow = (props) => {
              <Table.Cell>{name}</Table.Cell>
              <Table.Cell>{amount}</Table.Cell>
             <Table.Cell>
-                <Label as='a' href={auction.paymentUrl} content='withdraw' icon='euro' />
+                <Label as='a' href={auction.paymentUrl} target="_blank" content='withdraw' icon='euro' />
             </Table.Cell>
          </Table.Row>
     )
