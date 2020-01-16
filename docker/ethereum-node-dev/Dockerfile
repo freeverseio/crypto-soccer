@@ -15,7 +15,7 @@ RUN geth --datadir /test/data init /test/genesis.json
 # RUN ./node_modules/.bin/truffle compile
 # RUN geth --datadir /data --mine --unlock 0x83a909262608c650bd9b0ae06e29d90d0f67ac5e --password /test/geth-testnode/passwd --keystore /test/geth-testnode/keystore --rpc --rpcapi personal,db,eth,net,web3,txpool,miner,debug --rpcvhosts '*' --rpccorsdomain '*' --rpcaddr '0.0.0.0' --networkid 63819 --nodiscover & sleep 5 && ./node_modules/.bin/truffle migrate --network dockertest --reset
 
-VOLUME /test 
+# VOLUME /test 
 
 EXPOSE 8545
 EXPOSE 30303
