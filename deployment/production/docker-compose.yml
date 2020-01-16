@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:prod
+    image: freeverseio/ethereum:prodcontracts
     command: --mine --nodiscover 
     # ports: 
       # - "8545:8545"
