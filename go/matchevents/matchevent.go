@@ -6,7 +6,7 @@ import (
 	"math/big"
 )
 
-type Matchevent struct {
+type MatchEvent struct {
 	Minute          int16 `json:"minute"`
 	Type            int16 `json:"type"`
 	Team            int16 `json:"team"`

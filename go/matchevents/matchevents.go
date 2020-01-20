@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-type MatchEvents []Matchevent
+type MatchEvents []MatchEvent
 
 func Generate(
 	seed *big.Int,
@@ -25,7 +25,7 @@ func Generate(
 ) (MatchEvents, error) {
 	NULL := int16(-1)
 	NOONE := int16(14)
-	var emptyEvents []Matchevent
+	var emptyEvents []MatchEvent
 
 	// check 1:
 	if (len(blockchainEvents)-2)%5 != 0 {
@@ -58,7 +58,7 @@ func Generate(
 	return events, nil
 }
 
-func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) []Matchevent {
+func addCardsAndInjuries(team int16, events []MatchEvent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, NULL int16, NOONE int16) []MatchEvent {
 	// matchLog[4,5,6] = outOfGamePlayer, outOfGameType, outOfGameRound
 	// note that outofgame is a number from 0 to 13, and that NO OUT OF GAME = 14
 	// eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
@@ -74,7 +74,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 			typeOfEvent = EVNT_RED
 		}
 		minute := int16(rounds2mins[matchLog[6]])
-		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, outOfGamePlayer, NULL}
 		events = append(events, thisEvent)
 	}
 
@@ -87,7 +87,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 		salt := "c" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	yellowCardPlayer = int16(matchLog[8])
@@ -99,7 +99,7 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 		salt := "d" + strconv.Itoa(int(yellowCardPlayer))
 		minute := int16(GenerateRnd(seed, salt, uint64(maxMinute)))
 		typeOfEvent := EVNT_YELLOW
-		thisEvent := Matchevent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
+		thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, yellowCardPlayer, NULL}
 		events = append(events, thisEvent)
 	}
 	return events
@@ -107,8 +107,8 @@ func addCardsAndInjuries(team int16, events []Matchevent, seed *big.Int, matchLo
 
 // output event order: (minute, eventType, managesToShoot, isGoal, player1, player2)
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)
-func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([]Matchevent, []uint64) {
-	var events []Matchevent
+func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([]MatchEvent, []uint64) {
+	var events []MatchEvent
 	nEvents := (len(blockchainEvents) - 2) / 5
 	deltaMinutes := float64(45.0 / ((nEvents - 1) * 1.0))
 	deltaMinutesInt := uint64(math.Floor(deltaMinutes))
@@ -130,7 +130,7 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([
 		shooter := blockchainEvents[2+5*e+2]
 		isGoal := blockchainEvents[2+5*e+3]
 		assister := blockchainEvents[2+5*e+4]
-		var thisEvent Matchevent
+		var thisEvent MatchEvent
 		thisEvent.Minute = int16(minute)
 		thisEvent.Type = int16(EVNT_ATTACK)
 		thisEvent.Team = int16(teamThatAttacks.Int64())
@@ -149,7 +149,7 @@ func addEventsInRound(seed *big.Int, blockchainEvents []*big.Int, NULL int16) ([
 	return events, rounds2mins
 }
 
-func addSubstitutions(team int16, events []Matchevent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16) []Matchevent {
+func addSubstitutions(team int16, events []MatchEvent, seed *big.Int, matchLog [15]uint32, rounds2mins []uint64, lineup [14]uint8, substitutions [3]uint8, subsRounds [3]uint8, NULL int16) []MatchEvent {
 	// matchLog:	9,10,11 ingameSubs, ...0: no change required, 1: change happened, 2: change could not happen
 	for i := 0; i < 3; i++ {
 		subHappened := matchLog[9+i] == 1
@@ -158,7 +158,7 @@ func addSubstitutions(team int16, events []Matchevent, seed *big.Int, matchLog [
 			leavingPlayer := int16(substitutions[i])
 			enteringPlayer := int16(lineup[11+i])
 			typeOfEvent := EVNT_SUBST
-			thisEvent := Matchevent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
+			thisEvent := MatchEvent{minute, typeOfEvent, team, false, false, leavingPlayer, enteringPlayer}
 			events = append(events, thisEvent)
 		}
 	}
@@ -167,7 +167,7 @@ func addSubstitutions(team int16, events []Matchevent, seed *big.Int, matchLog [
 
 // make sure that if a player that enters via a substitution appears in any other action (goal, pass, cards & injuries),
 // then the substitution time must take place at least before that minute.
-func adjustSubstitutions(team int16, events []Matchevent) []Matchevent {
+func adjustSubstitutions(team int16, events []MatchEvent) []MatchEvent {
 	adjustedEvents := events
 	for e := 0; e < len(events); e++ {
 		if (events[e].Type == EVNT_SUBST) && (events[e].Team == team) {
