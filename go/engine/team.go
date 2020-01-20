@@ -8,6 +8,11 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
+const NoOutOfGamePlayer = uint8(14)
+const RedCard = uint8(3)
+const SoftInjury = uint8(1)
+const HardInjury = uint8(2)
+
 type Team struct {
 	TeamID         *big.Int
 	Players        [25]*Player
@@ -67,6 +72,80 @@ func DefaultTactic(contracts *contracts.Contracts) (*big.Int, error) {
 		return nil, err
 	}
 	return tactic, nil
+}
+
+func (b *Team) updateTeamState(
+	contracts contracts.Contracts,
+	is2ndHalf bool,
+	matchLog *big.Int,
+) error {
+	decodedTactic, err := contracts.Leagues.DecodeTactics(&bind.CallOpts{}, b.tactic)
+	if err != nil {
+		return err
+	}
+	outOfGamePlayer, err := contracts.Engineprecomp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
+	if err != nil {
+		return err
+	}
+	outOfGameType, err := contracts.Engineprecomp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
+	if err != nil {
+		return err
+	}
+	for shirt, player := range b.Players {
+		wasAligned, err := contracts.Engine.WasPlayerAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			uint8(shirt),
+			b.tactic,
+			matchLog,
+		)
+		if err != nil {
+			return err
+		}
+		player.skills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
+			&bind.CallOpts{},
+			player.skills,
+			wasAligned,
+		)
+		if err != nil {
+			return err
+		}
+		var redCardMatchesLeft uint8
+		var injuryMatchesLeft uint8
+		if outOfGamePlayer.Int64() != int64(NoOutOfGamePlayer) {
+			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
+				return fmt.Errorf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), b.tactic, matchLog)
+			}
+			if uint8(shirt) == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
+				switch outOfGameType.Int64() {
+				case int64(RedCard):
+					redCardMatchesLeft = 2
+				case int64(SoftInjury):
+					injuryMatchesLeft = 3
+				case int64(HardInjury):
+					injuryMatchesLeft = 7
+				default:
+					return fmt.Errorf("out of game type unknown %v", outOfGameType)
+				}
+			}
+		}
+		if is2ndHalf {
+			if redCardMatchesLeft > 0 {
+				redCardMatchesLeft--
+			}
+			if injuryMatchesLeft > 0 {
+				injuryMatchesLeft--
+			}
+		}
+		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.EncodedSkills, player.RedCardMatchesLeft, player.InjuryMatchesLeft)
+		if player.skills, err = contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.skills, redCardMatchesLeft != 0); err != nil {
+			return err
+		}
+		if player.skills, err = contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.skills, injuryMatchesLeft); err != nil {
+			return err
+		}
+
+	}
+	return nil
 }
 
 func (b *Team) SetTrainingPoints(contracts *contracts.Contracts, matchLog *big.Int) error {

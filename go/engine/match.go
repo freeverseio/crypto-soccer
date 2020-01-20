@@ -12,19 +12,15 @@ import (
 )
 
 type Match struct {
-	contracts         *contracts.Contracts
-	Seed              [32]byte
-	StartTime         *big.Int
-	HomeTeam          *Team
-	VisitorTeam       *Team
-	HomeGoals         uint8
-	VisitorGoals      uint8
-	HomeMatchLog      *big.Int
-	VisitorMatchLog   *big.Int
-	NOOUTOFGAMEPLAYER uint8
-	REDCARD           uint8
-	SOFTINJURY        uint8
-	HARDINJURY        uint8
+	contracts       *contracts.Contracts
+	Seed            [32]byte
+	StartTime       *big.Int
+	HomeTeam        *Team
+	VisitorTeam     *Team
+	HomeGoals       uint8
+	VisitorGoals    uint8
+	HomeMatchLog    *big.Int
+	VisitorMatchLog *big.Int
 }
 
 func (b Match) DumpState() string {
@@ -53,18 +49,6 @@ func NewMatch(contracts *contracts.Contracts) (*Match, error) {
 	}
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
-	if mp.NOOUTOFGAMEPLAYER, err = contracts.Engineprecomp.NOOUTOFGAMEPLAYER(&bind.CallOpts{}); err != nil {
-		return nil, err
-	}
-	if mp.REDCARD, err = contracts.Engineprecomp.REDCARD(&bind.CallOpts{}); err != nil {
-		return nil, err
-	}
-	if mp.SOFTINJURY, err = contracts.Engineprecomp.SOFTINJURY(&bind.CallOpts{}); err != nil {
-		return nil, err
-	}
-	if mp.HARDINJURY, err = contracts.Engineprecomp.HARDINJURY(&bind.CallOpts{}); err != nil {
-		return nil, err
-	}
 	return &mp, nil
 }
 
@@ -96,11 +80,10 @@ func (b *Match) Play1stHalf() error {
 	}
 	b.HomeGoals += goalsHome
 	b.VisitorGoals += goalsVisitor
-
-	if err = b.updateTeamState(is2ndHalf, b.HomeTeam, b.HomeMatchLog); err != nil {
+	if err = b.HomeTeam.updateTeamState(*b.contracts, is2ndHalf, b.HomeMatchLog); err != nil {
 		return err
 	}
-	if err = b.updateTeamState(is2ndHalf, b.VisitorTeam, b.VisitorMatchLog); err != nil {
+	if err = b.VisitorTeam.updateTeamState(*b.contracts, is2ndHalf, b.VisitorMatchLog); err != nil {
 		return err
 	}
 	return nil
@@ -134,10 +117,10 @@ func (b *Match) Play2ndHalf() error {
 	b.VisitorGoals += goalsVisitor
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
-	if err = b.updateTeamState(is2ndHalf, b.HomeTeam, logs[0]); err != nil {
+	if err = b.HomeTeam.updateTeamState(*b.contracts, is2ndHalf, logs[0]); err != nil {
 		return err
 	}
-	if err = b.updateTeamState(is2ndHalf, b.VisitorTeam, logs[1]); err != nil {
+	if err = b.VisitorTeam.updateTeamState(*b.contracts, is2ndHalf, logs[1]); err != nil {
 		return err
 	}
 	err = b.updateTeamSkills(b.HomeTeam, logs[0])
@@ -286,80 +269,6 @@ func (b *Match) getGoals(logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8,
 		logs[1],
 	)
 	return homeGoals, VisitorGoals, err
-}
-
-func (b *Match) updateTeamState(
-	is2ndHalf bool,
-	team *Team,
-	matchLog *big.Int,
-) error {
-	decodedTactic, err := b.contracts.Leagues.DecodeTactics(&bind.CallOpts{}, team.tactic)
-	if err != nil {
-		return err
-	}
-	outOfGamePlayer, err := b.contracts.Engineprecomp.GetOutOfGamePlayer(&bind.CallOpts{}, matchLog, is2ndHalf)
-	if err != nil {
-		return err
-	}
-	outOfGameType, err := b.contracts.Engineprecomp.GetOutOfGameType(&bind.CallOpts{}, matchLog, is2ndHalf)
-	if err != nil {
-		return err
-	}
-	for shirt, player := range team.Players {
-		wasAligned, err := b.contracts.Engine.WasPlayerAlignedEndOfLastHalf(
-			&bind.CallOpts{},
-			uint8(shirt),
-			team.tactic,
-			matchLog,
-		)
-		if err != nil {
-			return err
-		}
-		player.skills, err = b.contracts.Evolution.SetAlignedEndOfLastHalf(
-			&bind.CallOpts{},
-			player.skills,
-			wasAligned,
-		)
-		if err != nil {
-			return err
-		}
-		var redCardMatchesLeft uint8
-		var injuryMatchesLeft uint8
-		if outOfGamePlayer.Int64() != int64(b.NOOUTOFGAMEPLAYER) {
-			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
-				return fmt.Errorf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), team.tactic, matchLog)
-			}
-			if uint8(shirt) == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
-				switch outOfGameType.Int64() {
-				case int64(b.REDCARD):
-					redCardMatchesLeft = 2
-				case int64(b.SOFTINJURY):
-					injuryMatchesLeft = 3
-				case int64(b.HARDINJURY):
-					injuryMatchesLeft = 7
-				default:
-					return fmt.Errorf("out of game type unknown %v", outOfGameType)
-				}
-			}
-		}
-		if is2ndHalf {
-			if redCardMatchesLeft > 0 {
-				redCardMatchesLeft--
-			}
-			if injuryMatchesLeft > 0 {
-				injuryMatchesLeft--
-			}
-		}
-		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.EncodedSkills, player.RedCardMatchesLeft, player.InjuryMatchesLeft)
-		if player.skills, err = b.contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.skills, redCardMatchesLeft != 0); err != nil {
-			return err
-		}
-		if player.skills, err = b.contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.skills, injuryMatchesLeft); err != nil {
-			return err
-		}
-
-	}
-	return nil
 }
 
 func (b *Match) updateTeamLeaderBoard() error {

@@ -5,10 +5,39 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
 	"gotest.tools/golden"
 )
+
+func TestNoOutOfGamePlayer(t *testing.T) {
+	t.Parallel()
+	result, err := bc.Contracts.Engineprecomp.NOOUTOFGAMEPLAYER(&bind.CallOpts{})
+	assert.NilError(t, err)
+	assert.Equal(t, result, engine.NoOutOfGamePlayer)
+}
+
+func TestHardInjury(t *testing.T) {
+	t.Parallel()
+	result, err := bc.Contracts.Engineprecomp.HARDINJURY(&bind.CallOpts{})
+	assert.NilError(t, err)
+	assert.Equal(t, result, engine.HardInjury)
+}
+
+func TestRedCard(t *testing.T) {
+	t.Parallel()
+	result, err := bc.Contracts.Engineprecomp.REDCARD(&bind.CallOpts{})
+	assert.NilError(t, err)
+	assert.Equal(t, result, engine.RedCard)
+}
+
+func TestSoftInjury(t *testing.T) {
+	t.Parallel()
+	result, err := bc.Contracts.Engineprecomp.SOFTINJURY(&bind.CallOpts{})
+	assert.NilError(t, err)
+	assert.Equal(t, result, engine.SoftInjury)
+}
 
 func TestTeamStateDefault(t *testing.T) {
 	t.Parallel()
