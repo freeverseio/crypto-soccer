@@ -1,0 +1,115 @@
+package engine_test
+
+import (
+	"fmt"
+	"math/big"
+	"testing"
+
+	"github.com/freeverseio/crypto-soccer/go/engine"
+	"gotest.tools/assert"
+)
+
+func TestDefaultValues(t *testing.T) {
+	t.Parallel()
+	engine, err := engine.NewMatch(bc.Contracts)
+	assert.NilError(t, err)
+	assert.Assert(t, engine != nil, "engine is nil")
+}
+
+func TestPlay1stHalfWithDefaultValues(t *testing.T) {
+	t.Parallel()
+	engine, _ := engine.NewMatch(bc.Contracts)
+	err := engine.Play1stHalf()
+	assert.NilError(t, err)
+	assert.Equal(t, engine.HomeGoals, uint8(0))
+	assert.Equal(t, engine.VisitorGoals, uint8(0))
+	assert.Equal(t, engine.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+}
+
+func TestPlay1stHalf_1(t *testing.T) {
+	t.Parallel()
+	m, _ := engine.NewMatch(bc.Contracts)
+	homePlayer := engine.NewPlayerFromSkills("60912465658141224081372268432703414642709456376891023")
+	visitorPlayer := engine.NewPlayerFromSkills("527990852960211435545446683633031307934132992821212439")
+	m.HomeTeam.Players[0] = homePlayer
+	m.VisitorTeam.Players[0] = visitorPlayer
+	err := m.Play1stHalf()
+	assert.NilError(t, err)
+	assert.Equal(t, m.HomeGoals, uint8(0))
+	assert.Equal(t, m.VisitorGoals, uint8(0))
+	assert.Equal(t, m.HomeMatchLog.String(), "68582984444590546630976961169593813219497174670109271642235310440448")
+	assert.Equal(t, m.VisitorMatchLog.String(), "594466494909760143231211294687139552942416193784081023125303800627200")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "60912471367131994905211792665847292440690001907877519")
+	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "527990858669202206369286207866175185732113538352198935")
+	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
+}
+
+func TestPlay1stHalf_2(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		HomeAge             uint16
+		VisitorAge          uint16
+		HomeSkill           uint16
+		VisitorSkill        uint16
+		ExpectedHomeGoal    uint8
+		ExpectedVisitorGoal uint8
+	}{
+		{21, 30, 10, 50, 0, 3},
+		{30, 18, 1233, 2344, 0, 0},
+		{55, 18, 12, 2344, 0, 10},
+	}
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
+			m, _ := engine.NewMatch(bc.Contracts)
+			m.Seed = [32]byte{0x1, 0x1f}
+			m.StartTime = big.NewInt(1570147200)
+			m.HomeTeam.TeamID = big.NewInt(int64(1))
+			m.VisitorTeam.TeamID = big.NewInt(int64(2))
+			for i := 0; i < 25; i++ {
+				m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
+				m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
+			}
+			err := m.Play1stHalf()
+			assert.NilError(t, err)
+			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
+			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
+		})
+	}
+}
+
+func TestPlayAllMatch(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		HomeAge             uint16
+		VisitorAge          uint16
+		HomeSkill           uint16
+		VisitorSkill        uint16
+		ExpectedHomeGoal    uint8
+		ExpectedVisitorGoal uint8
+	}{
+		{21, 30, 10, 50, 0, 9},
+		{30, 18, 1233, 2344, 0, 0},
+		{55, 18, 12, 2344, 0, 24},
+	}
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
+			m, _ := engine.NewMatch(bc.Contracts)
+			m.Seed = [32]byte{0x1, 0x1f}
+			m.StartTime = big.NewInt(1570147200)
+			m.HomeTeam.TeamID = big.NewInt(int64(1))
+			m.VisitorTeam.TeamID = big.NewInt(int64(2))
+			for i := 0; i < 25; i++ {
+				m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
+				m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
+			}
+			err := m.Play1stHalf()
+			assert.NilError(t, err)
+			err = m.Play2ndHalf()
+			assert.NilError(t, err)
+			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
+			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
+		})
+	}
+}

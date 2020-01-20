@@ -1,17 +1,17 @@
-package match_test
+package engine_test
 
 import (
 	"fmt"
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
+	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
 )
 
 func TestTeamStateDefault(t *testing.T) {
 	t.Parallel()
-	team, err := match.NewTeam(bc.Contracts)
+	team, err := engine.NewTeam(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -28,13 +28,13 @@ func TestTeamStateDefault(t *testing.T) {
 
 func TestTeamSkills(t *testing.T) {
 	t.Parallel()
-	team, err := match.NewTeam(bc.Contracts)
+	team, err := engine.NewTeam(bc.Contracts)
 	assert.NilError(t, err)
 	skills := team.Skills()
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")
 	}
-	team.Players[2] = match.NewPlayerFromSkills("4544")
+	team.Players[2] = engine.NewPlayerFromSkills("4544")
 	skills = team.Skills()
 	assert.Equal(t, skills[2].String(), "4544")
 }
@@ -51,10 +51,10 @@ func TestTrainingPoints(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("log:%v expectedPoints:%v", tc.MatchLog, tc.ExpectedPoints), func(t *testing.T) {
-			team, err := match.NewTeam(bc.Contracts)
+			team, err := engine.NewTeam(bc.Contracts)
 			assert.NilError(t, err)
-			matchLog, _ := new(big.Int).SetString(tc.MatchLog, 10)
-			err = team.SetTrainingPoints(bc.Contracts, matchLog)
+			engineLog, _ := new(big.Int).SetString(tc.MatchLog, 10)
+			err = team.SetTrainingPoints(bc.Contracts, engineLog)
 			assert.NilError(t, err)
 			assert.Equal(t, team.TrainingPoints, tc.ExpectedPoints)
 		})

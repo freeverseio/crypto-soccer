@@ -1,16 +1,16 @@
-package match_test
+package engine_test
 
 import (
 	"math/big"
 	"testing"
 
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/process/match"
+	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
 )
 
 func TestDefenceOfNullPlayer(t *testing.T) {
 	t.Parallel()
-	p := match.NewNullPlayer()
+	p := engine.NewNullPlayer()
 	defence, err := p.Defence(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, defence, uint16(0))
@@ -18,7 +18,7 @@ func TestDefenceOfNullPlayer(t *testing.T) {
 
 func TestDefenceOfPlayer(t *testing.T) {
 	t.Parallel()
-	p := match.NewPlayerFromSkills("14606253788909032162646379450304996475079674564248175")
+	p := engine.NewPlayerFromSkills("14606253788909032162646379450304996475079674564248175")
 	defence, err := p.Defence(bc.Contracts.Assets)
 	assert.NilError(t, err)
 	assert.Equal(t, defence, uint16(955))
@@ -43,7 +43,7 @@ func TestNewPlayer(t *testing.T) {
 	gamesNonStopping := uint8(0)
 	injuryWeeksLeft := uint8(0)
 	substitutedLastHalf := false
-	p, err := match.NewPlayer(
+	p, err := engine.NewPlayer(
 		bc.Contracts,
 		playerID,
 		defence,
