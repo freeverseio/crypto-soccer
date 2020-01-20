@@ -2,6 +2,7 @@ package matchevents
 
 import (
 	"errors"
+	"fmt"
 	"hash/fnv"
 	"math"
 	"math/big"
@@ -16,6 +17,10 @@ type Matchevent struct {
 	IsGoal          bool  `json:"isgoal"`
 	PrimaryPlayer   int16 `json:"primaryplayer"`
 	SecondaryPlayer int16 `json:"secondaryplayer"`
+}
+
+func (b Matchevent) DumpState() string {
+	return fmt.Sprintf("%+v", b)
 }
 
 // eventType (0 = normal event, 1 = yellowCard, 2 = redCard, 3 = injurySoft, 4 = injuryHard, 5 = substitutions)

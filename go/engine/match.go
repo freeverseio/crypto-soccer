@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/freeverseio/crypto-soccer/go/matchevents"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,6 +21,7 @@ type Match struct {
 	VisitorGoals    uint8
 	HomeMatchLog    *big.Int
 	VisitorMatchLog *big.Int
+	Events          []matchevents.Matchevent
 }
 
 func (b Match) DumpState() string {
@@ -33,6 +34,9 @@ func (b Match) DumpState() string {
 	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
 	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
 	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
+	for i, event := range b.Events {
+		state += fmt.Sprintf("Events[%d]: %v\n", i, event.DumpState())
+	}
 	return state
 }
 
@@ -80,10 +84,14 @@ func (b *Match) Play1stHalf() error {
 	}
 	b.HomeGoals += goalsHome
 	b.VisitorGoals += goalsVisitor
+
 	if err = b.HomeTeam.Evolve(*b.contracts, b.HomeMatchLog, b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
 	if err = b.VisitorTeam.Evolve(*b.contracts, b.VisitorMatchLog, b.StartTime, is2ndHalf); err != nil {
+		return err
+	}
+	if err = b.processMatchEvents(is2ndHalf); err != nil {
 		return err
 	}
 	return nil
@@ -117,16 +125,16 @@ func (b *Match) Play2ndHalf() error {
 	b.VisitorGoals += goalsVisitor
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
+
 	if err = b.HomeTeam.Evolve(*b.contracts, logs[0], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
 	if err = b.VisitorTeam.Evolve(*b.contracts, logs[1], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	// err = b.updateTeamLeaderBoard()
-	// if err != nil {
-	// 	return err
-	// }
+	if err = b.processMatchEvents(is2ndHalf); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -159,108 +167,61 @@ func (b *Match) generateMatchSeed() (*big.Int, error) {
 	return z, nil
 }
 
-func (b *Match) ProcessMatchEvents(is2ndHalf bool) ([]storage.MatchEvent, error) {
-	log.Warning("Match.ProcessMatchEvents TODO not implemented")
-	return []storage.MatchEvent{}, nil
-	// isHomeStadium := true
-	// isPlayoff := false
-	// states := b.Skills()
-	// matchSeed, err := b.GenerateMatchSeed()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
-	// 	&bind.CallOpts{},
-	// 	matchSeed,
-	// 	b.StartTime,
-	// 	b.Skills(),
-	// 	[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
-	// 	[2]*big.Int{b.homeMatchLog, b.visitorMatchLog},
-	// 	[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
+func (b *Match) processMatchEvents(is2ndHalf bool) error {
+	isHomeStadium := true
+	isPlayoff := false
+	matchSeed, err := b.generateMatchSeed()
+	if err != nil {
+		return err
+	}
+	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
+		&bind.CallOpts{},
+		matchSeed,
+		b.StartTime,
+		b.Skills(),
+		[2]*big.Int{b.HomeTeam.tactic, b.VisitorTeam.tactic},
+		[2]*big.Int{b.HomeMatchLog, b.VisitorMatchLog},
+		[3]bool{is2ndHalf, isHomeStadium, isPlayoff},
+	)
+	if err != nil {
+		return err
+	}
 
-	// events := seedAndStartTimeAndEvents[:]
-	// log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log.Debugf("Full decoded match log 0: %v", log0)
-	// log.Debugf("Full decoded match log 1: %v", log1)
-	// decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// log.Debugf("Decoded tactics 0: %v", decodedTactics0)
-	// log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	// computedEvents, err := matchevents.GenerateMatchEvents(
-	// 	matchSeed,
-	// 	log0,
-	// 	log1,
-	// 	events,
-	// 	decodedTactics0.Lineup,
-	// 	decodedTactics1.Lineup,
-	// 	decodedTactics0.Substitutions,
-	// 	decodedTactics1.Substitutions,
-	// 	decodedTactics0.SubsRounds,
-	// 	decodedTactics1.SubsRounds,
-	// 	is2ndHalf,
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// var me []storage.MatchEvent
-	// for _, computedEvent := range computedEvents {
-	// 	var teamID string
-	// 	if computedEvent.Team == 0 {
-	// 		teamID = b.HomeTeam.TeamID.String()
-	// 	} else if computedEvent.Team == 1 {
-	// 		teamID = b.VisitorTeam.TeamID.String()
-	// 	} else {
-	// 		return nil, fmt.Errorf("Wrong match event team %v", computedEvent.Team)
-	// 	}
-	// 	event := storage.MatchEvent{}
-	// 	event.TimezoneIdx = int(b.Match.TimezoneIdx)
-	// 	event.CountryIdx = int(b.Match.CountryIdx)
-	// 	event.LeagueIdx = int(b.Match.LeagueIdx)
-	// 	event.MatchDayIdx = int(b.Match.MatchDayIdx)
-	// 	event.MatchIdx = int(b.Match.MatchIdx)
-	// 	event.TeamID = teamID
-	// 	event.Minute = int(computedEvent.Minute)
-	// 	event.Type, err = storage.MarchEventTypeByMatchEvent(computedEvent.Type)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	event.ManageToShoot = computedEvent.ManagesToShoot
-	// 	event.IsGoal = computedEvent.IsGoal
-	// 	primaryPlayerState := states[computedEvent.Team][computedEvent.PrimaryPlayer]
-	// 	primaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, primaryPlayerState)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	event.PrimaryPlayerID = primaryPlayerID.String()
-	// 	if computedEvent.SecondaryPlayer >= 0 && computedEvent.SecondaryPlayer < 25 {
-	// 		secondaryPlayerState := states[computedEvent.Team][computedEvent.SecondaryPlayer]
-	// 		secondaryPlayerID, err := b.contracts.Leagues.GetPlayerIdFromSkills(&bind.CallOpts{}, secondaryPlayerState)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		event.SecondaryPlayerID.String = secondaryPlayerID.String()
-	// 		event.SecondaryPlayerID.Valid = true
-	// 	}
-	// 	me = append(me, event)
-	// }
-	// return me, nil
+	events := seedAndStartTimeAndEvents[:]
+	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Full decoded match log 0: %v", log0)
+	log.Debugf("Full decoded match log 1: %v", log1)
+	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
+	if err != nil {
+		return err
+	}
+	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
+	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
+	b.Events, err = matchevents.GenerateMatchEvents(
+		matchSeed,
+		log0,
+		log1,
+		events,
+		decodedTactics0.Lineup,
+		decodedTactics1.Lineup,
+		decodedTactics0.Substitutions,
+		decodedTactics1.Substitutions,
+		decodedTactics0.SubsRounds,
+		decodedTactics1.SubsRounds,
+		is2ndHalf,
+	)
+	return err
 }
 
 func (b *Match) updateTeamLeaderBoard() error {
@@ -289,16 +250,4 @@ func (b *Match) updateTeamLeaderBoard() error {
 	// }
 
 	// return nil
-}
-
-func (b Match) getTrainingPoints() (homePoints, visitorPoints *big.Int, err error) {
-	homePoints, err = b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.HomeMatchLog)
-	if err != nil {
-		return nil, nil, err
-	}
-	visitorPoints, err = b.contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, b.VisitorMatchLog)
-	if err != nil {
-		return nil, nil, err
-	}
-	return homePoints, visitorPoints, nil
 }

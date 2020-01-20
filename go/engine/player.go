@@ -11,8 +11,7 @@ import (
 )
 
 type Player struct {
-	skills *big.Int `json:"skills"`
-	value  int      `json:"value"`
+	skills *big.Int
 }
 
 func NewNullPlayer() *Player {
@@ -65,6 +64,36 @@ func NewPlayerFromSkills(skills string) *Player {
 	var player Player
 	player.skills, _ = new(big.Int).SetString(skills, 10)
 	return &player
+}
+
+func (b *Player) SetAligned(contracts contracts.Contracts, aligned bool) error {
+	var err error
+	b.skills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
+		&bind.CallOpts{},
+		b.skills,
+		aligned,
+	)
+	return err
+}
+
+func (b *Player) SetRedCard(contracts contracts.Contracts, redCard bool) error {
+	var err error
+	b.skills, err = contracts.Evolution.SetRedCardLastGame(
+		&bind.CallOpts{},
+		b.skills,
+		redCard,
+	)
+	return err
+}
+
+func (b *Player) SetInjuryWeeks(contracts contracts.Contracts, weeks uint8) error {
+	var err error
+	b.skills, err = contracts.Evolution.SetInjuryWeeksLeft(
+		&bind.CallOpts{},
+		b.skills,
+		weeks,
+	)
+	return err
 }
 
 func (b Player) DumpState() string {

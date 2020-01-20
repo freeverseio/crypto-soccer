@@ -103,8 +103,9 @@ func TestPlay1stHalf_goals(t *testing.T) {
 		{30, 18, 1233, 2344, 0, 0},
 		{55, 18, 12, 2344, 0, 10},
 	}
-	for _, tc := range cases {
-		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
+	for i, tc := range cases {
+		tcName := fmt.Sprintf("%d", i)
+		t.Run(tcName, func(t *testing.T) {
 			m, _ := engine.NewMatch(bc.Contracts)
 			m.Seed = [32]byte{0x1, 0x1f}
 			m.StartTime = big.NewInt(1570147200)
@@ -118,11 +119,13 @@ func TestPlay1stHalf_goals(t *testing.T) {
 			assert.NilError(t, err)
 			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
 			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
+			golden.Assert(t, m.DumpState(), t.Name()+".golden")
 		})
 	}
 }
 
 func TestPlay2ndHalf_goals(t *testing.T) {
+	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	cases := []struct {
 		HomeAge             uint16

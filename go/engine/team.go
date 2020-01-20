@@ -118,12 +118,7 @@ func (b *Team) updateTeamState(
 		if err != nil {
 			return err
 		}
-		player.skills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
-			&bind.CallOpts{},
-			player.skills,
-			wasAligned,
-		)
-		if err != nil {
+		if err = player.SetAligned(contracts, wasAligned); err != nil {
 			return err
 		}
 		var redCardMatchesLeft uint8
@@ -151,13 +146,12 @@ func (b *Team) updateTeamState(
 			}
 		}
 		// log.Infof("encoded skills %v, redCard %v, injuries %v", player.EncodedSkills, player.RedCardMatchesLeft, player.InjuryMatchesLeft)
-		if player.skills, err = contracts.Evolution.SetRedCardLastGame(&bind.CallOpts{}, player.skills, redCardMatchesLeft != 0); err != nil {
+		if err = player.SetRedCard(contracts, redCardMatchesLeft != 0); err != nil {
 			return err
 		}
-		if player.skills, err = contracts.Evolution.SetInjuryWeeksLeft(&bind.CallOpts{}, player.skills, injuryMatchesLeft); err != nil {
+		if err = player.SetInjuryWeeks(contracts, injuryMatchesLeft); err != nil {
 			return err
 		}
-
 	}
 	return nil
 }
