@@ -130,6 +130,21 @@ func (b *Match) Play2ndHalf() error {
 	return nil
 }
 
+func (b *Match) getGoals(logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8, err error) {
+	homeGoals, err = b.contracts.Evolution.GetNGoals(
+		&bind.CallOpts{},
+		logs[0],
+	)
+	if err != nil {
+		return homeGoals, VisitorGoals, err
+	}
+	VisitorGoals, err = b.contracts.Evolution.GetNGoals(
+		&bind.CallOpts{},
+		logs[1],
+	)
+	return homeGoals, VisitorGoals, err
+}
+
 func (b *Match) Skills() [2][25]*big.Int {
 	return [2][25]*big.Int{b.HomeTeam.Skills(), b.VisitorTeam.Skills()}
 }
@@ -246,21 +261,6 @@ func (b *Match) ProcessMatchEvents(is2ndHalf bool) ([]storage.MatchEvent, error)
 	// 	me = append(me, event)
 	// }
 	// return me, nil
-}
-
-func (b *Match) getGoals(logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8, err error) {
-	homeGoals, err = b.contracts.Evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[0],
-	)
-	if err != nil {
-		return homeGoals, VisitorGoals, err
-	}
-	VisitorGoals, err = b.contracts.Evolution.GetNGoals(
-		&bind.CallOpts{},
-		logs[1],
-	)
-	return homeGoals, VisitorGoals, err
 }
 
 func (b *Match) updateTeamLeaderBoard() error {

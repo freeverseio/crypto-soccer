@@ -24,6 +24,7 @@ func TestDefaultValues(t *testing.T) {
 }
 
 func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
+	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	match, _ := engine.NewMatch(bc.Contracts)
 	err := match.Play1stHalf()
@@ -47,23 +48,25 @@ func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 }
 
-func TestPlay1stHalf(t *testing.T) {
+func TestPlayGame(t *testing.T) {
 	t.Parallel()
 	m, _ := engine.NewMatch(bc.Contracts)
-	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
-	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
-	m.HomeTeam.Players[0] = homePlayer
-	m.VisitorTeam.Players[0] = visitorPlayer
+	m.Seed = [32]byte{0x2, 0x1}
+	m.StartTime = big.NewInt(1570147200)
+	m.HomeTeam.TeamID = big.NewInt(int64(1))
+	m.VisitorTeam.TeamID = big.NewInt(int64(2))
+	homeSkill := uint16(1134)
+	visitorSkill := uint16(2344)
+	for i := 0; i < 25; i++ {
+		m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, 33, homeSkill, homeSkill, homeSkill, homeSkill, homeSkill)
+		m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, 18, visitorSkill, visitorSkill, visitorSkill, visitorSkill, visitorSkill)
+	}
 	err := m.Play1stHalf()
 	assert.NilError(t, err)
-	assert.Equal(t, m.HomeGoals, uint8(0))
-	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "166195960289441810257652497224293923324982848796288083926844440576")
-	assert.Equal(t, m.VisitorMatchLog.String(), "824397783217924227119640170247234125318077195049720029266288050176")
-	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146156532686539503615416807207209880594713965887498")
-	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730757187618900670896890173308251570218123297685554")
-	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
+	golden.Assert(t, m.DumpState(), t.Name()+".1.golden")
+	err = m.Play2ndHalf()
+	assert.NilError(t, err)
+	golden.Assert(t, m.DumpState(), t.Name()+".2.golden")
 }
 
 func TestPlay2ndHalf(t *testing.T) {

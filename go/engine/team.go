@@ -129,9 +129,6 @@ func (b *Team) updateTeamState(
 		var redCardMatchesLeft uint8
 		var injuryMatchesLeft uint8
 		if outOfGamePlayer.Int64() != int64(NoOutOfGamePlayer) {
-			if outOfGamePlayer.Int64() < 0 || int(outOfGamePlayer.Int64()) >= len(decodedTactic.Lineup) {
-				return fmt.Errorf("out of game player unknown %v, tactics %v, matchlog %v", outOfGamePlayer.Int64(), b.tactic, matchLog)
-			}
 			if uint8(shirt) == decodedTactic.Lineup[outOfGamePlayer.Int64()] {
 				switch outOfGameType.Int64() {
 				case int64(RedCard):
