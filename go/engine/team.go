@@ -240,12 +240,3 @@ func (b *Team) updateTeamSkills(
 	// }
 	return nil
 }
-
-func (b *Team) SetTrainingPoints(contracts *contracts.Contracts, matchLog *big.Int) error {
-	points, err := contracts.Evolution.GetTrainingPoints(&bind.CallOpts{}, matchLog)
-	if err != nil {
-		return err
-	}
-	b.TrainingPoints = points.Uint64()
-	return nil
-}

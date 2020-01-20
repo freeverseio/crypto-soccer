@@ -85,7 +85,7 @@ func TestTrainingPoints(t *testing.T) {
 			team, err := engine.NewTeam(bc.Contracts)
 			assert.NilError(t, err)
 			engineLog, _ := new(big.Int).SetString(tc.MatchLog, 10)
-			err = team.SetTrainingPoints(bc.Contracts, engineLog)
+			err = team.Evolve(*bc.Contracts, engineLog, big.NewInt(0), false)
 			assert.NilError(t, err)
 			assert.Equal(t, team.TrainingPoints, tc.ExpectedPoints)
 		})
