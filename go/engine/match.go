@@ -21,7 +21,7 @@ type Match struct {
 	VisitorGoals    uint8
 	HomeMatchLog    *big.Int
 	VisitorMatchLog *big.Int
-	Events          []matchevents.Matchevent
+	Events          matchevents.MatchEvents
 }
 
 func (b Match) DumpState() string {
@@ -34,9 +34,7 @@ func (b Match) DumpState() string {
 	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
 	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
 	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
-	for i, event := range b.Events {
-		state += fmt.Sprintf("Events[%d]: %v\n", i, event.DumpState())
-	}
+	state += b.Events.DumpState()
 	return state
 }
 
@@ -208,7 +206,7 @@ func (b *Match) processMatchEvents(is2ndHalf bool) error {
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	b.Events, err = matchevents.GenerateMatchEvents(
+	b.Events, err = matchevents.Generate(
 		matchSeed,
 		log0,
 		log1,
