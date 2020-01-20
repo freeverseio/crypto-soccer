@@ -7,6 +7,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
 func TestTeamStateDefault(t *testing.T) {
@@ -24,6 +25,7 @@ func TestTeamStateDefault(t *testing.T) {
 			t.Fatalf("Wrong %v", state)
 		}
 	}
+	golden.Assert(t, team.DumpState(), t.Name()+".golden")
 }
 
 func TestTeamSkills(t *testing.T) {

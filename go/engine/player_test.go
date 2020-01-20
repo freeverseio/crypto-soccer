@@ -8,6 +8,12 @@ import (
 	"gotest.tools/assert"
 )
 
+func TestNullPlayer(t *testing.T) {
+	t.Parallel()
+	p := engine.NewNullPlayer()
+	assert.Equal(t, p.DumpState(), "skills: 0")
+}
+
 func TestDefenceOfNullPlayer(t *testing.T) {
 	t.Parallel()
 	p := engine.NewNullPlayer()

@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -27,6 +28,17 @@ func NewTeam(
 		return nil, err
 	}
 	return &team, nil
+}
+
+func (b Team) DumpState() string {
+	var state string
+	state += fmt.Sprintf("TeamId: %v\n", b.TeamID)
+	for i, player := range b.Players {
+		state += fmt.Sprintf("Players[%d]: %v\n", i, player.DumpState())
+	}
+	state += fmt.Sprintf("tactic: %v\n", b.tactic)
+	state += fmt.Sprintf("TrainingPoints: %v", b.TrainingPoints)
+	return state
 }
 
 func (b Team) Skills() [25]*big.Int {

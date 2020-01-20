@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"math/big"
 	"time"
 
@@ -10,7 +11,8 @@ import (
 )
 
 type Player struct {
-	skills *big.Int
+	skills *big.Int `json:"skills"`
+	value  int      `json:"value"`
 }
 
 func NewNullPlayer() *Player {
@@ -63,6 +65,10 @@ func NewPlayerFromSkills(skills string) *Player {
 	var player Player
 	player.skills, _ = new(big.Int).SetString(skills, 10)
 	return &player
+}
+
+func (b Player) DumpState() string {
+	return fmt.Sprintf("skills: %v", b.skills)
 }
 
 func (b Player) Skills() *big.Int {
