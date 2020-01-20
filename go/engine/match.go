@@ -27,6 +27,19 @@ type Match struct {
 	HARDINJURY        uint8
 }
 
+func (b Match) DumpState() string {
+	var state string
+	state += fmt.Sprintf("Seed: %v\n", b.Seed)
+	state += fmt.Sprintf("StartTime: %v\n", b.StartTime)
+	state += fmt.Sprintf("HomeTeam: %v\n", b.HomeTeam.DumpState())
+	state += fmt.Sprintf("VisitorTeam: %v\n", b.VisitorTeam.DumpState())
+	state += fmt.Sprintf("HomeGoals: %v\n", b.HomeGoals)
+	state += fmt.Sprintf("VisitorGoals: %v\n", b.VisitorGoals)
+	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
+	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
+	return state
+}
+
 func NewMatch(contracts *contracts.Contracts) (*Match, error) {
 	var err error
 	var mp Match

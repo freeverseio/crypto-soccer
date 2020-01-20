@@ -7,8 +7,15 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/engine"
 	"gotest.tools/assert"
+	"gotest.tools/golden"
 )
 
+func TestDefaultMatch(t *testing.T) {
+	t.Parallel()
+	match, err := engine.NewMatch(bc.Contracts)
+	assert.NilError(t, err)
+	golden.Assert(t, match.DumpState(), t.Name()+".golden")
+}
 func TestDefaultValues(t *testing.T) {
 	t.Parallel()
 	engine, err := engine.NewMatch(bc.Contracts)
