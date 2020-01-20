@@ -16,7 +16,7 @@ func TestDefaultValues(t *testing.T) {
 	assert.Assert(t, engine != nil, "engine is nil")
 }
 
-func TestPlay1stHalfWithDefaultValues(t *testing.T) {
+func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
 	engine, _ := engine.NewMatch(bc.Contracts)
 	err := engine.Play1stHalf()
@@ -27,26 +27,58 @@ func TestPlay1stHalfWithDefaultValues(t *testing.T) {
 	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
 }
 
-func TestPlay1stHalf_1(t *testing.T) {
+func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
+	t.Skip("TODO: *************************  REACTIVE ***************************")
+	t.Parallel()
+	engine, _ := engine.NewMatch(bc.Contracts)
+	err := engine.Play2ndHalf()
+	assert.NilError(t, err)
+	assert.Equal(t, engine.HomeGoals, uint8(0))
+	assert.Equal(t, engine.VisitorGoals, uint8(0))
+	assert.Equal(t, engine.HomeMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+	assert.Equal(t, engine.VisitorMatchLog.String(), "1645504557321206042155578968558872826709262232930097591983538176")
+}
+
+func TestPlay1stHalf(t *testing.T) {
 	t.Parallel()
 	m, _ := engine.NewMatch(bc.Contracts)
-	homePlayer := engine.NewPlayerFromSkills("60912465658141224081372268432703414642709456376891023")
-	visitorPlayer := engine.NewPlayerFromSkills("527990852960211435545446683633031307934132992821212439")
+	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
+	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
 	m.HomeTeam.Players[0] = homePlayer
 	m.VisitorTeam.Players[0] = visitorPlayer
 	err := m.Play1stHalf()
 	assert.NilError(t, err)
 	assert.Equal(t, m.HomeGoals, uint8(0))
 	assert.Equal(t, m.VisitorGoals, uint8(0))
-	assert.Equal(t, m.HomeMatchLog.String(), "68582984444590546630976961169593813219497174670109271642235310440448")
-	assert.Equal(t, m.VisitorMatchLog.String(), "594466494909760143231211294687139552942416193784081023125303800627200")
-	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "60912471367131994905211792665847292440690001907877519")
+	assert.Equal(t, m.HomeMatchLog.String(), "166195960289441810257652497224293923324982848796288083926844440576")
+	assert.Equal(t, m.VisitorMatchLog.String(), "824397783217924227119640170247234125318077195049720029266288050176")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146156532686539503615416807207209880594713965887498")
 	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
-	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "527990858669202206369286207866175185732113538352198935")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730757187618900670896890173308251570218123297685554")
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
-func TestPlay1stHalf_2(t *testing.T) {
+func TestPlay2ndHalf(t *testing.T) {
+	t.Skip("TODO: *************************  REACTIVE ***************************")
+	t.Parallel()
+	m, _ := engine.NewMatch(bc.Contracts)
+	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
+	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
+	m.HomeTeam.Players[0] = homePlayer
+	m.VisitorTeam.Players[0] = visitorPlayer
+	err := m.Play2ndHalf()
+	assert.NilError(t, err)
+	assert.Equal(t, m.HomeGoals, uint8(0))
+	assert.Equal(t, m.VisitorGoals, uint8(0))
+	assert.Equal(t, m.HomeMatchLog.String(), "166195960289441810257652497224293923324982848796288083926844440576")
+	assert.Equal(t, m.VisitorMatchLog.String(), "824397783217924227119640170247234125318077195049720029266288050176")
+	assert.Equal(t, m.HomeTeam.Players[0].Skills().String(), "146156532686539503615416807207209880594713965887498")
+	assert.Equal(t, m.HomeTeam.Players[1].Skills().String(), "0")
+	assert.Equal(t, m.VisitorTeam.Players[0].Skills().String(), "730757187618900670896890173308251570218123297685554")
+	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
+}
+
+func TestPlay1stHalf_goals(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		HomeAge             uint16
@@ -79,7 +111,7 @@ func TestPlay1stHalf_2(t *testing.T) {
 	}
 }
 
-func TestPlayAllMatch(t *testing.T) {
+func TestPlay2ndHalf_goals(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
 		HomeAge             uint16
@@ -89,9 +121,9 @@ func TestPlayAllMatch(t *testing.T) {
 		ExpectedHomeGoal    uint8
 		ExpectedVisitorGoal uint8
 	}{
-		{21, 30, 10, 50, 0, 9},
+		{21, 30, 10, 50, 0, 3},
 		{30, 18, 1233, 2344, 0, 0},
-		{55, 18, 12, 2344, 0, 24},
+		{55, 18, 12, 2344, 0, 10},
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
@@ -104,9 +136,7 @@ func TestPlayAllMatch(t *testing.T) {
 				m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
 				m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
 			}
-			err := m.Play1stHalf()
-			assert.NilError(t, err)
-			err = m.Play2ndHalf()
+			err := m.Play2ndHalf()
 			assert.NilError(t, err)
 			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
 			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
