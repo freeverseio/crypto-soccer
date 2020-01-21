@@ -28,7 +28,7 @@ jobs:
     executor: freeverse_ethereum
     steps:
       - checkout
-      - run: maek setup contracts
+      - run: make setup contracts
       - run: cd go && go test ./engine/...
   synchronizer:
     machine:
