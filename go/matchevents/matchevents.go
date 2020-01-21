@@ -183,6 +183,26 @@ func adjustSubstitutions(team int16, events []MatchEvent) []MatchEvent {
 	return adjustedEvents
 }
 
+func (b MatchEvents) HomeGoals() uint8 {
+	var counter uint8
+	for _, event := range b {
+		if event.Team == 0 && event.IsGoal {
+			counter++
+		}
+	}
+	return counter
+}
+
+func (b MatchEvents) VisitorGoals() uint8 {
+	var counter uint8
+	for _, event := range b {
+		if event.Team == 1 && event.IsGoal {
+			counter++
+		}
+	}
+	return counter
+}
+
 func (b MatchEvents) DumpState() string {
 	var state string
 	for i, event := range b {

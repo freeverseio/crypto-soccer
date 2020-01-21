@@ -11,6 +11,26 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type MatchState int
+
+const (
+	Starting MatchState = iota + 1
+	Half
+	Ended
+)
+
+func (b MatchState) String() string {
+	names := [...]string{
+		"Starting",
+		"Half",
+		"Ended",
+	}
+	if b < Starting || b > Ended {
+		return "Unknown"
+	}
+	return names[b-1]
+}
+
 type Match struct {
 	contracts       *contracts.Contracts
 	Seed            [32]byte
@@ -22,6 +42,7 @@ type Match struct {
 	HomeMatchLog    *big.Int
 	VisitorMatchLog *big.Int
 	Events          matchevents.MatchEvents
+	State           MatchState
 }
 
 func (b Match) DumpState() string {
@@ -35,6 +56,7 @@ func (b Match) DumpState() string {
 	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
 	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
 	state += b.Events.DumpState()
+	state += fmt.Sprintf("State: %v\n", b.State.String())
 	return state
 }
 
@@ -51,10 +73,15 @@ func NewMatch(contracts *contracts.Contracts) (*Match, error) {
 	}
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
+	mp.State = Starting
 	return &mp, nil
 }
 
 func (b *Match) Play1stHalf() error {
+	if b.State != Starting {
+		return fmt.Errorf("Wrong state %v", b.State.String())
+	}
+
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
@@ -92,10 +119,15 @@ func (b *Match) Play1stHalf() error {
 	if err = b.processMatchEvents(is2ndHalf); err != nil {
 		return err
 	}
+	b.State = Half
 	return nil
 }
 
 func (b *Match) Play2ndHalf() error {
+	if b.State != Half {
+		return fmt.Errorf("Wrong state %v", b.State.String())
+	}
+
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
@@ -133,6 +165,7 @@ func (b *Match) Play2ndHalf() error {
 	if err = b.processMatchEvents(is2ndHalf); err != nil {
 		return err
 	}
+	b.State = Ended
 	return nil
 }
 
@@ -206,7 +239,7 @@ func (b *Match) processMatchEvents(is2ndHalf bool) error {
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	b.Events, err = matchevents.Generate(
+	generatedEvents, err := matchevents.Generate(
 		matchSeed,
 		log0,
 		log1,
@@ -219,7 +252,11 @@ func (b *Match) processMatchEvents(is2ndHalf bool) error {
 		decodedTactics1.SubsRounds,
 		is2ndHalf,
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	b.Events = append(b.Events, generatedEvents...)
+	return nil
 }
 
 func (b *Match) updateTeamLeaderBoard() error {
