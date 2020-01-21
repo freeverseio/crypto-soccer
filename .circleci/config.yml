@@ -24,7 +24,7 @@ jobs:
       - run: cd truffle-core && npm install
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
-  go.1:
+  go1:
     executor: freeverse
     steps:
       - checkout
@@ -177,7 +177,7 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - go.1:
+      - go1:
           filters:
             tags:
               only: /.*/
@@ -216,7 +216,7 @@ workflows:
             # - relay-api
             - relay-actions
             - market-notary
-            - go.1
+            - go1
       - dockerization-production:
           filters:
             tags:
@@ -229,7 +229,7 @@ workflows:
             # - relay-api
             - relay-actions
             - market-notary
-            - go.1
+            - go1
       - deploy:
           filters:
            branches:
