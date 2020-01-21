@@ -25,7 +25,7 @@ jobs:
       - run: cd truffle-core && ./node_modules/.bin/truffle compile
       - run: cd truffle-core && ./node_modules/.bin/truffle test
   go1:
-    executor: freeverse
+    executor: freeverse_ethereum
     steps:
       - checkout
       - run: cd go && go test ./engine/...
