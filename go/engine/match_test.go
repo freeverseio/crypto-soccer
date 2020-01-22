@@ -119,18 +119,17 @@ func TestPlayGame(t *testing.T) {
 	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = big.NewInt(int64(1))
 	m.VisitorTeam.TeamID = big.NewInt(int64(2))
-	homeSkill := uint16(1134)
-	visitorSkill := uint16(2344)
 	for i := 0; i < 25; i++ {
-		m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, 33, homeSkill, homeSkill, homeSkill, homeSkill, homeSkill)
-		m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, 18, visitorSkill, visitorSkill, visitorSkill, visitorSkill, visitorSkill)
+		m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
+		m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
 	}
+	golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 	err := m.Play1stHalf()
 	assert.NilError(t, err)
-	golden.Assert(t, m.DumpState(), t.Name()+".1.golden")
+	golden.Assert(t, m.DumpState(), t.Name()+".half.golden")
 	err = m.Play2ndHalf()
 	assert.NilError(t, err)
-	golden.Assert(t, m.DumpState(), t.Name()+".2.golden")
+	golden.Assert(t, m.DumpState(), t.Name()+".ended.golden")
 }
 
 func TestPlay2ndHalf(t *testing.T) {
