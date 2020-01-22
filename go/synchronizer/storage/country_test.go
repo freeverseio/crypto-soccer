@@ -7,11 +7,12 @@ import (
 )
 
 func TestCountryCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := storage.CountryCount()
+	defer tx.Rollback()
+	count, err := storage.CountryCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,21 +22,23 @@ func TestCountryCount(t *testing.T) {
 }
 
 func TestCountryCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezone := uint8(4)
-	sto.TimezoneCreate(storage.Timezone{timezone})
+	defer tx.Rollback()
+
+	timezone := storage.Timezone{uint8(4)}
+	timezone.Insert(tx)
 	country := storage.Country{
-		TimezoneIdx: timezone,
+		TimezoneIdx: timezone.TimezoneIdx,
 		CountryIdx:  4,
 	}
-	err = sto.CountryCreate(country)
+	err = country.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.CountryInTimezoneCount(timezone)
+	count, err := storage.CountryInTimezoneCount(tx, timezone.TimezoneIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,21 +48,23 @@ func TestCountryCreate(t *testing.T) {
 }
 
 func TestGetCountry(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezone := uint8(4)
-	sto.TimezoneCreate(storage.Timezone{timezone})
+	defer tx.Rollback()
+
+	timezone := storage.Timezone{uint8(4)}
+	timezone.Insert(tx)
 	country := storage.Country{
-		TimezoneIdx: timezone,
+		TimezoneIdx: timezone.TimezoneIdx,
 		CountryIdx:  5,
 	}
-	err = sto.CountryCreate(country)
+	err = country.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetCountry(country.TimezoneIdx, country.CountryIdx)
+	result, err := storage.CountryByTimezoneIdxCountryIdx(tx, country.TimezoneIdx, country.CountryIdx)
 	if err != nil {
 		t.Fatal(err)
 	}

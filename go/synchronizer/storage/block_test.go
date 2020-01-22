@@ -7,11 +7,12 @@ import (
 )
 
 func TestGetBlockNumber(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	number, err := storage.GetBlockNumber()
+	defer tx.Rollback()
+	number, err := storage.GetBlockNumber(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,15 +22,16 @@ func TestGetBlockNumber(t *testing.T) {
 }
 
 func TestSetBlockNumber(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = storage.SetBlockNumber(3)
+	defer tx.Rollback()
+	err = storage.SetBlockNumber(tx, 3)
 	if err != nil {
 		t.Fatal(err)
 	}
-	number, err := storage.GetBlockNumber()
+	number, err := storage.GetBlockNumber(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

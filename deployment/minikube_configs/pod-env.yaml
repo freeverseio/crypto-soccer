@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: edu-test-pod-env
+spec:
+  containers:
+    - name: ubuntu
+      image: ubuntu:latest
+      command: [ "/bin/sh", "-c", "--" ]
+      args: [ "sleep 90" ]
+      env:
+        - name: ENGINE_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: engine_contract_address
+        - name: ENGINEPRECOMP_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: engineprecomp_contract_address
+        - name: LEAGUES_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: leagues_contract_address
+        - name: MARKET_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: market_contract_address
+        - name: UPDATES_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: updates_contract_address
+        - name: ASSETS_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: assets_contract_address
+        - name: EVOLUTION_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: evolution_contract_address
+        - name: FRIENDLIES_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: friendlies_contract_address
+        - name: SHOP_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: shop_contract_address
+        - name: PRIVILEGED_CONTRACT_ADDRESS
+          valueFrom:
+            configMapKeyRef:
+              name: freeverse-configmap
+              key: privileged_contract_address
+  restartPolicy: Never

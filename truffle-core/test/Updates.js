@@ -51,24 +51,43 @@ contract('Updates', (accounts) => {
         await timeTravel.revertToSnapShot(snapshotId);
     });
             
-
-    it('check BC has the correct time', async () =>  {
+    it('require that BC and local time are less than 15 sec out of sync', async () =>  {
+        blockChainTimeSec = await updates.getNow().should.be.fulfilled;
+        localTimeMs = Date.now();
+        // the substraction is in miliseconds:
+        // require less than 3 hours
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 3*3600*1000).should.be.equal(true);
+        // require less than 1 hour
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 1*3600*1000).should.be.equal(true);
+        // require less than 30 min
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 30*60*1000).should.be.equal(true);
+        // require less than 10 min
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 10*60*1000).should.be.equal(true);
+        // require less than 5 min
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 5*60*1000).should.be.equal(true);
+        // require less than 1 min
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 60*1000).should.be.equal(true);
+        // require less than 20 sec
+        (Math.abs(blockChainTimeSec.toNumber()*1000 - localTimeMs) < 20*1000).should.be.equal(true);
+    });
+    it('check BC is set up in agreement with the local time', async () =>  {
         nextVerseTimestamp = await updates.nextVerseTimestamp().should.be.fulfilled;
         timeZoneForRound1 = await updates.timeZoneForRound1().should.be.fulfilled;
-        nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000)
-        now = new Date()
+        localTimeMs = Date.now();
+        now = new Date(localTimeMs);
+        nextVerse = new Date(nextVerseTimestamp.toNumber() * 1000);
         if (now.getUTCMinutes() < 57) {
             expectedHour = now.getUTCHours() + 1;
         } else {
             expectedHour = now.getUTCHours() + 2;
         }
-        nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear())
-        nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth())
-        nextVerse.getUTCDate().should.be.equal(now.getUTCDate())
-        nextVerse.getUTCHours().should.be.equal(expectedHour)
-        nextVerse.getUTCMinutes().should.be.equal(0)
-        nextVerse.getUTCSeconds().should.be.equal(0)
-        timeZoneForRound1.toNumber().should.be.equal(expectedHour)
+        nextVerse.getUTCFullYear().should.be.equal(now.getUTCFullYear());
+        nextVerse.getUTCMonth().should.be.equal(now.getUTCMonth());
+        nextVerse.getUTCDate().should.be.equal(now.getUTCDate());
+        nextVerse.getUTCHours().should.be.equal(expectedHour);
+        nextVerse.getUTCMinutes().should.be.equal(0);
+        nextVerse.getUTCSeconds().should.be.equal(0);
+        timeZoneForRound1.toNumber().should.be.equal(expectedHour);
     });
     
     it('wait some minutes', async () =>  {
@@ -98,7 +117,8 @@ contract('Updates', (accounts) => {
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         await timeTravel.advanceBlock().should.be.fulfilled;
-        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys")).should.be.fulfilled;
+        const cif = "ciao";
+        tx = await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboys"), cif).should.be.fulfilled;
         timeZoneToUpdate = await updates.nextTimeZoneToUpdate().should.be.fulfilled;
         verse = await updates.currentVerse().should.be.fulfilled;
         verse.toNumber().should.be.equal(verseBefore.toNumber() + 1); 
@@ -120,7 +140,8 @@ contract('Updates', (accounts) => {
         // await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.rejected;
         await timeTravel.advanceTime(20);
         // await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.rejected;
-        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+        const cif = "ciao2";
+        await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
         now = await updates.getNow().should.be.fulfilled;
         await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
         submissionTime = await assets.getLastActionsSubmissionTime(timeZoneToUpdateBefore[0].toNumber()).should.be.fulfilled;
@@ -150,7 +171,8 @@ contract('Updates', (accounts) => {
             if (diff < 0) diff += 24;
             // you change timezone every 4 verses
             diff.should.be.equal(Math.floor(verse / 4) % 24);
-            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy")).should.be.fulfilled;
+            const cif = "ciao3";
+            await updates.submitActionsRoot(actionsRoot =  web3.utils.keccak256("hiboy"), cif).should.be.fulfilled;
             await updates.updateTZ(root =  web3.utils.keccak256("hiboyz")).should.be.fulfilled;
             await moveToNextVerse(updates, extraSecs = 10);
         }

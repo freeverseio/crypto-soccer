@@ -11,6 +11,7 @@ contract EncodingSkills {
     uint8 constant public MAX_PLAYER_AGE_AT_BIRTH = 32;
     uint8 constant public N_SKILLS = 5;
     uint8 constant public NO_SUBST = 11;
+    uint8 public constant NO_LINEUP = PLAYERS_PER_TEAM_MAX; // No player chosen in that position
 
     // Birth Traits: potential, forwardness, leftishness, aggressiveness
     uint8 constant private IDX_POT = 0;
@@ -58,7 +59,7 @@ contract EncodingSkills {
             encoded |= uint256(extraAttack[p] ? 1 : 0) << 6 + p;
         }          
         for (uint8 p = 0; p < 11; p++) {
-            require(lineup[p] < PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
+            require(lineup[p] <= PLAYERS_PER_TEAM_MAX, "incorrect lineup entry");
             encoded |= uint256(lineup[p]) << 16 + 5 * p;
         }          
         for (uint8 p = 0; p < 3; p++) {
@@ -66,7 +67,7 @@ contract EncodingSkills {
             require(subsRounds[p] < 12, "incorrect round");
             // requirement: if there is no subst at "i", lineup[i + 11] = 25 + p (so that all lineups are different, and sortable)
             if (substitutions[p] == NO_SUBST) {
-                require(lineup[p + 11] == 25 + p, "incorrect lineup entry for no substituted player");
+                require(lineup[p + 11] == NO_LINEUP, "incorrect lineup entry for no substituted player");
             }
             encoded |= uint256(lineup[p + 11]) << 16 + 5 * (p + 11);
             encoded |= uint256(substitutions[p]) << 86 + 4 * p;
@@ -123,10 +124,13 @@ contract EncodingSkills {
      *      substitutedDuringLastHalf = 1b (bool) 
      *      sumSkills                 = 19b (must equal sum(skills), of if each is 16b, this can be at most 5x16b => use 19b)
      *      isSpecialPlayer           = 1b (set at the left-most bit, 255)
+     *      targetTeamId              = 43b
+     *      generation                = 8b 
     **/
     function encodePlayerSkills(
         uint16[N_SKILLS] memory skills, 
         uint256 dayOfBirth, 
+        uint8 generation,
         uint256 playerId, 
         uint8[4] memory birthTraits,
         bool alignedEndOfLastHalf, 
@@ -165,7 +169,8 @@ contract EncodingSkills {
         encoded |= uint256(gamesNonStopping) << 154;
         encoded |= uint256(injuryWeeksLeft) << 157;
         encoded |= uint256(substitutedLastHalf ? 1 : 0) << 160;
-        return (encoded | uint256(sumSkills) << 161);
+        encoded |= uint256(sumSkills) << 161;
+        return (encoded | uint256(generation) << 223);
     }
     
     function getShoot(uint256 encodedSkills) public pure returns (uint256) {
@@ -193,6 +198,7 @@ contract EncodingSkills {
     }
 
     function getPlayerIdFromSkills(uint256 encodedSkills) public pure returns (uint256) {
+        if (getIsSpecial(encodedSkills)) return encodedSkills;
         return uint256(encodedSkills >> 96 & 8796093022207); // 2**43 - 1 = 8796093022207
     }
 
@@ -250,5 +256,9 @@ contract EncodingSkills {
 
     function getTargetTeamId(uint256 encodedSkills) public pure returns (uint256) {
         return (encodedSkills >> 180) & (2**43-1);
+    }
+
+    function getGeneration(uint256 encodedSkills) public pure returns (uint256) {
+        return (encodedSkills >> 223) & 255;
     }
 }

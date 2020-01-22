@@ -1,35 +1,35 @@
 package process
 
 import (
+	"database/sql"
 	"errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/leagues"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 type Calendar struct {
-	leagues     *leagues.Leagues
-	storage     *storage.Storage
+	contracts   *contracts.Contracts
 	MatchDays   uint8
 	MatchPerDay uint8
 }
 
-func NewCalendar(leagues *leagues.Leagues, storage *storage.Storage) (*Calendar, error) {
-	matchDays, err := leagues.MATCHDAYS(&bind.CallOpts{})
+func NewCalendar(contracts *contracts.Contracts) (*Calendar, error) {
+	matchDays, err := contracts.Leagues.MATCHDAYS(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	matchPerDay, err := leagues.MATCHESPERDAY(&bind.CallOpts{})
+	matchPerDay, err := contracts.Leagues.MATCHESPERDAY(&bind.CallOpts{})
 	if err != nil {
 		return nil, err
 	}
-	return &Calendar{leagues, storage, matchDays, matchPerDay}, nil
+	return &Calendar{contracts, matchDays, matchPerDay}, nil
 }
 
-func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := b.storage.GetLeague(leagueIdx)
+func (b *Calendar) Generate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -39,13 +39,14 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			err = b.storage.MatchCreate(storage.Match{
+			match := storage.Match{
 				TimezoneIdx: timezoneIdx,
 				CountryIdx:  countryIdx,
 				LeagueIdx:   leagueIdx,
 				MatchDayIdx: matchDay,
 				MatchIdx:    match,
-			})
+			}
+			err = match.Insert(tx)
 			if err != nil {
 				return err
 			}
@@ -54,8 +55,8 @@ func (b *Calendar) Generate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 	return nil
 }
 
-func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := b.storage.GetLeague(leagueIdx)
+func (b *Calendar) Populate(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -65,19 +66,19 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			teams, err := b.leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
+			teams, err := b.contracts.Leagues.GetTeamsInLeagueMatch(&bind.CallOpts{}, matchDay, match)
 			if err != nil {
 				return nil
 			}
-			homeTeamID, err := b.storage.GetTeamID(timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
+			homeTeamID, err := storage.TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.HomeIdx))
 			if err != nil {
 				return err
 			}
-			visitorTeamID, err := b.storage.GetTeamID(timezoneIdx, countryIdx, leagueIdx, uint32(teams.VisitorIdx))
+			visitorTeamID, err := storage.TeamIdByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx, uint32(teams.VisitorIdx))
 			if err != nil {
 				return err
 			}
-			err = b.storage.MatchSetTeams(timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID)
+			err = storage.MatchSetTeams(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match, homeTeamID, visitorTeamID)
 			if err != nil {
 				return err
 			}
@@ -86,8 +87,8 @@ func (b *Calendar) Populate(timezoneIdx uint8, countryIdx uint32, leagueIdx uint
 	return nil
 }
 
-func (b *Calendar) Reset(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
-	league, err := b.storage.GetLeague(leagueIdx)
+func (b *Calendar) Reset(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32, leagueIdx uint32) error {
+	league, err := storage.LeagueByLeagueIdx(tx, leagueIdx)
 	if err != nil {
 		return err
 	}
@@ -97,7 +98,7 @@ func (b *Calendar) Reset(timezoneIdx uint8, countryIdx uint32, leagueIdx uint32)
 
 	for matchDay := uint8(0); matchDay < b.MatchDays; matchDay++ {
 		for match := uint8(0); match < b.MatchPerDay; match++ {
-			err = b.storage.MatchReset(timezoneIdx, countryIdx, leagueIdx, matchDay, match)
+			err = storage.MatchReset(tx, timezoneIdx, countryIdx, leagueIdx, matchDay, match)
 			if err != nil {
 				return err
 			}

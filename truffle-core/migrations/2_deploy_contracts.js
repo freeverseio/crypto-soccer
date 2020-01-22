@@ -6,6 +6,10 @@ const Leagues = artifacts.require('Leagues');
 const Market = artifacts.require('Market');
 const Updates = artifacts.require('Updates');
 const Friendlies = artifacts.require('Friendlies');
+const Shop = artifacts.require('Shop');
+const Privileged = artifacts.require('Privileged');
+const MatchEvents = artifacts.require('MatchEvents');
+const UtilsMatchLog = artifacts.require('UtilsMatchLog');
 
 
 require('chai')
@@ -15,6 +19,7 @@ require('chai')
 module.exports = function (deployer) {
   deployer.then(async () => {
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
+    const matchEvents = await deployer.deploy(MatchEvents).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const assets = await deployer.deploy(Assets).should.be.fulfilled;
@@ -22,13 +27,20 @@ module.exports = function (deployer) {
     const market = await deployer.deploy(Market).should.be.fulfilled;
     const updates = await deployer.deploy(Updates).should.be.fulfilled;
     const friendlies = await deployer.deploy(Friendlies).should.be.fulfilled;
-
+    const shop = await deployer.deploy(Shop).should.be.fulfilled;
+    const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
+    const utilsMatchLog = await deployer.deploy(UtilsMatchLog).should.be.fulfilled;
+    
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
+    await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     await updates.initUpdates(assets.address).should.be.fulfilled;
+    await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
     await evolution.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
+    await matchEvents.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
+    await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");
@@ -45,6 +57,11 @@ module.exports = function (deployer) {
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
     console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
+    console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
+    console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);
+    console.log("PRIVILEGED_CONTRACT_ADDRESS=" + privileged.address);
+    console.log("MATCHEVENTS_CONTRACT_ADDRESS=" + matchEvents.address);
+    console.log("UTILS_MATCH_LOG_CONTRACT_ADDRESS=" + utilsMatchLog.address);
   });
 };
 

@@ -9,17 +9,19 @@ import (
 )
 
 func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache.DeployContracts(ganache.Owner)
+	defer tx.Rollback()
 
-	calendar, err := process.NewCalendar(ganache.Leagues, storage)
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
+
+	calendar, err := process.NewCalendar(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,72 +29,82 @@ func TestGenerateCalendarOfUnexistentLeague(t *testing.T) {
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
-	err = calendar.Generate(timezoneIdx, countryIdx, leagueIdx)
+	err = calendar.Generate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err == nil {
 		t.Fatal("Generate calendar of unexistent league")
 	}
 }
 
 func TestResetCalendar(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache.DeployContracts(ganache.Owner)
+	defer tx.Rollback()
 
-	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
+	bc, err := testutils.NewBlockchainNode()
+	if err != nil {
+		t.Fatal(err)
+	}
+	bc.DeployContracts(bc.Owner)
+
+	calendarProcessor, err := process.NewCalendar(bc.Contracts)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	timezoneIdx := uint8(1)
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	timezone := storage.Timezone{timezoneIdx}
+	timezone.Insert(tx)
 	countryIdx := uint32(0)
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	country := storage.Country{timezoneIdx, countryIdx}
+	country.Insert(tx)
 	leagueIdx := uint32(0)
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
+	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
+	league.Insert(tx)
+	err = calendarProcessor.Generate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = calendarProcessor.Reset(timezoneIdx, countryIdx, leagueIdx)
+	err = calendarProcessor.Reset(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestGenerateCalendarOfExistingLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := universedb.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ganache, err := testutils.NewBlockchainNode()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ganache.DeployContracts(ganache.Owner)
+	defer tx.Rollback()
 
-	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
+	bc, err := testutils.NewBlockchainNode()
 	if err != nil {
 		t.Fatal(err)
 	}
+	bc.DeployContracts(bc.Owner)
 
+	calendarProcessor, err := process.NewCalendar(bc.Contracts)
+	if err != nil {
+		t.Fatal(err)
+	}
 	timezoneIdx := uint8(1)
-	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
+	timezone := storage.Timezone{timezoneIdx}
+	timezone.Insert(tx)
 	countryIdx := uint32(0)
-	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
+	country := storage.Country{timezoneIdx, countryIdx}
+	country.Insert(tx)
 	leagueIdx := uint32(0)
-	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
+	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
+	league.Insert(tx)
+
+	err = calendarProcessor.Generate(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
+	matches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdx(tx, timezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,40 +112,3 @@ func TestGenerateCalendarOfExistingLeague(t *testing.T) {
 		t.Fatalf("Wrong matches %v", len(matches))
 	}
 }
-
-// func TestPopulateCalendarOfExistingLeague(t *testing.T) {
-// 	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	ganache := testutils.NewGanache()
-// 	ganache.DeployContracts(ganache.Owner)
-
-// 	calendarProcessor, err := process.NewCalendar(ganache.Leagues, sto)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	timezoneIdx := uint8(1)
-// 	sto.TimezoneCreate(storage.Timezone{timezoneIdx})
-// 	countryIdx := uint32(0)
-// 	sto.CountryCreate(storage.Country{timezoneIdx, countryIdx})
-// 	leagueIdx := uint32(0)
-// 	sto.LeagueCreate(storage.League{timezoneIdx, countryIdx, leagueIdx})
-// 	err = calendarProcessor.Generate(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	err = calendarProcessor.Populate(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	matches, err := sto.GetMatches(timezoneIdx, countryIdx, leagueIdx)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	match := (*matches)[0]
-// 	if match.HomeTeamID == nil {
-// 		t.Fatal("Home team is nil")
-// 	}
-// }

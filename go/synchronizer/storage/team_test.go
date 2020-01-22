@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"math"
 	"math/big"
 	"testing"
 
@@ -8,11 +9,13 @@ import (
 )
 
 func TestTeamCount(t *testing.T) {
-	storage, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := storage.TeamCount()
+	defer tx.Rollback()
+
+	count, err := storage.TeamCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,77 +24,123 @@ func TestTeamCount(t *testing.T) {
 	}
 }
 
-func TestTeamCreate(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+func TestGetTeam(t *testing.T) {
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezone := uint8(1)
+	defer tx.Rollback()
+
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
-	sto.TimezoneCreate(storage.Timezone{timezone})
-	sto.CountryCreate(storage.Country{timezone, countryIdx})
-	sto.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})
-	var team storage.Team
-	team.TeamID = big.NewInt(4)
-	team.TimezoneIdx = timezone
+	timezone := storage.Timezone{uint8(1)}
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
+	team := storage.Team{}
+	team.TeamID = big.NewInt(3)
+	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	err = sto.TeamCreate(team)
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.RankingPoints = math.MaxUint64
+	if err = team.Insert(tx); err != nil {
+		t.Fatal(err)
+	}
+	result, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	count, err := sto.TeamCount()
+	if !result.Equal(team) {
+		t.Fatalf("Expected %v but %v", team, result)
+	}
+}
+
+func TestTeamCreate(t *testing.T) {
+	tx, err := s.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	countryIdx := uint32(4)
+	leagueIdx := uint32(0)
+	timezone := storage.Timezone{uint8(1)}
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
+
+	var team storage.Team
+	team.TeamID = big.NewInt(4)
+	team.TimezoneIdx = timezone.TimezoneIdx
+	team.CountryIdx = countryIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	err = team.Insert(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	count, err := storage.TeamCount(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if count != 1 {
 		t.Fatalf("Expected 1 result %v", count)
 	}
-	teamResult, err := sto.GetTeam(team.TeamID)
+	teamResult, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if teamResult.State.PrevPerfPoints.String() != "0" {
-		t.Fatalf("Wrong ranking points %v", teamResult.State.PrevPerfPoints)
+	if teamResult.PrevPerfPoints != 0 {
+		t.Fatalf("Wrong ranking points %v", teamResult.PrevPerfPoints)
 	}
-	if teamResult.State.RankingPoints.String() != "0" {
-		t.Fatalf("Wrong ranking points %v", teamResult.State.RankingPoints)
+	if teamResult.RankingPoints != 0 {
+		t.Fatalf("Wrong ranking points %v", teamResult.RankingPoints)
 	}
 }
 
 func TestGetTeamOfUnexistenTeamID(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer tx.Rollback()
+
 	teamID := big.NewInt(434)
-	_, err = sto.GetTeam(teamID)
+	_, err = storage.TeamByTeamId(tx, teamID)
 	if err == nil {
 		t.Fatal("Not error on unsexistent team")
 	}
 }
 
 func TestGetTeamInLeague(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezone := uint8(1)
-	countryIdx := uint32(0)
+	defer tx.Rollback()
+
+	countryIdx := uint32(1)
 	leagueIdx := uint32(0)
+	timezone := storage.Timezone{uint8(1)}
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
+
 	var team storage.Team
 	team.TeamID = big.NewInt(11)
-	team.TimezoneIdx = timezone
+	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	sto.TimezoneCreate(storage.Timezone{timezone})
-	sto.CountryCreate(storage.Country{timezone, countryIdx})
-	sto.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})
-	sto.TeamCreate(team)
-	teams, err := sto.GetTeamsInLeague(timezone, countryIdx, leagueIdx)
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.Insert(tx)
+	teams, err := storage.TeamsByTimezoneIdxCountryIdxLeagueIdx(tx, timezone.TimezoneIdx, countryIdx, leagueIdx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,37 +150,44 @@ func TestGetTeamInLeague(t *testing.T) {
 }
 
 func TestUpdateTeamOwner(t *testing.T) {
-	sto, err := storage.NewSqlite3("../../../universe.db/00_schema.sql")
+	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	timezone := uint8(1)
+	defer tx.Rollback()
+
 	countryIdx := uint32(4)
 	leagueIdx := uint32(0)
-	sto.TimezoneCreate(storage.Timezone{timezone})
-	sto.CountryCreate(storage.Country{timezone, countryIdx})
-	sto.LeagueCreate(storage.League{timezone, countryIdx, leagueIdx})
+	timezone := storage.Timezone{uint8(1)}
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	league := storage.League{timezone.TimezoneIdx, countryIdx, leagueIdx}
+	timezone.Insert(tx)
+	country.Insert(tx)
+	league.Insert(tx)
+
 	var team storage.Team
 	team.TeamID = big.NewInt(4)
-	team.TimezoneIdx = timezone
+	team.TimezoneIdx = timezone.TimezoneIdx
 	team.CountryIdx = countryIdx
-	team.State.Owner = "ciao"
-	team.State.LeagueIdx = leagueIdx
-	err = sto.TeamCreate(team)
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	team.RankingPoints = math.MaxUint64
+	err = team.Insert(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	team.State.Owner = "pippo"
-	err = sto.TeamUpdate(team.TeamID, team.State)
+	team.Owner = "pippo"
+	team.TrainingPoints = 4
+	err = team.Update(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, err := sto.GetTeam(team.TeamID)
+	result, err := storage.TeamByTeamId(tx, team.TeamID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if team.State.Owner != result.State.Owner {
-		t.Fatalf("expected owner pippo but got %v", result.State.Owner)
+	if !team.Equal(result) {
+		t.Fatalf("expected %v but got %v", team, result)
 	}
 }
 
@@ -158,7 +214,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	_, err = sto.GetTeam(1)
+// 	_, err = sto.TeamByTeamId(1)
 // 	if err == nil {
 // 		t.Fatal("Expecting error on unexistent team")
 // 	}
@@ -188,7 +244,7 @@ func TestUpdateTeamOwner(t *testing.T) {
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}
-// 	result, err := sto.GetTeam(team.Id)
+// 	result, err := sto.TeamByTeamId(team.Id)
 // 	if err != nil {
 // 		t.Fatal(err)
 // 	}

@@ -9,37 +9,29 @@ import (
 	//"github.com/ethereum/go-ethereum/crypto"
 
 	relay "github.com/freeverseio/crypto-soccer/go/relay/process"
-	"github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
 func TestSubmitActionRoot(t *testing.T) {
-	db, err := storage.NewSqlite3("../../../relay.db/00_schema.sql")
-	// db, err := storage.NewPostgres("postgres://freeverse:freeverse@localhost:5432/cryptosoccer?sslmode=disable")
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
-	bc, err := testutils.NewBlockchainNode()
+	defer tx.Rollback()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	err = bc.DeployContracts(bc.Owner)
-	if err != nil {
-		t.Fatal(err)
-	}
-	timezoneIdx := uint8(1)
-	err = bc.InitOneTimezone(timezoneIdx)
+	bc, err := testutils.NewBlockchainNodeDeployAndInit()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Updates)
+	p, err := relay.NewProcessor(bc.Client, bc.Owner, db, bc.Contracts.Updates, "localhost:5001")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = p.Process()
+	err = p.Process(tx)
 	if err != nil {
 		t.Fatal(err)
 	}

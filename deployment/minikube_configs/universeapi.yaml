@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: universeapi
+  labels:
+    app: universeapi
+    component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  selector:
+    app: universeapi
+  type: LoadBalancer
+  ports:
+  - name: http
+    protocol: TCP
+    port: 4000
+    targetPort: 4000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: universeapi
+  labels:
+    app: universeapi
+    component: graphql
+    part-of: cryptosoccer
+    version: "0.0.1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: universeapi
+  template:
+    metadata:
+      labels:
+        app: universeapi
+        component: graphql
+        part-of: cryptosoccer
+        version: "0.0.1"
+    spec:
+      containers:
+      - name: universeapi
+        image: freeverseio/universe.api:dev
+        imagePullPolicy: Always
+        envFrom:
+          - configMapRef:
+              name: freeverse-configmap
+        #args: [-d, postgres://freeverse:freeverse@$(UNIVERSEDB_SERVICE_HOST):$(UNIVERSEDB_SERVICE_PORT)/cryptosoccer]
+        # or we can use dns record universedb[.namespace]. Since they will both be in the same
+        # namespace the name of the service is sufficient
+        args: [-d, postgres://$(freeverse_username):$(freeverse_password)@universedb:5432/cryptosoccer]
+        #args: [-d, postgres://$(DB_USERNAME):$(DB_PASS)@universedb:5432/cryptosoccer]
+        ports:
+        - containerPort: 4000
+      imagePullSecrets:
+      - name: docker-secret

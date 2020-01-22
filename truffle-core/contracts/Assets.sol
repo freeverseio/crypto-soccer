@@ -9,6 +9,7 @@ import "./EncodingState.sol";
  */
 
 contract Assets is EncodingSkills, EncodingState, EncodingIDs {
+    event AssetsInit(address creatorAddr);
     event TeamTransfer(uint256 teamId, address to);
     event DivisionCreation(uint8 timezone, uint256 countryIdxInTZ, uint256 divisionIdxInCountry);
     event PlayerStateChange(uint256 playerId, uint256 state);
@@ -47,7 +48,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     uint8 constant public TEAMS_PER_LEAGUE = 8;
     uint8 constant public TEAMS_PER_DIVISION = 128; // LEAGUES_PER_DIV * TEAMS_PER_LEAGUE
     uint256 constant public DAYS_PER_ROUND = 16;
-    uint256 constant public ROSTER_TEAM = 1;
+    uint256 constant public ACADEMY_TEAM = 1;
     address constant public NULL_ADDR = address(0);
     bytes32 constant INIT_ORGMAP_HASH = bytes32(0); // to be computed externally once and placed here
     
@@ -73,6 +74,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
             _initTimeZone(tz);
         }
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     // hack for testing: we can init only one timezone
@@ -82,15 +84,18 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         gameDeployDay = secsToDays(now);
         _initTimeZone(tz);
         _needsInit = false;
+        emit AssetsInit(msg.sender);
     }
 
     function _initTimeZone(uint8 tz) private {
         Country memory country;
-        country.nDivisions = 1;
+        country.nDivisions = 10;
         _timeZones[tz].countries.push(country);
-        _timeZones[tz].countries[0].divisonIdxToRound[0] = 1;
         _timeZones[tz].orgMapHash[0] = INIT_ORGMAP_HASH;
-        emit DivisionCreation(tz, 0, 0);
+        for (uint8 division = 0 ; division < country.nDivisions ; division++){
+            _timeZones[tz].countries[0].divisonIdxToRound[division] = 1;
+            emit DivisionCreation(tz, 0, division);
+        }
     }
 
     function getLastUpdateTime(uint8 timeZone) external view returns(uint256) {
@@ -148,7 +153,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     function isBotTeam(uint256 teamId) public view returns(bool) {
-        if (teamId == ROSTER_TEAM) return false;
+        if (teamId == ACADEMY_TEAM) return false;
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamId);
         return isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry);
     }
@@ -213,7 +218,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function transferTeamInCountryToAddr(uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry, address addr) private {
         _assertTZExists(timeZone);
         _assertCountryInTZExists(timeZone, countryIdxInTZ);
-        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a non-bot team");
+        require(!isBotTeamInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "cannot transfer a bot team");
         require(addr != NULL_ADDR, "cannot transfer to a null address");
         require(_timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner != addr, "buyer and seller are the same addr");
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].owner = addr;
@@ -270,9 +275,8 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
         uint256 division = teamIdxInCountry / TEAMS_PER_DIVISION;
         require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         // compute a dna that is unique to this player, since it is made of a unique playerId:
-        uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 playerCreationDay = gameDeployDay + _timeZones[timeZone].countries[countryIdxInTZ].divisonIdxToRound[division] * DAYS_PER_ROUND;
-        return computeSkillsAndEncode(dna, shirtNum, playerCreationDay, playerId);
+        return computeSkillsAndEncode(shirtNum, playerCreationDay, playerId);
     }
 
     function getSpecialPlayerSkillsAtBirth(uint256 playerId) internal pure returns (uint256) {
@@ -280,18 +284,18 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     }
 
     // the next function was separated from getPlayerSkillsAtBirth only to keep stack within limits
-    function computeSkillsAndEncode(uint256 dna, uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+    function computeSkillsAndEncode(uint8 shirtNum, uint256 playerCreationDay, uint256 playerId) internal pure returns (uint256) {
+        uint256 dna = uint256(keccak256(abi.encode(playerId)));
         uint256 dayOfBirth;
         (dayOfBirth, dna) = computeBirthDay(dna, playerCreationDay);
         (uint16[N_SKILLS] memory skills, uint8[4] memory birthTraits, uint32 sumSkills) = computeSkills(dna, shirtNum);
-        return encodePlayerSkills(skills, dayOfBirth, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
+        return encodePlayerSkills(skills, dayOfBirth, 0, playerId, birthTraits, false, false, 0, 0, false, sumSkills);
     }
 
-    function getPlayerStateAtBirth(uint256 playerId) public view returns (uint256) {
-        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ROSTER_TEAM, 0, 0, 0);
+    function getPlayerStateAtBirth(uint256 playerId) public pure returns (uint256) {
+        if (getIsSpecial(playerId)) return encodePlayerState(playerId, ACADEMY_TEAM, 0, 0, 0);
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 playerIdxInCountry) = decodeTZCountryAndVal(playerId);
         uint256 teamIdxInCountry = playerIdxInCountry / PLAYERS_PER_TEAM_INIT;
-        require(_teamExistsInCountry(timeZone, countryIdxInTZ, teamIdxInCountry), "invalid team id");
         uint256 currentTeamId = encodeTZCountryAndVal(timeZone, countryIdxInTZ, teamIdxInCountry);
         uint8 shirtNum = uint8(playerIdxInCountry % PLAYERS_PER_TEAM_INIT);
         return encodePlayerState(playerId, currentTeamId, shirtNum, 0, 0);
@@ -308,9 +312,9 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
     function computeBirthDay(uint256 dna, uint256 playerCreationDay) public pure returns (uint16, uint256) {
         uint256 ageInDays = 5840 + (dna % 7300);  // 5840 = 16*365, 7300 = 20 * 365
         dna >>= 13; // log2(7300) = 12.8
-        return (uint16(playerCreationDay - ageInDays / 7), dna);
+        return (uint16(playerCreationDay - ageInDays / 7), dna); // 1095 = 3 * 365
     }
-
+    
     /// Compute the pseudorandom skills, sum of the skills is 5K (1K each skill on average)
     /// @param dna is a random number used as seed of the skills
     /// skills have currently, 16bits each, and there are 5 of them
@@ -443,7 +447,7 @@ contract Assets is EncodingSkills, EncodingState, EncodingIDs {
 
         (uint8 timeZone, uint256 countryIdxInTZ, uint256 teamIdxInCountry) = decodeTZCountryAndVal(teamIdTarget);
         _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtTarget] = playerId;
-        if (teamIdOrigin != ROSTER_TEAM) {
+        if (teamIdOrigin != ACADEMY_TEAM) {
             uint256 shirtOrigin = getCurrentShirtNum(state);
             (timeZone, countryIdxInTZ, teamIdxInCountry) = decodeTZCountryAndVal(teamIdOrigin);
             _timeZones[timeZone].countries[countryIdxInTZ].teamIdxInCountryToTeam[teamIdxInCountry].playerIds[shirtOrigin] = FREE_PLAYER_ID;

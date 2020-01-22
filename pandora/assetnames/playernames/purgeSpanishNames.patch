@@ -1,0 +1,657 @@
+diff --git a/pandora/playernames/tmp/goalRevNames b/pandora/playernames/tmp/goalRevNames
+index 38327fda..d5504b75 100644
+--- a/pandora/playernames/tmp/goalRevNames
++++ b/pandora/playernames/tmp/goalRevNames
+@@ -4362,607 +4362,253 @@
+ 7,Zeferino
+ 8,Aarón
+ 8,Abad
+-8,Abdon
+ 8,Abel
+ 8,Abelardo
+-8,Abelio
+-8,Abilio
+ 8,Abraham
+-8,Acacio
+-8,Adalberto
+ 8,Adán
+-8,Adelaido
+-8,Adelino
+-8,Adelio
+-8,Adelo
+ 8,Adriano
+ 8,Agapito
+-8,Ager
+-8,Agusti
+-8,Agustin
++8,Agustí
++8,Agustín
+ 8,Aiert
+ 8,Aimar
+-8,Aingeru
+ 8,Aitor
+ 8,Aitzol
+ 8,Aketza
+ 8,Albano
+ 8,Albert
+ 8,Albino
+-8,Alejandrino
++8,Alejandro
+ 8,Alejo
+ 8,Alesander
+ 8,Alexander
+ 8,Alfred
+-8,Alicio
+-8,Alipio
++8,Alfredo
+ 8,Alonso
+-8,Alvino
+ 8,Amadeo
+ 8,Amadeu
+-8,Amado
+-8,Amalio
+ 8,Amancio
+-8,Amando
+ 8,Amaro
+-8,Ambrosio
+-8,Amelio
+-8,Americo
+-8,Amilcar
+ 8,Anacleto
+ 8,Anartz
+ 8,Ander
+-8,Andima
+-8,Andolin
+-8,Andoni
+ 8,Andreu
+-8,Aner
+-8,Angélico
+-8,Angelino
+-8,Anibal
+-8,Aniceto
++8,Ángel
++8,Aníbal
+ 8,Anselmo
+-8,Antero
+-8,Antolin
+-8,Antolino
+ 8,Antoni
+-8,Antonino
++8,Antonio
+ 8,Antxon
+ 8,Anxo
+-8,Apolinar
+-8,Aquilino
+-8,Arcadio
+-8,Argentino
+-8,Argimiro
+ 8,Ariel
+ 8,Arkaitz
+-8,Armindo
+ 8,Arnaldo
+ 8,Arsenio
+ 8,Artur
+-8,Asdrubal
++8,Arturo
++8,Asdrúbal
+ 8,Asier
+-8,Asterio
+-8,Atanasio
+-8,Atilano
+-8,Atilio
+-8,Aureliano
+-8,Aureo
+ 8,Aznar
+-8,Balasi
+-8,Balbino
+-8,Baldomero
+-8,Balduino
+-8,Balendin
+ 8,Baltasar
+-8,Bárbaro
+ 8,Bartolomé
+-8,Basiliso
+ 8,Batista
+-8,Baudelio
+-8,Baudilio
+-8,Bautista
+-8,Belarmino
+ 8,Beñat
+ 8,Benedicto
+-8,Benedito
+-8,Benicio
+-8,Benigno
+-8,Bernardi
+-8,Bernardino
++8,Bernardo
+ 8,Berto
+-8,Bieito
+-8,Bienvenido
+-8,Bingen
+-8,Bittor
+-8,Bladimir
+-8,Bolivar
+-8,Bonifacio
+ 8,Borja
+ 8,Braulio
+-8,Brígido
+ 8,Bruno
+ 8,Buenaventura
+ 8,Calisto
+ 8,Calixto
+ 8,Camilo
+-8,Candelario
+-8,Candelo
+ 8,Carles
++8,Carlos
+ 8,Carlo
+-8,Carolino
+-8,Casiano
+-8,Casimir
+ 8,Casimiro
+-8,Catalino
+ 8,Cayetano
+ 8,Cebrián
+-8,Ceferino
+-8,Celedonio
+ 8,Celio
+ 8,Celso
+-8,Cesareo
+-8,Cesarino
++8,César
+ 8,Cesc
+-8,Chabier
+-8,Chuse
+-8,Cipriano
+-8,Ciriaco
+ 8,Ciro
+-8,Claro
+-8,Claudi
+-8,Claudino
+-8,Clemencio
+-8,Clementino
+-8,Cleto
+-8,Conrado
+-8,Constancio
+-8,Cornelio
+-8,Crescencio
++8,Claudio
++8,Conrad
+ 8,Cristian
+ 8,Cristiano
+-8,Cristino
+ 8,Cristo
+-8,Cristofer
+-8,Custodio
+-8,Dagoberto
+-8,Dalmiro
+-8,Damaso
++8,Crístofer
+ 8,Damián
+ 8,Danilo
+ 8,Darío
+-8,Delfino
+-8,Delio
+-8,Desiderio
+ 8,Dídac
+-8,Didio
+-8,Digno
+ 8,Dimas
+-8,Diodoro
+-8,Divino
+-8,Domitilo
+ 8,Donato
+-8,Doroteo
+-8,Edelmiro
+-8,Eder
+ 8,Edgar
+-8,Edgardo
+ 8,Edmundo
+ 8,Edorta
+-8,Edwin
+-8,Efigenio
+ 8,Efraín
+ 8,Egoitz
+ 8,Ekain
+ 8,Ekaitz
+-8,Eleder
+-8,Elegido
+-8,Eleuterio
+-8,Elfidio
+-8,Eli
+-8,Elidio
+-8,Eligio
+-8,Elio
+-8,Elionor
+-8,Elisardo
+-8,Eliseo
+ 8,Elmo
+ 8,Eloi
+-8,Elpidio
+-8,Emerito
+-8,Emeterio
+-8,Endika
+-8,Enedino
+ 8,Eneko
+ 8,Enric
+ 8,Epifanio
+ 8,Erlantz
+-8,Ernestino
+-8,Erramun
+-8,Errapel
+-8,Esmeraldo
+-8,Espiridión
++8,Ernesto
+ 8,Estefano
+-8,Estevan
+-8,Eufemiano
+-8,Eufemio
++8,Esteban
+ 8,Eugeni
+-8,Eulalio
+-8,Eulogio
+-8,Eustaquio
+-8,Eustasio
+-8,Eutimio
+-8,Eutropio
+ 8,Evaristo
+-8,Evelio
+-8,Evencio
+ 8,Ezequiel
+-8,Fabian
+-8,Fabiano
++8,Fabián
+ 8,Fabio
+-8,Fabriciano
+-8,Fabricio
+-8,Facundo
+ 8,Fausto
+-8,Favian
+-8,Felicisimo
+-8,Feliz
+ 8,Ferran
+-8,Fidelio
+-8,Filemon
+-8,Filomeno
+-8,Flavio
+-8,Floren
+-8,Florindo
+-8,Floro
+-8,Fortunato
+-8,Frances
+-8,Frantzisko
+-8,Fulgencio
+-8,Gabino
++8,Francisco
++8,Francesc
+ 8,Gaizka
+-8,Galo
+-8,Garikoitz
+ 8,Gaspar
+-8,Gaston
+-8,Gaudencio
+-8,Gavino
+-8,Gelasio
+-8,Genaro
+-8,Generoso
+-8,Geraldo
+-8,Gerson
+-8,Gervasio
+-8,Gil
+-8,Gilberto
+-8,Gines
+-8,Godofredo
+ 8,Gorka
+-8,Gotzon
+-8,Graciano
+-8,Graciliano
+-8,Gualberto
+ 8,Guillem
+-8,Guiomar
+-8,Gumersindo
+-8,Gurutz
++8,Guillermo
+ 8,Gustau
+-8,Haritz
+-8,Helio
+-8,Heliodoro
+-8,Heraclio
+ 8,Heredio
+-8,Heriberto
+-8,Hermenegildo
+-8,Hermindo
+-8,Herminio
+ 8,Hernán
+-8,Hernando
+-8,Hernesto
+-8,Higinio
+-8,Hipolito
+-8,Homero
+-8,Honorato
+-8,Honorio
+-8,Horacio
+-8,Hortensio
+-8,Huberto
+ 8,Hugo
+-8,Humberto
+-8,Ibai
+-8,Iban
+-8,Ibar
+-8,Ibo
+-8,Ibon
+ 8,Ignasi
+-8,Igon
+ 8,Iker
+-8,Ilazki
+-8,Ilidio
+-8,Ilídio
+-8,Iluminado
+ 8,Imanol
+-8,Imeldo
+ 8,Iñaki
+-8,Indalecio
+-8,Inocencio
+-8,Ion
+-8,Iratze
+-8,Isabelo
+ 8,Isaias
+-8,Isolino
+ 8,Jacobo
+ 8,Jairo
++8,Jaime
++8,Jan
+ 8,Jaume
+-8,Jenaro
+-8,Jeremías
++8,Javier
+ 8,Joaquim
+ 8,Joel
+ 8,Jokin
+-8,Jon
+ 8,Jordan
++8,José
+ 8,Joseba
+-8,Joselino
+ 8,Josu
+ 8,Josué
+-8,Jovito
+-8,Joxe
++8,Juan
+ 8,Juanito
+ 8,Julen
+ 8,Juli
+-8,Juliano
+-8,Justino
+-8,Juvenal
+ 8,Karlos
+-8,Karmel
+-8,Karmelo
+ 8,Kepa
+ 8,Kerman
+ 8,Kleber
+ 8,Koldo
+-8,Koldobika
+ 8,Lander
+-8,Laureano
+-8,Laurentino
+-8,Laurindo
+-8,Lazaro
+-8,Leocadio
++8,Lázaro
+ 8,León
+-8,Leoncio
+ 8,Leonel
+-8,Leontxo
+-8,Liborio
+-8,Licinio
+-8,Lidio
+-8,Liher
+-8,Liliano
+-8,Lilio
+-8,Lino
+-8,Lisardo
+-8,Livio
++8,Lionel
++8,Luis
+ 8,Lluis
+ 8,Lois
+-8,Longinos
+ 8,Lope
+-8,Loreno
++8,Luca
+ 8,Lucas
+-8,Lucidio
+-8,Lucilo
+-8,Ludivino
+-8,Macario
+-8,Magno
+ 8,Manel
+-8,Manoel
+-8,Manolito
+ 8,Manolo
+ 8,Manu
+ 8,Marc
+ 8,Marcel
+-8,Márcio
+ 8,Marco
+-8,Margarito
+-8,Marían
+-8,Marilo
+-8,Marin
+-8,Maritxu
+-8,Marti
+-8,Martiniano
+-8,Martirio
++8,Martí
++8,Martín
+ 8,Mateo
+ 8,Mateu
+-8,Mattin
+ 8,Mauricio
+ 8,Mauro
+-8,Maximiano
+-8,Maximiliano
+-8,Maximino
+ 8,Melchor
+ 8,Merino
+ 8,Mikel
+-8,Millan
+ 8,Miquel
+-8,Mirena
+-8,Mitxel
+ 8,Montxo
+ 8,Nacho
+-8,Narciso
+-8,Natalio
+ 8,Natanael
+-8,Nazario
+-8,Nector
+-8,Neftali
+ 8,Nelson
+-8,Nemesio
+-8,Nereo
+-8,Nestor
+-8,Nicandro
+-8,Nicanor
+-8,Nicasio
+-8,Niceto
+-8,Nicomedes
+-8,Norberto
++8,Néstor
+ 8,Nuno
+-8,Obdulio
+ 8,Octavi
+-8,Octavio
+-8,Ofelio
+ 8,Oier
+-8,Olallo
+-8,Olegario
+-8,Olimpio
+ 8,Oriol
+ 8,Orlando
+ 8,Osvaldo
+ 8,Oswaldo
+-8,Otilio
+-8,Ovidio
+ 8,Paco
+-8,Palmiro
+-8,Pantaleon
+-8,Pascasio
+-8,Pastor
+-8,Patrocinio
+ 8,Patxi
++8,Pablo
+ 8,Pau
+ 8,Paul
+-8,Pauli
+-8,Paulo
+-8,Peio
+-8,Pelayo
+-8,Peli
+ 8,Pepe
+ 8,Pere
+-8,Perfecto
+-8,Perpetuo
+-8,Petri
+-8,Petronilo
+-8,Pio
+-8,Plácido
+-8,Plinio
+-8,Policarpo
+-8,Polivio
++8,Pío
+ 8,Pompeu
+-8,Porfirio
+-8,Primitivo
+-8,Primo
+-8,Próspero
+-8,Prudencio
+ 8,Quique
+ 8,Rafa
+ 8,Rafel
+ 8,Raimon
+-8,Rainerio
+-8,Reginaldo
+-8,Régulo
+-8,Reinaldo
+-8,Remigio
+ 8,René
+ 8,Reynaldo
+ 8,Ricard
+-8,Rigoberto
+-8,Rito
++8,Ricardo
+ 8,Robert
++8,Roberto
+ 8,Rodolfo
+-8,Rogelio
+ 8,Roger
+-8,Rogerio
+-8,Rolando
+ 8,Roldán
+-8,Romel
+-8,Romualdo
+-8,Rómulo
+ 8,Ronaldo
+ 8,Roque
+-8,Rosalino
+ 8,Rosendo
+-8,Rosino
+ 8,Rubens
+ 8,Ruy
+ 8,Sabas
+-8,Sabin
+-8,Sabino
+-8,Salomón
+-8,Salvino
+ 8,Samuel
+ 8,Sancho
+-8,Sandalio
+ 8,Sandro
+-8,Saul
+-8,Saulo
+-8,Secundino
+-8,Senen
++8,Saúl
+ 8,Sergi
+-8,Sertorio
+-8,Servando
+-8,Servulo
++8,Sergio
+ 8,Seve
+-8,Severiano
+-8,Severino
+-8,Severo
+-8,Sigifredo
+-8,Silo
+-8,Silverio
+-8,Silvestre
+-8,Silvino
+ 8,Silvio
+-8,Simeon
+-8,Simon
+-8,Siro
+-8,Sixto
+-8,Sofronio
++8,Simón
+ 8,Tadeo
+-8,Taurino
+ 8,Telmo
+ 8,Teo
+-8,Teobaldo
+-8,Teodosio
+-8,Teodulo
+-8,Tercero
+-8,Tiburcio
+-8,Timoteo
+ 8,Tito
+-8,Toribio
+ 8,Tristán
+-8,Tulio
+-8,Txomin
+-8,Ugutz
++8,Txetxu
+ 8,Ulises
+ 8,Unai
+-8,Urbano
+ 8,Urko
+-8,Urtzi
+-8,Uxío
+-8,Valeriano
+-8,Valerio
+ 8,Vasco
+-8,Venancio
+-8,Vianor
+-8,Vicenc
+-8,Vicent
+-8,Victorino
+-8,Victorio
++8,Vicenç
++8,Vicente
++8,Víctor
+ 8,Vidal
+ 8,Vinicio
+-8,Virgilio
+-8,Virginio
+-8,Vitalino
+ 8,Vítor
+-8,Vitorio
+ 8,Vladimiro
+ 8,Walter
+-8,Wilfredo
+-8,Wladimiro
++8,Wilfred
+ 8,Xabi
+ 8,Xabier
+ 8,Xan
+-8,Xarles
+ 8,Xavi
+ 8,Xoan
+ 8,Xoaquin
+-8,Xulio
+-8,Zacarias
+-8,Zernin
+-8,Zigor
+ 9,Abel
+ 9,Achille
+ 9,Adama

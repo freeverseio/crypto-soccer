@@ -7,9 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/freeverseio/crypto-soccer/go/contracts/assets"
-	"github.com/freeverseio/crypto-soccer/go/contracts/market"
-	"github.com/freeverseio/crypto-soccer/go/contracts/updates"
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 )
 
 type AbstractEvent struct {
@@ -24,17 +22,12 @@ func NewAbstractEvent(blockNumber uint64, txIndex uint, name string, x interface
 }
 
 type EventScanner struct {
-	assets  *assets.Assets
-	updates *updates.Updates
-	market  *market.Market
-	Events  []*AbstractEvent
+	contracts *contracts.Contracts
+	Events    []*AbstractEvent
 }
 
-func NewEventScanner(assets *assets.Assets, updates *updates.Updates, market *market.Market) *EventScanner {
-	if assets != nil && updates != nil {
-		return &EventScanner{assets, updates, market, []*AbstractEvent{}}
-	}
-	return nil
+func NewEventScanner(contracts *contracts.Contracts) *EventScanner {
+	return &EventScanner{contracts, []*AbstractEvent{}}
 }
 
 type byFunction func(p1, p2 *AbstractEvent) bool
@@ -72,6 +65,9 @@ func (s *abstractEventSorter) Less(i, j int) bool {
 // updates.UpdatesActionsSubmission
 
 func (s *EventScanner) Process(opts *bind.FilterOpts) error {
+	if err := s.scanAssetsInit(opts); err != nil {
+		return err
+	}
 	if err := s.scanDivisionCreation(opts); err != nil {
 		return err
 	}
@@ -108,8 +104,21 @@ func (s *EventScanner) addEvent(rawEvent types.Log, name string, event interface
 	s.Events = append(s.Events, NewAbstractEvent(rawEvent.BlockNumber, rawEvent.Index, name, event))
 }
 
+func (s *EventScanner) scanAssetsInit(opts *bind.FilterOpts) error {
+	iter, err := s.contracts.Assets.FilterAssetsInit(opts)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		e := *(iter.Event)
+		log.Debugf("[scanner] scanAssetsInit")
+		s.addEvent(e.Raw, "AssetsInit", e)
+	}
+	return nil
+}
+
 func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
-	iter, err := s.assets.FilterDivisionCreation(opts)
+	iter, err := s.contracts.Assets.FilterDivisionCreation(opts)
 	if err != nil {
 		return err
 	}
@@ -122,7 +131,7 @@ func (s *EventScanner) scanDivisionCreation(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
-	iter, err := s.assets.FilterPlayerStateChange(opts)
+	iter, err := s.contracts.Assets.FilterPlayerStateChange(opts)
 	if err != nil {
 		return err
 	}
@@ -135,7 +144,7 @@ func (s *EventScanner) scanPlayerStateChange(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
-	iter, err := s.assets.FilterTeamTransfer(opts)
+	iter, err := s.contracts.Assets.FilterTeamTransfer(opts)
 	if err != nil {
 		return err
 	}
@@ -157,7 +166,7 @@ func (s *EventScanner) scanTeamTransfer(opts *bind.FilterOpts) error {
 //}
 
 func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
-	iter, err := s.market.FilterPlayerFreeze(opts)
+	iter, err := s.contracts.Market.FilterPlayerFreeze(opts)
 	if err != nil {
 		return err
 	}
@@ -170,7 +179,7 @@ func (s *EventScanner) scanPlayerFreeze(opts *bind.FilterOpts) error {
 }
 
 func (s *EventScanner) scanActionsSubmission(opts *bind.FilterOpts) error {
-	iter, err := s.updates.FilterActionsSubmission(opts)
+	iter, err := s.contracts.Updates.FilterActionsSubmission(opts)
 	if err != nil {
 		return err
 	}
