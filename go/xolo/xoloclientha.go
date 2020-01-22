@@ -96,8 +96,6 @@ func (s *XoloClientHA) SendTransaction(ctx context.Context, tx *types.Transactio
 	i := s.Rand(n)
 
 	for n > 0 {
-		fmt.Println("xoloclient-i->>>", i)
-
 		if s.available[i].Before(time.Now()) {
 			hash, err := s.XoloClients[i].SendTransaction(ctx, tx)
 			if err == nil {

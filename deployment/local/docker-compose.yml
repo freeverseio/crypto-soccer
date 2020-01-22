@@ -1,7 +1,7 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:dev
+    image: freeverseio/ethereum:devcontracts
     command: --nodiscover --mine
     ports: 
       - "8545:8545"
@@ -9,6 +9,15 @@ services:
       # - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
+  xolo:
+    build: 
+      context: ../../go/
+      dockerfile: Dockerfile.xolo
+    command: >
+      -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
+      -ethereum http://ethereum:8545
+    depends_on:
+      - ethereum
   universe.db:
     build: ../../universe.db/
     ports:
@@ -94,10 +103,11 @@ services:
     depends_on:
       - ethereum
       - ipfs.node
+      - xolo
     command: >
       -postgres postgres://freeverse:freeverse@relay.db:5432/relay?sslmode=disable  
-      -private_key "3b650bb692288ea5d4c99c2d3e1eb77972eaeebdb04f6b2610a7d7f42de0ad27" 
       -ethereum "http://ethereum:8545"
+      -xolo "http://xolo:8004"
       -updatesContractAddress "${UPDATES_CONTRACT_ADDRESS}" 
       -delay 10s
       -ipfs ipfs.node:5001

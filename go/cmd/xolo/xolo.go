@@ -1,52 +1,19 @@
 package main
 
 import (
+	"flag"
 	"net/http"
-	"os"
-	"strings"
-	"io/ioutil"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/fatih/color"
 	"github.com/freeverseio/crypto-soccer/go/xolo"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"github.com/urfave/cli"
 )
 
-type Config struct {
-	Rpc        struct {
-		URL string
-	}
-	Keystore struct {
-		Path   string
-		Passwd string
-	}
-}
-
-var C Config
-
-func init() {
-	cobra.OnInitialize(MustLoadConfig)
-}
-
-func MustLoadConfig() {
-
-	viper.SetConfigType("yaml")
-	viper.SetConfigName("xolo")
-	viper.AddConfigPath(".") // adding home directory as first search path
-
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-	err := viper.Unmarshal(&C)
-	if err != nil {
-		panic(err)
-	}
-}
+var ethereumClient *string
+var privateKeyHex *string
 
 func must(err error) {
 	if err != nil {
@@ -54,23 +21,17 @@ func must(err error) {
 	}
 }
 
-func serverStart(c *cli.Context) {
+func serverStart() {
 
-	MustLoadConfig()
-
-	rpclient, err := ethclient.Dial(C.Rpc.URL)
+	rpclient, err := ethclient.Dial(*ethereumClient)
 	if err != nil {
-		log.Fatalf("Failed to connect to RPC: %v %v", C.Rpc.URL, err)
+		log.Fatalf("Failed to connect to RPC: %v %v", *ethereumClient, err)
 	}
-	keystore, err := ioutil.ReadFile(C.Keystore.Path)
+	privateKey, err := crypto.HexToECDSA(*privateKeyHex)
 	if err != nil {
-		log.Fatalf("Unable to read key file '%v' %v", C.Keystore.Path, err)
+		log.Fatal("Unable to obtain privateKey")
 	}
-	signer, err := bind.NewTransactor(strings.NewReader(string(keystore)), C.Keystore.Passwd)
-	if err != nil {
-		log.Fatalf("Unable use key %v", err)
-	}
-
+	signer := bind.NewKeyedTransactor(privateKey)
 	xserver, err := xolo.NewServer(signer, rpclient)
 	if err != nil {
 		log.Fatalf("Cannot create server", err)
@@ -85,34 +46,9 @@ func serverStart(c *cli.Context) {
 	srv.ListenAndServe()
 }
 
-var ServerCommands = []cli.Command{
-	{
-		Name:  "server",
-		Usage: "manage server",
-		Subcommands: []cli.Command{
-			{
-				Name:   "start",
-				Usage:  "start the service",
-				Action: serverStart,
-			},
-		},
-	},
-}
-
 func main() {
-	app := cli.NewApp()
-	app.Description = "signer server"
-	app.Name = "Xoloitzcuintle"
-	app.Version = "0.0.1-alpha"
-	app.Flags = []cli.Flag{
-		cli.StringFlag{Name: "config"},
-	}
-
-	app.Commands = []cli.Command{}
-	app.Commands = append(app.Commands, ServerCommands...)
-	err := app.Run(os.Args)
-	if err != nil {
-		color.Red(err.Error())
-	}
-
+	privateKeyHex = flag.String("private_key", "3B878F7892FBBFA30C8AED1DF317C19B853685E707C2CF0EE1927DC516060A54", "private key")
+	ethereumClient = flag.String("ethereum", "http://localhost:8545", "ethereum node")
+	flag.Parse()
+	serverStart()
 }
