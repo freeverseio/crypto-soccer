@@ -1,6 +1,7 @@
 package engine_test
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"math/big"
 	"testing"
@@ -62,7 +63,6 @@ func TestPlay2ndHalfWithout1st(t *testing.T) {
 }
 
 func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	match, _ := engine.NewMatch(bc.Contracts)
 	err := match.Play1stHalf()
@@ -152,39 +152,32 @@ func TestPlay2ndHalf(t *testing.T) {
 	assert.Equal(t, m.VisitorTeam.Players[1].Skills().String(), "0")
 }
 
-func TestPlay1stHalf_goals(t *testing.T) {
+func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 	t.Parallel()
-	cases := []struct {
-		HomeAge             uint16
-		VisitorAge          uint16
-		HomeSkill           uint16
-		VisitorSkill        uint16
-		ExpectedHomeGoal    uint8
-		ExpectedVisitorGoal uint8
-	}{
-		{21, 30, 10, 50, 0, 3},
-		{30, 18, 1233, 2344, 0, 0},
-		{55, 18, 12, 2344, 0, 10},
+	cases := []struct{ Seed string }{
+		{"sdadfefe"},
+		{"pippo"},
+		{"4gfsg3564e5t"},
 	}
-	for i, tc := range cases {
-		tcName := fmt.Sprintf("%d", i)
-		t.Run(tcName, func(t *testing.T) {
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%+v", tc), func(t *testing.T) {
 			m, _ := engine.NewMatch(bc.Contracts)
-			m.Seed = [32]byte{0x1, 0x1f}
+			m.Seed = sha256.Sum256([]byte(tc.Seed))
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
 			m.VisitorTeam.TeamID = big.NewInt(int64(2))
 			for i := 0; i < 25; i++ {
-				m.HomeTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.HomeAge, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill, tc.HomeSkill)
-				m.VisitorTeam.Players[i] = engine.CreateDummyPlayer(t, bc.Contracts, tc.VisitorAge, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill, tc.VisitorSkill)
+				m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
+				m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
 			}
 			err := m.Play1stHalf()
 			assert.NilError(t, err)
-			assert.Equal(t, m.HomeGoals, tc.ExpectedHomeGoal)
-			assert.Equal(t, m.VisitorGoals, tc.ExpectedVisitorGoal)
 			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
 			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
-			golden.Assert(t, m.DumpState(), t.Name()+".golden")
+			err = m.Play2ndHalf()
+			assert.NilError(t, err)
+			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
+			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
 		})
 	}
 }
