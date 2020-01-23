@@ -46,6 +46,8 @@ type Match struct {
 	State           MatchState
 }
 
+type Matches []Match
+
 func (b Match) DumpState() string {
 	var state string
 	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
