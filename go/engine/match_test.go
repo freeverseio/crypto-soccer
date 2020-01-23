@@ -153,7 +153,6 @@ func TestPlay2ndHalf(t *testing.T) {
 }
 
 func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
-	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	cases := []struct{ Seed string }{
 		{"sdadfefe"},
@@ -171,12 +170,15 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 				m.HomeTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309339445376240739796176995438")
 				m.VisitorTeam.Players[i] = engine.NewPlayerFromSkills("16573429227295117480385309340654302060354425351701614")
 			}
+			golden.Assert(t, m.DumpState(), t.Name()+".starting.golden")
 			err := m.Play1stHalf()
 			assert.NilError(t, err)
+			golden.Assert(t, m.DumpState(), t.Name()+".half.golden")
 			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
 			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
 			err = m.Play2ndHalf()
 			assert.NilError(t, err)
+			golden.Assert(t, m.DumpState(), t.Name()+".ended.golden")
 			assert.Equal(t, m.HomeGoals, m.Events.HomeGoals())
 			assert.Equal(t, m.VisitorGoals, m.Events.VisitorGoals())
 		})

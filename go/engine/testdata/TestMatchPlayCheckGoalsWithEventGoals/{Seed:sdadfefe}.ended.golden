@@ -1,0 +1,93 @@
+Seed: [217 113 237 84 36 79 56 113 15 193 78 139 95 208 173 148 145 235 160 160 182 47 176 79 87 92 152 117 163 215 87 57]
+StartTime: 1570147200
+HomeTeam: TeamId: 1
+Players[0]: skills: 16573434936285888304224833572589254038720341707981934
+Players[1]: skills: 19964113025902812250617858151353443296690489336399258
+Players[2]: skills: 19964113025902812250617858151353443296690489336399258
+Players[3]: skills: 19964118734893583074457382384497321094671034867385754
+Players[4]: skills: 19964118734893583074457382384497321094671034867385754
+Players[5]: skills: 19964118734893583074457382384497321094671034867385754
+Players[6]: skills: 19964118734893583074457382384497321094671034867385754
+Players[7]: skills: 19964118734893583074457382384497321094671034867385754
+Players[8]: skills: 19964118734893583074457382384497321094671034867385754
+Players[9]: skills: 19964118734893583074457382384497321094671034867385754
+Players[10]: skills: 19964130152875124722136430850785076690632125929358746
+Players[11]: skills: 19964118734893583074457382384497321094671034867385754
+Players[12]: skills: 19964118734893583074457382384497321094671034867385754
+Players[13]: skills: 19964113025902812250617858151353443296690489336399258
+Players[14]: skills: 19964113025902812250617858151353443296690489336399258
+Players[15]: skills: 19964113025902812250617858151353443296690489336399258
+Players[16]: skills: 19964113025902812250617858151353443296690489336399258
+Players[17]: skills: 19964113025902812250617858151353443296690489336399258
+Players[18]: skills: 19964113025902812250617858151353443296690489336399258
+Players[19]: skills: 19964113025902812250617858151353443296690489336399258
+Players[20]: skills: 19964113025902812250617858151353443296690489336399258
+Players[21]: skills: 19964113025902812250617858151353443296690489336399258
+Players[22]: skills: 19964113025902812250617858151353443296690489336399258
+Players[23]: skills: 19964113025902812250617858151353443296690489336399258
+Players[24]: skills: 19964113025902812250617858151353443296690489336399258
+tactic: 340596594427581673436941882753025
+TrainingPoints: 23
+VisitorTeam: TeamId: 2
+Players[0]: skills: 16573434936285888304224833573798179858334970882688110
+Players[1]: skills: 19964113025902812250617858152562369116305118511105434
+Players[2]: skills: 19964113025902812250617858152562369116305118511105434
+Players[3]: skills: 19964118734893583074457382385706246914285664042091930
+Players[4]: skills: 19964118734893583074457382385706246914285664042091930
+Players[5]: skills: 19964118734893583074457382385706246914285664042091930
+Players[6]: skills: 19964118734893583074457382385706246914285664042091930
+Players[7]: skills: 19964118734893583074457382385706246914285664042091930
+Players[8]: skills: 19964118734893583074457382385706246914285664042091930
+Players[9]: skills: 19964118734893583074457382385706246914285664042091930
+Players[10]: skills: 19964130152875124722136430851994002510246755104064922
+Players[11]: skills: 19964118734893583074457382385706246914285664042091930
+Players[12]: skills: 19964118734893583074457382385706246914285664042091930
+Players[13]: skills: 19964113025902812250617858152562369116305118511105434
+Players[14]: skills: 19964113025902812250617858152562369116305118511105434
+Players[15]: skills: 19964113025902812250617858152562369116305118511105434
+Players[16]: skills: 19964113025902812250617858152562369116305118511105434
+Players[17]: skills: 19964113025902812250617858152562369116305118511105434
+Players[18]: skills: 19964113025902812250617858152562369116305118511105434
+Players[19]: skills: 19964113025902812250617858152562369116305118511105434
+Players[20]: skills: 19964113025902812250617858152562369116305118511105434
+Players[21]: skills: 19964113025902812250617858152562369116305118511105434
+Players[22]: skills: 19964113025902812250617858152562369116305118511105434
+Players[23]: skills: 19964113025902812250617858152562369116305118511105434
+Players[24]: skills: 19964113025902812250617858152562369116305118511105434
+tactic: 340596594427581673436941882753025
+TrainingPoints: 6
+HomeGoals: 4
+VisitorGoals: 1
+HomeMatchLog: 1270126589710522258182323394732234344281996953062426276584982961367525236
+VisitorMatchLog: 331489086547005583091196597462558882748412885136811569721184752494444689
+Events[0]: {Minute:3 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1}
+Events[1]: {Minute:4 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:4 SecondaryPlayer:-1}
+Events[2]: {Minute:9 Type:0 Team:0 ManagesToShoot:true IsGoal:true PrimaryPlayer:7 SecondaryPlayer:7}
+Events[3]: {Minute:14 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:6 SecondaryPlayer:-1}
+Events[4]: {Minute:19 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:7 SecondaryPlayer:-1}
+Events[5]: {Minute:20 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[6]: {Minute:25 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
+Events[7]: {Minute:30 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:1 SecondaryPlayer:-1}
+Events[8]: {Minute:35 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:4 SecondaryPlayer:-1}
+Events[9]: {Minute:36 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:5 SecondaryPlayer:-1}
+Events[10]: {Minute:40 Type:0 Team:1 ManagesToShoot:true IsGoal:true PrimaryPlayer:9 SecondaryPlayer:9}
+Events[11]: {Minute:47 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:2 SecondaryPlayer:-1}
+Events[12]: {Minute:39 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[13]: {Minute:1 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1}
+Events[14]: {Minute:39 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[15]: {Minute:1 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:10 SecondaryPlayer:-1}
+Events[16]: {Minute:48 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1}
+Events[17]: {Minute:49 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:4 SecondaryPlayer:-1}
+Events[18]: {Minute:54 Type:0 Team:0 ManagesToShoot:true IsGoal:true PrimaryPlayer:7 SecondaryPlayer:7}
+Events[19]: {Minute:59 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:6 SecondaryPlayer:-1}
+Events[20]: {Minute:64 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:7 SecondaryPlayer:-1}
+Events[21]: {Minute:65 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[22]: {Minute:70 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
+Events[23]: {Minute:75 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:1 SecondaryPlayer:-1}
+Events[24]: {Minute:80 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:4 SecondaryPlayer:-1}
+Events[25]: {Minute:81 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:5 SecondaryPlayer:-1}
+Events[26]: {Minute:85 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:3 SecondaryPlayer:-1}
+Events[27]: {Minute:92 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:2 SecondaryPlayer:-1}
+Events[28]: {Minute:80 Type:2 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+Events[29]: {Minute:80 Type:2 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:8 SecondaryPlayer:-1}
+State: Ended

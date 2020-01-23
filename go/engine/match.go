@@ -147,12 +147,10 @@ func (b *Match) Play2ndHalf() error {
 	if err != nil {
 		return err
 	}
-	goalsHome, goalsVisitor, err := b.getGoals(logs)
+	b.HomeGoals, b.VisitorGoals, err = b.getGoals(logs)
 	if err != nil {
 		return err
 	}
-	b.HomeGoals += goalsHome
-	b.VisitorGoals += goalsVisitor
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
 
