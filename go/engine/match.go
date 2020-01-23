@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/big"
 
@@ -47,7 +48,7 @@ type Match struct {
 
 func (b Match) DumpState() string {
 	var state string
-	state += fmt.Sprintf("Seed: %v\n", b.Seed)
+	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))
 	state += fmt.Sprintf("StartTime: %v\n", b.StartTime)
 	state += fmt.Sprintf("HomeTeam: %v\n", b.HomeTeam.DumpState())
 	state += fmt.Sprintf("VisitorTeam: %v\n", b.VisitorTeam.DumpState())
