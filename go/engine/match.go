@@ -81,7 +81,6 @@ func (b *Match) Play1stHalf() error {
 	if b.State != Starting {
 		return fmt.Errorf("Wrong state %v", b.State.String())
 	}
-
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
@@ -103,13 +102,10 @@ func (b *Match) Play1stHalf() error {
 	}
 	b.HomeMatchLog = matchLogs[0]
 	b.VisitorMatchLog = matchLogs[1]
-	goalsHome, goalsVisitor, err := b.getGoals(matchLogs)
+	b.HomeGoals, b.VisitorGoals, err = b.getGoals(matchLogs)
 	if err != nil {
 		return err
 	}
-	b.HomeGoals += goalsHome
-	b.VisitorGoals += goalsVisitor
-
 	if err = b.HomeTeam.Evolve(*b.contracts, b.HomeMatchLog, b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
@@ -127,7 +123,6 @@ func (b *Match) Play2ndHalf() error {
 	if b.State != Half {
 		return fmt.Errorf("Wrong state %v", b.State.String())
 	}
-
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
@@ -153,7 +148,6 @@ func (b *Match) Play2ndHalf() error {
 	}
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
-
 	if err = b.HomeTeam.Evolve(*b.contracts, logs[0], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
