@@ -2,6 +2,7 @@ package engine_test
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"testing"
@@ -154,15 +155,15 @@ func TestPlay2ndHalf(t *testing.T) {
 
 func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 	t.Parallel()
-	cases := []struct{ Seed string }{
-		{"sdadfefe"},
-		{"pippo"},
-		{"4gfsg3564e5t"},
+	cases := []struct{ Seed [32]byte }{
+		{sha256.Sum256([]byte("sdadfefe"))},
+		{sha256.Sum256([]byte("pippo"))},
+		{sha256.Sum256([]byte("4gfsg3564e5t"))},
 	}
 	for _, tc := range cases {
-		t.Run(fmt.Sprintf("%+v", tc), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%v", hex.EncodeToString(tc.Seed[:])), func(t *testing.T) {
 			m, _ := engine.NewMatch(bc.Contracts)
-			m.Seed = sha256.Sum256([]byte(tc.Seed))
+			m.Seed = tc.Seed
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
 			m.VisitorTeam.TeamID = big.NewInt(int64(2))
