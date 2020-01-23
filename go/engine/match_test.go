@@ -153,6 +153,7 @@ func TestPlay2ndHalf(t *testing.T) {
 }
 
 func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
+	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
 	cases := []struct{ Seed string }{
 		{"sdadfefe"},
