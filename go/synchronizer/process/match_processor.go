@@ -119,7 +119,7 @@ func (b *MatchProcessor) ProcessMatchEvents(
 	}
 	log.Debugf("Decoded tactics 0: %v", decodedTactics0)
 	log.Debugf("Decoded tactics 1: %v", decodedTactics1)
-	computedEvents, err := matchevents.GenerateMatchEvents(
+	computedEvents, err := matchevents.Generate(
 		matchSeed,
 		log0,
 		log1,
