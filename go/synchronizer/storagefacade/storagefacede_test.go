@@ -13,7 +13,11 @@ func TestNoStorageMatches(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	matches, err := storagefacade.NewMatchesByLeague(tx, 1, 0, 0, 0)
+	timezoneIdx := uint8(1)
+	countryIdx := uint32(0)
+	leagueIdx := uint32(0)
+	day := uint8(0)
+	matches, err := storagefacade.NewMatchesByLeague(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 0)
 }
