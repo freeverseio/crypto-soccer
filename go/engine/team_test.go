@@ -40,7 +40,7 @@ func TestSoftInjury(t *testing.T) {
 
 func TestTeamStateDefault(t *testing.T) {
 	t.Parallel()
-	team := engine.NewTeam(bc.Contracts)
+	team := engine.NewTeam()
 	states := team.Skills()
 	if len(states) != 25 {
 		t.Fatalf("Wrong states size %v", len(states))
@@ -55,7 +55,7 @@ func TestTeamStateDefault(t *testing.T) {
 
 func TestTeamSkills(t *testing.T) {
 	t.Parallel()
-	team := engine.NewTeam(bc.Contracts)
+	team := engine.NewTeam()
 	skills := team.Skills()
 	for _, skill := range skills {
 		assert.Equal(t, skill.String(), "0")

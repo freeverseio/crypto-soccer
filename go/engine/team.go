@@ -20,9 +20,7 @@ type Team struct {
 	TrainingPoints uint64
 }
 
-func NewTeam(
-	contracts *contracts.Contracts,
-) *Team {
+func NewTeam() *Team {
 	var team Team
 	team.TeamID = big.NewInt(0)
 	for i := range team.Players {

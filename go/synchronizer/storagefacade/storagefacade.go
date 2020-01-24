@@ -21,12 +21,12 @@ func NewMatchesByLeague(
 
 	var matches engine.Matches
 	for _, stoMatch := range stoMatches {
-		match := engine.NewMatch(bc.Contracts)
+		match := engine.NewMatch()
 		match.HomeTeam.TeamID = stoMatch.HomeTeamID
 		match.VisitorTeam.TeamID = stoMatch.VisitorTeamID
 		match.HomeMatchLog = stoMatch.HomeMatchLog
 		match.VisitorMatchLog = stoMatch.VisitorMatchLog
-		matches = append(matches, match)
+		matches = append(matches, *match)
 	}
 
 	return matches, nil

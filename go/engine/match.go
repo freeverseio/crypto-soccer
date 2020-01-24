@@ -33,7 +33,6 @@ func (b MatchState) String() string {
 }
 
 type Match struct {
-	contracts       *contracts.Contracts
 	Seed            [32]byte
 	StartTime       *big.Int
 	HomeTeam        *Team
@@ -63,30 +62,29 @@ func (b Match) DumpState() string {
 	return state
 }
 
-func NewMatch(contracts *contracts.Contracts) *Match {
+func NewMatch() *Match {
 	var mp Match
-	mp.contracts = contracts
 	mp.StartTime = big.NewInt(0)
-	mp.HomeTeam = NewTeam(contracts)
-	mp.VisitorTeam = NewTeam(contracts)
+	mp.HomeTeam = NewTeam()
+	mp.VisitorTeam = NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	mp.State = Starting
 	return &mp
 }
 
-func (b *Match) Play1stHalf() error {
+func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if b.State != Starting {
 		return fmt.Errorf("Wrong state %v", b.State.String())
 	}
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
-	matchSeed, err := b.generateMatchSeed()
+	matchSeed, err := b.generateMatchSeed(contracts)
 	if err != nil {
 		return err
 	}
-	matchLogs, err := b.contracts.Engine.PlayHalfMatch(
+	matchLogs, err := contracts.Engine.PlayHalfMatch(
 		&bind.CallOpts{},
 		matchSeed,
 		b.StartTime,
@@ -100,35 +98,35 @@ func (b *Match) Play1stHalf() error {
 	}
 	b.HomeMatchLog = matchLogs[0]
 	b.VisitorMatchLog = matchLogs[1]
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(matchLogs)
+	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, matchLogs)
 	if err != nil {
 		return err
 	}
-	if err = b.HomeTeam.Evolve(*b.contracts, b.HomeMatchLog, b.StartTime, is2ndHalf); err != nil {
+	if err = b.HomeTeam.Evolve(contracts, b.HomeMatchLog, b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	if err = b.VisitorTeam.Evolve(*b.contracts, b.VisitorMatchLog, b.StartTime, is2ndHalf); err != nil {
+	if err = b.VisitorTeam.Evolve(contracts, b.VisitorMatchLog, b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	if err = b.processMatchEvents(is2ndHalf); err != nil {
+	if err = b.processMatchEvents(contracts, is2ndHalf); err != nil {
 		return err
 	}
 	b.State = Half
 	return nil
 }
 
-func (b *Match) Play2ndHalf() error {
+func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if b.State != Half {
 		return fmt.Errorf("Wrong state %v", b.State.String())
 	}
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
-	matchSeed, err := b.generateMatchSeed()
+	matchSeed, err := b.generateMatchSeed(contracts)
 	if err != nil {
 		return err
 	}
-	logs, err := b.contracts.Evolution.Play2ndHalfAndEvolve(
+	logs, err := contracts.Evolution.Play2ndHalfAndEvolve(
 		&bind.CallOpts{},
 		matchSeed,
 		b.StartTime,
@@ -140,34 +138,34 @@ func (b *Match) Play2ndHalf() error {
 	if err != nil {
 		return err
 	}
-	b.HomeGoals, b.VisitorGoals, err = b.getGoals(logs)
+	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, logs)
 	if err != nil {
 		return err
 	}
 	b.HomeMatchLog = logs[0]
 	b.VisitorMatchLog = logs[1]
-	if err = b.HomeTeam.Evolve(*b.contracts, logs[0], b.StartTime, is2ndHalf); err != nil {
+	if err = b.HomeTeam.Evolve(contracts, logs[0], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	if err = b.VisitorTeam.Evolve(*b.contracts, logs[1], b.StartTime, is2ndHalf); err != nil {
+	if err = b.VisitorTeam.Evolve(contracts, logs[1], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	if err = b.processMatchEvents(is2ndHalf); err != nil {
+	if err = b.processMatchEvents(contracts, is2ndHalf); err != nil {
 		return err
 	}
 	b.State = Ended
 	return nil
 }
 
-func (b *Match) getGoals(logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8, err error) {
-	homeGoals, err = b.contracts.Evolution.GetNGoals(
+func (b *Match) getGoals(contracts contracts.Contracts, logs [2]*big.Int) (homeGoals uint8, VisitorGoals uint8, err error) {
+	homeGoals, err = contracts.Evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[0],
 	)
 	if err != nil {
 		return homeGoals, VisitorGoals, err
 	}
-	VisitorGoals, err = b.contracts.Evolution.GetNGoals(
+	VisitorGoals, err = contracts.Evolution.GetNGoals(
 		&bind.CallOpts{},
 		logs[1],
 	)
@@ -178,8 +176,8 @@ func (b *Match) Skills() [2][25]*big.Int {
 	return [2][25]*big.Int{b.HomeTeam.Skills(), b.VisitorTeam.Skills()}
 }
 
-func (b *Match) generateMatchSeed() (*big.Int, error) {
-	matchSeed, err := b.contracts.Engine.GenerateMatchSeed(&bind.CallOpts{}, b.Seed, b.HomeTeam.TeamID, b.VisitorTeam.TeamID)
+func (b *Match) generateMatchSeed(contracts contracts.Contracts) (*big.Int, error) {
+	matchSeed, err := contracts.Engine.GenerateMatchSeed(&bind.CallOpts{}, b.Seed, b.HomeTeam.TeamID, b.VisitorTeam.TeamID)
 	if err != nil {
 		return nil, err
 	}
@@ -188,14 +186,14 @@ func (b *Match) generateMatchSeed() (*big.Int, error) {
 	return z, nil
 }
 
-func (b *Match) processMatchEvents(is2ndHalf bool) error {
+func (b *Match) processMatchEvents(contracts contracts.Contracts, is2ndHalf bool) error {
 	isHomeStadium := true
 	isPlayoff := false
-	matchSeed, err := b.generateMatchSeed()
+	matchSeed, err := b.generateMatchSeed(contracts)
 	if err != nil {
 		return err
 	}
-	seedAndStartTimeAndEvents, err := b.contracts.Matchevents.PlayHalfMatch(
+	seedAndStartTimeAndEvents, err := contracts.Matchevents.PlayHalfMatch(
 		&bind.CallOpts{},
 		matchSeed,
 		b.StartTime,
@@ -209,21 +207,21 @@ func (b *Match) processMatchEvents(is2ndHalf bool) error {
 	}
 
 	events := seedAndStartTimeAndEvents[:]
-	log0, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
+	log0, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[0], is2ndHalf)
 	if err != nil {
 		return err
 	}
-	log1, err := b.contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
+	log1, err := contracts.Utilsmatchlog.FullDecodeMatchLog(&bind.CallOpts{}, seedAndStartTimeAndEvents[1], is2ndHalf)
 	if err != nil {
 		return err
 	}
 	log.Debugf("Full decoded match log 0: %v", log0)
 	log.Debugf("Full decoded match log 1: %v", log1)
-	decodedTactics0, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
+	decodedTactics0, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.HomeTeam.tactic)
 	if err != nil {
 		return err
 	}
-	decodedTactics1, err := b.contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
+	decodedTactics1, err := contracts.Assets.DecodeTactics(&bind.CallOpts{}, b.VisitorTeam.tactic)
 	if err != nil {
 		return err
 	}
