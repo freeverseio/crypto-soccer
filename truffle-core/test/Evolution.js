@@ -11,7 +11,6 @@ const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
-const MatchEvents = artifacts.require('MatchEvents');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
@@ -175,7 +174,7 @@ contract('Evolution', (accounts) => {
     beforeEach(async () => {
         evolution = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await MatchEvents.new().should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
@@ -366,7 +365,6 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
-    return
     
     it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
@@ -575,16 +573,17 @@ contract('Evolution', (accounts) => {
     });
 
     it('test that we can a 2nd half and include the evolution points too', async () => {
-        matchLog = await evolution.play2ndHalfAndEvolve(
+        matchLog = await play.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
-            [is2nd = true, isHomeStadium, isPlayoff]).should.be.fulfilled;
+            [is2nd = true, isHomeStadium, isPlayoff]
+        ).should.be.fulfilled;
 
-            matchLog[0].should.be.bignumber.equal('828212031530063714069492904776115492597195551273105492225696825706808722');
-            matchLog[1].should.be.bignumber.equal('993853943853037244967927045470764103456022166605194769473036213412693666');
+        matchLog[0].should.be.bignumber.equal('828212031530063714069492904776115492597195551273105492225696825706808722');
+        matchLog[1].should.be.bignumber.equal('993853943853037244967927045470764103456022166605194769473036213412693666');
 
-            expectedResult = [2, 2];
-            expectedPoints = [15, 18];
-            for (team = 0; team < 2; team++) {
+        expectedResult = [2, 2];
+        expectedPoints = [15, 18];
+        for (team = 0; team < 2; team++) {
             nGoals = await encodeLog.getNGoals(matchLog[team]);
             nGoals.toNumber().should.be.equal(expectedResult[team]);
             points = await encodeLog.getTrainingPoints(matchLog[team]).should.be.fulfilled;

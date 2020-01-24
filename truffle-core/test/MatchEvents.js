@@ -7,13 +7,13 @@ const truffleAssert = require('truffle-assertions');
 const logUtils = require('../utils/matchLogUtils.js');
 const debug = require('../utils/debugUtils.js');
 
-const MatchEvents = artifacts.require('MatchEvents');
+const Engine = artifacts.require('Engine');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const EncodingSkillsSetters = artifacts.require('EncodingSkillsSetters');
 
-contract('MatchEvents', (accounts) => {
+contract('Engine', (accounts) => {
     const UNDEF = undefined;
     const seed = web3.utils.toBN(web3.utils.keccak256("32123"));
     const substitutions = [6, 10, 0];
@@ -127,7 +127,7 @@ contract('MatchEvents', (accounts) => {
 
     beforeEach(async () => {
         encodingSet = await EncodingSkillsSetters.new().should.be.fulfilled;
-        engine = await MatchEvents.new().should.be.fulfilled;
+        engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         encodingLog = await EncodingMatchLog.new().should.be.fulfilled;

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./Evolution.sol";
-import "./MatchEvents.sol";
+import "./Engine.sol";
 
 contract PlayAndEvolve {
 
@@ -10,13 +10,13 @@ contract PlayAndEvolve {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
     Evolution private _evo;
-    MatchEvents private _engine;
+    Engine private _engine;
 
     function setEvolutionAddress(address addr) public {
         _evo = Evolution(addr);
     }
     function setEngine(address addr) public {
-        _engine = MatchEvents(addr);
+        _engine = Engine(addr);
     }
 
     function play2ndHalfAndEvolve(
