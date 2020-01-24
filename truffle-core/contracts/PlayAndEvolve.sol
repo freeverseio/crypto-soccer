@@ -1,20 +1,22 @@
 pragma solidity ^0.5.0;
 
 import "./Evolution.sol";
+import "./MatchEvents.sol";
 
 contract PlayAndEvolve {
 
     uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
+    uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
     Evolution private _evo;
-    Engine private _engine;
+    MatchEvents private _engine;
 
     function setEvolutionAddress(address addr) public {
         _evo = Evolution(addr);
     }
     function setEngine(address addr) public {
-        _engine = Engine(addr);
+        _engine = MatchEvents(addr);
     }
 
     function play2ndHalfAndEvolve(
@@ -28,10 +30,16 @@ contract PlayAndEvolve {
         public view returns(uint256[2] memory)
     {
         require(matchBools[IDX_IS_2ND_HALF], "play with evolution should only be called in 2nd half games");
-        return _evo.computeTrainingPoints(
-            _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools)
-        );
+        uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
+            _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
+
+        uint256[2] memory matchLogs;
+        matchLogs[0] =  matchLogsAndEvents[0];
+        matchLogs[1] =  matchLogsAndEvents[1];
+
+        return _evo.computeTrainingPoints(matchLogs);
     }
     
+    // seedAndStartTimeAndEvents => logAnd... (in other code)
 }
 

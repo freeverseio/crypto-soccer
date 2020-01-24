@@ -11,6 +11,7 @@ const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
+const MatchEvents = artifacts.require('MatchEvents');
 const EnginePreComp = artifacts.require('EnginePreComp');
 const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
@@ -174,7 +175,7 @@ contract('Evolution', (accounts) => {
     beforeEach(async () => {
         evolution = await Evolution.new().should.be.fulfilled;
         play = await PlayAndEvolve.new().should.be.fulfilled;
-        engine = await Engine.new().should.be.fulfilled;
+        engine = await MatchEvents.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
         encodeLog = await EncodingMatchLog.new().should.be.fulfilled;
@@ -225,7 +226,6 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
     
-    return
     
     it('evolution leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(
@@ -366,6 +366,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(newShoot, expectedNewShoot, toNum = true, verbose = false);
         debug.compareArrays(initShoot, expectedInitShoot, toNum = true, verbose = false);
     });
+    return
     
     it('getTeamEvolvedSkills with realistic team and non-zero TPs', async () => {
         teamState = createHardcodedTeam();
