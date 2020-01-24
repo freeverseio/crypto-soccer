@@ -12,6 +12,7 @@ const Assets = artifacts.require('Assets');
 const EncodingMatchLog = artifacts.require('EncodingMatchLog');
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
+const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
 contract('Evolution', (accounts) => {
     const substitutions = [6, 10, 0];
@@ -173,6 +174,7 @@ contract('Evolution', (accounts) => {
     
     beforeEach(async () => {
         evolution = await Evolution.new().should.be.fulfilled;
+        play = await PlayAndEvolve.new().should.be.fulfilled;
         engine = await Engine.new().should.be.fulfilled;
         assets = await Assets.new().should.be.fulfilled;
         await assets.init().should.be.fulfilled;
@@ -181,6 +183,8 @@ contract('Evolution', (accounts) => {
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
         await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
         await evolution.setEngine(engine.address).should.be.fulfilled;
+        await play.setEvolutionAddress(evolution.address).should.be.fulfilled;
+        
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
             extraAttackNull, tacticId442).should.be.fulfilled;
         tactics1 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
@@ -221,6 +225,8 @@ contract('Evolution', (accounts) => {
         newSkills = await evolution.getTeamEvolvedSkills(teamStateAll50Half2, assignment = 0, matchStartTime);
         debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
     });
+    
+    return
     
     it('evolution leading to an actual son', async () => {
         playerSkills = await engine.encodePlayerSkills(

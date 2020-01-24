@@ -10,6 +10,7 @@ const Shop = artifacts.require('Shop');
 const Privileged = artifacts.require('Privileged');
 const MatchEvents = artifacts.require('MatchEvents');
 const UtilsMatchLog = artifacts.require('UtilsMatchLog');
+const PlayAndEvolve = artifacts.require('PlayAndEvolve');
 
 
 require('chai')
@@ -30,6 +31,7 @@ module.exports = function (deployer) {
     const shop = await deployer.deploy(Shop).should.be.fulfilled;
     const privileged = await deployer.deploy(Privileged).should.be.fulfilled;
     const utilsMatchLog = await deployer.deploy(UtilsMatchLog).should.be.fulfilled;
+    const playAndEvolve = await deployer.deploy(PlayAndEvolve).should.be.fulfilled;
     
     console.log("Setting up ...");
     await leagues.setEngineAdress(engine.address).should.be.fulfilled;
@@ -41,6 +43,7 @@ module.exports = function (deployer) {
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await matchEvents.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
+    await playAndEvolve.setEvolutionAddress(evolution.address);
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");
