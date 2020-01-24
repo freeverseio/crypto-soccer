@@ -1,9 +1,10 @@
-package storage
+package storagefacade
 
 import (
 	"database/sql"
 
 	"github.com/freeverseio/crypto-soccer/go/engine"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 func NewMatchesByLeague(
@@ -13,7 +14,7 @@ func NewMatchesByLeague(
 	leagueIdx uint32,
 	day uint8,
 ) (engine.Matches, error) {
-	stoMatches, err := MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	stoMatches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	if err != nil {
 		return nil, err
 	}
