@@ -24,8 +24,6 @@ type Match struct {
 	Events          matchevents.MatchEvents
 }
 
-type Matches []Match
-
 func (b Match) DumpState() string {
 	var state string
 	state += fmt.Sprintf("Seed: %v\n", hex.EncodeToString(b.Seed[:]))

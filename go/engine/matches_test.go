@@ -1,12 +1,12 @@
-package storagefacade_test
+package engine_test
 
 import (
 	"database/sql"
 	"math/big"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storagefacade"
 	"gotest.tools/assert"
 )
 
@@ -20,7 +20,7 @@ func TestNewMatchByLeagueWithNoMatches(t *testing.T) {
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	day := uint8(0)
-	matches, err := storagefacade.NewMatchesByLeague(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	matches, err := engine.Load(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 0)
 }
@@ -36,7 +36,7 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	day := uint8(0)
-	matches, err := storagefacade.NewMatchesByLeague(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	matches, err := engine.Load(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 8)
 	match := matches[0]
@@ -49,6 +49,10 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	assert.Equal(t, match.HomeTeam.Players[0].Skills().String(), "123456")
 	assert.Equal(t, match.VisitorTeam.Players[0].Skills().String(), "123456")
 	assert.Equal(t, len(match.Events), 0)
+}
+
+func TestMatchToStorage(t *testing.T) {
+
 }
 
 func createMatches(t *testing.T, tx *sql.Tx) {
