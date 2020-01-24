@@ -29,6 +29,7 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	}
 	defer tx.Rollback()
 	storagefacade.CreateMatch(t, tx)
+	storagefacade.CreateMatch(t, tx)
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
