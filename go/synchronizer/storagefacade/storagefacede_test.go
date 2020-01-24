@@ -48,6 +48,7 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	assert.Equal(t, match.VisitorGoals, uint8(0))
 	assert.Equal(t, match.HomeTeam.Players[0].Skills().String(), "123456")
 	assert.Equal(t, match.VisitorTeam.Players[0].Skills().String(), "123456")
+	assert.Equal(t, len(match.Events), 0)
 }
 
 func createMatches(t *testing.T, tx *sql.Tx) {
