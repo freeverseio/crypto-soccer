@@ -22,6 +22,15 @@ type Match struct {
 	VisitorMatchLog *big.Int
 }
 
+func NewMatch() *Match {
+	return &Match{
+		HomeTeamID:      big.NewInt(0),
+		VisitorTeamID:   big.NewInt(0),
+		HomeMatchLog:    big.NewInt(0),
+		VisitorMatchLog: big.NewInt(0),
+	}
+}
+
 func (b *Match) Insert(tx *sql.Tx) error {
 	log.Debugf("[DBMS] Create Match Day %v", b)
 	_, err := tx.Exec("INSERT INTO matches (timezone_idx, country_idx, league_idx, match_day_idx, match_idx, home_team_id, visitor_team_id, home_match_log, visitor_match_log) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);",
