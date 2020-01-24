@@ -29,16 +29,24 @@ import (
 
 var (
 	metricsOpsSuccess = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "authproxy_success",
+		Name: "authproxy_ops_success",
 		Help: "The total number of processed events",
 	})
 	metricsOpsFailed = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "authproxy_failed",
+		Name: "authproxy_ops_failed",
 		Help: "The total number of failed events",
 	})
 	metricsOpsDropped = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "authproxy_dropped",
+		Name: "authproxy_ops_dropped",
 		Help: "The total number of droped events",
+	})
+	metricsCacheHits = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "authproxy_cache_hits",
+		Help: "The total number of cache hits",
+	})
+	metricsCacheMisses = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "authproxy_cache_misses",
+		Help: "The total number of cache misses",
 	})
 )
 
@@ -105,38 +113,44 @@ func checkPermissions(ctx context.Context, addr common.Address) (bool, error) {
 	return ok, nil
 }
 
-func checkAuthorization(ctx context.Context, r *http.Request) (bool, error) {
+func checkAuthorization(ctx context.Context, r *http.Request) (string, error) {
 
 	// check if token is well formed
 	auth := strings.TrimSpace(r.Header.Get("Authorization"))
 	if !strings.HasPrefix(auth, "Bearer") {
-		return false, errors.New("No authorization bearer")
+		return "", errors.New("No authorization bearer")
 	}
 	token := strings.TrimSpace(auth[len("Bearer"):])
 
 	// if backdoor is activated, check if is the godmode token
 	if *backdoor && token == godtoken {
-		return true, nil
+		return godtoken, nil
 	}
 
 	// check if token is cached
-	if _, ok := cache.Get(token); ok {
-		log.Info("cached!")
-		return true, nil
+	if addrHex, ok := cache.Get(token); ok {
+		metricsCacheHits.Inc()
+		return addrHex.(string), nil
 	}
 
 	// verify token
 	addr, _, err := authproxy.VerifyToken(token, time.Duration(*gracetime)*time.Second)
 	if err != nil {
-		return false, err
+		return "", err
 	}
-	ok, err := checkPermissions(ctx, addr)
 
-	// add to cache
-	if ok && err == nil {
-		cache.Set(token, true, gocache.DefaultExpiration)
+	ok, err := checkPermissions(ctx, addr)
+	if err != nil {
+		return "", err
 	}
-	return ok, err
+	if !ok {
+		return "", errors.New("User does not has pesmissions")
+	}
+
+	// add to cache & return
+	metricsCacheMisses.Inc()
+	cache.Set(token, addr.Hex(), gocache.DefaultExpiration)
+	return addr.Hex(), nil
 }
 
 func gqlproxy(w http.ResponseWriter, r *http.Request) {
@@ -156,8 +170,8 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// check if this request can be done
-	ok, err := checkAuthorization(ctx, r)
-	if err != nil || !ok {
+	addr, err := checkAuthorization(ctx, r)
+	if err != nil {
 		metricsOpsFailed.Inc()
 		log.Error("[", op, "]", err)
 		http.Error(w, fmt.Sprintf("Invalid authorization token [%v]", op), http.StatusUnauthorized)
@@ -186,6 +200,9 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "AuthProxy")
+	req.Header.Set("X-AuthProxy-Address", addr)
+
 	client := &http.Client{}
 	resp, err := client.Do(req.WithContext(ctx))
 	if err != nil {
@@ -209,6 +226,7 @@ func gqlproxy(w http.ResponseWriter, r *http.Request) {
 		response = resp.Body
 	}
 
+	// send back the reponse
 	if _, err := io.Copy(w, response); err != nil {
 		fail(err)
 		return
@@ -325,5 +343,5 @@ func main() {
 
 /*
 curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer joshua" --data '{"query":"{allTeams (condition: {owner: \"0x83A909262608c650BD9b0ae06E29D90D0F67aC5e\"}){totalCount}}"}'  `, *serviceurl
-ab -n 1000 -c 100 -p data.json -H "Authorization: Bearer joshua"`, *serviceurl
+ab -n 1000 -c 100 -p data.json -H "Authorization: Bearer joshua"
 */
