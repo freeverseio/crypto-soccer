@@ -39,7 +39,7 @@ module.exports = function (deployer) {
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     await updates.initUpdates(assets.address).should.be.fulfilled;
     await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
-    await evolution.setEngine(engine.address).should.be.fulfilled;
+    await playAndEvolve.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await matchEvents.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");

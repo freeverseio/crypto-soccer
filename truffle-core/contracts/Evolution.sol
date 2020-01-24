@@ -13,7 +13,6 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
-    uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 constant public N_SKILLS = 5;
     uint8 constant public SK_SHO = 0;
     uint8 constant public SK_SPE = 1;
@@ -22,31 +21,9 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     uint8 constant public SK_END = 4;
 
     Assets private _assets;
-    Engine private _engine;
 
     function setAssetsAddress(address addr) public {
         _assets = Assets(addr);
-    }
-
-    function setEngine(address addr) public {
-        _engine = Engine(addr);
-    }
-
-    // function to call on 2nd half when we want to the matchlog to include the evolution points too.
-    function play2ndHalfAndEvolve(
-        uint256 seed,
-        uint256 matchStartTime,
-        uint256[PLAYERS_PER_TEAM_MAX][2] memory states,
-        uint256[2] memory tactics,
-        uint256[2] memory matchLog,
-        bool[3] memory matchBools // [is2ndHalf, isHomeStadium, isPlayoff]
-    )
-        public view returns(uint256[2] memory)
-    {
-        require(matchBools[IDX_IS_2ND_HALF], "play with evolution should only be called in 2nd half games");
-        return computeTrainingPoints(
-            _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools)
-        );
     }
 
     function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)

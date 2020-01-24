@@ -170,7 +170,6 @@ contract('Evolution', (accounts) => {
             '14603326808435843856365497638008216685947959514366883'
         ];
     };
-
     
     beforeEach(async () => {
         evolution = await Evolution.new().should.be.fulfilled;
@@ -182,7 +181,7 @@ contract('Evolution', (accounts) => {
         precomp = await EnginePreComp.new().should.be.fulfilled;
         await engine.setPreCompAddr(precomp.address).should.be.fulfilled;
         await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
-        await evolution.setEngine(engine.address).should.be.fulfilled;
+        await play.setEngine(engine.address).should.be.fulfilled;
         await play.setEvolutionAddress(evolution.address).should.be.fulfilled;
         
         tactics0 = await engine.encodeTactics(substitutions, subsRounds, setNoSubstInLineUp(lineupConsecutive, substitutions), 
