@@ -63,21 +63,16 @@ func (b Match) DumpState() string {
 	return state
 }
 
-func NewMatch(contracts *contracts.Contracts) (*Match, error) {
-	var err error
+func NewMatch(contracts *contracts.Contracts) *Match {
 	var mp Match
 	mp.contracts = contracts
 	mp.StartTime = big.NewInt(0)
-	if mp.HomeTeam, err = NewTeam(contracts); err != nil {
-		return nil, err
-	}
-	if mp.VisitorTeam, err = NewTeam(contracts); err != nil {
-		return nil, err
-	}
+	mp.HomeTeam = NewTeam(contracts)
+	mp.VisitorTeam = NewTeam(contracts)
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	mp.State = Starting
-	return &mp, nil
+	return &mp
 }
 
 func (b *Match) Play1stHalf() error {

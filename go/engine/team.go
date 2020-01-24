@@ -22,17 +22,14 @@ type Team struct {
 
 func NewTeam(
 	contracts *contracts.Contracts,
-) (*Team, error) {
+) *Team {
 	var team Team
 	team.TeamID = big.NewInt(0)
 	for i := range team.Players {
 		team.Players[i] = NewNullPlayer()
 	}
-	var err error
-	if team.tactic, err = DefaultTactic(contracts); err != nil {
-		return nil, err
-	}
-	return &team, nil
+	team.tactic = DefaultTactic()
+	return &team
 }
 
 func (b Team) DumpState() string {
@@ -54,24 +51,9 @@ func (b Team) Skills() [25]*big.Int {
 	return skills
 }
 
-func DefaultTactic(contracts *contracts.Contracts) (*big.Int, error) {
-	substitutions := [3]uint8{11, 11, 11}
-	substitutionsMinute := [3]uint8{2, 3, 4}
-	formation := [14]uint8{0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 25, 25, 25}
-	extraAttack := [10]bool{false, false, false, false, false, false, false, false, false, false}
-	tacticID := uint8(1)
-	tactic, err := contracts.Engine.EncodeTactics(
-		&bind.CallOpts{},
-		substitutions,
-		substitutionsMinute,
-		formation,
-		extraAttack,
-		tacticID,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return tactic, nil
+func DefaultTactic() *big.Int {
+	tactic, _ := new(big.Int).SetString("340596594427581673436941882753025", 10)
+	return tactic
 }
 
 func (b *Team) Evolve(

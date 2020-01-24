@@ -14,20 +14,18 @@ import (
 
 func TestDefaultMatch(t *testing.T) {
 	t.Parallel()
-	match, err := engine.NewMatch(bc.Contracts)
-	assert.NilError(t, err)
+	match := engine.NewMatch(bc.Contracts)
 	golden.Assert(t, match.DumpState(), t.Name()+".golden")
 }
 func TestDefaultValues(t *testing.T) {
 	t.Parallel()
-	engine, err := engine.NewMatch(bc.Contracts)
-	assert.NilError(t, err)
+	engine := engine.NewMatch(bc.Contracts)
 	assert.Assert(t, engine != nil, "engine is nil")
 }
 
 func TestMatchState(t *testing.T) {
 	t.Parallel()
-	m, _ := engine.NewMatch(bc.Contracts)
+	m := engine.NewMatch(bc.Contracts)
 	m.Seed = [32]byte{0x2, 0x1}
 	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = big.NewInt(int64(1))
@@ -49,7 +47,7 @@ func TestMatchState(t *testing.T) {
 
 func TestPlay1stHalfTwice(t *testing.T) {
 	t.Parallel()
-	match, _ := engine.NewMatch(bc.Contracts)
+	match := engine.NewMatch(bc.Contracts)
 	err := match.Play1stHalf()
 	assert.NilError(t, err)
 	err = match.Play1stHalf()
@@ -58,14 +56,14 @@ func TestPlay1stHalfTwice(t *testing.T) {
 
 func TestPlay2ndHalfWithout1st(t *testing.T) {
 	t.Parallel()
-	m, _ := engine.NewMatch(bc.Contracts)
+	m := engine.NewMatch(bc.Contracts)
 	err := m.Play2ndHalf()
 	assert.Error(t, err, "Wrong state Starting")
 }
 
 func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 	t.Parallel()
-	match, _ := engine.NewMatch(bc.Contracts)
+	match := engine.NewMatch(bc.Contracts)
 	err := match.Play1stHalf()
 	assert.NilError(t, err)
 	assert.Equal(t, match.HomeGoals, uint8(0))
@@ -78,7 +76,7 @@ func TestPlay1stHalfWithEmptyTeam(t *testing.T) {
 func TestPlay2ndHalfWithEmptyTeam(t *testing.T) {
 	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
-	engine, _ := engine.NewMatch(bc.Contracts)
+	engine := engine.NewMatch(bc.Contracts)
 	err := engine.Play2ndHalf()
 	assert.NilError(t, err)
 	assert.Equal(t, engine.HomeGoals, uint8(0))
@@ -92,7 +90,7 @@ func TestPlayGameStress(t *testing.T) {
 	t.Parallel()
 	for i := 0; i < 100; i++ {
 		t.Run(fmt.Sprintf("age%v", i), func(t *testing.T) {
-			m, _ := engine.NewMatch(bc.Contracts)
+			m := engine.NewMatch(bc.Contracts)
 			m.Seed = [32]byte{0x2, 0x1}
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
@@ -115,7 +113,7 @@ func TestPlayGameStress(t *testing.T) {
 
 func TestPlayGame(t *testing.T) {
 	t.Parallel()
-	m, _ := engine.NewMatch(bc.Contracts)
+	m := engine.NewMatch(bc.Contracts)
 	m.Seed = [32]byte{0x2, 0x1}
 	m.StartTime = big.NewInt(1570147200)
 	m.HomeTeam.TeamID = big.NewInt(int64(1))
@@ -136,7 +134,7 @@ func TestPlayGame(t *testing.T) {
 func TestPlay2ndHalf(t *testing.T) {
 	t.Skip("TODO: *************************  REACTIVE ***************************")
 	t.Parallel()
-	m, _ := engine.NewMatch(bc.Contracts)
+	m := engine.NewMatch(bc.Contracts)
 	homePlayer := engine.NewPlayerFromSkills("146156532686539503615416807207209880594713965887498")
 	visitorPlayer := engine.NewPlayerFromSkills("730757187618900670896890173308251570218123297685554")
 	m.HomeTeam.Players[0] = homePlayer
@@ -162,7 +160,7 @@ func TestMatchPlayCheckGoalsWithEventGoals(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("%v", hex.EncodeToString(tc.Seed[:])), func(t *testing.T) {
-			m, _ := engine.NewMatch(bc.Contracts)
+			m := engine.NewMatch(bc.Contracts)
 			m.Seed = tc.Seed
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = big.NewInt(int64(1))
@@ -203,7 +201,7 @@ func TestPlay2ndHalf_goals(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(fmt.Sprintf("HAge:%v VAge:%v HSkill:%v VSkills:%v HGoals:%v VGoals:%v", tc.HomeAge, tc.VisitorAge, tc.HomeSkill, tc.VisitorSkill, tc.ExpectedHomeGoal, tc.ExpectedVisitorGoal), func(t *testing.T) {
-			m, _ := engine.NewMatch(bc.Contracts)
+			m := engine.NewMatch(bc.Contracts)
 			m.Seed = [32]byte{0x1, 0x1f}
 			m.StartTime = big.NewInt(1570147200)
 			m.HomeTeam.TeamID = big.NewInt(int64(1))

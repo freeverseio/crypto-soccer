@@ -21,7 +21,7 @@ func NewMatchesByLeague(
 
 	var matches engine.Matches
 	for _, stoMatch := range stoMatches {
-		var match engine.Match
+		match := engine.NewMatch(bc.Contracts)
 		match.HomeTeam.TeamID = stoMatch.HomeTeamID
 		match.VisitorTeam.TeamID = stoMatch.VisitorTeamID
 		match.HomeMatchLog = stoMatch.HomeMatchLog
