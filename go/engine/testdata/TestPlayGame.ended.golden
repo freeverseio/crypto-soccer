@@ -88,4 +88,3 @@ Events[24]: {Minute:86 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPl
 Events[25]: {Minute:91 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:6 SecondaryPlayer:-1}
 Events[26]: {Minute:86 Type:2 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
 Events[27]: {Minute:86 Type:2 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
-State: Ended

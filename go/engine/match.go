@@ -12,26 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type MatchState int
-
-const (
-	Starting MatchState = iota + 1
-	Half
-	Ended
-)
-
-func (b MatchState) String() string {
-	names := [...]string{
-		"Starting",
-		"Half",
-		"Ended",
-	}
-	if b < Starting || b > Ended {
-		return "Unknown"
-	}
-	return names[b-1]
-}
-
 type Match struct {
 	Seed            [32]byte
 	StartTime       *big.Int
@@ -42,7 +22,6 @@ type Match struct {
 	HomeMatchLog    *big.Int
 	VisitorMatchLog *big.Int
 	Events          matchevents.MatchEvents
-	State           MatchState
 }
 
 type Matches []Match
@@ -58,7 +37,6 @@ func (b Match) DumpState() string {
 	state += fmt.Sprintf("HomeMatchLog: %v\n", b.HomeMatchLog)
 	state += fmt.Sprintf("VisitorMatchLog: %v\n", b.VisitorMatchLog)
 	state += b.Events.DumpState()
-	state += fmt.Sprintf("State: %v\n", b.State.String())
 	return state
 }
 
@@ -69,14 +47,10 @@ func NewMatch() *Match {
 	mp.VisitorTeam = NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
-	mp.State = Starting
 	return &mp
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
-	if b.State != Starting {
-		return fmt.Errorf("Wrong state %v", b.State.String())
-	}
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := false
@@ -111,14 +85,10 @@ func (b *Match) Play1stHalf(contracts contracts.Contracts) error {
 	if err = b.processMatchEvents(contracts, is2ndHalf); err != nil {
 		return err
 	}
-	b.State = Half
 	return nil
 }
 
 func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
-	if b.State != Half {
-		return fmt.Errorf("Wrong state %v", b.State.String())
-	}
 	isHomeStadium := true
 	isPlayoff := false
 	is2ndHalf := true
@@ -138,6 +108,9 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err != nil {
 		return err
 	}
+	if err = b.processMatchEvents(contracts, is2ndHalf); err != nil {
+		return err
+	}
 	b.HomeGoals, b.VisitorGoals, err = b.getGoals(contracts, logs)
 	if err != nil {
 		return err
@@ -150,10 +123,6 @@ func (b *Match) Play2ndHalf(contracts contracts.Contracts) error {
 	if err = b.VisitorTeam.Evolve(contracts, logs[1], b.StartTime, is2ndHalf); err != nil {
 		return err
 	}
-	if err = b.processMatchEvents(contracts, is2ndHalf); err != nil {
-		return err
-	}
-	b.State = Ended
 	return nil
 }
 

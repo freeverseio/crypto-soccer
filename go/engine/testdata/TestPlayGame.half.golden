@@ -74,4 +74,3 @@ Events[10]: {Minute:41 Type:0 Team:1 ManagesToShoot:false IsGoal:false PrimaryPl
 Events[11]: {Minute:46 Type:0 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:6 SecondaryPlayer:-1}
 Events[12]: {Minute:4 Type:1 Team:0 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
 Events[13]: {Minute:4 Type:1 Team:1 ManagesToShoot:false IsGoal:false PrimaryPlayer:9 SecondaryPlayer:-1}
-State: Half
