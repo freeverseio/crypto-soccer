@@ -39,6 +39,11 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	matches, err := storagefacade.NewMatchesByLeague(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 8)
+	match := matches[0]
+	assert.Equal(t, match.HomeTeam.TeamID.String(), "10")
+	assert.Equal(t, match.VisitorTeam.TeamID.String(), "10")
+	assert.Equal(t, match.HomeMatchLog.String(), "12")
+	assert.Equal(t, match.VisitorMatchLog.String(), "13")
 }
 
 func createMatches(t *testing.T, tx *sql.Tx) {
@@ -70,13 +75,15 @@ func createMatches(t *testing.T, tx *sql.Tx) {
 		matchDayIdx := uint8(0)
 		matchIdx := uint8(i)
 		match := storage.Match{
-			TimezoneIdx:   timezoneIdx,
-			CountryIdx:    countryIdx,
-			LeagueIdx:     leagueIdx,
-			MatchDayIdx:   matchDayIdx,
-			MatchIdx:      matchIdx,
-			HomeTeamID:    big.NewInt(10),
-			VisitorTeamID: big.NewInt(10),
+			TimezoneIdx:     timezoneIdx,
+			CountryIdx:      countryIdx,
+			LeagueIdx:       leagueIdx,
+			MatchDayIdx:     matchDayIdx,
+			MatchIdx:        matchIdx,
+			HomeTeamID:      big.NewInt(10),
+			VisitorTeamID:   big.NewInt(10),
+			HomeMatchLog:    big.NewInt(12),
+			VisitorMatchLog: big.NewInt(13),
 		}
 		err = match.Insert(tx)
 		assert.NilError(t, err)

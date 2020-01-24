@@ -5,6 +5,7 @@ import (
 
 	"github.com/freeverseio/crypto-soccer/go/engine"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	"github.com/prometheus/common/log"
 )
 
 func NewMatchesByLeague(
@@ -20,8 +21,10 @@ func NewMatchesByLeague(
 	}
 
 	var matches engine.Matches
-	for _, stoMatch := range stoMatches {
+	for i := range stoMatches {
+		stoMatch := stoMatches[i]
 		match := engine.NewMatch()
+		log.Info(stoMatch)
 		match.HomeTeam.TeamID = stoMatch.HomeTeamID
 		match.VisitorTeam.TeamID = stoMatch.VisitorTeamID
 		match.HomeMatchLog = stoMatch.HomeMatchLog
