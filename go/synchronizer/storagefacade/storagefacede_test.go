@@ -1,8 +1,11 @@
 package storagefacade_test
 
 import (
+	"database/sql"
+	"math/big"
 	"testing"
 
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storagefacade"
 	"gotest.tools/assert"
 )
@@ -28,13 +31,54 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tx.Rollback()
-	storagefacade.CreateMatch(t, tx)
-	storagefacade.CreateMatch(t, tx)
+	createMatches(t, tx)
 	timezoneIdx := uint8(1)
 	countryIdx := uint32(0)
 	leagueIdx := uint32(0)
 	day := uint8(0)
 	matches, err := storagefacade.NewMatchesByLeague(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	assert.NilError(t, err)
-	assert.Equal(t, len(matches), 1)
+	assert.Equal(t, len(matches), 8)
+}
+
+func createMatches(t *testing.T, tx *sql.Tx) {
+	timezoneIdx := uint8(1)
+	timezone := storage.Timezone{timezoneIdx}
+	err := timezone.Insert(tx)
+	assert.NilError(t, err)
+
+	countryIdx := uint32(0)
+	country := storage.Country{timezone.TimezoneIdx, countryIdx}
+	err = country.Insert(tx)
+	assert.NilError(t, err)
+
+	leagueIdx := uint32(0)
+	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
+	err = league.Insert(tx)
+	assert.NilError(t, err)
+
+	var team storage.Team
+	team.TeamID = big.NewInt(10)
+	team.TimezoneIdx = timezoneIdx
+	team.CountryIdx = countryIdx
+	team.Owner = "ciao"
+	team.LeagueIdx = leagueIdx
+	err = team.Insert(tx)
+	assert.NilError(t, err)
+
+	for i := 0; i < 8; i++ {
+		matchDayIdx := uint8(0)
+		matchIdx := uint8(i)
+		match := storage.Match{
+			TimezoneIdx:   timezoneIdx,
+			CountryIdx:    countryIdx,
+			LeagueIdx:     leagueIdx,
+			MatchDayIdx:   matchDayIdx,
+			MatchIdx:      matchIdx,
+			HomeTeamID:    big.NewInt(10),
+			VisitorTeamID: big.NewInt(10),
+		}
+		err = match.Insert(tx)
+		assert.NilError(t, err)
+	}
 }
