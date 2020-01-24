@@ -44,6 +44,10 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	assert.Equal(t, match.VisitorTeam.TeamID.String(), "10")
 	assert.Equal(t, match.HomeMatchLog.String(), "12")
 	assert.Equal(t, match.VisitorMatchLog.String(), "13")
+	assert.Equal(t, match.HomeGoals, uint8(0))
+	assert.Equal(t, match.VisitorGoals, uint8(0))
+	assert.Equal(t, match.HomeTeam.Players[0].Skills().String(), "123456")
+	assert.Equal(t, match.VisitorTeam.Players[0].Skills().String(), "123456")
 }
 
 func createMatches(t *testing.T, tx *sql.Tx) {
@@ -70,6 +74,11 @@ func createMatches(t *testing.T, tx *sql.Tx) {
 	team.LeagueIdx = leagueIdx
 	err = team.Insert(tx)
 	assert.NilError(t, err)
+
+	var player storage.Player
+	player.TeamId = team.TeamID
+	player.EncodedSkills = big.NewInt(123456)
+	assert.NilError(t, player.Insert(tx))
 
 	for i := 0; i < 8; i++ {
 		matchDayIdx := uint8(0)

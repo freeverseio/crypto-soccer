@@ -14,19 +14,33 @@ func NewMatchesByLeague(
 	leagueIdx uint32,
 	day uint8,
 ) (engine.Matches, error) {
-	stoMatches, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	ms, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
 	if err != nil {
 		return nil, err
 	}
 
 	var matches engine.Matches
-	for i := range stoMatches {
-		stoMatch := stoMatches[i]
+	for i := range ms {
+		m := ms[i]
 		match := engine.NewMatch()
-		match.HomeTeam.TeamID = stoMatch.HomeTeamID
-		match.VisitorTeam.TeamID = stoMatch.VisitorTeamID
-		match.HomeMatchLog = stoMatch.HomeMatchLog
-		match.VisitorMatchLog = stoMatch.VisitorMatchLog
+		match.HomeTeam.TeamID = m.HomeTeamID
+		match.VisitorTeam.TeamID = m.VisitorTeamID
+		match.HomeMatchLog = m.HomeMatchLog
+		match.VisitorMatchLog = m.VisitorMatchLog
+		homeTeamPlayers, err := storage.PlayersByTeamId(tx, m.HomeTeamID)
+		if err != nil {
+			return nil, err
+		}
+		for _, player := range homeTeamPlayers {
+			match.HomeTeam.Players[player.ShirtNumber] = engine.NewPlayerFromSkills(player.EncodedSkills.String())
+		}
+		visitorTeamPlayers, err := storage.PlayersByTeamId(tx, m.VisitorTeamID)
+		if err != nil {
+			return nil, err
+		}
+		for _, player := range visitorTeamPlayers {
+			match.VisitorTeam.Players[player.ShirtNumber] = engine.NewPlayerFromSkills(player.EncodedSkills.String())
+		}
 		matches = append(matches, *match)
 	}
 
