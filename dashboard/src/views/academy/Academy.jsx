@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Container, Form, Segment, Grid, Header, Button, Divider } from 'semantic-ui-react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from '@apollo/react-hooks';
-import PlayerCard from '../../components/PlayerCard';
+import PlayersTable from '../../components/PlayersTable';
+import WithdrawalTable from '../../components/WithdrawalTable';
 
 const ALL_PLAYER_IN_ACCADEMY = gql`
 query {
@@ -20,6 +21,7 @@ query {
       auctionsByPlayerId(orderBy: VALID_UNTIL_DESC, first: 1) {
         nodes {
           validUntil
+          state
           bidsByAuction {
             totalCount
           }
@@ -96,8 +98,9 @@ export default function SpecialPlayer(props) {
         return playerId;
     }
 
-    function AccademyPlayers() {
+    function AccademyPlayersTable() {
         const { web3 } = props;
+
         const { loading, error, data } = useQuery(ALL_PLAYER_IN_ACCADEMY, {
             pollInterval: 2000,
         });
@@ -106,20 +109,7 @@ export default function SpecialPlayer(props) {
         if (error) return `Error! ${error}`;
 
         const players = data.allPlayers.nodes;
-        return (
-            <Grid columns={4}>
-                {
-                    players.map((player, key) => {
-                        return (
-                            <Grid.Column key={key}>
-                                <PlayerCard key={key} player={player} web3={web3} />
-                            </Grid.Column>
-                        );
-                    })
-
-                }
-            </Grid>
-        )
+        return (<PlayersTable players={players} web3={web3}/>);
     }
 
     async function handleSubmit(e) {
@@ -177,7 +167,11 @@ export default function SpecialPlayer(props) {
                 </Grid.Column>
             </Grid>
             <Divider />
-            <AccademyPlayers />
+            <AccademyPlayersTable />
+            <WithdrawalTable />
         </Container>
     );
 };
+
+
+

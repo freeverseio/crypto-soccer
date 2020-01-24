@@ -1,16 +1,18 @@
 version: '3'
 services:
   ethereum: 
-    image: freeverseio/ethereum:$TAG
+    image: freeverseio/ethereum:devcontracts
     command: --mine --nodiscover 
-    ports: 
-      - "8545:8545"
+    # ports: 
+      # - "8545:8545"
       # - "30303:30303"
       # - "30303:30303/udp"
     volumes:
       - ethereum-data:/test
   universe.db:
     image: freeverseio/universe.db:$TAG
+    volumes:
+      - universe.db-data:/var/lib/postgresql/data
   synchronizer:
     image: freeverseio/synchronizer:$TAG
     command: > 
@@ -36,6 +38,8 @@ services:
     command: -d postgres://freeverse:freeverse@universe.db:5432/cryptosoccer
   market.db:
     image: freeverseio/market.db:$TAG
+    volumes:
+      - market.db-data:/var/lib/postgresql/data
   market.trader:
     image: freeverseio/market.trader:$TAG
     command: -d postgres://freeverse:freeverse@market.db:5432/market -p 4000
@@ -59,6 +63,8 @@ services:
       --ethereum "http://ethereum:8545"
   relay.db:
     image: freeverseio/relay.db:$TAG
+    volumes:
+      - relay.db-data:/var/lib/postgresql/data
   horizon:
     image: freeverseio/horizon:$TAG
     depends_on:
@@ -95,6 +101,19 @@ services:
       - "127.0.0.1:5001:5001"
     volumes:
       - ipfs.node-data:/data
+  web3proxy:
+    image: adria0/web3proxy
+    environment:
+      - DEBUG=1
+    ports:
+      - "443:443"
+    command: >
+      "https://prod.gorengine.com/pippolo" "http://ethereum:8545"
 volumes:
   ethereum-data:
   ipfs.node-data:
+  universe.db-data:
+  market.db-data:
+  relay.db-data:
+
+

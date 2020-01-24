@@ -23,7 +23,7 @@ func run(
 ) (uint64, error) {
 	tx, err := universedb.Begin()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	defer func() {
 		if err != nil {
@@ -34,7 +34,7 @@ func run(
 	}()
 	relaytx, err := relaydb.Begin()
 	if err != nil {
-		log.Fatal(err)
+		return 0, err
 	}
 	defer func() {
 		if err != nil {
@@ -151,11 +151,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	delta := uint64(1000)
+	log.Info("On Going ...")
+	delta := uint64(10)
 	for {
 		processedBlocks, err := run(universedb, relaydb, processor, delta)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 		if processedBlocks == 0 {
 			time.Sleep(2 * time.Second)
