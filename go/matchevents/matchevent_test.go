@@ -49,7 +49,7 @@ func TestMatchEvents(t *testing.T) {
 	subsRounds := [3]uint8{4, 6, 7}
 
 	is2ndHalf := false
-	computedEvents, err := matchevents.GenerateMatchEvents(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
+	computedEvents, err := matchevents.Generate(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}
@@ -113,7 +113,7 @@ func TestMatchEvents2ndHalf(t *testing.T) {
 	subsRounds := [3]uint8{4, 6, 7}
 
 	is2ndHalf := true
-	computedEvents, err := matchevents.GenerateMatchEvents(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
+	computedEvents, err := matchevents.Generate(seed, matchLog, matchLog, events, lineup, lineup, substitutions, substitutions, subsRounds, subsRounds, is2ndHalf)
 	if err != nil {
 		t.Fatalf("error: %s", err)
 	}
