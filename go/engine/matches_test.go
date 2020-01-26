@@ -17,10 +17,8 @@ func TestNewMatchByLeagueWithNoMatches(t *testing.T) {
 	}
 	defer tx.Rollback()
 	timezoneIdx := uint8(1)
-	countryIdx := uint32(0)
-	leagueIdx := uint32(0)
 	day := uint8(0)
-	matches, err := engine.Load(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	matches, err := engine.Load(tx, timezoneIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 0)
 }
@@ -33,10 +31,8 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	defer tx.Rollback()
 	createMatches(t, tx)
 	timezoneIdx := uint8(1)
-	countryIdx := uint32(0)
-	leagueIdx := uint32(0)
 	day := uint8(0)
-	matches, err := engine.Load(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	matches, err := engine.Load(tx, timezoneIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 8)
 	match := matches[0]

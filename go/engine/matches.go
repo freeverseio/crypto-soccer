@@ -11,11 +11,9 @@ type Matches []Match
 func Load(
 	tx *sql.Tx,
 	timezoneIdx uint8,
-	countryIdx uint32,
-	leagueIdx uint32,
 	day uint8,
 ) (Matches, error) {
-	ms, err := storage.MatchesByTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
+	ms, err := storage.MatchesByTimezoneIdxAndMatchDay(tx, timezoneIdx, day)
 	if err != nil {
 		return nil, err
 	}
