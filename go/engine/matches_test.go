@@ -18,12 +18,12 @@ func TestNewMatchByLeagueWithNoMatches(t *testing.T) {
 	defer tx.Rollback()
 	timezoneIdx := uint8(1)
 	day := uint8(0)
-	matches, err := engine.Load(tx, timezoneIdx, day)
+	matches, err := engine.FromStorage(tx, timezoneIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 0)
 }
 
-func TestNewMatchByLeagueWithMatches(t *testing.T) {
+func TestMatchesFromStorage(t *testing.T) {
 	tx, err := s.Begin()
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,7 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	createMatches(t, tx)
 	timezoneIdx := uint8(1)
 	day := uint8(0)
-	matches, err := engine.Load(tx, timezoneIdx, day)
+	matches, err := engine.FromStorage(tx, timezoneIdx, day)
 	assert.NilError(t, err)
 	assert.Equal(t, len(matches), 8)
 	match := matches[0]
@@ -47,7 +47,7 @@ func TestNewMatchByLeagueWithMatches(t *testing.T) {
 	assert.Equal(t, len(match.Events), 0)
 }
 
-func TestMatchToStorage(t *testing.T) {
+func TestMatchesToStorage(t *testing.T) {
 
 }
 

@@ -8,7 +8,7 @@ import (
 
 type Matches []Match
 
-func Load(
+func FromStorage(
 	tx *sql.Tx,
 	timezoneIdx uint8,
 	day uint8,
@@ -45,6 +45,6 @@ func Load(
 	return matches, nil
 }
 
-func (b Matches) Save(tx *sql.Tx) error {
+func (b Matches) ToStorage(tx *sql.Tx) error {
 	return nil
 }

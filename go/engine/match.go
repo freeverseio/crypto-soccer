@@ -15,8 +15,8 @@ import (
 type Match struct {
 	Seed            [32]byte
 	StartTime       *big.Int
-	HomeTeam        *Team
-	VisitorTeam     *Team
+	HomeTeam        Team
+	VisitorTeam     Team
 	HomeGoals       uint8
 	VisitorGoals    uint8
 	HomeMatchLog    *big.Int
@@ -41,8 +41,8 @@ func (b Match) DumpState() string {
 func NewMatch() *Match {
 	var mp Match
 	mp.StartTime = big.NewInt(0)
-	mp.HomeTeam = NewTeam()
-	mp.VisitorTeam = NewTeam()
+	mp.HomeTeam = *NewTeam()
+	mp.VisitorTeam = *NewTeam()
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	return &mp
