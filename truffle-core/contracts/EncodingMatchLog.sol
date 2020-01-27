@@ -9,7 +9,8 @@ import "./EncodingMatchLogPart3.sol";
  * @title Library of functions to serialize matchLogs
  */
 
-    // MAX_GOALS = 12
+    // MAX_GOALS = 12,  NO_OUT_OF_GAME_PLAYER = 14
+    // 
     // uint8 nGoals, // 4b, offset 0 
     // uint8 assistersIdx[MAX_GOALS], 4b each, offset 4
     // uint8 shootersIdx[MAX_GOALS], 4b each, offset 52
@@ -19,7 +20,7 @@ import "./EncodingMatchLogPart3.sol";
     //      an int between [0, 13], 14 = NOTHING HAPPENED       
     // uint8[2] memory outOfGameRounds, 4b each, offset 155:135 +4 
     // uint8[2] memory outOfGameType, 2b each, offset 155:135 +8
-    //      null:  0 (cannot return null if outOfGamePlayer != NO_PLAYER)
+    //      null:  0 (cannot return null if outOfGamePlayer != NO_OUT_OF_GAME_PLAYER)
     //      injuryHard:  1
     //      injuryLow:   2
     //      redCard:     3

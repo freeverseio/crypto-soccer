@@ -17,6 +17,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     uint8 public constant WEEKS_HARD_INJ = 5;  // weeks a player is out when suffered a hard injury
     uint8 public constant WEEKS_SOFT_INJ = 2;  // weeks a player is out when suffered a soft injury
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
+    uint8 private constant CHG_HAPPENED        = uint8(1); 
     // uint8 constant public N_SKILLS = 5;
     uint8 constant private SK_SHO = 0;
     uint8 constant private SK_SPE = 1;
@@ -50,25 +51,71 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         //      - set all to false unless it happens in 1st or 2nd half
         //  -  injury => 
         //      - decrease by one unless it happens in 1st or 2nd half
-        if (!is2ndHalf) writeOutOfGameState(states, lineUp, matchLog, false);
+        if (!is2ndHalf) {
+            writeOutOfGameState(states, lineUp, matchLog, false);
+            writeFirstHalfLineUp(states, lineUp, substitutions, matchLog);
+        }
         else {
             decreaseOutOfGames(states);
             writeOutOfGameState(states, lineUp, matchLog, false);
             writeOutOfGameState(states, lineUp, matchLog, true);
+            resetFirstHalfLineUp(states);
+        }
+    }
+
+    function resetFirstHalfLineUp(uint256[PLAYERS_PER_TEAM_MAX] memory states) private pure {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if (states[p] != 0) {
+                states[p] = setAlignedEndOfFirstHalf(states[p], false);
+                states[p] = setSubstitutedFirstHalf(states[p], false);
+            }
         }
     }
     
+    function writeFirstHalfLineUp(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states, 
+        uint8[14] memory lineUp, 
+        uint8[3] memory  substitutions, 
+        uint256 matchLog 
+    ) 
+        private 
+        pure 
+    {
+        // NO_LINEUP = 25, NO_SUBS = 11
+        for (uint8 p = 0; p < 11; p++) {
+            uint8 linedUp = lineUp[p];
+            if (linedUp < NO_LINEUP) {
+                states[linedUp] = setAlignedEndOfFirstHalf(states[linedUp], true);
+                states[linedUp] = setSubstitutedFirstHalf(states[linedUp], false);
+            }
+        }
+        for (uint8 posInHalf = 0; posInHalf < 3; posInHalf++) {
+            if (getInGameSubsHappened(matchLog, posInHalf, false) == CHG_HAPPENED) {
+                uint8 leavingFieldPlayer    = substitutions[posInHalf];
+                uint8 enteringFieldPlayer   = lineUp[10 + posInHalf];
+                states[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(states[leavingFieldPlayer], false);
+                states[leavingFieldPlayer]  = setSubstitutedFirstHalf(states[enteringFieldPlayer], true);
+                states[enteringFieldPlayer] = setAlignedEndOfFirstHalf(states[enteringFieldPlayer], true);
+                states[enteringFieldPlayer] = setSubstitutedFirstHalf(states[enteringFieldPlayer], false);
+            }
+        }
+    }    
+    
     function writeOutOfGameState(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint8[14] memory lineUp, uint256 matchLog, bool is2ndHalf) private pure {
-        uint8 outOfGamePlayer1stHalf = lineUp[uint8(getOutOfGamePlayer(matchLog, is2ndHalf))];
-        uint8 outOfGameType1stHalf = lineUp[uint8(getOutOfGameType(matchLog, is2ndHalf))];
-        if (outOfGameType1stHalf == RED_CARD) {
-            states[outOfGamePlayer1stHalf] = setRedCardLastGame(states[outOfGamePlayer1stHalf], true);
+        // check if there was an out of player event:
+        uint8 outOfGamePlayer = uint8(getOutOfGamePlayer(matchLog, is2ndHalf));
+        if (outOfGamePlayer == NO_OUT_OF_GAME_PLAYER) return;
+        // convert outOfGamePlayer [0...13] to the index that points to the state in the team [0,..24]
+        outOfGamePlayer = lineUp[outOfGamePlayer];
+        uint8 outOfGameType = lineUp[uint8(getOutOfGameType(matchLog, is2ndHalf))];
+        if (outOfGameType == RED_CARD) {
+            states[outOfGamePlayer] = setRedCardLastGame(states[outOfGamePlayer], true);
         }
-        else if (outOfGameType1stHalf == HARD_INJURY) {
-            states[outOfGamePlayer1stHalf] = setInjuryWeeksLeft(states[outOfGamePlayer1stHalf], WEEKS_HARD_INJ);
+        else if (outOfGameType == HARD_INJURY) {
+            states[outOfGamePlayer] = setInjuryWeeksLeft(states[outOfGamePlayer], WEEKS_HARD_INJ);
         }
-        else if (outOfGameType1stHalf == SOFT_INJURY) {
-            states[outOfGamePlayer1stHalf] = setInjuryWeeksLeft(states[outOfGamePlayer1stHalf], WEEKS_SOFT_INJ);
+        else if (outOfGameType == SOFT_INJURY) {
+            states[outOfGamePlayer] = setInjuryWeeksLeft(states[outOfGamePlayer], WEEKS_SOFT_INJ);
         }
     }
         
