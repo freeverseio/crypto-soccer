@@ -234,7 +234,7 @@ contract EncodingSkills {
         return uint8(encodedSkills >> 157 & 7);
     }
 
-    function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getSubstitutedFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 160 & 1) == 1;
     }
 

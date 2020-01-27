@@ -23,9 +23,9 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     // uint8 public constant NO_SUBST  = 11;   // noone was subtituted
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
-    uint8 public constant SOFT_INJURY  = 1;   // type of event = redCard
-    uint8 public constant HARD_INJURY  = 2;   // type of event = redCard
-    uint8 public constant RED_CARD  = 3;   // type of event = redCard
+    uint8 public constant SOFT_INJURY  = 1;   // type of event
+    uint8 public constant HARD_INJURY  = 2;   // type of event
+    uint8 public constant RED_CARD  = 3;   // type of event
     // uint8 public constant NO_LINEUP = 25; // No player chosen in that position
 
 
@@ -546,7 +546,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
                         (playerSkills == 0) ||
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
-        if (is2ndHalf) isWrong = isWrong || getSubstitutedLastHalf(playerSkills);
+        if (is2ndHalf) isWrong = isWrong || getSubstitutedFirstHalf(playerSkills);
         if (isSubst) isWrong = isWrong || getAlignedEndOfLastHalf(playerSkills);
         if (isWrong) {return 0;} 
         else {return playerSkills;}

@@ -12,6 +12,10 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
+    uint8 public constant SOFT_INJURY  = 1;  
+    uint8 public constant HARD_INJURY  = 2;  
+    uint8 public constant WEEKS_HARD_INJ = 5;  // weeks a player is out when suffered a hard injury
+    uint8 public constant WEEKS_SOFT_INJ = 2;  // weeks a player is out when suffered a soft injury
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
     // uint8 constant public N_SKILLS = 5;
     uint8 constant private SK_SHO = 0;
@@ -35,25 +39,39 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         public
         pure
     {
-        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
-        if (!is2ndHalf) {
+        (uint8[3] memory  substitutions,,uint8[14] memory lineUp,, uint8 tacticsId) = decodeTactics(tactics);
+        
+        // after 1st Half, update:
+        //  - subtDuringFirstHalf, alignedEndOfFirstHalf => properly update
+        //  - redCards, injury => add if any of this happens
+        // after 2nd Half, update:
+        //  - subtDuringFirstHalf = 0, alignedEndOfFirstHalf = 0
+        //  - redCards: 
+        //      - set all to false unless it happens in 1st or 2nd half
+        //  -  injury => 
+        //      - decrease by one unless it happens in 1st or 2nd half
+        if (!is2ndHalf) writeOutOfGameState(states, lineUp, matchLog, false);
+        else {
             decreaseOutOfGames(states);
+            writeOutOfGameState(states, lineUp, matchLog, false);
+            writeOutOfGameState(states, lineUp, matchLog, true);
         }
-        // if (getOutOfGameType(matchLog, is2ndHalf) == RED_CARD)) {
-            
-        //      setRedCardLastGame(uint256 encodedSkills, bool val)
-        // }
-        //             (getOutOfGameType(matchLog[team], false) == RED_CARD ? 3 : 0)
-        //         +   (getOutOfGameType(matchLog[team], true)  == RED_CARD ? 3 : 0)
-        //         +   ((getYellowCard(matchLog[team], 0, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
-        //         +   ((getYellowCard(matchLog[team], 1, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0)
-        //         +   ((getYellowCard(matchLog[team], 0, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
-        //         +   ((getYellowCard(matchLog[team], 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
-        // }
-        //         outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
-
     }
     
+    function writeOutOfGameState(uint256[PLAYERS_PER_TEAM_MAX] memory states, uint8[14] memory lineUp, uint256 matchLog, bool is2ndHalf) private pure {
+        uint8 outOfGamePlayer1stHalf = lineUp[uint8(getOutOfGamePlayer(matchLog, is2ndHalf))];
+        uint8 outOfGameType1stHalf = lineUp[uint8(getOutOfGameType(matchLog, is2ndHalf))];
+        if (outOfGameType1stHalf == RED_CARD) {
+            states[outOfGamePlayer1stHalf] = setRedCardLastGame(states[outOfGamePlayer1stHalf], true);
+        }
+        else if (outOfGameType1stHalf == HARD_INJURY) {
+            states[outOfGamePlayer1stHalf] = setInjuryWeeksLeft(states[outOfGamePlayer1stHalf], WEEKS_HARD_INJ);
+        }
+        else if (outOfGameType1stHalf == SOFT_INJURY) {
+            states[outOfGamePlayer1stHalf] = setInjuryWeeksLeft(states[outOfGamePlayer1stHalf], WEEKS_SOFT_INJ);
+        }
+    }
+        
     // at the begining of a match, decrease the weeks left from injury and redcards.
     function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory states) public pure {
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
