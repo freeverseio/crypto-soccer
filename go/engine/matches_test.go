@@ -47,9 +47,19 @@ func TestMatchesFromStorage(t *testing.T) {
 	assert.Equal(t, len(match.Events), 0)
 }
 
-func TestMatchesToStorage(t *testing.T) {
+// func TestMatchesToStorage(t *testing.T) {
+// 	tx, err := s.Begin()
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer tx.Rollback()
+// 	createMatches(t, tx)
+// 	timezoneIdx := uint8(1)
+// 	day := uint8(0)
+// 	matches, err := engine.FromStorage(tx, timezoneIdx, day)
+// 	assert.NilError(t, err)
 
-}
+// }
 
 func createMatches(t *testing.T, tx *sql.Tx) {
 	timezoneIdx := uint8(1)

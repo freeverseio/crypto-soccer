@@ -8,6 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/matchevents"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -46,6 +47,25 @@ func NewMatch() *Match {
 	mp.HomeMatchLog = big.NewInt(0)
 	mp.VisitorMatchLog = big.NewInt(0)
 	return &mp
+}
+
+func NewMatchFromStorage(
+	sMatch storage.Match,
+	sHomePlayers []*storage.Player,
+	sVisitorPlayers []*storage.Player,
+) *Match {
+	match := NewMatch()
+	match.HomeTeam.TeamID = sMatch.HomeTeamID
+	match.VisitorTeam.TeamID = sMatch.VisitorTeamID
+	match.HomeMatchLog = sMatch.HomeMatchLog
+	match.VisitorMatchLog = sMatch.VisitorMatchLog
+	for _, player := range sHomePlayers {
+		match.HomeTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
+	}
+	for _, player := range sVisitorPlayers {
+		match.VisitorTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
+	}
+	return match
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {

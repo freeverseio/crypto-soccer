@@ -3,6 +3,7 @@ package engine
 import (
 	"database/sql"
 
+	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
@@ -21,30 +22,38 @@ func FromStorage(
 	var matches Matches
 	for i := range ms {
 		m := ms[i]
-		match := NewMatch()
-		match.HomeTeam.TeamID = m.HomeTeamID
-		match.VisitorTeam.TeamID = m.VisitorTeamID
-		match.HomeMatchLog = m.HomeMatchLog
-		match.VisitorMatchLog = m.VisitorMatchLog
 		homeTeamPlayers, err := storage.PlayersByTeamId(tx, m.HomeTeamID)
 		if err != nil {
 			return nil, err
-		}
-		for _, player := range homeTeamPlayers {
-			match.HomeTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
 		}
 		visitorTeamPlayers, err := storage.PlayersByTeamId(tx, m.VisitorTeamID)
 		if err != nil {
 			return nil, err
 		}
-		for _, player := range visitorTeamPlayers {
-			match.VisitorTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
-		}
+		match := NewMatchFromStorage(m, homeTeamPlayers, visitorTeamPlayers)
 		matches = append(matches, *match)
 	}
 	return matches, nil
 }
 
-func (b Matches) ToStorage(tx *sql.Tx) error {
+func (b Matches) ToStorage(contracts *contracts.Contracts, tx *sql.Tx) error {
+	for _, match := range b {
+		for _, player := range match.HomeTeam.Players {
+			var sPlayer storage.Player
+			defence, speed, pass, shoot, endurance, _, _, err := contracts.DecodeSkills(player.Skills())
+			if err != nil {
+				return err
+			}
+			sPlayer.Defence = defence.Uint64()
+			sPlayer.Speed = speed.Uint64()
+			sPlayer.Pass = pass.Uint64()
+			sPlayer.Shoot = shoot.Uint64()
+			sPlayer.Defence = endurance.Uint64()
+			sPlayer.EncodedSkills = player.Skills()
+			if err = sPlayer.Update(tx); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
