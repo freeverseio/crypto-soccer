@@ -3,7 +3,6 @@ pragma solidity ^0.5.0;
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLogPart3.sol";
-import "./.sol";
 
 contract Engine is EngineLib, EncodingMatchLogPart3 {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
