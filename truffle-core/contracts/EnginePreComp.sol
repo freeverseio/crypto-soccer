@@ -21,12 +21,12 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
     uint256 private constant SECS_IN_DAY    = 86400; // 24 * 3600 
 
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
-    uint8 public constant NO_SUBST  = 11;   // noone was subtituted
+    // uint8 public constant NO_SUBST  = 11;   // noone was subtituted
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant SOFT_INJURY  = 1;   // type of event = redCard
     uint8 public constant HARD_INJURY  = 2;   // type of event = redCard
     uint8 public constant RED_CARD  = 3;   // type of event = redCard
-    uint8 public constant NO_LINEUP = 25; // No player chosen in that position
+    // uint8 public constant NO_LINEUP = 25; // No player chosen in that position
 
 
     // Over a game, we would like:

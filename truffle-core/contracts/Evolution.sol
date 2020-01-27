@@ -9,16 +9,16 @@ import "./EncodingSkillsSetters.sol";
 
 contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, EncodingSkillsSetters {
 
-    uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
+    // uint8 constant public PLAYERS_PER_TEAM_MAX  = 25;
     uint8 public constant NO_OUT_OF_GAME_PLAYER  = 14;   // noone saw a card
     uint8 public constant RED_CARD = 3;   // noone saw a card
     uint256 constant public POINTS_FOR_HAVING_PLAYED  = 10; // beyond this diff among team qualities, it's basically infinite
-    uint8 constant public N_SKILLS = 5;
-    uint8 constant public SK_SHO = 0;
-    uint8 constant public SK_SPE = 1;
-    uint8 constant public SK_PAS = 2;
-    uint8 constant public SK_DEF = 3;
-    uint8 constant public SK_END = 4;
+    // uint8 constant public N_SKILLS = 5;
+    uint8 constant private SK_SHO = 0;
+    uint8 constant private SK_SPE = 1;
+    uint8 constant private SK_PAS = 2;
+    uint8 constant private SK_DEF = 3;
+    uint8 constant private SK_END = 4;
 
     Assets private _assets;
 
@@ -176,7 +176,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         (uint16[25] memory TPperSkill, uint8 specialPlayer, ) = decodeTP(userAssignment);
         uint16[5] memory singleTPperSkill;
 
-        // note that if no special player was selected => specialPlayer = PLAYER_PER_TEAM_MAX 
+        // note that if no special player was selected => specialPlayer = PLAYERS_PER_TEAM_MAX 
         // ==> it will never be processed in this loop
         for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
             uint256 skills = states[p];
