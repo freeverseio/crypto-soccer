@@ -35,7 +35,7 @@ func (b Matches) Play2ndHalf(contracts contracts.Contracts) error {
 }
 
 func worker(contracts contracts.Contracts, matchesChannel <-chan Match, is2ndHalf bool) error {
-	c, err := contracts.Duplicate()
+	c, err := contracts.Clone()
 	if err != nil {
 		return err
 	}

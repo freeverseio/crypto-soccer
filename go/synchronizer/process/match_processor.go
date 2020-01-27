@@ -11,7 +11,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/names"
 	relay "github.com/freeverseio/crypto-soccer/go/relay/storage"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/utils"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -599,7 +598,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	for i := range players {
 		shirtNumber := players[i].ShirtNumber
 		newState := newStates[shirtNumber]
-		defence, speed, pass, shoot, endurance, _, _, err := utils.DecodeSkills(b.contracts.Assets, newState)
+		defence, speed, pass, shoot, endurance, _, _, err := b.contracts.DecodeSkills(newState)
 		if err != nil {
 			return err
 		}

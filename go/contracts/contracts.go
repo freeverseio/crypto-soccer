@@ -40,7 +40,7 @@ type Contracts struct {
 	utilsmatchlogAddress string
 }
 
-func (b Contracts) Duplicate() (*Contracts, error) {
+func (b Contracts) Clone() (*Contracts, error) {
 	return New(
 		b.Client,
 		b.leaguesAddress,
