@@ -209,21 +209,28 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    // it('updateStatesAfterPlayHalf', async () => {
-    //     // uint256[PLAYERS_PER_TEAM_MAX] memory states,
-    //     // uint256 matchLog,
-    //     // uint256 tactics,
-    //     // bool is2ndHalf
-    //     matchLog = await engine.playHalfMatch(
-    //         123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [0, 0], 
-    //         [is2nd = false, isHome = true, playoff = false]
-    //     ).should.be.fulfilled;
-    //     newSkills = await training.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false);
-    //     console.log(newSkills)
-    //     // debug.compareArrays(newSkills, teamStateAll50Half2, toNum = false, verbose = false, isBigNumber = true);
-    // });
+    it('updateStatesAfterPlayHalf', async () => {
+        // note: substitutions = [6, 10, 0];
+        // note: lineup is consecutive
+        matchLog = await engine.playHalfMatch(
+            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [0, 0], 
+            [is2nd = false, isHome = true, playoff = false]
+        ).should.be.fulfilled;
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
+        // players not aligned did not change state: 
+        debug.compareArrays(newSkills.slice(13,25), teamStateAll50Half1.slice(13,25), toNum = false, verbose = false, isBigNumber = true);
+        // those that were aligned either finished the 1st half, or were substituted:
+        aligned = await evo.setAlignedEndOfFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
+        substituted = await evo.setSubstitutedFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
+        for (p = 0; p < 13; p++) {
+            console.log(p);
+            if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
+            else {newSkills[p].should.be.bignumber.equal(substituted);}
+        }
+    });
 
-    // return
+    return
+    
     it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);

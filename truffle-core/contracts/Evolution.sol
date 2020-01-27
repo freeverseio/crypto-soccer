@@ -27,7 +27,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
     ) 
         public
         pure
-        // returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
+        returns (uint256[PLAYERS_PER_TEAM_MAX] memory)
     {
         // after 1st Half, update:
         //  - subtDuringFirstHalf, alignedEndOfFirstHalf => properly update
@@ -48,7 +48,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
             writeOutOfGameState(states, tactics, matchLog, true);
             resetFirstHalfLineUp(states);
         }
-        // return states;
+        return states;
     }
 
     function resetFirstHalfLineUp(uint256[PLAYERS_PER_TEAM_MAX] memory states) private pure {
@@ -82,7 +82,7 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
                 uint8 leavingFieldPlayer    = substitutions[posInHalf];
                 uint8 enteringFieldPlayer   = lineUp[10 + posInHalf];
                 states[leavingFieldPlayer]  = setAlignedEndOfFirstHalf(states[leavingFieldPlayer], false);
-                states[leavingFieldPlayer]  = setSubstitutedFirstHalf(states[enteringFieldPlayer], true);
+                states[leavingFieldPlayer]  = setSubstitutedFirstHalf(states[leavingFieldPlayer], true);
                 states[enteringFieldPlayer] = setAlignedEndOfFirstHalf(states[enteringFieldPlayer], true);
                 states[enteringFieldPlayer] = setSubstitutedFirstHalf(states[enteringFieldPlayer], false);
             }
