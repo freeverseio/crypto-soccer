@@ -36,7 +36,8 @@ contract PlayAndEvolve {
         uint256[2] memory matchLogs;
         matchLogs[0] = matchLogsAndEvents[0];
         matchLogs[1] = matchLogsAndEvents[1];
-
+    
+        // _evo.updateStatesAfterPlayHalf(states, tactics, matchLog, matchBools);
         return _evo.computeTrainingPoints(matchLogs);
     }
     

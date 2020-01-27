@@ -26,6 +26,46 @@ contract Evolution is EncodingMatchLog, EngineLib, EncodingTPAssignment, Encodin
         _assets = Assets(addr);
     }
 
+    function updateStatesAfterPlayHalf(
+        uint256[PLAYERS_PER_TEAM_MAX] memory states,
+        uint256 matchLog,
+        uint256 tactics,
+        bool is2ndHalf
+    ) 
+        public
+        pure
+    {
+        (uint8[3] memory  substitutions,,uint8[14] memory lineup,, uint8 tacticsId) = decodeTactics(tactics);
+        if (!is2ndHalf) {
+            decreaseOutOfGames(states);
+        }
+        // if (getOutOfGameType(matchLog, is2ndHalf) == RED_CARD)) {
+            
+        //      setRedCardLastGame(uint256 encodedSkills, bool val)
+        // }
+        //             (getOutOfGameType(matchLog[team], false) == RED_CARD ? 3 : 0)
+        //         +   (getOutOfGameType(matchLog[team], true)  == RED_CARD ? 3 : 0)
+        //         +   ((getYellowCard(matchLog[team], 0, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+        //         +   ((getYellowCard(matchLog[team], 1, false) < NO_OUT_OF_GAME_PLAYER) ? 1 : 0)
+        //         +   ((getYellowCard(matchLog[team], 0, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0) 
+        //         +   ((getYellowCard(matchLog[team], 1, true)  < NO_OUT_OF_GAME_PLAYER) ? 1 : 0);
+        // }
+        //         outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
+
+    }
+    
+    // at the begining of a match, decrease the weeks left from injury and redcards.
+    function decreaseOutOfGames(uint256[PLAYERS_PER_TEAM_MAX] memory states) public pure {
+        for (uint8 p = 0; p < PLAYERS_PER_TEAM_MAX; p++) {
+            if (states[p] != 0) {
+                states[p] = setRedCardLastGame(states[p], false);
+                if (getInjuryWeeksLeft(states[p]) != 0) {
+                    states[p] = setInjuryWeeksLeft(states[p], getInjuryWeeksLeft(states[p])-1);
+                }
+            }
+        }
+    }
+
     function computeTrainingPoints(uint256[2] memory matchLog) public pure returns (uint256[2] memory)
     {
         // +11 point for winning at home, +22 points for winning

@@ -230,8 +230,8 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 154 & 7);
     }
 
-    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint256) {
-        return uint256(encodedSkills >> 157 & 7);
+    function getInjuryWeeksLeft(uint256 encodedSkills) public pure returns (uint8) {
+        return uint8(encodedSkills >> 157 & 7);
     }
 
     function getSubstitutedLastHalf(uint256 encodedSkills) public pure returns (bool) {
