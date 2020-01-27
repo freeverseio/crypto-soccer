@@ -1,4 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
+/**
+ * @title Library of functions to serialize matchLogs
+ */
 
 contract EncodingMatchLogPart4 {
     function getInGameSubsHappened(uint256 log, uint8 posInHalf, bool is2ndHalf) public pure returns (uint8) {

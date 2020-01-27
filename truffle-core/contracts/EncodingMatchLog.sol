@@ -3,7 +3,7 @@ pragma solidity >=0.4.21 <0.6.0;
 import "./EncodingMatchLogPart1.sol";
 import "./EncodingMatchLogPart2.sol";
 import "./EncodingMatchLogPart3.sol";
-import "./EncodingMatchLogPart5.sol";
+// note: both part1 and part2 inherit from part4
 
 /**
  * @title Library of functions to serialize matchLogs
@@ -18,20 +18,24 @@ import "./EncodingMatchLogPart5.sol";
     // uint8[2] memory outOfGamePlayer 4b each, offset 155:135
     // uint8[2] memory outOfGameRounds, 4b each, offset 155:135 +4 
     // uint8[2] memory outOfGameType, 2b each, offset 155:135 +8
+    //      null:  0 (cannot return null if outOfGamePlayer != NO_PLAYER)
+    //      injuryHard:  1
+    //      injuryLow:   2
+    //      redCard:     3
     // uint8[4] memory yellowCards, 4b each, // first 2 for first half, other for half 2, offset 165:145
     // bool[2] memory yellowCardedDidNotFinish1stHalf, // 1b each, offset 163  
     // uint8[3] memory halfTimeSubstitutions, // 4b each, offset 185
         // 0 means no subs, and we store here p+1 (where p = player in the starting 11 that was substituted)
     // uint8[6] memory ingameSubsHappened, // 2b each, offset 173
     //                             //  ...the first 3 for half 1, the other for half 2.
-    //                             // ...0: no change required, 1: change happened, 2: change could not happen  
+    //                             // ...0: no change required, 1: change happened, 2: change could not happen, cancelled.  
     // winner, 2b, winner: 0 = home, 1 = away, 2 = draw, offset 209 //     
     // nDefsHalf[2], 4b each, offset 197
     // NTot2ndHalf, 4b offset 205
     // teamSumSkills: 24b // offset 211
     // trainingPoints, 12b, offset 235
-    // bool isHomeStadium, // 1b each,
+    // bool isHomeStadium, // 1b each, offset 211
 
-contract EncodingMatchLog is EncodingMatchLogPart1, EncodingMatchLogPart2, EncodingMatchLogPart3, EncodingMatchLogPart5 {
+contract EncodingMatchLog is EncodingMatchLogPart1, EncodingMatchLogPart2, EncodingMatchLogPart3 {
 
 }

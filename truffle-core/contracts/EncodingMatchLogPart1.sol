@@ -8,8 +8,6 @@ import "./EncodingMatchLogPart4.sol";
 contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
 
     uint256 private constant ONE256       = 1; 
-    uint256 private constant CHG_HAPPENED        = uint256(1); 
-    uint256 private constant CHG_CANCELLED       = uint256(2); 
 
     function addNGoals(uint256 log, uint8 goals) public pure returns (uint256) {
         return log + goals;

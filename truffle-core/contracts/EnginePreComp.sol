@@ -6,7 +6,7 @@ import "./SortValues.sol";
 import "./EncodingMatchLogPart1.sol";
 
 contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
-    uint256 private constant ONE256              = uint256(1); 
+    uint256 private constant ONE256            = uint256(1); 
     uint8 private constant CHG_HAPPENED        = uint8(1); 
     uint8 private constant CHG_CANCELLED       = uint8(2); 
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]

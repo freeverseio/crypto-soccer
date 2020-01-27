@@ -6,8 +6,6 @@ pragma solidity >=0.4.21 <0.6.0;
 contract EncodingMatchLogPart2  {
 
     uint256 private constant ONE256       = 1; 
-    uint256 private constant CHG_HAPPENED        = uint256(1); 
-    uint256 private constant CHG_CANCELLED       = uint256(2); 
 
     function getAssister(uint256 log, uint8 pos) public pure returns (uint8) {
         return uint8((log >> (4 + 4 * pos)) & 15);
