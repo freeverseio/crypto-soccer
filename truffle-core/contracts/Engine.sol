@@ -3,8 +3,9 @@ pragma solidity ^0.5.0;
 import "./EnginePreComp.sol";
 import "./EngineLib.sol";
 import "./EncodingMatchLogPart3.sol";
+import "./EncodingMatchLogPart5.sol";
 
-contract Engine is EngineLib, EncodingMatchLogPart3 {
+contract Engine is EngineLib, EncodingMatchLogPart3, EncodingMatchLogPart5 {
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
     // // Idxs for vector of globSkills: [0=move2attack, 1=globSkills[IDX_CREATE_SHOOT], 2=globSkills[IDX_DEFEND_SHOOT], 3=blockShoot, 4=currentEndurance]
     uint8 private constant IDX_MOVE2ATTACK  = 0;        

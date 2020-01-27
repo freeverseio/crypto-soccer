@@ -52,10 +52,9 @@ contract UtilsMatchLog is EncodingMatchLog{
         decodedLog[2] = uint32(getNGoals(log));
         if (is2ndHalf) decodedLog[3] = uint32(getTrainingPoints(log));
         
-        (uint8 player, uint8 round, uint8 typeOfOutOfGame) = getOutOfGame(log, is2ndHalf);
-        decodedLog[4] = uint32(player);
-        decodedLog[5] = uint32(typeOfOutOfGame);
-        decodedLog[6] = uint32(round);
+        decodedLog[4] = uint32(getOutOfGamePlayer(log, is2ndHalf));
+        decodedLog[5] = uint32(getOutOfGameType(log, is2ndHalf));
+        decodedLog[6] = uint32(getOutOfGameRound(log, is2ndHalf));
     
         decodedLog[7] = uint32(getYellowCard(log, 0, is2ndHalf));
         decodedLog[8] = uint32(getYellowCard(log, 1, is2ndHalf));

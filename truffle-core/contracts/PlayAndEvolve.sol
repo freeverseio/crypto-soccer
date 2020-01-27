@@ -34,8 +34,8 @@ contract PlayAndEvolve {
             _engine.playHalfMatch(seed, matchStartTime, states, tactics, matchLog, matchBools);
 
         uint256[2] memory matchLogs;
-        matchLogs[0] =  matchLogsAndEvents[0];
-        matchLogs[1] =  matchLogsAndEvents[1];
+        matchLogs[0] = matchLogsAndEvents[0];
+        matchLogs[1] = matchLogsAndEvents[1];
 
         return _evo.computeTrainingPoints(matchLogs);
     }

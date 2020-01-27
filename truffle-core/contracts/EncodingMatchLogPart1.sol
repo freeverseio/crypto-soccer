@@ -5,26 +5,6 @@ import "./EncodingMatchLogPart4.sol";
  * @title Library of functions to serialize matchLogs
  */
 
-        // uint8 nGoals, // 4b, offset 0
-        // uint8 assistersIdx[12], 4b each, offset 4
-        // uint8 shootersIdx[12], 4b each, offset 52
-        // uint8 shooterFwdPos[12], 2b each, offset 100
-        // bool[7] memory penalties, // 1b each, offset 128
-        // uint8[2] memory outOfGames 4b each
-        // uint8[4] memory yellowCards, 4b each, // first 2 for first half, other for half 2
-        // uint8[2] memory outOfGameRounds,  
-        // uint8[2] memory typesOutOfGames, 
-        // bool[3] memory yellowCardedDidNotFinish1stHalf, 1b each,
-        // bool isHomeStadium, // 1b each,
-        // uint8[3] memory halfTimeSubstitutions, // 4b each, offset 201, the first 3 for half 1, the other for half 2
-        // uint8[6] memory ingameSubs, // 2b each, offset 189
-        //                             //  ...the first 3 for half 1, the other for half 2.
-        //                             // ...0: no change required, 1: change happened, 2: change could not happen  
-        // uint8[4] memory numDefTotWinner
-        //                             // [4b, 4b, 4b, 2b], offset 213
-        //                             // [nDefsHalf1, nDefsHalf2, nTotHalf2, winner]
-        //                             // winner: 0 = home, 1 = away, 2 = draw
-        // teamSumSkills: 24b // offset 227
 contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
 
     uint256 private constant ONE256       = 1; 
@@ -47,6 +27,11 @@ contract EncodingMatchLogPart1 is EncodingMatchLogPart4{
     function getOutOfGameType(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
         uint8 offset = is2ndHalf ? 163 : 143;
         return ((uint256(log) >> offset) & 3);
+    }
+
+    function getOutOfGameRound(uint256 log, bool is2ndHalf)  public pure returns (uint256) {
+        uint8 offset = is2ndHalf ? 155 : 135;
+        return ((uint256(log) >> offset +4 ) & 15);
     }
 
     function addOutOfGame(uint256 log, uint8 player, uint8 round, uint8 typeOfOutOfGame, bool is2ndHalf)  public pure returns (uint256) {
