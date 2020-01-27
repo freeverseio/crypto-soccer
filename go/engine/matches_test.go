@@ -1,111 +1,76 @@
 package engine_test
 
 import (
-	"database/sql"
-	"math/big"
+	"context"
 	"testing"
 
 	"github.com/freeverseio/crypto-soccer/go/engine"
-	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
-	"gotest.tools/assert"
 )
 
-func TestNewMatchByLeagueWithNoMatches(t *testing.T) {
-	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tx.Rollback()
-	timezoneIdx := uint8(1)
-	day := uint8(0)
-	matches, err := engine.FromStorage(tx, timezoneIdx, day)
-	assert.NilError(t, err)
-	assert.Equal(t, len(matches), 0)
+func BenchmarkPlayer1stHalf10(b *testing.B) {
+	benchmarkPlay1stHalf(b, 10)
 }
 
-func TestMatchesFromStorage(t *testing.T) {
-	tx, err := s.Begin()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tx.Rollback()
-	createMatches(t, tx)
-	timezoneIdx := uint8(1)
-	day := uint8(0)
-	matches, err := engine.FromStorage(tx, timezoneIdx, day)
-	assert.NilError(t, err)
-	assert.Equal(t, len(matches), 8)
-	match := matches[0]
-	assert.Equal(t, match.HomeTeam.TeamID.String(), "10")
-	assert.Equal(t, match.VisitorTeam.TeamID.String(), "10")
-	assert.Equal(t, match.HomeMatchLog.String(), "12")
-	assert.Equal(t, match.VisitorMatchLog.String(), "13")
-	assert.Equal(t, match.HomeGoals, uint8(0))
-	assert.Equal(t, match.VisitorGoals, uint8(0))
-	assert.Equal(t, match.HomeTeam.Players[0].Skills().String(), "123456")
-	assert.Equal(t, match.VisitorTeam.Players[0].Skills().String(), "123456")
-	assert.Equal(t, len(match.Events), 0)
+func BenchmarkPlayer1stHalf20(b *testing.B) {
+	benchmarkPlay1stHalf(b, 20)
 }
 
-// func TestMatchesToStorage(t *testing.T) {
-// 	tx, err := s.Begin()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer tx.Rollback()
-// 	createMatches(t, tx)
-// 	timezoneIdx := uint8(1)
-// 	day := uint8(0)
-// 	matches, err := engine.FromStorage(tx, timezoneIdx, day)
-// 	assert.NilError(t, err)
+func BenchmarkPlayer1stHalf40(b *testing.B) {
+	benchmarkPlay1stHalf(b, 40)
+}
 
-// }
+func BenchmarkPlayer1stHalf80(b *testing.B) {
+	benchmarkPlay1stHalf(b, 80)
+}
 
-func createMatches(t *testing.T, tx *sql.Tx) {
-	timezoneIdx := uint8(1)
-	timezone := storage.Timezone{timezoneIdx}
-	err := timezone.Insert(tx)
-	assert.NilError(t, err)
+func BenchmarkPlayer1stHalf160(b *testing.B) {
+	benchmarkPlay1stHalf(b, 160)
+}
 
-	countryIdx := uint32(0)
-	country := storage.Country{timezone.TimezoneIdx, countryIdx}
-	err = country.Insert(tx)
-	assert.NilError(t, err)
+func BenchmarkPlayer1stHalfParallel10(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 10)
+}
 
-	leagueIdx := uint32(0)
-	league := storage.League{timezoneIdx, countryIdx, leagueIdx}
-	err = league.Insert(tx)
-	assert.NilError(t, err)
+func BenchmarkPlayer1stHalfParallel20(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 20)
+}
 
-	var team storage.Team
-	team.TeamID = big.NewInt(10)
-	team.TimezoneIdx = timezoneIdx
-	team.CountryIdx = countryIdx
-	team.Owner = "ciao"
-	team.LeagueIdx = leagueIdx
-	err = team.Insert(tx)
-	assert.NilError(t, err)
+func BenchmarkPlayer1stHalfParallel40(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 40)
+}
 
-	var player storage.Player
-	player.TeamId = team.TeamID
-	player.EncodedSkills = big.NewInt(123456)
-	assert.NilError(t, player.Insert(tx))
+func BenchmarkPlayer1stHalfParallel80(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 80)
+}
 
-	for i := 0; i < 8; i++ {
-		matchDayIdx := uint8(0)
-		matchIdx := uint8(i)
-		match := storage.Match{
-			TimezoneIdx:     timezoneIdx,
-			CountryIdx:      countryIdx,
-			LeagueIdx:       leagueIdx,
-			MatchDayIdx:     matchDayIdx,
-			MatchIdx:        matchIdx,
-			HomeTeamID:      big.NewInt(10),
-			VisitorTeamID:   big.NewInt(10),
-			HomeMatchLog:    big.NewInt(12),
-			VisitorMatchLog: big.NewInt(13),
+func BenchmarkPlayer1stHalfParallel160(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 160)
+}
+
+func BenchmarkPlayer1stHalfParallel320(b *testing.B) {
+	benchmarkPlay1stHalfParallel(b, 320)
+}
+
+func benchmarkPlay1stHalf(b *testing.B, nMatches int) {
+	var matches engine.Matches
+	for i := 0; i < nMatches; i++ {
+		matches = append(matches, *engine.NewMatch())
+	}
+	for n := 0; n < b.N; n++ {
+		if err := matches.Play1stHalf(*bc.Contracts); err != nil {
+			b.Error(err)
 		}
-		err = match.Insert(tx)
-		assert.NilError(t, err)
+	}
+}
+
+func benchmarkPlay1stHalfParallel(b *testing.B, nMatches int) {
+	var matches engine.Matches
+	for i := 0; i < nMatches; i++ {
+		matches = append(matches, *engine.NewMatch())
+	}
+	for n := 0; n < b.N; n++ {
+		if err := matches.Play1stHalfParallel(context.Background(), *bc.Contracts); err != nil {
+			b.Error(err)
+		}
 	}
 }

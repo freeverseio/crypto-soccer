@@ -16,5 +16,6 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.1
 	github.com/urfave/cli v1.22.2
+	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4
 	gotest.tools v2.2.0+incompatible
 )

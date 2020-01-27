@@ -1,39 +1,60 @@
 package engine
 
 import (
+	"context"
 	"database/sql"
+	"runtime"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/freeverseio/crypto-soccer/go/contracts"
 	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type Matches []Match
 
-func FromStorage(
-	tx *sql.Tx,
-	timezoneIdx uint8,
-	day uint8,
-) (Matches, error) {
-	ms, err := storage.MatchesByTimezoneIdxAndMatchDay(tx, timezoneIdx, day)
+func (b Matches) Play1stHalf(contracts contracts.Contracts) error {
+	for _, match := range b {
+		if err := match.Play1stHalf(contracts); err != nil {
+			log.Error(match.DumpState())
+			return err
+		}
+	}
+	return nil
+}
+
+func worker(contracts contracts.Contracts, matchesChannel <-chan Match) error {
+	c, err := contracts.Duplicate()
 	if err != nil {
-		return nil, err
+		return err
+	}
+	for match := range matchesChannel {
+		if err := match.Play1stHalf(*c); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
+	numWorkers := runtime.NumCPU()
+	log.Debugf("Using %v workers", numWorkers)
+
+	matchesChannel := make(chan Match, len(b))
+	g, _ := errgroup.WithContext(ctx)
+
+	for i := 0; i < numWorkers; i++ {
+		g.Go(func() error {
+			return worker(contracts, matchesChannel)
+		})
 	}
 
-	var matches Matches
-	for i := range ms {
-		m := ms[i]
-		homeTeamPlayers, err := storage.PlayersByTeamId(tx, m.HomeTeamID)
-		if err != nil {
-			return nil, err
-		}
-		visitorTeamPlayers, err := storage.PlayersByTeamId(tx, m.VisitorTeamID)
-		if err != nil {
-			return nil, err
-		}
-		match := NewMatchFromStorage(m, homeTeamPlayers, visitorTeamPlayers)
-		matches = append(matches, *match)
+	for i := 0; i < len(b); i++ {
+		matchesChannel <- b[i]
 	}
-	return matches, nil
+	close(matchesChannel)
+	return g.Wait()
 }
 
 func (b Matches) ToStorage(contracts *contracts.Contracts, tx *sql.Tx) error {

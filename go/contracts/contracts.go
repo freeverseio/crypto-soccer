@@ -19,16 +19,40 @@ import (
 )
 
 type Contracts struct {
-	Client        *ethclient.Client
-	Leagues       *leagues.Leagues
-	Assets        *assets.Assets
-	Evolution     *evolution.Evolution
-	Engine        *engine.Engine
-	Engineprecomp *engineprecomp.Engineprecomp
-	Updates       *updates.Updates
-	Market        *market.Market
-	Matchevents   *matchevents.Matchevents
-	Utilsmatchlog *utilsmatchlog.Utilsmatchlog
+	Client               *ethclient.Client
+	Leagues              *leagues.Leagues
+	Assets               *assets.Assets
+	Evolution            *evolution.Evolution
+	Engine               *engine.Engine
+	Engineprecomp        *engineprecomp.Engineprecomp
+	Updates              *updates.Updates
+	Market               *market.Market
+	Matchevents          *matchevents.Matchevents
+	Utilsmatchlog        *utilsmatchlog.Utilsmatchlog
+	leaguesAddress       string
+	assetsAddress        string
+	evolutionAddress     string
+	engineAddress        string
+	engineprecompAddress string
+	updatesAddress       string
+	marketAddress        string
+	matcheventsAddress   string
+	utilsmatchlogAddress string
+}
+
+func (b Contracts) Duplicate() (*Contracts, error) {
+	return New(
+		b.Client,
+		b.leaguesAddress,
+		b.assetsAddress,
+		b.evolutionAddress,
+		b.engineAddress,
+		b.engineprecompAddress,
+		b.updatesAddress,
+		b.marketAddress,
+		b.matcheventsAddress,
+		b.utilsmatchlogAddress,
+	)
 }
 
 func New(
@@ -45,49 +69,59 @@ func New(
 ) (*Contracts, error) {
 	var err error
 	contracts := Contracts{}
+	contracts.leaguesAddress = leaguesAddress
+	contracts.assetsAddress = assetsAddress
+	contracts.evolutionAddress = evolutionAddress
+	contracts.engineAddress = engineAddress
+	contracts.engineprecompAddress = engineprecompAddress
+	contracts.updatesAddress = updatesAddress
+	contracts.marketAddress = marketAddress
+	contracts.matcheventsAddress = matcheventsAddress
+	contracts.utilsmatchlogAddress = utilsmatchlogAddress
+
 	contracts.Client = client
 
-	log.Info("creating leagues bindings to: ", leaguesAddress)
+	log.Debug("creating leagues bindings to: ", leaguesAddress)
 	contracts.Leagues, err = leagues.NewLeagues(common.HexToAddress(leaguesAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("creating assets bindings to: ", assetsAddress)
+	log.Debug("creating assets bindings to: ", assetsAddress)
 	contracts.Assets, err = assets.NewAssets(common.HexToAddress(assetsAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("creating evolution bindings to: ", evolutionAddress)
+	log.Debug("creating evolution bindings to: ", evolutionAddress)
 	contracts.Evolution, err = evolution.NewEvolution(common.HexToAddress(evolutionAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("creating engine bindings to: ", engineAddress)
+	log.Debug("creating engine bindings to: ", engineAddress)
 	contracts.Engine, err = engine.NewEngine(common.HexToAddress(engineAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("creating engineprecomp bindings to: ", engineprecompAddress)
+	log.Debug("creating engineprecomp bindings to: ", engineprecompAddress)
 	contracts.Engineprecomp, err = engineprecomp.NewEngineprecomp(common.HexToAddress(engineprecompAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("creating updates bindings to: ", updatesAddress)
+	log.Debug("creating updates bindings to: ", updatesAddress)
 	contracts.Updates, err = updates.NewUpdates(common.HexToAddress(updatesAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("failed to connect to the ethereum client: %v", err)
 	}
-	log.Info("Creating Market bindings to: ", marketAddress)
+	log.Debug("Creating Market bindings to: ", marketAddress)
 	contracts.Market, err = market.NewMarket(common.HexToAddress(marketAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
-	log.Info("Creating Matchevents bindings to: ", matcheventsAddress)
+	log.Debug("Creating Matchevents bindings to: ", matcheventsAddress)
 	contracts.Matchevents, err = matchevents.NewMatchevents(common.HexToAddress(matcheventsAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)
 	}
-	log.Info("Creating Utilsmatchlog bindings to: ", utilsmatchlogAddress)
+	log.Debug("Creating Utilsmatchlog bindings to: ", utilsmatchlogAddress)
 	contracts.Utilsmatchlog, err = utilsmatchlog.NewUtilsmatchlog(common.HexToAddress(utilsmatchlogAddress), contracts.Client)
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client: %v", err)

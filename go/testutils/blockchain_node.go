@@ -77,7 +77,7 @@ func NewBlockchainNode() (*BlockchainNode, error) {
 }
 
 func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
-	assetsAddress, tx10, assetsContract, err := assets.DeployAssets(
+	assetsAddress, tx10, _, err := assets.DeployAssets(
 		bind.NewKeyedTransactor(owner),
 		b.Client,
 	)
@@ -137,7 +137,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	engineprecompAddress, tx31, enginePreComp, err := engineprecomp.DeployEngineprecomp(
+	engineprecompAddress, tx31, _, err := engineprecomp.DeployEngineprecomp(
 		bind.NewKeyedTransactor(owner),
 		b.Client,
 	)
@@ -157,7 +157,7 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	utilsmatchlogAddress, tx33, utilsmatchlogContract, err := utilsmatchlog.DeployUtilsmatchlog(
+	utilsmatchlogAddress, tx33, _, err := utilsmatchlog.DeployUtilsmatchlog(
 		bind.NewKeyedTransactor(owner),
 		b.Client,
 	)
@@ -250,18 +250,18 @@ func (b *BlockchainNode) DeployContracts(owner *ecdsa.PrivateKey) error {
 		return err
 	}
 
-	b.Contracts = &contracts.Contracts{
+	b.Contracts, _ = contracts.New(
 		b.Client,
-		leaguesContract,
-		assetsContract,
-		evolutionContract,
-		engineContract,
-		enginePreComp,
-		updatesContract,
-		marketContract,
-		matcheventsContract,
-		utilsmatchlogContract,
-	}
+		leaguesAddress.String(),
+		assetsAddress.String(),
+		evolutionAddress.String(),
+		engineAddress.String(),
+		engineprecompAddress.String(),
+		updatesAddress.String(),
+		marketAddress.String(),
+		matcheventsAddress.String(),
+		utilsmatchlogAddress.String(),
+	)
 	return nil
 }
 
