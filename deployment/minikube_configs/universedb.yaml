@@ -73,12 +73,12 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5432
-        volumeMounts:
-        - mountPath: "/var/lib/postgresql/data"
-          name: universedb-storage
+        #volumeMounts:
+        #- mountPath: "/var/lib/postgresql/data"
+        #  name: universedb-storage
       imagePullSecrets:
       - name: docker-secret
-      volumes:
-      - name: universedb-storage
-        persistentVolumeClaim:
-          claimName: universedb-pvclaim
+      #volumes:
+      #- name: universedb-storage
+      #  persistentVolumeClaim:
+      #    claimName: universedb-pvclaim
