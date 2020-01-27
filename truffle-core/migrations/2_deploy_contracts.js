@@ -1,5 +1,6 @@
 const Engine = artifacts.require('Engine');
 const EnginePreComp = artifacts.require('EnginePreComp');
+const TrainingPoints = artifacts.require('TrainingPoints');
 const Evolution = artifacts.require('Evolution');
 const Assets = artifacts.require('Assets');
 const Leagues = artifacts.require('Leagues');
@@ -20,6 +21,7 @@ module.exports = function (deployer) {
   deployer.then(async () => {
     const engine = await deployer.deploy(Engine).should.be.fulfilled;
     const enginePreComp = await deployer.deploy(EnginePreComp).should.be.fulfilled;
+    const trainingPoints= await deployer.deploy(TrainingPoints).should.be.fulfilled;
     const evolution= await deployer.deploy(Evolution).should.be.fulfilled;
     const assets = await deployer.deploy(Assets).should.be.fulfilled;
     const leagues = await deployer.deploy(Leagues).should.be.fulfilled;
@@ -36,11 +38,11 @@ module.exports = function (deployer) {
     await leagues.setAssetsAdress(assets.address).should.be.fulfilled;
     await market.setAssetsAddress(assets.address).should.be.fulfilled;
     await updates.initUpdates(assets.address).should.be.fulfilled;
-    await evolution.setAssetsAddress(assets.address).should.be.fulfilled;
+    await trainingPoints.setAssetsAddress(assets.address).should.be.fulfilled;
     await playAndEvolve.setEngine(engine.address).should.be.fulfilled;
     await engine.setPreCompAddr(enginePreComp.address).should.be.fulfilled;
     await market.setAcademyAddr("0xb8CE9ab6943e0eCED004cDe8e3bBed6568B2Fa01");
-    await playAndEvolve.setEvolutionAddress(evolution.address);
+    await playAndEvolve.setEvolutionAddress(trainingPoints.address);
     console.log("Setting up ... done");
 
     console.log("Initing ... TODO : only one zone actually");
@@ -56,6 +58,7 @@ module.exports = function (deployer) {
     console.log("MARKET_CONTRACT_ADDRESS=" + market.address);
     console.log("UPDATES_CONTRACT_ADDRESS=" + updates.address);
     console.log("ASSETS_CONTRACT_ADDRESS=" + assets.address);
+    console.log("TRAININGPOINTS_CONTRACT_ADDRESS=" + trainingPoints.address);
     console.log("EVOLUTION_CONTRACT_ADDRESS=" + evolution.address);
     console.log("FRIENDLIES_CONTRACT_ADDRESS=" + friendlies.address);
     console.log("SHOP_CONTRACT_ADDRESS=" + shop.address);

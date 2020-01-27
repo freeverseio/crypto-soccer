@@ -1,5 +1,6 @@
 pragma solidity >=0.5.12 <0.6.2;
 
+import "./TrainingPoints.sol";
 import "./Evolution.sol";
 import "./Engine.sol";
 
@@ -9,11 +10,11 @@ contract PlayAndEvolve {
     uint8 private constant IDX_IS_2ND_HALF      = 0; 
     uint8 public constant ROUNDS_PER_MATCH  = 12;   // Number of relevant actions that happen during a game (12 equals one per 3.7 min)
 
-    Evolution private _evo;
+    TrainingPoints private _evo;
     Engine private _engine;
 
     function setEvolutionAddress(address addr) public {
-        _evo = Evolution(addr);
+        _evo = TrainingPoints(addr);
     }
     function setEngine(address addr) public {
         _engine = Engine(addr);
@@ -42,5 +43,8 @@ contract PlayAndEvolve {
     }
     
     // seedAndStartTimeAndEvents => logAnd... (in other code)
+
+
+
 }
 
