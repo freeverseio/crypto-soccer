@@ -24,14 +24,30 @@ func (b Matches) Play1stHalf(contracts contracts.Contracts) error {
 	return nil
 }
 
-func worker(contracts contracts.Contracts, matchesChannel <-chan Match) error {
+func (b Matches) Play2ndHalf(contracts contracts.Contracts) error {
+	for _, match := range b {
+		if err := match.Play2ndHalf(contracts); err != nil {
+			log.Error(match.DumpState())
+			return err
+		}
+	}
+	return nil
+}
+
+func worker(contracts contracts.Contracts, matchesChannel <-chan Match, is2ndHalf bool) error {
 	c, err := contracts.Duplicate()
 	if err != nil {
 		return err
 	}
 	for match := range matchesChannel {
-		if err := match.Play1stHalf(*c); err != nil {
-			return err
+		if is2ndHalf {
+			if err := match.Play2ndHalf(*c); err != nil {
+				return err
+			}
+		} else {
+			if err := match.Play1stHalf(*c); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -46,7 +62,27 @@ func (b Matches) Play1stHalfParallel(ctx context.Context, contracts contracts.Co
 
 	for i := 0; i < numWorkers; i++ {
 		g.Go(func() error {
-			return worker(contracts, matchesChannel)
+			return worker(contracts, matchesChannel, false)
+		})
+	}
+
+	for i := 0; i < len(b); i++ {
+		matchesChannel <- b[i]
+	}
+	close(matchesChannel)
+	return g.Wait()
+}
+
+func (b Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Contracts) error {
+	numWorkers := runtime.NumCPU()
+	log.Debugf("Using %v workers", numWorkers)
+
+	matchesChannel := make(chan Match, len(b))
+	g, _ := errgroup.WithContext(ctx)
+
+	for i := 0; i < numWorkers; i++ {
+		g.Go(func() error {
+			return worker(contracts, matchesChannel, true)
 		})
 	}
 

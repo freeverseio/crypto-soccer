@@ -1,6 +1,7 @@
 package process
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"math/big"
@@ -88,13 +89,9 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 
 	switch turnInDay {
 	case 0: // first half league match
-		for i := range matches {
-			matches[i].Play1stHalf(*b.contracts)
-		}
-	case 1:
-		for i := range matches {
-			matches[i].Play2ndHalf(*b.contracts)
-		}
+		matches.Play1stHalfParallel(context.TODO(), *b.contracts)
+	case 1: // second half league match
+		matches.Play2ndHalfParallel(context.TODO(), *b.contracts)
 	default:
 		log.Warnf("[LeagueProcessor] ... skipping")
 	} // switch
