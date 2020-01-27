@@ -218,7 +218,7 @@ contract EncodingSkills {
         return uint256(encodedSkills >> 149 & 7);
     }
 
-    function getAlignedEndOfLastHalf(uint256 encodedSkills) public pure returns (bool) {
+    function getAlignedEndOfFirstHalf(uint256 encodedSkills) public pure returns (bool) {
         return (encodedSkills >> 152 & 1) == 1;
     }
 

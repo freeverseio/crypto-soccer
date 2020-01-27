@@ -501,7 +501,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
         for (uint8 p = 0; p < 11; p++) {
             outStates[p] = verifyCanPlay(lineup[p], states[lineup[p]], is2ndHalf, false);
             if (outStates[p] != 0) {
-                if (is2ndHalf && !getAlignedEndOfLastHalf(outStates[p])) {
+                if (is2ndHalf && !getAlignedEndOfFirstHalf(outStates[p])) {
                     matchLog = addHalfTimeSubs(matchLog, p+1, changes); // for halftime subs, 0 = NO_SUBS
                     changes++;
                     teamSkills += getSumOfSkills(outStates[p]); 
@@ -547,7 +547,7 @@ contract EnginePreComp is EngineLib, EncodingMatchLogPart1, SortValues {
                         (getInjuryWeeksLeft(playerSkills) != 0) ||
                         getRedCardLastGame(playerSkills);
         if (is2ndHalf) isWrong = isWrong || getSubstitutedFirstHalf(playerSkills);
-        if (isSubst) isWrong = isWrong || getAlignedEndOfLastHalf(playerSkills);
+        if (isSubst) isWrong = isWrong || getAlignedEndOfFirstHalf(playerSkills);
         if (isWrong) {return 0;} 
         else {return playerSkills;}
     }

@@ -209,7 +209,7 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    it('updateStatesAfterPlayHalf', async () => {
+    it2('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -229,8 +229,26 @@ contract('Evolution', (accounts) => {
         }
     });
 
-    return
-    
+    it('updateStatesAfterPlayHalf: half 2', async () => {
+        // note: substitutions = [6, 10, 0];
+        // note: lineup is consecutive
+        matchLog = await engine.playHalfMatch(
+            123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
+            [is2nd = true, isHome = true, playoff = false]
+        ).should.be.fulfilled;
+        teamStateAll50Half1[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half1[1], 2);
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
+        // players not aligned did not change state: 
+        for (p = 0; p < 25; p++) {
+            aligned = await evo.getAlignedEndOfFirstHalf(newSkills[p]).should.be.fulfilled
+            aligned.should.be.equal(false)
+            substituted = await evo.getSubstitutedFirstHalf(newSkills[p]).should.be.fulfilled
+            substituted.should.be.equal(false)
+        }
+        weeks = await evo.getInjuryWeeksLeft(newSkills[1]);
+        weeks.toNumber().should.be.equal(1);
+    });
+
     it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
