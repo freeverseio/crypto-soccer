@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.5.12 <0.6.2;
 
 import "./Evolution.sol";
 import "./Engine.sol";
