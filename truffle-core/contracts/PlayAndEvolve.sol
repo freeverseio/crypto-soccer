@@ -50,8 +50,8 @@ contract PlayAndEvolve {
         uint256[2+5*ROUNDS_PER_MATCH] memory matchLogsAndEvents = 
             _engine.playHalfMatch(seed, matchStartTime, states, tactics, nullLogs, matchBools);
 
-        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], true);
-        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], true);
+        states[0] = _evo.updateStatesAfterPlayHalf(states[0], matchLogsAndEvents[0], tactics[0], false);
+        states[1] = _evo.updateStatesAfterPlayHalf(states[1], matchLogsAndEvents[1], tactics[1], false);
 
         return (states, matchLogsAndEvents);
     }

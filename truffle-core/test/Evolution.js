@@ -687,15 +687,15 @@ contract('Evolution', (accounts) => {
         assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
         
         const {0: skills, 1: matchLogsAndEvents} = await play.play1stHalfAndEvolve(
-            123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [assignment, assignment], 
+            123456, now, [teamStateAll50Half1, teamStateAll50Half1], [tactics0, tactics1], [assignment, assignment], 
             [is2nd = false, isHomeStadium, isPlayoff]
         ).should.be.fulfilled;
         
         matchLogsAndEvents[0].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222701407529504605586');
         matchLogsAndEvents[1].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222624846335839307426');
 
-        // show that after applying the trainpoints (before the match), the teams evolved from 250 per player to 549
-        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half2[0]).should.be.fulfilled;
+        // show that after applying the training points (before the match), the teams evolved from 250 per player to 549
+        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half1[0]).should.be.fulfilled;
         sumBeforeEvolving.toNumber().should.be.equal(250);
         expectedSums = Array.from(new Array(25), (x,i) => 549);
         sumSkills0 = []  // sum of skills of each player for team 0
@@ -709,6 +709,7 @@ contract('Evolution', (accounts) => {
         debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
         debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
 
+        // check that the game is played, ends up in 2-2, and that there are no TPs assigned (this is 1st half)
         expectedResult = [2, 2];
         expectedPoints = [0, 0];
         for (team = 0; team < 2; team++) {
@@ -717,8 +718,28 @@ contract('Evolution', (accounts) => {
             points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expectedPoints[team]);
         }
+        // check that the events are generated, and match whatever we got once.
         expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
+
+        // check that we set the "aligned" properties properly
+        for (p = 0; p < 14; p++) {
+            endedHalf = await evo.getAlignedEndOfFirstHalf(skills[0][p]).should.be.fulfilled;
+            wasSubst = await evo.getSubstitutedFirstHalf(skills[0][p]).should.be.fulfilled;
+            if (substitutions.includes(p)) {
+                endedHalf.should.be.equal(false);
+                wasSubst.should.be.equal(true);
+            } else {
+                endedHalf.should.be.equal(true);
+                wasSubst.should.be.equal(false);
+            }
+        }
+        for (p = 14; p < 25; p++) {
+            endedHalf = await evo.getAlignedEndOfFirstHalf(skills[0][p]).should.be.fulfilled;
+            wasSubst = await evo.getSubstitutedFirstHalf(skills[0][p]).should.be.fulfilled;
+            endedHalf.should.be.equal(false);
+            wasSubst.should.be.equal(false);
+        }
     });
     
     
@@ -739,6 +760,7 @@ contract('Evolution', (accounts) => {
             points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
             points.toNumber().should.be.equal(expectedPoints[team]);
         }
+        // check that the events are generated, and match whatever we got once.
         expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
     });
