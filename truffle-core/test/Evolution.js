@@ -211,8 +211,7 @@ contract('Evolution', (accounts) => {
 
     
     
-    // test test/Evolution.js
-    it('updateStatesAfterPlayHalf: half 1', async () => {
+    it2('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -272,8 +271,8 @@ contract('Evolution', (accounts) => {
     });
     
     
-    return
 
+    // test test/Evolution.js
 
     it('updateStatesAfterPlayHalf: half 2', async () => {
         // note: substitutions = [6, 10, 0];
@@ -282,9 +281,10 @@ contract('Evolution', (accounts) => {
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHome = true, playoff = false]
         ).should.be.fulfilled;
-        teamStateAll50Half1[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half1[1], 2);
-        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
+        teamStateAll50Half2[1] = await evo.setInjuryWeeksLeft(teamStateAll50Half2[1], 2);
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half2, matchLog[0], tactics0, is2nd = true).should.be.fulfilled;
         // players not aligned did not change state: 
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
         for (p = 0; p < 25; p++) {
             aligned = await evo.getAlignedEndOfFirstHalf(newSkills[p]).should.be.fulfilled
             aligned.should.be.equal(false)
@@ -293,8 +293,21 @@ contract('Evolution', (accounts) => {
         }
         weeks = await evo.getInjuryWeeksLeft(newSkills[1]);
         weeks.toNumber().should.be.equal(1);
+        
+        // now try the same with a red card in both halfs
+        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
+        newLog = await evo.addOutOfGame(newLog, player = 2, round = 2, typeOfOutOfGame = RED_CARD, is2nd = true).should.be.fulfilled;
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half2, newLog, tactics0, is2nd = true).should.be.fulfilled;
+        debug.compareArrays(newSkills.slice(14,25), teamStateAll50Half2.slice(14,25), toNum = false, verbose = false, isBigNumber = true);
+        for (p = 0; p < 25; p++) {
+            redCarded = await evo.getRedCardLastGame(newSkills[p]).should.be.fulfilled
+            if (p == 1 || p == 2) {redCarded.should.be.equal(true);}
+            else {redCarded.should.be.equal(false);}
+        }
     });
 
+    return;
+    
     it('getTeamEvolvedSkills: if assignment = 0, it works by doing absolutely nothing', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
