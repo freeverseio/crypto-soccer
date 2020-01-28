@@ -14,7 +14,6 @@ import (
 	"github.com/freeverseio/crypto-soccer/go/testutils"
 )
 
-// TODO reactive
 func TestSyncTeams(t *testing.T) {
 	tx, err := universedb.Begin()
 	if err != nil {

@@ -95,23 +95,61 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
 
-	// get the storage data
+	// switch turnInDay {
+	// case 0: // first half league match
+	// case 1:
+	if turnInDay < 2 {
+		countryCount, err := storage.CountryInTimezoneCount(tx, timezoneIdx)
+		if err != nil {
+			return err
+		}
+		for countryIdx := uint32(0); countryIdx < countryCount; countryIdx++ {
+			// if a new league is starting shuffle the teams
+			if (day == 0) && (turnInDay == 0) {
+				err = b.UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx, timezoneIdx, countryIdx)
+				if err != nil {
+					return err
+				}
+			}
+			leagueCount, err := storage.LeagueByTeimezoneIdxCountryIdx(tx, timezoneIdx, countryIdx)
+			if err != nil {
+				return err
+			}
+			for leagueIdx := uint32(0); leagueIdx < leagueCount; leagueIdx++ {
+				is2ndHalf := turnInDay == 1
+				log.Infof("LeagueProcessor::Process timezone: %v, countryIdx %v, leagueIdx %v, 2ndHalf %v", timezoneIdx, countryIdx, leagueIdx, is2ndHalf)
+				if day == 0 {
+					if err = b.resetLeague(tx, timezoneIdx, countryIdx, leagueIdx); err != nil {
+						return err
+					}
+					if err = storage.DeleteAllMatchEvents(tx, int(timezoneIdx), int(countryIdx), int(leagueIdx)); err != nil {
+						return err
+					}
+				}
 
-	matches, err := FromStorage(tx, timezoneIdx, day)
-	if err != nil {
-		return err
+				matches, err := engine.NewMatchesFromTimezoneIdxCountryIdxLeagueIdxMatchdayIdx(tx, timezoneIdx, countryIdx, leagueIdx, day)
+				if err != nil {
+					return err
+				}
+				if is2ndHalf {
+					if err = matches.Play2ndHalfParallel(context.TODO(), *b.contracts); err != nil {
+						return err
+					}
+				} else {
+					if err = matches.Play1stHalfParallel(context.TODO(), *b.contracts); err != nil {
+						return err
+					}
+				}
+				if err = matches.ToStorage(*b.contracts, tx); err != nil {
+					return err
+				}
+			}
+		}
 	}
-
-	switch turnInDay {
-	case 0: // first half league match
-		matches.Play1stHalfParallel(context.TODO(), *b.contracts)
-	case 1: // second half league match
-		matches.Play2ndHalfParallel(context.TODO(), *b.contracts)
-	default:
-		log.Warnf("[LeagueProcessor] ... skipping")
-	} // switch
-
-	return matches.ToStorage(*b.contracts, tx)
+	// default:
+	// 	log.Warnf("[LeagueProcessor] ... skipping")
+	// } // switch
+	return nil
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {
