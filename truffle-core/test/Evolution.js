@@ -209,7 +209,10 @@ contract('Evolution', (accounts) => {
         POINTS_FOR_HAVING_PLAYED = POINTS_FOR_HAVING_PLAYED.toNumber();
     });
 
-    it2('updateStatesAfterPlayHalf: half 1', async () => {
+    
+    
+    
+    it('updateStatesAfterPlayHalf: half 1', async () => {
         // note: substitutions = [6, 10, 0];
         // note: lineup is consecutive
         matchLog = await engine.playHalfMatch(
@@ -223,11 +226,26 @@ contract('Evolution', (accounts) => {
         aligned = await evo.setAlignedEndOfFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
         substituted = await evo.setSubstitutedFirstHalf(teamStateAll50Half1[0], true).should.be.fulfilled
         for (p = 0; p < 13; p++) {
-            console.log(p);
             if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
             else {newSkills[p].should.be.bignumber.equal(substituted);}
         }
+        // now try the same with a red card:
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, matchLog[0], tactics0, is2nd = false).should.be.fulfilled;
+        newLog = await evo.addOutOfGame(matchLog[0], player = 1, round = 2, typeOfOutOfGame = RED_CARD, is2nd = false).should.be.fulfilled;
+        newSkills = await evo.updateStatesAfterPlayHalf(teamStateAll50Half1, newLog, tactics0, is2nd = false).should.be.fulfilled;
+        debug.compareArrays(newSkills.slice(13,25), teamStateAll50Half1.slice(13,25), toNum = false, verbose = false, isBigNumber = true);
+        for (p = 0; p < 13; p++) {
+            console.log(p)
+            if (p != 1) {
+                if (!substitutions.includes(p)) {newSkills[p].should.be.bignumber.equal(aligned);}
+                else {newSkills[p].should.be.bignumber.equal(substituted);}
+            }
+        }
     });
+    
+    
+    return
+
 
     it('updateStatesAfterPlayHalf: half 2', async () => {
         // note: substitutions = [6, 10, 0];
