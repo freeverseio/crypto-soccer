@@ -67,11 +67,11 @@ func NewMatchFromStorage(
 	return match
 }
 
-func (b Match) ToStorage(tx *sql.Tx) error {
-	if err := b.HomeTeam.ToStorage(tx); err != nil {
+func (b Match) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
+	if err := b.HomeTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
-	if err := b.VisitorTeam.ToStorage(tx); err != nil {
+	if err := b.VisitorTeam.ToStorage(contracts, tx); err != nil {
 		return err
 	}
 	return b.Update(tx)

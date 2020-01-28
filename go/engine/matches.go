@@ -91,9 +91,9 @@ func (b Matches) Play2ndHalfParallel(ctx context.Context, contracts contracts.Co
 	return g.Wait()
 }
 
-func (b Matches) ToStorage(tx *sql.Tx) error {
+func (b Matches) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, match := range b {
-		if err := match.ToStorage(tx); err != nil {
+		if err := match.ToStorage(contracts, tx); err != nil {
 			return err
 		}
 

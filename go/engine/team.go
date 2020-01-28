@@ -31,9 +31,9 @@ func NewTeam() *Team {
 	return &team
 }
 
-func (b Team) ToStorage(tx *sql.Tx) error {
+func (b Team) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	for _, player := range b.Players {
-		if err := player.ToStorage(tx); err != nil {
+		if err := player.ToStorage(contracts, tx); err != nil {
 			return err
 		}
 	}

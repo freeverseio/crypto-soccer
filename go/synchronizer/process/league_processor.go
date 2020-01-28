@@ -111,7 +111,7 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 		log.Warnf("[LeagueProcessor] ... skipping")
 	} // switch
 
-	return matches.ToStorage(tx)
+	return matches.ToStorage(*b.contracts, tx)
 }
 
 func (b *LeagueProcessor) UpdatePrevPerfPointsAndShuffleTeamsInCountry(tx *sql.Tx, timezoneIdx uint8, countryIdx uint32) error {

@@ -26,9 +26,12 @@ func (b Player) IsNull() bool {
 	return b.sto.EncodedSkills.Cmp(big.NewInt(0)) == 0
 }
 
-func (b Player) ToStorage(tx *sql.Tx) error {
+func (b Player) ToStorage(contracts contracts.Contracts, tx *sql.Tx) error {
 	if b.IsNull() {
 		return nil
+	}
+	if err := b.decodeSkills(contracts); err != nil {
+		return err
 	}
 	return b.sto.Update(tx)
 }
