@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"database/sql"
 	"fmt"
 	"math/big"
 
@@ -28,6 +29,15 @@ func NewTeam() *Team {
 	}
 	team.tactic = DefaultTactic()
 	return &team
+}
+
+func (b Team) ToStorage(tx *sql.Tx) error {
+	for _, player := range b.Players {
+		if err := player.ToStorage(tx); err != nil {
+			return err
+		}
+	}
+	return b.Update(tx)
 }
 
 func (b Team) DumpState() string {

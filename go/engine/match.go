@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"math/big"
@@ -64,6 +65,16 @@ func NewMatchFromStorage(
 		match.VisitorTeam.Players[player.ShirtNumber].Player = *player
 	}
 	return match
+}
+
+func (b Match) ToStorage(tx *sql.Tx) error {
+	if err := b.HomeTeam.ToStorage(tx); err != nil {
+		return err
+	}
+	if err := b.VisitorTeam.ToStorage(tx); err != nil {
+		return err
+	}
+	return b.Update(tx)
 }
 
 func (b *Match) Play1stHalf(contracts contracts.Contracts) error {

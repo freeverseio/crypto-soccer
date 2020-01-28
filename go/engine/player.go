@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"database/sql"
 	"fmt"
 	"math/big"
 	"time"
@@ -19,6 +20,17 @@ func NewNullPlayer() *Player {
 	player := Player{}
 	player.EncodedSkills = big.NewInt(0)
 	return &player
+}
+
+func (b Player) IsNull() bool {
+	return b.EncodedSkills.Cmp(big.NewInt(0)) == 0
+}
+
+func (b Player) ToStorage(tx *sql.Tx) error {
+	if b.IsNull() {
+		return nil
+	}
+	return b.Update(tx)
 }
 
 func NewPlayer(
