@@ -14,15 +14,12 @@ import (
 )
 
 type Match struct {
-	Seed            [32]byte
-	StartTime       *big.Int
-	HomeTeam        Team
-	VisitorTeam     Team
-	HomeGoals       uint8
-	VisitorGoals    uint8
-	HomeMatchLog    *big.Int
-	VisitorMatchLog *big.Int
-	Events          matchevents.MatchEvents
+	storage.Match
+	Seed        [32]byte
+	StartTime   *big.Int
+	HomeTeam    Team
+	VisitorTeam Team
+	Events      matchevents.MatchEvents
 }
 
 func (b Match) DumpState() string {
@@ -51,19 +48,20 @@ func NewMatch() *Match {
 
 func NewMatchFromStorage(
 	sMatch storage.Match,
+	sHomeTeam storage.Team,
+	sVisitorTeam storage.Team,
 	sHomePlayers []*storage.Player,
 	sVisitorPlayers []*storage.Player,
 ) *Match {
 	match := NewMatch()
-	match.HomeTeam.TeamID = sMatch.HomeTeamID
-	match.VisitorTeam.TeamID = sMatch.VisitorTeamID
-	match.HomeMatchLog = sMatch.HomeMatchLog
-	match.VisitorMatchLog = sMatch.VisitorMatchLog
+	match.Match = sMatch
+	match.HomeTeam.Team = sHomeTeam
+	match.VisitorTeam.Team = sVisitorTeam
 	for _, player := range sHomePlayers {
-		match.HomeTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
+		match.HomeTeam.Players[player.ShirtNumber].Player = *player
 	}
 	for _, player := range sVisitorPlayers {
-		match.VisitorTeam.Players[player.ShirtNumber] = NewPlayerFromSkills(player.EncodedSkills.String())
+		match.VisitorTeam.Players[player.ShirtNumber].Player = *player
 	}
 	return match
 }

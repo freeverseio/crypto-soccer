@@ -54,10 +54,17 @@ func FromStorage(
 	if err != nil {
 		return nil, err
 	}
-
 	var matches engine.Matches
 	for i := range ms {
 		m := ms[i]
+		homeTeam, err := storage.TeamByTeamId(tx, m.HomeTeamID)
+		if err != nil {
+			return nil, err
+		}
+		visitorTeam, err := storage.TeamByTeamId(tx, m.VisitorTeamID)
+		if err != nil {
+			return nil, err
+		}
 		homeTeamPlayers, err := storage.PlayersByTeamId(tx, m.HomeTeamID)
 		if err != nil {
 			return nil, err
@@ -66,7 +73,13 @@ func FromStorage(
 		if err != nil {
 			return nil, err
 		}
-		match := engine.NewMatchFromStorage(m, homeTeamPlayers, visitorTeamPlayers)
+		match := engine.NewMatchFromStorage(
+			m,
+			homeTeam,
+			visitorTeam,
+			homeTeamPlayers,
+			visitorTeamPlayers,
+		)
 		matches = append(matches, *match)
 	}
 	return matches, nil
@@ -77,6 +90,16 @@ func ToStorage(
 	matches engine.Matches,
 ) error {
 	for _, match := range matches {
+		for _, player := range match.HomeTeam.Players {
+			if err := player.Update(tx); err != nil {
+				return err
+			}
+		}
+		for _, player := range match.VisitorTeam.Players {
+			if err := player.Update(tx); err != nil {
+				return err
+			}
+		}
 
 	}
 	return nil
@@ -91,6 +114,8 @@ func (b *LeagueProcessor) Process(tx *sql.Tx, event updates.UpdatesActionsSubmis
 	if timezoneIdx > 24 {
 		return errors.New("[LaegueProcessor] ... wront timezone")
 	}
+
+	// get the storage data
 
 	matches, err := FromStorage(tx, timezoneIdx, day)
 	if err != nil {

@@ -218,8 +218,8 @@ func (b *MatchProcessor) InnerProcess(
 	if err != nil {
 		return nil, err
 	}
-	match.HomeGoals = &goalsHome
-	match.VisitorGoals = &goalsVisitor
+	match.HomeGoals = goalsHome
+	match.VisitorGoals = goalsVisitor
 	match.HomeMatchLog = new(big.Int).Set(logs[0])
 	match.VisitorMatchLog = new(big.Int).Set(logs[1])
 	if err = b.UpdatePlayedByHalf(homeTeamPlayers, is2ndHalf, match.HomeTeamID, tactics[0], logs[0]); err != nil {
@@ -577,7 +577,7 @@ func (b *MatchProcessor) UpdateTeamSkills(
 	if err != nil {
 		return err
 	}
-	team.TrainingPoints = uint32(trainingPoints.Uint64())
+	team.TrainingPoints = trainingPoints.Uint64()
 
 	states, err := b.GetTeamState(players)
 	if err != nil {

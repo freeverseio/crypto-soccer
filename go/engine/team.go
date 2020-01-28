@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/freeverseio/crypto-soccer/go/contracts"
+	"github.com/freeverseio/crypto-soccer/go/synchronizer/storage"
 )
 
 const NoOutOfGamePlayer = uint8(14)
@@ -14,10 +15,9 @@ const SoftInjury = uint8(1)
 const HardInjury = uint8(2)
 
 type Team struct {
-	TeamID         *big.Int
-	Players        [25]*Player
-	tactic         *big.Int
-	TrainingPoints uint64
+	storage.Team
+	Players [25]*Player
+	tactic  *big.Int // TODO add to storage.Team
 }
 
 func NewTeam() *Team {
