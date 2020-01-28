@@ -694,6 +694,21 @@ contract('Evolution', (accounts) => {
         matchLogsAndEvents[0].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222701407529504605586');
         matchLogsAndEvents[1].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222624846335839307426');
 
+        // show that after applying the trainpoints (before the match), the teams evolved from 250 per player to 549
+        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half2[0]).should.be.fulfilled;
+        sumBeforeEvolving.toNumber().should.be.equal(250);
+        expectedSums = Array.from(new Array(25), (x,i) => 549);
+        sumSkills0 = []  // sum of skills of each player for team 0
+        sumSkills1 = []  // sum of skills of each player for team 1
+        for (p = 0; p < 25; p++) {
+            sum = await evo.getSumOfSkills(skills[0][p]).should.be.fulfilled;
+            sumSkills0.push(sum)
+            sum = await evo.getSumOfSkills(skills[1][p]).should.be.fulfilled;
+            sumSkills1.push(sum)
+        }
+        debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+        debug.compareArrays(sumSkills1, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+
         expectedResult = [2, 2];
         expectedPoints = [0, 0];
         for (team = 0; team < 2; team++) {
