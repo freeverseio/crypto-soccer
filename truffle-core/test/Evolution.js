@@ -672,7 +672,42 @@ contract('Evolution', (accounts) => {
         
     });
 
-    it('test that we can a 2nd half and include the training points too', async () => {
+    it('test that we can a 1st half and include apply training points too', async () => {
+        TP = 200;
+        TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
+        specialPlayer = 21;
+        // make sure they sum to TP:
+        for (bucket = 0; bucket < 5; bucket++){
+            sum4 = 0;
+            for (sk = 5 * bucket; sk < (5 * bucket + 4); sk++) {
+                sum4 += TPperSkill[sk];
+            }
+            TPperSkill[5 * bucket + 4] = TP - sum4;
+        }        
+        assignment = await training.encodeTP(TP, TPperSkill, specialPlayer).should.be.fulfilled;
+        
+        const {0: skills, 1: matchLogsAndEvents} = await play.play1stHalfAndEvolve(
+            123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [assignment, assignment], 
+            [is2nd = false, isHomeStadium, isPlayoff]
+        ).should.be.fulfilled;
+        
+        matchLogsAndEvents[0].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222701407529504605586');
+        matchLogsAndEvents[1].should.be.bignumber.equal('25296342363168174040606265772288757447733750103222624846335839307426');
+
+        expectedResult = [2, 2];
+        expectedPoints = [0, 0];
+        for (team = 0; team < 2; team++) {
+            nGoals = await encodeLog.getNGoals(matchLogsAndEvents[team]);
+            nGoals.toNumber().should.be.equal(expectedResult[team]);
+            points = await encodeLog.getTrainingPoints(matchLogsAndEvents[team]).should.be.fulfilled;
+            points.toNumber().should.be.equal(expectedPoints[team]);
+        }
+        expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+        debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
+    });
+    
+    
+    it2('test that we can a 2nd half and include the training points too', async () => {
         const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHomeStadium, isPlayoff]
