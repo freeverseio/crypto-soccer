@@ -96,22 +96,7 @@ func (b Matches) ToStorage(tx *sql.Tx) error {
 		if err := match.ToStorage(tx); err != nil {
 			return err
 		}
-		// for _, player := range match.HomeTeam.Players {
-		// 	var sPlayer storage.Player
-		// 	defence, speed, pass, shoot, endurance, _, _, err := contracts.DecodeSkills(player.Skills())
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	sPlayer.Defence = defence.Uint64()
-		// 	sPlayer.Speed = speed.Uint64()
-		// 	sPlayer.Pass = pass.Uint64()
-		// 	sPlayer.Shoot = shoot.Uint64()
-		// 	sPlayer.Defence = endurance.Uint64()
-		// 	sPlayer.EncodedSkills = player.Skills()
-		// 	if err = sPlayer.Update(tx); err != nil {
-		// 		return err
-		// 	}
-		// }
+
 	}
 	return nil
 }

@@ -169,7 +169,7 @@ func (b *Team) updateTeamSkills(
 	}
 
 	for i, player := range b.Players {
-		player.EncodedSkills = newSkills[i]
+		player.sto.EncodedSkills = newSkills[i]
 	}
 	// TODO the followign code is old but it contain the code to evolve the name of a change in the generation of a player. Add it in the future.
 	// for s, state := range newStates {

@@ -13,28 +13,28 @@ import (
 )
 
 type Player struct {
-	storage.Player
+	sto storage.Player
 }
 
 func NewNullPlayer() *Player {
 	player := Player{}
-	player.EncodedSkills = big.NewInt(0)
+	player.sto.EncodedSkills = big.NewInt(0)
 	return &player
 }
 
 func (b Player) IsNull() bool {
-	return b.EncodedSkills.Cmp(big.NewInt(0)) == 0
+	return b.sto.EncodedSkills.Cmp(big.NewInt(0)) == 0
 }
 
 func (b Player) ToStorage(tx *sql.Tx) error {
 	if b.IsNull() {
 		return nil
 	}
-	return b.Update(tx)
+	return b.sto.Update(tx)
 }
 
 func NewPlayer(
-	contracts *contracts.Contracts,
+	contracts contracts.Contracts,
 	playerID *big.Int,
 	defence uint16,
 	speed uint16,
@@ -56,7 +56,7 @@ func NewPlayer(
 	var err error
 	player := Player{}
 	sumSkills := uint32(defence) + uint32(speed) + uint32(endurance) + uint32(pass) + uint32(shoot)
-	player.EncodedSkills, err = contracts.Engine.EncodePlayerSkills(
+	player.sto.EncodedSkills, err = contracts.Engine.EncodePlayerSkills(
 		&bind.CallOpts{},
 		[5]uint16{shoot, speed, pass, defence, endurance},
 		big.NewInt(int64(dayOfBirthUnix)),
@@ -70,20 +70,24 @@ func NewPlayer(
 		substitutedLastHalf,
 		sumSkills,
 	)
+	if err != nil {
+		return nil, err
+	}
+	err = player.decodeSkills(contracts)
 	return &player, err
 }
 
 func NewPlayerFromSkills(skills string) *Player {
 	var player Player
-	player.EncodedSkills, _ = new(big.Int).SetString(skills, 10)
+	player.sto.EncodedSkills, _ = new(big.Int).SetString(skills, 10)
 	return &player
 }
 
 func (b *Player) SetAligned(contracts contracts.Contracts, aligned bool) error {
 	var err error
-	b.EncodedSkills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
+	b.sto.EncodedSkills, err = contracts.Evolution.SetAlignedEndOfLastHalf(
 		&bind.CallOpts{},
-		b.EncodedSkills,
+		b.sto.EncodedSkills,
 		aligned,
 	)
 	return err
@@ -91,9 +95,9 @@ func (b *Player) SetAligned(contracts contracts.Contracts, aligned bool) error {
 
 func (b *Player) SetRedCard(contracts contracts.Contracts, redCard bool) error {
 	var err error
-	b.EncodedSkills, err = contracts.Evolution.SetRedCardLastGame(
+	b.sto.EncodedSkills, err = contracts.Evolution.SetRedCardLastGame(
 		&bind.CallOpts{},
-		b.EncodedSkills,
+		b.sto.EncodedSkills,
 		redCard,
 	)
 	return err
@@ -101,25 +105,40 @@ func (b *Player) SetRedCard(contracts contracts.Contracts, redCard bool) error {
 
 func (b *Player) SetInjuryWeeks(contracts contracts.Contracts, weeks uint8) error {
 	var err error
-	b.EncodedSkills, err = contracts.Evolution.SetInjuryWeeksLeft(
+	b.sto.EncodedSkills, err = contracts.Evolution.SetInjuryWeeksLeft(
 		&bind.CallOpts{},
-		b.EncodedSkills,
+		b.sto.EncodedSkills,
 		weeks,
 	)
 	return err
 }
 
 func (b Player) DumpState() string {
-	return fmt.Sprintf("skills: %v", b.EncodedSkills)
+	return fmt.Sprintf("skills: %v", b.sto.EncodedSkills)
 }
 
 func (b Player) Skills() *big.Int {
-	return new(big.Int).Set(b.EncodedSkills)
+	return new(big.Int).Set(b.sto.EncodedSkills)
+}
+
+func (b *Player) decodeSkills(contracts contracts.Contracts) error {
+	defence, speed, pass, shoot, endurance, potential, dayOfBirth, err := contracts.DecodeSkills(b.sto.EncodedSkills)
+	if err != nil {
+		return err
+	}
+	b.sto.Defence = defence.Uint64()
+	b.sto.Speed = speed.Uint64()
+	b.sto.Pass = pass.Uint64()
+	b.sto.Shoot = shoot.Uint64()
+	b.sto.Endurance = endurance.Uint64()
+	b.sto.Potential = potential.Uint64()
+	b.sto.DayOfBirth = dayOfBirth.Uint64()
+	return nil
 }
 
 func (b Player) Defence(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetDefence(opts, b.EncodedSkills)
+	value, err := assets.GetDefence(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -128,7 +147,7 @@ func (b Player) Defence(assets *assets.Assets) (uint16, error) {
 
 func (b Player) Speed(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetSpeed(opts, b.EncodedSkills)
+	value, err := assets.GetSpeed(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -137,7 +156,7 @@ func (b Player) Speed(assets *assets.Assets) (uint16, error) {
 
 func (b Player) Pass(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetPass(opts, b.EncodedSkills)
+	value, err := assets.GetPass(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -145,7 +164,7 @@ func (b Player) Pass(assets *assets.Assets) (uint16, error) {
 }
 func (b Player) Shoot(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetShoot(opts, b.EncodedSkills)
+	value, err := assets.GetShoot(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -154,7 +173,7 @@ func (b Player) Shoot(assets *assets.Assets) (uint16, error) {
 
 func (b Player) Endurance(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetEndurance(opts, b.EncodedSkills)
+	value, err := assets.GetEndurance(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -163,7 +182,7 @@ func (b Player) Endurance(assets *assets.Assets) (uint16, error) {
 
 func (b Player) Potential(assets *assets.Assets) (uint16, error) {
 	opts := &bind.CallOpts{}
-	value, err := assets.GetPotential(opts, b.EncodedSkills)
+	value, err := assets.GetPotential(opts, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}
@@ -171,7 +190,7 @@ func (b Player) Potential(assets *assets.Assets) (uint16, error) {
 }
 
 func (b Player) BirthDayUnix(assets *assets.Assets) (uint16, error) {
-	birthDayUnix, err := assets.GetBirthDay(&bind.CallOpts{}, b.EncodedSkills)
+	birthDayUnix, err := assets.GetBirthDay(&bind.CallOpts{}, b.sto.EncodedSkills)
 	if err != nil {
 		return 0, err
 	}

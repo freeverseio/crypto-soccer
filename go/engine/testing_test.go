@@ -26,7 +26,7 @@ func TestCreateDummyPlayer(t *testing.T) {
 
 	for _, ts := range cases {
 		t.Run(fmt.Sprintf("%v", ts), func(t *testing.T) {
-			player := engine.CreateDummyPlayer(t, bc.Contracts, ts.Age, ts.Defence, ts.Speed, ts.Endurance, ts.Pass, ts.Shoot)
+			player := engine.CreateDummyPlayer(t, *bc.Contracts, ts.Age, ts.Defence, ts.Speed, ts.Endurance, ts.Pass, ts.Shoot)
 			value, err := player.Defence(bc.Contracts.Assets)
 			assert.NilError(t, err)
 			assert.Equal(t, value, ts.Defence)

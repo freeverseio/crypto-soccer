@@ -59,10 +59,10 @@ func NewMatchFromStorage(
 	match.HomeTeam.Team = sHomeTeam
 	match.VisitorTeam.Team = sVisitorTeam
 	for _, player := range sHomePlayers {
-		match.HomeTeam.Players[player.ShirtNumber].Player = *player
+		match.HomeTeam.Players[player.ShirtNumber].sto = *player
 	}
 	for _, player := range sVisitorPlayers {
-		match.VisitorTeam.Players[player.ShirtNumber].Player = *player
+		match.VisitorTeam.Players[player.ShirtNumber].sto = *player
 	}
 	return match
 }
