@@ -672,7 +672,7 @@ contract('Evolution', (accounts) => {
         
     });
 
-    it('test that we can a 1st half and include apply training points too', async () => {
+    it2('test that we can a 1st half and include apply training points too', async () => {
         TP = 200;
         TPperSkill = Array.from(new Array(25), (x,i) => TP/5 - 3*i % 6);
         specialPlayer = 21;
@@ -743,7 +743,7 @@ contract('Evolution', (accounts) => {
     });
     
     
-    it2('test that we can a 2nd half and include the training points too', async () => {
+    it('test that we can a 2nd half and include the training points too', async () => {
         const {0: skills, 1: matchLogsAndEvents} = await play.play2ndHalfAndEvolve(
             123456, now, [teamStateAll50Half2, teamStateAll50Half2], [tactics0, tactics1], [0, 0], 
             [is2nd = true, isHomeStadium, isPlayoff]
@@ -763,6 +763,28 @@ contract('Evolution', (accounts) => {
         // check that the events are generated, and match whatever we got once.
         expected = [ 0, 1, 9, 1, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 10, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 8, 1, 6, 0, 1, 9, 1, 5, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
         debug.compareArrays(matchLogsAndEvents.slice(2), expected, toNum = true, verbose = false, isBigNumber = false);
+        
+        // test that the states did not change the intrinsics of the players:
+        sumBeforeEvolving = await evo.getSumOfSkills(teamStateAll50Half2[0]).should.be.fulfilled;
+        sumBeforeEvolving.toNumber().should.be.equal(250);
+        expectedSums = Array.from(new Array(25), (x,i) => 250);
+        sumSkills0 = []  // sum of skills of each player for team 0
+        sumSkills1 = []  // sum of skills of each player for team 1
+        for (p = 0; p < 25; p++) {
+            sum = await evo.getSumOfSkills(skills[0][p]).should.be.fulfilled;
+            sumSkills0.push(sum)
+            sum = await evo.getSumOfSkills(skills[1][p]).should.be.fulfilled;
+            sumSkills1.push(sum)
+        }
+        debug.compareArrays(sumSkills0, expectedSums, toNum = true, verbose = false, isBigNumber = false);
+
+        // check that we correctly reset the "played game" properties
+        for (p = 0; p < 25; p++) {
+            endedHalf = await evo.getAlignedEndOfFirstHalf(skills[0][p]).should.be.fulfilled;
+            wasSubst = await evo.getSubstitutedFirstHalf(skills[0][p]).should.be.fulfilled;
+            endedHalf.should.be.equal(false);
+            wasSubst.should.be.equal(false);
+        }
     });
 
     it2('training points with random inputs', async () => {
